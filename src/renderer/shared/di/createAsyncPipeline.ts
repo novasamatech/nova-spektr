@@ -4,6 +4,8 @@ import { syncApplyImpl } from './syncApplyImpl';
 // Public interface
 type AsyncPipelineHandler<Value, Meta> = (value: Value, meta: Meta) => Value | Promise<Value>;
 
+const id = <T>(v: T): T => v;
+
 export const createAsyncPipeline = <Value, Meta = void>(config?: {
   name?: string;
   postprocess?: AsyncPipelineHandler<Value, Meta>;
@@ -13,19 +15,20 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
     name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
       available: handler.available,
-      fn: ({ acc, input }) => acc.then((value) => handler.fn(value, input)),
+      body: ({ acc, input }) => acc.then((value) => handler.body(value, input)),
     }),
   });
+
+  const postprocess = config?.postprocess ?? id;
 
   return {
     ...identifier,
     apply(value: Value, meta: Meta) {
-      return syncApplyImpl({ identifier, input: meta, acc: Promise.resolve(value) }).then((v) => {
-        if (config?.postprocess) {
-          return config.postprocess(v, meta);
-        } else {
-          return v;
-        }
+      return syncApplyImpl({
+        identifier,
+        input: meta,
+        acc: Promise.resolve(value),
+        postprocess: ({ output }) => output.then((v) => postprocess(v, meta) as Awaited<Value>),
       });
     },
   };

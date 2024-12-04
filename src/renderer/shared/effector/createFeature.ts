@@ -2,7 +2,7 @@ import { type Event, type Scope, type Store, createDomain, createStore, sample }
 import { createGate, useGate } from 'effector-react';
 import { readonly } from 'patronum';
 
-import { type AnyIdentifier, type InferHandlerFn } from '@/shared/di';
+import { type AnyIdentifier, type InferHandlerBody, isSlotIdentifier, normalizeSlotHandler } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type Params<T> = {
@@ -180,20 +180,24 @@ export const createFeature = <T = object>({
     target: triggerIdentifiersFx,
   });
 
-  const inject = <T extends AnyIdentifier>(identifier: T, fn: InferHandlerFn<T>) => {
+  const inject = <T extends AnyIdentifier>(identifier: T, body: InferHandlerBody<T>) => {
     // special wrapper for views - we trying to start feature on render
-    if (identifier.type === 'slot') {
-      const handler = (props: never) => {
-        useGate(gate);
+    if (isSlotIdentifier(identifier)) {
+      const slotHandlerBody = normalizeSlotHandler(body as InferHandlerBody<typeof identifier>);
+      const handler = {
+        order: slotHandlerBody.order,
+        render: (props: never) => {
+          useGate(gate);
 
-        return fn(props);
+          return slotHandlerBody.render(props);
+        },
       };
 
       identifier.registerHandler({
         // TODO create correct feature toggle using effector tools
         // eslint-disable-next-line effector/no-getState
         available: () => (scope ? scope.getState(enable) : enable.getState()),
-        fn: handler,
+        body: handler,
       });
     } else {
       identifier.registerHandler({
@@ -206,7 +210,7 @@ export const createFeature = <T = object>({
 
           return isFeatureEnabled && isFeatureRunning;
         },
-        fn,
+        body,
       });
     }
   };
