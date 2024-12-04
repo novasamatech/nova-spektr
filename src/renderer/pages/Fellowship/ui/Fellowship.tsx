@@ -12,7 +12,12 @@ import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
 import { navigationModel } from '@/features/navigation';
-import { COLLECTIVES_CHAIN_ID, COLLECTIVES_WESTEND_CHAIN_ID, fellowshipPageModel } from '../model/fellowshipPage';
+import {
+  COLLECTIVES_CHAIN_ID,
+  COLLECTIVES_NOVASAMA_CHAIN_ID,
+  COLLECTIVES_WESTEND_CHAIN_ID,
+  fellowshipPageModel,
+} from '../model/fellowshipPage';
 
 const { MembersCard } = fellowshipMembersFeature.views;
 const { ProfileCard } = fellowshipProfileFeature.views;
@@ -63,8 +68,9 @@ export const Fellowship = () => {
                     navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))
                   }
                 >
-                  <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot People</Select.Item>
-                  <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Test People</Select.Item>
+                  <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot Collectives</Select.Item>
+                  <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Westend Collectives</Select.Item>
+                  <Select.Item value={COLLECTIVES_NOVASAMA_CHAIN_ID}>Novasama Collectives</Select.Item>
                 </Select>
                 {/* eslint-enable i18next/no-literal-string */}
               </div>
