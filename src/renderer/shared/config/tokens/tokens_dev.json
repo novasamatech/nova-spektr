@@ -413,6 +413,20 @@
         "assetId": 0,
         "assetSymbol": "WND",
         "type": "native"
+      },
+      {
+        "chainId": "0xa35b4d0bf5767fcc3a4795aca93ef3b152c7c280d558d49eea535cae56a3a93e",
+        "name": "Novasama Testnet - Fellowship",
+        "assetId": 0,
+        "assetSymbol": "WND",
+        "type": "native"
+      },
+      {
+        "chainId": "0x713daf193a6301583ff467be736da27ef0a72711b248927ba413f573d2b38e44",
+        "name": "Westend Collectives",
+        "assetId": 0,
+        "assetSymbol": "WND",
+        "type": "native"
       }
     ]
   },
