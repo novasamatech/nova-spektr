@@ -38,7 +38,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
   };
 
   return (
-    <Plate className="z-10 border-b-4 border-double p-0 shadow-shards">
+    <Plate className="z-10 border-b-4 border-double p-0 shadow-stack">
       <Accordion>
         <Accordion.Button
           iconOpened="shelfDown"
