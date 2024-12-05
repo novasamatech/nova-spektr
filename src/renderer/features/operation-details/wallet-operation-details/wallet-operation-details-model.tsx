@@ -10,7 +10,7 @@ import { WalletIcon, walletModel } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 export const walletOperationDetailsFeature = createFeature({
-  name: 'Wallet operation details',
+  name: 'wallet/operation details',
 });
 
 walletOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationDetails, {

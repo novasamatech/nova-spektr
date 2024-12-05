@@ -7,7 +7,7 @@ import { BondOperationDetails } from './components/BondOperationDetails';
 import { BondOperationTitle } from './components/BondOperationTitle';
 
 export const bondOperationDetailFeature = createFeature({
-  name: 'Bond operation details',
+  name: 'staking/bond operation details',
 });
 
 bondOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {

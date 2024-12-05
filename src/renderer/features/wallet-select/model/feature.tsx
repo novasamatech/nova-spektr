@@ -4,7 +4,7 @@ import { SelectWalletPairing } from '@/features/wallets/SelectWalletPairing';
 import { WalletSelect } from '../components/WalletSelect';
 
 export const walletsSelectFeatureStatus = createFeature({
-  name: 'Wallets select',
+  name: 'wallet/select',
 });
 
 walletsSelectFeatureStatus.inject(navigationHeaderSlot, () => {

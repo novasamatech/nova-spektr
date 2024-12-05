@@ -1,4 +1,7 @@
+/* eslint-disable import-x/max-dependencies */
+
 import { kernelModel } from '@/shared/core';
+import { registerFeatures } from '@/shared/effector';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -20,6 +23,21 @@ import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { walletSelectFeature } from '@/features/wallet-select';
 
 export const initModel = () => {
+  registerFeatures([
+    assetsNavigationFeature,
+    stakingNavigationFeature,
+    governanceNavigationFeature,
+    fellowshipNavigationFeature,
+    operationsNavigationFeature,
+    contactsNavigationFeature,
+    notificationsNavigationFeature,
+    settingsNavigationFeature,
+    walletSelectFeature.feature,
+    operationDetails.transferOperationDetailFeature,
+    operationDetails.bondOperationDetailFeature,
+    operationDetails.walletOperationDetailsFeature,
+  ]);
+
   assetsNavigationFeature.start();
   stakingNavigationFeature.start();
   governanceNavigationFeature.start();
@@ -28,10 +46,6 @@ export const initModel = () => {
   contactsNavigationFeature.start();
   notificationsNavigationFeature.start();
   settingsNavigationFeature.start();
-  // TODO: should run automatically
-  operationDetails.transferOperationDetailFeature.start();
-  operationDetails.bondOperationDetailFeature.start();
-  operationDetails.walletOperationDetailsFeature.start();
 
   walletSelectFeature.feature.start();
 

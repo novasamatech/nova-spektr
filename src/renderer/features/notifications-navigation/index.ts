@@ -4,7 +4,7 @@ import { Paths } from '@/shared/routes';
 import { navigationBottomLinksPipeline } from '@/features/app-shell';
 
 export const notificationsNavigationFeature = createFeature({
-  name: 'Notifications navigation',
+  name: 'notifications/navigation',
   enable: $features.map(({ notifications }) => notifications),
 });
 

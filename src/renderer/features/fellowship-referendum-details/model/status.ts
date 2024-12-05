@@ -23,6 +23,6 @@ const $input = combine(
 );
 
 export const referendumsDetailsFeatureStatus = createFeature({
-  name: 'referendumDetails',
+  name: 'fellowship/referendum details',
   input: $input,
 });

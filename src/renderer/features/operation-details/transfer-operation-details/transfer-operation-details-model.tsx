@@ -6,7 +6,7 @@ import { TransferOperationDetails } from './components/TransferOperationDetails'
 import { TransferOperationTitle } from './components/TransferOperationTitle';
 
 export const transferOperationDetailFeature = createFeature({
-  name: 'Transfer operation details',
+  name: 'transfer/operations',
 });
 
 transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
