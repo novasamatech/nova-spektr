@@ -42,7 +42,7 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
       <div className={cnTw('relative z-10 block w-full', sticky && 'sticky top-0 z-10')}>
         <RadixAccordion.Trigger
           className={cnTw(
-            'group flex w-full items-center gap-x-2 bg-row-background px-3 py-1',
+            'group flex w-full items-center gap-x-2 bg-row-background py-1 pl-3 pr-2',
             'shadow-stack hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
             'transition-all duration-300 data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
           )}

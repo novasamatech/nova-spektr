@@ -20,10 +20,10 @@ export const NetworkCard = memo(({ chain, asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <div className="flex items-center px-2 py-1.5">
+    <div className="flex items-center px-2 py-1">
       <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
         <AssetIcon asset={asset} />
-        <div>
+        <div className="flex flex-col gap-y-0.5">
           <BodyText>{chain.assetSymbol}</BodyText>
           <div className="flex items-center gap-x-1.5">
             <ChainIcon src={chains[chain.chainId].icon} name={chain.name} />
@@ -31,9 +31,7 @@ export const NetworkCard = memo(({ chain, asset }: Props) => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-end">
-        <AssembledAssetAmount asset={asset} balance={chain.balance} />
-      </div>
+      <AssembledAssetAmount asset={asset} balance={chain.balance} />
       <AssetLinks assetId={chain.assetId} chainId={chain.chainId} />
     </div>
   );
