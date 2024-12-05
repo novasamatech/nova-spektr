@@ -14,7 +14,7 @@ import {
   type Balance,
   type ChainId,
 } from '@/shared/core';
-import { ZERO_BALANCE, getBalanceBn, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, getBalanceBn, nonNullable, totalAmount, totalAmountBN } from '@/shared/lib/utils';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
 
@@ -31,6 +31,7 @@ export const tokensService = {
   sumTokenBalances,
   sortTokensByBalance,
   hideZeroBalances,
+  calculateTotalBalance,
 };
 
 function getTokensData(): AssetByChains[] {
@@ -59,13 +60,7 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
   }, []);
 }
 
-function getChainWithBalance(
-  balances: Balance[],
-  chains: AssetChain[],
-  accounts: Account[],
-): [AssetChain[], AssetBalance] {
-  let totalBalance = {} as AssetBalance;
-
+function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: Account[]): AssetChain[] {
   const chainsWithBalance = chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
@@ -80,8 +75,6 @@ function getChainWithBalance(
       return sumTokenBalances(balance, acc);
     }, {});
 
-    totalBalance = sumTokenBalances(assetBalance, totalBalance);
-
     if (assetBalance.verified !== false) {
       acc.push({ ...chain, balance: assetBalance });
     }
@@ -89,19 +82,31 @@ function getChainWithBalance(
     return acc;
   }, [] as AssetChain[]);
 
-  return [chainsWithBalance, totalBalance];
+  return chainsWithBalance;
+}
+
+function calculateTotalBalance(assets: AssetChain[]) {
+  let totalBalance: AssetBalance = {};
+
+  for (const { balance } of assets) {
+    totalBalance = sumTokenBalances(totalBalance, balance);
+  }
+
+  return totalBalance;
 }
 
 function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
-  if (!hideZeroBalance) return activeTokensWithBalance;
+  if (!hideZeroBalance) {
+    return activeTokensWithBalance;
+  }
 
   const result: AssetByChains[] = [];
 
   for (const token of activeTokensWithBalance) {
-    if (totalAmount(token.totalBalance) === ZERO_BALANCE) continue;
+    if (totalAmountBN(calculateTotalBalance(token.chains)).isZero()) continue;
 
     const filteredChains = token.chains.filter((chain) => {
-      return totalAmount(chain.balance) !== ZERO_BALANCE;
+      return nonNullable(chain.balance) && !totalAmountBN(chain.balance).isZero();
     });
 
     result.push({ ...token, chains: filteredChains });
@@ -122,7 +127,7 @@ function sortTokensByBalance(
   const testnets = { withBalance: [], noBalance: [] };
 
   for (const token of tokens) {
-    const tokenTotal = totalAmount(token.totalBalance);
+    const tokenTotal = totalAmount(calculateTotalBalance(token.chains));
     const tokenBalance = getBalanceBn(tokenTotal, token.precision);
     const tokenAssetPrice = token.priceId && currency && assetsPrices?.[token.priceId]?.[currency]?.price;
     const fiatBalance = new BigNumber(tokenAssetPrice || 0).multipliedBy(tokenBalance);
