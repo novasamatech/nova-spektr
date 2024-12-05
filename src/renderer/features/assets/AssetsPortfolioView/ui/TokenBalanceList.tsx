@@ -3,9 +3,9 @@ import { memo, useMemo } from 'react';
 
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText, Icon, IconButton, Tooltip } from '@/shared/ui';
+import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
-import { CardStack } from '@/shared/ui-kit';
+import { CardStack, Tooltip } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
@@ -15,9 +15,6 @@ import { portfolioModel } from '../model/portfolio-model';
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 import { ChainsList } from './ChainsList';
 import { NetworkCard } from './NetworkCard';
-
-const IconButtonStyle =
-  'hover:bg-transparent hover:text-icon-default focus:bg-transparent focus:text-icon-default active:bg-transparent active:text-icon-default';
 
 type Props = {
   asset: AssetByChains;
@@ -45,9 +42,9 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
     <CardStack>
       <CardStack.Trigger>
         <div className="flex w-full items-center">
-          <div className="flex flex-1 items-center gap-x-2">
+          <div className="flex flex-1 items-center gap-x-2 py-0.5">
             <AssetIcon asset={asset} />
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-y-0.5">
               <BodyText>{asset.symbol}</BodyText>
               <div className="flex items-center">
                 <ChainsList chains={chains} assetChains={asset.chains} />
@@ -55,11 +52,14 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
                   {t('balances.availableNetworks', { count: asset.chains.length })}
                 </FootnoteText>
                 {totalBalance.verified && (
-                  <div className="ml-2.5 flex items-center gap-x-2 text-text-warning">
-                    <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                      <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
-                    </Tooltip>
-                  </div>
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <div tabIndex={0} className="ml-2 text-text-warning">
+                        <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
+                  </Tooltip>
                 )}
               </div>
             </div>
@@ -69,22 +69,20 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
             wrapperClassName="flex-col gap-0.5 items-end px-2 w-[100px]"
             className="text-text-primar text-right"
           />
-          <div className="flex w-[100px] flex-col items-end">
-            <AssembledAssetAmount asset={asset} balance={totalBalance} />
-          </div>
+          <AssembledAssetAmount asset={asset} balance={totalBalance} />
 
           <div className="ml-3 flex gap-x-2">
             <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
-              <IconButton size={20} name="sendArrow" className={IconButtonStyle} onClick={handleSend} />
+              <IconButton size={20} name="sendArrow" onClick={handleSend} />
             </CheckPermission>
             <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
-              <IconButton size={20} name="receiveArrow" className={IconButtonStyle} onClick={handleReceive} />
+              <IconButton size={20} name="receiveArrow" onClick={handleReceive} />
             </CheckPermission>
           </div>
         </div>
       </CardStack.Trigger>
       <CardStack.Content>
-        <ul className="flex flex-col gap-y-1.5 pl-5">
+        <ul className="flex flex-col pl-5">
           {asset.chains.map((chain) => (
             <li key={`${chain.chainId}-${chain.assetId}`}>
               <NetworkCard chain={chain} asset={asset} />

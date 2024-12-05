@@ -98,7 +98,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, s
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <li className="w-[546px]">
+    <li className="w-[736px]">
       <Accordion isDefaultOpen>
         <Accordion.Button
           buttonClass={cnTw(
