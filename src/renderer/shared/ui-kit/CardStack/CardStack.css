@@ -21,3 +21,13 @@
 .card-stack-content[data-state="open"] .card-stack-plate {
   max-width: 100%;
 }
+
+.card-stack-content[data-state="closed"] .card-stack-section {
+  transition: visibility;
+  transition-delay: 0.3s;
+  visibility: hidden;
+}
+
+.card-stack-content[data-state="open"] .card-stack-section {
+  visibility: visible;
+}

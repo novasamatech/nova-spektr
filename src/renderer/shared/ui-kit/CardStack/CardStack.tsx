@@ -90,7 +90,7 @@ const Content = ({ children }: PropsWithChildren) => {
           'group-data-[state=open]:border-t group-data-[state=open]:border-divider group-data-[state=open]:shadow-none',
         )}
       />
-      <section ref={ref} className="relative">
+      <section ref={ref} className="card-stack-section relative">
         {children}
       </section>
     </RadixAccordion.Content>
