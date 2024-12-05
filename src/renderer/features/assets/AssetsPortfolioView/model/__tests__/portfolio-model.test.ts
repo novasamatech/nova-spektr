@@ -58,10 +58,10 @@ const mockTokens: AssetByChains[] = [
   },
 ];
 
-// TODO input data is a bit complex and after refactoring of internal model chains wallet and etc should be presented.
-//  For now it's simplier to turn of some of the test and think about simplifying external dependencies.
+// TODO input data is a bit complex and after refactoring of internal model, chains wallet and etc should be presented.
+//  For now it's simplier to turn off some of the test and think about simplifying external dependencies.
 
-describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
+describe('Portfolio model', () => {
   test('should handle activeViewChanged event', async () => {
     const scope = fork({
       values: new Map().set(portfolioModel.$activeView, AssetsListView.CHAIN_CENTRIC),
@@ -75,7 +75,7 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
     const scope = fork({
       values: new Map()
         .set(portfolioModel.$activeView, AssetsListView.TOKEN_CENTRIC)
-        .set(portfolioModel._test.$basicTokens, mockTokens)
+        .set(portfolioModel._test.$defaultTokens, mockTokens)
         .set(portfolioModel._test.$query, ''),
     });
 
@@ -87,17 +87,17 @@ describe('features/assets/AssetsPortfolioView/model/portfolio-model', () => {
 
   xtest('should update $sortedTokens store on changes in $activeTokens', async () => {
     const scope = fork({
-      values: new Map().set(portfolioModel._test.$basicTokens, []),
+      values: new Map().set(portfolioModel._test.$defaultTokens, []),
     });
 
-    await allSettled(portfolioModel._test.$basicTokens, { scope, params: mockTokens });
+    await allSettled(portfolioModel._test.$defaultTokens, { scope, params: mockTokens });
 
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);
   });
 
   xtest('should sort tokens', async () => {
     const scope = fork({
-      values: [[portfolioModel._test.$basicTokens, Array.from(mockTokens).reverse()]],
+      values: [[portfolioModel._test.$defaultTokens, Array.from(mockTokens).reverse()]],
     });
 
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);

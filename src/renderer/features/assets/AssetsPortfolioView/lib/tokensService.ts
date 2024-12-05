@@ -88,8 +88,8 @@ function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts
 function calculateTotalBalance(assets: AssetChain[]) {
   let totalBalance: AssetBalance = {};
 
-  for (const asset of assets) {
-    totalBalance = sumTokenBalances(totalBalance, asset.balance);
+  for (const { balance } of assets) {
+    totalBalance = sumTokenBalances(totalBalance, balance);
   }
 
   return totalBalance;

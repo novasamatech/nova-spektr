@@ -24,22 +24,22 @@ const $accounts = restore<Account[]>(accountsChanged, []);
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
-const $basicTokens = createStore(tokensService.getTokensData());
+const $defaultTokens = createStore(tokensService.getTokensData());
 
 const $tokens = combine(
   {
-    basicTokens: $basicTokens,
+    defaultTokens: $defaultTokens,
     activeView: $activeView,
     wallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
   },
-  ({ basicTokens, activeView, wallet, chains }) => {
+  ({ defaultTokens, activeView, wallet, chains }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
     if (nullable(wallet)) return DEFAULT_LIST;
 
     const tokens: AssetByChains[] = [];
 
-    for (const token of basicTokens) {
+    for (const token of defaultTokens) {
       const filteredChains = token.chains.filter((chain) => {
         return wallet.accounts.some((account) => {
           return (
@@ -177,7 +177,7 @@ export const portfolioModel = {
   },
 
   _test: {
-    $basicTokens,
+    $defaultTokens,
     $query,
   },
 };
