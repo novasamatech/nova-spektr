@@ -3,8 +3,8 @@ import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'rea
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, SearchInput } from '@/shared/ui';
-import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
+import { FootnoteText } from '@/shared/ui';
+import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { identityModel } from '../model/identity';
 import { membersModel } from '../model/members';
 import { membersFeatureStatus } from '../model/status';
@@ -48,7 +48,13 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
         <Box fitContainer fillContainer>
           {members.length !== 0 ? (
             <Box shrink={0} padding={[4, 5, 6]}>
-              <SearchInput autoFocus placeholder={t('general.input.searchLabel')} value={query} onChange={setQuery} />
+              <SearchInput
+                height="sm"
+                autoFocus
+                placeholder={t('general.input.searchLabel')}
+                value={query}
+                onChange={setQuery}
+              />
             </Box>
           ) : null}
 
