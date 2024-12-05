@@ -20,23 +20,21 @@ export const NetworkCard = memo(({ chain, asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <li className="flex cursor-default flex-col rounded">
-      <div className="flex items-center px-2 py-1.5">
-        <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
-          <AssetIcon asset={asset} />
-          <div>
-            <BodyText>{chain.assetSymbol}</BodyText>
-            <div className="flex items-center gap-x-1.5">
-              <ChainIcon src={chains[chain.chainId].icon} name={chain.name} />
-              <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
-            </div>
+    <div className="flex items-center px-2 py-1.5">
+      <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
+        <AssetIcon asset={asset} />
+        <div>
+          <BodyText>{chain.assetSymbol}</BodyText>
+          <div className="flex items-center gap-x-1.5">
+            <ChainIcon src={chains[chain.chainId].icon} name={chain.name} />
+            <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
           </div>
         </div>
-        <div className="flex flex-col items-end">
-          <AssembledAssetAmount asset={asset} balance={chain.balance} />
-        </div>
-        <AssetLinks assetId={chain.assetId} chainId={chain.chainId} />
       </div>
-    </li>
+      <div className="flex flex-col items-end">
+        <AssembledAssetAmount asset={asset} balance={chain.balance} />
+      </div>
+      <AssetLinks assetId={chain.assetId} chainId={chain.chainId} />
+    </div>
   );
 });
