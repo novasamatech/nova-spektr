@@ -1,7 +1,7 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore } from 'effector';
 import { once } from 'patronum';
 
-import { type Account, type AssetByChains, type Balance, type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { type Account, type AssetByChains } from '@/shared/core';
 import { includes, nullable } from '@/shared/lib/utils';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
@@ -9,6 +9,8 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { tokensService } from '../lib/tokensService';
+
+const DEFAULT_LIST: never[] = [];
 
 const activeViewChanged = createEvent<AssetsListView>();
 const accountsChanged = createEvent<Account[]>();
@@ -21,97 +23,54 @@ const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
 const $accounts = restore<Account[]>(accountsChanged, []);
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
-const $tokens = createStore<AssetByChains[]>([]);
-const $activeTokens = createStore<AssetByChains[]>([]);
-const $activeTokensWithBalance = createStore<AssetByChains[]>([]);
-const $filteredTokens = createStore<AssetByChains[]>([]);
-const $sortedTokens = createStore<AssetByChains[]>([]);
 
-const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () => true);
+const $defaultTokens = createStore(tokensService.getTokensData());
 
-type UpdateTokenParams = {
-  activeWallet?: Wallet;
-  chains: Record<ChainId, Chain>;
-};
+const $tokens = combine(
+  {
+    defaultTokens: $defaultTokens,
+    activeView: $activeView,
+    wallet: walletModel.$activeWallet,
+    chains: networkModel.$chains,
+  },
+  ({ defaultTokens, activeView, wallet, chains }) => {
+    if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
+    if (nullable(wallet)) return DEFAULT_LIST;
 
-const getUpdatedTokensFx = createEffect(({ activeWallet, chains }: UpdateTokenParams): AssetByChains[] => {
-  const tokens = tokensService.getTokensData();
-  const updatedTokens: AssetByChains[] = [];
-
-  for (const token of tokens) {
-    const filteredChains = token.chains.filter((chain) => {
-      return activeWallet?.accounts.some((account) => {
-        return (
-          accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
-          accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
-        );
-      });
-    });
-
-    if (filteredChains.length === 0) continue;
-
-    updatedTokens.push({ ...token, chains: filteredChains });
-  }
-
-  return updatedTokens;
-});
-
-type PopulateBalanceParams = {
-  activeTokens: AssetByChains[];
-  balances: Balance[];
-  accounts: Account[];
-};
-
-const populateTokensBalanceFx = createEffect(
-  ({ activeTokens, balances, accounts }: PopulateBalanceParams): AssetByChains[] => {
     const tokens: AssetByChains[] = [];
 
-    for (const token of activeTokens) {
-      const [chainsWithBalance, totalBalance] = tokensService.getChainWithBalance(balances, token.chains, accounts);
+    for (const token of defaultTokens) {
+      const filteredChains = token.chains.filter((chain) => {
+        return wallet.accounts.some((account) => {
+          return (
+            accountUtils.isNonBaseVaultAccount(account, wallet) &&
+            accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
+          );
+        });
+      });
 
-      if (chainsWithBalance.length === 0) continue;
+      if (filteredChains.length === 0) continue;
 
-      tokens.push({ ...token, chains: chainsWithBalance, totalBalance });
+      tokens.push({ ...token, chains: filteredChains });
     }
 
     return tokens;
   },
 );
 
-sample({
-  clock: [walletModel.$activeWallet, $activeView, once(networkModel.$chains)],
-  source: {
-    activeView: $activeView,
-    activeWallet: walletModel.$activeWallet,
-    chains: networkModel.$chains,
-  },
-  filter: ({ activeView, activeWallet }) => {
-    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && activeWallet);
-  },
-  target: getUpdatedTokensFx,
-});
-
-sample({
-  clock: getUpdatedTokensFx.doneData,
-  target: $tokens,
-});
-
-sample({
-  clock: [networkModel.$connections, $tokens],
-  source: {
-    activeView: $activeView,
-    activeWallet: walletModel.$activeWallet,
+const $activeTokens = combine(
+  {
+    wallet: walletModel.$activeWallet,
     connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,
   },
-  filter: ({ connections, activeWallet, activeView }) => {
-    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && Object.keys(connections).length && activeWallet);
-  },
-  fn: ({ connections, chains, tokens, activeWallet }): AssetByChains[] => {
-    const isMultisigWallet = walletUtils.isMultisig(activeWallet);
-    const hasAccounts = activeWallet!.accounts.length > 0;
-    const multisigChainToInclude = isMultisigWallet && hasAccounts ? activeWallet.accounts[0].chainId : undefined;
+  ({ connections, chains, tokens, wallet }) => {
+    if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
+
+    const isMultisigWallet = walletUtils.isMultisig(wallet);
+    const hasAccounts = wallet.accounts.length > 0;
+    const multisigChainToInclude = isMultisigWallet && hasAccounts ? wallet.accounts.at(0)?.chainId : undefined;
 
     const activeTokens: AssetByChains[] = [];
 
@@ -134,32 +93,34 @@ sample({
 
     return activeTokens;
   },
-  target: $activeTokens,
-});
+);
 
-sample({
-  clock: [balanceModel.$balances, networkModel.$connections, $accounts, $tokens],
-  source: {
-    activeView: $activeView,
+const $activeTokensWithBalance = combine(
+  {
     activeTokens: $activeTokens,
     accounts: $accounts,
     balances: balanceModel.$balances,
   },
-  filter: ({ activeView, balances }) => {
-    return Boolean(activeView === AssetsListView.TOKEN_CENTRIC && balances.length > 0);
+  ({ activeTokens, balances, accounts }) => {
+    const tokens: AssetByChains[] = [];
+
+    for (const token of activeTokens) {
+      const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, accounts);
+
+      if (chainsWithBalance.length === 0) {
+        continue;
+      }
+
+      tokens.push({ ...token, chains: chainsWithBalance });
+    }
+
+    return tokens;
   },
-  target: populateTokensBalanceFx,
-});
+);
 
-sample({
-  clock: populateTokensBalanceFx.doneData,
-  target: $activeTokensWithBalance,
-});
-
-sample({
-  clock: [$activeTokensWithBalance, queryChanged],
-  source: { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
-  fn: ({ activeTokensWithBalance, query }) => {
+const $filteredTokensWithBalance = combine(
+  { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
+  ({ activeTokensWithBalance, query }) => {
     const filteredTokens: AssetByChains[] = [];
 
     for (const token of activeTokensWithBalance) {
@@ -178,29 +139,28 @@ sample({
 
     return filteredTokens;
   },
-  target: $filteredTokens,
-});
+);
 
-sample({
-  clock: [$activeTokensWithBalance, $filteredTokens, $hideZeroBalances],
-  source: {
+const $sortedTokens = combine(
+  {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
     $hideZeroBalances: $hideZeroBalances,
-    filteredTokens: $filteredTokens,
+    filteredTokens: $filteredTokensWithBalance,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  fn: ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+  ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query
       ? filteredTokens
       : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
-  target: $sortedTokens,
-});
+);
+
+const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () => true);
 
 export const portfolioModel = {
   $activeView,
@@ -217,8 +177,7 @@ export const portfolioModel = {
   },
 
   _test: {
-    $activeTokensWithBalance,
-    $filteredTokens,
+    $defaultTokens,
     $query,
   },
 };
