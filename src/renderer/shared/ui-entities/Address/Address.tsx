@@ -30,11 +30,11 @@ export const Address = memo(
     testId = 'Address',
     hideAddress,
   }: Props) => {
-    const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
+    const titleNode = title ? <span className="truncate">{title}</span> : null;
 
     const addressNode = (
       <span
-        className={cnTw('w-full text-text-primary', {
+        className={cnTw('w-full', {
           'text-help-text text-text-tertiary': title && !hideAddress,
           hidden: title && hideAddress,
         })}
