@@ -42,15 +42,15 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
       <div className={cnTw('relative z-10 block w-full', sticky && 'sticky top-0 z-10')}>
         <RadixAccordion.Trigger
           className={cnTw(
-            'group flex w-full items-center gap-x-2 bg-row-background px-3 py-1 shadow-stack hover:shadow-stack-hover',
+            'group flex w-full items-center gap-x-2 bg-row-background px-3 py-1',
+            'shadow-stack hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
             'transition-all duration-300 data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
-            'data-[state=open]:shadow-none',
           )}
         >
           <Icon
             className={cnTw(
               'transition-all duration-100 group-data-[state=open]:rotate-90',
-              'shrink-0 text-icon-default group-hover:text-icon-hover',
+              'shrink-0 text-icon-default group-hover:text-icon-hover group-focus:text-icon-hover',
             )}
             name="shelfRight"
             size={16}
