@@ -89,7 +89,6 @@ const Title = ({ action, close, children }: TitleProps) => {
 };
 
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
-  // eslint-disable-next-line react/jsx-no-useless-fragment
   return disableScroll ? (
     <div className="h-full flex-grow overflow-hidden">{children}</div>
   ) : (
