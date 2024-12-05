@@ -41,7 +41,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
   const totalBalance = useMemo(() => tokensService.calculateTotalBalance(asset.chains), [asset.chains]);
 
   return (
-    <Plate className="z-10 border-b-4 border-double p-0 shadow-shards">
+    <Plate className="z-10 border-b-4 border-double p-0 shadow-stack">
       <Accordion>
         <Accordion.Button
           iconOpened="shelfDown"
