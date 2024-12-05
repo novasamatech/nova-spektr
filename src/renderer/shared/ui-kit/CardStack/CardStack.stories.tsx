@@ -22,12 +22,14 @@ export const Default: Story = {
             <CardStack.Trigger>Hello, open me, please</CardStack.Trigger>
             <CardStack.Content>
               <ul className="flex flex-col gap-y-4">
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
+                {Array.from({ length: 7 }).map((_, index) => (
+                  <li key={index} className="flex justify-between rounded p-2">
+                    <span>My text</span>
+                    <button type="button" className="rounded-md bg-gray-100 p-1">
+                      Click me
+                    </button>
+                  </li>
+                ))}
               </ul>
             </CardStack.Content>
           </CardStack>
@@ -46,12 +48,16 @@ export const StickyTrigger: Story = {
             <CardStack.Trigger sticky>Hello, I&#39;m sticky button</CardStack.Trigger>
             <CardStack.Content>
               <ul className="flex flex-col gap-y-4 bg-green-100">
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
-                <li className="rounded p-2">My text</li>
+                <ul className="flex flex-col gap-y-4">
+                  {Array.from({ length: 7 }).map((_, index) => (
+                    <li key={index} className="flex justify-between rounded p-2">
+                      <span>My text</span>
+                      <button type="button" className="rounded-md bg-gray-100 p-1">
+                        Click me
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </ul>
             </CardStack.Content>
           </CardStack>
