@@ -28,18 +28,12 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   render: ({ operation }) => {
     const { t } = useI18n();
     const transaction = getTransactionFromMultisigTx(operation);
+
     const chains = useUnit(networkModel.$chains);
     const apis = useUnit(networkModel.$apis);
 
     const chain = chains[operation.chainId];
     const api = apis[operation.chainId];
-
-    const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
-    const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
-    const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
-
-    const referendumId = operationDetailsUtils.getReferendumId(operation);
-    const vote = operationDetailsUtils.getVote(operation);
 
     const defaultAsset = chain?.assets[0];
 
@@ -62,6 +56,28 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
         setIsUndelegationLoading(false);
       });
     }, [api, operation]);
+
+    if (
+      transaction?.type &&
+      ![
+        TransactionType.UNLOCK,
+        TransactionType.VOTE,
+        TransactionType.REVOTE,
+        TransactionType.REMOVE_VOTE,
+        TransactionType.DELEGATE,
+        TransactionType.UNDELEGATE,
+        TransactionType.EDIT_DELEGATION,
+      ].includes(transaction.type)
+    ) {
+      return null;
+    }
+
+    const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
+    const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
+    const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
+
+    const referendumId = operationDetailsUtils.getReferendumId(operation);
+    const vote = operationDetailsUtils.getVote(operation);
 
     if (referendumId) {
       result.push(
@@ -153,7 +169,9 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
     if (delegationTracks) {
       result.push(
         <DetailRow label={t('operation.details.delegationTracks')} className="text-text-secondary">
-          <TracksDetails tracks={delegationTracks.map(Number)} />
+          <div className="-mr-2">
+            <TracksDetails tracks={delegationTracks.map(Number)} />
+          </div>
         </DetailRow>,
       );
     }

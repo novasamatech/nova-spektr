@@ -10,7 +10,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetById } from '@/shared/lib/utils';
+import { cnTw, getAssetById } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -57,7 +57,14 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
     result.push(
       <>
         <DetailRow label={t('operation.details.validators')} className="text-text-secondary">
-          <button type="button" className="flex items-center gap-x-1 text-text-secondary" onClick={toggleValidators}>
+          <button
+            type="button"
+            className={cnTw(
+              '-mr-2 flex cursor-pointer items-center gap-x-1 rounded px-2 py-[3px]',
+              'text-text-secondary hover:bg-action-background-hover hover:text-text-primary',
+            )}
+            onClick={toggleValidators}
+          >
             <FootnoteText as="span" className="text-inherit">
               {selectedValidators.length}
             </FootnoteText>

@@ -82,7 +82,6 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitl
     [
       TransactionType.ADD_PROXY,
       TransactionType.REMOVE_PROXY,
-      TransactionType.PROXY,
       TransactionType.CREATE_PURE_PROXY,
       TransactionType.REMOVE_PURE_PROXY,
     ].includes(transaction.type)
