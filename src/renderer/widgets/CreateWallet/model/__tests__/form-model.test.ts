@@ -22,7 +22,7 @@ jest.mock('@/shared/lib/utils', () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/CreateWallet/model/form-model', () => {
+describe('Create multisig wallet form-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });

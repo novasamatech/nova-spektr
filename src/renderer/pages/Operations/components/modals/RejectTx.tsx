@@ -3,8 +3,15 @@ import { useUnit } from 'effector-react';
 import { sortBy } from 'lodash';
 import { useEffect, useState } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type Account, type Address, type HexString, type MultisigAccount, type Transaction } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import {
+  type Account,
+  type Address,
+  type FlexibleMultisigAccount,
+  type HexString,
+  type MultisigAccount,
+  type Transaction,
+} from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -29,8 +36,8 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount;
   connection: ExtendedChain;
   children: React.ReactNode;
 };

@@ -4,8 +4,9 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';

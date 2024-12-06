@@ -6,28 +6,34 @@ export type HandlerInput<Input, Output> = {
   index: number;
 };
 
-export type DefaultHandlerFn<Input, Output> = (handlerInput: HandlerInput<Input, Output>) => Output;
+export type DefaultHandlerBody<Input, Output> = (handlerInput: HandlerInput<Input, Output>) => Output;
 
-export type RegisterHandlerParams<HandlerFn> = {
+export type Handler<HandlerBody> = {
   available(): boolean;
-  fn: HandlerFn;
+  body: HandlerBody;
 };
 
-export type Handler<Input, Output> = {
-  available(): boolean;
-  fn: DefaultHandlerFn<Input, Output>;
-};
-
-export type Identifier<Input, Output, HandlerFn = DefaultHandlerFn<Input, Output>> = {
+export type Identifier<
+  Input,
+  Output,
+  HandlerBody = DefaultHandlerBody<Input, Output>,
+  ProcessedHandlerBody = DefaultHandlerBody<Input, Output>,
+> = {
   type: string;
   name: string;
-  $handlers: Store<Handler<Input, Output>[]>;
-  registerHandler: EventCallable<RegisterHandlerParams<HandlerFn>>;
+  $handlers: Store<Handler<ProcessedHandlerBody>[]>;
+  registerHandler: EventCallable<Handler<HandlerBody>>;
   updateHandlers: EventCallable<void>;
+  __BRAND: 'Identifier';
 };
 
-export type AnyIdentifier<Input = any, Output = any, HandlerFn = any> = Identifier<Input, Output, HandlerFn>;
+export type AnyIdentifier<Input = any, Output = any, HandlerBody = any, ProcessedHandlerBody = any> = Identifier<
+  Input,
+  Output,
+  HandlerBody,
+  ProcessedHandlerBody
+>;
 
 export type InferInput<T extends AnyIdentifier> = T extends AnyIdentifier<infer Input> ? Input : never;
 export type InferOutput<T extends AnyIdentifier> = T extends AnyIdentifier<any, infer Output> ? Output : never;
-export type InferHandlerFn<T extends AnyIdentifier> = T extends AnyIdentifier<any, any, infer Fn> ? Fn : never;
+export type InferHandlerBody<T extends AnyIdentifier> = T extends AnyIdentifier<any, any, infer Fn> ? Fn : never;

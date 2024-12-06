@@ -51,8 +51,7 @@ describe('createFeature', () => {
     const scope = fork();
 
     const pipeline = createPipeline<string[], string>();
-    const $input = createStore<{ ready: true }>({ ready: true });
-    const featureStatus = createFeature({ name: 'test', input: $input, scope });
+    const featureStatus = createFeature({ name: 'test', scope });
     await allSettled(featureStatus.start, { scope });
 
     featureStatus.inject(pipeline, (list, meta) => list.concat('1', meta));
@@ -64,14 +63,19 @@ describe('createFeature', () => {
     const scope = fork();
 
     const slot = createSlot();
-    const $input = createStore<{ ready: true }>({ ready: true });
-    const featureStatus = createFeature({ name: 'test', input: $input, scope });
+    const featureStatus = createFeature({ name: 'test', scope });
 
     featureStatus.inject(slot, () => <span>feature</span>);
+    featureStatus.inject(slot, {
+      render: () => <span>feature</span>,
+    });
 
     const screenIdle = render(<>{slot.render()}</>);
     expect(screenIdle.container).toMatchInlineSnapshot(`
 <div>
+  <span>
+    feature
+  </span>
   <span>
     feature
   </span>

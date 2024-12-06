@@ -108,7 +108,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {accountUtils.isMultisigAccount(shards[0]) && (
+          {shards?.[0] && accountUtils.isMultisigAccount(shards[0]) && (
             <DetailRow
               className="text-text-primary"
               label={

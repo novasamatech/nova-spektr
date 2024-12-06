@@ -60,7 +60,7 @@ const $referendumsFilteredByStatus = combine(
     referendums: $referendums,
     selectedTracks: filterModel.$selectedTracks,
     selectedVotingStatus: filterModel.$selectedVotingStatus,
-    voting: votingModel.$walletVoting,
+    voting: votingModel.$accountsVoting,
   },
   ({ referendums, voting, selectedTracks, selectedVotingStatus }) => {
     const votingMap = dictionary(voting, 'referendumId');

@@ -6,8 +6,6 @@ export { Select, Combobox, MultiSelect, DropdownIconButton } from './Dropdowns';
 
 export { Popover, Tooltip, MenuPopover, useParentScrollLock } from './Popovers';
 
-export { Input, AmountInput, PasswordInput, SearchInput, InputArea, InputFile } from './Inputs';
-
 export {
   LargeTitleText,
   TitleText,

@@ -5,5 +5,6 @@ export { Account } from './Account/Account';
 export { AssetIcon } from './AssetIcon/AssetIcon';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
 export { AccountExplorers } from './AccountExplorers/AccountExplorers';
+export { RootExplorers } from './RootExplorer/RootExplorers';
 export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';

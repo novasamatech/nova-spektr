@@ -11,7 +11,7 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
-        order: ['Design System', ['kit', 'entities'], 'v1', ['ui', 'entities'], '*'],
+        order: ['Intro', 'Design System', ['kit', 'entities'], 'v1', ['ui', 'entities'], '*'],
       },
     },
   },
@@ -25,7 +25,7 @@ const preview: Preview = {
     },
     (Story) => {
       return (
-        <ThemeProvider bodyAsPortalContainer>
+        <ThemeProvider bodyAsPortalContainer iconStyle='colored'>
           <Story />
         </ThemeProvider>
       );

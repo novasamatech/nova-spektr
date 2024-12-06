@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { type Address as AddressType, type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { Identicon } from '@/shared/ui/Identicon/Identicon';
+import { Identicon } from '@/shared/ui';
 import { Hash } from '../Hash/Hash';
 
 type IconProps = XOR<{
@@ -30,11 +30,11 @@ export const Address = memo(
     testId = 'Address',
     hideAddress,
   }: Props) => {
-    const titleNode = title ? <span className="truncate text-text-primary">{title}</span> : null;
+    const titleNode = title ? <span className="truncate">{title}</span> : null;
 
     const addressNode = (
       <span
-        className={cnTw('w-full text-text-primary', {
+        className={cnTw('w-full', {
           'text-help-text text-text-tertiary': title && !hideAddress,
           hidden: title && hideAddress,
         })}

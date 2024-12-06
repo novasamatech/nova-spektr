@@ -5,11 +5,12 @@ import { type FormEvent } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { AmountInput, Button, InputHint, MultiSelect, Shimmering } from '@/shared/ui';
+import { Button, InputHint, MultiSelect, Shimmering } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
 type Props = {

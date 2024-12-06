@@ -1,10 +1,26 @@
-import { Bytes, Data, Null, StorageKey, Struct, Text, bool, i64, u128, u16, u32, u64, u8 } from '@polkadot/types';
-import { GenericAccountId } from '@polkadot/types/generic/AccountId';
+import {
+  Bytes,
+  Data,
+  GenericAccountId,
+  GenericEthereumAccountId,
+  Null,
+  Raw,
+  StorageKey,
+  Struct,
+  Text,
+  bool,
+  i64,
+  u128,
+  u16,
+  u32,
+  u64,
+  u8,
+} from '@polkadot/types';
 import { type Perbill, type Permill } from '@polkadot/types/interfaces';
-import { BN, u8aToString } from '@polkadot/util';
+import { BN, u8aToHex, u8aToString } from '@polkadot/util';
 import { z } from 'zod';
 
-import { isCorrectAccountId } from '@/shared/lib/utils';
+import { isCorrectAccountId, isEthereumAccountId } from '@/shared/lib/utils';
 
 export const storageKeySchema = <const T extends [z.ZodTypeAny, ...z.ZodTypeAny[]]>(...schema: T) => {
   const argsSchema = z.tuple(schema);
@@ -56,16 +72,18 @@ export const dataStringSchema = z
   .instanceof(Data)
   .transform((value) => (value.isRaw ? u8aToString(value.asRaw) : value.value.toString()));
 
+export const hexSchema = z.instanceof(Raw).transform((value) => u8aToHex(value.hash));
+
 export type BlockHeight = z.infer<typeof blockHeightSchema>;
 export const blockHeightSchema = u32Schema.describe('blockHeight').brand('blockHeight');
 
 export type AccountId = z.infer<typeof accountIdSchema>;
 export const accountIdSchema = z
-  .instanceof(GenericAccountId)
+  .union([z.instanceof(GenericAccountId), z.instanceof(GenericEthereumAccountId)])
   .transform((value, ctx) => {
     const account = value.toHex();
     if (account.startsWith('0x')) {
-      if (isCorrectAccountId(account)) {
+      if (isCorrectAccountId(account) || isEthereumAccountId(account)) {
         return account;
       }
 

@@ -10,10 +10,11 @@ import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
-import { walletSelectUtils } from '@/features/wallets/WalletSelect/lib/wallet-select-utils';
-import { GroupLabels } from '@/features/wallets/WalletSelect/ui/WalletGroup';
+import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
+
+const { services, constants } = walletSelectFeature;
 
 type Props = {
   isOwnAccount?: boolean;
@@ -96,7 +97,7 @@ export const Signatory = ({
       },
     });
 
-    const walletByGroup = walletSelectUtils.getWalletByGroups(filteredWallets || []);
+    const walletByGroup = services.walletSelect.getWalletByGroups(filteredWallets || []);
     const options: [WalletFamily, Account[]][] = [];
 
     for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
@@ -184,7 +185,7 @@ export const Signatory = ({
                     <div className="flex items-center gap-x-2 py-1">
                       <WalletIcon type={walletType} />
                       <CaptionText className="font-semibold uppercase text-text-secondary">
-                        {t(GroupLabels[walletType])}
+                        {t(constants.GROUP_LABELS[walletType])}
                       </CaptionText>
                     </div>
                   }

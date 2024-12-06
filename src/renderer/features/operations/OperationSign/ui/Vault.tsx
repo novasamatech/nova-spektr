@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { type Address, type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, toAddress } from '@/shared/lib/utils';
+import { ValidationErrors, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
@@ -33,34 +33,35 @@ export const Vault = ({
     }
   }, [countdown]);
 
-  const handleSignature = async (data: string | string[]): Promise<void> => {
-    const isMultishard = Array.isArray(data);
-    const signatures = isMultishard
-      ? (data as HexString[]).map(operationSignUtils.transformEcdsaSignature)
-      : [data as HexString].map(operationSignUtils.transformEcdsaSignature);
+  const handleSignature = async (scanResult: HexString | HexString[]): Promise<void> => {
+    const signatures = Array.isArray(scanResult)
+      ? scanResult.map(operationSignUtils.transformEcdsaSignature)
+      : [scanResult].map(operationSignUtils.transformEcdsaSignature);
 
-    const accountIds = signingPayloads.map((p) => p.signatory?.accountId || p.account.accountId);
+    const accountIds = signingPayloads.map((p) => p.signatory?.accountId ?? p.account.accountId);
 
-    const isVerified = signatures.every((signature, index) => {
+    let isVerified = false;
+
+    if (signatures.length > 1) {
       // TODO: Research complex verification
       // TODO: research multishard signature verification
-      if (isMultishard) {
-        return true;
-      }
+      isVerified = true;
+    } else {
+      isVerified = signatures.every((signature, index) => {
+        const payload = txPayloads.at(index);
+        const accountId = accountIds.at(index);
 
-      const payload = txPayloads[index];
-      const verifiablePayload = payload?.slice(1);
-      const verifiableComplexPayload = payload?.slice(2);
+        if (nullable(payload) || nullable(accountId)) return false;
 
-      const isVerified =
-        verifiablePayload &&
-        transactionService.verifySignature(verifiablePayload, signature as HexString, accountIds[index]);
-      const isComplexVerified =
-        verifiableComplexPayload &&
-        transactionService.verifySignature(verifiableComplexPayload, signature as HexString, accountIds[index]);
+        const verifiablePayload = payload.slice(1);
+        const verifiableComplexPayload = payload.slice(2);
 
-      return isVerified || isComplexVerified;
-    });
+        const isVerified = transactionService.verifySignature(verifiablePayload, signature, accountId);
+        const isComplexVerified = transactionService.verifySignature(verifiableComplexPayload, signature, accountId);
+
+        return isVerified || isComplexVerified;
+      });
+    }
 
     const balanceValidationError = validateBalance && (await validateBalance());
 

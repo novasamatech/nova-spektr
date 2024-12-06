@@ -5,6 +5,8 @@ import { Trans } from 'react-i18next';
 import {
   type Account,
   type Address,
+  type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigTransaction,
   type Transaction,
@@ -52,8 +54,8 @@ import {
 } from '../common/utils';
 
 type Props = {
-  tx: MultisigTransaction;
-  account?: MultisigAccount;
+  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  account?: MultisigAccount | FlexibleMultisigAccount;
   signatory?: Account;
   extendedChain?: ExtendedChain;
 };

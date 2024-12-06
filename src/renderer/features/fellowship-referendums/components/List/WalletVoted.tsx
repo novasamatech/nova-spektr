@@ -13,7 +13,7 @@ export const WalletVoted = ({ referendum }: Props) => {
   const { t } = useI18n();
 
   const voting = useStoreMap({
-    store: votingModel.$walletVoting,
+    store: votingModel.$accountsVoting,
     keys: [referendum.id],
     fn: (votings, [id]) => votings.find(voting => voting.referendumId === id),
   });

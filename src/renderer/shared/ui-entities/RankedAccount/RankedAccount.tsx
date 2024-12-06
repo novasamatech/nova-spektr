@@ -25,11 +25,11 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
           <Rank rank={rank} />
         </div>
         <div className="relative min-w-0 shrink grow">
-          <div className="flex grow items-center gap-4.5 text-text-secondary">
+          <div className="flex grow items-center gap-4.5">
             <Identicon address={address} size={20} canCopy background={false} />
-            <Address title={name} address={address} showIcon={false} variant="truncate" />
+            <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
           </div>
-          <div className="absolute inset-y-0 left-3 my-auto h-fit w-fit">
+          <div className="pointer-events-none absolute inset-y-0 left-3 my-auto h-fit w-fit">
             <Indicator active={isActive} />
           </div>
         </div>
@@ -40,7 +40,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
   );
 };
 
-const Rank = ({ rank }: { rank: number }) => {
+const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] => {
   const rankVariants: Record<number, ComponentProps<typeof Label>['variant']> = {
     2: 'orange',
     3: 'red',
@@ -50,17 +50,20 @@ const Rank = ({ rank }: { rank: number }) => {
     7: 'blue',
   };
 
-  const variant = rankVariants[rank] || 'gray';
-
-  return <Label variant={variant}>{rank.toString()}</Label>;
+  return rankVariants[rank] ?? (rank > 7 ? 'blue' : 'gray');
 };
+
+const Rank = ({ rank }: { rank: number }) => {
+  return <Label variant={pickRankColor(rank)}>{rank.toString()}</Label>;
+};
+
 type IndicatorProps = {
   active: boolean;
 };
 
 const Indicator = ({ active }: IndicatorProps) => {
   return (
-    <div className="pointer-events-none relative flex h-4 w-4 items-center justify-center rounded-full bg-white">
+    <div className="relative flex h-4 w-4 items-center justify-center rounded-full bg-white">
       <div
         className={cnTw(
           'h-2 w-2 rounded-full shadow-[0_0_0_1.5px]',

@@ -19,6 +19,7 @@ type BoxProps = PropsWithChildren<{
   shrink?: CSS.Property.FlexShrink;
   fitContainer?: boolean;
   fillContainer?: boolean;
+  hideOverflow?: boolean;
   grow?: number;
   wrap?: boolean;
   gap?: BoxSpacing;
@@ -66,6 +67,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       horizontalAlign,
       fitContainer,
       fillContainer,
+      hideOverflow,
       width,
       height,
       testId = 'Box',
@@ -107,7 +109,8 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
           'flex-row-reverse': direction === 'row-reverse',
           'max-h-full w-full': fitContainer,
           'min-h-full min-w-full': fillContainer,
-          wrap: wrap,
+          'flex-wrap': wrap,
+          'overflow-hidden': hideOverflow,
         })}
         style={style}
         data-testid={testId}

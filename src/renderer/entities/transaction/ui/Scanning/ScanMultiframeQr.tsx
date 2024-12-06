@@ -69,7 +69,7 @@ export const ScanMultiframeQr = ({
       const api = apis[chainId];
       const txAddress = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
 
-      const { payload } = transactionService.createPayloadWithMetadata(
+      const info = transactionService.createPayloadWithMetadata(
         signingPayload.transaction,
         api,
         metadataMap[txAddress][chainId],
@@ -89,7 +89,7 @@ export const ScanMultiframeQr = ({
 
       const signPayload = createSubstrateSignPayload(
         address,
-        payload,
+        info.payload,
         chainId,
         signerWallet.signingType,
         (signingPayload.account as ShardAccount).derivationPath,
@@ -97,8 +97,8 @@ export const ScanMultiframeQr = ({
       );
 
       return {
+        info,
         signPayload,
-        payload,
         transactionData: signingPayload.transaction,
       };
     });
@@ -106,6 +106,8 @@ export const ScanMultiframeQr = ({
     const txRequests = await Promise.all(transactionPromises);
 
     if (txRequests.length === 0) return;
+
+    transactionService.logPayload(txRequests.map(({ info }) => info));
 
     await init();
 
@@ -115,7 +117,7 @@ export const ScanMultiframeQr = ({
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
     setBulkTransactions(bulk);
-    setTxPayloads(txRequests.map((t) => t.payload));
+    setTxPayloads(txRequests.map((t) => t.info.payload));
     setEncoder(Encoder.with_defaults(bulk, 128));
   };
 

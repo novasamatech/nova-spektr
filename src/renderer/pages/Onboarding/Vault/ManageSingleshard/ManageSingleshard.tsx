@@ -14,7 +14,8 @@ import {
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeaderTitleText, IconButton, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Field, Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { AccountsList, walletModel } from '@/entities/wallet';
@@ -100,10 +101,8 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
             control={control}
             rules={{ required: true, maxLength: 256 }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.walletNameLabel')}>
                 <Input
-                  wrapperClass="flex items-center"
-                  label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
@@ -115,7 +114,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
                   {t('onboarding.watchOnly.walletNameRequiredError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 

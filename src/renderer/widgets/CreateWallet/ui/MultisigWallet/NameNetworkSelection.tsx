@@ -3,12 +3,11 @@ import { useUnit } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { Step, nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 

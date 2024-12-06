@@ -18,16 +18,15 @@ export type ProxyAccount = {
   delay: number;
 };
 
-export const enum ProxyType {
-  ANY = 'Any',
-  NON_TRANSFER = 'NonTransfer',
-  STAKING = 'Staking',
-  AUCTION = 'Auction',
-  CANCEL_PROXY = 'CancelProxy',
-  GOVERNANCE = 'Governance',
-  IDENTITY_JUDGEMENT = 'IdentityJudgement',
-  NOMINATION_POOLS = 'NominationPools',
-}
+export type ProxyType =
+  | 'Any'
+  | 'NonTransfer'
+  | 'Staking'
+  | 'Auction'
+  | 'CancelProxy'
+  | 'Governance'
+  | 'IdentityJudgement'
+  | 'NominationPools';
 
 export const enum ProxyVariant {
   NONE = 'none', // temp value, until we not receive correct proxy variant

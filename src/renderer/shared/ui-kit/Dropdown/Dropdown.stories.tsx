@@ -16,12 +16,13 @@ const meta: Meta<typeof Dropdown> = {
     return (
       <Dropdown {...params}>
         <Dropdown.Trigger>
-          <Button>Trigger</Button>
+          <Button>Dropdown trigger</Button>
         </Dropdown.Trigger>
         <Dropdown.Content>
-          <Dropdown.Item>Item 1</Dropdown.Item>
-          <Dropdown.Item>Item 2</Dropdown.Item>
-          <Dropdown.Separator />
+          <Dropdown.Group label="Section 1">
+            <Dropdown.Item>Item 1</Dropdown.Item>
+            <Dropdown.Item>Item 2</Dropdown.Item>
+          </Dropdown.Group>
           <Dropdown.Group label="Section 2">
             <Dropdown.CheckboxItem checked={true}>Item 4</Dropdown.CheckboxItem>
             <Dropdown.CheckboxItem checked={true}>Item 5</Dropdown.CheckboxItem>
@@ -56,8 +57,49 @@ export const Controlled: Story = {
   ],
 };
 
-export const PreventClosing: Story = {
+export const CheckboxItem: Story = {
+  render: (params) => {
+    return (
+      <Dropdown {...params}>
+        <Dropdown.Trigger>
+          <Button>Dropdown trigger</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Content>
+          <Dropdown.CheckboxItem checked={true}>Checkbox 1</Dropdown.CheckboxItem>
+          <Dropdown.CheckboxItem checked={true} disabled>
+            Checkbox 2
+          </Dropdown.CheckboxItem>
+          <Dropdown.CheckboxItem checked={false} disabled>
+            Checkbox 3
+          </Dropdown.CheckboxItem>
+          <Dropdown.CheckboxItem checked={false}>Checkbox 4</Dropdown.CheckboxItem>
+        </Dropdown.Content>
+      </Dropdown>
+    );
+  },
+};
+
+export const Separator: Story = {
+  render: (params) => {
+    return (
+      <Dropdown {...params}>
+        <Dropdown.Trigger>
+          <Button>Dropdown trigger</Button>
+        </Dropdown.Trigger>
+        <Dropdown.Content>
+          <Dropdown.Item>Item 1</Dropdown.Item>
+          <Dropdown.Item>Item 2</Dropdown.Item>
+          <Dropdown.Separator />
+          <Dropdown.Item>Item 3</Dropdown.Item>
+          <Dropdown.Item>Item 4</Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown>
+    );
+  },
+};
+
+export const AdaptiveWidth: Story = {
   args: {
-    preventClosing: true,
+    width: 'trigger',
   },
 };

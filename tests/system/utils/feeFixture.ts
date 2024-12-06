@@ -9,7 +9,7 @@ type FeeFixture = {
 export const test = base.extend<FeeFixture>({
   vaultWallet: async ({ loginPage }, use, testInfo) => {
     await loginPage.gotoOnboarding();
-    const vaultWallet = testInfo.title.includes('ethereum')
+    const vaultWallet = testInfo.tags.includes('@eth-test')
       ? await loginPage.createVaultEthWallet()
       : await loginPage.createVaultSubstrateWallet();
     await use(vaultWallet);

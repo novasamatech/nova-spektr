@@ -24,7 +24,7 @@ import {
 } from '@/entities/staking';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletSelectModel } from '@/features/wallets';
+import { walletDetailsFeature } from '@/features/wallet-details';
 import * as Operations from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -34,6 +34,10 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+const {
+  views: { WalletDetails },
+} = walletDetailsFeature;
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -58,6 +62,7 @@ export const Staking = () => {
 
   const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
 
@@ -308,7 +313,7 @@ export const Staking = () => {
               />
             </NetworkInfo>
 
-            {networkIsActive && accounts.length > 0 && (
+            {networkIsActive && accounts.length > 0 && activeChain && (
               <>
                 <Actions
                   canInteract={!!activeWallet && permissionUtils.canStake(activeWallet)}
@@ -322,9 +327,8 @@ export const Staking = () => {
                   era={chainId ? chainEra[chainId] : undefined}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}
-                  explorers={activeChain?.explorers}
+                  chain={activeChain}
                   isStakingLoading={isStakingLoading}
-                  addressPrefix={addressPrefix}
                   onCheckValidators={openSelectedValidators}
                   onToggleNominator={toggleSelectedNominators}
                 />
@@ -334,7 +338,7 @@ export const Staking = () => {
             {networkIsActive && activeWallet && accounts.length === 0 && (
               <EmptyList message={<EmptyAccountMessage walletType={activeWallet.type} />}>
                 {walletUtils.isPolkadotVault(activeWallet) && (
-                  <Button variant="text" onClick={() => walletSelectModel.events.walletIdSet(activeWallet.id)}>
+                  <Button variant="text" onClick={() => setShowWalletDetails(true)}>
                     {t('emptyState.addNewAccountButton')}
                   </Button>
                 )}
@@ -353,6 +357,12 @@ export const Staking = () => {
         explorers={explorers}
         isOpen={isShowNominators}
         onClose={toggleNominators}
+      />
+
+      <WalletDetails
+        isOpen={showWalletDetails}
+        wallet={activeWallet ?? null}
+        onClose={() => setShowWalletDetails(false)}
       />
 
       <Operations.BondNominate />

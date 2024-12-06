@@ -18,10 +18,17 @@ type Props = {
 export const TokenPrice = memo(({ assetId, className, wrapperClassName }: Props) => {
   const { t } = useI18n();
   const currency = useUnit(currencyModel.$activeCurrency);
-  const price = useStoreMap(priceProviderModel.$assetsPrices, (prices) => {
-    if (!currency || !prices) return;
+  const price = useStoreMap({
+    store: priceProviderModel.$assetsPrices,
+    keys: [currency, assetId],
+    fn: (prices, [currency, assetId]) => {
+      if (!currency || !prices || !assetId) return null;
 
-    return assetId && prices[assetId]?.[currency.coingeckoId];
+      const assetPrice = prices[assetId];
+      if (!assetPrice) return null;
+
+      return assetPrice[currency.coingeckoId] ?? null;
+    },
   });
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 

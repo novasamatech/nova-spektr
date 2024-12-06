@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
 import { ERROR } from '../constants';
@@ -33,10 +33,11 @@ export const ProfileCard = memo(() => {
           <Skeleton fullWidth active={!fulfilled && !isNetworkDisabled}>
             {member ? (
               <Box direction="row" width="100%" gap={2} verticalAlign="center">
-                <Identicon size={16} />
                 <SmallTitleText className="w-full">
                   {identity?.name ?? (
                     <Address
+                      showIcon
+                      iconSize={16}
                       address={toAddress(member.accountId, { prefix: featureInput?.chain.addressPrefix })}
                       variant="truncate"
                     />

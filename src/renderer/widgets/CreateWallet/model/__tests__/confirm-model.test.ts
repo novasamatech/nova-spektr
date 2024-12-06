@@ -7,7 +7,7 @@ import { confirmModel } from '../confirm-model';
 
 import { initiatorWallet, signerWallet, testApi } from './mock';
 
-describe('widgets/CreateWallet/model/confirm-model', () => {
+describe('Create multisig wallet confirm-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });

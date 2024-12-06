@@ -214,9 +214,9 @@ const Destination = () => {
   const prefixElement = (
     <div className="flex h-auto items-center">
       {validateAddress(payout) ? (
-        <Identicon className="mr-1" address={payout} size={20} background={false} canCopy={false} />
+        <Identicon address={payout} size={20} background={false} canCopy={false} />
       ) : (
-        <Icon className="mr-2" size={20} name="emptyIdenticon" />
+        <Icon size={20} name="emptyIdenticon" />
       )}
     </div>
   );

@@ -41,7 +41,11 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   private async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
     const feeText = await feeRow.textContent();
-    expect(feeText).toMatch(TransferModalElements.feePattern);
+
+    const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+    const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+
+    expect(feeValue).toBeGreaterThan(0);
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {

@@ -1,16 +1,55 @@
+import { Icon } from '@/shared/ui'
+import { Box } from '@/shared/ui-kit'
 
-# Spectr components library
+# Spektr components library
 
-We've got 4 sources of components:
+Collection of ui primitives and utils for building <a href="https://novaspektr.io/" target="_blank">Nova Spektr</a> and related applications.
 
-```
-@/shared/ui-kit
-@/shared/ui-entities
-```
+## How to import
 
-And deprecated
+Library is a combination of several sources:
 
-```
-@/shared/ui
-@/entities/*
-```
+* <Box direction='row' verticalAlign='center'>`Design System / kit` <Icon name="right" size={12} /> `@/shared/ui-kit`</Box>
+* <Box direction='row' verticalAlign='center'>`Design System / entities` <Icon name="right" size={12} /> `@/shared/ui-entities`</Box>
+* <Box direction='row' verticalAlign='center'>`v1 / kit` <Icon name="right" size={12} /> `@/shared/ui` <sup><small>deprecated</small></sup></Box>
+* <Box direction='row' verticalAlign='center'>`v1 / entities` <Icon name="right" size={12} /> `@/entities/*` <sup><small>deprecated</small></sup></Box>
+
+## Basic conceptions
+
+### Separation
+
+Components are segregated into two distinct branches, ensuring library modularity and preventing feature bloat.
+
+#### kit: the basic building blocks
+
+Components classified as `kit` represent foundational elements characterized by:
+
+- Interaction with generic data types like text, numbers, dates, and lists;
+- Generation of abstract user interactions outside of specific business context;
+- Building of basic layout.
+
+Illustrative examples:
+- `Button` triggers a click without encoding specific workflow logic;
+- `Select` picks value without knowing semantic meaning;
+- `Input` edits some text;
+- `Box` provides flexible layout scaffolding.
+
+#### entities: domain-specific components
+
+`entities` encapsulate components with specialized knowledge of the Polkadot ecosystem.
+
+Illustrative examples:
+- `Address` rendering hash with identicon;
+- `Account` combining address with chain-specific explorer links;
+- `AssetIcon` picking certain icon for given asset.
+
+### Composition
+Each component is engineered with a singular, focused responsibility.
+Any variations in behavior and presentation are achieved through component composition rather than customization.
+
+### Minimal API surface
+Main goal is to make props of each component simple and memorable. It's achieved by some restrictions:
+- No `className` prop;
+- Almost no dom element props in component API (except for integration between components);
+- Finite number of component states. In theory developer can write examples for all combinations of props.
+

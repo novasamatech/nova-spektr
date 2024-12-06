@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 
 import {
   type AccountId,
+  type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
@@ -26,9 +28,9 @@ import LogModal from './LogModal';
 type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransaction | FlexibleMultisigTransaction;
   connection: ExtendedChain;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
 export const OperationSignatories = ({ tx, connection, account }: Props) => {

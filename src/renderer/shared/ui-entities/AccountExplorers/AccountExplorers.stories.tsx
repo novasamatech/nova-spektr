@@ -5,22 +5,20 @@ import { FootnoteText } from '@/shared/ui';
 
 import { AccountExplorers } from './AccountExplorers';
 
-const testAccountId = '0xd180LUV5yfqBC9i8Lfssufw2434ef24f3f7AhBDDcaHEF03a8';
-const testChain: Chain = {
-  name: 'Polkadot',
-  specName: 'polkadot',
-  addressPrefix: 0,
-  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-  icon: '',
-  options: [],
-  nodes: [],
-  assets: [],
+const testAccountId = '0x9e9bf57d2420cc050723e9609afd5a1c326aceaf6b3f4175fda2eb26044d1f64';
+
+const kusamaChain = {
+  name: 'Kusama Asset Hub',
+  addressPrefix: 2,
+  chainId: '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a',
   explorers: [
     {
       name: 'Subscan',
-      extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
-      account: 'https://polkadot.subscan.io/account/{address}',
-      multisig: 'https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
+      account: 'https://assethub-kusama.subscan.io/account/{address}',
+    },
+    {
+      name: 'Statescan',
+      account: 'https://statemine.statescan.io/#/accounts/{address}',
     },
     {
       name: 'Sub.ID',
@@ -34,7 +32,7 @@ const meta: Meta<typeof AccountExplorers> = {
   component: AccountExplorers,
   args: {
     accountId: testAccountId,
-    chain: testChain,
+    chain: kusamaChain as Chain,
   },
   parameters: {
     layout: 'centered',

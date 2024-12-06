@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Asset, type Explorer } from '@/shared/core';
+import { type Address, type Asset, type Chain, type Explorer } from '@/shared/core';
 import { type ShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { Accordion, FootnoteText, Plate, Shimmering, Tooltip } from '@/shared/ui';
@@ -18,6 +18,7 @@ type Props = {
   isStakingLoading: boolean;
   era?: number;
   asset?: Asset;
+  chain: Chain;
   explorers?: Explorer[];
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
@@ -29,9 +30,8 @@ export const ShardedList = ({
   shardsStake,
   era,
   asset,
-  explorers,
+  chain,
   isStakingLoading,
-  addressPrefix,
   onCheckValidators,
   onToggleNominator,
   getContent,
@@ -66,7 +66,7 @@ export const ShardedList = ({
   );
 
   return (
-    <Plate className="border-b-4 border-double p-0 shadow-shards">
+    <Plate className="border-b-4 border-double p-0 shadow-stack">
       <Accordion className="w-auto">
         <div className="flex rounded-md border-b border-divider px-3 py-2 transition-colors hover:bg-action-background-hover">
           <Accordion.Button buttonClass="ml-auto w-auto" iconOpened="shelfDown" iconClosed="shelfRight" />
@@ -74,7 +74,7 @@ export const ShardedList = ({
             <Checkbox
               checked={shardsStats.selected === shardsStake.length}
               semiChecked={shardsStats.selected > 0 && shardsStats.selected < shardsStake.length}
-              onChange={(checked) => selectAllShards(checked)}
+              onChange={selectAllShards}
             >
               <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
                 <div className="flex items-center gap-x-2">
@@ -141,8 +141,7 @@ export const ShardedList = ({
                   stake={shard}
                   nominatorsLength={shardsStake.length}
                   asset={asset}
-                  explorers={explorers}
-                  addressPrefix={addressPrefix}
+                  chain={chain}
                   onToggleNominator={onToggleNominator}
                   onCheckValidators={onCheckValidators}
                 />

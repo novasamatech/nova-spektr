@@ -21,11 +21,10 @@ const mockConnections = {
   },
 };
 
-describe('features/multisigs/model/multisigs-model', () => {
+describe('multisigs model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
-
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
@@ -51,10 +50,10 @@ describe('features/multisigs/model/multisigs-model', () => {
         ])
         .set(networkModel.$chains, mockChains)
         .set(networkModel.$connections, mockConnections),
-      handlers: new Map().set(multisigsModel._test.saveMultisigFx, spySaveMultisig),
+      handlers: new Map().set(walletModel._test.walletCreatedFx, spySaveMultisig),
     });
 
-    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    allSettled(multisigsModel.events.subscribe, { scope });
     await jest.runOnlyPendingTimersAsync();
 
     expect(spySaveMultisig).toHaveBeenCalled();
@@ -79,10 +78,10 @@ describe('features/multisigs/model/multisigs-model', () => {
         ])
         .set(networkModel.$chains, mockChains)
         .set(networkModel.$connections, mockConnections),
-      handlers: new Map().set(multisigsModel._test.saveMultisigFx, spySaveMultisig),
+      handlers: new Map().set(walletModel._test.walletCreatedFx, spySaveMultisig),
     });
 
-    allSettled(multisigsModel.events.multisigsDiscoveryStarted, { scope });
+    allSettled(multisigsModel.events.subscribe, { scope });
     await jest.runOnlyPendingTimersAsync();
 
     expect(spySaveMultisig).not.toHaveBeenCalled();

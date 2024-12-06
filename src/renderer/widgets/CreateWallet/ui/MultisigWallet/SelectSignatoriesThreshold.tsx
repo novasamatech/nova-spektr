@@ -4,11 +4,10 @@ import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
-import { Step } from '../../lib/types';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';

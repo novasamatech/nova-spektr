@@ -29,13 +29,25 @@ describe('entities/wallet/lib/wallet-utils', () => {
   test('isMultisig should return true when wallet type is Multisig', () => {
     const wallet = { type: WalletType.MULTISIG } as Wallet;
 
+    expect(walletUtils.isRegularMultisig(wallet)).toEqual(true);
+  });
+
+  test('isFlexibleMultisig should return true when wallet type is Flexible Multisig', () => {
+    const wallet = { type: WalletType.FLEXIBLE_MULTISIG } as Wallet;
+
+    expect(walletUtils.isFlexibleMultisig(wallet)).toEqual(true);
+  });
+
+  test('isMultisig should return true when wallet type is Flexible Multisig', () => {
+    const wallet = { type: WalletType.FLEXIBLE_MULTISIG } as Wallet;
+
     expect(walletUtils.isMultisig(wallet)).toEqual(true);
   });
 
   test('isMultisig should return false when wallet type is not Multisig', () => {
     const wallet = { type: WalletType.NOVA_WALLET } as Wallet;
 
-    expect(walletUtils.isMultisig(wallet)).toEqual(false);
+    expect(walletUtils.isRegularMultisig(wallet)).toEqual(false);
   });
 
   test('isNovaWallet should return true when wallet type is NovaWallet', () => {
@@ -47,7 +59,7 @@ describe('entities/wallet/lib/wallet-utils', () => {
   test('isNovaWallet should return false when wallet type is not NovaWallet', () => {
     const wallet = { type: WalletType.POLKADOT_VAULT } as Wallet;
 
-    expect(walletUtils.isMultisig(wallet)).toEqual(false);
+    expect(walletUtils.isRegularMultisig(wallet)).toEqual(false);
   });
 
   test('isProxied should return true when wallet type is Proxied', () => {
