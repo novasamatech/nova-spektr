@@ -18,7 +18,7 @@ import {
 } from '@/entities/transaction';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
-import { StakingOperationTitle } from './components/StakingOperationTitle';
+import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -69,7 +69,7 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
       );
     }
 
-    return <div>{result}</div>;
+    return <>{result.map((e) => e)}</>;
   },
   order: 1,
 });
@@ -87,7 +87,7 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitl
       TransactionType.REMOVE_PURE_PROXY,
     ].includes(transaction.type)
   ) {
-    return <StakingOperationTitle tx={operation} />;
+    return <ProxyOperationTitle tx={operation} />;
   }
 
   return null;

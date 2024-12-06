@@ -65,16 +65,16 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
 
     if (referendumId) {
       result.push(
-        <DetailRow label={t('operation.details.referendum')}>
-          <FootnoteText>#{referendumId}</FootnoteText>
+        <DetailRow label={t('operation.details.referendum')} className="text-text-secondary">
+          <FootnoteText className="text-text-secondary">#{referendumId}</FootnoteText>
         </DetailRow>,
       );
     }
 
     if (vote) {
       result.push(
-        <DetailRow label={t('operation.details.votes')}>
-          <FootnoteText>
+        <DetailRow label={t('operation.details.votes')} className="text-text-secondary">
+          <FootnoteText className="text-text-secondary">
             <>
               <span className="uppercase">
                 {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
@@ -89,6 +89,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
                       value={voteTransactionService.getVotes(vote)}
                       asset={defaultAsset}
                       showSymbol={false}
+                      className="text-text-secondary"
                     />
                   ),
                 }}
@@ -102,7 +103,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
     if (isUndelegationLoading) {
       result.push(
         <>
-          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
+          <DetailRow label={t('operation.details.delegationTarget')}>
             <Skeleton width={40} height={6} />
           </DetailRow>
 
@@ -123,7 +124,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
 
     if (!delegationTarget && undelegationTarget) {
       result.push(
-        <DetailRow label={t('operation.details.delegationTarget')}>
+        <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
           <Account accountId={toAccountId(undelegationTarget)} variant="short" chain={chain} />
         </DetailRow>,
       );
@@ -131,7 +132,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
 
     if (delegationVotes) {
       result.push(
-        <DetailRow label={t('operation.details.delegationVotes')}>
+        <DetailRow label={t('operation.details.delegationVotes')} className="text-text-secondary">
           <FootnoteText>
             <AssetBalance value={delegationVotes} asset={defaultAsset} showSymbol={false} />
           </FootnoteText>
@@ -141,7 +142,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
 
     if (!delegationVotes && undelegationVotes) {
       result.push(
-        <DetailRow label={t('operation.details.delegationVotes')}>
+        <DetailRow label={t('operation.details.delegationVotes')} className="text-text-secondary">
           <FootnoteText>
             <AssetBalance value={undelegationVotes} asset={defaultAsset} showSymbol={false}></AssetBalance>
           </FootnoteText>
@@ -151,13 +152,13 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
 
     if (delegationTracks) {
       result.push(
-        <DetailRow label={t('operation.details.delegationTracks')}>
+        <DetailRow label={t('operation.details.delegationTracks')} className="text-text-secondary">
           <TracksDetails tracks={delegationTracks.map(Number)} />
         </DetailRow>,
       );
     }
 
-    return <div>{result}</div>;
+    return <>{result.map((e) => e)}</>;
   },
   order: 1,
 });

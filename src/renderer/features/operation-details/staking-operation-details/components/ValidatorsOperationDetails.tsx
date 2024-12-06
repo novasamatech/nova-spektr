@@ -56,7 +56,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   if (Boolean(selectedValidators?.length) && defaultAsset) {
     result.push(
       <>
-        <DetailRow label={t('operation.details.validators')}>
+        <DetailRow label={t('operation.details.validators')} className="text-text-secondary">
           <button type="button" className="flex items-center gap-x-1 text-text-secondary" onClick={toggleValidators}>
             <FootnoteText as="span" className="text-inherit">
               {selectedValidators.length}
@@ -77,5 +77,5 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
     );
   }
 
-  return <div>{result}</div>;
+  return <>{result.map((e) => e)}</>;
 };

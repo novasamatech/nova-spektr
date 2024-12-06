@@ -60,5 +60,5 @@ export const TransferOperationDetails = ({ operation }: Props) => {
     );
   }
 
-  return <div>{result}</div>;
+  return <>{result.map((e) => e)}</>;
 };

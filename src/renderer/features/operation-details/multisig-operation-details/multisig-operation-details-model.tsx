@@ -5,7 +5,10 @@ import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { ChainTitle } from '@/entities/chain';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
+import { TransactionTitle } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
@@ -35,4 +38,20 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
     );
   },
   order: 0,
+});
+
+multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+  const transaction = getTransactionFromMultisigTx(operation);
+
+  if (!transaction) {
+    return (
+      <>
+        <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
+
+        <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      </>
+    );
+  }
+
+  return null;
 });
