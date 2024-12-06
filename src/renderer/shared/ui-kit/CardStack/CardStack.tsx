@@ -48,7 +48,9 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
           className={cnTw(
             'group flex w-full items-center gap-x-2 bg-row-background py-1 pl-3 pr-2',
             'shadow-stack hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
-            'transition-all duration-300 data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
+            'transition-all duration-300',
+            'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
+            'border-b border-transparent data-[state=open]:border-divider',
           )}
         >
           <Icon
@@ -72,7 +74,7 @@ const Content = ({ children }: PropsWithChildren) => {
       <div
         className={cnTw(
           'card-stack-plate absolute left-1/2 top-0 h-full w-full -translate-x-1/2 rounded-b-md bg-white shadow-stack',
-          'group-data-[state=open]/stack:border-t group-data-[state=open]/stack:border-divider group-data-[state=open]/stack:shadow-none',
+          'group-data-[state=open]/stack:shadow-none',
         )}
       />
       <RadixAccordion.Content asChild>
