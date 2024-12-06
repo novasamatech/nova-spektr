@@ -19,7 +19,7 @@ const getColStyle = (wallet?: Wallet): string => {
     return '';
   }
   if (walletUtils.isWatchOnly(wallet)) {
-    return 'grid-cols-[1fr,100px,15px,10px]';
+    return 'grid-cols-[1fr,100px,105px,10px]';
   }
 
   return 'grid-cols-[1fr,100px,108px,60px]';
