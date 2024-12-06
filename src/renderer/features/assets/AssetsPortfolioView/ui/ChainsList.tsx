@@ -19,7 +19,7 @@ export const ChainsList = memo(({ assetChains, chains }: Props) => {
   const counter = assetChains.length - MAX_VISIBLE_CHAINS_WHEN_COLLAPSED;
 
   // Since this component renders inside large loop it's better to optimize it as hard as we can.
-  // This optimization can be omited after refactoring of AssetByChains struct.
+  // This optimization can be omitted after refactoring of AssetByChains struct.
   const chainNodes: ReactNode[] = new Array(visibleChains);
 
   for (let index = 0; index < visibleChains; index++) {
