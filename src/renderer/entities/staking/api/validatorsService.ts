@@ -143,7 +143,7 @@ function getMaxValidators(api: ApiPromise): number {
   return getDefaultValidatorsAmount(api);
 }
 
-// TODO: temporary turn off identities
+// TODO: Temporary turn off identities
 async function getIdentities(
   api: ApiPromise,
   addresses: Address[],
