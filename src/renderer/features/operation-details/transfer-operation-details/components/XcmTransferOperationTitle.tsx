@@ -2,14 +2,14 @@ import { chainsService } from '@/shared/api/network';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
-import { ChainTitle } from '@/entities/chain';
+import { XcmChains } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-export const TransferOperationTitle = ({ operation }: Props) => {
+export const XcmTransferOperationTitle = ({ operation }: Props) => {
   const asset =
     operation.transaction &&
     getAssetById(operation.transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
@@ -25,7 +25,11 @@ export const TransferOperationTitle = ({ operation }: Props) => {
         </div>
       )}
 
-      <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      <XcmChains
+        chainIdFrom={operation.chainId}
+        chainIdTo={operation.transaction?.args.destinationChain}
+        className="w-[114px]"
+      />
     </>
   );
 };

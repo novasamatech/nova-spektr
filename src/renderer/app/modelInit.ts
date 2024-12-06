@@ -34,8 +34,10 @@ export const initModel = () => {
     settingsNavigationFeature,
     walletSelectFeature.feature,
     operationDetails.transferOperationDetailFeature,
-    operationDetails.bondOperationDetailFeature,
-    operationDetails.walletOperationDetailsFeature,
+    operationDetails.stakingOperationDetailFeature,
+    operationDetails.multisigOperationDetailsFeature,
+    operationDetails.proxyOperationDetailFeature,
+    operationDetails.governanceOperationDetailFeature,
   ]);
 
   assetsNavigationFeature.start();

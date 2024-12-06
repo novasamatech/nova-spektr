@@ -9,7 +9,7 @@ type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-export const BondOperationTitle = ({ tx }: Props) => {
+export const GovernanceOperationTitle = ({ tx }: Props) => {
   const asset =
     tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
   const amount = tx.transaction && getTransactionAmount(tx.transaction);

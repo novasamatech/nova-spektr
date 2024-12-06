@@ -1,57 +1,23 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
-import { Trans } from 'react-i18next';
 
-import { chainsService } from '@/shared/api/network';
 import {
-  type Address,
   type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigTransaction,
-  type Transaction,
-  type Validator,
 } from '@/shared/core';
-import { TransactionType } from '@/shared/core';
 import { useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
+import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
-import { ChainTitle } from '@/entities/chain';
-import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { type ExtendedChain, networkUtils } from '@/entities/network';
-import { proxyUtils } from '@/entities/proxy';
+import { type ExtendedChain } from '@/entities/network';
 import { signatoryUtils } from '@/entities/signatory';
-import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
-import {
-  isAddProxyTransaction,
-  isManageProxyTransaction,
-  isRemoveProxyTransaction,
-  isRemovePureProxyTransaction,
-  isUndelegateTransaction,
-  isXcmTransaction,
-} from '@/entities/transaction';
 import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 import { AddressStyle, InteractionStyle } from '../common/constants';
-import {
-  getDelegate,
-  getDelegationTarget,
-  getDelegationTracks,
-  getDelegationVotes,
-  getDestinationChain,
-  getMultisigExtrinsicLink,
-  getPayee,
-  getProxyType,
-  getReferendumId,
-  getSender,
-  getUndelegationData,
-  getVote,
-} from '../common/utils';
+import { getMultisigExtrinsicLink } from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -64,68 +30,16 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const wallets = useUnit(walletModel.$wallets);
 
-  const payee = getPayee(tx);
-  const sender = getSender(tx);
-  const delegate = getDelegate(tx);
-  const proxyType = getProxyType(tx);
-  const destinationChain = getDestinationChain(tx);
-
-  const delegationTarget = getDelegationTarget(tx);
-  const delegationTracks = getDelegationTracks(tx);
-  const delegationVotes = getDelegationVotes(tx);
-
-  const referendumId = getReferendumId(tx);
-  const vote = getVote(tx);
-
-  const api = extendedChain?.api;
   const defaultAsset = extendedChain?.assets[0];
   const addressPrefix = extendedChain?.addressPrefix;
   const explorers = extendedChain?.explorers;
-  const connection = extendedChain?.connection;
-
-  const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
-  const [undelegationVotes, setUndelegationVotes] = useState<string>();
-  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
-
-  useEffect(() => {
-    if (isUndelegateTransaction(transaction)) {
-      setIsUndelegationLoading(true);
-    }
-
-    if (!api) return;
-
-    getUndelegationData(api, tx).then(({ votes, target }) => {
-      setUndelegationVotes(votes);
-      setUndelegationTarget(target);
-      setIsUndelegationLoading(false);
-    });
-  }, [api, tx]);
 
   const [isAdvancedShown, toggleAdvanced] = useToggle();
-  const [isValidatorsOpen, toggleValidators] = useToggle();
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
 
-  const transaction = getTransactionFromMultisigTx(tx);
-  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
-
-  const allValidators = Object.values(validatorsMap);
-
-  const startStakingValidators: Address[] =
-    (tx.transaction?.type === TransactionType.BATCH_ALL &&
-      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args
-        ?.targets) ||
-    [];
-
-  const selectedValidators: Validator[] =
-    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
-  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
-  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
-
   const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
   const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
-  const validatorsAsset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
   const valueClass = 'text-text-secondary';
   const depositorWallet =
@@ -140,226 +54,6 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   return (
     <dl className="flex w-full flex-col gap-y-1">
       {operationDetails}
-
-      {isXcmTransaction(transaction) && (
-        <>
-          {sender && (
-            <DetailRow label={t('operation.details.sender')} className={valueClass}>
-              <AddressWithExplorers
-                explorers={explorers}
-                addressFont={AddressStyle}
-                type="short"
-                address={sender}
-                addressPrefix={addressPrefix}
-                wrapperClassName="-mr-2 min-w-min"
-              />
-            </DetailRow>
-          )}
-
-          <DetailRow label={t('operation.details.fromNetwork')} className={valueClass}>
-            <ChainTitle chainId={tx.chainId} fontClass={valueClass} />
-          </DetailRow>
-
-          {destinationChain && (
-            <DetailRow label={t('operation.details.toNetwork')} className={valueClass}>
-              <ChainTitle chainId={destinationChain} fontClass={valueClass} />
-            </DetailRow>
-          )}
-        </>
-      )}
-
-      {isAddProxyTransaction(transaction) && delegate && (
-        <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isRemoveProxyTransaction(transaction) && delegate && (
-        <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isRemovePureProxyTransaction(transaction) && sender && (
-        <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={sender}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {isManageProxyTransaction(transaction) && proxyType && (
-        <DetailRow label={t('operation.details.accessType')} className={valueClass}>
-          <FootnoteText className={valueClass}>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
-        </DetailRow>
-      )}
-
-      {referendumId && (
-        <DetailRow label={t('operation.details.referendum')} className={valueClass}>
-          <FootnoteText className={valueClass}>#{referendumId}</FootnoteText>
-        </DetailRow>
-      )}
-
-      {vote && (
-        <DetailRow label={t('operation.details.votes')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            <>
-              <span className="uppercase">
-                {t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}
-              </span>
-              :{' '}
-              <Trans
-                t={t}
-                i18nKey="governance.addDelegation.votesValue"
-                components={{
-                  votes: (
-                    <AssetBalance
-                      value={voteTransactionService.getVotes(vote)}
-                      asset={defaultAsset}
-                      showSymbol={false}
-                      className={valueClass}
-                    />
-                  ),
-                }}
-              />
-            </>
-          </FootnoteText>
-        </DetailRow>
-      )}
-
-      {isUndelegationLoading && (
-        <>
-          <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-            <Skeleton width={40} height={6} />
-          </DetailRow>
-
-          <DetailRow label={t('operation.details.delegationVotes')}>
-            <Skeleton width={20} height={5} />
-          </DetailRow>
-        </>
-      )}
-
-      {delegationTarget && (
-        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {!delegationTarget && undelegationTarget && (
-        <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={undelegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
-        </DetailRow>
-      )}
-
-      {delegationVotes && (
-        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            <AssetBalance
-              className={valueClass}
-              value={delegationVotes}
-              asset={defaultAsset}
-              showSymbol={false}
-            ></AssetBalance>
-          </FootnoteText>
-        </DetailRow>
-      )}
-
-      {!delegationVotes && undelegationVotes && (
-        <DetailRow label={t('operation.details.delegationVotes')} className={valueClass}>
-          <FootnoteText className={valueClass}>
-            <AssetBalance
-              className={valueClass}
-              value={undelegationVotes}
-              asset={defaultAsset}
-              showSymbol={false}
-            ></AssetBalance>
-          </FootnoteText>
-        </DetailRow>
-      )}
-
-      {delegationTracks && (
-        <DetailRow label={t('operation.details.delegationTracks')} className={valueClass}>
-          <TracksDetails tracks={delegationTracks.map(Number)} />
-        </DetailRow>
-      )}
-
-      {Boolean(selectedValidators?.length) && defaultAsset && (
-        <>
-          <DetailRow label={t('operation.details.validators')} className={valueClass}>
-            <button
-              type="button"
-              className={cnTw('flex items-center gap-x-1 text-text-secondary', InteractionStyle)}
-              onClick={toggleValidators}
-            >
-              <FootnoteText as="span" className="text-inherit">
-                {selectedValidators.length}
-              </FootnoteText>
-              <Icon name="info" size={16} />
-            </button>
-          </DetailRow>
-          <ValidatorsModal
-            isOpen={isValidatorsOpen}
-            asset={validatorsAsset}
-            selectedValidators={selectedValidators}
-            notSelectedValidators={notSelectedValidators}
-            explorers={extendedChain?.explorers}
-            onClose={toggleValidators}
-          />
-        </>
-      )}
-
-      {payee && (
-        <DetailRow
-          label={t('operation.details.payee')}
-          className={cnTw(valueClass, { 'pr-0': typeof payee === 'string' })}
-        >
-          {typeof payee === 'string' ? (
-            t('staking.confirmation.restakeRewards')
-          ) : (
-            <AddressWithExplorers
-              type="short"
-              explorers={explorers}
-              addressFont={AddressStyle}
-              address={payee.Account}
-              addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2 min-w-min"
-            />
-          )}
-        </DetailRow>
-      )}
 
       <Button
         variant="text"

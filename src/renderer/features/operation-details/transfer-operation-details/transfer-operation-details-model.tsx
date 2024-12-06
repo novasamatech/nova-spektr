@@ -1,9 +1,11 @@
 import { createFeature } from '@/shared/effector';
-import { isTransferTransaction } from '@/entities/transaction';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
+import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
 
 export const transferOperationDetailFeature = createFeature({
   name: 'transfer/operations',
@@ -11,9 +13,9 @@ export const transferOperationDetailFeature = createFeature({
 
 transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
   render: ({ operation }) => {
-    const transaction = operation.transaction;
+    const transaction = getTransactionFromMultisigTx(operation);
 
-    if (isTransferTransaction(transaction)) {
+    if (isTransferTransaction(transaction) || isXcmTransaction(transaction)) {
       return <TransferOperationDetails operation={operation} />;
     }
 
@@ -23,8 +25,14 @@ transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationD
 });
 
 transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
-  if (isTransferTransaction(operation.transaction)) {
-    return <TransferOperationTitle tx={operation} />;
+  const transaction = getTransactionFromMultisigTx(operation);
+
+  if (isTransferTransaction(transaction)) {
+    return <TransferOperationTitle operation={operation} />;
+  }
+
+  if (isXcmTransaction(transaction)) {
+    return <XcmTransferOperationTitle operation={operation} />;
   }
 
   return null;

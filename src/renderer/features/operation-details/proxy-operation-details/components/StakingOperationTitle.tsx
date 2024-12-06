@@ -6,18 +6,17 @@ import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-export const TransferOperationTitle = ({ operation }: Props) => {
+export const StakingOperationTitle = ({ tx }: Props) => {
   const asset =
-    operation.transaction &&
-    getAssetById(operation.transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
-  const amount = operation.transaction && getTransactionAmount(operation.transaction);
+    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+  const amount = tx.transaction && getTransactionAmount(tx.transaction);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={operation.transaction} />
+      <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} />
 
       {asset && amount && (
         <div className="w-[160px]">
@@ -25,7 +24,7 @@ export const TransferOperationTitle = ({ operation }: Props) => {
         </div>
       )}
 
-      <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      <ChainTitle chainId={tx.chainId} className="w-[114px]" />
     </>
   );
 };

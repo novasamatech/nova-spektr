@@ -9,11 +9,11 @@ import { networkModel } from '@/entities/network';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
-export const walletOperationDetailsFeature = createFeature({
-  name: 'wallet/operation details',
+export const multisigOperationDetailsFeature = createFeature({
+  name: 'multisig/operation details',
 });
 
-walletOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationDetails, {
   render: ({ operation }) => {
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
