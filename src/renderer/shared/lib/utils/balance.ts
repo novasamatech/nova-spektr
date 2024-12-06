@@ -207,9 +207,9 @@ export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN =>
 
   const { free, frozen, reserved } = balance;
 
-  const freeCannotDropBelow = frozen.gt(reserved) ? frozen.sub(reserved) : BN_ZERO;
+  const diff = BN.max(BN_ZERO, frozen.sub(reserved));
 
-  return free.gt(freeCannotDropBelow) ? free.sub(freeCannotDropBelow) : BN_ZERO;
+  return BN.max(BN_ZERO, free.sub(diff));
 };
 
 export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
@@ -222,30 +222,32 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
  * account.
  */
 export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
-  if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
+  if (!balance?.free || !balance?.frozen) return BN_ZERO;
 
   const { free, frozen } = balance;
 
-  return free.gt(frozen) ? free.sub(frozen) : BN_ZERO;
+  return BN.max(BN_ZERO, free.sub(frozen));
 };
 
 export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string => {
   return withdrawableAmountBN(balance).toString();
 };
 
-export const stakedAmountBN = (balance: Balance) => {
+export const stakedAmountBN = (balance: AssetBalance) => {
   if (!balance.locked) return BN_ZERO;
 
-  const bnLocks = balance.locked.find((lock) => lock.type === LockTypes.STAKING);
+  const bnLocks = balance.locked
+    .filter((lock) => lock.type === LockTypes.STAKING)
+    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 
-  return bnLocks?.amount || BN_ZERO;
+  return bnLocks;
 };
 
 export const stakedAmount = (balance: Balance): string => {
   return stakedAmountBN(balance).toString();
 };
 
-export const stakeableAmountBN = (balance: Balance) => {
+export const stakeableAmountBN = (balance: AssetBalance) => {
   const total = totalAmountBN(balance);
   const staked = stakedAmountBN(balance);
 
