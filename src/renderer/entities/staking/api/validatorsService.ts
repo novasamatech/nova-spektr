@@ -150,7 +150,7 @@ async function getIdentities(
   isLightClient?: boolean,
 ): Promise<Record<Address, { identity: Identity }>> {
   return Promise.resolve({});
-  
+
   const subIdentities = await getSubIdentities(api, addresses, isLightClient);
   const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
 
