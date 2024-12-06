@@ -18,12 +18,14 @@ export const Member = ({ item, chain }: Props) => {
   });
 
   return (
-    <RankedAccount
-      chain={chain}
-      rank={item.rank}
-      name={identity?.name}
-      isActive={item.isActive}
-      accountId={item.accountId}
-    />
+    <div className="rounded-md text-text-secondary hover:bg-action-background-hover hover:text-text-primary">
+      <RankedAccount
+        chain={chain}
+        rank={item.rank}
+        name={identity?.name}
+        isActive={item.isActive}
+        accountId={item.accountId}
+      />
+    </div>
   );
 };

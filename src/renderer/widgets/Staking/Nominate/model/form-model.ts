@@ -9,7 +9,6 @@ import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
-  nonNullable,
   stakeableAmount,
   transferableAmount,
   withdrawableAmount,
@@ -260,11 +259,9 @@ sample({
 sample({
   clock: $nominateForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories, signatory) => {
-    return !isEmpty(signatories) && nonNullable(signatory);
-  },
+  filter: (signatories) => !isEmpty(signatories),
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
 
     return match?.balance || ZERO_BALANCE;
   },

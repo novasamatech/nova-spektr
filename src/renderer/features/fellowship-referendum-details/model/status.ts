@@ -17,7 +17,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
-      wallet,
+      accounts: wallet.accounts,
     };
   },
 );

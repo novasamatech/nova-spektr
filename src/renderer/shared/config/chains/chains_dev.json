@@ -7815,5 +7815,68 @@
         }
       }
     ]
+  },
+  {
+    "name": "Novasama Testnet - Fellowship",
+    "specName": "collectives-westend",
+    "addressPrefix": 42,
+    "chainId": "0xa35b4d0bf5767fcc3a4795aca93ef3b152c7c280d558d49eea535cae56a3a93e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://westend-collectives-a-parachain.novasama-tech.org",
+        "name": "Novasama node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Westend",
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "type": "native",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Westend Collectives",
+    "specName": "westend",
+    "addressPrefix": 42,
+    "chainId": "0x713daf193a6301583ff467be736da27ef0a72711b248927ba413f573d2b38e44",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet"
+    ],
+    "nodes": [
+      {
+        "url": "wss://collectives-westend-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://westend-collectives-rpc.polkadot.io",
+        "name": "Parity node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Westend",
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "type": "native",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+        }
+      }
+    ]
   }
 ]

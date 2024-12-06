@@ -658,10 +658,10 @@ sample({
     proxyDeposit: $newProxyDeposit,
     proxies: $activeProxies,
   },
-  filter: ({ transaction }, formData) => {
-    return nonNullable(transaction) && nonNullable(formData.signatory);
-  },
+  filter: ({ transaction }) => nonNullable(transaction),
   fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, isProxy, fee }, formData) => {
+    const signatory = formData.signatory?.accountId ? formData.signatory : null;
+
     return {
       transactions: {
         wrappedTx: transaction!.wrappedTx,
@@ -672,6 +672,7 @@ sample({
         ...formData,
         fee,
         account: realAccount,
+        signatory,
         proxyDeposit,
         multisigDeposit,
         proxyNumber: proxies.length,

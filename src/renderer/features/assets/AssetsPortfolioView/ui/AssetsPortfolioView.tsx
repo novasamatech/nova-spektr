@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { TokenBalance } from './TokenBalance';
@@ -17,12 +18,11 @@ const getColStyle = (wallet?: Wallet): string => {
   if (!wallet) {
     return '';
   }
-  const colStyleMap: Partial<Record<WalletType, string>> = {
-    [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px]',
-    [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,30px]',
-  };
+  if (walletUtils.isWatchOnly(wallet)) {
+    return 'grid-cols-[1fr,100px,105px,10px]';
+  }
 
-  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,110px,50px]';
+  return 'grid-cols-[1fr,100px,108px,60px]';
 };
 
 export const AssetsPortfolioView = () => {
@@ -45,12 +45,10 @@ export const AssetsPortfolioView = () => {
     return null;
   }
 
-  const colStyle = getColStyle(wallet);
-
   return (
     <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
       {list.length > 0 && (
-        <div className={`grid w-[548px] items-center pl-[35px] pr-4 ${colStyle}`}>
+        <div className={cnTw('grid w-[736px] items-center pl-9.5 pr-4', getColStyle(wallet))}>
           <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
           <FootnoteText className="text-text-tertiary" align="right">
             {fiatFlag && t('balances.price')}
@@ -61,9 +59,9 @@ export const AssetsPortfolioView = () => {
         </div>
       )}
 
-      <ul className="flex min-h-full w-full flex-col items-center gap-y-4">
+      <ul className="flex min-h-full w-full flex-col items-center gap-y-2">
         {list.map((asset) => (
-          <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-[548px]">
+          <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-full max-w-[736px]">
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
         ))}

@@ -24,7 +24,7 @@ export const ShardSelectorButton = () => {
   }
 
   return (
-    <div className="mx-auto mt-4 flex w-[546px] items-center">
+    <div className="mx-auto mt-4 flex w-[736px] items-center">
       <SmallTitleText as="h3">{t('balances.assetsOnLabel')} </SmallTitleText>
       <Button
         variant="text"

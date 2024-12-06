@@ -11,19 +11,19 @@ import { referendumsFeatureStatus } from './status';
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 
-const $walletVoting = createStore<Voting[]>([]).reset(referendumsFeatureStatus.stopped);
+const $accountsVoting = createStore<Voting[]>([]).reset(referendumsFeatureStatus.stopped);
 
 sample({
   clock: attachToFeatureInput(referendumsFeatureStatus, $referendums),
 
-  fn: ({ input: { palletType, api, chainId, wallet }, data: referendums }) => {
+  fn: ({ input: { palletType, api, chainId, accounts }, data: referendums }) => {
     return {
       palletType,
       api,
       chainId,
       referendums: referendums.map(r => r.id),
       // TODO use branded account id
-      accounts: wallet.accounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
+      accounts: accounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
     };
   },
 
@@ -33,16 +33,16 @@ sample({
 sample({
   clock: attachToFeatureInput(referendumsFeatureStatus, $voting),
 
-  fn: ({ input: { wallet }, data: voting }) => {
-    const accounts = toKeysRecord(wallet.accounts.map(a => a.accountId));
+  fn: ({ input: { accounts }, data: voting }) => {
+    const accountsMap = toKeysRecord(accounts.map(a => a.accountId));
 
-    return voting.filter(voting => voting.accountId in accounts);
+    return voting.filter(voting => voting.accountId in accountsMap);
   },
 
-  target: $walletVoting,
+  target: $accountsVoting,
 });
 
 export const votingModel = {
   $voting,
-  $walletVoting,
+  $accountsVoting,
 };
