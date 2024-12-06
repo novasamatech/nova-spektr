@@ -502,9 +502,7 @@ sample({
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $newProxyDeposit,
   },
-  filter: ({ transaction }, formData) => {
-    return nonNullable(transaction) && nonNullable(formData.signatory);
-  },
+  filter: ({ transaction }) => nonNullable(transaction),
   fn: ({ proxyDeposit, multisigDeposit, realAccount, transaction, isProxy, fee }, formData) => {
     return {
       transactions: {

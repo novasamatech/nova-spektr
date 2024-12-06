@@ -392,13 +392,8 @@ sample({
 
 sample({
   clock: $delegateForm.$values.updates,
-  source: {
-    networkStore: $networkStore,
-    accounts: $accounts,
-  },
-  filter: (networkStore, formData) => {
-    return nonNullable(networkStore) && nonNullable(formData.signatory);
-  },
+  source: { networkStore: $networkStore, accounts: $accounts },
+  filter: ({ networkStore }) => nonNullable(networkStore),
   fn: ({ accounts }, formData) => {
     const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
 
