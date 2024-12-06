@@ -22,6 +22,7 @@ const $input = combine(
       palletType: network.palletType,
       wallets,
       wallet,
+      accounts: wallet.accounts,
     };
   },
 );

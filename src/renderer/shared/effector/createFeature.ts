@@ -1,9 +1,20 @@
-import { type Event, type Scope, type Store, createDomain, createStore, sample } from 'effector';
+import {
+  type Event,
+  type Scope,
+  type Store,
+  createDomain,
+  createStore,
+  restore as effectorRestore,
+  sample,
+} from 'effector';
 import { createGate, useGate } from 'effector-react';
 import { readonly } from 'patronum';
 
 import { type AnyIdentifier, type InferHandlerBody, isSlotIdentifier, normalizeSlotHandler } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+
+// TODO implement feature start when enable flag goes `true` and feature supposed to be started.
+// TODO implement features dependency graph (and somehow merge it with input store, i like that idea).
 
 type Params<T> = {
   name: string;
@@ -13,6 +24,7 @@ type Params<T> = {
   scope?: Scope;
 };
 
+type BootstrapParams = { reason: 'external' | 'gate' | 'enable' };
 type ErrorType = 'fatal' | 'error' | 'warning';
 
 type FailedStateParams = { error: Error; type: ErrorType };
@@ -57,14 +69,17 @@ export const createFeature = <T = object>({
 }: Params<T>) => {
   const domain = createDomain(name);
 
-  const $input = domain.createStore<T | null>(null);
-  const $state = domain.createStore<State<T>>({ status: 'idle' }, { name: 'state' });
-  const $status = $state.map((x) => x.status);
-
   const start = domain.createEvent('start');
+  const bootstrap = domain.createEvent<BootstrapParams>('bootstrap');
   const stop = domain.createEvent('stop');
   const fail = domain.createEvent<FailedStateParams>('fail');
   const restore = domain.createEvent('restore');
+
+  const $input = domain.createStore<T | null>(null);
+  const $state = domain.createStore<State<T>>({ status: 'idle' }, { name: 'state' });
+  const $status = $state.map((x) => x.status);
+  const $bootstrapParams = effectorRestore(bootstrap, null);
+  const $runWasRequested = domain.createStore(false);
 
   const running = domain.createEvent<T>('running');
   const failed = $status.updates.filter({ fn: (x) => x === 'failed' });
@@ -80,6 +95,12 @@ export const createFeature = <T = object>({
 
   sample({
     clock: start,
+    fn: (): BootstrapParams => ({ reason: 'external' }),
+    target: bootstrap,
+  });
+
+  sample({
+    clock: bootstrap,
     source: { data: input, status: $status, enable },
     filter: ({ status, enable }) => enable && status !== 'starting' && status !== 'running',
     fn: ({ data }) => calculateState(data, filter),
@@ -89,7 +110,7 @@ export const createFeature = <T = object>({
   sample({
     clock: stop,
     fn: (): IdleState => ({ status: 'idle' }),
-    target: $state,
+    target: [$state, $bootstrapParams.reinit],
   });
 
   sample({
@@ -105,6 +126,36 @@ export const createFeature = <T = object>({
     source: input,
     fn: (data, { error, type }): State<T> => ({ status: 'failed', data, error, type }),
     target: $state,
+  });
+
+  // Enable flag management
+
+  sample({
+    clock: start,
+    source: enable,
+    filter: (enable) => !enable,
+    fn: () => true,
+    target: $runWasRequested,
+  });
+
+  sample({
+    clock: stop,
+    fn: () => false,
+    target: $runWasRequested,
+  });
+
+  sample({
+    clock: enable,
+    source: $runWasRequested,
+    filter: (wasRequested, enable) => wasRequested && enable,
+    fn: (): BootstrapParams => ({ reason: 'enable' }),
+    target: bootstrap,
+  });
+
+  sample({
+    clock: enable,
+    filter: (enable) => !enable,
+    target: stop,
   });
 
   // Input data management
@@ -147,12 +198,14 @@ export const createFeature = <T = object>({
   sample({
     clock: $gatesOpened,
     filter: (x) => x === 1,
-    target: start,
+    fn: (): BootstrapParams => ({ reason: 'gate' }),
+    target: bootstrap,
   });
 
   sample({
     clock: $gatesOpened,
-    filter: (x) => x === 0,
+    source: $bootstrapParams,
+    filter: (params, x) => x === 0 && nonNullable(params) && params.reason === 'gate',
     target: stop,
   });
 
@@ -181,6 +234,8 @@ export const createFeature = <T = object>({
   });
 
   const inject = <T extends AnyIdentifier>(identifier: T, body: InferHandlerBody<T>) => {
+    registerIdentifier(identifier);
+
     // special wrapper for views - we trying to start feature on render
     if (isSlotIdentifier(identifier)) {
       const slotHandlerBody = normalizeSlotHandler(body as InferHandlerBody<typeof identifier>);

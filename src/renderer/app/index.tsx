@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HashRouter } from 'react-router-dom';
 
+import { resetFeatureStatuses, updateFeatureStatus } from '@/shared/config/features';
 import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
@@ -15,6 +16,22 @@ import { APP_CONFIG } from '../../../app.config';
 import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
 import { WebSplashScreen } from './components/WebSplashScreen/WebSplashScreen';
+
+declare global {
+  interface Window {
+    __spektr_config: {
+      enableFeature(name: string): void;
+      disableFeature(name: string): void;
+      resetFeatureConfig(): void;
+    };
+  }
+}
+
+window.__spektr_config = {
+  enableFeature: (name) => updateFeatureStatus([name, true]),
+  disableFeature: (name) => updateFeatureStatus([name, false]),
+  resetFeatureConfig: () => resetFeatureStatuses(),
+};
 
 const CLEAR_LOADING_TIMEOUT = 700;
 const DIRTY_LOADING_TIMEOUT = 2000;
@@ -64,8 +81,7 @@ if (!container) {
 
 document.body.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
 
-createRoot(container).render(<Root />);
-
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // which leads to errors in components that use camera
 // https://reactjs.org/docs/strict-mode.html#ensuring-reusable-state
+createRoot(container).render(<Root />);

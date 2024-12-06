@@ -48,7 +48,6 @@ export type AssetByChains = {
   symbol: string;
   isTestToken?: boolean;
   priceId?: string;
-  totalBalance?: AssetBalance;
   chains: {
     chainId: ChainId;
     name: string;

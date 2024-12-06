@@ -44,7 +44,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
       <Modal.Title close>{`Referendum #${referendumId}`}</Modal.Title>
       <Modal.Content>
         <div className="flex min-h-full bg-main-app-background">
-          <Box direction="row" width="100%" gap={4} padding={[4, 6]} fillContainer wrap>
+          <Box direction="row" width="100%" gap={4} padding={[4, 6]} fillContainer>
             <Box width="100%">
               <Card>
                 <Box padding={6} gap={4}>
