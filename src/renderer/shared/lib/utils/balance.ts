@@ -233,21 +233,27 @@ export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string 
   return withdrawableAmountBN(balance).toString();
 };
 
-export const stakedAmount = (balance: Balance): string => {
-  if (!balance.locked) return ZERO_BALANCE;
+export const stakedAmountBN = (balance: Balance) => {
+  if (!balance.locked) return BN_ZERO;
 
   const bnLocks = balance.locked.find((lock) => lock.type === LockTypes.STAKING);
 
-  return bnLocks?.amount.toString() || ZERO_BALANCE;
+  return bnLocks?.amount || BN_ZERO;
+};
+
+export const stakedAmount = (balance: Balance): string => {
+  return stakedAmountBN(balance).toString();
+};
+
+export const stakeableAmountBN = (balance: Balance) => {
+  const total = totalAmountBN(balance);
+  const staked = stakedAmountBN(balance);
+
+  return BN.max(BN_ZERO, total.sub(staked));
 };
 
 export const stakeableAmount = (balance?: Balance): string => {
-  if (!balance) return ZERO_BALANCE;
-
-  const bnFree = new BN(balance.free || ZERO_BALANCE);
-  const bnStaked = new BN(stakedAmount(balance));
-
-  return bnFree.sub(bnStaked).toString();
+  return balance ? stakeableAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
