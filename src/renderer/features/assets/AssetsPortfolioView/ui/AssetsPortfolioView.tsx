@@ -19,11 +19,11 @@ const getColStyle = (wallet?: Wallet): string => {
     return '';
   }
   const colStyleMap: Partial<Record<WalletType, string>> = {
-    [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px]',
-    [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,30px]',
+    [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px,10px]',
+    [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,54px]',
   };
 
-  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,110px,50px]';
+  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,108px,60px]';
 };
 
 export const AssetsPortfolioView = () => {
