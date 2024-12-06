@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -8,7 +8,7 @@ import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { TokenBalance } from './TokenBalance';
@@ -18,12 +18,11 @@ const getColStyle = (wallet?: Wallet): string => {
   if (!wallet) {
     return '';
   }
-  const colStyleMap: Partial<Record<WalletType, string>> = {
-    [WalletType.WATCH_ONLY]: 'grid-cols-[1fr,100px,105px,10px]',
-    [WalletType.PROXIED]: 'grid-cols-[1fr,100px,105px,54px]',
-  };
+  if (walletUtils.isWatchOnly(wallet)) {
+    return 'grid-cols-[1fr,100px,15px,10px]';
+  }
 
-  return colStyleMap[wallet.type] || 'grid-cols-[1fr,100px,108px,60px]';
+  return 'grid-cols-[1fr,100px,108px,60px]';
 };
 
 export const AssetsPortfolioView = () => {
