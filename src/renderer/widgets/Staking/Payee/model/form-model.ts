@@ -13,7 +13,6 @@ import {
   toAddress,
   transferableAmount,
   validateAddress,
-  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -196,7 +195,7 @@ const $signatories = combine(
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);

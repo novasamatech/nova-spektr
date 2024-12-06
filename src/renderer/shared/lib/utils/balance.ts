@@ -216,6 +216,11 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
   return transferableAmountBN(balance).toString();
 };
 
+/**
+ * Unlike transferableAmount, withdrawable skips reserved part of balance. It
+ * could be usefull in operations where reserved part is already taken into
+ * account.
+ */
 export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
   if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
 

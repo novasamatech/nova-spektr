@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { type AccountId, type Chain } from '@/shared/core';
-import { transferableAmount, withdrawableAmountBN } from '@/shared/lib/utils';
+import { transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type ChainProxyStore, type SignatoryStore } from '../types/types';
 
@@ -32,8 +32,8 @@ export const AddProxyRules = {
         );
 
         return isMultisig
-          ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
-          : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+          ? new BN(params.proxyDeposit).lte(withdrawableAmountBN(balance))
+          : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(transferableAmountBN(balance));
       },
     }),
   },
