@@ -1,5 +1,5 @@
 import * as RadixAccordion from '@radix-ui/react-accordion';
-import { type PropsWithChildren, createContext, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type PropsWithChildren, createContext, useId, useMemo, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
@@ -26,7 +26,9 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
         value={open ? id : ''}
         onValueChange={(value) => setOpen(value === id)}
       >
-        <RadixAccordion.Item value={id}>{children}</RadixAccordion.Item>
+        <RadixAccordion.Item value={id} className="group/stack card-stack">
+          {children}
+        </RadixAccordion.Item>
       </RadixAccordion.Root>
     </Context.Provider>
   );
@@ -63,37 +65,18 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 };
 
 const Content = ({ children }: PropsWithChildren) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    if (!ref.current || !contentRef.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      const { clientHeight } = ref.current!;
-
-      contentRef.current!.style.cssText = `--radix-accordion-content-height: ${clientHeight}px;`;
-    });
-
-    resizeObserver.observe(ref.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
   return (
-    <RadixAccordion.Content forceMount ref={contentRef} className="card-stack-content group relative overflow-hidden">
+    <div className="relative min-h-1.5 overflow-hidden">
       <div
         className={cnTw(
           'card-stack-plate absolute left-1/2 top-0 h-full w-full -translate-x-1/2 rounded-b-md bg-white shadow-stack',
-          'group-data-[state=open]:border-t group-data-[state=open]:border-divider group-data-[state=open]:shadow-none',
+          'group-data-[state=open]/stack:border-t group-data-[state=open]/stack:border-divider group-data-[state=open]/stack:shadow-none',
         )}
       />
-      <section ref={ref} className="card-stack-section relative">
-        {children}
-      </section>
-    </RadixAccordion.Content>
+      <RadixAccordion.Content asChild>
+        <section className="card-stack-content relative">{children}</section>
+      </RadixAccordion.Content>
+    </div>
   );
 };
 
