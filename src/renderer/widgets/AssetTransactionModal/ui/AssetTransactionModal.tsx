@@ -5,7 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
-import { BaseModal, BodyText, FootnoteText, HeaderTitleText, SearchInput } from '@/shared/ui';
+import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
+import { Box, Modal } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -50,52 +51,49 @@ export const AssetTransactionModal = () => {
   }
 
   const { title, path } = getModalDetails(modalType);
-  const modalTitle = <HeaderTitleText>{t(title, { asset: assetWithChains.symbol })}</HeaderTitleText>;
 
   return (
-    <BaseModal
-      closeButton
-      panelClass="max-h-[610px] overflow-y-auto"
-      headerClass="p-3 pl-5 pb-7"
-      isOpen={isModalOpen}
-      title={modalTitle}
-      onClose={closeModal}
-    >
-      <SearchInput
-        value={query}
-        placeholder={t('balances.searchPlaceholder')}
-        className="w-full"
-        onChange={assetTransactionModel.events.queryChanged}
-      />
-      <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
-      <ul>
-        {assetWithChains.chains.map((chain) => (
-          <li
-            key={`${chain.assetSymbol}_${chain.chainId}`}
-            tabIndex={0}
-            className="flex flex-col rounded text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
-          >
-            <Link
-              to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
-              onClick={() => assetTransactionModel.output.flowClosed()}
-            >
-              <div className="flex items-center px-2 py-1.5">
-                <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
-                  <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
-                  <BodyText className="text-inherit">{chain.name}</BodyText>
-                </div>
-                <div className="flex flex-col items-end">
-                  <BodyText className="text-inherit">
-                    {assetTransactionUtils.getChainBalance(t, chain, assetWithChains.precision)}
-                  </BodyText>
-                  <AssetFiatBalance amount={totalAmount(chain.balance)} asset={assetWithChains} />
-                </div>
-              </div>
-            </Link>
-          </li>
-        ))}
-        <EmptyAssetsState />
-      </ul>
-    </BaseModal>
+    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal.Title close>{t(title, { asset: assetWithChains.symbol })}</Modal.Title>
+      <Modal.Content>
+        <Box padding={[3, 5]}>
+          <SearchInput
+            value={query}
+            placeholder={t('balances.searchPlaceholder')}
+            className="w-full"
+            onChange={assetTransactionModel.events.queryChanged}
+          />
+          <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
+          <ul>
+            {assetWithChains.chains.map((chain) => (
+              <li
+                key={`${chain.assetSymbol}_${chain.chainId}`}
+                tabIndex={0}
+                className="flex flex-col rounded text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
+              >
+                <Link
+                  to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
+                  onClick={() => assetTransactionModel.output.flowClosed()}
+                >
+                  <div className="flex items-center px-2 py-1.5">
+                    <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
+                      <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
+                      <BodyText className="text-inherit">{chain.name}</BodyText>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <BodyText className="text-inherit">
+                        {assetTransactionUtils.getChainBalance(t, chain, assetWithChains.precision)}
+                      </BodyText>
+                      <AssetFiatBalance amount={totalAmount(chain.balance)} asset={assetWithChains} />
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+            <EmptyAssetsState />
+          </ul>
+        </Box>
+      </Modal.Content>
+    </Modal>
   );
 };

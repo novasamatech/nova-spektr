@@ -1,7 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Account, type Asset, type Chain, type Conviction } from '@/shared/core';
@@ -344,9 +343,7 @@ sample({
 sample({
   clock: $delegateForm.fields.signatory.onChange,
   source: $signatories,
-  filter: (signatories, signatory) => {
-    return !isEmpty(signatories) && nonNullable(signatory);
-  },
+  filter: (signatories) => signatories.length > 0,
   fn: (signatories, signatory) => {
     const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
 
@@ -393,9 +390,7 @@ sample({
 sample({
   clock: $delegateForm.$values.updates,
   source: { networkStore: $networkStore, accounts: $accounts },
-  filter: (networkStore, formData) => {
-    return nonNullable(networkStore) && nonNullable(formData.signatory);
-  },
+  filter: (networkStore) => nonNullable(networkStore),
   fn: ({ accounts }, formData) => {
     const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
 

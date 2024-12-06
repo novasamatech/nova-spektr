@@ -333,14 +333,8 @@ sample({
     chain: $chain,
     account: $account,
   },
-  filter: ({ chain, account }, formData) => {
-    return nonNullable(chain) && nonNullable(account) && nonNullable(formData.signatory);
-  },
-  fn: (_, formData) => {
-    const signatory = Object.keys(formData.signatory!).length > 0 ? formData.signatory : null;
-
-    return { ...formData, signatory };
-  },
+  filter: ({ chain, account }) => nonNullable(chain) && nonNullable(account),
+  fn: (_, formData) => formData,
   target: formSubmitted,
 });
 
