@@ -52,5 +52,13 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     target: $fee,
   });
 
+  sample({
+    clock: fetchFeeFx.fail,
+    source: $transaction,
+    filter: nonNullable,
+    fn: (_) => BN_ZERO,
+    target: $fee,
+  });
+
   return { $: $fee, $pending: fetchFeeFx.pending };
 };

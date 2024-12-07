@@ -81,7 +81,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   }, [countdown]);
 
   useEffect(() => {
-    if (signatures) {
+    if (signatures.length > 0) {
       handleSignature(signatures);
     }
   }, [signatures]);

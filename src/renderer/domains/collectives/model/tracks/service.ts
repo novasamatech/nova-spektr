@@ -22,6 +22,10 @@ const getMinimumRank = (trackId: TrackId, maxRank: number) => {
     return trackId - 18;
   }
 
+  if (trackId >= 31 && trackId <= 36) {
+    return trackId - 28;
+  }
+
   return maxRank;
 };
 

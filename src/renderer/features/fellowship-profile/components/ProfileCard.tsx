@@ -34,14 +34,14 @@ export const ProfileCard = memo(() => {
             {member ? (
               <Box direction="row" width="100%" gap={2} verticalAlign="center">
                 <SmallTitleText className="w-full">
-                  {identity?.name ?? (
-                    <Address
-                      showIcon
-                      iconSize={16}
-                      address={toAddress(member.accountId, { prefix: featureInput?.chain.addressPrefix })}
-                      variant="truncate"
-                    />
-                  )}
+                  <Address
+                    showIcon
+                    iconSize={16}
+                    title={identity?.name}
+                    address={toAddress(member.accountId, { prefix: featureInput?.chain.addressPrefix })}
+                    hideAddress
+                    variant="truncate"
+                  />
                 </SmallTitleText>
               </Box>
             ) : (
