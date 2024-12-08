@@ -72,7 +72,7 @@ const getMultisigsFx = createEffect(({ chains, wallets }: GetMultisigsParams) =>
 
         for (const multisig of indexedMultisigs) {
           const existingWallet = walletUtils.getWalletFilteredAccounts(multisigWallets || [], {
-            accountFn: (a) => a.accountId === multisig.accountId,
+            accountFn: (a) => a.accountId === multisig.accountId && accountUtils.isChainIdMatch(a, chain.chainId),
           });
           if (existingWallet) continue;
 
