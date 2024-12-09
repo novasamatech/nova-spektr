@@ -278,8 +278,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   sample({
     clock: reinitForm,
     source: $signatories,
-    filter: $signatories.map((x) => x.length < 2),
-    fn: (s) => s.at(0) ?? null,
+    filter: (signatories) => signatories.length === 1,
+    fn: (signers) => {
+      const signer = signers.at(0);
+
+      return signer ? signer.account : null;
+    },
     target: form.fields.signatory.onChange,
   });
 
