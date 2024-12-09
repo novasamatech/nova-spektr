@@ -14,7 +14,6 @@ import {
   useState,
 } from 'react';
 
-import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
@@ -42,24 +41,14 @@ type InputProps = Pick<
 >;
 
 type ControlledPopoverProps = {
-  selectedValue: string;
+  value: string;
   onChange: (value: string) => void;
-} & XOR<{
-  inputValue: string;
   onInput: (value: string) => void;
-}>;
+};
 
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
-const Root = ({
-  testId = 'Combobox',
-  inputValue,
-  selectedValue,
-  onChange,
-  onInput,
-  children,
-  ...inputProps
-}: RootProps) => {
+const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -74,8 +63,8 @@ const Root = ({
         <Ariakit.ComboboxProvider
           open={open}
           setOpen={onOpenChange}
-          value={inputValue}
-          selectedValue={selectedValue}
+          defaultValue={value}
+          defaultSelectedValue={value}
           setSelectedValue={onChange}
           setValue={(value) => startTransition(() => onChange(value))}
         >

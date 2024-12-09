@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const SelectMultisigWalletType = ({ isOpen }: Props) => {
-  // TODO make null when we're ready to work with flexible multisig
+  // TODO: make null when we're ready to work with flexible multisig
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
 
   const handleClose = () => {
@@ -37,7 +37,8 @@ export const SelectMultisigWalletType = ({ isOpen }: Props) => {
     );
   }
 
-  return <>{MultisigModals[selectedFlow](handleClose, () => setSelectedFlow(null))}</>;
+  // TODO: make null when we're ready to work with flexible multisig
+  return <>{MultisigModals[selectedFlow](handleClose, () => setSelectedFlow('regularMultisig'))}</>;
 };
 
 type SelectProps = {

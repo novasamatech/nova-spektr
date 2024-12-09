@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type Account, type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
+import { type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, performSearch, toAccountId, toAddress } from '@/shared/lib/utils';
-import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
+import { CaptionText, Combobox, IconButton, Identicon, InputHint } from '@/shared/ui';
+import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
+import { Box, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
@@ -44,7 +45,7 @@ export const Signatory = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const [query, setQuery] = useState('');
-  const [accountsGroup, setAccountsGroup] = useState<[WalletFamily, Account[]][]>([]);
+  const [options, setOptions] = useState<ComboboxOption<{ address: AccountAddress; walletId?: ID }>[]>([]);
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -82,6 +83,7 @@ export const Signatory = ({
     return ownAccountName || contactAccountName;
   }, [isOwnAccount, ownAccountName, contactAccountName]);
 
+  // Wallets
   useEffect(() => {
     if (!isOwnAccount || wallets.length === 0 || !chain) return;
 
@@ -98,21 +100,62 @@ export const Signatory = ({
     });
 
     const walletByGroup = services.walletSelect.getWalletByGroups(filteredWallets || []);
-    const options: [WalletFamily, Account[]][] = [];
+    const walletsOptions: ComboboxOption[] = [];
 
     for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
       if (walletsGroup.length === 0) continue;
 
-      const accountOptions: Account[] = [];
+      const accountOptions: ComboboxOption[] = [];
       for (const wallet of walletsGroup) {
-        accountOptions.push(...wallet.accounts);
+        for (const account of wallet.accounts) {
+          const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+          accountOptions.push({
+            id: account.walletId.toString(),
+            value: { address, walletId: account.walletId },
+            element: <Address showIcon title={account.name} address={address} />,
+          });
+        }
       }
 
-      options.push([walletFamily as WalletFamily, accountOptions]);
+      walletsOptions.push(
+        {
+          id: walletFamily,
+          value: undefined,
+          disabled: true,
+          element: (
+            <div className="flex items-center gap-x-2" key={walletFamily}>
+              <WalletIcon type={walletFamily as WalletFamily} />
+              <CaptionText className="font-semibold uppercase text-text-secondary">
+                {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
+              </CaptionText>
+            </div>
+          ),
+        },
+        ...accountOptions,
+      );
     }
 
-    setAccountsGroup(options);
+    setOptions(walletsOptions);
   }, [query, wallets, isOwnAccount]);
+
+  // Contacts
+  useEffect(() => {
+    if (isOwnAccount || contacts.length === 0) return;
+
+    const contactsOptions: ComboboxOption[] = [];
+    for (const contact of filteredContacts) {
+      const displayAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
+
+      contactsOptions.push({
+        id: signatoryIndex.toString(),
+        element: <Address showIcon title={contact.name} address={displayAddress} />,
+        value: { address: displayAddress },
+      });
+    }
+
+    setOptions(contactsOptions);
+  }, [query, isOwnAccount, contacts, filteredContacts]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
@@ -136,14 +179,12 @@ export const Signatory = ({
     });
   };
 
-  const onAddressChange = <T extends string = `${AccountAddress}_${ID}`>(address: T) => {
-    const [accountAddress, walletId] = address.split('_');
-
+  const onAddressChange = (address: AccountAddress, walletId?: ID) => {
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
       name: signatoryName,
-      address: accountAddress,
-      walletId: walletId, // will be undefined for contact
+      address: address,
+      walletId: walletId?.toString(), // will be undefined for contact
     });
   };
 
@@ -164,6 +205,9 @@ export const Signatory = ({
           <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
               placeholder={t('createMultisigAccount.signatorySelection')}
+              options={options}
+              query={query}
+              value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
               prefixElement={
                 <Identicon
                   address={isInvalidAddress ? '' : signatoryAddress}
@@ -172,48 +216,9 @@ export const Signatory = ({
                   canCopy={false}
                 />
               }
-              inputValue={signatoryAddress}
-              selectedValue={`${signatoryAddress}_${selectedWalletId}`}
-              invalid={isDuplicate}
-              onChange={onAddressChange}
+              onChange={({ value }) => onAddressChange(value.address, value.walletId)}
               onInput={setQuery}
-            >
-              {accountsGroup.map(([walletType, accounts]) => (
-                <Combobox.Group
-                  key={walletType}
-                  title={
-                    <div className="flex items-center gap-x-2 py-1">
-                      <WalletIcon type={walletType} />
-                      <CaptionText className="font-semibold uppercase text-text-secondary">
-                        {t(constants.GROUP_LABELS[walletType])}
-                      </CaptionText>
-                    </div>
-                  }
-                >
-                  {accounts.map((account) => {
-                    const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
-                    const itemValue = `${address}_${account.walletId}`;
-
-                    return (
-                      <Combobox.Item key={account.id} value={itemValue}>
-                        <div className="pl-7">
-                          <Address showIcon canCopy={false} title={account.name} address={address} />
-                        </div>
-                      </Combobox.Item>
-                    );
-                  })}
-                </Combobox.Group>
-              ))}
-              {filteredContacts.map((contact) => {
-                const address = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
-
-                return (
-                  <Combobox.Item key={contact.id} value={address}>
-                    <Address showIcon title={contact.name} address={address} />
-                  </Combobox.Item>
-                );
-              })}
-            </Combobox>
+            />
 
             <InputHint active={isDuplicate} variant="error">
               {t('createMultisigAccount.duplicateSignatoryAddress')}
