@@ -9,14 +9,15 @@ import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexib
 import { flowModel } from '../../model/flow-model';
 
 import { MultisigWallet } from './MultisigWallet';
-import { MultisigWalletType, descriptionMultisig } from './common/constants';
+import { type MultisigWalletType, descriptionMultisig } from './common/constants';
 
 type Props = {
   isOpen: boolean;
 };
 
 export const SelectMultisigWalletType = ({ isOpen }: Props) => {
-  const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>(null);
+  // TODO make null when we're ready to work with flexible multisig
+  const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
 
   const handleClose = () => {
     flowModel.output.flowFinished();
@@ -26,10 +27,10 @@ export const SelectMultisigWalletType = ({ isOpen }: Props) => {
   return (
     <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
       {nullable(selectedFlow) && <SelectMultisig onContinue={setSelectedFlow} />}
-      {selectedFlow === MultisigWalletType.REGULAR && (
+      {selectedFlow === 'regularMultisig' && (
         <MultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
       )}
-      {selectedFlow === MultisigWalletType.FLEXIBLE && (
+      {selectedFlow === 'flexibleMultisig' && (
         <FlexibleMultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
       )}
     </Modal>
@@ -46,18 +47,18 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
   const [walletType, setWalletType] = useState<MultisigWalletType>();
 
   const flexibleMultisigOption = {
-    id: MultisigWalletType.FLEXIBLE,
-    value: MultisigWalletType.FLEXIBLE,
+    id: 'flexibleMultisig',
+    value: 'flexibleMultisig',
     title: t('createMultisigAccount.flexibleMultisig.flexible'),
     description: t('createMultisigAccount.selectMultisigDescription.flexibleDescription'),
-  };
+  } as const;
 
   const regularMultisigOption = {
-    id: MultisigWalletType.REGULAR,
-    value: MultisigWalletType.REGULAR,
+    id: 'regularMultisig',
+    value: 'regularMultisig',
     title: t('createMultisigAccount.multisig'),
     description: t('createMultisigAccount.selectMultisigDescription.regularDescription'),
-  };
+  } as const;
 
   return (
     <>
