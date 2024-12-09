@@ -1,16 +1,8 @@
 import { memo } from 'react';
 
 import { type MultisigTransaction } from '@/shared/core';
-import { createSlot } from '@/shared/di';
 
 import { Operation } from './Operation';
-
-type SlotProps = {
-  operation: MultisigTransaction;
-};
-
-export const operationDetailsSlot = createSlot<SlotProps>();
-export const operationTitleSlot = createSlot<SlotProps>();
 
 type Props = {
   operations?: MultisigTransaction[];
