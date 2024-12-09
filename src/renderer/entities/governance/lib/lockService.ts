@@ -3,7 +3,7 @@ import { type BN, BN_ZERO, bnMax } from '@polkadot/util';
 
 import { type ClaimTime, type ClaimTimeAt, type ClaimTimeUntil } from '@/shared/api/governance';
 import { type Balance, type Conviction, type Voting } from '@/shared/core';
-import { getRelativeTimeFromApi, lockedAmountBN } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, totalAmountBN } from '@/shared/lib/utils';
 
 import { votingService } from './votingService';
 
@@ -74,9 +74,7 @@ const getLockPeriods = async (api: ApiPromise) => {
 };
 
 const getAvailableBalance = (balance: Balance) => {
-  const free = balance.free ?? BN_ZERO;
-
-  return free.add(lockedAmountBN(balance));
+  return totalAmountBN(balance);
 };
 
 export const locksService = {
