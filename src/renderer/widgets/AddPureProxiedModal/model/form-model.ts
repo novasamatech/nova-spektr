@@ -100,10 +100,12 @@ const $proxyForm = createForm<FormParams>({
               form.chain.chainId,
               form.chain.assets[0].assetId.toString(),
             );
+            const proxyDeposit = new BN(params.proxyDeposit);
+            const fee = new BN(params.fee);
 
             return isMultisig
-              ? new BN(params.proxyDeposit).lte(withdrawableAmountBN(balance))
-              : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(transferableAmountBN(balance));
+              ? proxyDeposit.lte(withdrawableAmountBN(balance))
+              : proxyDeposit.add(fee).lte(transferableAmountBN(balance));
           },
         },
       ],
