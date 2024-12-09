@@ -64,7 +64,7 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
     if (isManageProxyTransaction(transaction) && proxyType) {
       result.push(
         <DetailRow label={t('operation.details.accessType')} className="text-text-secondary">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
+          <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
         </DetailRow>,
       );
     }
@@ -74,20 +74,23 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
   order: 1,
 });
 
-proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
+  render: ({ operation }) => {
+    const transaction = getTransactionFromMultisigTx(operation);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.ADD_PROXY,
-      TransactionType.REMOVE_PROXY,
-      TransactionType.CREATE_PURE_PROXY,
-      TransactionType.REMOVE_PURE_PROXY,
-    ].includes(transaction.type)
-  ) {
-    return <ProxyOperationTitle tx={operation} />;
-  }
+    if (
+      transaction?.type &&
+      [
+        TransactionType.ADD_PROXY,
+        TransactionType.REMOVE_PROXY,
+        TransactionType.CREATE_PURE_PROXY,
+        TransactionType.REMOVE_PURE_PROXY,
+      ].includes(transaction.type)
+    ) {
+      return <ProxyOperationTitle tx={operation} />;
+    }
 
-  return null;
+    return null;
+  },
+  order: 1,
 });

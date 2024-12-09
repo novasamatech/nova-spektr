@@ -1,6 +1,5 @@
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
-// TODO: fix import
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
@@ -47,23 +46,26 @@ stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDe
   order: 2,
 });
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
+  render: ({ operation }) => {
+    const transaction = getTransactionFromMultisigTx(operation);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.BOND,
-      TransactionType.STAKE_MORE,
-      TransactionType.UNSTAKE,
-      TransactionType.RESTAKE,
-      TransactionType.REDEEM,
-      TransactionType.NOMINATE,
-      TransactionType.DESTINATION,
-    ].includes(transaction.type)
-  ) {
-    return <StakingOperationTitle tx={operation} />;
-  }
+    if (
+      transaction?.type &&
+      [
+        TransactionType.BOND,
+        TransactionType.STAKE_MORE,
+        TransactionType.UNSTAKE,
+        TransactionType.RESTAKE,
+        TransactionType.REDEEM,
+        TransactionType.NOMINATE,
+        TransactionType.DESTINATION,
+      ].includes(transaction.type)
+    ) {
+      return <StakingOperationTitle tx={operation} />;
+    }
 
-  return null;
+    return null;
+  },
+  order: 1,
 });

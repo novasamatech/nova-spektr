@@ -4,7 +4,6 @@ import { Trans } from 'react-i18next';
 
 import { type Address, TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
-// TODO: fix import
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
@@ -150,7 +149,12 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
       result.push(
         <DetailRow label={t('operation.details.delegationVotes')} className="text-text-secondary">
           <FootnoteText>
-            <AssetBalance value={delegationVotes} asset={defaultAsset} showSymbol={false} />
+            <AssetBalance
+              className="text-text-secondary"
+              value={delegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            />
           </FootnoteText>
         </DetailRow>,
       );
@@ -160,7 +164,12 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
       result.push(
         <DetailRow label={t('operation.details.delegationVotes')} className="text-text-secondary">
           <FootnoteText>
-            <AssetBalance value={undelegationVotes} asset={defaultAsset} showSymbol={false}></AssetBalance>
+            <AssetBalance
+              className="text-text-secondary"
+              value={undelegationVotes}
+              asset={defaultAsset}
+              showSymbol={false}
+            ></AssetBalance>
           </FootnoteText>
         </DetailRow>,
       );
@@ -181,23 +190,26 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   order: 1,
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
+  render: ({ operation }) => {
+    const transaction = getTransactionFromMultisigTx(operation);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.UNLOCK,
-      TransactionType.VOTE,
-      TransactionType.REVOTE,
-      TransactionType.REMOVE_VOTE,
-      TransactionType.DELEGATE,
-      TransactionType.UNDELEGATE,
-      TransactionType.EDIT_DELEGATION,
-    ].includes(transaction.type)
-  ) {
-    return <GovernanceOperationTitle tx={operation} />;
-  }
+    if (
+      transaction?.type &&
+      [
+        TransactionType.UNLOCK,
+        TransactionType.VOTE,
+        TransactionType.REVOTE,
+        TransactionType.REMOVE_VOTE,
+        TransactionType.DELEGATE,
+        TransactionType.UNDELEGATE,
+        TransactionType.EDIT_DELEGATION,
+      ].includes(transaction.type)
+    ) {
+      return <GovernanceOperationTitle tx={operation} />;
+    }
 
-  return null;
+    return null;
+  },
+  order: 1,
 });

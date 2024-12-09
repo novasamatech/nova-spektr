@@ -3,15 +3,16 @@ import { useUnit } from 'effector-react';
 import { useMultisigChainContext } from '@/app/providers';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';
 import { useNetworkData } from '@/entities/network';
 import { permissionUtils, walletModel } from '@/entities/wallet';
+import { multisigOperationsFeature } from '@/features/multisig-operations';
 import { getMultisigExtrinsicLink } from '../common/utils';
 
-import { OperationCardDetails } from './OperationCardDetails';
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
 import CallDataModal from './modals/CallDataModal';
@@ -47,6 +48,12 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
   });
 
+  const operationDetails = useSlot(multisigOperationsFeature.slots.operationDetails, {
+    props: {
+      operation: tx,
+    },
+  });
+
   return (
     <div className="flex flex-1">
       <div className="flex w-[416px] flex-col border-r border-r-divider p-4">
@@ -70,7 +77,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
+        <div className="flex w-full flex-col gap-y-1">{operationDetails}</div>
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (

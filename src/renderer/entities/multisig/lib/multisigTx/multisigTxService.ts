@@ -84,6 +84,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
           });
 
           const newEvents = createNewEventsPayload(oldEvents, newestOldTx, pendingTx.params.approvals);
+
           for (const e of newEvents) {
             addEventWithQueue(e);
           }

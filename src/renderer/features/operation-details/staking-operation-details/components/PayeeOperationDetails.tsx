@@ -23,7 +23,10 @@ export const PayeeOperationDetails = ({ operation }: Props) => {
 
   if (payee) {
     result.push(
-      <DetailRow label={t('operation.details.payee')} className={cnTw({ 'pr-0': typeof payee === 'string' })}>
+      <DetailRow
+        label={t('operation.details.payee')}
+        className={cnTw('text-text-secondary', { 'pr-0': typeof payee === 'string' })}
+      >
         {typeof payee === 'string' ? (
           t('staking.confirmation.restakeRewards')
         ) : (
