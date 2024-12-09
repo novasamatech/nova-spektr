@@ -16,7 +16,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { nonNullable, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
@@ -131,7 +131,7 @@ const $signatories = combine(
           chain.assets[0].assetId.toString(),
         );
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);

@@ -22,6 +22,7 @@ import {
   nonNullable,
   toAddress,
   transferableAmount,
+  transferableAmountBN,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -99,10 +100,12 @@ const $proxyForm = createForm<FormParams>({
               form.chain.chainId,
               form.chain.assets[0].assetId.toString(),
             );
+            const proxyDeposit = new BN(params.proxyDeposit);
+            const fee = new BN(params.fee);
 
             return isMultisig
-              ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
-              : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+              ? proxyDeposit.lte(withdrawableAmountBN(balance))
+              : proxyDeposit.add(fee).lte(transferableAmountBN(balance));
           },
         },
       ],
