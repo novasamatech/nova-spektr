@@ -9,11 +9,11 @@ import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexib
 import { flowModel } from '../../model/flow-model';
 
 import { MultisigWallet } from './MultisigWallet';
-import { MultisigWalletType, descriptionMultisig } from './common/constants';
+import { type MultisigWalletType, descriptionMultisig } from './common/constants';
 
 const MultisigModals: Record<MultisigWalletType, (onClose: VoidFunction, onBack: VoidFunction) => ReactNode> = {
-  [MultisigWalletType.REGULAR]: (onClose, onBack) => <MultisigWallet onClose={onClose} onGoBack={onBack} />,
-  [MultisigWalletType.FLEXIBLE]: (onClose, onBack) => <FlexibleMultisigWallet onClose={onClose} onGoBack={onBack} />,
+  regularMultisig: (onClose, onBack) => <MultisigWallet onClose={onClose} onGoBack={onBack} />,
+  flexibleMultisig: (onClose, onBack) => <FlexibleMultisigWallet onClose={onClose} onGoBack={onBack} />,
 };
 
 type Props = {
@@ -21,7 +21,8 @@ type Props = {
 };
 
 export const SelectMultisigWalletType = ({ isOpen }: Props) => {
-  const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>(null);
+  // TODO make null when we're ready to work with flexible multisig
+  const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
 
   const handleClose = () => {
     flowModel.output.flowFinished();
@@ -49,18 +50,18 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
   const [walletType, setWalletType] = useState<MultisigWalletType>();
 
   const flexibleMultisigOption = {
-    id: MultisigWalletType.FLEXIBLE,
-    value: MultisigWalletType.FLEXIBLE,
+    id: 'flexibleMultisig',
+    value: 'flexibleMultisig',
     title: t('createMultisigAccount.flexibleMultisig.flexible'),
     description: t('createMultisigAccount.selectMultisigDescription.flexibleDescription'),
-  };
+  } as const;
 
   const regularMultisigOption = {
-    id: MultisigWalletType.REGULAR,
-    value: MultisigWalletType.REGULAR,
+    id: 'regularMultisig',
+    value: 'regularMultisig',
     title: t('createMultisigAccount.multisig'),
     description: t('createMultisigAccount.selectMultisigDescription.regularDescription'),
-  };
+  } as const;
 
   return (
     <>

@@ -1,7 +1,4 @@
-export const enum MultisigWalletType {
-  FLEXIBLE = 'flexibleMultisig',
-  REGULAR = 'regularMultisig',
-}
+export type MultisigWalletType = 'regularMultisig' | 'flexibleMultisig';
 
 export const descriptionMultisig = [
   { text: 'createMultisigAccount.selectMultisigDescription.featureOne', onlyFlexible: false },
