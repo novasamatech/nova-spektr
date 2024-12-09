@@ -44,7 +44,9 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
           <Dialog.Content
             aria-describedby={undefined}
             className={cnTw(
-              'ui-kit-modal-height flex min-w-32 max-w-full transform flex-col overflow-hidden rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
+              'ui-kit-modal-height flex min-w-32 max-w-full flex-col overflow-hidden',
+              'text-left align-middle text-body',
+              'transform rounded-lg bg-white shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',

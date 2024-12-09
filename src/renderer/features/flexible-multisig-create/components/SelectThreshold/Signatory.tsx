@@ -3,19 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import {
-  performSearch,
-  toAccountId,
-  toAddress,
-  validateEthereumAddress,
-  validateSubstrateAddress,
-} from '@/shared/lib/utils';
+import { performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
 import { Box, Field, Input } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
-import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
@@ -179,10 +172,7 @@ export const Signatory = ({
   const onAddressChange = (data: ComboboxOption) => {
     if (!chain) return;
 
-    const isEthereumChain = networkUtils.isEthereumBased(chain.options);
-    const validateFn = isEthereumChain ? validateEthereumAddress : validateSubstrateAddress;
-
-    const validatedAddress = validateFn(data.value) ? data.value : '';
+    const validatedAddress = validateAddress(data.value, chain) ? data.value : '';
     const fixedAddress = toAddress(validatedAddress, { prefix: chain?.addressPrefix });
 
     signatoryModel.events.changeSignatory({

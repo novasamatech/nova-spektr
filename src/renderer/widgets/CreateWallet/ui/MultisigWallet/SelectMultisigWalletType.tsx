@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
@@ -11,12 +11,17 @@ import { flowModel } from '../../model/flow-model';
 import { MultisigWallet } from './MultisigWallet';
 import { type MultisigWalletType, descriptionMultisig } from './common/constants';
 
+const MultisigModals: Record<MultisigWalletType, (onClose: VoidFunction, onBack: VoidFunction) => ReactNode> = {
+  regularMultisig: (onClose, onBack) => <MultisigWallet onClose={onClose} onGoBack={onBack} />,
+  flexibleMultisig: (onClose, onBack) => <FlexibleMultisigWallet onClose={onClose} onGoBack={onBack} />,
+};
+
 type Props = {
   isOpen: boolean;
 };
 
 export const SelectMultisigWalletType = ({ isOpen }: Props) => {
-  // TODO make null when we're ready to work with flexible multisig
+  // TODO: make null when we're ready to work with flexible multisig
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
 
   const handleClose = () => {
@@ -24,17 +29,16 @@ export const SelectMultisigWalletType = ({ isOpen }: Props) => {
     flexibleMultisigModel.output.flowFinished();
   };
 
-  return (
-    <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
-      {nullable(selectedFlow) && <SelectMultisig onContinue={setSelectedFlow} />}
-      {selectedFlow === 'regularMultisig' && (
-        <MultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
-      )}
-      {selectedFlow === 'flexibleMultisig' && (
-        <FlexibleMultisigWallet isOpen onClose={handleClose} onGoBack={() => setSelectedFlow(null)} />
-      )}
-    </Modal>
-  );
+  if (nullable(selectedFlow)) {
+    return (
+      <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
+        <SelectMultisig onContinue={setSelectedFlow} />
+      </Modal>
+    );
+  }
+
+  // TODO: make null when we're ready to work with flexible multisig
+  return <>{MultisigModals[selectedFlow](handleClose, () => setSelectedFlow('regularMultisig'))}</>;
 };
 
 type SelectProps = {
