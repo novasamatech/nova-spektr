@@ -25,7 +25,6 @@ function insufficientBalanceForFee(
     amount,
     asset,
     balance,
-    xcmFee,
     fee,
 
     isNative,
@@ -36,7 +35,7 @@ function insufficientBalanceForFee(
   config: Config = { withFormatAmount: true },
 ) {
   if (isXcm && !isNative) {
-    if (isLteThanBalance(xcmFee, balance)) {
+    if (isLteThanBalance(fee, balance)) {
       return true;
     }
   }
