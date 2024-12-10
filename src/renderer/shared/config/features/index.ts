@@ -13,6 +13,7 @@ export const $features = createStore({
   // TODO: Dev only
   fellowship: isDev(),
   operations: true,
+  basket: true,
   contacts: true,
   notifications: true,
   settings: true,

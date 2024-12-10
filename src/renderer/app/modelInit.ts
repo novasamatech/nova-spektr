@@ -8,6 +8,7 @@ import { walletModel } from '@/entities/wallet';
 import { multisigsModel } from '@/processes/multisigs';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
+import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -27,6 +28,7 @@ export const initModel = () => {
   contactsNavigationFeature.start();
   notificationsNavigationFeature.start();
   settingsNavigationFeature.start();
+  basketNavigationFeature.start();
 
   walletsSelectFeature.start();
 
