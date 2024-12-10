@@ -4206,6 +4206,22 @@
         "typeExtras": {
           "assetId": "86"
         }
+      },
+      {
+        "name": "MYTH",
+        "assetId": 15,
+        "symbol": "MYTH",
+        "precision": 18,
+        "type": "statemine",
+        "priceId": "mythos",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MYTH.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MYTH.svg"
+        },
+        "typeExtras": {
+          "assetId": "0x010100a534",
+          "palletName": "ForeignAssets"
+        }
       }
     ],
     "explorers": [
@@ -5428,6 +5444,24 @@
           "currencyIdScale": "0x20000000",
           "currencyIdType": "u32",
           "existentialDeposit": "100786131828",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "name": "AAVE",
+        "assetId": 45,
+        "symbol": "AAVE",
+        "precision": 18,
+        "type": "orml",
+        "priceId": "aave",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/AAVE.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/AAVE.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0xb0440f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "59084194977843",
           "transfersEnabled": true
         }
       }
@@ -7159,6 +7193,54 @@
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PLMC.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PLMC.svg"
         }
+      },
+      {
+        "name": "Polkadot",
+        "assetId": 1,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "statemine",
+        "priceId": "polkadot",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+        },
+        "typeExtras": {
+          "assetId": "10",
+          "palletName": "ForeignAssets"
+        }
+      },
+      {
+        "name": "USD Tether",
+        "assetId": 2,
+        "symbol": "USDT",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "tether",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDT.svg"
+        },
+        "typeExtras": {
+          "assetId": "1984",
+          "palletName": "ForeignAssets"
+        }
+      },
+      {
+        "name": "USD Coin",
+        "assetId": 3,
+        "symbol": "USDC",
+        "precision": 6,
+        "type": "statemine",
+        "priceId": "usd-coin",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDC.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDC.svg"
+        },
+        "typeExtras": {
+          "assetId": "1337",
+          "palletName": "ForeignAssets"
+        }
       }
     ],
     "explorers": [
@@ -7329,6 +7411,53 @@
         {
           "type": "subquery",
           "url": "https://subquery-proxy-westend-prod.novasama-tech.org"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Mythos",
+    "specName": "polkadot",
+    "addressPrefix": 29972,
+    "chainId": "0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Mythos.svg",
+    "options": [
+      "ethereum_based"
+    ],
+    "nodes": [
+      {
+        "url": "wss://polkadot-mythos-rpc.polkadot.io",
+        "name": "Parity node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "MYTH",
+        "assetId": 0,
+        "symbol": "MYTH",
+        "precision": 18,
+        "type": "native",
+        "priceId": "mythos",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MYTH.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MYTH.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://mythos.subscan.io/extrinsic/{hash}",
+        "account": "https://mythos.subscan.io/account/{address}",
+        "multisig": "https://mythos.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      }
+    ],
+    "externalApi": {
+      "history": [
+        {
+          "type": "subquery",
+          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-mythos"
         }
       ]
     }
