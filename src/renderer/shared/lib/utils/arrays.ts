@@ -134,3 +134,24 @@ export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
 
   return isFunction(sort) ? res.sort(sort) : res;
 };
+
+export const groupBy = <const T, const K extends PropertyKey>(
+  iterable: Iterable<T>,
+  map: (value: T) => K,
+): Record<K, T[]> => {
+  const groups: Partial<Record<K, T[]>> = {};
+
+  for (const item of iterable) {
+    const itemKey = map(item);
+
+    let list = groups[itemKey];
+    if (list === undefined) {
+      list = [];
+      groups[itemKey] = list;
+    }
+
+    list.push(item);
+  }
+
+  return groups as Record<K, T[]>;
+};
