@@ -38,8 +38,8 @@ function insufficientBalanceForFee(
   const amountBN = new BN(
     isNative ? (config.withFormatAmount ? formatAmount(amount, asset.precision) : amount) : ZERO_BALANCE,
   );
-  const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : fee);
-  const xcmFeeBN = new BN(isXcm && isNative ? xcmFee : ZERO_BALANCE);
+  const feeBN = new BN(isProxy || isMultisig || !isNative ? ZERO_BALANCE : fee);
+  const xcmFeeBN = new BN(isXcm ? xcmFee : ZERO_BALANCE);
   const value = amountBN.add(feeBN).add(xcmFeeBN);
 
   return isLteThanBalance(value, balance);
