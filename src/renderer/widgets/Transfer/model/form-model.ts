@@ -132,6 +132,8 @@ const $transferForm = createForm<FormParams>({
             balance: $accountBalance,
           }),
         ),
+        // TODO we've got missunderstanding of this validation meaning on XCM transfers.
+        //   now this validation skips check for non-native tokens
         TransferRules.amount.insufficientBalanceForFee(
           combine({
             fee: $fee,
