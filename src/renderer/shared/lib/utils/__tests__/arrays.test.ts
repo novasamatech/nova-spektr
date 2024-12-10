@@ -1,4 +1,4 @@
-import { addUnique, merge, splice } from '../arrays';
+import { addUnique, groupBy, merge, splice } from '../arrays';
 
 describe('shared/lib/onChainUtils/arrays', () => {
   test('should insert element in the beginning', () => {
@@ -143,6 +143,26 @@ describe('shared/lib/onChainUtils/arrays', () => {
         { id: 4, date: new Date(4) },
         { id: 5, date: new Date(5) },
       ]);
+    });
+  });
+
+  describe('groupBy', () => {
+    it('should group', () => {
+      const list = [
+        { type: 'a', v: 1 },
+        { type: 'b', v: 1 },
+        { type: 'a', v: 2 },
+      ] as const;
+
+      const groups = groupBy(list, (v) => v.type);
+
+      expect(groups).toEqual({
+        a: [
+          { type: 'a', v: 1 },
+          { type: 'a', v: 2 },
+        ],
+        b: [{ type: 'b', v: 1 }],
+      });
     });
   });
 });

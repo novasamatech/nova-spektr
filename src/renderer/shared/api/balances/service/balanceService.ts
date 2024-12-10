@@ -5,6 +5,7 @@ import { type AccountData, type Balance as ChainBalance } from '@polkadot/types/
 import { type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
 import { type Codec } from '@polkadot/types/types';
 import { type BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { camelCase } from 'lodash';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
@@ -18,7 +19,7 @@ import {
   type LockTypes,
   type OrmlExtras,
 } from '@/shared/core';
-import { getAssetId, getRepeatedIndex, toAddress } from '@/shared/lib/utils';
+import { getAssetId, getRepeatedIndex, groupBy, isHex, nullable, toAddress } from '@/shared/lib/utils';
 
 type NoIdBalance = Omit<Balance, 'id'>;
 
@@ -45,25 +46,25 @@ function subscribeBalances(
 ): UnsubscribePromise[] {
   const uniqueAccountIds = uniq(accountIds);
 
-  const { nativeAsset, statemineAssets, ormlAssets } = chain.assets.reduce<{
-    nativeAsset?: Asset;
-    statemineAssets: Asset[];
-    ormlAssets: Asset[];
-  }>(
-    (acc, asset) => {
-      if (asset.type === AssetType.NATIVE) acc.nativeAsset = asset;
-      if (asset.type === AssetType.STATEMINE) acc.statemineAssets.push(asset);
-      if (asset.type === AssetType.ORML) acc.ormlAssets.push(asset);
+  const nativeAsset = chain.assets.find((asset) => asset.type === AssetType.NATIVE);
+  const statemineAssets = chain.assets.filter((asset) => asset.type === AssetType.STATEMINE);
+  const ormlAssets = chain.assets.filter((asset) => asset.type === AssetType.ORML);
 
-      return acc;
-    },
-    { nativeAsset: undefined, statemineAssets: [], ormlAssets: [] },
-  );
+  const stateminePalletGroups = groupBy(statemineAssets, (asset) => {
+    if (asset.typeExtras && 'palletName' in asset.typeExtras) {
+      return camelCase(asset.typeExtras.palletName);
+    }
+
+    return 'assets';
+  });
 
   return [
     subscribeNativeAssetsChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
-    subscribeStatemineAssetsChange(api, chain, statemineAssets, uniqueAccountIds, callback),
     subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
+
+    ...Object.entries(stateminePalletGroups).map(([pallet, assets]) => {
+      return subscribeStatemineAssetsChange(api, pallet, chain, assets, uniqueAccountIds, callback);
+    }),
   ];
 }
 
@@ -143,25 +144,40 @@ function subscribeNativeAssetsChange(
 
 function subscribeStatemineAssetsChange(
   api: ApiPromise,
+  pallet: string,
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
   callback: (newBalances: NoIdBalance[]) => void,
 ): UnsubscribePromise {
-  if (!api || !assets.length || !accountIds.length || !api.query.assets) return Promise.resolve(noop);
+  if (!api || !assets.length || !accountIds.length) return Promise.resolve(noop);
 
-  const assetsTuples = assets.reduce<[string, Address][]>((acc, asset) => {
+  if (!api.query[pallet]) {
+    throw new Error(`Pallet ${pallet} not found.`);
+  }
+
+  const type = api.tx.foreignAssets.transfer.meta.args[0].type;
+  if (nullable(type)) {
+    return Promise.resolve(noop);
+  }
+
+  const assetsTuples = assets.reduce<[string | Codec, Address][]>((acc, asset) => {
+    const assetId = getAssetId(asset);
+    // @ts-expect-error type argument in createType has incorrect types
+    const location = isHex(assetId) ? api.createType(type, assetId) : assetId;
+
     for (const accountId of accountIds) {
-      acc.push([getAssetId(asset), toAddress(accountId, { prefix: chain.addressPrefix })]);
+      acc.push([location, toAddress(accountId, { prefix: chain.addressPrefix })]);
     }
 
     return acc;
   }, []);
 
-  return api.query.assets.account.multi(assetsTuples, (data) => {
+  return api.query[pallet].account.multi(assetsTuples, (data) => {
     const newBalances: NoIdBalance[] = [];
 
     for (const [index, accountInfo] of data.entries()) {
+      // @ts-expect-error it's hard to type such cases
       const free = accountInfo.isNone ? BN_ZERO : accountInfo.unwrap().balance.toBn();
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
