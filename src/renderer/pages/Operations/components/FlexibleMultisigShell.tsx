@@ -149,31 +149,27 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
                 </SignatoryCard>
               ))}
 
-              {contactSignatories.length > 0 && (
-                <>
-                  {contactSignatories.map((signatory) => (
-                    <SignatoryCard
-                      key={signatory.accountId}
-                      accountId={signatory.accountId}
-                      addressPrefix={connection.addressPrefix}
-                      status={getSignatoryStatus(events, signatory.accountId)}
-                      explorers={connection.explorers}
-                    >
-                      <Address
-                        title={getSignatoryName(
-                          signatory.accountId,
-                          signatories,
-                          contacts,
-                          wallets,
-                          connection.addressPrefix,
-                        )}
-                        variant="short"
-                        address={signatory.address}
-                      />
-                    </SignatoryCard>
-                  ))}
-                </>
-              )}
+              {contactSignatories.map((signatory) => (
+                <SignatoryCard
+                  key={signatory.accountId}
+                  accountId={signatory.accountId}
+                  addressPrefix={connection.addressPrefix}
+                  status={getSignatoryStatus(events, signatory.accountId)}
+                  explorers={connection.explorers}
+                >
+                  <Address
+                    title={getSignatoryName(
+                      signatory.accountId,
+                      signatories,
+                      contacts,
+                      wallets,
+                      connection.addressPrefix,
+                    )}
+                    variant="short"
+                    address={signatory.address}
+                  />
+                </SignatoryCard>
+              ))}
             </ul>
           )}
         </div>

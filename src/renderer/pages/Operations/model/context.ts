@@ -7,7 +7,7 @@ import { isCreatePureProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 
 const $availableTransaction = combine(operationsModel.$multisigTransactions, networkModel.$chains, (txs, chains) => {
-  return txs.filter((tx) => !(tx.chainId in chains));
+  return txs.filter((tx) => tx.chainId in chains);
 });
 
 const $account = walletModel.$activeWallet.map((x) => x?.accounts.find(accountUtils.isMultisigAccount) ?? null);
