@@ -22,6 +22,7 @@ import {
   toAccountId,
   toAddress,
   transferableAmount,
+  validateAddress,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -341,7 +342,7 @@ const $pureTx = combine(
     isConnected: $isChainConnected,
   },
   ({ network, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
-    if (!network || !isConnected || (isXcm && !xcmData)) return undefined;
+    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) return undefined;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
