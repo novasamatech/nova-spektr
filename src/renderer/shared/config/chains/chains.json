@@ -7423,7 +7423,10 @@
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Mythos.svg",
     "options": [
-      "ethereum_based"
+      "multisig",
+      "ethereum_based",
+      "regular_proxy",
+      "pure_proxy"
     ],
     "nodes": [
       {
@@ -7458,6 +7461,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-mythos"
+        }
+      ],
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-mythos-prod.novasama-tech.org"
         }
       ]
     }
