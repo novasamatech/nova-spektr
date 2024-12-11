@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -8,14 +8,16 @@ import {
   type MultisigAccount,
   type MultisigTransaction,
   type Transaction,
+  TransactionType,
   type Validator,
 } from '@/shared/core';
-import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, getAssetById, truncate } from '@/shared/lib/utils';
+import { cnTw, copyToClipboard, getAssetById, toAccountId, truncate } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { identityDomain } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
@@ -48,6 +50,7 @@ import {
   getSender,
   getUndelegationData,
   getVote,
+  // eslint-disable-next-line import-x/max-dependencies
 } from '../common/utils';
 
 type Props = {
@@ -87,6 +90,12 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [tx.chainId],
+    fn: (value, [chainId]) => value[chainId] ?? {},
+  });
+
   useEffect(() => {
     if (isUndelegateTransaction(transaction)) {
       setIsUndelegationLoading(true);
@@ -110,6 +119,14 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const allValidators = Object.values(validatorsMap);
+
+  useEffect(() => {
+    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+
+    if (accounts.length === 0) return;
+
+    identityDomain.identity.request({ chainId: tx.chainId, accounts });
+  }, [validatorsMap]);
 
   const startStakingValidators: Address[] =
     (tx.transaction?.type === TransactionType.BATCH_ALL &&
@@ -351,6 +368,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           <ValidatorsModal
             isOpen={isValidatorsOpen}
             asset={validatorsAsset}
+            identities={identities}
             selectedValidators={selectedValidators}
             notSelectedValidators={notSelectedValidators}
             explorers={extendedChain?.explorers}

@@ -1,11 +1,13 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Button, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
+import { identityDomain } from '@/domains/identity';
 import { ValidatorsTable } from '@/entities/staking';
 import { validatorsModel } from '../model/validators-model';
 
@@ -117,6 +119,16 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
   const chain = useUnit(validatorsModel.$chain);
   const asset = useUnit(validatorsModel.$asset);
 
+  const identity = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [chain?.chainId, validator],
+    fn: (value, [chainId, validator]) => {
+      if (nullable(chainId) || nullable(value[chainId])) return undefined;
+
+      return value[chainId][toAccountId(validator.address) as AccountId];
+    },
+  });
+
   return (
     <li className="group pl-5 hover:bg-hover">
       <Checkbox
@@ -125,7 +137,12 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
         onChange={() => validatorsModel.events.validatorToggled(validator)}
       >
         <div className={cnTw(rowStyle, 'flex-1 pl-0 hover:bg-transparent')}>
-          <ValidatorsTable.Row validator={validator} asset={asset || undefined} explorers={chain?.explorers} />
+          <ValidatorsTable.Row
+            validator={validator}
+            identity={identity}
+            asset={asset || undefined}
+            explorers={chain?.explorers}
+          />
         </div>
       </Checkbox>
     </li>

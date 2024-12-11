@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -7,8 +7,10 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type Account, type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, toAddress } from '@/shared/lib/utils';
+import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
+import { identityDomain } from '@/domains/identity';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -58,6 +60,12 @@ export const Staking = () => {
 
   const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
+
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [chainId],
+    fn: (list, [chainId]) => (chainId ? list[chainId] : {}),
+  });
 
   const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
 
@@ -151,13 +159,19 @@ export const Staking = () => {
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
+    const accounts = Object.keys(validators).map(toAccountId) as AccountId[];
+
+    if (!chainId || accounts.length === 0) return;
+
+    identityDomain.identity.request({ chainId, accounts });
+  }, [validators]);
+
+  useEffect(() => {
     if (!api || !selectedStash) return;
 
-    validatorsService
-      .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
-      .then((nominators) => {
-        setNominators(Object.values(nominators));
-      });
+    validatorsService.getNominators(api, selectedStash).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
   }, [api, selectedStash]);
 
   const changeNetwork = (chainId: ChainId) => {
@@ -349,6 +363,7 @@ export const Staking = () => {
         asset={relaychainAsset}
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
+        identities={identities}
         explorers={explorers}
         isOpen={isShowNominators}
         onClose={toggleNominators}

@@ -6,6 +6,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
+import { identityDomain } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
@@ -62,6 +63,12 @@ export const Confirmation = ({
     store: confirmModel.$eraLength,
     keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
+  });
+
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [confirmStore?.chain?.chainId],
+    fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
@@ -223,6 +230,7 @@ export const Confirmation = ({
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}
         validators={confirmStore.validators}
+        identities={identities}
         onClose={toggleValidators}
       />
     </>
