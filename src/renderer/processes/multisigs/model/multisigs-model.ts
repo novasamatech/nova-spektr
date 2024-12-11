@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { interval } from 'patronum';
@@ -21,11 +21,10 @@ import {
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { nonNullable, nullable, toAddress, toKeysRecord } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
@@ -33,6 +32,10 @@ const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
 const subscribe = createEvent();
 const request = createEvent<Account[]>();
+
+const $multisigAccounts = walletModel.$allWallets
+  .map(walletUtils.getAllAccounts)
+  .map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
 
 const { tick: pollingRequest } = interval({
   start: subscribe,
@@ -45,7 +48,7 @@ const updateRequested = sample({
   fn: (wallets) => {
     const filteredWallets =
       walletUtils.getWalletsFilteredAccounts(wallets, {
-        walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w),
+        walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w),
       }) ?? [];
 
     return walletUtils.getAllAccounts(filteredWallets);
@@ -64,6 +67,7 @@ const $multisigChains = combine(networkModel.$chains, (chains) => {
 type GetMultisigsParams = {
   chains: Chain[];
   accounts: Account[];
+  multisigAccounts: Account[];
   proxies: Record<ChainId, ProxyAccount[]>;
 };
 
@@ -82,7 +86,7 @@ type FlexibleMultisigResponse = {
 type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 const getMultisigsFx = createEffect(
-  ({ chains, accounts, proxies }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
+  ({ chains, accounts, proxies, multisigAccounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
     const requests = chains.map(async (chain) => {
       const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
@@ -92,14 +96,13 @@ const getMultisigsFx = createEffect(
       const accountIds = uniq(
         accounts.filter((a) => accountUtils.isChainIdMatch(a, chain.chainId)).map((account) => account.accountId),
       );
-      const accountsMap = toKeysRecord(accountIds);
 
       const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
 
       return (
         indexedMultisigs
           // filter out multisigs that already exists
-          .filter((multisigResult) => !(multisigResult.accountId in accountsMap))
+          .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
             const proxy = nonNullable(proxiesList)
@@ -168,11 +171,14 @@ const populateFlexibleMultisigWalletFx = createEffect(({ account, chain }: Flexi
 sample({
   clock: [updateRequested, request],
   source: {
+    multisigAccounts: $multisigAccounts,
     chains: $multisigChains,
-    proxies: proxyModel.$proxies,
+    // TODO uncomment when we're ready to work with flexible multisig.
+    // proxies: proxyModel.$proxies,
+    proxies: createStore({}),
     connections: networkModel.$connections,
   },
-  fn: ({ chains, proxies, connections }, accounts) => {
+  fn: ({ multisigAccounts, chains, proxies, connections }, accounts) => {
     const filteredChains = chains.filter((chain) => {
       if (nullable(connections[chain.chainId])) return false;
 
@@ -181,6 +187,7 @@ sample({
 
     return {
       chains: filteredChains,
+      multisigAccounts,
       accounts,
       proxies,
     };

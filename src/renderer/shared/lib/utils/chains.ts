@@ -1,6 +1,14 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import { type AccountId, type Address, type ChainId, type Explorer, type HexString } from '@/shared/core';
+import {
+  type AccountId,
+  type Address,
+  type Chain,
+  type ChainId,
+  ChainOptions,
+  type Explorer,
+  type HexString,
+} from '@/shared/core';
 
 import { toAddress } from './address';
 import { RelayChains, SS58_DEFAULT_PREFIX } from './constants';
@@ -59,4 +67,15 @@ export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
     [RelayChains.WESTEND]: WellKnownChain.westend2,
     [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
   }[chainId];
+}
+
+/**
+ * Check whether chain is evm or not
+ *
+ * @param chain Value to check
+ *
+ * @returns {Boolean}
+ */
+export function isEvmChain(chain: Chain): boolean {
+  return chain.options?.includes(ChainOptions.ETHEREUM_BASED) ?? false;
 }

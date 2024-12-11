@@ -16,7 +16,7 @@ export const AssetLinks = memo(({ assetId, chainId }: Props) => {
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
-    <div className="ml-3 flex gap-x-2">
+    <div className="ml-4 flex gap-x-3">
       <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
         <Link
           to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}

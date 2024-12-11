@@ -20,7 +20,7 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
   const address = toAddress(accountId, { prefix: addressPrefix });
 
   return (
-    <Popover align="end" dialog testId="AccountExplorers">
+    <Popover align="end" dialog testId="AddressExplorer">
       <Popover.Trigger>
         <IconButton name="details" className="text-icon-default" testId={testId} onClick={(e) => e.stopPropagation()} />
       </Popover.Trigger>
