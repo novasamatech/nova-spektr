@@ -112,7 +112,7 @@ export const TransferRules = {
           {
             amount,
             asset: network.asset,
-            balance: balance.native,
+            balance: isXcm ? balance.native : balance.balance,
             xcmFee,
             fee,
             isNative,
