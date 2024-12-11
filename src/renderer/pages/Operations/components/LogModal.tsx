@@ -116,7 +116,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
 
-        <Status className="shrink-0" status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
       </div>
 
       <div className="flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll bg-main-app-background p-5">

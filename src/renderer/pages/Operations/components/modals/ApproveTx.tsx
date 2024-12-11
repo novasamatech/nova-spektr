@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
@@ -7,6 +8,7 @@ import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '
 import {
   type Account,
   type Address,
+  type Chain,
   type FlexibleMultisigAccount,
   type HexString,
   type MultisigAccount,
@@ -22,7 +24,7 @@ import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { useMultisigEvent } from '@/entities/multisig';
-import { type ExtendedChain, networkModel } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
@@ -44,7 +46,8 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
   account: MultisigAccount | FlexibleMultisigAccount;
-  connection: ExtendedChain;
+  chain: Chain;
+  api: ApiPromise;
   children: React.ReactNode;
 };
 
@@ -56,7 +59,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
+const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
@@ -81,8 +84,8 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
 
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx.transaction), t, feeTx?.type, tx);
 
-  const nativeAsset = connection.assets[0];
-  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
+  const nativeAsset = chain.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets);
 
   const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
     if (permissionUtils.canApproveMultisigTx(wallet)) {
@@ -109,16 +112,16 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
   const initWeight = async () => {
     let weight;
     try {
-      if (!tx.callData || !connection.api) return;
+      if (!tx.callData || !api) return;
 
-      const transaction = getTxFromCallData(connection.api, tx.callData);
+      const transaction = getTxFromCallData(api, tx.callData);
 
       weight = await transactionService.getExtrinsicWeight(transaction);
     } catch {
-      if (tx.transaction?.args && connection.api) {
-        weight = await transactionService.getTxWeight(tx.transaction as Transaction, connection.api);
+      if (tx.transaction?.args && api) {
+        weight = await transactionService.getTxWeight(tx.transaction as Transaction, api);
       } else {
-        weight = connection.api?.createType('Weight', MAX_WEIGHT);
+        weight = api.createType('Weight', MAX_WEIGHT);
       }
     }
 
@@ -127,7 +130,7 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
 
   useEffect(() => {
     initWeight();
-  }, [tx.transaction, connection.api]);
+  }, [tx.transaction, api]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -144,10 +147,10 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
   };
 
   const getMultisigTx = (signer: Address): Transaction => {
-    const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+    const signerAddress = toAddress(signer, { prefix: chain?.addressPrefix });
 
     const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
+      const signatoryAddress = toAddress(s.accountId, { prefix: chain?.addressPrefix });
 
       if (signerAddress !== signatoryAddress) {
         acc.push(signatoryAddress);
@@ -175,15 +178,15 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
-    if (!connection.api || !feeTx || !signAccount.accountId || !nativeAsset) {
+    if (!api || !feeTx || !signAccount.accountId || !nativeAsset) {
       return false;
     }
 
-    const fee = await transactionService.getTransactionFee(feeTx, connection.api);
+    const fee = await transactionService.getTransactionFee(feeTx, api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,
-      connection.chainId,
+      chain.chainId,
       nativeAsset.assetId.toString(),
     );
 
@@ -218,7 +221,7 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
 
   const checkBalance = () =>
     validateBalance({
-      api: connection.api,
+      api,
       chainId: tx.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
@@ -237,11 +240,11 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
   }
 
   const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && txPayload;
-  if (isSubmitStep && connection.api) {
+  if (isSubmitStep && api) {
     return (
       <Submit
         tx={approveTx}
-        api={connection.api}
+        api={api}
         multisigTx={tx}
         account={signAccount}
         txPayload={txPayload}
@@ -262,20 +265,21 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
           <Confirmation
             tx={tx}
             account={account}
-            chainConnection={connection}
+            api={api}
+            chain={chain}
             feeTx={feeTx}
             signAccount={unsignedAccounts.length === 1 ? unsignedAccounts[0] : undefined}
             onSign={trySetSignerAccount}
           />
         )}
 
-        {activeStep === Step.SIGNING && approveTx && connection.api && signAccount && (
+        {activeStep === Step.SIGNING && approveTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
             apis={apis}
             signingPayloads={[
               {
-                chain: connection,
+                chain: chain,
                 account: signAccount,
                 transaction: approveTx,
                 signatory: signAccount,
@@ -290,7 +294,7 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
         <SignatorySelectModal
           isOpen={isSelectAccountModalOpen}
           accounts={unsignedAccounts}
-          chain={connection}
+          chain={chain}
           nativeAsset={nativeAsset}
           onClose={toggleSelectAccountModal}
           onSelect={selectSignerAccount}

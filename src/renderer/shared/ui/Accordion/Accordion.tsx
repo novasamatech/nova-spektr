@@ -80,6 +80,9 @@ const Content = ({ as = 'div', className, children }: PropsWithChildren<ContentP
   );
 };
 
+/**
+ * @deprecated Use `import { Accordion } from '@/shared/ui-kit'` instead.
+ */
 export const Accordion = Object.assign(AccordionRoot, {
   Button,
   Content,

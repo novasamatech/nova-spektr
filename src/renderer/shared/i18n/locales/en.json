@@ -928,6 +928,10 @@
     "cancelTitle": "Reject",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
+    "createFlexibleMultisig": {
+      "title": "Flexible multisig is creating...",
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
+    },
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -989,6 +993,7 @@
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
+    "signatoriesTitleCount": "Signatories { count }",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",

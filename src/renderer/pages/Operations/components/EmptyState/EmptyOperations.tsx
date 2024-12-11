@@ -3,7 +3,7 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon } from '@/shared/ui';
 
 type Props = {
-  multisigAccount?: MultisigAccount | FlexibleMultisigAccount;
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
   isEmptyFromFilters: boolean;
 };
 

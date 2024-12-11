@@ -291,3 +291,17 @@ const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | 
 
   return tx.transaction;
 };
+
+export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId) => {
+  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  if (cancelEvent) {
+    return cancelEvent.status;
+  }
+
+  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+  if (signedEvent) {
+    return signedEvent.status;
+  }
+
+  return null;
+};
