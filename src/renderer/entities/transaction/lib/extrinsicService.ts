@@ -62,13 +62,15 @@ export const getUnsignedTransaction: Record<
         );
   },
   [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
-    return methods.assets.transfer(
+    return defineMethod(
       {
-        id: transaction.args.asset,
-        target: transaction.args.dest,
-        amount: transaction.args.value,
+        method: {
+          name: 'transfer',
+          pallet: transaction.args.palletName ?? 'assets',
+          args: transaction.args,
+        },
+        ...info,
       },
-      info,
       options,
     );
   },
@@ -463,13 +465,12 @@ export const getExtrinsic: Record<
     api.tx.balances.transferKeepAlive
       ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value),
-  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => {
-    const type = api.tx.assets.transfer.meta.args[0].type;
+  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
+    const type = api.tx[palletName].transfer.meta.args[0].type;
     // @ts-expect-error Incorrect polkadot-js/api types
     const location = api.createType(type, asset);
 
-    // @ts-expect-error Incorrect polkadot-js/api types
-    return api.tx.assets.transfer(location, dest, value);
+    return api.tx[palletName].transfer(location, dest, value);
   },
   [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => {
     if (api.tx.currencies) {
