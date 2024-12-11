@@ -25,7 +25,7 @@ export const ShardInfoPopover = () => {
 
           <section className="flex flex-col gap-y-2">
             <InfoLink
-              url="https://docs.novaspektr.io/staking/multishard-relay-chain-nominating"
+              url="https://docs.novaspektr.io/wallet-management/polkadot-vault-wallet/pair-with-polkadot-vault#in-case-you-would-like-to-add-custom-derivation-path-keys"
               iconName="link"
               iconPosition="right"
             >
