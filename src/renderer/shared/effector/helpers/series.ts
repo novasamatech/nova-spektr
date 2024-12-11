@@ -24,7 +24,7 @@ export const series = <T>(target: EventCallable<T> | Effect<T, any>) => {
   const push = createEvent<Iterable<T> | ArrayLike<T>>();
 
   const $queue = createStore<T[]>([])
-    .on(push, (state, payload) => state.concat(Array.from(payload)))
+    .on(push, (state, payload) => state.concat(Array.isArray(payload) ? payload : Array.from(payload)))
     .on(pop, ([, ...rest]) => rest);
   const $head = $queue.map((queue) => {
     const value = queue.at(0);
