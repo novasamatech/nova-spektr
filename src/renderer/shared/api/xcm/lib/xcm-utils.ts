@@ -43,6 +43,7 @@ const JunctionType: Record<string, string> = {
 };
 
 export type JunctionTypeKey = keyof typeof JunctionType;
+export type Network = 'polkadot' | 'kusama' | 'westend' | 'rococo';
 
 const JunctionHierarchyLevel: Record<JunctionTypeKey, number> = {
   parachainId: 0,
@@ -105,9 +106,11 @@ function createJunctionFromObject(data: Record<string, unknown>) {
 
   if (entries.length === 1) {
     return {
-      X1: {
-        [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
-      },
+      X1: [
+        {
+          [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
+        },
+      ],
     };
   }
 
@@ -152,48 +155,50 @@ function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
 }
 
 function getDestinationLocation(
-  originChain: Pick<Chain, 'parentId'>,
+  originChain: Pick<Chain, 'parentId' | 'specName'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(destinationParaId, accountId);
+    return getSiblingLocation(destinationParaId, accountId, originChain.specName as Network);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(accountId);
+    return getParentLocation(accountId, originChain.specName as Network);
   }
 
   if (destinationParaId) {
-    return getChildLocation(destinationParaId, accountId);
+    return getChildLocation(destinationParaId, accountId, originChain.specName as Network);
   }
 
   return undefined;
 }
 
-function getAccountLocation(accountId?: AccountId) {
+function getAccountLocation(accountId?: AccountId, network?: string) {
   const isEthereum = isEthereumAccountId(accountId);
 
   return {
     parents: 0,
     interior: {
-      X1: {
-        [isEthereum ? 'accountKey20' : 'accountId32']: {
-          network: 'Any',
-          [isEthereum ? 'key' : 'id']: accountId,
+      X1: [
+        {
+          [isEthereum ? 'accountKey20' : 'accountId32']: {
+            network: network || 'Any',
+            [isEthereum ? 'key' : 'id']: accountId,
+          },
         },
-      },
+      ],
     },
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId) {
+function getChildLocation(parachainId: number, accountId?: AccountId, network?: Network) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: network || 'Any',
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -204,13 +209,13 @@ function getChildLocation(parachainId: number, accountId?: AccountId) {
   };
 }
 
-function getParentLocation(accountId?: AccountId) {
+function getParentLocation(accountId?: AccountId, network?: Network) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: network || 'Any',
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -221,13 +226,13 @@ function getParentLocation(accountId?: AccountId) {
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId) {
+function getSiblingLocation(parachainId: number, accountId?: AccountId, network?: Network) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: network || 'Any',
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }

@@ -145,21 +145,26 @@ function getAssetLocation(
 function getVersionedDestinationLocation(
   api: ApiPromise,
   transferType: XcmTransferType,
-  originChain: Pick<Chain, 'parentId'>,
+  originChain: Pick<Chain, 'parentId' | 'specName'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
-  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
+  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
 
   if (!version) return location;
 
   return { [version]: location };
 }
 
-function getVersionedAccountLocation(api: ApiPromise, transferType: XcmTransferType, accountId?: AccountId) {
-  const location = xcmUtils.getAccountLocation(accountId);
+function getVersionedAccountLocation(
+  api: ApiPromise,
+  transferType: XcmTransferType,
+  accountId?: AccountId,
+  network?: string,
+) {
+  const location = xcmUtils.getAccountLocation(accountId, network);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
 

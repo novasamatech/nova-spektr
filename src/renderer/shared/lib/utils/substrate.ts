@@ -27,8 +27,7 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
 
-// TODO: Add V3, V4 support
-const SUPPORTED_VERSIONS = ['V2'];
+const SUPPORTED_VERSIONS = ['V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
 /**

@@ -2,7 +2,7 @@ import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { Action } from './types';
 
-export const XCM_URL = 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/xcm/v4/transfers.json';
+export const XCM_URL = 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/xcm/v6/transfers.json';
 export const XCM_KEY = 'xcm-config';
 
 export const INSTRUCTION_OBJECT: Record<Action, (assetLocation: object, destLocation: object) => object> = {
