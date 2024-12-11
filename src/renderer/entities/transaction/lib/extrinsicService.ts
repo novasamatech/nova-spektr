@@ -463,9 +463,29 @@ export const getExtrinsic: Record<
     api.tx.balances.transferKeepAlive
       ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value),
-  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
-  [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
-    api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
+  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => {
+    const type = api.tx.assets.transfer.meta.args[0].type;
+    // @ts-expect-error Incorrect polkadot-js/api types
+    const location = api.createType(type, asset);
+
+    // @ts-expect-error Incorrect polkadot-js/api types
+    return api.tx.assets.transfer(location, dest, value);
+  },
+  [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => {
+    if (api.tx.currencies) {
+      const type = api.tx.currencies.transfer.meta.args[1].type;
+      // @ts-expect-error Incorrect polkadot-js/api types
+      const location = api.createType(type, asset);
+
+      return api.tx.currencies.transfer(dest, location, value);
+    }
+
+    const type = api.tx.tokens.transfer.meta.args[1].type;
+    // @ts-expect-error Incorrect polkadot-js/api types
+    const location = api.createType(type, asset);
+
+    return api.tx.tokens.transfer(dest, location, value);
+  },
   [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
     return isOldMultisigPallet(api)
       ? // @ts-expect-error TODO fix
