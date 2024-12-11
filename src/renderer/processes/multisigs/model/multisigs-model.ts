@@ -106,10 +106,11 @@ const getMultisigsFx = createEffect(
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
             const proxy = nonNullable(proxiesList)
-              ? // TODO should we filter out not Any proxy type?
-                (proxiesList.find((p) => p.chainId === chain.chainId) ?? null)
+              ? // TODO check if it's a pure proxy
+                (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
               : null;
 
+            // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
             if (proxy) {
               return {
                 type: 'flexibleMultisig',

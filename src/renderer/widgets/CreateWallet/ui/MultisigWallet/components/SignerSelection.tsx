@@ -3,8 +3,7 @@ import { useUnit } from 'effector-react';
 
 import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
-import { Step } from '@/shared/lib/utils';
+import { Step, toAddress } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
