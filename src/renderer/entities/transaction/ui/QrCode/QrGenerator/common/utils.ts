@@ -10,7 +10,6 @@ import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
 import {
-  CRYPTO_ECDSA,
   CRYPTO_ED25519,
   CRYPTO_ETHEREUM,
   CRYPTO_SR25519,
@@ -66,23 +65,12 @@ export const createSubstrateSignPayload = (
   return createSignPayload(address, Command.Transaction, payload, genesisHash, cryptoType);
 };
 
-const pickCryptoTypePrefix = (cryptoType: CryptoType) => {
-  const map = {
-    [CryptoType.SR25519]: CRYPTO_SR25519,
-    [CryptoType.ED25519]: CRYPTO_ED25519,
-    [CryptoType.ECDSA]: CRYPTO_ECDSA,
-    [CryptoType.ETHEREUM]: CRYPTO_ETHEREUM,
-  } as const;
-
-  return map[cryptoType];
-};
-
 export const createSignPayload = (
   address: string,
   cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  cryptoType = CryptoType.SR25519,
+  cryptoType: CryptoType,
 ): Uint8Array => {
   return u8aConcat(
     pickCryptoTypePrefix(cryptoType),
@@ -99,7 +87,7 @@ export const createDynamicDerivationsSignPayload = (
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
-  cryptoType = CryptoType.SR25519,
+  cryptoType: CryptoType,
 ): Uint8Array => {
   return u8aConcat(
     pickCryptoTypePrefix(cryptoType),
@@ -151,6 +139,17 @@ export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => 
     [CryptoType.ECDSA]: 2,
     [CryptoType.ETHEREUM]: 3,
   }[cryptoType];
+};
+
+const pickCryptoTypePrefix = (cryptoType: CryptoType) => {
+  const map = {
+    [CryptoType.SR25519]: CRYPTO_SR25519,
+    [CryptoType.ED25519]: CRYPTO_ED25519,
+    [CryptoType.ECDSA]: CRYPTO_ETHEREUM,
+    [CryptoType.ETHEREUM]: CRYPTO_ETHEREUM,
+  } as const;
+
+  return map[cryptoType];
 };
 
 export const createDynamicDerivationPayload = (publicKey: Address, derivations: DynamicDerivationRequestInfo[]) => {
