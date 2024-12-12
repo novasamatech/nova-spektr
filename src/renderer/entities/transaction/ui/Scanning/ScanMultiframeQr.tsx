@@ -99,6 +99,7 @@ export const ScanMultiframeQr = ({
       return {
         info,
         signPayload,
+        cryptoType: (signingPayload.account as BaseAccount).cryptoType,
         transactionData: signingPayload.transaction,
       };
     });
@@ -107,7 +108,7 @@ export const ScanMultiframeQr = ({
 
     if (txRequests.length === 0) return;
 
-    transactionService.logPayload(txRequests.map(({ info }) => info));
+    transactionService.logPayload(txRequests.map(({ info, cryptoType }) => ({ ...info, additional: { cryptoType } })));
 
     await init();
 

@@ -401,10 +401,14 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
   return result;
 }
 
-function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
+type LogInfo = Awaited<ReturnType<typeof createPayload>> & {
+  additional?: Record<string, unknown>;
+};
+
+function logPayload(info: LogInfo[]) {
   console.groupCollapsed('transaction log');
   for (const log of info) {
-    console.info('operation type:', log.type);
+    console.group(`Operation: ${log.type}`);
 
     console.table({
       address: log.info.address,
@@ -412,16 +416,24 @@ function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
       nonce: log.info.nonce,
     });
 
-    console.group('args');
+    console.group('Arguments');
     console.table(log.args);
     console.groupEnd();
 
-    console.groupCollapsed('unsigned');
+    if (log.additional) {
+      console.group('Additional info');
+      console.table(log.additional);
+      console.groupEnd();
+    }
+
+    console.groupCollapsed('Unsigned data');
     console.info(log.unsigned);
     console.groupEnd();
 
-    console.groupCollapsed('signed');
+    console.groupCollapsed('Sign payload');
     console.info(log.hexPayload);
+    console.groupEnd();
+
     console.groupEnd();
   }
   console.groupEnd();

@@ -11,6 +11,7 @@ import { type DynamicDerivationRequestInfo } from '../../common/types';
 
 import {
   CRYPTO_ECDSA,
+  CRYPTO_ED25519,
   CRYPTO_ETHEREUM,
   CRYPTO_SR25519,
   CRYPTO_STUB,
@@ -65,6 +66,17 @@ export const createSubstrateSignPayload = (
   return createSignPayload(address, Command.Transaction, payload, genesisHash, cryptoType);
 };
 
+const pickCryptoTypePrefix = (cryptoType: CryptoType) => {
+  const map = {
+    [CryptoType.SR25519]: CRYPTO_SR25519,
+    [CryptoType.ED25519]: CRYPTO_ED25519,
+    [CryptoType.ECDSA]: CRYPTO_ECDSA,
+    [CryptoType.ETHEREUM]: CRYPTO_ETHEREUM,
+  } as const;
+
+  return map[cryptoType];
+};
+
 export const createSignPayload = (
   address: string,
   cmd: number,
@@ -72,10 +84,8 @@ export const createSignPayload = (
   genesisHash: ChainId | Uint8Array,
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
-  const isEthereum = cryptoType === CryptoType.ETHEREUM;
-
   return u8aConcat(
-    isEthereum ? CRYPTO_ETHEREUM : CRYPTO_SR25519,
+    pickCryptoTypePrefix(cryptoType),
     new Uint8Array([cmd]),
     decodeAddress(address),
     u8aToU8a(payload),
@@ -92,7 +102,7 @@ export const createDynamicDerivationsSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ECDSA,
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
     new Uint8Array([cmd]),
     decodeAddress(address),
     str.encode(derivationPath),

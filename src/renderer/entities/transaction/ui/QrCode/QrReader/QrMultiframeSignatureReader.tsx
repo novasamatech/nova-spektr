@@ -1,4 +1,4 @@
-import { u8aToHex } from '@polkadot/util';
+import { u8aConcat, u8aToHex } from '@polkadot/util';
 import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
 import init, { Decoder, EncodingPacket } from 'raptorq';
 import { useEffect, useRef } from 'react';
@@ -70,7 +70,7 @@ export const QrMultiframeSignatureReader = ({
   };
 
   const makeResultPayload = <T extends Uint8Array[]>(data?: T): HexString[] => {
-    return (data || []).map((s) => u8aToHex(new Uint8Array([...CRYPTO_SR25519, ...s])));
+    return (data || []).map((s) => u8aToHex(u8aConcat(CRYPTO_SR25519, s)));
   };
 
   const getVideoInputs = async (): Promise<number> => {
