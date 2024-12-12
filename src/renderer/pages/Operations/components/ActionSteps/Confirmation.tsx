@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@/shared/core';
@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { type ExtendedChain } from '@/entities/network';
+import { type ExtendedChain, networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -46,6 +46,18 @@ export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx,
 
   const transaction = getTransactionFromMultisigTx(tx);
 
+  const xcmApi = useStoreMap({
+    store: networkModel.$apis,
+    keys: [transaction],
+    fn: (apis, [transaction]) => {
+      if (transaction && isXcmTransaction(transaction)) {
+        return apis[transaction.args.destinationChain] ?? null;
+      }
+
+      return null;
+    },
+  });
+
   useEffect(() => {
     xcmTransferModel.events.xcmConfigLoaded();
   }, []);
@@ -82,9 +94,9 @@ export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx,
         )}
       </DetailRow>
 
-      {isXcmTransaction(transaction) && xcmConfig && chainConnection.api && (
+      {isXcmTransaction(transaction) && xcmConfig && xcmApi && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
-          <XcmFee api={chainConnection.api} transaction={transaction} asset={asset} config={xcmConfig} />
+          <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
 
