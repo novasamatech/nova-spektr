@@ -1,14 +1,18 @@
 import { type Asset, type Explorer } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, BaseModal, SmallTitleText } from '@/shared/ui';
+// eslint-disable-next-line boundaries/element-types
+import { type AccountIdentity } from '@/domains/identity';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {
   isOpen: boolean;
   selectedValidators: Validator[];
   notSelectedValidators: Validator[];
+  identities: Record<AccountId, AccountIdentity>;
   asset?: Asset;
   explorers?: Explorer[];
   onClose: () => void;
@@ -18,6 +22,7 @@ export const ValidatorsModal = ({
   isOpen,
   selectedValidators,
   notSelectedValidators,
+  identities,
   explorers,
   asset,
   onClose,
@@ -45,7 +50,12 @@ export const ValidatorsModal = ({
             <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
                 <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
-                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
+                  <ValidatorsTable.Row
+                    validator={validator}
+                    identity={identities[toAccountId(validator.address) as AccountId]}
+                    asset={asset}
+                    explorers={explorers}
+                  />
                 </li>
               )}
             </ValidatorsTable>
@@ -63,7 +73,12 @@ export const ValidatorsModal = ({
             <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
               {(validator, rowStyle) => (
                 <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
-                  <ValidatorsTable.Row validator={validator} asset={asset} explorers={explorers} />
+                  <ValidatorsTable.Row
+                    validator={validator}
+                    identity={identities[toAccountId(validator.address) as AccountId]}
+                    asset={asset}
+                    explorers={explorers}
+                  />
                 </li>
               )}
             </ValidatorsTable>

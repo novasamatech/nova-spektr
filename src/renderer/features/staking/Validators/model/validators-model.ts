@@ -3,9 +3,11 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { pending, spread } from 'patronum';
 
 import { type Asset, type Chain, type EraIndex, type Validator } from '@/shared/core';
+import { includesMultiple, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identityDomain } from '@/domains/identity';
 import { networkModel, networkUtils } from '@/entities/network';
-import { type ValidatorMap, validatorsService } from '@/entities/staking';
-import { eraService } from '@/entities/staking';
+import { type ValidatorMap, eraService, validatorsService } from '@/entities/staking';
 
 type Input = {
   chain: Chain;
@@ -58,20 +60,26 @@ const $api = combine(
   { skipVoid: false },
 );
 
+const $identity = combine(identityDomain.identity.$list, $chain, (list, chain) => {
+  if (!chain) return {};
+
+  return list[chain.chainId] ?? {};
+});
+
 const $filteredValidators = combine(
   {
     query: $query,
     validators: $validators,
+    identity: $identity,
   },
-  ({ query, validators }) => {
+  ({ query, validators, identity }) => {
     if (!query) return validators;
 
     return validators.filter((validator) => {
       const address = validator.address.toLowerCase();
-      const subName = validator.identity?.subName.toLowerCase() || '';
-      const parentName = validator.identity?.parent.name.toLowerCase() || '';
+      const identityName = identity[toAccountId(validator.address) as AccountId]?.name || '';
 
-      return parentName.includes(query) || subName.includes(query) || address.includes(query);
+      return includesMultiple([address, identityName], query);
     });
   },
 );
@@ -148,6 +156,18 @@ sample({
   clock: getValidatorsFx.doneData,
   fn: (validatorsMap) => Object.values(validatorsMap),
   target: $validators,
+});
+
+sample({
+  clock: $validators.updates,
+  source: $chain,
+  filter: (chain, validators) => nonNullable(chain) && validators.length > 0,
+  fn: (chain, validators) => {
+    const accounts = validators.map((validator) => toAccountId(validator.address)) as AccountId[];
+
+    return { accounts, chainId: chain!.chainId };
+  },
+  target: identityDomain.identity.request,
 });
 
 sample({

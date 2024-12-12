@@ -11,8 +11,8 @@ import { networkModel } from '@/entities/network';
 import { identityService } from './service';
 import { type AccountIdentity } from './types';
 
-type Data = Record<AccountId, AccountIdentity>;
-type Store = Record<ChainId, Data>;
+type IdentityData = Record<AccountId, AccountIdentity>;
+type IdentityStore = Record<ChainId, IdentityData>;
 type RequestParams = {
   accounts: AccountId[];
   chainId: ChainId;
@@ -29,7 +29,7 @@ const {
   request: requestIdentity,
   pending,
   fail,
-} = createDataSource<Store, InnerRequestParams, Data>({
+} = createDataSource<IdentityStore, InnerRequestParams, IdentityData>({
   initial: {},
   mutateParams(params, store) {
     const chainIdentities = store[params.chainId] ?? {};
@@ -45,7 +45,7 @@ const {
   async fn({ api, accounts }) {
     const response = await identityPallet.storage.identityOf(api, accounts);
 
-    return response.reduce<Data>((acc, record) => {
+    return response.reduce<IdentityData>((acc, record) => {
       if (record.identity) {
         acc[record.account] = {
           accountId: record.account,
@@ -77,7 +77,10 @@ const request = createEvent<RequestParams>();
 
 sample({
   clock: request,
-  source: { apis: $apis, chains: $chains },
+  source: {
+    apis: $apis,
+    chains: $chains,
+  },
   fn: ({ apis, chains }, { chainId, accounts }) => {
     const identityChain = identityService.findIdentityChain(chains, chainId);
     if (nullable(identityChain)) {

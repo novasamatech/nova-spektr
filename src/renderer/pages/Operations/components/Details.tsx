@@ -18,9 +18,11 @@ import {
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
+import { identityDomain } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
@@ -53,6 +55,7 @@ import {
   getSpawner,
   getUndelegationData,
   getVote,
+  // eslint-disable-next-line import-x/max-dependencies
 } from '../common/utils';
 
 type Props = {
@@ -93,6 +96,12 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const referendumId = getReferendumId(tx);
   const vote = getVote(tx);
 
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [tx.chainId],
+    fn: (value, [chainId]) => value[chainId] ?? {},
+  });
+
   const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
 
   useEffect(() => {
@@ -120,6 +129,14 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const allValidators = Object.values(validatorsMap);
 
   const transaction = getTransactionFromMultisigTx(tx);
+
+  useEffect(() => {
+    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+
+    if (accounts.length === 0) return;
+
+    identityDomain.identity.request({ chainId: tx.chainId, accounts });
+  }, [validatorsMap]);
 
   const startStakingValidators: Address[] =
     (tx.transaction?.type === 'batchAll' &&
@@ -243,6 +260,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
           <SelectedValidatorsModal
             isOpen={isValidatorsOpen}
             validators={selectedValidators}
+            identities={identities}
             onClose={toggleValidators}
           />
         </>

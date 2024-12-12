@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
+import { identityDomain } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
@@ -40,6 +41,12 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     store: confirmModel.$signerWallets,
     keys: [id],
     fn: (value, [id]) => value?.[id],
+  });
+
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [confirmStore?.chain?.chainId],
+    fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
@@ -166,6 +173,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}
         validators={confirmStore.validators}
+        identities={identities}
         onClose={toggleValidators}
       />
     </>

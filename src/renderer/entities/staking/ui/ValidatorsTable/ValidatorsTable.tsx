@@ -1,8 +1,10 @@
 import { type Asset, type Explorer, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getComposedIdentity } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';
+// eslint-disable-next-line boundaries/element-types
+import { type AccountIdentity } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { ExplorersPopover } from '@/entities/wallet';
@@ -39,17 +41,18 @@ const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps
 
 type RowProps = {
   validator: Validator;
+  identity?: AccountIdentity;
   asset?: Asset;
   explorers?: Explorer[];
 };
 
-const ValidatorRow = ({ validator, asset, explorers = [] }: RowProps) => (
+const ValidatorRow = ({ validator, identity, asset, explorers = [] }: RowProps) => (
   <>
     <div className="mr-auto flex items-center gap-x-2" data-testid="validator">
       <Identicon address={validator.address} background={false} size={20} />
-      {validator.identity ? (
+      {identity ? (
         <div className="flex flex-col">
-          <BodyText>{getComposedIdentity(validator.identity)}</BodyText>
+          <BodyText>{identity.name}</BodyText>
           <HelpText className="text-text-tertiary">{validator.address}</HelpText>
         </div>
       ) : (
@@ -77,12 +80,12 @@ const ValidatorRow = ({ validator, asset, explorers = [] }: RowProps) => (
   </>
 );
 
-const ValidatorShortRow = ({ validator }: Pick<RowProps, 'validator'>) => (
+const ValidatorShortRow = ({ validator, identity }: Pick<RowProps, 'validator' | 'identity'>) => (
   <div className="mr-auto flex items-center gap-x-2">
     <Identicon address={validator.address} background={false} size={20} />
     <div className="flex w-[276px] flex-col">
-      {validator.identity ? (
-        <BodyText className="text-text-secondary">{getComposedIdentity(validator.identity)}</BodyText>
+      {identity ? (
+        <BodyText className="text-text-secondary">{identity.name}</BodyText>
       ) : (
         <BodyText className="text-text-secondary">
           <Hash value={validator.address} variant="truncate" />

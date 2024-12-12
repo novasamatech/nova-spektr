@@ -1,5 +1,4 @@
 import { type Address, type ChainId } from './general';
-import { type Identity } from './identity';
 
 export type Validator = {
   address: Address;
@@ -11,7 +10,6 @@ export type Validator = {
   oversubscribed: boolean;
   slashed: boolean;
   apy: number;
-  identity?: Identity;
   avgApy: number;
   nominators: Nominator[];
 };

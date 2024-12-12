@@ -1,11 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Data, type Option } from '@polkadot/types';
-import { type AccountId32 } from '@polkadot/types/interfaces';
-import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
-import { u8aToString } from '@polkadot/util';
 import merge from 'lodash/merge';
 
-import { type Address, type EraIndex, type Identity, type SubIdentity, type Validator } from '@/shared/core';
+import { type Address, type EraIndex, type Validator } from '@/shared/core';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
 import { stakingUtils } from '../lib/staking-utils';
 import { type ValidatorMap } from '../lib/types';
@@ -34,13 +30,9 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
 
   const mergedValidators = merge(stake, prefs);
 
-  const [identity, slashes] = await Promise.all([
-    getIdentities(api, Object.keys(mergedValidators), isLightClient),
-    getSlashingSpans(api, Object.keys(stake), era, isLightClient),
-    // getApy(api, Object.values(mergedValidators)),
-  ]);
+  const slashes = await getSlashingSpans(api, Object.keys(stake), era, isLightClient);
 
-  return merge(mergedValidators, identity, slashes);
+  return merge(mergedValidators, slashes);
 }
 
 function getValidatorFunction(api: ApiPromise) {
@@ -78,6 +70,7 @@ async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<V
 }
 
 type ValidatorStake = Pick<Validator, 'address' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
+
 async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<Address, ValidatorStake>> {
   // HINT: to get full list of nominators uncomment code below to paginate for each validator
   const data = await api.query.staking.erasStakersOverview.entries(era);
@@ -143,132 +136,6 @@ function getMaxValidators(api: ApiPromise): number {
   return getDefaultValidatorsAmount(api);
 }
 
-// TODO: Temporary turn off identities
-async function getIdentities(
-  api: ApiPromise,
-  addresses: Address[],
-  isLightClient?: boolean,
-): Promise<Record<Address, { identity: Identity }>> {
-  return Promise.resolve({});
-
-  const subIdentities = await getSubIdentities(api, addresses, isLightClient);
-  const parentIdentities = await getParentIdentities(api, subIdentities, isLightClient);
-
-  return addresses.reduce<Record<Address, { identity: Identity }>>((acc, address) => {
-    acc[address] = { identity: parentIdentities[address] };
-
-    return acc;
-  }, {});
-}
-
-async function getSubIdentities(
-  api: ApiPromise,
-  addresses: Address[],
-  isLightClient?: boolean,
-): Promise<SubIdentity[]> {
-  if (isLightClient) {
-    const wrappedIdentities = await api.query.identity.superOf.entries();
-
-    const subIdentities = wrappedIdentities.reduce<Record<Address, [AccountId32, Data]>>(
-      (acc, [storageKey, wrappedIdentity]) => {
-        acc[storageKey.args[0].toString()] = wrappedIdentity.unwrap();
-
-        return acc;
-      },
-      {},
-    );
-
-    return addresses.reduce<SubIdentity[]>((acc, subAddress) => {
-      const payload = {
-        sub: subAddress,
-        parent: subAddress,
-        subName: '',
-      };
-
-      if (subIdentities[subAddress]) {
-        const rawData = subIdentities[subAddress];
-        payload.parent = rawData[0].toHuman();
-        payload.subName = rawData[1].isRaw ? u8aToString(rawData[1].asRaw) : rawData[1].value.toString();
-      }
-
-      acc.push(payload);
-
-      return acc;
-    }, []);
-  }
-
-  const subIdentities = await api.query.identity.superOf.multi(addresses);
-
-  return subIdentities.reduce<SubIdentity[]>((acc, identity, index) => {
-    const payload = {
-      sub: addresses[index],
-      parent: addresses[index],
-      subName: '',
-    };
-
-    if (identity.isSome) {
-      const [address, rawData] = identity.unwrap();
-      payload.parent = address.toHuman();
-      payload.subName = rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString();
-    }
-
-    acc.push(payload);
-
-    return acc;
-  }, []);
-}
-
-async function getParentIdentities(
-  api: ApiPromise,
-  subIdentities: SubIdentity[],
-  isLightClient?: boolean,
-): Promise<Record<Address, Identity>> {
-  let parentIdentities;
-
-  if (isLightClient) {
-    const wrappedIdentities = await api.query.identity.identityOf.entries();
-
-    const identities = wrappedIdentities.reduce<Record<Address, Option<PalletIdentityRegistration>>>(
-      (acc, [storageKey, identity]) => {
-        const address = storageKey.args[0].toString();
-        // @ts-expect-error TODO fix
-        acc[address] = identity;
-
-        return acc;
-      },
-      {},
-    );
-
-    parentIdentities = subIdentities.map((identity) => identities[identity.parent]);
-  } else {
-    const identityAddresses = subIdentities.map((identity) => identity.parent);
-    parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
-  }
-
-  return parentIdentities.reduce<Record<Address, Identity>>((acc, identity, index) => {
-    if (!identity || identity.isNone) return acc;
-
-    const { parent, sub, subName } = subIdentities[index];
-    const unwrappedIdentity = identity.unwrap();
-    // HINT: in runtime 1_4_0 unwrappedIdentity returns Option<(identity, rest)>
-    const data = 'info' in unwrappedIdentity ? unwrappedIdentity : unwrappedIdentity[0];
-    const { display, web, email, twitter } = data.info; // { data also includes: judgements, deposit }
-
-    acc[sub] = {
-      subName,
-      email: email.isRaw ? u8aToString(email.asRaw) : email.value.toString(),
-      twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
-      website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
-      parent: {
-        address: parent,
-        name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
-      },
-    };
-
-    return acc;
-  }, {});
-}
-
 // Don't show APY in UI right now
 // async function getApy(api: ApiPromise, validators: Validator[]): Promise<Record<Address, { apy: number }>> {
 //   const apy = await getValidatorsApy(api, validators);
@@ -278,7 +145,7 @@ async function getParentIdentities(
 //   }, {});
 // }
 
-async function getNominators(api: ApiPromise, stash: Address, isLightClient?: boolean): Promise<ValidatorMap> {
+async function getNominators(api: ApiPromise, stash: Address): Promise<ValidatorMap> {
   try {
     const data = await api.query.staking.nominators(stash);
 
@@ -286,16 +153,12 @@ async function getNominators(api: ApiPromise, stash: Address, isLightClient?: bo
 
     const nominatorsUnwraped = data.unwrap();
 
-    const nominators = nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
+    return nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
       const address = nominator.toString();
       acc[address] = { address } as Validator;
 
       return acc;
     }, {});
-
-    const identities = await getIdentities(api, Object.keys(nominators), isLightClient);
-
-    return merge(nominators, identities);
   } catch (error) {
     console.warn(error);
 
