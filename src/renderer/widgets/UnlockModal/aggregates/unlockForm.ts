@@ -14,7 +14,7 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import { ZERO_BALANCE, nonNullable, toAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -274,7 +274,7 @@ const $signatories = combine(
           network.asset.assetId.toString(),
         );
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);

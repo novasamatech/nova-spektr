@@ -1,3 +1,4 @@
+import { type HexString } from '@/shared/core';
 import { type Identity } from '@/shared/core/types/identity';
 
 /**
@@ -158,4 +159,8 @@ export const splitCamelCaseString = (value: string): string => {
  */
 export const addLeadingZero = (value: number): string => {
   return value < 10 ? `0${value}` : `${value}`;
+};
+
+export const isHex = (v: string): v is HexString => {
+  return v.startsWith('0x');
 };

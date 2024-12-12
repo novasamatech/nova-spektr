@@ -1,6 +1,6 @@
-import { type Effect, type Event, type EventCallable, createEvent, createStore, sample } from 'effector';
+import { type Effect, type EventCallable, createEvent, createStore, sample } from 'effector';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 /**
  * Triggers target unit on each element of the input list.
@@ -24,13 +24,19 @@ export const series = <T>(target: EventCallable<T> | Effect<T, any>) => {
   const push = createEvent<Iterable<T> | ArrayLike<T>>();
 
   const $queue = createStore<T[]>([])
-    .on(push, (state, payload) => state.concat(Array.from(payload)))
+    .on(push, (state, payload) => state.concat(Array.isArray(payload) ? payload : Array.from(payload)))
     .on(pop, ([, ...rest]) => rest);
-  const $head = $queue.map((queue) => queue.at(0) ?? null);
-  const nextHeadRetrieved = $head.updates.filter({ fn: nonNullable }) as Event<T>;
+  const $head = $queue.map((queue) => {
+    const value = queue.at(0);
+    if (nullable(value)) return null;
+
+    return { value };
+  });
+  const nextHeadRetrieved = $head.updates.filter({ fn: nonNullable });
 
   sample({
     clock: nextHeadRetrieved,
+    fn: ({ value }) => value,
     target: [target, pop],
   });
 

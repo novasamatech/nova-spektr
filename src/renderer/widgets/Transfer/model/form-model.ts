@@ -22,7 +22,7 @@ import {
   toAccountId,
   toAddress,
   transferableAmount,
-  withdrawableAmount,
+  validateAddress,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -133,6 +133,8 @@ const $transferForm = createForm<FormParams>({
             balance: $accountBalance,
           }),
         ),
+        // TODO we've got missunderstanding of this validation meaning on XCM transfers.
+        //   now this validation skips check for non-native tokens
         TransferRules.amount.insufficientBalanceForFee(
           combine({
             fee: $fee,
@@ -273,7 +275,7 @@ const $signatories = combine(
           chain.assets[0].assetId.toString(),
         );
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);
@@ -340,7 +342,7 @@ const $pureTx = combine(
     isConnected: $isChainConnected,
   },
   ({ network, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
-    if (!network || !isConnected || (isXcm && !xcmData)) return undefined;
+    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) return undefined;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,

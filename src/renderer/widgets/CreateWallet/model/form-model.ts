@@ -169,6 +169,11 @@ sample({
   target: $createMultisigForm.fields.threshold.reset,
 });
 
+sample({
+  clock: $createMultisigForm.fields.chainId.changed,
+  target: [$createMultisigForm.fields.threshold.reset, signatoryModel.events.resetSignatories],
+});
+
 export const formModel = {
   $chain,
   $createMultisigForm,

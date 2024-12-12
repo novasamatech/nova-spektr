@@ -1,4 +1,4 @@
-import { addUnique, dictionary, merge, splice } from '../arrays';
+import { addUnique, dictionary, groupBy, merge, splice } from '../arrays';
 
 describe('Arrays utils', () => {
   test('should insert element in the beginning', () => {
@@ -221,6 +221,26 @@ describe('dictionary', () => {
       1: 'Alice: Developer',
       2: 'Bob: Designer',
       3: 'Charlie: Manager',
+    });
+  });
+
+  describe('groupBy', () => {
+    it('should group', () => {
+      const list = [
+        { type: 'a', v: 1 },
+        { type: 'b', v: 1 },
+        { type: 'a', v: 2 },
+      ] as const;
+
+      const groups = groupBy(list, (v) => v.type);
+
+      expect(groups).toEqual({
+        a: [
+          { type: 'a', v: 1 },
+          { type: 'a', v: 2 },
+        ],
+        b: [{ type: 'b', v: 1 }],
+      });
     });
   });
 });

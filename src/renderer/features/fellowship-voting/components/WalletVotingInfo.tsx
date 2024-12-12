@@ -27,7 +27,7 @@ export const WalletVotingInfo = memo(({ referendumId }: Props) => {
 
   return (
     <Surface>
-      <Box padding={6} gap={1}>
+      <Box direction="row" padding={6} gap={1}>
         <Icon name="voted" size={16} className="text-icon-accent" />
         <span className="text-footnote text-tab-text-accent">{t('fellowship.voting.voted')}</span>
         <span className="text-footnote">

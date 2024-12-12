@@ -87,7 +87,7 @@ type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 const getMultisigsFx = createEffect(
   ({ chains, accounts, proxies, multisigAccounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
-    const requests = chains.map(async (chain) => {
+    const requests = chains.flatMap(async (chain) => {
       const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
       if (nullable(multisigIndexer) || accounts.length === 0) return [];
@@ -96,6 +96,8 @@ const getMultisigsFx = createEffect(
       const accountIds = uniq(
         accounts.filter((a) => accountUtils.isChainIdMatch(a, chain.chainId)).map((account) => account.accountId),
       );
+
+      if (accountIds.length === 0) return [];
 
       const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
 

@@ -207,42 +207,55 @@ export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN =>
 
   const { free, frozen, reserved } = balance;
 
-  const freeCannotDropBelow = frozen.gt(reserved) ? frozen.sub(reserved) : BN_ZERO;
+  const diff = BN.max(BN_ZERO, frozen.sub(reserved));
 
-  return free.gt(freeCannotDropBelow) ? free.sub(freeCannotDropBelow) : BN_ZERO;
+  return BN.max(BN_ZERO, free.sub(diff));
 };
 
 export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
   return transferableAmountBN(balance).toString();
 };
 
+/**
+ * Unlike transferableAmount, withdrawable skips reserved part of balance. It
+ * could be usefull in operations where reserved part is already taken into
+ * account.
+ */
 export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
-  if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
+  if (!balance?.free || !balance?.frozen) return BN_ZERO;
 
   const { free, frozen } = balance;
 
-  return free.gt(frozen) ? free.sub(frozen) : BN_ZERO;
+  return BN.max(BN_ZERO, free.sub(frozen));
 };
 
 export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string => {
   return withdrawableAmountBN(balance).toString();
 };
 
+export const stakedAmountBN = (balance: AssetBalance) => {
+  if (!balance.locked) return BN_ZERO;
+
+  const bnLocks = balance.locked
+    .filter((lock) => lock.type === LockTypes.STAKING)
+    .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
+
+  return bnLocks;
+};
+
 export const stakedAmount = (balance: Balance): string => {
-  if (!balance.locked) return ZERO_BALANCE;
+  return stakedAmountBN(balance).toString();
+};
 
-  const bnLocks = balance.locked.find((lock) => lock.type === LockTypes.STAKING);
+export const stakeableAmountBN = (balance: AssetBalance) => {
+  const total = totalAmountBN(balance);
+  const staked = stakedAmountBN(balance);
 
-  return bnLocks?.amount.toString() || ZERO_BALANCE;
+  return BN.max(BN_ZERO, total.sub(staked));
 };
 
 export const stakeableAmount = (balance?: Balance): string => {
-  if (!balance) return ZERO_BALANCE;
-
-  const bnFree = new BN(balance.free || ZERO_BALANCE);
-  const bnStaked = new BN(stakedAmount(balance));
-
-  return bnFree.sub(bnStaked).toString();
+  return balance ? stakeableAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {

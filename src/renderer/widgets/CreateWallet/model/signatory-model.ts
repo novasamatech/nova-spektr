@@ -11,6 +11,7 @@ const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
 const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
+const resetSignatories = createEvent();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
@@ -106,6 +107,11 @@ sample({
   target: $signatories,
 });
 
+sample({
+  clock: resetSignatories,
+  target: $signatories.reinit,
+});
+
 export const signatoryModel = {
   $signatories,
   $ownedSignatoriesWallets,
@@ -119,5 +125,6 @@ export const signatoryModel = {
     changeSignatory,
     deleteSignatory,
     getSignatoriesBalance,
+    resetSignatories,
   },
 };

@@ -40,7 +40,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
 
   return (
     <CardStack>
-      <CardStack.Trigger>
+      <CardStack.Trigger sticky>
         <div className="flex w-full items-center">
           <div className="flex flex-1 items-center gap-x-2 py-0.5">
             <AssetIcon asset={asset} />

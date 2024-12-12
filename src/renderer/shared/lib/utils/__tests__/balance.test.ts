@@ -1,7 +1,21 @@
 import { BN } from '@polkadot/util';
 
-import { type AssetBalance } from '@/shared/core';
-import { formatBalance, withdrawableAmount } from '../balance';
+import { type AssetBalance, LockTypes } from '@/shared/core';
+import { formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
+
+const createBalance = (params: {
+  free?: string | number;
+  frozen?: string | number;
+  reserved?: string | number;
+  locked?: AssetBalance['locked'];
+}): AssetBalance => {
+  return {
+    free: new BN(params.free || '0'),
+    frozen: new BN(params.frozen || '0'),
+    reserved: new BN(params.reserved || '0'),
+    locked: params.locked,
+  };
+};
 
 describe('shared/lib/onChainUtils/balance', () => {
   describe('formatBalance', () => {
@@ -72,19 +86,40 @@ describe('shared/lib/onChainUtils/balance', () => {
     });
   });
 
-  describe('withdrawableAmount', () => {
-    const createBalance = (params: {
-      free?: string | number;
-      frozen?: string | number;
-      reserved?: string | number;
-    }): AssetBalance => {
-      return {
-        free: new BN(params.free || '0'),
-        frozen: new BN(params.frozen || '0'),
-        reserved: new BN(params.reserved || '0'),
-      };
-    };
+  describe('transferableAmount', () => {
+    test.each([
+      {
+        name: 'should return amount without frozen',
+        balance: createBalance({ free: '100', frozen: '10' }),
+        expected: '90',
+      },
+      {
+        name: 'should add reserved to frozen',
+        balance: createBalance({ free: '100', frozen: '10', reserved: '5' }),
+        expected: '95',
+      },
+      {
+        name: 'should add reserved to frozen',
+        balance: createBalance({ free: '100', frozen: '10', reserved: '20' }),
+        expected: '100',
+      },
+      {
+        name: 'should return 0 when frozen exceeds free',
+        balance: createBalance({ free: '50', frozen: '100' }),
+        expected: '0',
+      },
+      {
+        name: 'should handle all zero values',
+        balance: createBalance({}),
+        expected: '0',
+      },
+    ])('$name', ({ balance, expected }) => {
+      const result = transferableAmountBN(balance);
+      expect(result.toString()).toEqual(expected);
+    });
+  });
 
+  describe('withdrawableAmount', () => {
     test.each([
       {
         name: 'should return available amount',
@@ -123,6 +158,30 @@ describe('shared/lib/onChainUtils/balance', () => {
     ])('$name', ({ balance, expected }) => {
       const result = withdrawableAmount(balance);
       expect(result).toEqual(expected);
+    });
+  });
+
+  describe('stakeableAmount', () => {
+    test.each([
+      {
+        name: 'should return available amount',
+        balance: createBalance({ free: '100' }),
+        expected: '100',
+      },
+      {
+        name: 'should take staked into account',
+        balance: createBalance({
+          free: '100',
+          locked: [
+            { amount: new BN(25), type: LockTypes.STAKING },
+            { amount: new BN(25), type: LockTypes.STAKING },
+          ],
+        }),
+        expected: '50',
+      },
+    ])('$name', ({ balance, expected }) => {
+      const result = stakeableAmountBN(balance);
+      expect(result.toString()).toEqual(expected);
     });
   });
 });
