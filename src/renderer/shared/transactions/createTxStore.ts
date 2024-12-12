@@ -12,7 +12,7 @@ type Params = {
   $api: Store<ApiPromise | null>;
   $chain: Store<Chain | null>;
   $coreTx: Store<Transaction | null>;
-  $activeWallet: Store<Wallet | null>;
+  $activeWallet: Store<Wallet | null | undefined>;
   $wallets: Store<Wallet[]>;
   $account: Store<Account | null>;
   $signatory?: Store<Account | null>;
