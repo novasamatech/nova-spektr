@@ -102,7 +102,7 @@ export const createDynamicDerivationsSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    pickCryptoTypePrefix(cryptoType),
     new Uint8Array([cmd]),
     decodeAddress(address),
     str.encode(derivationPath),
