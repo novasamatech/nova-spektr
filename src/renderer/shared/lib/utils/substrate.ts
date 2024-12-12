@@ -75,7 +75,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
     registry,
     metadataRpc: metadataRpc.toHex(),
     signedExtensions: registry.signedExtensions,
-    userExtensions: EXTENSIONS[chainId]?.txwrapper.userExtensions,
+    userExtensions: EXTENSIONS[chainId]?.txwrapper?.userExtensions,
   };
 
   return { options, info, registry };
