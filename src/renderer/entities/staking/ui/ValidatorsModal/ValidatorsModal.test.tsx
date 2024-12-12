@@ -16,28 +16,11 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     isOpen: true,
     amount: '1000000000000',
     asset: { symbol: 'DOT', precision: 10 } as Asset,
+    identities: {},
     selectedValidators: [
-      {
-        address: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap',
-        identity: {
-          subName: 'subName',
-          parent: { name: 'parent', address: '0x123' },
-        },
-      },
-      {
-        address: 'EGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN',
-        identity: {
-          subName: 'subName',
-          parent: { name: 'parent', address: '0x123' },
-        },
-      },
-      {
-        address: '5H46Nxu6sJvTYe4rSUxYTUU6pG5dh6jZq66je2g7SLE3RCj6',
-        identity: {
-          subName: 'subName',
-          parent: { name: 'parent', address: '0x123' },
-        },
-      },
+      { address: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap' },
+      { address: 'EGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN' },
+      { address: '5H46Nxu6sJvTYe4rSUxYTUU6pG5dh6jZq66je2g7SLE3RCj6' },
     ] as Validator[],
     notSelectedValidators: [],
     onClose: () => {},
