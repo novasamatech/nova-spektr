@@ -13,8 +13,10 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
+  TransactionType,
 } from '@/shared/core';
 import {
+  TEST_ACCOUNTS,
   ZERO_BALANCE,
   formatAmount,
   getAssetId,
@@ -24,6 +26,7 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
+import { createTxStore } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -155,33 +158,79 @@ const $transferForm = createForm<FormParams>({
 
 // Computed
 
-const $txWrappers = combine(
+const $api = combine(
   {
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-    account: $transferForm.fields.account.$value,
+    apis: networkModel.$apis,
     network: $networkStore,
-    signatories: $selectedSignatories,
   },
-  ({ wallet, account, wallets, network, signatories }) => {
-    if (!wallet || !network || !account.id) return [];
+  ({ apis, network }) => {
+    if (!network) return null;
 
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
+    return apis[network.chain.chainId] ?? null;
+  },
+);
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
-      },
+const $isChainConnected = combine(
+  {
+    network: $networkStore,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ network, statuses }) => {
+    if (!network) return false;
+
+    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+  },
+);
+
+const $coreTx = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    form: $transferForm.$values,
+    xcmData: xcmTransferModel.$xcmData,
+    isConnected: $isChainConnected,
+  },
+  ({ network, isXcm, form, xcmData, isConnected }): Transaction | null => {
+    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) return null;
+
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: form.account.accountId,
+      amount: form.amount,
+      destination: form.destination,
+      xcmData,
     });
+  },
+);
 
-    return transactionService.getTxWrappers({
-      wallet,
-      wallets: filteredWallets || [],
-      account,
-      signatories,
-    });
+const { $wrappedTx: $transaction, $txWrappers } = createTxStore({
+  $api,
+  $activeWallet: walletModel.$activeWallet,
+  $wallets: walletModel.$wallets,
+  $chain: $transferForm.fields.xcmChain.$value,
+  $coreTx,
+  $account: $transferForm.fields.account.$value || null,
+  $signatory: $transferForm.fields.signatory.$value || null,
+});
+
+const $fakeTx = combine(
+  {
+    network: $networkStore,
+    isConnected: $isChainConnected,
+    isXcm: $isXcm,
+    xcmData: xcmTransferModel.$xcmData,
+  },
+  ({ isConnected, network, isXcm, xcmData }): Transaction | null => {
+    if (!network || !isConnected) return null;
+    console.log(xcmData, isXcm);
+
+    return {
+      chainId: network.chain.chainId,
+      address: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
+      type: TransactionType.TRANSFER,
+      args: { destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }), ...xcmData?.args },
+    };
   },
 );
 
@@ -307,73 +356,6 @@ const $chains = combine(
 
     return [network.chain].concat(xcmChains);
   },
-);
-
-const $isChainConnected = combine(
-  {
-    network: $networkStore,
-    statuses: networkModel.$connectionStatuses,
-  },
-  ({ network, statuses }) => {
-    if (!network) return false;
-
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
-  },
-);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    network: $networkStore,
-  },
-  ({ apis, network }) => {
-    if (!network) return null;
-
-    return apis[network.chain.chainId] ?? null;
-  },
-);
-
-const $pureTx = combine(
-  {
-    network: $networkStore,
-    isXcm: $isXcm,
-    form: $transferForm.$values,
-    xcmData: xcmTransferModel.$xcmData,
-    isConnected: $isChainConnected,
-  },
-  ({ network, isXcm, form, xcmData, isConnected }): Transaction | undefined => {
-    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) return undefined;
-
-    return transactionBuilder.buildTransfer({
-      chain: network.chain,
-      asset: network.asset,
-      accountId: form.account.accountId,
-      amount: form.amount,
-      destination: form.destination,
-      xcmData,
-    });
-  },
-  { skipVoid: false },
-);
-
-const $transaction = combine(
-  {
-    api: $api,
-    networkStore: $networkStore,
-    pureTx: $pureTx,
-    txWrappers: $txWrappers,
-  },
-  ({ api, networkStore, pureTx, txWrappers }) => {
-    if (!networkStore || !pureTx || !api) return undefined;
-
-    return transactionService.getWrappedTransaction({
-      api,
-      addressPrefix: networkStore.chain.addressPrefix,
-      transaction: pureTx,
-      txWrappers,
-    });
-  },
-  { skipVoid: false },
 );
 
 const $destinationAccounts = combine(
@@ -647,9 +629,10 @@ export const formModel = {
   $fee,
   $multisigDeposit,
 
+  $coreTx,
+  $fakeTx,
   $api,
   $networkStore,
-  $pureTx,
   $transaction,
   $isMultisig,
   $isXcm,

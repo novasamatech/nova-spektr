@@ -15,7 +15,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: Transaction | DecodedTransaction;
+  transaction?: Transaction | DecodedTransaction | null;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
