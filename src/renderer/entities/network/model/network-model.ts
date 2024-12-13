@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { spread } from 'patronum';
+import { debug, spread } from 'patronum';
 
 import {
   ProviderType,
@@ -22,6 +22,7 @@ import {
   type Metadata,
   type NoID,
 } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
@@ -58,11 +59,7 @@ const populateConnectionsFx = createEffect((): Promise<Connection[]> => {
 });
 
 const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Record<ChainId, ConnectionStatus> => {
-  return Object.values(chains).reduce<Record<ChainId, ConnectionStatus>>((acc, chain) => {
-    acc[chain.chainId] = ConnectionStatus.DISCONNECTED;
-
-    return acc;
-  }, {});
+  return dictionary(Object.values(chains), 'chainId', () => ConnectionStatus.DISCONNECTED);
 });
 
 type MetadataSubResult = {
@@ -99,11 +96,11 @@ const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderM
   provider.updateMetadata(metadata);
 });
 
-const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
-  for (const chainId of Object.keys(chains)) {
-    chainConnected(chainId as ChainId);
-  }
-});
+// const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
+//   for (const chainId of Object.keys(chains)) {
+//     chainConnected(chainId as ChainId);
+//   }
+// });
 
 type CreateProviderParams = {
   chainId: ChainId;
@@ -163,10 +160,6 @@ const createProviderFx = createEffect(
   },
 );
 
-const disconnectProviderFx = createEffect((provider: ProviderWithMetadata): Promise<void> => {
-  return provider.disconnect();
-});
-
 type CreateApiParams = {
   chainId: ChainId;
   providers: Record<ChainId, ProviderWithMetadata>;
@@ -183,9 +176,15 @@ const createApiFx = createEffect(async ({ chainId, providers, apis }: CreateApiP
   return networkService.createApi(chainId, providers[chainId]);
 });
 
-const disconnectApiFx = createEffect(async (api: ApiPromise): Promise<ChainId> => {
+type DisconnectParams = {
+  api: ApiPromise;
+  provider: ProviderWithMetadata;
+};
+const disconnectConnectionFx = createEffect(async ({ api, provider }: DisconnectParams): Promise<ChainId> => {
   const chainId = api.genesisHash.toHex();
+
   await api.disconnect();
+  await provider.disconnect();
 
   return chainId;
 });
@@ -233,10 +232,20 @@ sample({
   target: $connections,
 });
 
+// sample({
+//   clock: populateConnectionsFx.doneData,
+//   source: $chains,
+//   target: initConnectionsFx,
+// });
+
+// TODO: new way, waiting for Sergey's fix
 sample({
   clock: populateConnectionsFx.doneData,
   source: $chains,
-  target: initConnectionsFx,
+  fn: (chains) => {
+    return Object.keys(chains).map((chainId) => chainId as ChainId);
+  },
+  target: series(chainConnected),
 });
 
 sample({
@@ -337,6 +346,11 @@ sample({
   }),
 });
 
+debug($apis);
+debug($providers);
+debug($connections);
+debug($connectionStatuses);
+
 sample({
   clock: failed,
   source: $connectionStatuses,
@@ -351,18 +365,19 @@ sample({
 });
 
 sample({
-  clock: [disconnected, failed],
-  source: $apis,
-  fn: (apis, chainId) => apis[chainId],
-  target: disconnectApiFx,
-});
-
-sample({
   clock: chainDisconnected,
-  source: $providers,
-  filter: (providers, chainId) => Boolean(providers[chainId]),
-  fn: (providers, chainId) => providers[chainId],
-  target: disconnectProviderFx,
+  source: {
+    apis: $apis,
+    providers: $providers,
+  },
+  filter: ({ apis, providers }, chainId) => {
+    return nonNullable(apis[chainId]) && nonNullable(providers[chainId]);
+  },
+  fn: ({ apis, providers }, chainId) => ({
+    api: apis[chainId],
+    provider: providers[chainId],
+  }),
+  target: disconnectConnectionFx,
 });
 
 // =====================================================
@@ -385,21 +400,36 @@ sample({
 });
 
 sample({
-  clock: disconnectApiFx.doneData,
+  clock: disconnectConnectionFx.doneData,
   source: $metadataSubscriptions,
-  fn: (metadataSubscriptions, chainId) => metadataSubscriptions[chainId],
+  filter: (subscriptions, chainId) => nonNullable(subscriptions[chainId]),
+  fn: (subscriptions, chainId) => subscriptions[chainId],
   target: unsubscribeMetadataFx,
 });
 
 sample({
-  clock: disconnectApiFx.doneData,
-  source: $metadataSubscriptions,
-  fn: (subscriptions, chainId) => {
-    const { [chainId]: _, ...rest } = subscriptions;
-
-    return rest;
+  clock: disconnectConnectionFx.doneData,
+  source: {
+    apis: $apis,
+    providers: $providers,
+    subscriptions: $metadataSubscriptions,
   },
-  target: $metadataSubscriptions,
+  fn: ({ apis, providers, subscriptions }, chainId) => {
+    const { [chainId]: _a, ...restApis } = apis;
+    const { [chainId]: _p, ...restProviders } = providers;
+    const { [chainId]: _s, ...restMetadataSubs } = subscriptions;
+
+    return {
+      newApis: restApis,
+      newProviders: restProviders,
+      newMetadataSubs: restMetadataSubs,
+    };
+  },
+  target: spread({
+    newApis: $apis,
+    newProviders: $providers,
+    newMetadataSubs: $metadataSubscriptions,
+  }),
 });
 
 sample({

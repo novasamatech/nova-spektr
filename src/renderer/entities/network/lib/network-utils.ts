@@ -37,6 +37,7 @@ export const networkUtils = {
 function isConnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTED;
 }
+
 function isDisconnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.DISCONNECTED;
 }
@@ -44,6 +45,7 @@ function isDisconnectedStatus(status: ConnectionStatus): boolean {
 function isConnectingStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTING;
 }
+
 function isErrorStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.ERROR;
 }

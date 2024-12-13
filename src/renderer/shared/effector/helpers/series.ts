@@ -26,17 +26,21 @@ export const series = <T>(target: EventCallable<T> | Effect<T, any>) => {
   const $queue = createStore<T[]>([])
     .on(push, (state, payload) => state.concat(Array.isArray(payload) ? payload : Array.from(payload)))
     .on(pop, ([, ...rest]) => rest);
+
   const $head = $queue.map((queue) => {
     const value = queue.at(0);
     if (nullable(value)) return null;
 
     return { value };
   });
+
   const nextHeadRetrieved = $head.updates.filter({ fn: nonNullable });
 
   sample({
     clock: nextHeadRetrieved,
-    fn: ({ value }) => value,
+    fn: ({ value }) => {
+      return value;
+    },
     target: [target, pop],
   });
 
