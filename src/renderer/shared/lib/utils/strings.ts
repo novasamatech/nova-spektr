@@ -164,3 +164,9 @@ export const addLeadingZero = (value: number): string => {
 export const isHex = (v: string): v is HexString => {
   return v.startsWith('0x');
 };
+
+export function toFirstCharLowercase(value?: string): string {
+  if (!value) return '';
+
+  return value.charAt(0).toLowerCase() + value.slice(1);
+}
