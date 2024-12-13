@@ -29,7 +29,7 @@ import {
 import { createTxStore } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { TransferType, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
@@ -216,17 +216,17 @@ const $fakeTx = combine(
   {
     network: $networkStore,
     isConnected: $isChainConnected,
-    isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
   },
-  ({ isConnected, network, isXcm, xcmData }): Transaction | null => {
+  ({ isConnected, network, xcmData }): Transaction | null => {
     if (!network || !isConnected) return null;
-    console.log(xcmData, isXcm);
+
+    const transactionType = network.asset.type ? TransferType[network.asset.type] : TransactionType.TRANSFER;
 
     return {
       chainId: network.chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
-      type: TransactionType.TRANSFER,
+      type: transactionType,
       args: { destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }), ...xcmData?.args },
     };
   },
