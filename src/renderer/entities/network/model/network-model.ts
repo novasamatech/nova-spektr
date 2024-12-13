@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { debug, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import {
   ProviderType,
@@ -332,11 +332,6 @@ sample({
     event: connectionStatusChanged,
   }),
 });
-
-debug($apis);
-debug($providers);
-debug($connections);
-debug($connectionStatuses);
 
 sample({
   clock: failed,
