@@ -2,6 +2,11 @@ import { Action, type XcmConfig, XcmTransferType } from '../../lib/types';
 
 export const CONFIG: XcmConfig = {
   assetsLocation: {
+    Statemint: {
+      chainId: '68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
+      multiLocation: {},
+    },
+
     DOT: {
       chainId: '91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       multiLocation: {},
@@ -138,6 +143,29 @@ export const CONFIG: XcmConfig = {
                 assetId: 0,
                 fee: {
                   mode: { type: 'proportional', value: '10016000000000' },
+                  instructions: 'xtokensDest',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      chainId: '68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
+      assets: [
+        {
+          assetId: 0,
+          assetLocation: 'Statemint',
+          assetLocationPath: { type: 'absolute' },
+          xcmTransfers: [
+            {
+              type: XcmTransferType.XTOKENS,
+              destination: {
+                chainId: '91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+                assetId: 0,
+                fee: {
+                  mode: { type: 'proportional', value: '999999999999' },
                   instructions: 'xtokensDest',
                 },
               },
