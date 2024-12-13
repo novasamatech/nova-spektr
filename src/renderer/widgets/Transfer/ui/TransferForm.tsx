@@ -277,9 +277,9 @@ const FeeSection = () => {
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
   const transaction = useUnit(formModel.$transaction);
-  const pureTx = useUnit(formModel.$pureTx);
+  const coreTx = useUnit(formModel.$coreTx);
+  const fakeTx = useUnit(formModel.$fakeTx);
   const isMultisig = useUnit(formModel.$isMultisig);
-
   const isXcm = useUnit(formModel.$isXcm);
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
@@ -302,7 +302,7 @@ const FeeSection = () => {
       <FeeWithLabel
         api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx}
+        transaction={transaction?.wrappedTx || fakeTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
@@ -312,7 +312,7 @@ const FeeSection = () => {
           api={xcmApi}
           config={xcmConfig}
           asset={network.asset}
-          transaction={pureTx}
+          transaction={coreTx || fakeTx}
           onFeeChange={formModel.events.xcmFeeChanged}
           onFeeLoading={formModel.events.isXcmFeeLoadingChanged}
         />

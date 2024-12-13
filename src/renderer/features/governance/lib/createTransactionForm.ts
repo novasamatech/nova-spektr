@@ -14,11 +14,10 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { createTxStore } from '@/shared/transactions';
 import { balanceUtils } from '@/entities/balance';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-
-import { createTxStore } from './createTxStore';
 
 export type BasicFormParams = {
   account: Account | null;

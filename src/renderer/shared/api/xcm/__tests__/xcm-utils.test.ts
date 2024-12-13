@@ -25,6 +25,17 @@ describe('shared/api/xcm/lib/xcm-utils', () => {
     expect(fee.toString()).toEqual('403808327');
   });
 
+  test('should calculate correct fee when reserveFee is undefined', () => {
+    const fee = xcmUtils.getEstimatedFeeFromConfig(
+      CONFIG,
+      CONFIG.assetsLocation['Statemint'],
+      'origin-chain',
+      CONFIG.chains[2].assets[0].xcmTransfers[0],
+    );
+
+    expect(fee.toString()).toEqual('3999999999');
+  });
+
   test('should calculate correct location for sibling prachain', () => {
     const location = xcmUtils.getDestinationLocation({ parentId: '0x00' }, 2000) as any;
 

@@ -64,20 +64,18 @@ export const getUnsignedTransaction: Record<
   [TransactionType.ASSET_TRANSFER]: (transaction, info, options, api) => {
     const palletName = transaction.args.palletName ?? 'assets';
     const methodArgs = api.tx[palletName].transfer.meta.args;
-    const rawArgs = [transaction.args.asset, transaction.args.target, transaction.args.amount];
+    const rawArgs = [transaction.args.asset, transaction.args.dest, transaction.args.value];
     const args = zipWith(methodArgs, rawArgs, (method, arg) => {
       return [method.name.toString(), api.createType(method.type.toString(), arg)] as const;
     });
-
-    const argsMap = Object.fromEntries(args);
 
     return defineMethod(
       {
         method: {
           name: 'transfer',
-          pallet: transaction.args.palletName ?? 'assets',
+          pallet: palletName,
           // @ts-expect-error defineMethod type disallow Codec type
-          args: argsMap,
+          args: Object.fromEntries(args),
         },
         ...info,
       },

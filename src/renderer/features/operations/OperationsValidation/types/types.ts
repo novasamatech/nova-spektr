@@ -110,6 +110,19 @@ export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network
   balance: string;
 };
 
+export type TransferXcmFeeStore = {
+  isXcm: boolean;
+  isNative: boolean;
+  transferableAsset: Asset;
+  transferableBalance: string;
+  nativeBalance: string;
+  isMultisig: boolean;
+  isProxy: boolean;
+  xcmFee: string;
+  fee: string;
+  amount: string;
+};
+
 export type SignatoryFeeStore = {
   feeData: { fee: string; multisigDeposit: string };
   isMultisig: boolean;
