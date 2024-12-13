@@ -96,12 +96,6 @@ const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderM
   provider.updateMetadata(metadata);
 });
 
-// const initConnectionsFx = createEffect((chains: Record<ChainId, Chain>) => {
-//   for (const chainId of Object.keys(chains)) {
-//     chainConnected(chainId as ChainId);
-//   }
-// });
-
 type CreateProviderParams = {
   chainId: ChainId;
   nodes: string[];
@@ -232,13 +226,6 @@ sample({
   target: $connections,
 });
 
-// sample({
-//   clock: populateConnectionsFx.doneData,
-//   source: $chains,
-//   target: initConnectionsFx,
-// });
-
-// TODO: new way, waiting for Sergey's fix
 sample({
   clock: populateConnectionsFx.doneData,
   source: $chains,
