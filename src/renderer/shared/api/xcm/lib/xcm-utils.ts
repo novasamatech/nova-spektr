@@ -43,7 +43,6 @@ const JunctionType: Record<string, string> = {
 };
 
 export type JunctionTypeKey = keyof typeof JunctionType;
-export type Network = 'polkadot' | 'kusama' | 'westend' | 'rococo';
 
 const JunctionHierarchyLevel: Record<JunctionTypeKey, number> = {
   parachainId: 0,

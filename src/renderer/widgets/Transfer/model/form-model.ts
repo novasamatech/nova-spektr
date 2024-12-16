@@ -182,6 +182,8 @@ const getDeliveryFeeFx = createEffect(
     transaction?: Transaction | null;
   }) => {
     if (config && api && parentApi && parachainId && transaction) {
+      const txBytesLength = transactionService.getTxBytesLength(transaction, api);
+
       return xcmService
         .getDeliveryFeeFromConfig({
           config,
@@ -189,7 +191,7 @@ const getDeliveryFeeFx = createEffect(
           originApi: api,
           parentApi,
           destinationChainId: parachainId,
-          transaction,
+          txBytesLength,
         })
         .then((fee) => fee.toString());
     } else {
