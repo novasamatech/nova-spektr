@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { spread } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import {
   ProviderType,
@@ -19,7 +19,6 @@ import {
   ConnectionStatus,
   ConnectionType,
   type ID,
-  type Metadata,
   type NoID,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
@@ -66,11 +65,17 @@ type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFn;
 };
-const subscribeMetadataFx = createEffect(async (api: ApiPromise): Promise<MetadataSubResult> => {
-  const unsubscribe = await metadataService.subscribeMetadata(api, requestMetadataFx);
+const subscribeMetadataFx = createEffect(
+  async ({ api, cachedVersion }: { api: ApiPromise; cachedVersion: number | null }): Promise<MetadataSubResult> => {
+    const unsubscribe = await metadataService.subscribeMetadata({
+      api,
+      cachedVersion,
+      callback: requestMetadataFx,
+    });
 
-  return { chainId: api.genesisHash.toHex(), unsubscribe };
-});
+    return { chainId: api.genesisHash.toHex(), unsubscribe };
+  },
+);
 
 const requestMetadataFx = createEffect((api: ApiPromise): Promise<NoID<ChainMetadata>> => {
   return metadataService.requestMetadata(api);
@@ -90,7 +95,7 @@ const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => 
 
 type ProviderMetadataParams = {
   provider: ProviderWithMetadata;
-  metadata: Metadata;
+  metadata: ChainMetadata;
 };
 const updateProviderMetadataFx = createEffect(({ provider, metadata }: ProviderMetadataParams) => {
   provider.updateMetadata(metadata);
@@ -118,7 +123,7 @@ const createProviderFx = createEffect(
     const provider = networkService.createProvider(
       chainId,
       providerType,
-      { nodes, metadata: metadata?.metadata },
+      { nodes, metadata },
       {
         onConnected: () => {
           if (DEBUG_NETWORKS) {
@@ -156,18 +161,17 @@ const createProviderFx = createEffect(
 
 type CreateApiParams = {
   chainId: ChainId;
-  providers: Record<ChainId, ProviderWithMetadata>;
-  apis: Record<ChainId, ApiPromise>;
+  provider: ProviderWithMetadata;
+  existingApi: ApiPromise | null;
 };
-const createApiFx = createEffect(async ({ chainId, providers, apis }: CreateApiParams): Promise<ApiPromise> => {
-  if (chainId in apis) {
-    const api = apis[chainId];
-    await api.connect();
+const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
+  if (existingApi) {
+    await existingApi.connect();
 
-    return api;
+    return existingApi;
   }
 
-  return networkService.createApi(chainId, providers[chainId]);
+  return networkService.createApi(chainId, provider);
 });
 
 type DisconnectParams = {
@@ -227,7 +231,7 @@ sample({
 });
 
 sample({
-  clock: populateConnectionsFx.doneData,
+  clock: combineEvents([populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done]),
   source: $chains,
   fn: (chains) => {
     return Object.keys(chains).map((chainId) => chainId as ChainId);
@@ -294,7 +298,11 @@ sample({
 sample({
   clock: connected,
   source: { providers: $providers, apis: $apis },
-  fn: ({ providers, apis }, chainId) => ({ chainId, providers, apis }),
+  fn: ({ providers, apis }, chainId) => ({
+    chainId,
+    provider: providers[chainId],
+    existingApi: apis[chainId] ?? null,
+  }),
   target: createApiFx,
 });
 
@@ -367,7 +375,12 @@ sample({
 // =====================================================
 
 sample({
-  clock: createApiFx.doneData,
+  clock: createApiFx.done,
+  source: $metadata,
+  fn: (metadata, { params, result }) => ({
+    api: result,
+    cachedVersion: metadata.find((m) => m.chainId === params.chainId)?.version ?? null,
+  }),
   target: subscribeMetadataFx,
 });
 
@@ -451,7 +464,7 @@ sample({
   filter: (_, metadata) => nonNullable(metadata),
   fn: (providers, metadata) => ({
     provider: providers[metadata!.chainId],
-    metadata: metadata!.metadata,
+    metadata: metadata!,
   }),
   target: updateProviderMetadataFx,
 });

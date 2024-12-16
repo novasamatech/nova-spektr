@@ -1,23 +1,32 @@
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 
-import { type HexString } from '@/shared/core';
-import { GET_METADATA_METHOD } from '../lib/constants';
+import { type ChainMetadata } from '@/shared/core';
 import { type ProviderWithMetadata } from '../lib/types';
 
-export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: HexString) {
+export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: ChainMetadata) {
   class CachedProvider extends Provider implements ProviderWithMetadata {
-    private metadata: HexString | undefined = metadata;
+    private metadata: ChainMetadata | null = metadata || null;
 
-    updateMetadata(metadata: HexString) {
+    updateMetadata(metadata: ChainMetadata) {
       this.metadata = metadata;
     }
 
     async send(method: string, params: unknown[], ...args: any[]): Promise<any> {
-      const hasMetadata = Boolean(this.metadata);
-      const isMetadataMethod = method === GET_METADATA_METHOD;
       const hasParams = params.length > 0;
 
-      return hasMetadata && isMetadataMethod && !hasParams ? this.metadata : super.send(method, params, ...args);
+      if (method === 'state_getMetadata' && !hasParams && this.metadata) {
+        return Promise.resolve(this.metadata?.metadata);
+      }
+
+      if (method === 'state_call' && hasParams && this.metadata) {
+        const call = params[0];
+
+        if (call === 'Metadata_metadata_at_version') {
+          return Promise.resolve(this.metadata?.metadata);
+        }
+      }
+
+      return super.send(method, params, ...args);
     }
   }
 

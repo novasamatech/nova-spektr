@@ -9,7 +9,7 @@ describe('shared/api/network/services/metadataService', () => {
       rpc: { state: { subscribeRuntimeVersion: () => Promise.resolve(unsub) } },
     } as unknown as ApiPromise;
 
-    const result = await metadataService.subscribeMetadata(apiMock, () => {});
+    const result = await metadataService.subscribeMetadata({ api: apiMock, cachedVersion: null, callback: () => {} });
     expect(result).toEqual(unsub);
     expect(unsub()).toEqual(5);
   });

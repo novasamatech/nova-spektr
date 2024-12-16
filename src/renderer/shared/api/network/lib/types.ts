@@ -1,6 +1,6 @@
 import { type ProviderInterface, type ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 
-import { type HexString } from '@/shared/core';
+import { type ChainMetadata } from '@/shared/core';
 
 export const enum ProviderType {
   WEB_SOCKET = 'ws',
@@ -15,5 +15,5 @@ export type Subscription = {
 };
 
 export interface ProviderWithMetadata extends ProviderInterface {
-  updateMetadata: (metadata: HexString) => void;
+  updateMetadata: (metadata: ChainMetadata) => void;
 }

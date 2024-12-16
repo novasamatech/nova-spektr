@@ -18,6 +18,22 @@ async function requestMetadata(api: ApiPromise): Promise<NoID<ChainMetadata>> {
   };
 }
 
-function subscribeMetadata(api: ApiPromise, callback: (api: ApiPromise) => void): UnsubscribePromise {
-  return api.rpc.state.subscribeRuntimeVersion(() => callback(api));
+type SubscribeParams = {
+  api: ApiPromise;
+  cachedVersion: number | null;
+  callback: (api: ApiPromise) => void;
+};
+
+function subscribeMetadata({ api, cachedVersion, callback }: SubscribeParams): UnsubscribePromise {
+  let currectVersion = cachedVersion ?? 0;
+
+  return api.rpc.state.subscribeRuntimeVersion((version) => {
+    const receivedVersion = version.specVersion.toNumber();
+    if (receivedVersion > currectVersion) {
+      console.info(`Runtime version upgrade: ${currectVersion} -> ${receivedVersion}`);
+
+      currectVersion = receivedVersion;
+      callback(api);
+    }
+  });
 }
