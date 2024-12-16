@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_TEN } from '@polkadot/util';
-import get from 'lodash/get';
+import { camelCase, get } from 'lodash';
 
 import { type AccountId, type Chain, type ChainId, type HexString } from '@/shared/core';
-import { getAssetId, getTypeName, getTypeVersion, toFirstCharLowercase, toLocalChainId } from '@/shared/lib/utils';
+import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';
@@ -362,11 +362,11 @@ async function getDeliveryFeeFromConfig({
 
   if (direction === 'toParent') {
     deliveryFactor = (
-      await parentApi.query[toFirstCharLowercase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
+      await parentApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
     ).toString();
   } else {
     deliveryFactor = (
-      await originApi.query[toFirstCharLowercase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
     ).toString();
   }
 

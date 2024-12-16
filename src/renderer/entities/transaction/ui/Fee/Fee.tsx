@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
@@ -15,23 +15,20 @@ type Props = {
   asset: Asset;
   transaction?: Transaction | null;
   className?: string;
-  extraFee?: string;
+  extraFee?: BN;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
 };
 
 export const Fee = memo(
-  ({ api, multiply = 1, asset, transaction, className, extraFee, onFeeChange, onFeeLoading }: Props) => {
+  ({ api, multiply = 1, asset, transaction, className, extraFee = BN_ZERO, onFeeChange, onFeeLoading }: Props) => {
     const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
     const [fee, setFee] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
     const updateFee = (fee: string) => {
-      const totalFee = new BN(fee)
-        .muln(multiply)
-        .add(new BN(extraFee || 0))
-        .toString();
+      const totalFee = new BN(fee).muln(multiply).add(extraFee).toString();
 
       setFee(totalFee);
       onFeeChange?.(totalFee);

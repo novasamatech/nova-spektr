@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
@@ -91,7 +91,7 @@ const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
-const $deliveryFee = createStore<string>(ZERO_BALANCE);
+const $deliveryFee = createStore(BN_ZERO);
 
 const $selectedSignatories = createStore<Account[]>([]);
 
@@ -100,7 +100,7 @@ const $totalFee = combine(
     fee: $fee,
     deliveryFee: $deliveryFee,
   },
-  ({ fee, deliveryFee }) => new BN(fee).add(new BN(deliveryFee)).toString(),
+  ({ fee, deliveryFee }) => new BN(fee).add(deliveryFee).toString(),
 );
 
 const $transferForm = createForm<FormParams>({
@@ -184,18 +184,16 @@ const getDeliveryFeeFx = createEffect(
     if (config && api && parentApi && parachainId && transaction) {
       const txBytesLength = transactionService.getTxBytesLength(transaction, api);
 
-      return xcmService
-        .getDeliveryFeeFromConfig({
-          config,
-          originChain: toLocalChainId(api.genesisHash.toHex()) || '',
-          originApi: api,
-          parentApi,
-          destinationChainId: parachainId,
-          txBytesLength,
-        })
-        .then((fee) => fee.toString());
+      return xcmService.getDeliveryFeeFromConfig({
+        config,
+        originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+        originApi: api,
+        parentApi,
+        destinationChainId: parachainId,
+        txBytesLength,
+      });
     } else {
-      return '0';
+      return BN_ZERO;
     }
   },
 );
@@ -674,7 +672,7 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.fail,
-  fn: () => ZERO_BALANCE,
+  fn: () => BN_ZERO,
   target: $deliveryFee,
 });
 
