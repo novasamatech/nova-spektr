@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_TEN } from '@polkadot/util';
 import get from 'lodash/get';
 
 import { type AccountId, type Chain, type ChainId, type HexString, type Transaction } from '@/shared/core';
@@ -7,7 +7,7 @@ import { getAssetId, getTypeName, getTypeVersion, toFirstCharLowercase, toLocalC
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs, transactionService } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';
-import { XCM_KEY, XCM_URL } from '../lib/constants';
+import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
   type AssetName,
@@ -370,11 +370,10 @@ async function getDeliveryFeeFromConfig({
     ).toString();
   }
 
-  const SET_TOPIC_SIZE = new BN(33);
   const weight = transactionService.getTxBytesLength(transaction, originApi);
   const weightWithTopic = new BN(weight).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weightWithTopic.mul(new BN(deliveryFeeConfig.sizeFactor)));
-  const deliveryFee = new BN(deliveryFactor).div(new BN(10).pow(new BN(12))).mul(feeSize);
+  const deliveryFee = new BN(deliveryFactor).div(new BN(BN_TEN).pow(FACTOR_MULTIPLIER)).mul(feeSize);
 
   return deliveryFee;
 }

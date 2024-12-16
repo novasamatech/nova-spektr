@@ -654,7 +654,7 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.xcmChain.onChange,
+  clock: $coreTx,
   source: {
     api: $api,
     parentApi: xcmTransferModel.$parentChainApi,
