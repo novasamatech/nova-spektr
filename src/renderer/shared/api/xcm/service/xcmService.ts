@@ -161,13 +161,8 @@ function getVersionedDestinationLocation(
   return { [version]: location };
 }
 
-function getVersionedAccountLocation(
-  api: ApiPromise,
-  transferType: XcmTransferType,
-  accountId?: AccountId,
-  network?: string,
-) {
-  const location = xcmUtils.getAccountLocation(accountId, network);
+function getVersionedAccountLocation(api: ApiPromise, transferType: XcmTransferType, accountId?: AccountId) {
+  const location = xcmUtils.getAccountLocation(accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
 

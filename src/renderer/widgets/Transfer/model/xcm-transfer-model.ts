@@ -165,14 +165,12 @@ const $txBeneficiary = combine(
     api: $api,
     destination: $destination,
     transferDirection: $transferDirection,
-    network: $networkStore,
   },
-  ({ api, destination, transferDirection, network }) => {
-    if (!api || !destination || !transferDirection) return undefined;
+  ({ api, destination, transferDirection }) => {
+    if (!api || !destination || !transferDirection) return null;
 
-    return xcmService.getVersionedAccountLocation(api, transferDirection.type, destination, network?.chain.specName);
+    return xcmService.getVersionedAccountLocation(api, transferDirection.type, destination);
   },
-  { skipVoid: false },
 );
 
 const $txAsset = combine(

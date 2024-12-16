@@ -174,7 +174,7 @@ function getDestinationLocation(
   return undefined;
 }
 
-function getAccountLocation(accountId?: AccountId, network?: string) {
+function getAccountLocation(accountId?: AccountId) {
   const isEthereum = isEthereumAccountId(accountId);
 
   return {
@@ -183,7 +183,7 @@ function getAccountLocation(accountId?: AccountId, network?: string) {
       X1: [
         {
           [isEthereum ? 'accountKey20' : 'accountId32']: {
-            network: network || 'Any',
+            network: null,
             [isEthereum ? 'key' : 'id']: accountId,
           },
         },
