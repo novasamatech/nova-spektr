@@ -171,6 +171,7 @@ const $txBeneficiary = combine(
 
     return xcmService.getVersionedAccountLocation(api, transferDirection.type, destination);
   },
+  // TODO: Remove skipVoid
   { skipVoid: false },
 );
 
