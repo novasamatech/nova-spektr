@@ -157,20 +157,20 @@ function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
 }
 
 function getDestinationLocation(
-  originChain: Pick<Chain, 'parentId' | 'specName'>,
+  originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(destinationParaId, accountId, originChain.specName as Network);
+    return getSiblingLocation(destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(accountId, originChain.specName as Network);
+    return getParentLocation(accountId);
   }
 
   if (destinationParaId) {
-    return getChildLocation(destinationParaId, accountId, originChain.specName as Network);
+    return getChildLocation(destinationParaId, accountId);
   }
 
   return undefined;
@@ -194,13 +194,13 @@ function getAccountLocation(accountId?: AccountId) {
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId, network?: Network) {
+function getChildLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: network || 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -211,13 +211,13 @@ function getChildLocation(parachainId: number, accountId?: AccountId, network?: 
   };
 }
 
-function getParentLocation(accountId?: AccountId, network?: Network) {
+function getParentLocation(accountId?: AccountId) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: network || 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -228,13 +228,13 @@ function getParentLocation(accountId?: AccountId, network?: Network) {
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId, network?: Network) {
+function getSiblingLocation(parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: network || 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }

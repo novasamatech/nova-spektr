@@ -150,7 +150,7 @@ function getAssetLocation(
 function getVersionedDestinationLocation(
   api: ApiPromise,
   transferType: XcmTransferType,
-  originChain: Pick<Chain, 'parentId' | 'specName'>,
+  originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
