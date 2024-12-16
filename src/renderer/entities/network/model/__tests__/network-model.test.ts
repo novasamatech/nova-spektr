@@ -30,7 +30,8 @@ describe('entities/network/model/network-model', () => {
 
   const mockMetadata: ChainMetadata = {
     id: 1,
-    version: 1,
+    runtimeVersion: 1,
+    metadataVersion: 15,
     chainId: '0x01',
     metadata: '0x123',
   };

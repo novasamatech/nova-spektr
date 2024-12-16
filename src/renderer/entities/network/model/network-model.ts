@@ -65,11 +65,11 @@ type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFn;
 };
-const subscribeMetadataFx = createEffect(
+const subscribeRuntimeVersionFx = createEffect(
   async ({ api, cachedVersion }: { api: ApiPromise; cachedVersion: number | null }): Promise<MetadataSubResult> => {
-    const unsubscribe = await metadataService.subscribeMetadata({
+    const unsubscribe = await metadataService.subscribeRuntimeVersion({
       api,
-      cachedVersion,
+      cachedRuntimeVersion: cachedVersion,
       callback: requestMetadataFx,
     });
 
@@ -379,13 +379,13 @@ sample({
   source: $metadata,
   fn: (metadata, { params, result }) => ({
     api: result,
-    cachedVersion: metadata.find((m) => m.chainId === params.chainId)?.version ?? null,
+    cachedVersion: metadata.find((m) => m.chainId === params.chainId)?.runtimeVersion ?? null,
   }),
-  target: subscribeMetadataFx,
+  target: subscribeRuntimeVersionFx,
 });
 
 sample({
-  clock: subscribeMetadataFx.doneData,
+  clock: subscribeRuntimeVersionFx.doneData,
   source: $metadataSubscriptions,
   fn: (subscriptions, { chainId, unsubscribe }) => ({
     ...subscriptions,
@@ -431,8 +431,12 @@ sample({
   clock: requestMetadataFx.doneData,
   source: $metadata,
   filter: (metadata, newMetadata) => {
-    return metadata.every(({ chainId, version }) => {
-      return chainId !== newMetadata.chainId || version !== newMetadata.version;
+    return metadata.every(({ chainId, runtimeVersion, metadataVersion }) => {
+      return (
+        chainId !== newMetadata.chainId ||
+        runtimeVersion !== newMetadata.runtimeVersion ||
+        metadataVersion !== newMetadata.metadataVersion
+      );
     });
   },
   fn: (_, metadata) => metadata,

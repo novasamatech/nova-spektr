@@ -1,4 +1,6 @@
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
+import { hexToU8a, u8aToNumber } from '@polkadot/util';
+import { isString } from 'lodash';
 
 import { type ChainMetadata } from '@/shared/core';
 import { type ProviderWithMetadata } from '../lib/types';
@@ -15,14 +17,17 @@ export function createCachedProvider(Provider: new (...args: any[]) => ProviderI
       const hasParams = params.length > 0;
 
       if (method === 'state_getMetadata' && !hasParams && this.metadata) {
-        return Promise.resolve(this.metadata?.metadata);
+        return Promise.resolve(this.metadata.metadata);
       }
 
       if (method === 'state_call' && hasParams && this.metadata) {
-        const call = params[0];
+        const [call, rawVersion] = params;
 
         if (call === 'Metadata_metadata_at_version') {
-          return Promise.resolve(this.metadata?.metadata);
+          const metadataVersion = isString(rawVersion) ? u8aToNumber(hexToU8a(rawVersion)) : null;
+          if (metadataVersion === this.metadata.metadataVersion) {
+            return Promise.resolve(this.metadata.metadata);
+          }
         }
       }
 

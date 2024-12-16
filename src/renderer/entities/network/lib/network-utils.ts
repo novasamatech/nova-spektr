@@ -93,7 +93,7 @@ function isAutoBalanceConnection(connection: Connection): boolean {
 function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {
   return metadata.reduce<Record<ChainId, ChainMetadata>>(
     (acc, data) => {
-      if (data.version >= (acc[data.chainId]?.version || -1)) {
+      if (data.runtimeVersion >= (acc[data.chainId]?.runtimeVersion || -1)) {
         acc[data.chainId] = data;
       }
 
