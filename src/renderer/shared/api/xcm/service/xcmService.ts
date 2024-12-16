@@ -102,6 +102,8 @@ function getEstimatedRequiredDestWeight(
     new BN(config.networkBaseWeight[xcmTransfer.destination.chainId]),
   );
 
+  if (!assetLocation?.reserveFee) return weight;
+
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
   if (isReserveChain) return weight;

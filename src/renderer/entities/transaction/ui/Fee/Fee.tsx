@@ -13,7 +13,7 @@ type Props = {
   api: ApiPromise | null;
   multiply?: number;
   asset: Asset;
-  transaction?: Transaction;
+  transaction?: Transaction | null;
   className?: string;
   extraFee?: string;
   onFeeChange?: (fee: string) => void;

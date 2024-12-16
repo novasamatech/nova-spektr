@@ -1,6 +1,7 @@
 import { xcmService } from '../service/xcmService';
 
 import {
+  CONFIG,
   XCMPALLET_TRANSFER_HUB_ASTAR,
   XCMPALLET_TRANSFER_KSM_BIFROST,
   XTOKENS_ACA_DOT,
@@ -64,5 +65,16 @@ describe('shared/api/xcm/service/xcm-service', () => {
       toRelayChain: true,
       type: 'xTokens',
     });
+  });
+
+  test('should calculate correct required dest weight when reserveFee is undefined', () => {
+    const weight = xcmService.getEstimatedRequiredDestWeight(
+      CONFIG,
+      CONFIG.assetsLocation['Statemint'],
+      'origin-chain',
+      CONFIG.chains[2].assets[0].xcmTransfers[0],
+    );
+
+    expect(weight.toString()).toEqual('4000000000');
   });
 });

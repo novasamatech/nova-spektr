@@ -92,6 +92,7 @@ sample({
     event: [
       {
         ...formData,
+        xcmAsset: networkStore!.asset,
         chain: networkStore!.chain,
         asset: networkStore!.asset!,
         coreTx,

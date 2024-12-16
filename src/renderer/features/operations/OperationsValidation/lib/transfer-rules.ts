@@ -112,13 +112,44 @@ export const TransferRules = {
           {
             amount,
             asset: network.asset,
-            balance: balance.native,
+            balance: isXcm ? balance.native : balance.balance,
             xcmFee,
             fee,
             isNative,
             isProxy,
             isMultisig,
             isXcm,
+          },
+          config,
+        );
+      },
+    }),
+    insufficientBalanceForXcmFee: (
+      source: Store<TransferAmountFeeStore>,
+      config: { withFormatAmount: boolean } = { withFormatAmount: true },
+    ) => ({
+      name: 'insufficientBalanceForXcmFee',
+      errorText: 'transfer.notEnoughBalanceForFeeError',
+      source,
+      validator: (
+        amount: string,
+        _: any,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
+      ) => {
+        if (!network) return false;
+
+        return balanceValidation.insufficientBalanceForXcmFee(
+          {
+            amount,
+            transferableAsset: network.asset,
+            transferableBalance: balance.balance,
+            nativeBalance: balance.native,
+            xcmFee,
+            fee,
+            isXcm,
+            isNative,
+            isProxy,
+            isMultisig,
           },
           config,
         );

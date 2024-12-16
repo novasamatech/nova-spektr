@@ -28,6 +28,7 @@ import {
 type Input = {
   id?: number;
   xcmChain: Chain;
+  xcmAsset: Asset;
   chain: Chain;
   asset: Asset;
   account: Account;

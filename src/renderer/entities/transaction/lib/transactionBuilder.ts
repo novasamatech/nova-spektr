@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
@@ -67,11 +68,15 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
     transactionType = xcmData.transactionType;
   }
 
+  const palletName =
+    asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
+
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: transactionType,
     args: {
+      palletName,
       dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
       value: formatAmount(amount, asset.precision) || '1',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),

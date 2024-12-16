@@ -8,7 +8,7 @@ import {
   defineMethod,
   methods,
 } from '@substrate/txwrapper-polkadot';
-import sortBy from 'lodash/sortBy';
+import { sortBy, zipWith } from 'lodash';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
@@ -61,14 +61,24 @@ export const getUnsignedTransaction: Record<
           options,
         );
   },
-  [TransactionType.ASSET_TRANSFER]: (transaction, info, options) => {
-    return methods.assets.transfer(
+  [TransactionType.ASSET_TRANSFER]: (transaction, info, options, api) => {
+    const palletName = transaction.args.palletName ?? 'assets';
+    const methodArgs = api.tx[palletName].transfer.meta.args;
+    const rawArgs = [transaction.args.asset, transaction.args.dest, transaction.args.value];
+    const args = zipWith(methodArgs, rawArgs, (method, arg) => {
+      return [method.name.toString(), api.createType(method.type.toString(), arg)] as const;
+    });
+
+    return defineMethod(
       {
-        id: transaction.args.asset,
-        target: transaction.args.dest,
-        amount: transaction.args.value,
+        method: {
+          name: 'transfer',
+          pallet: palletName,
+          // @ts-expect-error defineMethod type disallow Codec type
+          args: Object.fromEntries(args),
+        },
+        ...info,
       },
-      info,
       options,
     );
   },
@@ -463,9 +473,28 @@ export const getExtrinsic: Record<
     api.tx.balances.transferKeepAlive
       ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value),
-  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset }, api) => api.tx.assets.transfer(asset, dest, value),
-  [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) =>
-    api.tx.currencies ? api.tx.currencies.transfer(dest, asset, value) : api.tx.tokens.transfer(dest, asset, value),
+  [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
+    const type = api.tx[palletName].transfer.meta.args[0].type;
+    // @ts-expect-error Incorrect polkadot-js/api types
+    const location = api.createType(type, asset);
+
+    return api.tx[palletName].transfer(location, dest, value);
+  },
+  [TransactionType.ORML_TRANSFER]: ({ dest, value, asset }, api) => {
+    if (api.tx.currencies) {
+      const type = api.tx.currencies.transfer.meta.args[1].type;
+      // @ts-expect-error Incorrect polkadot-js/api types
+      const location = api.createType(type, asset);
+
+      return api.tx.currencies.transfer(dest, location, value);
+    }
+
+    const type = api.tx.tokens.transfer.meta.args[1].type;
+    // @ts-expect-error Incorrect polkadot-js/api types
+    const location = api.createType(type, asset);
+
+    return api.tx.tokens.transfer(dest, location, value);
+  },
   [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
     return isOldMultisigPallet(api)
       ? // @ts-expect-error TODO fix

@@ -80,6 +80,8 @@ function getEstimatedFeeFromConfig(
 
   const fee = weightToFee(weight, new BN(xcmTransfer.destination.fee.mode.value));
 
+  if (!assetLocation?.reserveFee) return fee;
+
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
   if (isReserveChain) return fee;

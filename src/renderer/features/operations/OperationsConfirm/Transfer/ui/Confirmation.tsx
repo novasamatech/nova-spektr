@@ -132,8 +132,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             className="text-text-primary"
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.xcmFee} asset={confirmStore.xcmChain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.xcmChain.assets[0]} amount={confirmStore.xcmFee} />
+              <AssetBalance value={confirmStore.xcmFee} asset={confirmStore.xcmAsset} />
+              <AssetFiatBalance asset={confirmStore.xcmAsset} amount={confirmStore.xcmFee} />
             </div>
           </DetailRow>
         )}

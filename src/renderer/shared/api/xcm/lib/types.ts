@@ -26,7 +26,7 @@ export type Fee = {
 export type AssetLocation = {
   chainId: string;
   multiLocation: MultiLocation;
-  reserveFee: Fee;
+  reserveFee?: Fee;
 };
 export type AssetsLocation = Record<AssetName, AssetLocation>;
 
