@@ -40,7 +40,7 @@ describe('shared/api/xcm/lib/xcm-utils', () => {
     const location = xcmUtils.getDestinationLocation({ parentId: '0x00' }, 2000) as any;
 
     expect(location.parents).toEqual(1);
-    expect(location.interior.X1.Parachain).toEqual(2000);
+    expect(location.interior.X1[0].Parachain).toEqual(2000);
   });
 
   test('should calculate correct location for parent parachain', () => {
@@ -54,13 +54,13 @@ describe('shared/api/xcm/lib/xcm-utils', () => {
     const location = xcmUtils.getDestinationLocation({ parentId: '0x00' }, undefined, '0x00') as any;
 
     expect(location.parents).toEqual(1);
-    expect(location.interior.X1.AccountId32.id).toEqual('0x00');
+    expect(location.interior.X1[0].AccountId32.id).toEqual('0x00');
   });
 
   test('should calculate correct location for child parachain', () => {
     const location = xcmUtils.getDestinationLocation({ parentId: undefined }, 2000) as any;
 
     expect(location.parents).toEqual(0);
-    expect(location.interior.X1.Parachain).toEqual(2000);
+    expect(location.interior.X1[0].Parachain).toEqual(2000);
   });
 });

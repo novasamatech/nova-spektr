@@ -1,8 +1,12 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { BN, BN_ZERO } from '@polkadot/util';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
+import { type XcmConfig, xcmService } from '@/shared/api/xcm';
 import {
   type Account,
   type AccountId,
@@ -23,13 +27,14 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
+  toLocalChainId,
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { TransferType, transactionBuilder, transactionService } from '@/entities/transaction';
+import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
@@ -87,8 +92,17 @@ const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
+const $deliveryFee = createStore(BN_ZERO);
 
 const $selectedSignatories = createStore<Account[]>([]);
+
+const $totalFee = combine(
+  {
+    fee: $fee,
+    deliveryFee: $deliveryFee,
+  },
+  ({ fee, deliveryFee }) => new BN(fee).add(deliveryFee).toString(),
+);
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -97,7 +111,7 @@ const $transferForm = createForm<FormParams>({
       rules: [
         TransferRules.account.noProxyFee(
           combine({
-            fee: $fee,
+            fee: $totalFee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
@@ -110,7 +124,7 @@ const $transferForm = createForm<FormParams>({
         TransferRules.signatory.noSignatorySelected($isMultisig),
         TransferRules.signatory.notEnoughTokens(
           combine({
-            fee: $fee,
+            fee: $totalFee,
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             balance: $signatoryBalance,
@@ -138,7 +152,7 @@ const $transferForm = createForm<FormParams>({
         ),
         TransferRules.amount.insufficientBalanceForXcmFee(
           combine({
-            fee: $fee,
+            fee: $totalFee,
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             balance: $accountBalance,
@@ -396,6 +410,47 @@ const $canSubmit = combine(
   },
 );
 
+const $extrinsic = combine(
+  {
+    api: $api,
+    coreTx: $coreTx,
+  },
+  ({ api, coreTx }) => {
+    if (!api || !coreTx) return null;
+
+    return getExtrinsic[coreTx.type](coreTx.args, api);
+  },
+);
+
+const getDeliveryFeeFx = createEffect(
+  async ({
+    config,
+    parachainId,
+    api,
+    parentApi,
+    extrinsic,
+  }: {
+    config: XcmConfig | null;
+    parachainId: number | null;
+    api: ApiPromise | null;
+    parentApi: ApiPromise | null;
+    extrinsic?: SubmittableExtrinsic<'promise'> | null;
+  }) => {
+    if (config && api && parentApi && parachainId && extrinsic) {
+      return xcmService.getDeliveryFeeFromConfig({
+        config,
+        originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+        originApi: api,
+        parentApi,
+        destinationChainId: parachainId,
+        txBytesLength: extrinsic.encodedLength,
+      });
+    } else {
+      return BN_ZERO;
+    }
+  },
+);
+
 // Fields connections
 
 sample({
@@ -609,6 +664,29 @@ sample({
   target: formSubmitted,
 });
 
+sample({
+  clock: $extrinsic,
+  source: {
+    api: $api,
+    parentApi: xcmTransferModel.$parentChainApi,
+    parachainId: xcmTransferModel.$xcmParaId,
+    config: xcmTransferModel.$config,
+    extrinsic: $extrinsic,
+  },
+  target: getDeliveryFeeFx,
+});
+
+sample({
+  clock: getDeliveryFeeFx.doneData,
+  target: $deliveryFee,
+});
+
+sample({
+  clock: getDeliveryFeeFx.fail,
+  fn: () => BN_ZERO,
+  target: $deliveryFee,
+});
+
 export const formModel = {
   $transferForm,
   $proxyWallet,
@@ -626,6 +704,7 @@ export const formModel = {
 
   $fee,
   $multisigDeposit,
+  $deliveryFee,
 
   $coreTx,
   $fakeTx,
