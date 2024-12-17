@@ -45,7 +45,7 @@ export const Signatory = ({
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
   const chain = useUnit(formModel.$chain);
-  
+
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
 
