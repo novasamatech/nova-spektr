@@ -38,7 +38,11 @@ export const SelectSignatoriesThreshold = () => {
     if (ownedSignatoriesWallets.length > 1) {
       flexibleMultisigModel.events.stepChanged(Step.SIGNER_SELECTION);
     } else {
-      flexibleMultisigModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
+      const account = ownedSignatoriesWallets.at(0)?.accounts.at(0);
+
+      if (!account) return;
+
+      flexibleMultisigModel.events.signerSelected(account);
       event.preventDefault();
       submit();
     }
