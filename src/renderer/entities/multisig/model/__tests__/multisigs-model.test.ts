@@ -1,9 +1,9 @@
 import { allSettled, fork } from 'effector';
 
 import { AccountType, ChainOptions, ConnectionType, ExternalType, WalletType } from '@/shared/core';
-import { multisigService } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { multisigService } from '../../api';
 import { multisigsModel } from '../multisigs-model';
 
 const mockChains = {

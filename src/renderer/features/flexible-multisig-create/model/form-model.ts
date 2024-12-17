@@ -1,13 +1,14 @@
 import { combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { type Chain, type ChainId, CryptoType } from '@/shared/core';
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
+import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 import { signatoryModel } from './signatory-model';
 
+const MIN_THRESHOLD = 2;
 const DEFAULT_CHAIN: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'; // Polkadot
 
 type FormParams = {
@@ -18,18 +19,6 @@ type FormParams = {
 
 const $createMultisigForm = createForm<FormParams>({
   fields: {
-    threshold: {
-      init: 0,
-      rules: [
-        {
-          name: 'moreOrEqualToTwo',
-          validator: (threshold) => threshold >= 2,
-        },
-      ],
-    },
-    chainId: {
-      init: DEFAULT_CHAIN,
-    },
     name: {
       init: '',
       rules: [
@@ -38,6 +27,12 @@ const $createMultisigForm = createForm<FormParams>({
           validator: (name) => name !== '',
         },
       ],
+    },
+    chainId: {
+      init: DEFAULT_CHAIN,
+    },
+    threshold: {
+      init: 0,
     },
   },
   validateOn: ['submit'],
@@ -137,6 +132,48 @@ const $availableAccounts = combine(
   },
 );
 
+const $invalidAddresses = combine(
+  {
+    chain: $chain,
+    signatories: signatoryModel.$signatories,
+  },
+  ({ chain, signatories }) => {
+    if (!chain) return [];
+
+    let badSignatories: Address[] = [];
+
+    for (const signer of signatories) {
+      if (!signer.address || validateAddress(signer.address, chain)) continue;
+
+      badSignatories = addUnique(badSignatories, signer.address);
+    }
+
+    return badSignatories;
+  },
+);
+
+const $canSubmit = combine(
+  {
+    hasEmptySignatories: signatoryModel.$hasEmptySignatories,
+    hasEmptySignatoryName: signatoryModel.$hasEmptySignatoryName,
+    hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
+    multisigAlreadyExists: $multisigAlreadyExists,
+    invalidAddresses: $invalidAddresses,
+    hiddenMultisig: $hiddenMultisig,
+    threshold: $createMultisigForm.fields.threshold.$value,
+  },
+  ({ invalidAddresses, threshold, ...params }) => {
+    if (invalidAddresses.length > 0 || threshold < MIN_THRESHOLD) return false;
+
+    return Object.values(params).every((param) => nullable(param) || !param);
+  },
+);
+
+sample({
+  clock: $createMultisigForm.fields.chainId.changed,
+  target: [$createMultisigForm.fields.threshold.reset, signatoryModel.events.resetSignatories],
+});
+
 sample({
   clock: signatoryModel.events.deleteSignatory,
   target: $createMultisigForm.fields.threshold.reset,
@@ -149,6 +186,8 @@ export const formModel = {
   $hiddenMultisig,
   $availableAccounts,
   $chain,
+  $invalidAddresses,
+  $canSubmit,
 
   output: {
     formSubmitted: $createMultisigForm.formValidated,

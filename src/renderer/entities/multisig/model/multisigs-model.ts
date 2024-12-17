@@ -22,10 +22,10 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { multisigService } from '../api';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
@@ -107,6 +107,7 @@ const getMultisigsFx = createEffect(
           .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
+
             const proxy = nonNullable(proxiesList)
               ? // TODO check if it's a pure proxy
                 (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
