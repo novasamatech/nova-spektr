@@ -5,6 +5,7 @@ export type AssetName = string;
 export type XcmConfig = {
   assetsLocation: AssetsLocation;
   instructions: Instructions;
+  networkDeliveryFee: NetworkDeliveryFee;
   networkBaseWeight: NetworkBaseWeight;
   chains: ChainXCM[];
 };
@@ -41,6 +42,21 @@ export type FeeMode = {
 
 export type NetworkBaseWeight = {
   [chainId: string]: string;
+};
+
+export type DeliveryFeeConfig = {
+  type: 'exponential';
+  factorPallet: 'ParachainSystem' | 'XcmpQueue' | 'Dmp';
+  sizeBase: string;
+  sizeFactor: string;
+  alwaysHoldingPays: boolean;
+};
+
+export type NetworkDeliveryFee = {
+  [chainId: string]: {
+    toParent?: DeliveryFeeConfig;
+    toParachain?: DeliveryFeeConfig;
+  };
 };
 
 export type AssetXCM = {
