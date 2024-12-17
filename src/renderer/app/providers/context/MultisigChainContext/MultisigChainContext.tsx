@@ -46,7 +46,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
-  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
+  const events = getLiveEventsByKeys(txs);
 
   useGate(operationsModel.gate.flow, {
     transactions: txs,

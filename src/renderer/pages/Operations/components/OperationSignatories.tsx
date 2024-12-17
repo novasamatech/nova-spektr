@@ -88,6 +88,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
     return signedEvent?.status;
   };
 
+  console.log('xcm', contactSignatories);
+
   return (
     <div className="flex w-[320px] flex-col px-2 py-4">
       <div className="mb-3 flex items-center justify-between">

@@ -15,7 +15,7 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount, validateCallData } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -155,10 +155,12 @@ const ApproveTxModal = ({ tx, account, connection, children }: Props) => {
       return acc;
     }, []);
 
+    const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
+
     return {
       chainId: tx.chainId,
       address: signerAddress,
-      type: tx.callData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
+      type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
         otherSignatories: otherSignatories.sort(),
