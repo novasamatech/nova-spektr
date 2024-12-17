@@ -1,13 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
-import get from 'lodash/get';
+import { BN, BN_TEN } from '@polkadot/util';
+import { camelCase, get } from 'lodash';
 
 import { type AccountId, type Chain, type ChainId, type HexString } from '@/shared/core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';
-import { XCM_KEY, XCM_URL } from '../lib/constants';
+import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
   type AssetName,
@@ -28,6 +28,7 @@ export const xcmService = {
   getAvailableTransfers,
   getEstimatedFee,
   getEstimatedRequiredDestWeight,
+  getDeliveryFeeFromConfig,
 
   getAssetLocation,
   getVersionedDestinationLocation,
@@ -36,6 +37,8 @@ export const xcmService = {
   parseXcmPalletExtrinsic,
   parseXTokensExtrinsic,
   decodeXcm,
+
+  getParentChain,
 };
 
 async function fetchXcmConfig(): Promise<XcmConfig> {
@@ -151,9 +154,9 @@ function getVersionedDestinationLocation(
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
-  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
+  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
 
   if (!version) return location;
 
@@ -325,4 +328,51 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     value: data.amount,
     dest: data.destAccountId,
   };
+}
+
+function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
+  if (!chain.parentId) return chain;
+
+  return chains[chain.parentId];
+}
+
+async function getDeliveryFeeFromConfig({
+  config,
+  originChain,
+  originApi,
+  parentApi,
+  destinationChainId,
+  txBytesLength,
+}: {
+  config: XcmConfig;
+  originChain: string;
+  originApi: ApiPromise;
+  parentApi: ApiPromise;
+  destinationChainId: number;
+  txBytesLength: number;
+}): Promise<BN> {
+  const RELAYCHAINS = [1000, 2000];
+  const direction = RELAYCHAINS.includes(destinationChainId) ? 'toParent' : 'toParachain';
+
+  const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
+
+  if (!deliveryFeeConfig) return new BN(0);
+
+  let deliveryFactor: string;
+
+  if (direction === 'toParent') {
+    deliveryFactor = (
+      await parentApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
+    ).toString();
+  } else {
+    deliveryFactor = (
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
+    ).toString();
+  }
+
+  const weight = new BN(txBytesLength).add(SET_TOPIC_SIZE);
+  const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
+  const deliveryFee = new BN(deliveryFactor).div(new BN(BN_TEN).pow(FACTOR_MULTIPLIER)).mul(feeSize);
+
+  return deliveryFee;
 }

@@ -80,6 +80,14 @@ class DexieStorage extends Dexie {
       basketTransactions: '++id',
     });
 
+    this.version(24).stores({
+      metadata: null,
+    });
+
+    this.version(25).stores({
+      metadata: '++id',
+    });
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
