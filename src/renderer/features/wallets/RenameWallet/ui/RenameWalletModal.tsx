@@ -3,7 +3,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Button, Input, InputHint } from '@/shared/ui';
+import { BaseModal, Button, InputHint } from '@/shared/ui';
+import { Field, Input } from '@/shared/ui-kit';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = {
@@ -37,20 +38,12 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
   return (
     <BaseModal isOpen={isOpen} closeButton title={t('walletDetails.common.renameTitle')} onClose={onClose}>
       <form className="flex flex-col gap-4 pt-4" onSubmit={submitForm}>
-        <div className="flex flex-col gap-y-2">
-          <Input
-            name="name"
-            className="w-full"
-            wrapperClass="h-[42px]"
-            label={t('walletDetails.common.renameLabel')}
-            invalid={name?.hasError()}
-            value={name?.value}
-            onChange={name?.onChange}
-          />
+        <Field text={t('walletDetails.common.renameLabel')}>
+          <Input name="name" invalid={name?.hasError()} value={name?.value} onChange={name?.onChange} />
           <InputHint variant="error" active={name?.hasError()}>
             {t(name.errorText())}
           </InputHint>
-        </div>
+        </Field>
 
         <Button className="ml-auto" type="submit" disabled={!isValid}>
           {t('walletDetails.common.renameSaveButton')}

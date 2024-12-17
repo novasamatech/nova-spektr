@@ -13,7 +13,6 @@ import {
   ViewClass,
 } from '@/shared/ui/Dropdowns/common/constants';
 import { type DropdownResult, type Position, type Theme } from '@/shared/ui/Dropdowns/common/types';
-import { CommonInputStyles, CommonInputStylesTheme } from '@/shared/ui/Inputs/common/styles';
 import { Checkbox } from '@/shared/ui-kit';
 
 type DropdownOption<T = any> = {
@@ -117,9 +116,9 @@ export const AccountsMultiSelector = ({
               !open && !invalid && SelectButtonStyle[theme].closed,
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
-              CommonInputStyles,
-              CommonInputStylesTheme[theme],
-              'inline-flex w-full items-center justify-between gap-x-2 gap-y-2 py-2 pr-2',
+              'bg-input-background text-text-primary',
+              'rounded border text-footnote outline-offset-1',
+              'inline-flex w-full items-center justify-between gap-2 px-2 py-2',
             )}
             tabIndex={tabIndex}
           >

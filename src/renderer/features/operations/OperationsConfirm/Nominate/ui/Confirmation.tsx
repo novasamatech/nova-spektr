@@ -89,7 +89,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
             <DetailRow
               className="text-text-primary"
               label={

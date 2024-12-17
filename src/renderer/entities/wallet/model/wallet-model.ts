@@ -7,6 +7,7 @@ import {
   type Account,
   type BaseAccount,
   type ChainAccount,
+  type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type NoID,
@@ -20,7 +21,7 @@ import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
-type CreateParams<T extends Account = Account> = {
+export type CreateParams<T extends Account = Account> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
   // external means wallet was created by someone else and discovered later
@@ -33,8 +34,9 @@ const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
 const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount | ShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
-const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
+const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
+const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
 const walletHidden = createEvent<Wallet>();
@@ -231,7 +233,14 @@ const walletCreationFail = sample({
 }).filter({ fn: nonNullable });
 
 sample({
-  clock: [walletConnectCreated, watchOnlyCreated, multisigCreated, singleshardCreated, proxiedCreated],
+  clock: [
+    walletConnectCreated,
+    watchOnlyCreated,
+    multisigCreated,
+    flexibleMultisigCreated,
+    singleshardCreated,
+    proxiedCreated,
+  ],
   target: walletCreatedFx,
 });
 
@@ -377,6 +386,7 @@ export const walletModel = {
     multishardCreated,
     singleshardCreated,
     multisigCreated,
+    flexibleMultisigCreated,
     walletConnectCreated,
     proxiedCreated,
     walletCreatedDone,
@@ -395,5 +405,6 @@ export const walletModel = {
 
   _test: {
     $allWallets,
+    walletCreatedFx,
   },
 };

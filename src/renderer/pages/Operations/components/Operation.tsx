@@ -1,6 +1,6 @@
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { Accordion, FootnoteText } from '@/shared/ui';
@@ -13,8 +13,8 @@ import { OperationFullInfo } from './OperationFullInfo';
 import { Status } from './Status';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account?: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 const Operation = ({ tx, account }: Props) => {

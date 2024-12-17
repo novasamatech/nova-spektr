@@ -6,10 +6,11 @@ import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton, Tooltip } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { allTracks, votingService } from '@/entities/governance';
-import { ContactItem, ExplorersPopover, accountUtils, walletModel } from '@/entities/wallet';
+import { ContactItem, accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
@@ -102,21 +103,17 @@ export const YourDelegations = () => {
                   <Checkbox checked={selectedAccounts.includes(account)} onChange={() => toggleAccount(account)} />
                 </div>
                 <div className="flex-1 px-3">
-                  <ExplorersPopover
+                  <ContactItem
+                    name={account.name}
                     address={account.accountId}
-                    explorers={chain.explorers}
-                    button={
-                      <ContactItem
-                        name={account.name}
-                        address={account.accountId}
-                        keyType={
-                          accountUtils.isShardAccount(account) || accountUtils.isChainAccount(account)
-                            ? account.keyType
-                            : undefined
-                        }
-                      />
+                    keyType={
+                      accountUtils.isShardAccount(account) || accountUtils.isChainAccount(account)
+                        ? account.keyType
+                        : undefined
                     }
-                  />
+                  >
+                    <AccountExplorers accountId={account.accountId} chain={chain} />
+                  </ContactItem>
                 </div>
                 <div className="flex w-[168px] flex-col items-end justify-center px-3">
                   <BodyText>

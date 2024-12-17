@@ -25,13 +25,18 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
   });
   const modalNodes = triggerNode ? arrayChildren.filter((child) => child !== triggerNode) : arrayChildren;
 
+  const hasTitle =
+    modalNodes.find((child) => {
+      return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
+    }) !== null;
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={onToggle}>
       {triggerNode}
       <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay
           className={cnTw(
-            'fixed inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
+            'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
             'duration-300 animate-in fade-in',
           )}
@@ -39,7 +44,9 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
           <Dialog.Content
             aria-describedby={undefined}
             className={cnTw(
-              'ui-kit-modal-height flex min-w-32 max-w-full transform flex-col overflow-hidden rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
+              'ui-kit-modal-height flex min-w-32 max-w-full flex-col overflow-hidden',
+              'text-left align-middle text-body',
+              'transform rounded-lg bg-white shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',
@@ -53,6 +60,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
               },
             )}
           >
+            {hasTitle ? null : <Dialog.Title hidden />}
             {modalNodes}
           </Dialog.Content>
         </Dialog.Overlay>

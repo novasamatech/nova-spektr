@@ -20,7 +20,7 @@ type Props = Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> & {
 };
 
 export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ invalid, disabled, testId, value, onChange, ...props }, ref) => {
+  ({ invalid, disabled, testId = 'TextArea', value, onChange, ...props }, ref) => {
     return (
       <textarea
         className={cnTw(

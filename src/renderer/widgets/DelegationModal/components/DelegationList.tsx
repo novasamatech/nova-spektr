@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
-import { Button, Loader, SearchInput } from '@/shared/ui';
-import { Box, Select } from '@/shared/ui-kit';
+import { Button, Loader } from '@/shared/ui';
+import { Box, SearchInput, Select } from '@/shared/ui-kit';
 import { SortType } from '../common/constants';
 import { delegationModel } from '../model/delegation-model';
 
@@ -32,9 +32,8 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
         </div>
       ) : (
         <>
-          <div className="mx-5 mb-4 flex items-center gap-4">
+          <div className="mx-5 mb-4 grid grid-cols-[1fr,auto] items-center gap-x-4">
             <SearchInput
-              wrapperClass="flex-1"
               value={query}
               placeholder={t('general.input.searchPlaceholder')}
               onChange={delegationModel.events.queryChanged}

@@ -41,7 +41,7 @@ export const BaseModal = ({
       <Dialog.Portal>
         <Dialog.Overlay
           className={cnTw(
-            'fixed inset-0 flex min-h-full items-center justify-center overflow-hidden p-4',
+            'absolute inset-0 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
             'duration-300 animate-in fade-in',
             zIndex,

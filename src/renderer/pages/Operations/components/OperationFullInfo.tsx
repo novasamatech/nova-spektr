@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useMultisigChainContext } from '@/app/providers';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type CallData, type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
@@ -20,8 +20,8 @@ import CallDataModal from './modals/CallDataModal';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account?: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 export const OperationFullInfo = ({ tx, account }: Props) => {
@@ -99,14 +99,14 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (
-            <RejectTxModal tx={tx} account={account} connection={extendedChain}>
+            <RejectTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
           {account && isApproveAvailable && connection && (
-            <ApproveTxModal tx={tx} account={account} connection={extendedChain}>
+            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}

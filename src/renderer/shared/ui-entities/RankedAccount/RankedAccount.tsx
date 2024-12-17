@@ -4,7 +4,7 @@ import { type AccountId, type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
-import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
 type Props = {

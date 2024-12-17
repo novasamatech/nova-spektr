@@ -4,16 +4,19 @@ import { camelCase } from 'lodash';
 import { type ClaimAction } from '@/shared/api/governance';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
+  type Account,
   type AccountId,
   type Address,
   type Asset,
   type Chain,
   type ChainId,
   type Conviction,
+  type MultisigAccount,
   type ReferendumId,
   type TrackId,
   type Transaction,
   TransactionType,
+  WrapperKind,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
@@ -39,6 +42,8 @@ export const transactionBuilder = {
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
+  buildCreatePureProxy,
+  buildCreateFlexibleMultisig,
 
   buildBatchAll,
   splitBatchAll,
@@ -485,7 +490,6 @@ function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Trans
 
   return buildBatchAll({ chain, accountId, transactions });
 }
-
 type RejectTxParams = {
   chain: Chain;
   signerAddress: Address;
@@ -508,4 +512,80 @@ function buildRejectMultisigTx({ chain, signerAddress, threshold, otherSignatori
       },
     },
   };
+}
+
+type CreateProxyPureParams = {
+  chain: Chain;
+  accountId: AccountId;
+};
+
+function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.CREATE_PURE_PROXY,
+    args: { proxyType: 'Any', delay: 0, index: 0 },
+  };
+}
+
+type CreateFlexibleMultisigParams = {
+  chain: Chain;
+  signer: Account;
+  api: ApiPromise;
+  multisigAccountId: AccountId;
+  threshold: number;
+  proxyDeposit: string;
+  signatories: {
+    accountId: AccountId;
+    address: Address;
+  }[];
+};
+
+function buildCreateFlexibleMultisig({
+  api,
+  chain,
+  multisigAccountId,
+  threshold,
+  signatories,
+  signer,
+  proxyDeposit,
+}: CreateFlexibleMultisigParams): Transaction {
+  const proxyTransaction = transactionBuilder.buildCreatePureProxy({
+    chain: chain,
+    accountId: signer.accountId,
+  });
+
+  const wrappedTransaction = transactionService.getWrappedTransaction({
+    api: api,
+    addressPrefix: chain.addressPrefix,
+    transaction: proxyTransaction,
+    txWrappers: [
+      {
+        kind: WrapperKind.MULTISIG,
+        multisigAccount: {
+          accountId: multisigAccountId,
+          signatories,
+          threshold,
+        } as MultisigAccount,
+        signatories: signatories.map((s) => ({
+          accountId: toAccountId(s.address),
+        })) as Account[],
+        signer,
+      },
+    ],
+  });
+
+  const transferTransaction = {
+    chainId: chain.chainId,
+    address: toAddress(signer.accountId, { prefix: chain.addressPrefix }),
+    type: TransactionType.TRANSFER,
+    args: {
+      dest: toAddress(multisigAccountId, { prefix: chain.addressPrefix }),
+      value: proxyDeposit,
+    },
+  };
+
+  const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
+
+  return buildBatchAll({ chain, accountId: signer.accountId, transactions });
 }

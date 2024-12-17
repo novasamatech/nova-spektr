@@ -3,8 +3,9 @@ import { useEffect } from 'react';
 
 import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
-import { Alert, BaseModal, Button, InfoLink, InputFile, InputHint } from '@/shared/ui';
+import { nonNullable } from '@/shared/lib/utils';
+import { Alert, BaseModal, Button, InfoLink, InputHint } from '@/shared/ui';
+import { InputFile } from '@/shared/ui-kit';
 import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { importKeysModel } from '../model/import-keys-model';
@@ -58,21 +59,24 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
 
   return (
     <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
-      <div className="flex flex-col items-start gap-y-4">
-        <InputFile
-          placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-          accept=".yaml,.txt"
-          className={cnTw('h-[126px] w-full', validationError && 'mb-2', successReport && 'mb-4')}
-          invalid={Boolean(validationError?.error)}
-          onChange={handleFileUpload}
-        />
+      <div className="mt-4 flex flex-col items-start gap-y-4">
+        <div className="flex w-full flex-col gap-y-2">
+          <div className="h-[126px]">
+            <InputFile
+              accept=".yaml,.txt"
+              placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
+              invalid={nonNullable(validationError?.error)}
+              onChange={handleFileUpload}
+            />
+          </div>
 
-        <InputHint active={Boolean(validationError)} variant="error" className="mt-2">
-          {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
-        </InputHint>
+          <InputHint active={nonNullable(validationError)} variant="error">
+            {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
+          </InputHint>
+        </div>
 
         <Alert
-          active={Boolean(successReport)}
+          active={nonNullable(successReport)}
           title={t('dynamicDerivations.importKeys.report.title')}
           variant="success"
         >
@@ -84,7 +88,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
           ))}
         </Alert>
 
-        <InfoLink url={TEMPLATE_GITHUB_LINK} className="mt-2 gap-x-1 px-3" iconName="import" iconPosition="right">
+        <InfoLink url={TEMPLATE_GITHUB_LINK} className="ml-2" iconName="import" iconPosition="right">
           {t('dynamicDerivations.importKeys.downloadTemplateButton')}
         </InfoLink>
       </div>

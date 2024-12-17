@@ -84,7 +84,6 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
       <div ref={anchorRef} className="w-full">
         <Ariakit.Combobox
           autoSelect
-          autoComplete="both"
           ref={comboboxRef}
           placeholder={placeholder}
           render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}

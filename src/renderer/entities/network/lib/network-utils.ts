@@ -6,6 +6,7 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
+  ExternalType,
 } from '@/shared/core';
 import { RelayChains } from '@/shared/lib/utils';
 
@@ -29,6 +30,7 @@ export const networkUtils = {
 
   getNewestMetadata,
   getLightClientChains,
+  getProxyExternalApi,
 
   getMainRelaychains,
   chainNameToUrl,
@@ -88,6 +90,18 @@ function isRpcConnection(connection: Connection): boolean {
 
 function isAutoBalanceConnection(connection: Connection): boolean {
   return connection.connectionType === ConnectionType.AUTO_BALANCE;
+}
+
+function getProxyExternalApi(chain: Chain) {
+  if (isMultisigSupported(chain.options)) {
+    if (!chain.externalApi) return null;
+    const proxyExternalApis = chain.externalApi[ExternalType.PROXY];
+    if (!proxyExternalApis) return null;
+
+    return proxyExternalApis.find((x) => x.url) ?? null;
+  }
+
+  return null;
 }
 
 function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {

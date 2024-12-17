@@ -1,12 +1,21 @@
+import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Account, type MultisigAccount, type MultisigTransaction, type Transaction } from '@/shared/core';
+import {
+  type Account,
+  type Chain,
+  type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
+  type MultisigAccount,
+  type MultisigTransaction,
+  type Transaction,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { type ExtendedChain, networkModel } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -23,14 +32,15 @@ import { TransactionAmount } from '@/pages/Operations/components/TransactionAmou
 import { Details } from '../Details';
 
 type Props = {
-  tx: MultisigTransaction;
-  account: MultisigAccount;
+  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  account: MultisigAccount | FlexibleMultisigAccount;
   signAccount?: Account;
-  chainConnection: ExtendedChain;
+  chain: Chain;
+  api: ApiPromise;
   feeTx?: Transaction;
   onSign: () => void;
 };
-export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx, onSign }: Props) => {
+export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSign }: Props) => {
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -42,7 +52,7 @@ export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx,
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const asset = getAssetById(tx.transaction?.args.assetId, chainConnection.assets) || chainConnection.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets) || chain.assets[0];
 
   const transaction = getTransactionFromMultisigTx(tx);
 
@@ -70,22 +80,22 @@ export const Confirmation = ({ tx, account, chainConnection, signAccount, feeTx,
         {tx.transaction && <TransactionAmount tx={tx.transaction} />}
       </div>
 
-      <Details tx={tx} account={account} extendedChain={chainConnection} signatory={signAccount} />
-      {signAccount && chainConnection?.api && (
+      <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />
+      {signAccount && api && (
         <MultisigDepositWithLabel
-          api={chainConnection.api}
-          asset={chainConnection.assets[0]}
+          api={api}
+          asset={chain.assets[0]}
           className="text-footnote"
           threshold={(account as MultisigAccount).threshold}
         />
       )}
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {chainConnection?.api && feeTx ? (
+        {api && feeTx ? (
           <Fee
             className="text-footnote"
-            api={chainConnection.api}
-            asset={chainConnection.assets[0]}
+            api={api}
+            asset={chain.assets[0]}
             transaction={feeTx}
             onFeeChange={(fee) => setIsFeeLoaded(Boolean(fee))}
           />

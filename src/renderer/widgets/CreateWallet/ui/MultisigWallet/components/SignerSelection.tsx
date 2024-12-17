@@ -2,10 +2,12 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { type Account, AccountType, type ChainAccount } from '@/shared/core';
+import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { Step } from '@/widgets/CreateWallet/lib/types';
+import { Box, Modal } from '@/shared/ui-kit';
+import { accountUtils } from '@/entities/wallet';
 import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
 import { formModel } from '@/widgets/CreateWallet/model/form-model';
 import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
@@ -16,7 +18,7 @@ export const SignerSelection = () => {
   const { t } = useI18n();
 
   const chain = useUnit(formModel.$chain);
-  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets) || [];
+  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
   const { submit } = useForm(formModel.$createMultisigForm);
 
@@ -27,35 +29,37 @@ export const SignerSelection = () => {
   };
 
   return (
-    <section className="max-h-[660px] w-full overflow-x-hidden px-5 pb-4">
-      <ul className="my-4 flex flex-col [overflow-y:overlay]">
-        {ownedSignatoriesWallets.map(({ accounts, type, name }) => {
-          if (!chain) return null;
+    <>
+      <Modal.Content>
+        <ul className="my-1 flex max-h-[660px] w-full max-w-[368px] flex-col gap-y-2 px-3">
+          {ownedSignatoriesWallets.map((wallet) => {
+            if (!chain) return null;
 
-          const account =
-            accounts[0].type === AccountType.BASE
-              ? accounts[0]
-              : accounts.find((account) => (account as ChainAccount).chainId === chain.chainId);
+            const account = wallet.accounts.find((account) => {
+              return accountUtils.isBaseAccount(account) || account.chainId === chain.chainId;
+            });
 
-          if (!account) return null;
+            if (!account) return null;
 
-          return (
-            <Signer
-              key={`${account.walletId}_${account.accountId}`}
-              account={account}
-              walletName={name}
-              walletType={type}
-              chain={chain}
-              onSubmit={onSubmit}
-            />
-          );
-        })}
-      </ul>
-      <div className="mt-auto flex items-center justify-between">
-        <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
-          {t('createMultisigAccount.backButton')}
-        </Button>
-      </div>
-    </section>
+            return (
+              <Signer
+                key={`${account.walletId}_${account.accountId}`}
+                account={account}
+                wallet={wallet}
+                chain={chain}
+                onSubmit={onSubmit}
+              />
+            );
+          })}
+        </ul>
+      </Modal.Content>
+      <Modal.Footer>
+        <Box fitContainer direction="row" horizontalAlign="start" verticalAlign="center">
+          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
+            {t('createMultisigAccount.backButton')}
+          </Button>
+        </Box>
+      </Modal.Footer>
+    </>
   );
 };

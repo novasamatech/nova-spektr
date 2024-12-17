@@ -8,8 +8,9 @@ import { type BaseAccount, type Chain, type ChainAccount, type ChainId, type Hex
 import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
-import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { Field, Input } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type AddressInfo, type CompactSeedInfo, type SeedInfo } from '@/entities/transaction';
 import { ExplorersPopover, walletModel } from '@/entities/wallet';
@@ -198,146 +199,146 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   };
 
   return (
-    <>
-      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
-        <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
-        <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
+    <div className="flex h-full">
+      <div className="flex-1 rounded-l-lg bg-white">
+        <div className="flex h-full flex-col px-5 py-4">
+          <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
+          <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
 
-        <form className="flex h-full flex-col" onSubmit={handleSubmit(createWallet)}>
-          <Controller
-            name="walletName"
-            control={control}
-            rules={{ required: true, maxLength: 256 }}
-            render={({ field: { onChange, value } }) => (
-              <Input
-                wrapperClass="flex items-center"
-                label={t('onboarding.walletNameLabel')}
-                placeholder={t('onboarding.walletNamePlaceholder')}
-                invalid={Boolean(errors.walletName)}
-                value={value}
-                onChange={onChange}
-              />
-            )}
-          />
-          <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
-            {t('onboarding.watchOnly.walletNameMaxLenError')}
-          </InputHint>
-          <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
-            {t('onboarding.watchOnly.walletNameRequiredError')}
-          </InputHint>
+          <form className="flex h-full flex-col" onSubmit={handleSubmit(createWallet)}>
+            <Controller
+              name="walletName"
+              control={control}
+              rules={{ required: true, maxLength: 256 }}
+              render={({ field: { onChange, value } }) => (
+                <Field text={t('onboarding.walletNameLabel')}>
+                  <Input
+                    placeholder={t('onboarding.walletNamePlaceholder')}
+                    invalid={Boolean(errors.walletName)}
+                    value={value}
+                    onChange={onChange}
+                  />
+                </Field>
+              )}
+            />
+            <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
+              {t('onboarding.watchOnly.walletNameMaxLenError')}
+            </InputHint>
+            <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
+              {t('onboarding.watchOnly.walletNameRequiredError')}
+            </InputHint>
 
-          <div className="flex flex-1 items-end justify-between">
-            <Button variant="text" onClick={goBack}>
-              {t('onboarding.backButton')}
-            </Button>
+            <div className="flex flex-1 items-end justify-between">
+              <Button variant="text" onClick={goBack}>
+                {t('onboarding.backButton')}
+              </Button>
 
-            <Button type="submit" disabled={!isValid || !activeWalletsHaveName}>
-              {t('onboarding.continueButton')}
+              <Button type="submit" disabled={!isValid || !activeWalletsHaveName}>
+                {t('onboarding.continueButton')}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="flex-1 rounded-r-lg bg-input-background-disabled">
+        <div className="relative flex h-full flex-col py-4">
+          <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
+
+          <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
+            <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+
+            <Button
+              variant="text"
+              suffixElement={<Icon name="magic" size={16} className="text-icon-accent" />}
+              onClick={fillAccountNames}
+            >
+              {t('onboarding.vault.fillNamesButton')}
             </Button>
           </div>
-        </form>
-      </div>
-
-      <div className="relative flex w-[472px] flex-col rounded-r-lg bg-input-background-disabled py-4">
-        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
-
-        <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
-          <SmallTitleText>{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-
-          <Button
-            variant="text"
-            suffixElement={<Icon name="magic" size={16} className="text-icon-accent" />}
-            onClick={fillAccountNames}
-          >
-            {t('onboarding.vault.fillNamesButton')}
-          </Button>
-        </div>
-        <div className="mx-5 flex py-2">
-          <FootnoteText className="w-[182px] text-text-tertiary">{t('onboarding.vault.addressColumn')}</FootnoteText>
-          <FootnoteText className="text-text-tertiary">{t('onboarding.vault.nameColumn')}</FootnoteText>
-        </div>
-        <div className="overflow-y-auto pl-3 pr-3.5">
-          {accounts.map((account, index) => (
-            <div key={getAccountId(index)}>
-              <div className="flex w-full items-center justify-between gap-2">
-                <ExplorersPopover
-                  button={
-                    <FootnoteText className="flex w-[180px] items-center gap-2 text-text-secondary">
-                      <Address address={account.address} variant="truncate" showIcon />
-                      <IconButton name="details" />
-                    </FootnoteText>
-                  }
-                  address={account.address}
-                  explorers={RootExplorers}
-                  contextClassName="mr-[-2rem]"
-                />
-                <div className="flex items-center">
+          <div className="mx-5 grid grid-cols-[170px,auto] gap-x-4 py-2">
+            <FootnoteText className="text-text-tertiary">{t('onboarding.vault.addressColumn')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{t('onboarding.vault.nameColumn')}</FootnoteText>
+          </div>
+          <div className="overflow-y-auto pl-3 pr-3.5">
+            {accounts.map((account, index) => (
+              <div key={getAccountId(index)}>
+                <div className="grid grid-cols-[178px,auto] items-center gap-x-4 pr-6">
+                  <ExplorersPopover
+                    button={
+                      <FootnoteText className="flex items-center gap-2 text-text-secondary">
+                        <Address address={account.address} variant="truncate" showIcon />
+                        <IconButton name="details" />
+                      </FootnoteText>
+                    }
+                    address={account.address}
+                    explorers={RootExplorers}
+                    contextClassName="mr-[-2rem]"
+                  />
                   <Input
                     disabled={inactiveAccounts[getAccountId(index)]}
-                    wrapperClass="flex w-[214px] items-center p-3 mr-[23px]"
                     placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                     value={accountNames[getAccountId(index)] || ''}
-                    onChange={(name) => updateAccountName(name, index)}
+                    onChange={(value) => updateAccountName(value, index)}
                   />
                 </div>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {Object.entries(chainsObject).map(([chainId, chain]) => {
-                  const derivedKeys = account.derivedKeys[chainId as ChainId];
+                <ul className="flex flex-col gap-2.5">
+                  {Object.entries(chainsObject).map(([chainId, chain]) => {
+                    const derivedKeys = account.derivedKeys[chainId as ChainId];
 
-                  if (!derivedKeys) return;
+                    if (!derivedKeys) return;
 
-                  return (
-                    <div key={chainId}>
-                      <div className="ml-4 flex items-center">
-                        <div className="mr-4 h-[34px] w-[2px] bg-divider"></div>
-                        <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
-                      </div>
-                      {derivedKeys.map(({ address }, derivedKeyIndex) => (
-                        <div
-                          key={getAccountId(index, chainId, derivedKeyIndex)}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center">
-                            <div
-                              className={cnTw(
-                                'ml-4 h-[50px] w-[2px] bg-divider',
-                                derivedKeyIndex === derivedKeys.length - 1 && 'mb-[24px] h-[26px]',
-                              )}
-                            ></div>
-                            <div className="h-[2px] w-[8px] bg-divider"></div>
-                            <div className="flex items-center gap-1">
-                              <FootnoteText className="w-[150px] text-text-secondary">
-                                <Address address={address} variant="truncate" showIcon />
-                              </FootnoteText>
-                              <AccountExplorers accountId={toAccountId(address)} chain={chain} />
+                    return (
+                      <li key={chainId}>
+                        <div className="ml-4 flex items-center">
+                          <div className="mr-4 h-[34px] w-[2px] bg-divider"></div>
+                          <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                        </div>
+                        {derivedKeys.map(({ address }, derivedKeyIndex) => (
+                          <div
+                            key={getAccountId(index, chainId, derivedKeyIndex)}
+                            className="flex items-center gap-x-4"
+                          >
+                            <div className="flex items-center">
+                              <div
+                                className={cnTw(
+                                  'ml-4 h-[50px] w-[2px] bg-divider',
+                                  derivedKeyIndex === derivedKeys.length - 1 && 'mb-[24px] h-[26px]',
+                                )}
+                              />
+                              <div className="h-[2px] w-[8px] bg-divider" />
+                              <div className="ml-2 flex items-center gap-1">
+                                <FootnoteText className="w-[125px] text-text-secondary">
+                                  <Address address={address} variant="truncate" showIcon />
+                                </FootnoteText>
+                                <AccountExplorers accountId={toAccountId(address)} chain={chain} />
+                              </div>
+                            </div>
+                            <div className="grid w-full grid-cols-[auto,16px] items-center gap-x-2">
+                              <Input
+                                disabled={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
+                                placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
+                                value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
+                                onChange={(value) => updateAccountName(value, index, chainId, derivedKeyIndex)}
+                              />
+                              <IconButton
+                                name={
+                                  inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'eye' : 'eyeSlashed'
+                                }
+                                onClick={() => toggleAccount(index, chainId, derivedKeyIndex)}
+                              />
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              disabled={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
-                              wrapperClass="flex w-[214px] items-center p-3"
-                              placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
-                              value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
-                              onChange={(name) => updateAccountName(name, index, chainId, derivedKeyIndex)}
-                            />
-                            <IconButton
-                              name={
-                                inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)] ? 'eye' : 'eyeSlashed'
-                              }
-                              onClick={() => toggleAccount(index, chainId, derivedKeyIndex)}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
+                        ))}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };

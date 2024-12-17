@@ -1,4 +1,4 @@
-import { type ProxiedAccount, ProxyType, ProxyVariant } from '@/shared/core';
+import { type ProxiedAccount, ProxyVariant } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { proxyUtils } from '../proxy-utils';
 
@@ -22,7 +22,7 @@ describe('entities/proxy/lib/proxy-utils', () => {
   test('should return proxied name for a given proxied account', () => {
     const proxiedAccount = {
       accountId: TEST_ACCOUNTS[0],
-      proxyType: ProxyType.ANY,
+      proxyType: 'Any',
       proxyVariant: ProxyVariant.REGULAR,
     } as unknown as ProxiedAccount;
 

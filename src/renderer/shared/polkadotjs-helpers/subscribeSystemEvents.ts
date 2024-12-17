@@ -13,10 +13,11 @@ export const subscribeSystemEvents = (
 ) => {
   const isValidEvent = (event: Event) => {
     const isCorrectSection = event.section.toString() === section;
+
     if (!methods || methods.length === 0) {
       return isCorrectSection;
     }
-    const isCorrectMethod = methods.includes(event.method);
+    const isCorrectMethod = methods.includes(event.method.toString());
 
     return isCorrectSection && isCorrectMethod;
   };

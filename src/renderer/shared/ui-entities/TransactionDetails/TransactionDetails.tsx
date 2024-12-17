@@ -9,7 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';
-import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];

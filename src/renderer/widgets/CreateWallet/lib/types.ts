@@ -1,14 +1,5 @@
 import { type Account, type ChainId, type Transaction } from '@/shared/core';
 
-export const enum Step {
-  NAME_NETWORK,
-  SIGNATORIES_THRESHOLD,
-  CONFIRM,
-  SIGNER_SELECTION,
-  SIGN,
-  SUBMIT,
-}
-
 export type FormParams = {
   threshold: number;
   chainId: ChainId;

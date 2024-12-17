@@ -43,7 +43,9 @@ export const Fellowship = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <Search />
+        <div className="w-[230px]">
+          <Search />
+        </div>
       </Header>
 
       <ScrollArea>
