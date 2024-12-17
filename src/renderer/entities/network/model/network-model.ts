@@ -382,10 +382,14 @@ sample({
 sample({
   clock: createApiFx.done,
   source: $metadata,
-  fn: (metadata, { params, result }) => ({
-    api: result,
-    cachedVersion: metadata.find((m) => m.chainId === params.chainId)?.runtimeVersion ?? null,
-  }),
+  fn: (metadata, { params, result }) => {
+    const cachedVersion = metadata.find((m) => m.chainId === params.chainId)?.runtimeVersion ?? null;
+
+    return {
+      api: result,
+      cachedVersion,
+    };
+  },
   target: subscribeRuntimeVersionFx,
 });
 
