@@ -222,8 +222,13 @@ sample({
   target: $connections,
 });
 
+const readyToConnect = combineEvents({
+  events: [populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done],
+  reset: networkStarted,
+});
+
 sample({
-  clock: combineEvents([populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done]),
+  clock: readyToConnect,
   source: $chains,
   fn: (chains) => {
     return Object.keys(chains).map((chainId) => chainId as ChainId);

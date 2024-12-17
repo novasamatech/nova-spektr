@@ -83,23 +83,21 @@ describe('entities/network/model/network-model', () => {
       connections: [mockConnection],
       metadata: [mockMetadata],
     });
-
+    const provider = { isConnected: true, onMetadataReceived: () => {} } as unknown as ProviderWithMetadata;
     const scope = fork();
 
-    const spyCreateProvider = jest
-      .spyOn(networkService, 'createProvider')
-      .mockReturnValue({ isConnected: true } as ProviderWithMetadata);
+    const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
 
     await allSettled(networkModel.events.networkStarted, { scope });
 
     expect(spyCreateProvider).toHaveBeenCalledWith(
       mockChainMap['0x01'].chainId,
       ProviderType.WEB_SOCKET,
-      { metadata: mockMetadata.metadata, nodes: ['http://localhost:8080'] },
+      { metadata: mockMetadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
     expect(scope.getState(networkModel._test.$providers)).toEqual({
-      '0x01': { isConnected: true },
+      '0x01': provider,
     });
   });
 
@@ -115,13 +113,14 @@ describe('entities/network/model/network-model', () => {
       ],
       metadata: [mockMetadata],
     });
-
-    const scope = fork();
-
     const connectMock = jest.fn();
-    const spyCreateProvider = jest
-      .spyOn(networkService, 'createProvider')
-      .mockReturnValue({ connect: connectMock, isConnected: true } as unknown as ProviderWithMetadata);
+    const provider = {
+      connect: connectMock,
+      isConnected: true,
+      onMetadataReceived: () => {},
+    } as unknown as ProviderWithMetadata;
+    const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
+    const scope = fork();
 
     await allSettled(networkModel.events.networkStarted, { scope });
 
@@ -133,7 +132,7 @@ describe('entities/network/model/network-model', () => {
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
     expect(scope.getState(networkModel._test.$providers)).toEqual({
-      '0x01': { connect: connectMock, isConnected: true },
+      '0x01': provider,
     });
   });
 });
