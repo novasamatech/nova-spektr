@@ -157,11 +157,7 @@ type CreateApiParams = {
   existingApi: ApiPromise | null;
 };
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
-  if (existingApi) {
-    await existingApi.connect();
-
-    return existingApi;
-  }
+  if (nonNullable(existingApi)) return existingApi;
 
   return networkService.createApi(chainId, provider);
 });
