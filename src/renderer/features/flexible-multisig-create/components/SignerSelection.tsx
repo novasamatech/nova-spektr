@@ -1,16 +1,18 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
 
 import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Step, toAddress } from '@/shared/lib/utils';
+import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { WalletCardMd, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
+
+import { Signer } from './Signer';
 
 export const SignerSelection = () => {
   const { t } = useI18n();
@@ -19,15 +21,16 @@ export const SignerSelection = () => {
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const chain = useUnit(formModel.$chain);
 
-  const onSubmit = (account: Account) => {
+  const onSubmit = (event: FormEvent, account: Account) => {
     flexibleMultisigModel.events.signerSelected(account);
+    event.preventDefault();
     submit();
   };
 
   return (
     <>
       <Modal.Content>
-        <ul className="my-1 flex max-h-[660px] w-full flex-col gap-y-2 px-3">
+        <ul className="my-1 flex max-h-[660px] w-full max-w-[368px] flex-col gap-y-2 px-3">
           {ownedSignatoriesWallets.map((wallet) => {
             if (!chain) return null;
 
@@ -38,15 +41,13 @@ export const SignerSelection = () => {
             if (!account) return null;
 
             return (
-              <li key={`${account.walletId}_${account.accountId}`} className="flex items-center justify-between">
-                <WalletCardMd
-                  wallet={wallet}
-                  description={toAddress(account.accountId, { prefix: chain.addressPrefix, chunk: 12 })}
-                  onClick={() => onSubmit(account)}
-                >
-                  <AccountExplorers accountId={account.accountId} chain={chain} />
-                </WalletCardMd>
-              </li>
+              <Signer
+                key={`${account.walletId}_${account.accountId}`}
+                account={account}
+                wallet={wallet}
+                chain={chain}
+                onSubmit={onSubmit}
+              />
             );
           })}
         </ul>

@@ -88,7 +88,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
           <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <div className="mt-auto flex items-center justify-end">
+          <div className="flex items-center justify-end gap-x-6">
             {nonNullable(asset) ? <MultisigFees asset={asset} /> : null}
 
             <Button
