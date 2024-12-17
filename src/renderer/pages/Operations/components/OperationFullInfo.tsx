@@ -64,7 +64,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   if (!walletUtils.isMultisig(activeWallet)) return;
 
   const isRejectAvailable = wallets.some((wallet) => {
-    const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
+    const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
 
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
   });

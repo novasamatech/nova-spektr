@@ -48,7 +48,9 @@ export const getSignatoryName = (
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c.accountId === signatoryId);
+    console.log('xcmCol', collection);
+
+    return collection.find((c) => c?.accountId === signatoryId);
   };
 
   // signatory data source priority: transaction -> contacts -> wallets -> address
@@ -59,6 +61,8 @@ export const getSignatoryName = (
   if (fromContact) return fromContact;
 
   const accounts = wallets.map((wallet) => wallet.accounts).flat();
+  console.log('xcmAcc', accounts);
+
   const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 
