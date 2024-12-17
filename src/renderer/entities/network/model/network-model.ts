@@ -160,12 +160,9 @@ type CreateApiParams = {
   apis: Record<ChainId, ApiPromise>;
 };
 const createApiFx = createEffect(async ({ chainId, providers, apis }: CreateApiParams): Promise<ApiPromise> => {
-  if (chainId in apis) {
-    const api = apis[chainId];
-    await api.connect();
+  const api = apis[chainId];
 
-    return api;
-  }
+  if (nonNullable(api)) return api;
 
   return networkService.createApi(chainId, providers[chainId]);
 });
