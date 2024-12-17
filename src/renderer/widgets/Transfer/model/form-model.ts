@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
@@ -33,7 +34,7 @@ import {
 import { createTxStore } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { TransferType, transactionBuilder, transactionService } from '@/entities/transaction';
+import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
@@ -166,37 +167,6 @@ const $transferForm = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
-
-const getDeliveryFeeFx = createEffect(
-  async ({
-    config,
-    parachainId,
-    api,
-    parentApi,
-    transaction,
-  }: {
-    config: XcmConfig | null;
-    parachainId: number | null;
-    api: ApiPromise | null;
-    parentApi: ApiPromise | null;
-    transaction?: Transaction | null;
-  }) => {
-    if (config && api && parentApi && parachainId && transaction) {
-      const txBytesLength = transactionService.getTxBytesLength(transaction, api);
-
-      return xcmService.getDeliveryFeeFromConfig({
-        config,
-        originChain: toLocalChainId(api.genesisHash.toHex()) || '',
-        originApi: api,
-        parentApi,
-        destinationChainId: parachainId,
-        txBytesLength,
-      });
-    } else {
-      return BN_ZERO;
-    }
-  },
-);
 
 // Computed
 
@@ -440,6 +410,47 @@ const $canSubmit = combine(
   },
 );
 
+const $extrinsic = combine(
+  {
+    api: $api,
+    coreTx: $coreTx,
+  },
+  ({ api, coreTx }) => {
+    if (!api || !coreTx) return null;
+
+    return getExtrinsic[coreTx.type](coreTx.args, api);
+  },
+);
+
+const getDeliveryFeeFx = createEffect(
+  async ({
+    config,
+    parachainId,
+    api,
+    parentApi,
+    extrinsic,
+  }: {
+    config: XcmConfig | null;
+    parachainId: number | null;
+    api: ApiPromise | null;
+    parentApi: ApiPromise | null;
+    extrinsic?: SubmittableExtrinsic<'promise'> | null;
+  }) => {
+    if (config && api && parentApi && parachainId && extrinsic) {
+      return xcmService.getDeliveryFeeFromConfig({
+        config,
+        originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+        originApi: api,
+        parentApi,
+        destinationChainId: parachainId,
+        txBytesLength: extrinsic.encodedLength,
+      });
+    } else {
+      return BN_ZERO;
+    }
+  },
+);
+
 // Fields connections
 
 sample({
@@ -654,13 +665,13 @@ sample({
 });
 
 sample({
-  clock: $coreTx,
+  clock: $extrinsic,
   source: {
     api: $api,
     parentApi: xcmTransferModel.$parentChainApi,
     parachainId: xcmTransferModel.$xcmParaId,
     config: xcmTransferModel.$config,
-    transaction: $coreTx,
+    extrinsic: $extrinsic,
   },
   target: getDeliveryFeeFx,
 });

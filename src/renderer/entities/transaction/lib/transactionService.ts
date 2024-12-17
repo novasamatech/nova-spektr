@@ -53,7 +53,6 @@ export const transactionService = {
   getTxWeight,
   verifySignature,
   splitTxsByWeight,
-  getTxBytesLength,
 
   logPayload,
 };
@@ -346,12 +345,6 @@ async function getTxWeight(
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
   return getExtrinsicWeight(extrinsic, options);
-}
-
-function getTxBytesLength(transaction: Transaction, api: ApiPromise): number {
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
-  return extrinsic.encodedLength;
 }
 
 function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
