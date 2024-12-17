@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
-import { type BN, BN_TWO, bnMin, hexToU8a, isHex } from '@polkadot/util';
+import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import {
   type BaseTxInfo,
@@ -249,3 +249,7 @@ export const getSecondsDurationToBlock = (timeToBlock: number): number => {
 
   return Math.floor(time / 1000);
 };
+
+export const numberToScaleEncoded = (value: number) => u8aToHex(numberToU8a(value));
+
+export const scaleEncodedToNumber = (value: string) => u8aToNumber(hexToU8a(value));
