@@ -61,7 +61,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     updateCallData(api, tx, callData as CallData);
   };
 
-  if (!walletUtils.isMultisig(activeWallet)) return;
+  if (!walletUtils.isMultisig(activeWallet)) return null;
 
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
