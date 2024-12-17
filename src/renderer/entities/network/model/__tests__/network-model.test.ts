@@ -128,7 +128,7 @@ describe('entities/network/model/network-model', () => {
     expect(spyCreateProvider).toHaveBeenCalledWith(
       mockChainMap['0x01'].chainId,
       ProviderType.LIGHT_CLIENT,
-      { metadata: mockMetadata.metadata, nodes: [''] },
+      { metadata: mockMetadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
     expect(scope.getState(networkModel._test.$providers)).toEqual({
