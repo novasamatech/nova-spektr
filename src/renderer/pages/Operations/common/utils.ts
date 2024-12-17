@@ -48,7 +48,7 @@ export const getSignatoryName = (
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c.accountId === signatoryId);
+    return collection.find((c) => c?.accountId === signatoryId);
   };
 
   // signatory data source priority: transaction -> contacts -> wallets -> address

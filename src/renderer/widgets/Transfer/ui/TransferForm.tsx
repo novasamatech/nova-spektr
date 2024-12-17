@@ -283,6 +283,7 @@ const FeeSection = () => {
   const isXcm = useUnit(formModel.$isXcm);
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
+  const deliveryFee = useUnit(formModel.$deliveryFee);
 
   if (!network) {
     return null;
@@ -303,6 +304,7 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction?.wrappedTx || fakeTx}
+        extraFee={deliveryFee}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />

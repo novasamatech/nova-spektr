@@ -39,6 +39,7 @@ export const networkUtils = {
 function isConnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTED;
 }
+
 function isDisconnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.DISCONNECTED;
 }
@@ -46,6 +47,7 @@ function isDisconnectedStatus(status: ConnectionStatus): boolean {
 function isConnectingStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTING;
 }
+
 function isErrorStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.ERROR;
 }
@@ -105,7 +107,7 @@ function getProxyExternalApi(chain: Chain) {
 function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {
   return metadata.reduce<Record<ChainId, ChainMetadata>>(
     (acc, data) => {
-      if (data.version >= (acc[data.chainId]?.version || -1)) {
+      if (data.runtimeVersion >= (acc[data.chainId]?.runtimeVersion || -1)) {
         acc[data.chainId] = data;
       }
 

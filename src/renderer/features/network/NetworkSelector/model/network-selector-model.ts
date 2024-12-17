@@ -100,8 +100,8 @@ sample({
     return reconnectMap[chainId] ? { disconnect: chainId } : { connect: chainId };
   },
   target: spread({
-    connect: networkModel.events.chainConnected,
     disconnect: networkModel.events.chainDisconnected,
+    connect: networkModel.events.chainConnected,
   }),
 });
 

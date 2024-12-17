@@ -56,10 +56,12 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
   }>(
     (acc, account) => {
       if (accountUtils.isBaseAccount(account)) {
+        const nonBaseAccounts = accounts.filter((acc) => !accountUtils.isBaseAccount(acc));
+
         acc.baseId = account.id;
         acc.root[account.id] = getChainCounter(chains);
-        acc.root[account.id].checked = accounts.length;
-        acc.root[account.id].total = accounts.length;
+        acc.root[account.id].checked = nonBaseAccounts.length;
+        acc.root[account.id].total = nonBaseAccounts.length;
       } else {
         acc.shards.push(account as ChainAccount | ShardAccount);
       }
