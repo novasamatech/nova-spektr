@@ -17,6 +17,7 @@ export const $features = createStore({
   contacts: true,
   notifications: true,
   settings: true,
+  flexible: true,
 });
 
 persist({

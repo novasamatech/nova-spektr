@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { interval } from 'patronum';
@@ -22,10 +22,11 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { multisigService } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
+import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { multisigService } from '../api';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
@@ -100,6 +101,7 @@ const getMultisigsFx = createEffect(
       if (accountIds.length === 0) return [];
 
       const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
+      console.log('indexedMultisigs', indexedMultisigs);
 
       return (
         indexedMultisigs
@@ -107,10 +109,12 @@ const getMultisigsFx = createEffect(
           .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             const proxiesList = proxies[accountId];
+
             const proxy = nonNullable(proxiesList)
               ? // TODO check if it's a pure proxy
                 (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
               : null;
+            console.log('proxiesList', proxies, proxiesList, proxy);
 
             // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
             if (proxy) {
@@ -177,11 +181,12 @@ sample({
     multisigAccounts: $multisigAccounts,
     chains: $multisigChains,
     // TODO uncomment when we're ready to work with flexible multisig.
-    // proxies: proxyModel.$proxies,
-    proxies: createStore({}),
+    proxies: proxyModel.$proxies,
+    // proxies: createStore({}),
     connections: networkModel.$connections,
   },
   fn: ({ multisigAccounts, chains, proxies, connections }, accounts) => {
+    console.log(proxies);
     const filteredChains = chains.filter((chain) => {
       if (nullable(connections[chain.chainId])) return false;
 

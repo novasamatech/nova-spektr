@@ -64,15 +64,15 @@ export const FlexibleMultisigWallet = ({ onClose, onGoBack }: Props) => {
   return (
     <Modal isOpen size={MODAL_SIZE[activeStep].size} height={MODAL_SIZE[activeStep].height} onToggle={onClose}>
       <Modal.Title close>{modalTitle}</Modal.Title>
-      <Modal.Content>
-        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
-        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-        {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-        {isStep(activeStep, Step.SIGN) && (
+      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
+      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
+      {isStep(activeStep, Step.SIGN) && (
+        <Modal.Content>
           <OperationSign onGoBack={() => flexibleMultisigModel.events.stepChanged(Step.CONFIRM)} />
-        )}
-      </Modal.Content>
+        </Modal.Content>
+      )}
     </Modal>
   );
 };
