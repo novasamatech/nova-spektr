@@ -106,7 +106,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
             </RejectTxModal>
           )}
           {account && isApproveAvailable && connection && (
-            <ApproveTxModal tx={tx} account={account} connection={extendedChain}>
+            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}
