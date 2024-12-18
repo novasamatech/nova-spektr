@@ -228,21 +228,6 @@ const $xcmData = combine(
   { skipVoid: false },
 );
 
-const $parentChainApi = combine(
-  {
-    network: $networkStore,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
-  ({ network, chains, apis }) => {
-    if (!chains || !apis || !network) return null;
-
-    const parentChain = xcmService.getParentChain(network.chain, chains);
-
-    return apis[parentChain.chainId] ?? null;
-  },
-);
-
 sample({
   clock: xcmStarted,
   target: xcmConfigLoaded,
@@ -281,12 +266,12 @@ sample({
 export const xcmTransferModel = {
   $config,
   $apiDestination,
-  $parentChainApi,
   $xcmData,
   $xcmFee,
   $isXcmFeeLoading,
   $transferDirections,
   $xcmParaId,
+  $xcmChainId: $xcmChain,
 
   events: {
     xcmStarted,

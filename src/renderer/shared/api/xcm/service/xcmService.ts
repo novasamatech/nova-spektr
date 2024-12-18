@@ -339,20 +339,19 @@ function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
 async function getDeliveryFeeFromConfig({
   config,
   originChain,
+  destinationChain,
   originApi,
-  parentApi,
   destinationChainId,
   txBytesLength,
 }: {
   config: XcmConfig;
   originChain: string;
+  destinationChain: Chain;
   originApi: ApiPromise;
-  parentApi: ApiPromise;
   destinationChainId: number;
   txBytesLength: number;
 }): Promise<BN> {
-  const RELAYCHAINS = [1000, 2000];
-  const direction = RELAYCHAINS.includes(destinationChainId) ? 'toParent' : 'toParachain';
+  const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
@@ -362,7 +361,7 @@ async function getDeliveryFeeFromConfig({
 
   if (direction === 'toParent') {
     deliveryFactor = (
-      await parentApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
     ).toString();
   } else {
     deliveryFactor = (
