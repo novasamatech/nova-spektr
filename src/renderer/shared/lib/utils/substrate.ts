@@ -17,7 +17,6 @@ import {
   type BlockHeight,
   type CallData,
   type CallHash,
-  type ChainId,
   type HexString,
   type ProxyType,
   XcmPallets,
@@ -39,21 +38,20 @@ const UNUSED_LABEL = 'unused';
  * @substrate/txwrapper-polkadot signing
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
-  const chainId = api.genesisHash.toString() as ChainId;
+  const chainId = api.genesisHash.toHex();
 
-  const [header, blockHash, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
+  const [header, blockHash, nonce] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
     api.rpc.system.accountNextIndex(address),
-    api.rpc.state.getRuntimeVersion(),
   ]);
 
   const metadataRpc = api.runtimeMetadata.toHex();
 
   const registry = getRegistry({
-    chainName: specName.toString() as GetRegistryOpts['chainName'],
-    specName: specName.toString() as GetRegistryOpts['specName'],
-    specVersion: specVersion.toNumber(),
+    chainName: api.runtimeVersion.specName.toString(),
+    specName: api.runtimeVersion.specName.toString() as GetRegistryOpts['specName'],
+    specVersion: api.runtimeVersion.specVersion.toNumber(),
     metadataRpc,
     ...EXTENSIONS[chainId]?.txwrapper,
   });
@@ -65,8 +63,8 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
     genesisHash: chainId,
     metadataRpc,
     nonce: nonce.toNumber(),
-    specVersion: specVersion.toNumber(),
-    transactionVersion: transactionVersion.toNumber(),
+    specVersion: api.runtimeVersion.specVersion.toNumber(),
+    transactionVersion: api.runtimeVersion.transactionVersion.toNumber(),
     eraPeriod: 64,
     tip: 0,
   };
