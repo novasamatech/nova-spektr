@@ -25,13 +25,13 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should add new derivations', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//gov',
-          type: KeyType.GOVERNANCE,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
         },
         {
-          derivationPath: '//polkadot//staking//some_other_key',
-          type: KeyType.STAKING,
+          derivationPath: '//polkadot//custom//some_other_key',
+          type: KeyType.CUSTOM,
           chainId: importKeysMocks.chainId,
         },
       ];
@@ -55,8 +55,8 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should not duplicate keys', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//gov',
-          type: KeyType.GOVERNANCE,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
         },
         {
@@ -80,8 +80,8 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should merge sharded keys', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//staking',
-          type: KeyType.STAKING,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
           sharded: '20',
         },
@@ -97,7 +97,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
       );
 
       const shardedDerivations = mergedDerivations.filter((d) => d.type === AccountType.SHARD);
-      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//staking//19');
+      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
 
       expect(shardedDerivations.length).toEqual(20);
       expect(added).toEqual(11);

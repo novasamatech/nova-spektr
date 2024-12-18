@@ -20,6 +20,7 @@ type ContextProps = {
 const Context = createContext<ContextProps>({});
 
 type ControlledSelectProps<T extends string> = {
+  name?: string;
   placeholder: string;
   value: T | null;
   onChange: (value: T) => void;
@@ -31,6 +32,7 @@ type ControlledSelectProps<T extends string> = {
 type RootProps<T extends string> = PropsWithChildren<ControlledSelectProps<T> & ContextProps>;
 
 const Root = <T extends string>({
+  name,
   theme = 'light',
   invalid,
   disabled,
@@ -52,9 +54,9 @@ const Root = <T extends string>({
         disabled={disabled}
         value={value || ''}
         onOpenChange={onToggle}
-        onValueChange={onChange}
+        onValueChange={(value) => onChange(value as T)}
       >
-        <Button placeholder={placeholder} />
+        <Button name={name} placeholder={placeholder} />
         <Content>{children}</Content>
       </RadixSelect.Root>
     </Context.Provider>
@@ -64,15 +66,14 @@ const Root = <T extends string>({
   // https://github.com/radix-ui/primitives/issues/1569
 };
 
-type TriggerProps = {
-  placeholder: string;
-};
+type TriggerProps = Pick<ControlledSelectProps<string>, 'name' | 'placeholder'>;
 
-const Button = ({ placeholder }: TriggerProps) => {
+const Button = ({ name, placeholder }: TriggerProps) => {
   const { theme, height, invalid, disabled } = useContext(Context);
 
   return (
     <RadixSelect.Trigger
+      name={name}
       className={cnTw(
         'relative flex w-full items-center pl-[11px] pr-6',
         'rounded border text-footnote outline-offset-1',
