@@ -128,6 +128,7 @@
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",
+    "createMultisigWallet": "Create multisig wallet",
     "createionStatusTitle": "Mulitisig creation",
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
@@ -135,22 +136,21 @@
       "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
-    "duplicateSignatoryErrorTitle": "Duplicate signatory",
-    "duplicateSignatoryErrorText": "The list must consist of unique signatories",
+    "duplicateSignatoryAddress": "Signatory address already exist",
     "errorMessage": "Something went wrong",
-    "multiChain": {
-      "description": "Creation is free, the wallet works on all networks",
-      "featureFour": "Custom voting threshold",
-      "featureOne": "Any chain",
-      "featureThree": "Mutliple signers",
-      "featureTwo": "Some wallets are not supported",
-      "title": "Multi-chain multisig"
+    "flexibleMultisig": {
+      "flexible": "Flexible multisig",
+      "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
+      "proxyDeposit": "Proxy deposit:",
+      "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
+      "title": "Create flexible multisig"
     },
+    "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
     "multisigExistText": "A multisig wallet with the selected signatories and threshold already exists. You can try to create a multisig on another network.",
-    "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you. Would you like to restore it now?",
     "multisigExistTitle": "Multisig wallet already exists",
+    "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
     "multisigStep": "Step { step }.",
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
@@ -163,44 +163,46 @@
     "noOwnSignatoryTitle": "No owned account",
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
-    "notEnoughTokensTitle": "Not enough tokens",
-    "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit and network fee on a selected account",
-    "notEnoughSignatories": "You need to select at least 2 signatories",
-    "notEnoughSignatoriesTitle": "Not enough signatories",
-    "notEmptySignatoryTitle": "Empty signatory",
-    "notEmptySignatoryNameTitle": "Empty signatory name",
     "notEmptySignatory": "No empty signatory allowed",
     "notEmptySignatoryName": "No empty signatory name allowed",
-    "ownAccountSelection": "Address",
+    "notEmptySignatoryNameTitle": "Empty signatory name",
+    "notEmptySignatoryTitle": "Empty signatory",
+    "notEnoughMultisigTokens": "Selected wallets do not have sufficient balance to pay for the proxy deposit, multisig deposit, and network fees",
+    "notEnoughSignatories": "You need to select at least 2 signatories",
+    "notEnoughSignatoriesTitle": "Not enough signatories",
+    "notEnoughTokensTitle": "Not enough tokens",
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
-    "selectSigner": "Select signer",
+    "selectMultisigDescription": {
+      "flexibleDescription": "Can modify signatories",
+      "regularDescription": "Regular multisig wallet",
+      "featureOne": "<strong>Multiple Signatories</strong> required to approve transactions",
+      "featureTwo": "<strong>Set custom signatory threshold</strong> which must be met for transactions to be executed",
+      "featureThree": "<strong>Delegate authority</strong> over certain operations",
+      "featureFour": "<strong>Change signatories and threshold</strong> at any time",
+      "featureFive": "<strong>Address does not change</strong> when changing signatories",
+      "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <strong>only works on the network</strong> it was created on.",
+      "regularNote": "Only multisig deposit is required. This wallet <strong>only works on the network</strong> it was created on."
+    },
+    "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
-    "signatoryAddress": "Signatory address",
+    "signatoryAddress": "Address",
     "signatoryNameLabel": "Signatory name",
     "signatorySelection": "Choose or enter address",
     "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your multisig.",
     "signatoryTitle": "Select signatories",
     "signingWallet": "Signing wallet",
     "signingWith": "Signing with",
-    "singleChain": {
-      "description": "Creation is free, the wallet can work on one network only",
-      "featureFour": "Custom voting threshold",
-      "featureOne": "Single chain",
-      "featureThree": "Mutliple signers",
-      "featureTwo": "Use any wallet",
-      "title": "Single-chain multisig"
-    },
     "successMessage": "Wallet added",
     "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
-    "thresholdErrorTitle": "Invalid threshold",
     "thresholdErrorDescription": "Threshold must be set and superior or equal to { minThreshold }",
+    "thresholdErrorTitle": "Invalid threshold",
     "thresholdHint": "Minimum number of signatories needed to approve a transaction.",
     "thresholdName": "Threshold",
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
-    "thresholdPlaceholder": "Select threshold",
+    "thresholdPlaceholder": "Select number",
     "title": "Create multisig",
     "titleOn": "on",
     "walletFormTitle": "Set up your wallet",
@@ -296,6 +298,7 @@
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createMultisig": "Create a new multisig wallet",
+    "createFlexibleMultisig": "Create a new flexible multisig wallet",
     "createOrImportAccount": "Create a new account or import an existing one"
   },
   "fallbackScreen": {
@@ -403,11 +406,6 @@
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
-    },
-    "passwordInput": {
-      "passwordLabel": "Password",
-      "passwordPlaceholder": "Enter password",
-      "passwordVisibilityButton": "Show password"
     },
     "title": {
       "appName": "Nova Spektr",
@@ -781,7 +779,8 @@
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "flexibleMultisigWalletSignAction": "Sign operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -929,6 +928,10 @@
     "cancelTitle": "Reject",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
+    "createFlexibleMultisig": {
+      "title": "Flexible multisig is creating...",
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
+    },
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -990,6 +993,7 @@
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
+    "signatoriesTitleCount": "Signatories { count }",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",
@@ -1155,7 +1159,8 @@
       "identityJudgement": "Judgement operations",
       "nominationPools": "Nominations operations",
       "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations"
+      "staking": "Staking operations",
+      "unknown": "Unknown operations"
     },
     "operations": {
       "any": "all operations",
@@ -1659,10 +1664,14 @@
       "walletRemoved": "Wallet removed"
     },
     "multisig": {
+      "accountGroup": "Account",
+      "accountTab": "Account and signatories",
       "accountsGroup": "Your accounts",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
+      "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
+      "singleChainTitle": "on <chain /> with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },
@@ -1701,6 +1710,7 @@
     "disconnectedLabel": "Disconnected",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
+    "flexibleMultisigLabel": "Flexible Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "proxiedLabel": "Delegated to you (Proxied)",

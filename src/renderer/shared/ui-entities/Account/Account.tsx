@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { type AccountId, type Chain } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
 type Props = {

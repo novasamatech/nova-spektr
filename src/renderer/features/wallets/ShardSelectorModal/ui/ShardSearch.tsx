@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui';
+import { SearchInput } from '@/shared/ui-kit';
 import { shardsModel } from '../model/shards-model';
 
 export const ShardSearch = () => {
@@ -13,7 +13,6 @@ export const ShardSearch = () => {
     <SearchInput
       value={query}
       placeholder={t('balances.searchPlaceholder')}
-      wrapperClass="mb-4 ml-2 mr-5"
       onChange={shardsModel.events.queryChanged}
     />
   );

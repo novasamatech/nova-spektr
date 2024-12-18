@@ -471,6 +471,7 @@ export const networkModel = {
     networkStarted,
     chainConnected,
     chainDisconnected,
+    connectionsPopulated: populateConnectionsFx.doneData,
   },
 
   output: {

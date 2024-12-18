@@ -1,6 +1,6 @@
-import { addUnique, groupBy, merge, splice } from '../arrays';
+import { addUnique, dictionary, groupBy, merge, splice } from '../arrays';
 
-describe('shared/lib/onChainUtils/arrays', () => {
+describe('Arrays utils', () => {
   test('should insert element in the beginning', () => {
     const array = splice([1, 2, 3], 100, 0);
     expect(array).toEqual([100, 2, 3]);
@@ -23,126 +23,204 @@ describe('shared/lib/onChainUtils/arrays', () => {
     expect(array1).toEqual([100]);
     expect(array2).toEqual([100]);
   });
+});
 
-  describe('addUniq', () => {
-    test('should replace element', () => {
-      const array = addUnique([1, 2, 3], 2);
-      expect(array).toEqual([1, 2, 3]);
+describe('addUniq', () => {
+  test('should replace element', () => {
+    const array = addUnique([1, 2, 3], 2);
+    expect(array).toEqual([1, 2, 3]);
+  });
+
+  test('should add new element', () => {
+    const array = addUnique([1, 2, 3], 4);
+    expect(array).toEqual([1, 2, 3, 4]);
+  });
+
+  test('should replace element according to compare function', () => {
+    const array = addUnique([{ id: 1 }, { id: 2 }], { id: 2, name: 'test' }, (x) => x.id);
+    expect(array).toEqual([{ id: 1 }, { id: 2, name: 'test' }]);
+  });
+
+  test('should add element according to compare function', () => {
+    const array = addUnique([{ id: 1 }, { id: 2 }], { id: 3 }, (x) => x.id);
+    expect(array).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  });
+});
+
+describe('merge', () => {
+  test('should array of strings', () => {
+    const list1 = ['1', '2', '3', '4'];
+    const list2 = ['2', '5'];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s,
     });
+    expect(res).toEqual(['1', '2', '3', '4', '5']);
+  });
 
-    test('should add new element', () => {
-      const array = addUnique([1, 2, 3], 4);
-      expect(array).toEqual([1, 2, 3, 4]);
+  test('should return firrt array if second is empty', () => {
+    const list1 = ['1', '2', '3', '4'];
+
+    const res = merge({
+      a: list1,
+      b: [],
+      mergeBy: (s) => s,
     });
+    expect(res).toBe(list1);
+  });
 
-    test('should replace element according to compare function', () => {
-      const array = addUnique([{ id: 1 }, { id: 2 }], { id: 2, name: 'test' }, (x) => x.id);
-      expect(array).toEqual([{ id: 1 }, { id: 2, name: 'test' }]);
+  test('should return second array if first is empty', () => {
+    const list2 = ['1', '2', '3', '4'];
+
+    const res = merge({
+      a: [],
+      b: list2,
+      mergeBy: (s) => s,
     });
+    expect(res).toBe(list2);
+  });
 
-    test('should add element according to compare function', () => {
-      const array = addUnique([{ id: 1 }, { id: 2 }], { id: 3 }, (x) => x.id);
-      expect(array).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  test('should sort', () => {
+    const list1 = [2, 4, 3];
+    const list2 = [1, 5];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s,
+      sort: (a, b) => a - b,
+    });
+    expect(res).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  test('should merge objects', () => {
+    const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
+    const list2 = [{ id: 3 }, { id: 2 }, { id: 3, test: true }, { id: 6 }, { id: 7 }];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s.id,
+    });
+    expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3, test: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }]);
+  });
+
+  test('should merge and sort objects', () => {
+    const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
+    const list2 = [{ id: 3 }, { id: 2 }];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s.id,
+      sort: (a, b) => b.id - a.id,
+    });
+    expect(res).toEqual([{ id: 5 }, { id: 4 }, { id: 3 }, { id: 2 }, { id: 1 }]);
+  });
+
+  test('should sort objects by complex value', () => {
+    const list1 = [
+      { id: 1, date: new Date(1) },
+      { id: 5, date: new Date(5) },
+      { id: 4, date: new Date(4) },
+    ];
+    const list2 = [
+      { id: 3, date: new Date(3) },
+      { id: 2, date: new Date(2) },
+    ];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s.id,
+      sort: (a, b) => a.date.getTime() - b.date.getTime(),
+    });
+    expect(res).toEqual([
+      { id: 1, date: new Date(1) },
+      { id: 2, date: new Date(2) },
+      { id: 3, date: new Date(3) },
+      { id: 4, date: new Date(4) },
+      { id: 5, date: new Date(5) },
+    ]);
+  });
+});
+
+describe('dictionary', () => {
+  type TestData = {
+    id: number;
+    name: string;
+    value?: string;
+  };
+
+  const data: TestData[] = [
+    { id: 1, name: 'Alice', value: 'Developer' },
+    { id: 2, name: 'Bob', value: 'Designer' },
+    { id: 3, name: 'Charlie', value: 'Manager' },
+  ];
+
+  test('should create a dictionary with no transformer provided', () => {
+    const result = dictionary(data, 'id');
+
+    expect(result).toEqual({
+      1: { id: 1, name: 'Alice', value: 'Developer' },
+      2: { id: 2, name: 'Bob', value: 'Designer' },
+      3: { id: 3, name: 'Charlie', value: 'Manager' },
     });
   });
 
-  describe('merge', () => {
-    it('should array of strings', () => {
-      const list1 = ['1', '2', '3', '4'];
-      const list2 = ['2', '5'];
+  test('should create a dictionary using transformer function', () => {
+    const result = dictionary(data, 'id', (item) => item.name);
 
-      const res = merge({
-        a: list1,
-        b: list2,
-        mergeBy: (s) => s,
-      });
-      expect(res).toEqual(['1', '2', '3', '4', '5']);
+    expect(result).toEqual({
+      1: 'Alice',
+      2: 'Bob',
+      3: 'Charlie',
     });
+  });
 
-    it('should return firrt array if second is empty', () => {
-      const list1 = ['1', '2', '3', '4'];
+  test('should create a dictionary with a plain value as transformer', () => {
+    const result = dictionary(data, 'id', 'constant value');
 
-      const res = merge({
-        a: list1,
-        b: [],
-        mergeBy: (s) => s,
-      });
-      expect(res).toBe(list1);
+    expect(result).toEqual({
+      1: 'constant value',
+      2: 'constant value',
+      3: 'constant value',
     });
+  });
 
-    it('should return second array if first is empty', () => {
-      const list2 = ['1', '2', '3', '4'];
+  test('should skip items where the key is undefined or missing', () => {
+    const incompleteData = [
+      { id: undefined, name: 'Alice', value: 'Developer' }, // undefined 'id'
+      { name: 'Bob', value: 'Designer' }, // Missing 'id'
+      { id: 3, name: 'Charlie' },
+    ] as TestData[];
 
-      const res = merge({
-        a: [],
-        b: list2,
-        mergeBy: (s) => s,
-      });
-      expect(res).toBe(list2);
+    const result = dictionary(incompleteData, 'id', 'constant value');
+
+    expect(result).toEqual({
+      3: 'constant value',
     });
+  });
 
-    it('should sort', () => {
-      const list1 = [2, 4, 3];
-      const list2 = [1, 5];
+  test('should handle cases where transformer is undefined', () => {
+    const result = dictionary(data, 'id', undefined);
 
-      const res = merge({
-        a: list1,
-        b: list2,
-        mergeBy: (s) => s,
-        sort: (a, b) => a - b,
-      });
-      expect(res).toEqual([1, 2, 3, 4, 5]);
+    expect(result).toEqual({
+      1: { id: 1, name: 'Alice', value: 'Developer' },
+      2: { id: 2, name: 'Bob', value: 'Designer' },
+      3: { id: 3, name: 'Charlie', value: 'Manager' },
     });
+  });
 
-    it('should merge objects', () => {
-      const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
-      const list2 = [{ id: 3 }, { id: 2 }, { id: 3, test: true }, { id: 6 }, { id: 7 }];
+  test('should handle complex transformer functions', () => {
+    const result = dictionary(data, 'id', (item) => `${item.name}: ${item.value}`);
 
-      const res = merge({
-        a: list1,
-        b: list2,
-        mergeBy: (s) => s.id,
-      });
-      expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3, test: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }]);
-    });
-
-    it('should merge and sort objects', () => {
-      const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
-      const list2 = [{ id: 3 }, { id: 2 }];
-
-      const res = merge({
-        a: list1,
-        b: list2,
-        mergeBy: (s) => s.id,
-        sort: (a, b) => b.id - a.id,
-      });
-      expect(res).toEqual([{ id: 5 }, { id: 4 }, { id: 3 }, { id: 2 }, { id: 1 }]);
-    });
-
-    it('should sort objects by complex value', () => {
-      const list1 = [
-        { id: 1, date: new Date(1) },
-        { id: 5, date: new Date(5) },
-        { id: 4, date: new Date(4) },
-      ];
-      const list2 = [
-        { id: 3, date: new Date(3) },
-        { id: 2, date: new Date(2) },
-      ];
-
-      const res = merge({
-        a: list1,
-        b: list2,
-        mergeBy: (s) => s.id,
-        sort: (a, b) => a.date.getTime() - b.date.getTime(),
-      });
-      expect(res).toEqual([
-        { id: 1, date: new Date(1) },
-        { id: 2, date: new Date(2) },
-        { id: 3, date: new Date(3) },
-        { id: 4, date: new Date(4) },
-        { id: 5, date: new Date(5) },
-      ]);
+    expect(result).toEqual({
+      1: 'Alice: Developer',
+      2: 'Bob: Designer',
+      3: 'Charlie: Manager',
     });
   });
 

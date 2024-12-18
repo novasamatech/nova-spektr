@@ -1,10 +1,19 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { sortBy } from 'lodash';
 import { useEffect, useState } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type Account, type Address, type HexString, type MultisigAccount, type Transaction } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import {
+  type Account,
+  type Address,
+  type Chain,
+  type FlexibleMultisigAccount,
+  type HexString,
+  type MultisigAccount,
+  type Transaction,
+} from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -13,7 +22,7 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { type ExtendedChain, networkModel } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
   OperationResult,
@@ -29,9 +38,10 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account: MultisigAccount;
-  connection: ExtendedChain;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount;
+  chain: Chain;
+  api: ApiPromise;
   children: React.ReactNode;
 };
 
@@ -43,7 +53,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const RejectTxModal = ({ tx, account, connection, children }: Props) => {
+const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -66,8 +76,8 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
     tx,
   );
 
-  const nativeAsset = connection.assets[0];
-  const asset = getAssetById(tx.transaction?.args.assetId, connection.assets);
+  const nativeAsset = chain.assets[0];
+  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets);
 
   const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: walletUtils.isValidSignatory,
@@ -76,7 +86,7 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
 
   const checkBalance = () =>
     validateBalance({
-      api: connection.api,
+      api,
       chainId: tx.chainId,
       transaction: rejectTx,
       assetId: nativeAsset.assetId.toString(),
@@ -109,10 +119,10 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
   };
 
   const getMultisigTx = (signer: Address): Transaction => {
-    const signerAddress = toAddress(signer, { prefix: connection?.addressPrefix });
+    const signerAddress = toAddress(signer, { prefix: chain?.addressPrefix });
 
     const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      const signatoryAddress = toAddress(s.accountId, { prefix: connection?.addressPrefix });
+      const signatoryAddress = toAddress(s.accountId, { prefix: chain?.addressPrefix });
 
       if (signerAddress !== signatoryAddress) {
         acc.push(signatoryAddress);
@@ -122,7 +132,7 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
     }, []);
 
     return transactionBuilder.buildRejectMultisigTx({
-      chain: connection,
+      chain: chain,
       signerAddress,
       threshold: account.threshold,
       otherSignatories: sortBy(otherSignatories),
@@ -131,15 +141,15 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
   };
 
   const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
-    if (!connection.api || !rejectTx || !signAccount.accountId || !nativeAsset) {
+    if (!api || !rejectTx || !signAccount.accountId || !nativeAsset) {
       return false;
     }
 
-    const fee = await transactionService.getTransactionFee(rejectTx, connection.api);
+    const fee = await transactionService.getTransactionFee(rejectTx, api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,
-      connection.chainId,
+      chain.chainId,
       nativeAsset.assetId.toString(),
     );
 
@@ -167,12 +177,12 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
 
   const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
 
-  if (isSubmitStep && connection.api) {
+  if (isSubmitStep && api) {
     return (
       <Submit
         isReject
         tx={rejectTx}
-        api={connection.api}
+        api={api}
         multisigTx={tx}
         account={signAccount}
         txPayload={txPayload}
@@ -193,19 +203,20 @@ const RejectTxModal = ({ tx, account, connection, children }: Props) => {
           <Confirmation
             tx={tx}
             account={account}
-            chainConnection={connection}
+            api={api}
+            chain={chain}
             feeTx={rejectTx}
             signAccount={signAccount}
             onSign={handleConfirm}
           />
         )}
-        {activeStep === Step.SIGNING && rejectTx && connection.api && signAccount && (
+        {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
             apis={apis}
             signingPayloads={[
               {
-                chain: connection,
+                chain: chain,
                 account: signAccount,
                 transaction: rejectTx,
                 signatory: signAccount,

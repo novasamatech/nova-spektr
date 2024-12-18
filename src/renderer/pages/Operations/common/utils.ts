@@ -48,7 +48,7 @@ export const getSignatoryName = (
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c.accountId === signatoryId);
+    return collection.find((c) => c?.accountId === signatoryId);
   };
 
   // signatory data source priority: transaction -> contacts -> wallets -> address
@@ -290,4 +290,18 @@ const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | 
   }
 
   return tx.transaction;
+};
+
+export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId) => {
+  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  if (cancelEvent) {
+    return cancelEvent.status;
+  }
+
+  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+  if (signedEvent) {
+    return signedEvent.status;
+  }
+
+  return null;
 };

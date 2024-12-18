@@ -25,19 +25,17 @@ const StatusColor: Record<MultisigTxStatus, 'default' | 'success' | 'error'> = {
 
 type Props = {
   status: MultisigTransaction['status'];
-  signed?: number;
-  threshold?: number;
-  className?: string;
+  signed: number;
+  threshold: number;
 };
 
-export const Status = ({ status, signed, threshold, className }: Props) => {
+export const Status = ({ status, signed, threshold }: Props) => {
   const { t } = useI18n();
 
-  const text =
-    status === 'SIGNING' ? t('operation.signing', { signed, threshold: threshold || 0 }) : t(StatusTitle[status]);
+  const text = status === 'SIGNING' ? t('operation.signing', { signed, threshold }) : t(StatusTitle[status]);
 
   return (
-    <OperationStatus pallet={StatusColor[status]} className={className}>
+    <OperationStatus pallet={StatusColor[status]} className="w-fit shrink-0">
       {text}
     </OperationStatus>
   );

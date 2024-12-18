@@ -7,7 +7,7 @@ export const signatoryUtils = {
 
 function getSignatoryWallet(wallets: Wallet[], accountId: AccountId): Wallet | undefined {
   return wallets.find((wallet) => {
-    const hasMatch = wallet.accounts.some((account) => account.accountId === accountId);
+    const hasMatch = wallet.accounts?.some((account) => account.accountId === accountId);
 
     return hasMatch && walletUtils.isValidSignatory(wallet);
   });

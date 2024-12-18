@@ -5,8 +5,8 @@ import { type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, Button, Icon, Loader, SearchInput, Shimmering, SmallTitleText } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui-kit';
+import { BodyText, Button, Icon, Loader, Shimmering, SmallTitleText } from '@/shared/ui';
+import { Checkbox, SearchInput } from '@/shared/ui-kit';
 import { identityDomain } from '@/domains/identity';
 import { ValidatorsTable } from '@/entities/staking';
 import { validatorsModel } from '../model/validators-model';
@@ -45,12 +45,13 @@ const Header = () => {
           {t('staking.validators.maxValidatorsLabel', { max: maxValidators })}
         </SmallTitleText>
       )}
-      <SearchInput
-        wrapperClass="w-[220px] ml-auto"
-        placeholder={t('staking.validators.searchPlaceholder')}
-        value={query}
-        onChange={validatorsModel.events.queryChanged}
-      />
+      <div className="ml-auto w-[274px]">
+        <SearchInput
+          value={query}
+          placeholder={t('staking.validators.searchPlaceholder')}
+          onChange={validatorsModel.events.queryChanged}
+        />
+      </div>
     </div>
   );
 };

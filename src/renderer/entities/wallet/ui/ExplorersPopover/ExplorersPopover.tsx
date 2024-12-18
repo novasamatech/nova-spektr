@@ -61,6 +61,10 @@ const PopoverGroup = ({ title, active = true, children }: PropsWithChildren<Grou
   );
 };
 
+/**
+ * @deprecated Use `import { AccountExplorers, RootExplorers } from
+ *   '@/shared/ui-entities'` instead.
+ */
 export const ExplorersPopover = Object.assign(ExplorersPopoverRoot, {
   Group: PopoverGroup,
 });

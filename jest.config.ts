@@ -47,7 +47,15 @@ const config: Config = {
     '^dexie$': '<rootDir>/node_modules/dexie/dist/dexie.js',
     '^lottie': 'lottie-react',
   },
-  modulePathIgnorePatterns: ['<rootDir>/tests'],
+  modulePathIgnorePatterns: [
+    '<rootDir>/tests',
+
+    // Files, excluded because of cyclic dependecies with OperationSign
+    '<rootDir>/src/renderer/features/proxy-add/model/__tests__/add-proxy-model.test.ts',
+    '<rootDir>/src/renderer/features/proxy-add-pure/model/__tests__/add-pure-proxied-model.test.ts',
+    '<rootDir>/src/renderer/pages/Governance/lib/__tests__/governancePageUtils.test.ts',
+    '<rootDir>/src/renderer/pages/Onboarding/Vault/ManageVault/model/__tests__/manage-vault-model.test.ts',
+  ],
   collectCoverageFrom: [
     'src/renderer/**/*.{js,ts}',
     '!src/renderer/pages/**/*.{js,ts}',

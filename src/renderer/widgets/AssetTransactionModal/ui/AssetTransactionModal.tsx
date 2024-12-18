@@ -5,8 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
-import { BodyText, FootnoteText, SearchInput } from '@/shared/ui';
-import { Box, Modal } from '@/shared/ui-kit';
+import { BodyText, FootnoteText } from '@/shared/ui';
+import { Box, Modal, SearchInput } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -60,7 +60,6 @@ export const AssetTransactionModal = () => {
           <SearchInput
             value={query}
             placeholder={t('balances.searchPlaceholder')}
-            className="w-full"
             onChange={assetTransactionModel.events.queryChanged}
           />
           <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>

@@ -4,7 +4,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, Icon, Identicon, Input, InputHint } from '@/shared/ui';
+import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Field, Input } from '@/shared/ui-kit';
 import { type Callbacks, editFormModel } from '../model/contact-form';
 
 type Props = Callbacks & {
@@ -38,12 +39,9 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
 
   return (
     <form className="flex flex-col gap-4 pt-4" onSubmit={submitForm}>
-      <div className="flex flex-col gap-y-2">
+      <Field text={t('addressBook.editContact.nameLabel')}>
         <Input
           name="name"
-          className="w-full"
-          wrapperClass="h-[42px]"
-          label={t('addressBook.editContact.nameLabel')}
           placeholder={t('addressBook.editContact.namePlaceholder')}
           invalid={name?.hasError()}
           value={name?.value}
@@ -52,14 +50,11 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
         <InputHint variant="error" active={name?.hasError()}>
           {t(name.errorText())}
         </InputHint>
-      </div>
+      </Field>
 
-      <div className="flex flex-col gap-y-2">
+      <Field text={t('addressBook.editContact.accountIdLabel')}>
         <Input
           name="address"
-          wrapperClass="h-[42px]"
-          className="ml-2 w-full"
-          label={t('addressBook.editContact.accountIdLabel')}
           placeholder={t('addressBook.editContact.accountIdPlaceholder')}
           invalid={address?.hasError()}
           value={address?.value}
@@ -78,7 +73,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
         <InputHint variant="error" active={address?.hasError()}>
           {t(address.errorText())}
         </InputHint>
-      </div>
+      </Field>
 
       <Button className="ml-auto" type="submit" disabled={!isValid || pending} isLoading={pending}>
         {t('addressBook.editContact.saveContactButton')}

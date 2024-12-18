@@ -42,6 +42,7 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfo
           {wallet.name}
         </FootnoteText>
       </button>
+      {/* TODO: do the same as in WalletCardMd */}
       <IconButton className="absolute right-2" name="details" size={16} onClick={handleClick(onInfoClick)} />
     </div>
   );

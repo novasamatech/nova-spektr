@@ -16,34 +16,37 @@ export function splice<T>(collection: T[], item: T, position: number): T[] {
 }
 
 /**
- * Create dictionary with given key and value Keys can only be type of string,
- * number or symbol
+ * Create dictionary with given key and transformer value. Keys can only be type
+ * of string, number or symbol
  *
  * @param collection Array of items
- * @param property Field to be used as key
- * @param predicate Transformer function
+ * @param key Property to be used as key
+ * @param transformer Transformer function or plain value
  *
  * @returns {Object}
  */
-export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfType<T, PropertyKey>>(
+export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfType<T, PropertyKey>, R = T>(
   collection: T[],
-  property: K,
-  predicate?: (item: T) => any,
-): Record<T[K], any> {
-  return collection.reduce(
-    (acc, item) => {
-      const element = item[property];
+  key: K,
+  transformer?: ((item: T) => R) | R,
+): Record<T[K], R> {
+  const result: Record<T[K], R> = {} as Record<T[K], R>;
 
-      if (predicate) {
-        acc[element] = predicate(item);
-      } else {
-        acc[element] = item;
-      }
+  for (const item of collection) {
+    const element = item[key];
 
-      return acc;
-    },
-    {} as Record<T[K], any>,
-  );
+    if (!element) continue;
+
+    if (!transformer) {
+      result[element] = item as unknown as R;
+    } else if (typeof transformer === 'function') {
+      result[element] = (transformer as (item: T) => R)(item);
+    } else {
+      result[element] = transformer as R;
+    }
+  }
+
+  return result;
 }
 
 export function getRepeatedIndex(index: number, base: number): number {

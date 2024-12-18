@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { SearchInput } from '@/shared/ui';
+import { Box, SearchInput } from '@/shared/ui-kit';
 import { assetsSearchModel } from '../model/assets-search-model';
 
 export const AssetsSearch = () => {
@@ -10,11 +10,12 @@ export const AssetsSearch = () => {
   const query = useUnit(assetsSearchModel.$query);
 
   return (
-    <SearchInput
-      value={query}
-      placeholder={t('balances.searchPlaceholder')}
-      wrapperClass="w-[280px]"
-      onChange={assetsSearchModel.events.queryChanged}
-    />
+    <Box width="280px">
+      <SearchInput
+        value={query}
+        placeholder={t('balances.searchPlaceholder')}
+        onChange={assetsSearchModel.events.queryChanged}
+      />
+    </Box>
   );
 };

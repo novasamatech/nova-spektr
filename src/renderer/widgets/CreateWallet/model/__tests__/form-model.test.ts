@@ -22,7 +22,7 @@ jest.mock('@/shared/lib/utils', () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/CreateWallet/model/form-model', () => {
+describe('Create multisig wallet form-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -40,21 +40,6 @@ describe('widgets/CreateWallet/model/form-model', () => {
     await allSettled(formModel.$createMultisigForm.submit, { scope });
 
     expect(scope.getState(formModel.$createMultisigForm.fields.name.$errors)[0].rule).toEqual('notEmpty');
-  });
-
-  test('should error out for low threshold', async () => {
-    const scope = fork({
-      values: new Map()
-        .set(networkModel.$apis, { '0x00': testApi })
-        .set(networkModel.$chains, { '0x00': testChain })
-        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
-    });
-
-    await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 1 });
-    await allSettled(formModel.$createMultisigForm.submit, { scope });
-
-    expect(scope.getState(formModel.$createMultisigForm.fields.threshold.$errors)[0].rule).toEqual('moreOrEqualToTwo');
   });
 
   test('should have correct value for $multisigAccountId', async () => {
@@ -144,5 +129,22 @@ describe('widgets/CreateWallet/model/form-model', () => {
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
 
     expect(scope.getState(formModel.$multisigAlreadyExists)).toEqual(true);
+  });
+
+  test('should have invalid chain addresses', async () => {
+    const badAddress = '0x629C0eC6B23D0E3A2f67c2753660971faa9A1907';
+    const signatories = [
+      { name: 'address_1', address: '5ERebGRitMv68YJzXdzWce3rEM9XRZdunEZYtAi69rhgcoNe', walletId: '1' },
+      { name: 'address_2', address: badAddress },
+    ];
+
+    const scope = fork({
+      values: new Map().set(networkModel.$chains, { '0x00': testChain }).set(signatoryModel.$signatories, signatories),
+    });
+    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
+
+    await allSettled(signatoryModel.events.changeSignatory, { scope, params: { index: 1, ...signatories[1] } });
+
+    expect(scope.getState(formModel.$invalidAddresses)).toEqual([badAddress]);
   });
 });

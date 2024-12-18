@@ -16,8 +16,9 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
-import { Button, HeaderTitleText, Icon, Input, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
+import { Field, Input } from '@/shared/ui-kit';
 import { MultiAccountsList, walletModel } from '@/entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
@@ -153,10 +154,8 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
             control={control}
             rules={{ required: true, maxLength: 256 }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.walletNameLabel')}>
                 <Input
-                  wrapperClass="flex items-center"
-                  label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
@@ -168,7 +167,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
                   {t('onboarding.watchOnly.walletNameRequiredError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 

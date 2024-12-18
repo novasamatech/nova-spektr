@@ -28,7 +28,7 @@ export const Assets = () => {
     <>
       <section className="flex h-full flex-col">
         <Header title={t('balances.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <div className="flex items-center gap-x-3">
+          <div className="grid grid-cols-[230px,1fr] items-center gap-x-3">
             <AssetsSearch />
             <AssetsSettings />
           </div>
