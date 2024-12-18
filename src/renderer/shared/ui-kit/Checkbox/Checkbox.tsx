@@ -1,10 +1,10 @@
 import * as CheckboxItem from '@radix-ui/react-checkbox';
-import { type PropsWithChildren } from 'react';
+import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import './Checkbox.css';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { LabelText } from '@/shared/ui/Typography';
+import './Checkbox.css';
 
 type Props = {
   checked?: boolean;
@@ -12,6 +12,7 @@ type Props = {
   disabled?: boolean;
   checkboxPosition?: 'center' | 'top';
   onChange?: (checked: boolean, semiChecked?: boolean) => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
 export const Checkbox = ({
@@ -21,6 +22,7 @@ export const Checkbox = ({
   checkboxPosition = 'center',
   children,
   onChange,
+  onClick,
 }: PropsWithChildren<Props>) => {
   const checkedState = checked ? true : semiChecked ? 'indeterminate' : false;
   const iconColor = disabled ? 'text-filter-border' : 'text-white';
@@ -48,13 +50,14 @@ export const Checkbox = ({
         )}
         disabled={disabled}
         onCheckedChange={handleChange}
+        onClick={onClick}
       >
         <CheckboxItem.Indicator>
           {checked && <Icon name="checked" size={16} className={iconColor} />}
           {!checked && semiChecked && <Icon name="semiChecked" size={16} className={iconColor} />}
         </CheckboxItem.Indicator>
       </CheckboxItem.Root>
-      {Boolean(children) && children}
+      {children}
     </LabelText>
   );
 };

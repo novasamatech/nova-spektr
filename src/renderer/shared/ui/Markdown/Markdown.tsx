@@ -1,3 +1,4 @@
+import noop from 'lodash/noop';
 import { type ChangeEvent, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -72,17 +73,16 @@ const components: Components = {
       <Checkbox
         {...props}
         onChange={(newCheckedState: boolean) => {
-          if (typeof props.onChange === 'function') {
-            // Simulate a ChangeEvent for props.onChange to fit types
-            const event = {
-              target: {
-                checked: newCheckedState,
-              },
-            } as ChangeEvent<HTMLInputElement>;
+          if (typeof props.onChange !== 'function') return;
 
-            props.onChange(event);
-          }
+          const event = {
+            target: {
+              checked: newCheckedState,
+            },
+          } as ChangeEvent<HTMLInputElement>;
+          props.onChange(event);
         }}
+        onClick={noop}
       />
     ) : (
       <input {...props} />
