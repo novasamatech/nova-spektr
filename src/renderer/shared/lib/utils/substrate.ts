@@ -39,14 +39,13 @@ const UNUSED_LABEL = 'unused';
  */
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
+  const metadataRpc = api.runtimeMetadata.toHex();
 
   const [header, blockHash, nonce] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
     api.rpc.system.accountNextIndex(address),
   ]);
-
-  const metadataRpc = api.runtimeMetadata.toHex();
 
   const registry = getRegistry({
     chainName: api.runtimeVersion.specName.toString(),
