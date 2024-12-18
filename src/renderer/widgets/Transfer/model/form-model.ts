@@ -3,6 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { camelCase } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
@@ -237,11 +238,20 @@ const $fakeTx = combine(
 
     const transactionType = network.asset.type ? TransferType[network.asset.type] : TransactionType.TRANSFER;
 
+    const palletName =
+      network.asset.typeExtras && 'palletName' in network.asset.typeExtras
+        ? camelCase(network.asset.typeExtras.palletName)
+        : 'assets';
+
     return {
       chainId: network.chain.chainId,
       address: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
       type: transactionType,
-      args: { destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }), ...xcmData?.args },
+      args: {
+        palletName,
+        destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
+        ...xcmData?.args,
+      },
     };
   },
 );
