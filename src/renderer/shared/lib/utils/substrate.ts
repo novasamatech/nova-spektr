@@ -41,19 +41,20 @@ const UNUSED_LABEL = 'unused';
 export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toString() as ChainId;
 
-  const [header, blockHash, metadataRpc, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
+  const [header, blockHash, nonce, { specVersion, transactionVersion, specName }] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
-    api.rpc.state.getMetadata(),
     api.rpc.system.accountNextIndex(address),
     api.rpc.state.getRuntimeVersion(),
   ]);
+
+  const metadataRpc = api.runtimeMetadata.toHex();
 
   const registry = getRegistry({
     chainName: specName.toString() as GetRegistryOpts['chainName'],
     specName: specName.toString() as GetRegistryOpts['specName'],
     specVersion: specVersion.toNumber(),
-    metadataRpc: metadataRpc.toHex(),
+    metadataRpc,
     ...EXTENSIONS[chainId]?.txwrapper,
   });
 
@@ -62,7 +63,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
     blockHash: blockHash.toString(),
     blockNumber: header.number.toNumber(),
     genesisHash: chainId,
-    metadataRpc: metadataRpc.toHex(),
+    metadataRpc,
     nonce: nonce.toNumber(),
     specVersion: specVersion.toNumber(),
     transactionVersion: transactionVersion.toNumber(),
@@ -72,7 +73,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
 
   const options: OptionsWithMeta = {
     registry,
-    metadataRpc: metadataRpc.toHex(),
+    metadataRpc,
     signedExtensions: registry.signedExtensions,
     userExtensions: EXTENSIONS[chainId]?.txwrapper?.userExtensions,
   };
