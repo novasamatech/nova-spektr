@@ -67,7 +67,9 @@ export const Governance = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <Search />
+        <Box width="230px">
+          <Search />
+        </Box>
       </Header>
 
       <ScrollArea>
