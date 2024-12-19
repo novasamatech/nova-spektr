@@ -59,7 +59,8 @@ export const TransferRules = {
     incorrectRecipient: {
       name: 'incorrectRecipient',
       errorText: 'transfer.incorrectRecipientError',
-      validator: validateAddress,
+      // Second argument for validator is form data, but we need chain
+      validator: (destination: string) => validateAddress(destination),
     },
   },
   amount: {
