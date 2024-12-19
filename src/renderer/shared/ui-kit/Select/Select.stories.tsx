@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Icon } from '@/shared/ui';
 import { Box } from '../Box/Box';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 
 import { Select } from './Select';
 
@@ -104,12 +105,12 @@ export const Groups: Story = {
 export const Dark: Story = {
   decorators: [
     (Story, { args }) => {
-      const [open, onToggle] = useState(false);
-
       return (
-        <div className="flex h-[300px] w-[400px] justify-center rounded-lg bg-black pt-[50px]">
-          <Story args={{ ...args, open, onToggle, theme: 'dark' }} />;
-        </div>
+        <ThemeProvider theme="dark">
+          <div className="flex h-[300px] w-[400px] justify-center rounded-lg bg-black pt-[50px]">
+            <Story args={args} />;
+          </div>
+        </ThemeProvider>
       );
     },
   ],
