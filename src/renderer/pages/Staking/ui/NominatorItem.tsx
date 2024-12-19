@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { type Account, type Address, type Asset, type Chain } from '@/shared/core';
+import { type Address, type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, Plate, Shimmering } from '@/shared/ui';
+import { FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
-import { Checkbox } from '@/shared/ui-kit';
+import { Checkbox, Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -17,7 +17,7 @@ type Props = {
   asset?: Asset;
   chain: Chain;
   isStakingLoading: boolean;
-  stake: NominatorInfo<Account>;
+  stake: NominatorInfo;
   content: ReactNode;
   onToggleNominator: (nominator: Address, boolean: boolean) => void;
   onCheckValidators: (stash?: Address) => void;
@@ -39,46 +39,44 @@ export const NominatorsItem = ({
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
-    <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6">
+    <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6 py-2.5">
       {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
-        <div className="w-full">
+        <div className="flex w-full gap-x-2">
           <Checkbox
             disabled={isStakingLoading}
             checked={stake.isSelected}
             onChange={(checked) => onToggleNominator(stake.address, checked)}
-          >
-            <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
-          </Checkbox>
+          />
+          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
         </div>
       ) : (
         <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
       )}
-      <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
-        {!stake.totalStake || !asset ? (
-          <>
-            <Shimmering width={82} height={15} />
-            <Shimmering width={56} height={10} />
-          </>
-        ) : (
-          <>
-            <AssetBalance value={stake.totalStake} asset={asset} />
-            <AssetFiatBalance amount={stake.totalStake} asset={asset} />
-          </>
-        )}
-      </div>
-      <div className="flex flex-col items-end gap-y-0.5 justify-self-end">
-        {!stake.totalReward || !asset ? (
-          <>
-            <Shimmering width={82} height={15} />
-            <Shimmering width={56} height={10} />
-          </>
-        ) : (
-          <>
-            <AssetBalance value={stake.totalReward} asset={asset} />
-            <AssetFiatBalance amount={stake.totalReward} asset={asset} />
-          </>
-        )}
-      </div>
+
+      {!stake.totalStake || !asset ? (
+        <div className="flex flex-col items-end gap-y-1.5 pb-1">
+          <Skeleton width={20} height={4} />
+          <Skeleton width={14} height={3} />
+        </div>
+      ) : (
+        <div className="flex flex-col items-end justify-self-end">
+          <AssetBalance value={stake.totalStake} asset={asset} />
+          <AssetFiatBalance amount={stake.totalStake} asset={asset} />
+        </div>
+      )}
+
+      {!stake.totalReward || !asset ? (
+        <div className="flex flex-col items-end gap-y-1.5 pb-1">
+          <Skeleton width={20} height={4} />
+          <Skeleton width={14} height={3} />
+        </div>
+      ) : (
+        <div className="flex flex-col items-end justify-self-end">
+          <AssetBalance value={stake.totalReward} asset={asset} />
+          <AssetFiatBalance amount={stake.totalReward} asset={asset} />
+        </div>
+      )}
+
       <AccountExplorers accountId={stake.account.accountId} chain={chain}>
         {nonNullable(stake.stash) && (
           <button
