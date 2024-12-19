@@ -1,7 +1,10 @@
-import { multisigsDomainModel } from './model/multisigs/model';
+import { operationsDomainModel } from './model/operations/model';
+import { operationsService } from './model/operations/service';
 
 export const multisigDomain = {
-  multisigs: multisigsDomainModel,
+  operations: operationsDomainModel,
+
+  operationsService,
 };
 
-export type { Multisig } from './model/multisigs/types';
+export type { MultisigOperation, MultisigEvent } from './model/operations/types';

@@ -6,18 +6,17 @@ import { multisigOperationsFeatureStatus } from './status';
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: [multisigDomain.multisigs.request, multisigDomain.multisigs.subscribe],
+  target: [multisigDomain.operations.requestOperations, multisigDomain.operations.subscribeEvents],
 });
 
 sample({
   clock: multisigOperationsFeatureStatus.stopped,
-  target: multisigDomain.multisigs.unsubscribe,
+  target: multisigDomain.operations.unsubscribeEvents,
 });
 
-const $operations = multisigDomain.multisigs.$multisigOperations.map((list) => list ?? {});
-
 export const operationsModel = {
-  $operations,
+  $operations: multisigDomain.operations.$operations,
+  $events: multisigDomain.operations.$events,
 
   $pending: multisigOperationsFeatureStatus.isStarting,
   $fulfilled: multisigOperationsFeatureStatus.isRunning,

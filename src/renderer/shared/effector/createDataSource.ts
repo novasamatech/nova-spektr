@@ -1,44 +1,75 @@
-import { type StoreWritable, createEffect, createEvent, createStore, is, sample } from 'effector';
+import {
+  type Store,
+  type StoreWritable,
+  type UnitTargetable,
+  attach,
+  createEffect,
+  createEvent,
+  createStore,
+  is,
+  sample,
+} from 'effector';
 import { readonly } from 'patronum';
 
-type FactoryParams<Params, Value, Response> = {
-  initial: Value | StoreWritable<Value>;
+import { type XOR } from '@/shared/core';
+
+type Units<Source, Target> = XOR<
+  {
+    initial: Source | StoreWritable<Source>;
+  },
+  {
+    source: Store<Source>;
+    target: UnitTargetable<Target>;
+  }
+>;
+
+type FactoryParams<Params, Source, Response, Target> = Units<Source, Target> & {
   fn(params: Params): Response | Promise<Response>;
-  map(store: Value, params: { params: Params; result: Response }): Value;
-  mutateParams?(params: Params, store: Value): Params;
-  filter?(params: Params, store: Value): boolean;
+  map(store: Source, params: { params: Params; result: Response }): Target;
+  mutateParams?(params: Params, store: Source): Params;
+  filter?(params: Params, store: Source): boolean;
 };
 
-export const createDataSource = <Value, Params, Response = Value>({
+export const createDataSource = <Source, Params, Response = Source, Target = Source>({
   initial,
+  source,
+  target,
   fn,
   map,
   filter = () => true,
   mutateParams = (params) => params,
-}: FactoryParams<Params, Value, Awaited<Response>>) => {
+}: FactoryParams<Params, Source, Awaited<Response>, Target>) => {
   const empty = Symbol();
 
-  const $store = is.store(initial) ? initial : createStore<Value>(initial);
+  let $source: Store<Source>;
+  let targetUnit: UnitTargetable<Target>;
+
+  if (initial) {
+    $source = is.store(initial) ? initial : createStore<Source>(initial);
+    targetUnit = $source as unknown as UnitTargetable<Target>;
+  } else if (source && target) {
+    $source = source;
+    targetUnit = target;
+  } else {
+    throw new Error("fields initial, source or target aren't passed");
+  }
+
   const $fulfilled = createStore(false);
   const $lastParams = createStore<Params | symbol>(empty);
-  const request = createEvent<Params>();
-  const mutatedRequest = createEvent<Params>();
   const retry = createEvent();
   const fx = createEffect(fn);
 
-  sample({
-    clock: request,
-    source: $store,
-    fn: (store, params) => mutateParams(params, store),
-    target: mutatedRequest,
-  });
+  const request = attach({
+    source: $source,
+    effect: (store: Source, params: Params) => {
+      const mutatedParams = mutateParams(params, store);
 
-  sample({
-    clock: mutatedRequest,
-    source: $store,
-    filter: (store, params) => filter(params, store),
-    fn: (_, params) => params,
-    target: fx,
+      if (filter(mutatedParams, store)) {
+        return fx(mutatedParams).then(() => undefined);
+      }
+
+      return Promise.resolve(undefined);
+    },
   });
 
   sample({
@@ -61,9 +92,9 @@ export const createDataSource = <Value, Params, Response = Value>({
 
   sample({
     clock: fx.done,
-    source: $store,
+    source: $source,
     fn: map,
-    target: $store,
+    target: targetUnit,
   });
 
   sample({
@@ -75,7 +106,7 @@ export const createDataSource = <Value, Params, Response = Value>({
   });
 
   return {
-    $: readonly($store),
+    $: readonly($source),
 
     fulfilled: readonly($fulfilled),
 

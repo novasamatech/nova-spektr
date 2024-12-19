@@ -60,7 +60,7 @@ describe('merge', () => {
     expect(res).toEqual(['1', '2', '3', '4', '5']);
   });
 
-  test('should return firrt array if second is empty', () => {
+  it('should return first array if second is empty', () => {
     const list1 = ['1', '2', '3', '4'];
 
     const res = merge({
@@ -95,7 +95,7 @@ describe('merge', () => {
     expect(res).toEqual([1, 2, 3, 4, 5]);
   });
 
-  test('should merge objects', () => {
+  test('should replace objects', () => {
     const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
     const list2 = [{ id: 3 }, { id: 2 }, { id: 3, test: true }, { id: 6 }, { id: 7 }];
 
@@ -107,7 +107,20 @@ describe('merge', () => {
     expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3, test: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }]);
   });
 
-  test('should merge and sort objects', () => {
+  test('should merge objects', () => {
+    const list1 = [{ id: 1, v: 1 }, { id: 5 }];
+    const list2 = [{ id: 3 }, { id: 1, v: 2 }];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s.id,
+      merge: (a, b) => ({ ...a, v: (a.v ?? 0) + (b.v ?? 0) }),
+    });
+    expect(res).toEqual([{ id: 1, v: 3 }, { id: 3 }, { id: 5 }]);
+  });
+
+  it('should replace and sort objects', () => {
     const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
     const list2 = [{ id: 3 }, { id: 2 }];
 
