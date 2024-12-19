@@ -19,7 +19,7 @@ const destinationChanged = createEvent<AccountId>();
 
 const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
-const $xcmChain = restore(xcmChainSelected, null);
+const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
@@ -70,15 +70,13 @@ const $transferDirections = combine(
 
 const $transferDirection = combine(
   {
-    xcmChain: $xcmChain,
+    xcmChainId: $xcmChainId,
     xcmAsset: $xcmAsset,
   },
-  ({ xcmChain, xcmAsset }) => {
-    if (!xcmChain || !xcmAsset) return undefined;
+  ({ xcmChainId, xcmAsset }) => {
+    if (!xcmChainId || !xcmAsset) return undefined;
 
-    const xcmChainId = toLocalChainId(xcmChain);
-
-    return xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === xcmChainId);
+    return xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === toLocalChainId(xcmChainId));
   },
   { skipVoid: false },
 );
@@ -209,20 +207,20 @@ const $xcmData = combine(
     api: $api,
     xcmFee: $xcmFee,
     xcmAsset: $txAsset,
-    xcmChain: $xcmChain,
+    xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
     xcmDest: $txDestination,
     xcmBeneficiary: $txBeneficiary,
     transferDirection: $transferDirection,
   },
-  ({ api, xcmChain, transferDirection, ...rest }) => {
-    if (!api || !transferDirection || !xcmChain) return undefined;
+  ({ api, xcmChainId, transferDirection, ...rest }) => {
+    if (!api || !transferDirection || !xcmChainId) return undefined;
 
     const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
 
     return {
       transactionType,
-      args: { destinationChain: xcmChain, ...rest },
+      args: { destinationChain: xcmChainId, ...rest },
     };
   },
   { skipVoid: false },
@@ -271,7 +269,7 @@ export const xcmTransferModel = {
   $isXcmFeeLoading,
   $transferDirections,
   $xcmParaId,
-  $xcmChainId: $xcmChain,
+  $xcmChainId,
 
   events: {
     xcmStarted,

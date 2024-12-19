@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const TransactionAmount = ({ tx, className }: Props) => {
-  const assetId = tx && (tx.args.assetId || tx.args.asset);
+  const assetId = tx?.args.assetId || tx?.args.asset;
   const asset = getAssetById(assetId, chainsService.getChainById(tx.chainId)?.assets);
   const value = getTransactionAmount(tx);
 
