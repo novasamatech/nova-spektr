@@ -50,13 +50,11 @@ export const XcmFee = memo(
         return;
       }
 
-      const originChainId = transaction.chainId;
-      const destinationChainId = transaction.args.destinationChain;
-      const configChain = config.chains.find((c) => c.chainId === toLocalChainId(originChainId));
+      const originChainId = toLocalChainId(transaction.chainId);
+      const destinationChainId = toLocalChainId(transaction.args.destinationChain);
+      const configChain = config.chains.find((c) => c.chainId === originChainId);
       const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
-      const configXcmTransfer = configAsset?.xcmTransfers.find(
-        (t) => t.destination.chainId === toLocalChainId(destinationChainId),
-      );
+      const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
 
       if (originChainId && configXcmTransfer && configAsset) {
         xcmService

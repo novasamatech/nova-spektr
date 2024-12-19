@@ -432,28 +432,40 @@ const $extrinsic = combine(
   },
 );
 
+const $xcmChain = combine(
+  {
+    chains: networkModel.$chains,
+    xcmChainId: xcmTransferModel.$xcmChainId,
+  },
+  ({ chains, xcmChainId }) => {
+    if (!xcmChainId) return null;
+
+    return chains[xcmChainId] ?? null;
+  },
+);
+
 const getDeliveryFeeFx = createEffect(
   async ({
     config,
     parachainId,
     api,
-    parentApi,
     extrinsic,
+    destinationChain,
   }: {
     config: XcmConfig | null;
     parachainId: number | null;
     api: ApiPromise | null;
-    parentApi: ApiPromise | null;
     extrinsic?: SubmittableExtrinsic<'promise'> | null;
+    destinationChain: Chain | null;
   }) => {
-    if (config && api && parentApi && parachainId && extrinsic) {
+    if (config && api && parachainId && extrinsic && destinationChain) {
       return xcmService.getDeliveryFeeFromConfig({
         config,
         originChain: toLocalChainId(api.genesisHash.toHex()) || '',
         originApi: api,
-        parentApi,
         destinationChainId: parachainId,
-        txBytesLength: extrinsic.encodedLength,
+        extrinsic,
+        destinationChain,
       });
     } else {
       return BN_ZERO;
@@ -678,10 +690,10 @@ sample({
   clock: $extrinsic,
   source: {
     api: $api,
-    parentApi: xcmTransferModel.$parentChainApi,
     parachainId: xcmTransferModel.$xcmParaId,
     config: xcmTransferModel.$config,
     extrinsic: $extrinsic,
+    destinationChain: $xcmChain,
   },
   target: getDeliveryFeeFx,
 });

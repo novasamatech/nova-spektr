@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
@@ -339,20 +340,19 @@ function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
 async function getDeliveryFeeFromConfig({
   config,
   originChain,
+  destinationChain,
   originApi,
-  parentApi,
   destinationChainId,
-  txBytesLength,
+  extrinsic,
 }: {
   config: XcmConfig;
   originChain: string;
+  destinationChain: Chain;
   originApi: ApiPromise;
-  parentApi: ApiPromise;
   destinationChainId: number;
-  txBytesLength: number;
+  extrinsic: SubmittableExtrinsic<'promise'>;
 }): Promise<BN> {
-  const RELAYCHAINS = [1000, 2000];
-  const direction = RELAYCHAINS.includes(destinationChainId) ? 'toParent' : 'toParachain';
+  const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
@@ -362,7 +362,7 @@ async function getDeliveryFeeFromConfig({
 
   if (direction === 'toParent') {
     deliveryFactor = (
-      await parentApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
     ).toString();
   } else {
     deliveryFactor = (
@@ -370,9 +370,9 @@ async function getDeliveryFeeFromConfig({
     ).toString();
   }
 
-  const weight = new BN(txBytesLength).add(SET_TOPIC_SIZE);
+  const weight = new BN(extrinsic.length).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
-  const deliveryFee = new BN(deliveryFactor).div(new BN(BN_TEN).pow(FACTOR_MULTIPLIER)).mul(feeSize);
+  const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 
   return deliveryFee;
 }
