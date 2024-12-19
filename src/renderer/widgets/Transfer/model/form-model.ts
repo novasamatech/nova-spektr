@@ -454,7 +454,7 @@ const getDeliveryFeeFx = createEffect(
         originChain: toLocalChainId(api.genesisHash.toHex()) || '',
         originApi: api,
         destinationChainId: parachainId,
-        txBytesLength: extrinsic.encodedLength,
+        extrinsic,
         destinationChain,
       });
     } else {

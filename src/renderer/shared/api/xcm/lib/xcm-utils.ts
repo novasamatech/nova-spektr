@@ -264,11 +264,15 @@ async function estimateFeeFromApi(
 
   let paymentInfo;
 
+  console.log('xcm', message, xcmVersion);
+
   try {
     paymentInfo = await api.tx[pallet].execute(message, 0).paymentInfo(TEST_ACCOUNTS[0]);
   } catch {
     paymentInfo = await api.tx[pallet].execute(message, { refTime: '0', proofSize: '0' }).paymentInfo(TEST_ACCOUNTS[0]);
   }
+
+  console.log('xcm', paymentInfo.toHuman());
 
   return paymentInfo.partialFee;
 }
