@@ -69,8 +69,11 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   });
 
   useEffect(() => {
-    xcmTransferModel.events.xcmConfigLoaded();
-  }, []);
+    xcmTransferModel.events.xcmStarted({
+      chain,
+      asset,
+    });
+  }, [chain, asset, xcmApi]);
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
