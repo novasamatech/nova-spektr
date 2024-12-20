@@ -129,7 +129,7 @@ const $filteredTokensWithBalance = combine(
 
     for (const token of activeTokensWithBalance) {
       // Case 1: full match for token symbol -> get only that token across all chains
-      if (new RegExp(`^${query}$`, 'gi').test(token.symbol)) {
+      if (query.toLowerCase() === token.symbol.toLowerCase()) {
         filteredTokens = [{ ...token, chains: token.chains }];
         break;
       }
@@ -137,7 +137,7 @@ const $filteredTokensWithBalance = combine(
       let tokenChains = [];
       for (const chain of token.chains) {
         // Case 2: full match for chain name -> get all tokens for that chain
-        if (new RegExp(`^${query}$`, 'gi').test(chain.name)) {
+        if (query.toLowerCase() === chain.name.toLowerCase()) {
           fullChainMatch.push(filteredTokens.length);
           tokenChains = [chain];
           break;
