@@ -58,8 +58,8 @@ const mockTokens: AssetByChains[] = [
   },
 ];
 
-// TODO input data is a bit complex and after refactoring of internal model, chains wallet and etc should be presented.
-//  For now it's simplier to turn off some of the test and think about simplifying external dependencies.
+// TODO: input data is a bit complex and after refactoring of internal model, chains wallet and etc should be presented.
+// For now it's simpler to turn off some of the test and think about simplifying external dependencies.
 
 describe('Portfolio model', () => {
   test('should handle activeViewChanged event', async () => {
