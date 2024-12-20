@@ -1,29 +1,25 @@
 import { type BN } from '@polkadot/util';
 
-import { type CallData, type CallHash, type HexString } from '@/shared/core';
+import { type CallHash, type ChainId, type HexString } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
-
-export type Timepoint = {
-  height: BlockHeight;
-  index: number;
-};
 
 export type MultisigEvent = {
   accountId: AccountId;
+  chainId: ChainId;
+  callHash: CallHash;
   status: 'approved' | 'rejected';
   blockCreated: BlockHeight;
-  indexCreated: number;
+  indexCreated: BlockHeight;
   extrinsicHash?: HexString;
 };
 
-export type Multisig = {
+export type MultisigOperation = {
   status: 'pending' | 'cancelled' | 'executed' | 'error';
   accountId: AccountId;
+  chainId: ChainId;
   callHash: CallHash;
-  callData?: CallData;
   deposit: BN;
   depositor: AccountId;
   blockCreated: BlockHeight;
-  indexCreated: number;
-  events: MultisigEvent[];
+  indexCreated: BlockHeight;
 };
