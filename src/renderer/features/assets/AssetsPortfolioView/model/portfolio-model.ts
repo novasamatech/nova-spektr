@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, restore } from 'effector';
 import { once } from 'patronum';
 
 import { type Account, type AssetByChains } from '@/shared/core';
-import { includes, nullable } from '@/shared/lib/utils';
+import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -119,25 +119,43 @@ const $activeTokensWithBalance = combine(
 );
 
 const $filteredTokensWithBalance = combine(
-  { activeTokensWithBalance: $activeTokensWithBalance, query: $query },
+  {
+    activeTokensWithBalance: $activeTokensWithBalance,
+    query: $query,
+  },
   ({ activeTokensWithBalance, query }) => {
-    const filteredTokens: AssetByChains[] = [];
+    let filteredTokens: AssetByChains[] = [];
+    const fullChainMatch: number[] = [];
 
     for (const token of activeTokensWithBalance) {
-      const filteredChains = token.chains.filter((chain) => {
-        const hasSymbol = includes(chain.assetSymbol, query);
-        const hasAssetName = includes(token.name, query);
-        const hasChainName = includes(chain.name, query);
+      // Case 1: match token symbol -> get only that token across all chains
+      if (new RegExp(`^${query}$`, 'gi').test(token.symbol)) {
+        filteredTokens = [{ ...token, chains: token.chains }];
+        break;
+      }
 
-        return hasSymbol || hasAssetName || hasChainName;
-      });
+      // Case 2: match chain name -> get all tokens for that chains
+      // Case 3: Check chain name & asset symbol
+      let tokenChains = [];
+      for (const chain of token.chains) {
+        if (new RegExp(`^${query}$`, 'gi').test(chain.name)) {
+          fullChainMatch.push(filteredTokens.length);
+          tokenChains = [chain];
+          break;
+        }
+        if (includesMultiple([chain.name, chain.assetSymbol], query)) {
+          tokenChains.push(chain);
+        }
+      }
 
-      if (filteredChains.length === 0) continue;
+      if (tokenChains.length === 0) continue;
 
-      filteredTokens.push({ ...token, chains: filteredChains });
+      filteredTokens.push({ ...token, chains: tokenChains });
     }
 
-    return filteredTokens;
+    if (fullChainMatch.length === 0) return filteredTokens;
+
+    return filteredTokens.filter((_, index) => fullChainMatch.includes(index));
   },
 );
 
