@@ -128,21 +128,21 @@ const $filteredTokensWithBalance = combine(
     const fullChainMatch: number[] = [];
 
     for (const token of activeTokensWithBalance) {
-      // Case 1: match token symbol -> get only that token across all chains
+      // Case 1: full match for token symbol -> get only that token across all chains
       if (new RegExp(`^${query}$`, 'gi').test(token.symbol)) {
         filteredTokens = [{ ...token, chains: token.chains }];
         break;
       }
 
-      // Case 2: match chain name -> get all tokens for that chains
-      // Case 3: Check chain name & asset symbol
       let tokenChains = [];
       for (const chain of token.chains) {
+        // Case 2: full match for chain name -> get all tokens for that chain
         if (new RegExp(`^${query}$`, 'gi').test(chain.name)) {
           fullChainMatch.push(filteredTokens.length);
           tokenChains = [chain];
           break;
         }
+        // Case 3: partial match for chain name or asset symbol
         if (includesMultiple([chain.name, chain.assetSymbol], query)) {
           tokenChains.push(chain);
         }
