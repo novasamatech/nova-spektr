@@ -44,12 +44,12 @@ describe('shared/api/xcm/service/xcm-service', () => {
     const result = xcmService.parseXcmPalletExtrinsic(XCMPALLET_TRANSFER_HUB_ASTAR);
 
     expect(result).toEqual({
-      isRelayToken: true,
-      amount: '10070392000',
-      destParachain: 2001,
-      destAccountId: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',
+      isRelayToken: false,
+      amount: '176500000',
+      destParachain: 2006,
+      destAccountId: '0x4d081065a791aaabf8c4c9ec8ed87dce10145c86869c66e80286645730d70c44',
+      assetGeneralIndex: '1984',
       assetParachain: 0,
-      assetGeneralIndex: '',
       toRelayChain: false,
       type: 'xcmPallet',
     });

@@ -224,12 +224,7 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
 
   if (!parsedPayload.isRelayToken) {
     const assetJunction = Object.keys(assetInterior)[0];
-    let cols;
-    if (assetJunction === 'X1') {
-      cols = get(assetInterior, assetJunction);
-    } else {
-      cols = xcmUtils.getJunctionCols<{ GeneralIndex: string; Parachain: number }>(assetInterior, assetJunction);
-    }
+    const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string; Parachain: number }>(assetInterior, assetJunction);
 
     parsedPayload.assetGeneralIndex = xcmUtils.toRawString(cols?.GeneralIndex);
     parsedPayload.assetParachain = cols?.Parachain ? Number(xcmUtils.toRawString(cols.Parachain.toString())) : 0;
