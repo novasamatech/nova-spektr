@@ -71,7 +71,7 @@ function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseA
   );
 }
 
-function isVaultChainAccount(account: Partial<Account>): account is VaultChainAccount {
+function isVaultChainAccount(account: Partial<AnyAccount>): account is VaultChainAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -80,7 +80,7 @@ function isVaultChainAccount(account: Partial<Account>): account is VaultChainAc
   );
 }
 
-function isWcAccount(account: Partial<Account>): account is WcAccount {
+function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -89,7 +89,7 @@ function isWcAccount(account: Partial<Account>): account is WcAccount {
   );
 }
 
-function isVaultShardAccount(account: Partial<Account>): account is VaultShardAccount {
+function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShardAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -98,7 +98,7 @@ function isVaultShardAccount(account: Partial<Account>): account is VaultShardAc
   );
 }
 
-function isRegularMultisigAccount(account: Partial<Account>): account is MultisigAccount {
+function isRegularMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -107,7 +107,7 @@ function isRegularMultisigAccount(account: Partial<Account>): account is Multisi
   );
 }
 
-function isFlexibleMultisigAccount(account: Partial<Account>): account is FlexibleMultisigAccount {
+function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -116,11 +116,11 @@ function isFlexibleMultisigAccount(account: Partial<Account>): account is Flexib
   );
 }
 
-function isMultisigAccount(account: Partial<Account>): account is MultisigAccount | FlexibleMultisigAccount {
+function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
   return isFlexibleMultisigAccount(account) || isRegularMultisigAccount(account);
 }
 
-function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
+function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -129,7 +129,7 @@ function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount 
   );
 }
 
-function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
+function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
   return isProxiedAccount(account) && account.proxyVariant === ProxyVariant.PURE;
 }
 
