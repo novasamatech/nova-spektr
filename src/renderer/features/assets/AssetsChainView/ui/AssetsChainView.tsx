@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
-import { type Account, type Chain } from '@/shared/core';
+import { type Account, type Asset, type Chain } from '@/shared/core';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { isStringsMatchQuery, nullable } from '@/shared/lib/utils';
+import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
@@ -32,8 +32,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const chains = useUnit(networkModel.$chains);
 
   const [sortedChains, setSortedChains] = useState<Chain[]>([]);
+  const [filteredChains, setFilteredChains] = useState<Chain[]>([]);
 
-  const { list, isLoading } = useDeferredList({ list: sortedChains, forceFirstRender: true });
+  const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
     if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
@@ -41,24 +42,30 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const multisigChainToInclude = isMultisig ? activeWallet.accounts[0].chainId : undefined;
 
-    const availableChains = Object.values(chains).filter((chain) => {
-      return activeWallet.accounts.some((account) => {
-        return (
-          accountUtils.isNonBaseVaultAccount(account, activeWallet) &&
-          accountUtils.isChainAndCryptoMatch(account, chain)
-        );
-      });
-    });
+    const filteredChains = [];
+    for (const chain of Object.values(chains)) {
+      const connection = connections[chain.chainId];
 
-    const filteredChains = availableChains.filter((c) => {
-      const connection = connections[c.chainId];
+      if (nullable(connection)) continue;
+      if (networkUtils.isDisabledConnection(connection)) continue;
 
-      if (nullable(connection)) return false;
-      if (networkUtils.isDisabledConnection(connection)) return false;
-      if (!isMultisig) return true;
+      for (const account of activeWallet.accounts) {
+        if (
+          !accountUtils.isNonBaseVaultAccount(account, activeWallet) ||
+          !accountUtils.isChainAndCryptoMatch(account, chain)
+        )
+          continue;
 
-      return networkUtils.isMultisigSupported(c.options) || multisigChainToInclude === c.chainId;
-    });
+        if (
+          !isMultisig ||
+          networkUtils.isMultisigSupported(chain.options) ||
+          multisigChainToInclude === chain.chainId
+        ) {
+          filteredChains.push(chain);
+          break;
+        }
+      }
+    }
 
     const sortedChains = chainsService.sortChainsByBalance(
       filteredChains,
@@ -70,13 +77,46 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     setSortedChains(sortedChains);
   }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
 
+  useEffect(() => {
+    let filteredChains: Chain[] = [];
+    const fullChainMatch: number[] = [];
+
+    for (const chain of sortedChains) {
+      // Case 1: full match for chain.name  -> get only that chain
+      if (query.toLowerCase() === chain.name.toLowerCase()) {
+        filteredChains = [chain];
+        break;
+      }
+
+      let filteredAssets: Asset[] = [];
+      for (const asset of chain.assets) {
+        // Case 2: full match for asset symbol -> get only that asset
+        if (query.toLowerCase() === asset.symbol.toLowerCase()) {
+          fullChainMatch.push(filteredChains.length);
+          filteredAssets = [asset];
+          break;
+        }
+        // Case 3: partial match for asset symbol
+        if (includesMultiple([chain.name, asset.name], query)) {
+          filteredAssets.push(asset);
+        }
+      }
+
+      if (filteredAssets.length === 0) continue;
+
+      filteredChains.push({ ...chain, assets: filteredAssets });
+    }
+
+    if (fullChainMatch.length === 0) {
+      setFilteredChains(filteredChains);
+    } else {
+      setFilteredChains(filteredChains.filter((_, index) => fullChainMatch.includes(index)));
+    }
+  }, [sortedChains, query]);
+
   if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
     return null;
   }
-
-  const searchSymbolOnly = list.some((chain) => {
-    return chain.assets.some((asset) => isStringsMatchQuery(query, [asset.symbol, asset.name]));
-  });
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
@@ -88,14 +128,9 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
         )}
 
         {list.map((chain) => (
-          <NetworkAssets
-            key={chain.chainId}
-            searchSymbolOnly={searchSymbolOnly}
-            chain={chain}
-            accounts={activeShards}
-            hideZeroBalances={hideZeroBalances}
-            query={query}
-          />
+          <li className="w-[736px]" key={chain.chainId}>
+            <NetworkAssets chain={chain} accounts={activeShards} hideZeroBalances={hideZeroBalances} query={query} />
+          </li>
         ))}
         <EmptyAssetsState />
       </ul>
