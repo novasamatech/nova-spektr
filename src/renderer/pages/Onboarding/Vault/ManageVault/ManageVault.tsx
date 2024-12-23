@@ -87,7 +87,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   useEffect(() => {
     const chains = chainsService.getChainsData({ sort: true });
-    const chainsMap = dictionary(chains, 'chainId', [] as (ChainAccount | ShardAccount[])[]);
+    const chainsMap = dictionary(chains, 'chainId', () => [] as (ChainAccount | ShardAccount[])[]);
 
     for (const account of keysGroups) {
       const chainId = accountUtils.isAccountWithShards(account) ? account[0].chainId : account.chainId;
