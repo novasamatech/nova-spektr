@@ -367,7 +367,6 @@ async function getDeliveryFeeFromConfig({
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
-  console.log('getDeliveryFeeFromConfig. deliveryFeeConfig', deliveryFeeConfig);
 
   if (!deliveryFeeConfig) return new BN(0);
 
