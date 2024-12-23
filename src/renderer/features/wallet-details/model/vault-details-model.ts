@@ -72,7 +72,7 @@ sample({
     // @ts-expect-error some types missaligment (no accountId)
     const accountsToCreate: AnyAccount[] = accounts.map((account) =>
       accountUtils.isVaultChainAccount(account)
-        ? { ...account, baseId: rootAccountId, walletId }
+        ? { ...account, baseAccountId: rootAccountId, walletId }
         : { ...account, walletId },
     );
 

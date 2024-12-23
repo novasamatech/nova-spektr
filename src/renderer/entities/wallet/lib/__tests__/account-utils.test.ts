@@ -190,7 +190,7 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     const accounts: Account[] = [
       { id: 1, walletId: 1 } as unknown as Account,
       { id: 2, walletId: 1 } as unknown as Account,
-      { id: 3, walletId: 1, accountType: AccountType.BASE } as unknown as Account,
+      { id: 3, walletId: 1, type: 'universal', accountType: AccountType.BASE } as unknown as Account,
     ];
 
     const walletId = 1;

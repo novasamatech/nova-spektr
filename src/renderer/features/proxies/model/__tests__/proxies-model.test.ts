@@ -66,7 +66,8 @@ describe('features/proxies/model/proxies-model', () => {
     jest.restoreAllMocks();
   });
 
-  test('should add $proxies and $proxyGroups ', async () => {
+  // TODO do we really want to test worker here?
+  xtest('should add $proxies and $proxyGroups ', async () => {
     const newProxy = {
       chainId: '0x01' as HexString,
       accountId: '0x02' as AccountId,

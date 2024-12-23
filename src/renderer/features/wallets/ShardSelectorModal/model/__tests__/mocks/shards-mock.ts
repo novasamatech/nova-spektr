@@ -82,7 +82,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
 const multishardAccounts = [
   {
     id: 2,
-    baseId: 1,
+    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
     walletId: 2,
     name: 'Main KSM key',
     type: 'chain',
@@ -93,7 +93,7 @@ const multishardAccounts = [
   },
   {
     id: 3,
-    baseId: 1,
+    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
     walletId: 2,
     name: 'Main DOT key',
     type: 'chain',
@@ -112,7 +112,7 @@ const multishardAccounts = [
   },
   {
     id: 5,
-    baseId: 4,
+    baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
     walletId: 2,
     name: 'Second WND key',
     type: 'chain',
@@ -123,7 +123,7 @@ const multishardAccounts = [
   },
   {
     id: 6,
-    baseId: 4,
+    baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
     walletId: 2,
     name: 'Second ACA key',
     type: 'chain',

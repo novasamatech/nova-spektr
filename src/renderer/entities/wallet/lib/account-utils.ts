@@ -20,7 +20,7 @@ import {
 } from '@/shared/core';
 import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, networkDomain } from '@/domains/network';
@@ -178,7 +178,7 @@ function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cr
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
   // TODO WTF
-  return pjsSchema.helpers.toAccountId(u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId));
+  return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId) as AccountId;
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): (VaultChainAccount | VaultShardAccount[])[] {

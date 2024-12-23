@@ -35,7 +35,10 @@ describe('features/wallet/model/shards-model', () => {
     const { multishardWallet, multishardAccounts, chainsMap } = shardsMock;
 
     const scope = fork({
-      values: new Map().set(walletModel.__test.$rawWallets, [multishardWallet]).set(networkModel.$chains, chainsMap),
+      values: new Map()
+        .set(networkDomain.accounts.__test.$list, multishardAccounts)
+        .set(walletModel.__test.$rawWallets, [multishardWallet])
+        .set(networkModel.$chains, chainsMap),
     });
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });

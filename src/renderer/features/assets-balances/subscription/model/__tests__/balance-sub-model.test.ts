@@ -3,6 +3,7 @@ import { type Scope, allSettled, fork } from 'effector';
 import { balanceService } from '@/shared/api/balances';
 import { storageService } from '@/shared/api/storage';
 import { type ChainId, ConnectionStatus } from '@/shared/core';
+import { networkDomain } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -14,10 +15,11 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
   const { wallets, newWallets, accounts } = balanceSubMock;
 
   const setupInitialState = async (scope: Scope) => {
-    const { chains, wallets } = balanceSubMock;
+    const { chains, wallets, accounts } = balanceSubMock;
 
     const actions = Promise.all([
       allSettled(networkModel.$chains, { scope, params: chains }),
+      allSettled(networkDomain.accounts.__test.$list, { scope, params: accounts }),
       allSettled(walletModel.__test.$rawWallets, { scope, params: wallets }),
     ]);
 
@@ -115,27 +117,27 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
   });
 
   test('should update $subscriptions on walletToSubSet', async () => {
-    const scope_1 = fork({
+    const scope = fork({
       values: new Map().set(networkModel.$connectionStatuses, {
         '0x01': ConnectionStatus.DISCONNECTED,
         '0x02': ConnectionStatus.CONNECTED,
       }),
     });
-    await setupInitialState(scope_1);
+    await setupInitialState(scope);
 
-    expect(scope_1.getState(balanceSubModel._test.$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': undefined,
       '0x02': { [wallets[0].id]: [balanceSpyPromise, lockSpyPromise] },
     });
 
-    const action = allSettled(balanceSubModel.events.walletToSubSet, { scope: scope_1, params: wallets[1] });
+    const action = allSettled(balanceSubModel.events.walletToSubSet, { scope: scope, params: wallets[1] });
 
     await jest.runAllTimersAsync();
     await action;
 
     expect(balanceSpy).not.toHaveBeenCalled();
     expect(lockSpy).not.toHaveBeenCalled();
-    expect(scope_1.getState(balanceSubModel._test.$subscriptions)).toEqual({
+    expect(scope.getState(balanceSubModel._test.$subscriptions)).toEqual({
       '0x01': undefined,
       '0x02': {
         [wallets[0].id]: [balanceSpyPromise, lockSpyPromise],

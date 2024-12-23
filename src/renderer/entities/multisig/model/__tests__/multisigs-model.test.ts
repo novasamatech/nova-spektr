@@ -53,7 +53,7 @@ describe('multisigs model', () => {
           },
         ])
         .set(networkDomain.accounts.__test.$list, [
-          { walletId: 1, accountId: '0x03', accountType: AccountType.WALLET_CONNECT, chainId: '0x01' },
+          { walletId: 1, accountId: '0x03', type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x01' },
         ])
         .set(networkModel.$chains, mockChains)
         .set(networkModel.$connections, mockConnections),

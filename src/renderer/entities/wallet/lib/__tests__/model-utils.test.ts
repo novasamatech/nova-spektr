@@ -12,6 +12,7 @@ import { modelUtils } from '../model-utils';
 const accounts = [
   {
     name: 'My base account',
+    type: 'universal',
     accountType: AccountType.BASE,
     accountId: TEST_ACCOUNTS[0],
     signingType: SigningType.POLKADOT_VAULT,
@@ -19,6 +20,7 @@ const accounts = [
   },
   {
     name: 'My chain account',
+    type: 'chain',
     accountType: AccountType.CHAIN,
     accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
@@ -29,6 +31,7 @@ const accounts = [
   },
   {
     name: 'My chain account',
+    type: 'chain',
     accountType: AccountType.CHAIN,
     accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
@@ -39,6 +42,7 @@ const accounts = [
   },
   {
     name: 'My base account',
+    type: 'universal',
     accountType: AccountType.BASE,
     accountId: TEST_ACCOUNTS[0],
     chainType: ChainType.SUBSTRATE,

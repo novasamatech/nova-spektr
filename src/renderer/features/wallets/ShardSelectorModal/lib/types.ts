@@ -30,8 +30,6 @@ export type SelectedStruct = {
   };
 };
 
-export type ChainsMap<T> = {
-  [chainId: ChainId]: {
-    [key: string]: T[];
-  };
+export type ChainsMap<T, K extends string = string> = {
+  [chainId: ChainId]: Record<K, T[]>;
 };

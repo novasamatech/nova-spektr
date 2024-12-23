@@ -4,12 +4,11 @@ import {
   type Account,
   type Chain,
   type ChainId,
-  type ID,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
+import { entries, isStringsMatchQuery, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
@@ -113,6 +112,9 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
 
   for (const shard of shards) {
     const root = roots[shard.accountId];
+
+    if (nullable(root)) continue;
+
     root.checked += 1;
     root.total += 1;
     root[shard.chainId].checked += 1;
@@ -179,13 +181,13 @@ function getStructForVault<T>(accounts: Account[], chainsMap: ChainsMap<T>): Roo
   return [[root, chainsTuples]];
 }
 
-function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>): RootTuple[] {
-  const rootsMap: Record<ID, VaultBaseAccount> = {};
+function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T, AccountId>): RootTuple[] {
+  const rootsMap: Record<AccountId, VaultBaseAccount> = {};
   const roots: Map<VaultBaseAccount, ChainTuple[]> = new Map();
 
   for (const account of accounts) {
     if (accountUtils.isVaultBaseAccount(account)) {
-      rootsMap[account.id] = account;
+      rootsMap[account.accountId] = account;
       roots.set(account, []);
     }
 
@@ -201,13 +203,13 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
 
   if (!roots.size) return [];
 
-  for (const [chainId, rootTuples] of Object.entries(chainsMap)) {
-    const tuples = Object.entries(rootTuples);
+  for (const [chainId, rootTuples] of entries(chainsMap)) {
+    const tuples = entries(rootTuples);
 
     if (tuples.length === 0) continue;
 
     for (const [baseId, accounts] of tuples) {
-      const chainTuples = roots.get(rootsMap[Number(baseId)]);
+      const chainTuples = roots.get(rootsMap[baseId]);
       if (chainTuples) {
         chainTuples.push([chainId as ChainId, accounts as never]);
       }

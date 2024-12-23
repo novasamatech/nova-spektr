@@ -69,7 +69,7 @@ export type Account =
   | ProxiedAccount
   | FlexibleMultisigAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
+export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseAccountId'>;
 
 export const enum AccountType {
   BASE = 'base',
