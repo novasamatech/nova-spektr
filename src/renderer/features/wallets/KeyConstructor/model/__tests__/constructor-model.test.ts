@@ -2,12 +2,12 @@ import { type Scope, allSettled, fork } from 'effector';
 
 import {
   AccountType,
-  type ChainAccount,
   type ChainId,
   CryptoType,
   KeyType,
-  type ShardAccount,
   SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
@@ -36,7 +36,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as never as (ChainAccount | ShardAccount)[],
+      params: defaultKeys as never as (VaultChainAccount | VaultShardAccount)[],
     });
 
     expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0], [defaultKeys[1], defaultKeys[2]]]);
@@ -69,7 +69,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as never as (ChainAccount | ShardAccount)[],
+      params: defaultKeys as never as (VaultChainAccount | VaultShardAccount)[],
     });
     await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
 
@@ -83,7 +83,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys.slice(0, 1) as never as ChainAccount[],
+      params: defaultKeys.slice(0, 1) as never as VaultChainAccount[],
     });
 
     await submitForm(scope);
@@ -136,7 +136,7 @@ describe('features/wallet/model/constructor-model', () => {
       keyName: 'My custom key',
     });
 
-    const keys = scope.getState(constructorModel.$keys) as ShardAccount[][];
+    const keys = scope.getState(constructorModel.$keys) as VaultShardAccount[][];
     expect(keys[0]).toHaveLength(4);
     expect(keys[0][0]).toEqual({
       type: 'chain',
@@ -158,7 +158,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: [customKey] as never as ChainAccount[],
+      params: [customKey] as never as VaultChainAccount[],
     });
 
     const network = { chainId: customKey.chainId, specName: 'polkadot' } as unknown;

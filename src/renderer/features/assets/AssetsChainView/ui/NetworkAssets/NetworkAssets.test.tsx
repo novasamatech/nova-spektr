@@ -5,12 +5,12 @@ import { Provider } from 'effector-react';
 import chains from '@/shared/config/chains/chains.json';
 import {
   AccountType,
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   CryptoType,
-  type ShardAccount,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
@@ -49,7 +49,7 @@ jest.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
-const accounts: (BaseAccount | ChainAccount | ShardAccount)[] = [
+const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
     id: 1,
     walletId: 1,

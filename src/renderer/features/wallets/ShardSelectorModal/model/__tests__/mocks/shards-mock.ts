@@ -1,18 +1,18 @@
 import {
   AccountType,
-  type BaseAccount,
-  type ChainAccount,
   CryptoType,
   KeyType,
   type MultiShardWallet,
   type PolkadotVaultWallet,
-  type ShardAccount,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-const vaultAccounts: (BaseAccount | ChainAccount | ShardAccount)[] = [
+const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
     id: 2,
     walletId: 1,
@@ -140,7 +140,7 @@ const multishardAccounts = [
     accountType: AccountType.BASE,
     accountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340',
   },
-] as unknown as (BaseAccount | ChainAccount)[];
+] as unknown as (VaultBaseAccount | VaultChainAccount)[];
 
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,

@@ -96,7 +96,7 @@ const AccountsSelector = () => {
   }
 
   const options = accounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {
@@ -191,7 +191,7 @@ const Destination = () => {
   }));
 
   const destinationOptions = destinationAccounts.map((account) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {

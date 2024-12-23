@@ -3,7 +3,6 @@ import set from 'lodash/set';
 
 import {
   AccountType,
-  type BaseAccount,
   type Chain,
   type ChainId,
   type Connection,
@@ -12,6 +11,7 @@ import {
   type ProxyAccount,
   ProxyVariant,
   SigningType,
+  type VaultBaseAccount,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorker, state } from '../proxy-worker';
@@ -152,7 +152,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01' as AccountId,
         signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
-      } as BaseAccount,
+      } as VaultBaseAccount,
     };
     const accountsForProxied = {};
 
@@ -221,7 +221,7 @@ describe('features/proxies/workers/proxy-worker', () => {
         accountId: '0x01' as AccountId,
         signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
-      } as BaseAccount,
+      } as VaultBaseAccount,
     };
     const accountsForProxied = {};
 

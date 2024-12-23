@@ -1,4 +1,4 @@
-import { type BaseAccount, type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { type ChainId, type VaultBaseAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 
-export type MultishardMap = Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
-export type VaultMap = Record<ChainId, (ChainAccount | ShardAccount[])[]>;
+export type MultishardMap = Map<VaultBaseAccount, Record<ChainId, VaultChainAccount[]>>;
+export type VaultMap = Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]>;

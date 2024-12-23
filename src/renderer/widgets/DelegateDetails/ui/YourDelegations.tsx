@@ -107,7 +107,7 @@ export const YourDelegations = () => {
                     name={account.name}
                     address={account.accountId}
                     keyType={
-                      accountUtils.isShardAccount(account) || accountUtils.isChainAccount(account)
+                      accountUtils.isVaultShardAccount(account) || accountUtils.isVaultChainAccount(account)
                         ? account.keyType
                         : undefined
                     }

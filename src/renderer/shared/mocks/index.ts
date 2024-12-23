@@ -4,17 +4,17 @@ import {
   AccountType,
   type Asset,
   AssetType,
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   type ChainId,
   CryptoType,
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
   ProxyVariant,
-  type ShardAccount,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type WalletConnectWallet,
   WalletType,
   type WcAccount,
@@ -69,7 +69,7 @@ export const createAccountId = (seed: string = '0') => {
   return pjsSchema.helpers.toAccountId(toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address));
 };
 
-export const createBaseAccount = (id: number = Math.round(Math.random() * 10)): BaseAccount => ({
+export const createBaseAccount = (id: number = Math.round(Math.random() * 10)): VaultBaseAccount => ({
   id,
   accountId: createAccountId(`Base account ${id}`),
   signingType: SigningType.POLKADOT_VAULT,
@@ -111,7 +111,7 @@ export const createProxiedAccount = (id: number = Math.round(Math.random() * 10)
 
 export const createPolkadotWallet = (
   id: number,
-  accounts: (BaseAccount | ChainAccount | ShardAccount)[],
+  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[],
 ): PolkadotVaultWallet => ({
   id,
   accounts,

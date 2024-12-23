@@ -3,7 +3,7 @@ import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@/shared/core';
+import { type Address, type ChainId, type VaultBaseAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -92,8 +92,8 @@ export const ScanMultiframeQr = ({
         info.payload,
         chainId,
         signerWallet.signingType,
-        (signingPayload.account as ShardAccount).derivationPath,
-        (signingPayload.account as BaseAccount).cryptoType,
+        (signingPayload.account as VaultShardAccount).derivationPath,
+        (signingPayload.account as VaultBaseAccount).cryptoType,
       );
 
       return {

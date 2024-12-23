@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type Chain, type ShardAccount } from '@/shared/core';
+import { type Chain, type VaultShardAccount } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, CaptionText, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
@@ -11,7 +11,7 @@ import { SelectableShard } from './SelectableShard';
 
 type Props = {
   rootAccountId: AccountId;
-  accounts: ShardAccount[];
+  accounts: VaultShardAccount[];
   chain: Chain;
 };
 export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
@@ -30,7 +30,7 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
     });
   };
 
-  const toggleShard = (shard: ShardAccount, value: boolean) => {
+  const toggleShard = (shard: VaultShardAccount, value: boolean) => {
     shardsModel.events.shardToggled({
       root: rootAccountId,
       chainId: chain.chainId,

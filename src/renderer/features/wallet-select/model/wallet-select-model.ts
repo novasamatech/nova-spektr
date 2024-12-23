@@ -52,7 +52,7 @@ const $walletBalance = combine(
     return balances.reduce<BigNumber>((acc, balance) => {
       const account = accountMap[balance.accountId];
       if (!account) return acc;
-      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return acc;
+      if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
       const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
 

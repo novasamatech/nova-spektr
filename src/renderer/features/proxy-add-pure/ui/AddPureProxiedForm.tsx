@@ -97,7 +97,7 @@ const AccountSelector = () => {
   }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
     return {

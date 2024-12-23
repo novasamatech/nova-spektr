@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import {
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   type DraftAccount,
   type PolkadotVaultWallet,
-  type ShardAccount,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -43,7 +43,7 @@ const {
 
 type Props = {
   wallet: PolkadotVaultWallet;
-  root: BaseAccount;
+  root: VaultBaseAccount;
   accountsMap: VaultMap;
   onClose: () => void;
 };
@@ -76,8 +76,8 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   }, []);
 
   const handleConstructorKeys = (
-    keysToAdd: (ChainAccount | ShardAccount[])[],
-    keysToRemove: (ChainAccount | ShardAccount[])[],
+    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
+    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
   ) => {
     toggleConstructorModal();
 
@@ -94,17 +94,17 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     }
   };
 
-  const handleImportedKeys = (keys: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
+  const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     toggleImportModal();
     const newKeys = keys.filter((key) => {
-      return key.keyType === KeyType.MAIN || !(key as ChainAccount | ShardAccount).accountId;
+      return key.keyType === KeyType.MAIN || !(key as VaultChainAccount | VaultShardAccount).accountId;
     });
 
     vaultDetailsModel.events.keysAdded(newKeys);
     toggleScanModal();
   };
 
-  const handleVaultKeys = (accounts: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
+  const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     vaultDetailsModel.events.accountsCreated({
       walletId: wallet.id,
       rootAccountId: root.accountId,

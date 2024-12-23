@@ -1,11 +1,11 @@
 import {
   AccountType,
-  type BaseAccount,
-  type ChainAccount,
   ChainType,
   CryptoType,
   KeyType,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { modelUtils } from '../model-utils';
@@ -48,7 +48,7 @@ const accounts = [
 
 describe('entities/wallet/lib/model-utils#groupAccounts', () => {
   test('should create groups of base & chains accounts', () => {
-    const { base, chains } = modelUtils.groupAccounts(accounts as (BaseAccount | ChainAccount)[]);
+    const { base, chains } = modelUtils.groupAccounts(accounts as (VaultBaseAccount | VaultChainAccount)[]);
 
     expect(base).toEqual([accounts[0], accounts[3]]);
     expect(chains).toEqual([[accounts[1], accounts[2]]]);

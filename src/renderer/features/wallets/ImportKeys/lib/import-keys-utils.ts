@@ -6,14 +6,14 @@ import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type Address,
-  type ChainAccount,
   type ChainId,
   CryptoType,
   type DraftAccount,
   type HexString,
   KeyType,
-  type ShardAccount,
   SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -229,7 +229,7 @@ function getDerivationError(derivation: DerivationWithPath): DerivationValidatio
   if (errors.length) return errors;
 }
 
-type DraftAccounts = (DraftAccount<ShardAccount> | DraftAccount<ChainAccount>)[];
+type DraftAccounts = (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
 
 function mergeChainDerivations(existingDerivations: DraftAccounts, importedDerivations: TypedImportedDerivation[]) {
   let addedKeys = 0;

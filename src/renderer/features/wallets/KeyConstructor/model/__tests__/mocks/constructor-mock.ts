@@ -1,11 +1,11 @@
 import {
   AccountType,
-  type ChainAccount,
   CryptoType,
   KeyType,
   type NoID,
-  type ShardAccount,
   SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 
@@ -19,7 +19,7 @@ const defaultKeys = [
     cryptoType: CryptoType.SR25519,
     signingType: SigningType.POLKADOT_VAULT,
     derivationPath: '//polkadot//MAIN',
-  } satisfies Omit<NoID<ChainAccount>, 'accountId' | 'walletId'>,
+  } satisfies Omit<NoID<VaultChainAccount>, 'accountId' | 'walletId'>,
   {
     type: 'chain',
     name: 'Shard_1 DOT key',
@@ -30,7 +30,7 @@ const defaultKeys = [
     keyType: KeyType.PUBLIC,
     accountType: AccountType.SHARD,
     derivationPath: '//polkadot//hot//0',
-  } satisfies Omit<NoID<ShardAccount>, 'accountId' | 'walletId'>,
+  } satisfies Omit<NoID<VaultShardAccount>, 'accountId' | 'walletId'>,
   {
     type: 'chain',
     name: 'Shard_2 DOT key',
@@ -41,10 +41,10 @@ const defaultKeys = [
     keyType: KeyType.PUBLIC,
     accountType: AccountType.SHARD,
     derivationPath: '//polkadot//hot//1',
-  } satisfies Omit<NoID<ShardAccount>, 'accountId' | 'walletId'>,
+  } satisfies Omit<NoID<VaultShardAccount>, 'accountId' | 'walletId'>,
 ];
 
-const customKey: ChainAccount = {
+const customKey: VaultChainAccount = {
   type: 'chain',
   name: 'custom key',
   keyType: KeyType.CUSTOM,

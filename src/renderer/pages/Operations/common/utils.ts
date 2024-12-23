@@ -90,7 +90,7 @@ export const getSignatoryAccounts = (
       acc.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
+        (a) => accountUtils.isVaultChainAccount(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
         acc.push(legacySignatoryAccount);

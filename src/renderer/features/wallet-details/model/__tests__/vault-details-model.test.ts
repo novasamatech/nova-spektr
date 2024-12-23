@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { type Chain, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type Chain, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { type AnyAccount, networkDomain } from '@/domains/network';
 import { vaultDetailsModel } from '../vault-details-model';
@@ -11,7 +11,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   });
 
   test('should set $shards on shardsSelected', async () => {
-    const shard = { name: 'My shard' } as ShardAccount;
+    const shard = { name: 'My shard' } as VaultShardAccount;
     const scope = fork();
 
     await allSettled(vaultDetailsModel.events.shardsSelected, { scope, params: [shard] });
@@ -21,7 +21,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   test('should clear $shards & $chain on shardsCleared', async () => {
     const scope = fork({
       values: new Map()
-        .set(vaultDetailsModel.$shards, [{ name: 'My shard' } as ShardAccount])
+        .set(vaultDetailsModel.$shards, [{ name: 'My shard' } as VaultShardAccount])
         .set(vaultDetailsModel.$chain, { chainId: '0x00' } as unknown as Chain),
     });
 
@@ -31,7 +31,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   });
 
   test('should set $keysToAdd on keysAdded', async () => {
-    const key = { name: 'My shard' } as DraftAccount<ChainAccount>;
+    const key = { name: 'My shard' } as DraftAccount<VaultChainAccount>;
     const scope = fork();
 
     await allSettled(vaultDetailsModel.events.keysAdded, { scope, params: [key] });
@@ -58,7 +58,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     const walletId = 1;
     const accounts = [{ accountId: '0x00', walletId, name: 'My first shard' }];
 
-    const key = { name: 'My second shard' } as unknown as DraftAccount<ChainAccount>;
+    const key = { name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
     const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
     const newAccount = { walletId, ...key };
 

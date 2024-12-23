@@ -8,12 +8,12 @@ import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
-  type ChainAccount,
   type ChainId,
   CryptoType,
   type DraftAccount,
-  type ShardAccount,
   SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -65,7 +65,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainElements, setChainElements] = useState<[string, (ChainAccount | ShardAccount[])[]][]>([]);
+  const [chainElements, setChainElements] = useState<[string, (VaultChainAccount | VaultShardAccount[])[]][]>([]);
 
   const {
     submit,
@@ -87,7 +87,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   useEffect(() => {
     const chains = chainsService.getChainsData({ sort: true });
-    const chainsMap = dictionary(chains, 'chainId', () => [] as (ChainAccount | ShardAccount[])[]);
+    const chainsMap = dictionary(chains, 'chainId', () => [] as (VaultChainAccount | VaultShardAccount[])[]);
 
     for (const account of keysGroups) {
       const chainId = accountUtils.isAccountWithShards(account) ? account[0].chainId : account.chainId;
@@ -116,7 +116,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   };
 
   const handleCreateVault = (
-    accounts: (Omit<ChainAccount, 'id' | 'walletId'> | Omit<ShardAccount, 'id' | 'walletId'>)[],
+    accounts: (Omit<VaultChainAccount, 'id' | 'walletId'> | Omit<VaultShardAccount, 'id' | 'walletId'>)[],
   ) => {
     manageVaultModel.events.vaultCreated({
       wallet: {
@@ -144,14 +144,14 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     });
   };
 
-  const handleImportKeys = (keys: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
+  const handleImportKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     manageVaultModel.events.derivationsImported(keys);
     toggleIsImportModalOpen();
   };
 
   const handleConstructorKeys = (
-    keysToAdd: (ChainAccount | ShardAccount[])[],
-    keysToRemove: (ChainAccount | ShardAccount[])[],
+    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
+    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
   ) => {
     manageVaultModel.events.keysRemoved(keysToRemove.flat());
     manageVaultModel.events.keysAdded(keysToAdd.flat());
@@ -312,7 +312,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys as (ShardAccount | ChainAccount)[]}
+        keys={keys as (VaultShardAccount | VaultChainAccount)[]}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

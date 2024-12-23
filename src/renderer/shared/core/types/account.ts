@@ -1,18 +1,18 @@
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO we should move each account type into separated feature that implements logic around it.
 // eslint-disable-next-line boundaries/element-types
-import { type ChainAccount as CAccount, type UniversalAccount } from '@/domains/network';
+import { type ChainAccount, type UniversalAccount } from '@/domains/network';
 
 import { type ID, type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
-export type BaseAccount = UniversalAccount<{
+export type VaultBaseAccount = UniversalAccount<{
   id: ID;
   accountType: AccountType.BASE;
 }>;
 
-export type ChainAccount = CAccount<{
+export type VaultChainAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.CHAIN;
   baseAccountId?: AccountId;
@@ -20,7 +20,7 @@ export type ChainAccount = CAccount<{
   derivationPath: string;
 }>;
 
-export type ShardAccount = CAccount<{
+export type VaultShardAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.SHARD;
   groupId: string;
@@ -28,14 +28,14 @@ export type ShardAccount = CAccount<{
   derivationPath: string;
 }>;
 
-export type MultisigAccount = CAccount<{
+export type MultisigAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
 }>;
 
-export type FlexibleMultisigAccount = CAccount<{
+export type FlexibleMultisigAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.FLEXIBLE_MULTISIG;
   signatories: Signatory[];
@@ -43,13 +43,13 @@ export type FlexibleMultisigAccount = CAccount<{
   proxyAccountId?: AccountId; // we have accountId only after proxy is created
 }>;
 
-export type WcAccount = CAccount<{
+export type WcAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.WALLET_CONNECT;
   signingExtras: Record<string, any>;
 }>;
 
-export type ProxiedAccount = CAccount<{
+export type ProxiedAccount = ChainAccount<{
   id: ID;
   accountType: AccountType.PROXIED;
   proxyAccountId: AccountId;
@@ -61,9 +61,9 @@ export type ProxiedAccount = CAccount<{
 }>;
 
 export type Account =
-  | BaseAccount
-  | ChainAccount
-  | ShardAccount
+  | VaultBaseAccount
+  | VaultChainAccount
+  | VaultShardAccount
   | MultisigAccount
   | WcAccount
   | ProxiedAccount

@@ -2,12 +2,12 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 
 import {
-  type BaseAccount,
-  type ChainAccount,
   type DraftAccount,
   type NoID,
-  type ShardAccount,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
@@ -23,15 +23,15 @@ export type Callbacks = {
 };
 
 type VaultCreateParams = {
-  root: Omit<NoID<BaseAccount>, 'walletId'>;
+  root: Omit<NoID<VaultBaseAccount>, 'walletId'>;
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-  accounts: (Omit<NoID<ChainAccount>, 'walletId'> | Omit<NoID<ShardAccount>, 'walletId'>)[];
+  accounts: (Omit<NoID<VaultChainAccount>, 'walletId'> | Omit<NoID<VaultShardAccount>, 'walletId'>)[];
 };
 
 const formInitiated = createEvent<SeedInfo[]>();
-const keysRemoved = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
-const keysAdded = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
-const derivationsImported = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
+const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -39,10 +39,10 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $keys = createStore<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>([]);
+const $keys = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>([]);
 
-const $keysGroups = combine($keys, (accounts): (ChainAccount | ShardAccount[])[] => {
-  return accountUtils.getAccountsAndShardGroups(accounts as (ChainAccount | ShardAccount)[]);
+const $keysGroups = combine($keys, (accounts): (VaultChainAccount | VaultShardAccount[])[] => {
+  return accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
 });
 
 const $hasKeys = combine($keys, (keys): boolean => {
@@ -82,7 +82,7 @@ sample({
   fn: (chains) => {
     const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
 
-    return defaultChains.reduce<DraftAccount<ChainAccount>[]>((acc, chain) => {
+    return defaultChains.reduce<DraftAccount<VaultChainAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
       acc.push({

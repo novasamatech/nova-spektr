@@ -4,14 +4,14 @@ import { readonly } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import {
   type Account,
-  type BaseAccount,
-  type ChainAccount,
   type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type NoID,
   type ProxiedAccount,
-  type ShardAccount,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
   type WcAccount,
 } from '@/shared/core';
@@ -32,9 +32,9 @@ export type CreateParams<T extends AnyAccount = AnyAccount> = {
 };
 
 const walletStarted = createEvent();
-const watchOnlyCreated = createEvent<CreateParams<BaseAccount>>();
-const multishardCreated = createEvent<CreateParams<BaseAccount | ChainAccount | ShardAccount>>();
-const singleshardCreated = createEvent<CreateParams<BaseAccount>>();
+const watchOnlyCreated = createEvent<CreateParams<VaultBaseAccount>>();
+const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
+const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
@@ -109,7 +109,7 @@ const walletCreatedFx = createEffect(
     if (!dbWallet) return undefined;
 
     const accountsPayload = accounts.map(
-      (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
+      (account) => ({ ...account, walletId: dbWallet.id }) as VaultChainAccount | UniversalAccount,
     );
 
     const dbAccounts = await networkDomain.accounts.createAccounts(accountsPayload);

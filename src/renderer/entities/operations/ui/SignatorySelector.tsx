@@ -46,7 +46,7 @@ export const SignatorySelector = ({
         onChange={(value) => selectSigner(Number(value))}
       >
         {signatories.map(({ signer, balance }) => {
-          const isShard = accountUtils.isShardAccount(signer);
+          const isShard = accountUtils.isVaultShardAccount(signer);
           const address = toAddress(signer.accountId, { prefix: addressPrefix });
 
           return (

@@ -3,14 +3,15 @@ import { allSettled, fork } from 'effector';
 import { storageService } from '@/shared/api/storage';
 import {
   AccountType,
-  type BaseAccount,
   CryptoType,
   ProxyVariant,
   SigningType,
+  type VaultBaseAccount,
   type Wallet,
   WalletType,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
+import { createAccountId } from '@/shared/mocks';
 import { type AnyAccount, networkDomain } from '@/domains/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
@@ -49,7 +50,7 @@ const wallet = {
       accountType: AccountType.BASE,
       name: 'first account',
       accountId: TEST_ACCOUNTS[0],
-    } satisfies BaseAccount,
+    } satisfies VaultBaseAccount,
     {
       id: 2,
       walletId: 1,
@@ -58,8 +59,8 @@ const wallet = {
       cryptoType: CryptoType.SR25519,
       accountType: AccountType.BASE,
       name: 'second account',
-      accountId: TEST_ACCOUNTS[1],
-    } satisfies BaseAccount,
+      accountId: createAccountId('proxied account'),
+    } satisfies VaultBaseAccount,
   ],
 } as Wallet;
 
@@ -72,8 +73,9 @@ const proxiedWallet = {
   accounts: [
     {
       id: 3,
+      type: 'chain',
       accountId: '0x01',
-      proxyAccountId: '0x00',
+      proxyAccountId: createAccountId('proxied account'),
       chainId: TEST_CHAIN_ID,
       delay: 0,
       proxyType: 'Any',
@@ -133,6 +135,7 @@ describe('features/wallets/ForgetModel', () => {
     const scope = fork({
       values: new Map()
         .set(walletModel.__test.$rawWallets, [wallet, proxiedWallet])
+        .set(networkDomain.accounts.__test.$list, [...wallet.accounts, ...proxiedWallet.accounts])
         .set(proxyModel.$proxies, {
           '0x01': [
             {

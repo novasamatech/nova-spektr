@@ -1,11 +1,11 @@
 import {
   type Account,
-  type BaseAccount,
-  type ChainAccount,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxiedAccount,
-  type ShardAccount,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type WcAccount,
 } from './account';
 import { type ID } from './general';
@@ -29,22 +29,22 @@ export interface Wallet {
 
 export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;
-  accounts: (BaseAccount | ChainAccount | ShardAccount)[];
+  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[];
 }
 
 export interface SingleShardWallet extends Wallet {
   type: WalletType.SINGLE_PARITY_SIGNER;
-  accounts: BaseAccount[];
+  accounts: VaultBaseAccount[];
 }
 
 export interface MultiShardWallet extends Wallet {
   type: WalletType.MULTISHARD_PARITY_SIGNER;
-  accounts: (BaseAccount | ChainAccount)[];
+  accounts: (VaultBaseAccount | VaultChainAccount)[];
 }
 
 export interface WatchOnlyWallet extends Wallet {
   type: WalletType.WATCH_ONLY;
-  accounts: BaseAccount[];
+  accounts: VaultBaseAccount[];
 }
 
 // TODO: try to move signatories data out of account

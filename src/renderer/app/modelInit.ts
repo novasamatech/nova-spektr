@@ -1,4 +1,5 @@
 import { kernelModel } from '@/shared/core';
+import { networkDomain } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
 import { multisigsModel } from '@/entities/multisig';
@@ -21,6 +22,8 @@ import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { walletSelectFeature } from '@/features/wallet-select';
 
 export const initModel = () => {
+  networkDomain.accounts.populate();
+
   assetsNavigationFeature.start();
   stakingNavigationFeature.start();
   governanceNavigationFeature.start();

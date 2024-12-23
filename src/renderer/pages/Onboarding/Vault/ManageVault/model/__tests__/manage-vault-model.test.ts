@@ -1,7 +1,7 @@
 import { hexToU8a } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { AccountType, type ChainAccount, CryptoType, KeyType, SigningType } from '@/shared/core';
+import { AccountType, CryptoType, KeyType, SigningType, type VaultChainAccount } from '@/shared/core';
 import { TEST_HASH } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -96,7 +96,9 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
     expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });
     expect(scope.getState(manageVaultModel.$keys).length).toEqual(3); // Polkadot, Kusama, Westend
     expect(
-      scope.getState(manageVaultModel.$keys).find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
+      scope
+        .getState(manageVaultModel.$keys)
+        .find((account) => (account as VaultChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
 

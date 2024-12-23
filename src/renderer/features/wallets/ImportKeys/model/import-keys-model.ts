@@ -3,7 +3,7 @@ import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
 import { parse } from 'yaml';
 
-import { type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type ChainId, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { PATH_ERRORS } from '../lib/constants';
@@ -20,7 +20,7 @@ import {
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
   root: AccountId;
-  derivations: (DraftAccount<ShardAccount> | DraftAccount<ChainAccount>)[];
+  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
 };
 type Report = {
   addedKeys: number;
@@ -32,7 +32,7 @@ type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
 const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
-const $mergedKeys = createStore<(DraftAccount<ShardAccount> | DraftAccount<ChainAccount>)[]>([]);
+const $mergedKeys = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -120,7 +120,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: (DraftAccount<ShardAccount> | DraftAccount<ChainAccount>)[];
+  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
   report: Report;
 };
 type MergePathsParams = {

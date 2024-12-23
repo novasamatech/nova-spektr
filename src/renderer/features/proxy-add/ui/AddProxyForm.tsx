@@ -101,7 +101,7 @@ const AccountSelector = () => {
   }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
     const id = networkDomain.accountsService.uniqId(account);
 
@@ -175,7 +175,7 @@ const ProxyInput = () => {
   const proxyQuery = useUnit(formModel.$proxyQuery);
 
   const options = proxyAccounts.map((proxyAccount) => {
-    const isShard = accountUtils.isShardAccount(proxyAccount);
+    const isShard = accountUtils.isVaultShardAccount(proxyAccount);
     const address = toAddress(proxyAccount.accountId, { prefix: chain.value.addressPrefix });
     const id = networkDomain.accountsService.uniqId(proxyAccount);
 

@@ -1,7 +1,7 @@
 import keyBy from 'lodash/keyBy';
 import { useEffect, useState } from 'react';
 
-import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -19,8 +19,10 @@ const enum Step {
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  keys: (DraftAccount<ShardAccount> | DraftAccount<ChainAccount>)[];
-  onComplete: (accounts: (Omit<ChainAccount, 'id' | 'walletId'> | Omit<ShardAccount, 'id' | 'walletId'>)[]) => void;
+  keys: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+  onComplete: (
+    accounts: (Omit<VaultChainAccount, 'id' | 'walletId'> | Omit<VaultShardAccount, 'id' | 'walletId'>)[],
+  ) => void;
   onClose: () => void;
 };
 export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {
@@ -38,7 +40,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
     const accounts = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
     // TODO fix in lol
-    const newAccounts = accounts.filter((account) => !(account as ShardAccount | ChainAccount).id);
+    const newAccounts = accounts.filter((account) => !(account as VaultShardAccount | VaultChainAccount).id);
 
     onComplete(newAccounts);
   };

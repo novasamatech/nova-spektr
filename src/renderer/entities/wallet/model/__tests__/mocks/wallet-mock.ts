@@ -1,13 +1,13 @@
 import {
   type Account,
   AccountType,
-  type BaseAccount,
-  type ChainAccount,
   ChainType,
   CryptoType,
   type ID,
   KeyType,
   SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
   type Wallet,
   WalletType,
 } from '@/shared/core';
@@ -24,7 +24,7 @@ const accounts: Account[] = [
     accountId: createAccountId('1'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies BaseAccount,
+  } satisfies VaultBaseAccount,
   {
     id: 2,
     walletId: 1,
@@ -38,7 +38,7 @@ const accounts: Account[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.HOT,
     derivationPath: '//test/path_1',
-  } satisfies ChainAccount,
+  } satisfies VaultChainAccount,
   {
     id: 3,
     walletId: 2,
@@ -48,7 +48,7 @@ const accounts: Account[] = [
     accountId: createAccountId('3'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies BaseAccount,
+  } satisfies VaultBaseAccount,
   {
     type: 'chain',
     id: 4,
@@ -62,7 +62,7 @@ const accounts: Account[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
-  } satisfies ChainAccount,
+  } satisfies VaultChainAccount,
   {
     id: 5,
     walletId: 3,
@@ -72,7 +72,7 @@ const accounts: Account[] = [
     accountId: createAccountId('5'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies BaseAccount,
+  } satisfies VaultBaseAccount,
 ];
 
 function getWallets(activeId: ID): Wallet[] {
@@ -123,7 +123,7 @@ const newAccounts: Account[] = [
     accountId: createAccountId('4'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies BaseAccount,
+  } satisfies VaultBaseAccount,
   {
     id: 5,
     walletId: 3,
@@ -137,7 +137,7 @@ const newAccounts: Account[] = [
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
-  } satisfies ChainAccount,
+  } satisfies VaultChainAccount,
 ];
 
 const newProxiedWallet = {

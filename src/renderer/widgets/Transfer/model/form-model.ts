@@ -298,7 +298,7 @@ const $accounts = combine(
 
     const { chain, asset } = network;
     const walletAccounts = walletUtils.getAccountsBy([wallet], (a, w) => {
-      const isBase = accountUtils.isBaseAccount(a);
+      const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
       return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
@@ -391,7 +391,7 @@ const $destinationAccounts = combine(
     if (!isXcm || !wallet || !chain.chainId) return [];
 
     return walletUtils.getAccountsBy([wallet], (a, w) => {
-      const isBase = accountUtils.isBaseAccount(a);
+      const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
       return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);

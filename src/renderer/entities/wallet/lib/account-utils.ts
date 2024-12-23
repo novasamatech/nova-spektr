@@ -5,16 +5,16 @@ import keyBy from 'lodash/keyBy';
 // TODO: resolve cross import
 import {
   type Account,
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   type ChainId,
   type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type MultisigThreshold,
   type ProxiedAccount,
-  type ShardAccount,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
   type WcAccount,
 } from '@/shared/core';
@@ -29,15 +29,15 @@ import { networkUtils } from '@/entities/network';
 import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
-  isBaseAccount,
-  isChainAccount,
+  isVaultBaseAccount,
+  isVaultChainAccount,
+  isVaultShardAccount,
   isRegularMultisigAccount,
   isFlexibleMultisigAccount,
   isMultisigAccount,
   isWcAccount,
   isProxiedAccount,
   isPureProxiedAccount,
-  isShardAccount,
 
   isChainDependant,
   isChainIdMatch,
@@ -62,7 +62,7 @@ export const accountUtils = {
 
 // Account types
 
-function isBaseAccount(account: Partial<AnyAccount>): account is BaseAccount {
+function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isUniversalAccount(account) &&
@@ -71,7 +71,7 @@ function isBaseAccount(account: Partial<AnyAccount>): account is BaseAccount {
   );
 }
 
-function isChainAccount(account: Partial<Account>): account is ChainAccount {
+function isVaultChainAccount(account: Partial<Account>): account is VaultChainAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -89,7 +89,7 @@ function isWcAccount(account: Partial<Account>): account is WcAccount {
   );
 }
 
-function isShardAccount(account: Partial<Account>): account is ShardAccount {
+function isVaultShardAccount(account: Partial<Account>): account is VaultShardAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     networkDomain.accountsService.isChainAccount(account) &&
@@ -135,12 +135,12 @@ function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAcco
 
 // Matchers
 
-function isAccountWithShards(accounts: Account | ShardAccount[]): accounts is ShardAccount[] {
-  return Array.isArray(accounts) && isShardAccount(accounts[0]);
+function isAccountWithShards(accounts: Account | VaultShardAccount[]): accounts is VaultShardAccount[] {
+  return Array.isArray(accounts) && isVaultShardAccount(accounts[0]);
 }
 
 function isChainDependant(account: Partial<Account>): boolean {
-  if (isBaseAccount(account)) return false;
+  if (isVaultBaseAccount(account)) return false;
 
   return !isMultisigAccount(account) || Boolean(account.chainId);
 }
@@ -148,8 +148,8 @@ function isChainDependant(account: Partial<Account>): boolean {
 function isChainIdMatch(account: Account, chainId: ChainId): boolean {
   if (!isChainDependant(account)) return true;
 
-  const chainAccountMatch = isChainAccount(account) && account.chainId === chainId;
-  const shardAccountMatch = isShardAccount(account) && account.chainId === chainId;
+  const chainAccountMatch = isVaultChainAccount(account) && account.chainId === chainId;
+  const shardAccountMatch = isVaultShardAccount(account) && account.chainId === chainId;
   const wcAccountMatch = isWcAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
   const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
@@ -164,7 +164,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return isWcAccount(account) || (account as BaseAccount).cryptoType === cryptoType;
+  return isWcAccount(account) || (account as VaultBaseAccount).cryptoType === cryptoType;
 }
 
 function isEthereumBased(account: Account): boolean {
@@ -181,40 +181,40 @@ function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cr
   return pjsSchema.helpers.toAccountId(u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId));
 }
 
-function getAccountsAndShardGroups(accounts: Account[]): (ChainAccount | ShardAccount[])[] {
+function getAccountsAndShardGroups(accounts: Account[]): (VaultChainAccount | VaultShardAccount[])[] {
   const shardsIndexes: Record<string, number> = {};
 
-  return accounts.reduce<(ChainAccount | ShardAccount[])[]>((acc, account) => {
-    if (isBaseAccount(account)) return acc;
+  return accounts.reduce<(VaultChainAccount | VaultShardAccount[])[]>((acc, account) => {
+    if (isVaultBaseAccount(account)) return acc;
 
-    if (!isShardAccount(account)) {
+    if (!isVaultShardAccount(account)) {
       // @ts-expect-error TODO fix
       acc.push(account);
 
       return acc;
     }
 
-    const existingGroupIndex = shardsIndexes[(account as ShardAccount).groupId];
+    const existingGroupIndex = shardsIndexes[(account as VaultShardAccount).groupId];
     if (existingGroupIndex !== undefined) {
-      (acc[existingGroupIndex] as ShardAccount[]).push(account);
+      (acc[existingGroupIndex] as VaultShardAccount[]).push(account);
     } else {
       acc.push([account]);
-      shardsIndexes[(account as ShardAccount).groupId] = acc.length - 1;
+      shardsIndexes[(account as VaultShardAccount).groupId] = acc.length - 1;
     }
 
     return acc;
   }, []);
 }
 
-function getBaseAccount(accounts: Account[], walletId?: ID): BaseAccount | undefined {
+function getBaseAccount(accounts: Account[], walletId?: ID): VaultBaseAccount | undefined {
   return accounts.find((a) => {
     const walletMatch = !walletId || walletId === a.walletId;
 
-    return walletMatch && isBaseAccount(a);
-  }) as BaseAccount;
+    return walletMatch && isVaultBaseAccount(a);
+  }) as VaultBaseAccount;
 }
 
-function getSignatoryAccounts<T extends BaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
+function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
   const accountsMap = keyBy(accounts, 'accountId');
 
   return accountIds.map((id) => accountsMap[id]);
@@ -246,7 +246,7 @@ function isGovernanceProxyType(account: ProxiedAccount): boolean {
 }
 
 function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
-  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
 }
 
 function getAddressesForWallet(wallet: Wallet, chain: Chain) {

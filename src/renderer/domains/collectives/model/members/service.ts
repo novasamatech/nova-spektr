@@ -6,7 +6,7 @@ import { type CoreMember, type Member } from './types';
 
 const findMatchingMember = (wallet: Wallet, accounts: Account[], chain: Chain, members: Member[]) => {
   const walletAccounts = accounts.filter(account => {
-    return accountUtils.isNonBaseVaultAccount(account, wallet) && accountUtils.isChainAndCryptoMatch(account, chain);
+    return !accountUtils.isVaultBaseAccount(account) && accountUtils.isChainAndCryptoMatch(account, chain);
   });
   const accountsDictionary = dictionary(walletAccounts, 'accountId');
 

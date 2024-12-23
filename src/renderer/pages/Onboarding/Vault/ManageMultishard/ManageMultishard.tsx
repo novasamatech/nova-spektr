@@ -5,12 +5,12 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { chainsService } from '@/shared/api/network';
 import {
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   type ChainId,
   type HexString,
   type NoID,
+  type VaultBaseAccount,
+  type VaultChainAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -142,7 +142,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   };
 
   const createDerivedAccounts = (derivedKeys: AddressInfo[], chainId: ChainId, accountIndex: number) => {
-    return derivedKeys.reduce<Omit<NoID<ChainAccount>, 'walletId'>[]>((acc, derivedKey, index) => {
+    return derivedKeys.reduce<Omit<NoID<VaultChainAccount>, 'walletId'>[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
       if (!inactiveAccounts[accountId]) {
@@ -165,7 +165,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
     const accountsToSave = accounts.reduce<
-      (Omit<NoID<BaseAccount>, 'walletId'> | Omit<NoID<ChainAccount>, 'walletId'>)[]
+      (Omit<NoID<VaultBaseAccount>, 'walletId'> | Omit<NoID<VaultChainAccount>, 'walletId'>)[]
     >((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],

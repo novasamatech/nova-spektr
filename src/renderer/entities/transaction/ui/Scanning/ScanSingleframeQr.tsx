@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import {
   type Account,
   type Address,
-  type BaseAccount,
-  type ChainAccount,
   type ChainId,
-  type ShardAccount,
   type Transaction,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
@@ -76,8 +76,8 @@ export const ScanSingleframeQr = ({
             signingType={signerWallet.signingType}
             address={address}
             genesisHash={chainId}
-            derivationPath={(account as ChainAccount | ShardAccount).derivationPath}
-            cryptoType={(account as BaseAccount).cryptoType || CryptoType.SR25519}
+            derivationPath={(account as VaultChainAccount | VaultShardAccount).derivationPath}
+            cryptoType={(account as VaultBaseAccount).cryptoType || CryptoType.SR25519}
           />
         )}
       </QrGeneratorContainer>

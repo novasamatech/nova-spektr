@@ -1,4 +1,4 @@
-import { type Chain, type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
@@ -9,9 +9,9 @@ import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];
-  accountsMap: Record<ChainId, (ChainAccount | ShardAccount[])[]>;
+  accountsMap: Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]>;
   className?: string;
-  onShardClick?: (shards: ShardAccount[]) => void;
+  onShardClick?: (shards: VaultShardAccount[]) => void;
 };
 
 export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick }: Props) => {

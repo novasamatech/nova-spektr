@@ -3,11 +3,11 @@ import { type ApiPromise } from '@polkadot/api';
 import {
   AccountType,
   type Chain,
-  type ChainAccount,
   ChainOptions,
   ChainType,
   type MultisigAccount,
   SigningType,
+  type VaultChainAccount,
   type Wallet,
   WalletType,
 } from '@/shared/core';
@@ -33,7 +33,7 @@ export const accounts = [
     accountId: '0x960d75eab8e58bffcedf1fa51d85e2acb37d107e9bd7009a3473d3809122493c',
     chainType: ChainType.SUBSTRATE,
     chainId: '0x00',
-  } as unknown as ChainAccount,
+  } as unknown as VaultChainAccount,
 
   {
     id: 2,
@@ -43,7 +43,7 @@ export const accounts = [
     accountId: '0x04dd9807d3f7008abfcbffc8cb96e8e26a71a839c7c18d471b0eea782c1b8521',
     chainType: ChainType.SUBSTRATE,
     chainId: '0x00',
-  } as unknown as ChainAccount,
+  } as unknown as VaultChainAccount,
 
   {
     walletId: 3,
@@ -59,7 +59,7 @@ export const accounts = [
     accountId: '0x00',
     chainType: ChainType.SUBSTRATE,
     chainId: '0x01',
-  } as unknown as ChainAccount,
+  } as unknown as VaultChainAccount,
 
   {
     id: 5,
@@ -69,7 +69,7 @@ export const accounts = [
     accountId: '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d',
     chainType: ChainType.SUBSTRATE,
     chainId: '0x00',
-  } as unknown as ChainAccount,
+  } as unknown as VaultChainAccount,
 ];
 
 export const multisigWallet = {
