@@ -186,6 +186,7 @@ type ParsedPayload = {
 
 type XcmPalletPayload = ParsedPayload & {
   assetGeneralIndex: string;
+  assetParachain?: number;
   type: 'xcmPallet';
 };
 
@@ -208,20 +209,25 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
     destParachain: 0,
     destAccountId: '',
     assetGeneralIndex: '',
+    assetParachain: 0,
     toRelayChain: destInterior === 'Here',
     type: 'xcmPallet' as const,
   };
 
   const beneficiaryJunction = Object.keys(beneficiaryInterior)[0];
-  parsedPayload.destAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
+  const substrateAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
+  const ethAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountKey20.key`) as unknown as string;
+  parsedPayload.destAccountId = substrateAccountId || ethAccountId;
 
   const destJunction = Object.keys(destInterior)[0];
   parsedPayload.destParachain = Number(xcmUtils.toRawString(get(destInterior, `${destJunction}.Parachain`)));
 
   if (!parsedPayload.isRelayToken) {
     const assetJunction = Object.keys(assetInterior)[0];
-    const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string }>(assetInterior, assetJunction);
-    parsedPayload.assetGeneralIndex = xcmUtils.toRawString(cols.GeneralIndex);
+    const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string; Parachain: number }>(assetInterior, assetJunction);
+
+    parsedPayload.assetGeneralIndex = xcmUtils.toRawString(cols?.GeneralIndex);
+    parsedPayload.assetParachain = cols?.Parachain ? Number(xcmUtils.toRawString(cols.Parachain.toString())) : 0;
   }
 
   return parsedPayload;
@@ -255,14 +261,17 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   parsedPayload.toRelayChain = destJunction === 'X1';
 
   if (parsedPayload.toRelayChain) {
-    parsedPayload.destAccountId = get(destInterior, 'X1.AccountId32.id') as unknown as string;
+    const substrateAccountId = get(destInterior, `X1.AccountId32.id`) as unknown as string;
+    const ethAccountId = get(destInterior, `X1.AccountKey20.key`) as unknown as string;
+
+    parsedPayload.destAccountId = substrateAccountId || ethAccountId;
   } else {
     const cols = xcmUtils.getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
     if (cols.Parachain) {
       parsedPayload.destParachain = Number(xcmUtils.toRawString(cols.Parachain.toString()));
       parsedPayload.toRelayChain = false;
     }
-    parsedPayload.destAccountId = get(cols, 'AccountId32.id') as unknown as string;
+    parsedPayload.destAccountId = (get(cols, 'AccountId32.id') || get(cols, 'AccountKey20.key')) as unknown as string;
   }
 
   return parsedPayload;
@@ -301,7 +310,10 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     }, []);
 
     const assetKeyVal = filteredAssetLocations.find(([_, { multiLocation }]) => {
-      const xcmPalletMatch = data.type === 'xcmPallet' && multiLocation.generalIndex === data.assetGeneralIndex;
+      const xcmPalletMatch =
+        data.type === 'xcmPallet' &&
+        (!data.assetParachain || multiLocation.parachainId === data.assetParachain) &&
+        (multiLocation.generalIndex === data.assetGeneralIndex || data.assetGeneralIndex.length === 0);
 
       const xTokensMatch =
         data.type === 'xTokens' &&

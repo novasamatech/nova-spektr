@@ -4,6 +4,7 @@ import {
   CONFIG,
   XCMPALLET_TRANSFER_HUB_ASTAR,
   XCMPALLET_TRANSFER_KSM_BIFROST,
+  XCMPALLET_TRANSFER_PAH_MYTH,
   XTOKENS_ACA_DOT,
   XTOKENS_ACA_PARALLEL,
 } from './mock/xcmData';
@@ -17,7 +18,23 @@ describe('shared/api/xcm/service/xcm-service', () => {
       amount: '10070392000',
       destParachain: 2001,
       destAccountId: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',
+      assetParachain: 0,
       assetGeneralIndex: '',
+      toRelayChain: false,
+      type: 'xcmPallet',
+    });
+  });
+
+  test('should parse xcmPallet parachain > eth parachain', () => {
+    const result = xcmService.parseXcmPalletExtrinsic(XCMPALLET_TRANSFER_PAH_MYTH);
+
+    expect(result).toEqual({
+      isRelayToken: false,
+      amount: '1327680000000000065',
+      assetGeneralIndex: '',
+      assetParachain: 3369,
+      destAccountId: '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
+      destParachain: 3369,
       toRelayChain: false,
       type: 'xcmPallet',
     });
@@ -32,6 +49,7 @@ describe('shared/api/xcm/service/xcm-service', () => {
       destParachain: 2006,
       destAccountId: '0x4d081065a791aaabf8c4c9ec8ed87dce10145c86869c66e80286645730d70c44',
       assetGeneralIndex: '1984',
+      assetParachain: 0,
       toRelayChain: false,
       type: 'xcmPallet',
     });
