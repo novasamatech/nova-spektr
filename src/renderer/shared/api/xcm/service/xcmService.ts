@@ -367,6 +367,7 @@ async function getDeliveryFeeFromConfig({
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
+  console.log('getDeliveryFeeFromConfig. deliveryFeeConfig', deliveryFeeConfig);
 
   if (!deliveryFeeConfig) return new BN(0);
 
@@ -382,7 +383,7 @@ async function getDeliveryFeeFromConfig({
     ).toString();
   }
 
-  const weight = new BN(extrinsic.length).add(SET_TOPIC_SIZE);
+  const weight = new BN(extrinsic.encodedLength).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
   const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 
