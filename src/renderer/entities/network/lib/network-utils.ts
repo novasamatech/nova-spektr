@@ -6,6 +6,7 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
+  ExternalType,
 } from '@/shared/core';
 import { RelayChains } from '@/shared/lib/utils';
 
@@ -29,6 +30,7 @@ export const networkUtils = {
 
   getNewestMetadata,
   getLightClientChains,
+  getProxyExternalApi,
 
   getMainRelaychains,
   chainNameToUrl,
@@ -37,6 +39,7 @@ export const networkUtils = {
 function isConnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTED;
 }
+
 function isDisconnectedStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.DISCONNECTED;
 }
@@ -44,6 +47,7 @@ function isDisconnectedStatus(status: ConnectionStatus): boolean {
 function isConnectingStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.CONNECTING;
 }
+
 function isErrorStatus(status: ConnectionStatus): boolean {
   return status === ConnectionStatus.ERROR;
 }
@@ -88,10 +92,22 @@ function isAutoBalanceConnection(connection: Connection): boolean {
   return connection.connectionType === ConnectionType.AUTO_BALANCE;
 }
 
+function getProxyExternalApi(chain: Chain) {
+  if (isMultisigSupported(chain.options)) {
+    if (!chain.externalApi) return null;
+    const proxyExternalApis = chain.externalApi[ExternalType.PROXY];
+    if (!proxyExternalApis) return null;
+
+    return proxyExternalApis.find((x) => x.url) ?? null;
+  }
+
+  return null;
+}
+
 function getNewestMetadata(metadata: ChainMetadata[]): Record<ChainId, ChainMetadata> {
   return metadata.reduce<Record<ChainId, ChainMetadata>>(
     (acc, data) => {
-      if (data.version >= (acc[data.chainId]?.version || -1)) {
+      if (data.runtimeVersion >= (acc[data.chainId]?.runtimeVersion || -1)) {
         acc[data.chainId] = data;
       }
 

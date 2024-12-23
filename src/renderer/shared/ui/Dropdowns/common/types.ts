@@ -5,6 +5,11 @@ import { type IconNames } from '../../types';
 export type Position = 'up' | 'down' | 'auto';
 export type Theme = 'dark' | 'light';
 
+export const ThemeStyles: Record<Theme, string> = {
+  light: 'bg-input-background text-text-primary',
+  dark: 'text-white',
+};
+
 export type DropdownOption<T = any> = {
   id: string;
   element: ReactNode;

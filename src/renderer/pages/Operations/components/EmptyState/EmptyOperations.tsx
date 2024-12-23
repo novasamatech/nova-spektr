@@ -1,9 +1,9 @@
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon } from '@/shared/ui';
 
 type Props = {
-  multisigAccount?: MultisigAccount;
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
   isEmptyFromFilters: boolean;
 };
 

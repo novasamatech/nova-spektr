@@ -10,7 +10,7 @@ jest.mock('@/shared/i18n', () => ({
 
 describe('pages/Operations/components/EmptyState/EmptyOperations', () => {
   test('should render component', () => {
-    render(<EmptyOperations isEmptyFromFilters={false} />);
+    render(<EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />);
 
     const label = screen.getByText('operations.noOperationsWalletNotMulti');
 

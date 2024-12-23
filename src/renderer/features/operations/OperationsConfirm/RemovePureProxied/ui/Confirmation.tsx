@@ -1,7 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
-import { ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
@@ -75,7 +74,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         proxied={confirmStore.proxiedAccount}
       >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
-          <FootnoteText>{t(proxyUtils.getProxyTypeName(ProxyType.ANY))}</FootnoteText>
+          {/* eslint-disable-next-line i18next/no-literal-string */}
+          <FootnoteText>{t(proxyUtils.getProxyTypeName('Any'))}</FootnoteText>
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">

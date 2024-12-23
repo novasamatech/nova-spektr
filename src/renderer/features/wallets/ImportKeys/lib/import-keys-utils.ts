@@ -197,7 +197,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
   if (!derivation.derivationPath) return true;
 
-  const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.GOVERNANCE, KeyType.STAKING, KeyType.CUSTOM];
+  const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.CUSTOM];
 
   const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
   const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);

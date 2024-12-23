@@ -1,23 +1,24 @@
 import { kernelModel } from '@/shared/core';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
+import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
-import { multisigsModel } from '@/processes/multisigs';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
+import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
-import { walletsSelectFeature } from '@/features/wallets-select';
+import { walletSelectFeature } from '@/features/wallet-select';
 
 export const initModel = () => {
   assetsNavigationFeature.start();
@@ -29,8 +30,9 @@ export const initModel = () => {
   notificationsNavigationFeature.start();
   settingsNavigationFeature.start();
   basketNavigationFeature.start();
+  flexibleMultisigNavigationFeature.start();
 
-  walletsSelectFeature.start();
+  walletSelectFeature.feature.start();
 
   kernelModel.events.appStarted();
   governanceModel.events.governanceStarted();
@@ -41,5 +43,5 @@ export const initModel = () => {
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
-  multisigsModel.events.multisigsDiscoveryStarted();
+  multisigsModel.events.subscribe();
 };

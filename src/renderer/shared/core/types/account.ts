@@ -46,9 +46,17 @@ export type MultisigAccount = GenericAccount & {
   type: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: MultisigThreshold;
-  chainId?: ChainId;
+  chainId: ChainId;
   cryptoType: CryptoType;
-  creatorAccountId: AccountId;
+};
+
+export type FlexibleMultisigAccount = GenericAccount & {
+  type: AccountType.FLEXIBLE_MULTISIG;
+  signatories: Signatory[];
+  threshold: MultisigThreshold;
+  chainId: ChainId;
+  cryptoType: CryptoType;
+  proxyAccountId?: AccountId; // we have accountId only after proxy is created
 };
 
 export type WcAccount = GenericAccount & {
@@ -68,7 +76,14 @@ export type ProxiedAccount = GenericAccount & {
   cryptoType: CryptoType;
 };
 
-export type Account = BaseAccount | ChainAccount | ShardAccount | MultisigAccount | WcAccount | ProxiedAccount;
+export type Account =
+  | BaseAccount
+  | ChainAccount
+  | ShardAccount
+  | MultisigAccount
+  | WcAccount
+  | ProxiedAccount
+  | FlexibleMultisigAccount;
 
 export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
 
@@ -77,6 +92,7 @@ export const enum AccountType {
   CHAIN = 'chain',
   SHARD = 'shard',
   MULTISIG = 'multisig',
+  FLEXIBLE_MULTISIG = 'flexible_multisig',
   WALLET_CONNECT = 'wallet_connect',
   PROXIED = 'proxied',
 }
@@ -85,7 +101,5 @@ export const enum KeyType {
   MAIN = 'main',
   PUBLIC = 'pub',
   HOT = 'hot',
-  GOVERNANCE = 'governance',
-  STAKING = 'staking',
   CUSTOM = 'custom',
 }

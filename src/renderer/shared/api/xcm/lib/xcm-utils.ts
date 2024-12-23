@@ -107,9 +107,11 @@ function createJunctionFromObject(data: Record<string, unknown>) {
 
   if (entries.length === 1) {
     return {
-      X1: {
-        [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
-      },
+      X1: [
+        {
+          [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
+        },
+      ],
     };
   }
 
@@ -179,12 +181,14 @@ function getAccountLocation(accountId?: AccountId) {
   return {
     parents: 0,
     interior: {
-      X1: {
-        [isEthereum ? 'accountKey20' : 'accountId32']: {
-          network: 'Any',
-          [isEthereum ? 'key' : 'id']: accountId,
+      X1: [
+        {
+          [isEthereum ? 'accountKey20' : 'accountId32']: {
+            network: null,
+            [isEthereum ? 'key' : 'id']: accountId,
+          },
         },
-      },
+      ],
     },
   };
 }
@@ -195,7 +199,7 @@ function getChildLocation(parachainId: number, accountId?: AccountId) {
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -212,7 +216,7 @@ function getParentLocation(accountId?: AccountId) {
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -229,7 +233,7 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId) {
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
@@ -241,6 +245,10 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId) {
 }
 
 function getJunctionCols<T>(interior: Record<string, object>, path: string): T {
+  if (path === 'X1') {
+    return get(interior, path) as T;
+  }
+
   return Object.values(get(interior, path)).reduce((acc, item) => {
     return { ...acc, ...item };
   }, {});

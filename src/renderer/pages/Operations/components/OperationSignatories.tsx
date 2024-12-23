@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import {
-  type AccountId,
+  type FlexibleMultisigAccount,
+  type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
   type Signatory,
-  type SigningStatus,
   type Wallet,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -19,16 +19,16 @@ import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { AddressWithName, WalletIcon, walletModel } from '@/entities/wallet';
-import { getSignatoryName } from '../common/utils';
+import { getSignatoryName, getSignatoryStatus } from '../common/utils';
 
 import LogModal from './LogModal';
 
 type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
-  tx: MultisigTransaction;
+  tx: MultisigTransaction | FlexibleMultisigTransaction;
   connection: ExtendedChain;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
 export const OperationSignatories = ({ tx, connection, account }: Props) => {
@@ -78,16 +78,6 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
   }, [signatories.length, approvals.length, cancellation.length]);
 
-  const getSignatoryStatus = (signatory: AccountId): SigningStatus | undefined => {
-    const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
-    if (cancelEvent) {
-      return cancelEvent.status;
-    }
-    const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
-
-    return signedEvent?.status;
-  };
-
   return (
     <div className="flex w-[320px] flex-col px-2 py-4">
       <div className="mb-3 flex items-center justify-between">
@@ -121,7 +111,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   key={signatory.accountId}
                   accountId={signatory.accountId}
                   addressPrefix={connection.addressPrefix}
-                  status={getSignatoryStatus(signatory.accountId)}
+                  status={getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
@@ -143,7 +133,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   key={signatory.accountId}
                   accountId={signatory.accountId}
                   addressPrefix={connection.addressPrefix}
-                  status={getSignatoryStatus(signatory.accountId)}
+                  status={getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
                   <AddressWithName

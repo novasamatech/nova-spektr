@@ -1,9 +1,14 @@
+import { BN } from '@polkadot/util';
+
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { Action } from './types';
 
-export const XCM_URL = 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/xcm/v4/transfers.json';
+export const XCM_URL = 'https://raw.githubusercontent.com/novasamatech/nova-utils/master/xcm/v6/transfers.json';
 export const XCM_KEY = 'xcm-config';
+
+export const SET_TOPIC_SIZE = new BN(33);
+export const FACTOR_MULTIPLIER = new BN(18);
 
 export const INSTRUCTION_OBJECT: Record<Action, (assetLocation: object, destLocation: object) => object> = {
   [Action.WITHDRAW_ASSET]: (assetLocation: object) => {

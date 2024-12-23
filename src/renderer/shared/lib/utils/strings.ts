@@ -93,7 +93,7 @@ export const includesMultiple = (values: (string | undefined)[], searchString = 
  *
  * @returns {String}
  */
-export const truncate = (text: string, start = 5, end = 5): string => {
+export const truncate = (text: string, start = 5, end = start): string => {
   if (text.length <= start + end) return text;
 
   return `${text.slice(0, start)}...${text.slice(-1 * end)}`;

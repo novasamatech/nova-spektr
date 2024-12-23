@@ -15,10 +15,10 @@ import {
   Icon,
   IconButton,
   Identicon,
-  Input,
   InputHint,
   SmallTitleText,
 } from '@/shared/ui';
+import { Field, Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { AccountsList, walletModel } from '@/entities/wallet';
 
@@ -119,10 +119,8 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
             control={control}
             rules={{ required: true, maxLength: 256 }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.walletNameLabel')}>
                 <Input
-                  wrapperClass="flex items-center"
-                  label={t('onboarding.walletNameLabel')}
                   placeholder={t('onboarding.walletNamePlaceholder')}
                   invalid={Boolean(errors.walletName)}
                   value={value}
@@ -135,26 +133,22 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                 <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
                   {t('onboarding.watchOnly.walletNameRequiredError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 
           <Controller
             name="address"
             control={control}
-            rules={{ required: true, validate: validateAddress }}
+            rules={{ required: true, validate: (address) => validateAddress(address) }}
             render={({ field: { onChange, value } }) => (
-              <div>
+              <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
-                  wrapperClass="flex items-center"
                   invalid={Boolean(errors.address)}
-                  label={t('onboarding.accountAddressLabel')}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={value}
                   prefixElement={
-                    <div className="mr-2">
-                      {isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />}
-                    </div>
+                    isValid ? <Identicon address={value} background={false} /> : <Icon name="emptyIdenticon" />
                   }
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={onChange}
@@ -163,7 +157,7 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
                 <InputHint variant="error" active={!!errors.address}>
                   {t('onboarding.watchOnly.accountAddressError')}
                 </InputHint>
-              </div>
+              </Field>
             )}
           />
 

@@ -4,3 +4,4 @@ export { createDataSubscription, createPagesHandler } from './createDataSubscrip
 export { attachToFeatureInput } from './attachToFeatureInput';
 
 export { series } from './helpers/series';
+export { createBuffer } from './helpers/createBuffer';

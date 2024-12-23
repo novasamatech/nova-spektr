@@ -3,7 +3,7 @@ import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
 import { EXTENSIONS } from '@/shared/config/extensions';
-import { type ChainId, type HexString } from '@/shared/core';
+import { type ChainId, type ChainMetadata } from '@/shared/core';
 import { getKnownChain } from '@/shared/lib/utils';
 import { ProviderType, type ProviderWithMetadata } from '../lib/types';
 import { createCachedProvider } from '../provider/CachedProvider';
@@ -27,7 +27,7 @@ function createApi(chainId: ChainId, provider: ProviderInterface): Promise<ApiPr
 
 type ProviderParams = {
   nodes?: string[];
-  metadata?: HexString;
+  metadata?: ChainMetadata;
 };
 type ProviderListeners = {
   onConnected: (value?: any) => void;
@@ -58,7 +58,7 @@ function createProvider(
   return provider;
 }
 
-function createSubstrateProvider(chainId: ChainId, metadata?: HexString): ProviderWithMetadata | undefined {
+function createSubstrateProvider(chainId: ChainId, metadata?: ChainMetadata): ProviderWithMetadata | undefined {
   const knownChainId = getKnownChain(chainId);
 
   if (knownChainId) {

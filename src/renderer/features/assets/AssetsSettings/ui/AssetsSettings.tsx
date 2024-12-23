@@ -3,8 +3,8 @@ import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, IconButton, Select, Switch } from '@/shared/ui';
-import { Box, Popover } from '@/shared/ui-kit';
+import { FootnoteText, IconButton, Switch } from '@/shared/ui';
+import { Box, Field, Popover, Select } from '@/shared/ui-kit';
 import { AssetsListView } from '@/entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 
@@ -13,19 +13,6 @@ export const AssetsSettings = memo(() => {
 
   const assetsView = useUnit(assetsSettingsModel.$assetsView);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
-
-  const options = [
-    {
-      id: AssetsListView.TOKEN_CENTRIC.toString(),
-      value: AssetsListView.TOKEN_CENTRIC,
-      element: <FootnoteText>{t('balances.tokenCentric')}</FootnoteText>,
-    },
-    {
-      id: AssetsListView.CHAIN_CENTRIC.toString(),
-      value: AssetsListView.CHAIN_CENTRIC,
-      element: <FootnoteText>{t('balances.chainCentric')}</FootnoteText>,
-    },
-  ];
 
   return (
     <Popover align="end">
@@ -48,13 +35,20 @@ export const AssetsSettings = memo(() => {
             {t('balances.hideZeroBalancesLabel')}
           </Switch>
           <hr className="-mx-3 my-4 border-divider" />
-          <Select
-            label={t('balances.pageView')}
-            selectedId={assetsView.toString()}
-            placeholder={t('settings.networks.selectorPlaceholder')}
-            options={options}
-            onChange={({ value }) => assetsSettingsModel.events.assetsViewChanged(value)}
-          />
+          <Field text={t('balances.pageView')}>
+            <Select
+              placeholder={t('settings.networks.selectorPlaceholder')}
+              value={assetsView.toString()}
+              onChange={(value) => assetsSettingsModel.events.assetsViewChanged(Number(value))}
+            >
+              <Select.Item value={AssetsListView.TOKEN_CENTRIC.toString()}>
+                <FootnoteText>{t('balances.tokenCentric')}</FootnoteText>
+              </Select.Item>
+              <Select.Item value={AssetsListView.CHAIN_CENTRIC.toString()}>
+                <FootnoteText>{t('balances.chainCentric')}</FootnoteText>
+              </Select.Item>
+            </Select>
+          </Field>
         </Box>
       </Popover.Content>
     </Popover>

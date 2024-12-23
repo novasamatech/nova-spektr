@@ -113,6 +113,10 @@ export type MultisigTransaction = {
   transaction?: Transaction | DecodedTransaction;
 };
 
+export type FlexibleMultisigTransaction = MultisigTransaction & {
+  proxiedAccountId: AccountId;
+};
+
 export type MultisigTransactionKey = Pick<
   MultisigTransaction,
   'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'

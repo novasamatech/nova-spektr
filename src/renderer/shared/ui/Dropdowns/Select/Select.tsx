@@ -3,7 +3,6 @@ import { Fragment, forwardRef, useId } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
-import { CommonInputStyles, CommonInputStylesTheme } from '../../Inputs/common/styles';
 import { FootnoteText, LabelText } from '../../Typography';
 import {
   ButtonTextEmptyStyle,
@@ -16,7 +15,7 @@ import {
   SelectButtonStyle,
   ViewClass,
 } from '../common/constants';
-import { type DropdownOption, type DropdownResult, type Position, type Theme } from '../common/types';
+import { type DropdownOption, type DropdownResult, type Position, type Theme, ThemeStyles } from '../common/types';
 
 type Props<T = any> = {
   className?: string;
@@ -65,9 +64,9 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
                 !open && !invalid && SelectButtonStyle[theme].closed,
                 invalid && SelectButtonStyle[theme].invalid,
                 SelectButtonStyle[theme].disabled,
-                CommonInputStyles,
-                CommonInputStylesTheme[theme],
-                'flex min-h-9 w-full items-center justify-between gap-x-2 pr-2',
+                ThemeStyles[theme],
+                'flex min-h-9 w-full items-center justify-between gap-x-2 px-3 py-[7px] pr-2',
+                'rounded border text-footnote outline-offset-1',
               )}
             >
               {selectedOption && !open ? (

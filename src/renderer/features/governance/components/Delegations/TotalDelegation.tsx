@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useConfirmContext } from '@/shared/providers';
@@ -7,8 +7,12 @@ import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@/shared/
 import { AssetBalance } from '@/entities/asset';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletSelectModel } from '@/features/wallets';
+import { walletDetailsFeature } from '@/features/wallet-details';
 import { delegationAggregate } from '../../aggregates/delegation';
+
+const {
+  views: { WalletDetails },
+} = walletDetailsFeature;
 
 type Props = {
   onClick: () => void;
@@ -25,6 +29,8 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const canDelegate = useUnit(delegationAggregate.$canDelegate);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
+
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const handleClick = () => {
     if (hasAccount && canDelegate) {
@@ -54,33 +60,41 @@ export const TotalDelegation = ({ onClick }: Props) => {
       confirmText: walletUtils.isPolkadotVault(activeWallet) ? t('emptyState.addAccountButton') : undefined,
     }).then((result) => {
       if (result && activeWallet) {
-        walletSelectModel.events.walletIdSet(activeWallet.id);
+        setShowWalletDetails(true);
       }
     });
   };
 
   return (
-    <button onClick={handleClick}>
-      <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
-        <div className="flex flex-col items-start gap-y-2">
-          <div className="flex items-center gap-x-1">
-            <Icon size={16} name="opengovDelegations" />
-            <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
+    <>
+      <button onClick={handleClick}>
+        <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
+          <div className="flex flex-col items-start gap-y-2">
+            <div className="flex items-center gap-x-1">
+              <Icon size={16} name="opengovDelegations" />
+              <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
+            </div>
+
+            {!isLoading && network ? (
+              totalDelegation !== '0' ? (
+                <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
+              ) : (
+                <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
+              )
+            ) : (
+              <Shimmering width={120} height={20} />
+            )}
           </div>
 
-          {!isLoading && network ? (
-            totalDelegation !== '0' ? (
-              <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
-            ) : (
-              <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
-            )
-          ) : (
-            <Shimmering width={120} height={20} />
-          )}
-        </div>
+          <Icon name="arrowRight" />
+        </Plate>
+      </button>
 
-        <Icon name="arrowRight" />
-      </Plate>
-    </button>
+      <WalletDetails
+        isOpen={showWalletDetails}
+        wallet={activeWallet ?? null}
+        onClose={() => setShowWalletDetails(false)}
+      />
+    </>
   );
 };

@@ -21,17 +21,18 @@ function getExtendedChain(
 }
 
 type Metrics = Record<'success' | 'connecting' | 'error', number>;
+
 function getStatusMetrics(networkList: ExtendedChain[]): Metrics {
-  return networkList.reduce(
-    (acc, network) => {
-      if (networkUtils.isDisabledConnection(network.connection)) return acc;
+  const metrics = { connecting: 0, success: 0, error: 0 };
 
-      if (networkUtils.isConnectedStatus(network.connectionStatus)) acc.success += 1;
-      if (networkUtils.isConnectingStatus(network.connectionStatus)) acc.connecting += 1;
-      if (networkUtils.isErrorStatus(network.connectionStatus)) acc.error += 1;
+  for (const network of networkList) {
+    if (networkUtils.isDisabledConnection(network.connection)) continue;
 
-      return acc;
-    },
-    { success: 0, connecting: 0, error: 0 },
-  );
+    if (networkUtils.isConnectedStatus(network.connectionStatus)) metrics.success += 1;
+    if (networkUtils.isConnectingStatus(network.connectionStatus)) metrics.connecting += 1;
+    if (networkUtils.isDisconnectedStatus(network.connectionStatus)) metrics.connecting += 1;
+    if (networkUtils.isErrorStatus(network.connectionStatus)) metrics.error += 1;
+  }
+
+  return metrics;
 }

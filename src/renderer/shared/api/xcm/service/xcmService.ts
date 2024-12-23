@@ -1,13 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
-import get from 'lodash/get';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { BN, BN_TEN } from '@polkadot/util';
+import { camelCase, get } from 'lodash';
 
 import { type AccountId, type Chain, type ChainId, type HexString } from '@/shared/core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';
-import { XCM_KEY, XCM_URL } from '../lib/constants';
+import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
   type AssetName,
@@ -28,6 +29,7 @@ export const xcmService = {
   getAvailableTransfers,
   getEstimatedFee,
   getEstimatedRequiredDestWeight,
+  getDeliveryFeeFromConfig,
 
   getAssetLocation,
   getVersionedDestinationLocation,
@@ -36,6 +38,8 @@ export const xcmService = {
   parseXcmPalletExtrinsic,
   parseXTokensExtrinsic,
   decodeXcm,
+
+  getParentChain,
 };
 
 async function fetchXcmConfig(): Promise<XcmConfig> {
@@ -151,9 +155,9 @@ function getVersionedDestinationLocation(
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
-  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
+  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
 
   if (!version) return location;
 
@@ -182,6 +186,7 @@ type ParsedPayload = {
 
 type XcmPalletPayload = ParsedPayload & {
   assetGeneralIndex: string;
+  assetParachain?: number;
   type: 'xcmPallet';
 };
 
@@ -204,20 +209,25 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
     destParachain: 0,
     destAccountId: '',
     assetGeneralIndex: '',
+    assetParachain: 0,
     toRelayChain: destInterior === 'Here',
     type: 'xcmPallet' as const,
   };
 
   const beneficiaryJunction = Object.keys(beneficiaryInterior)[0];
-  parsedPayload.destAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
+  const substrateAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
+  const ethAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountKey20.key`) as unknown as string;
+  parsedPayload.destAccountId = substrateAccountId || ethAccountId;
 
   const destJunction = Object.keys(destInterior)[0];
   parsedPayload.destParachain = Number(xcmUtils.toRawString(get(destInterior, `${destJunction}.Parachain`)));
 
   if (!parsedPayload.isRelayToken) {
     const assetJunction = Object.keys(assetInterior)[0];
-    const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string }>(assetInterior, assetJunction);
-    parsedPayload.assetGeneralIndex = xcmUtils.toRawString(cols.GeneralIndex);
+    const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string; Parachain: number }>(assetInterior, assetJunction);
+
+    parsedPayload.assetGeneralIndex = xcmUtils.toRawString(cols?.GeneralIndex);
+    parsedPayload.assetParachain = cols?.Parachain ? Number(xcmUtils.toRawString(cols.Parachain.toString())) : 0;
   }
 
   return parsedPayload;
@@ -251,14 +261,17 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   parsedPayload.toRelayChain = destJunction === 'X1';
 
   if (parsedPayload.toRelayChain) {
-    parsedPayload.destAccountId = get(destInterior, 'X1.AccountId32.id') as unknown as string;
+    const substrateAccountId = get(destInterior, `X1.AccountId32.id`) as unknown as string;
+    const ethAccountId = get(destInterior, `X1.AccountKey20.key`) as unknown as string;
+
+    parsedPayload.destAccountId = substrateAccountId || ethAccountId;
   } else {
     const cols = xcmUtils.getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
     if (cols.Parachain) {
       parsedPayload.destParachain = Number(xcmUtils.toRawString(cols.Parachain.toString()));
       parsedPayload.toRelayChain = false;
     }
-    parsedPayload.destAccountId = get(cols, 'AccountId32.id') as unknown as string;
+    parsedPayload.destAccountId = (get(cols, 'AccountId32.id') || get(cols, 'AccountKey20.key')) as unknown as string;
   }
 
   return parsedPayload;
@@ -297,7 +310,10 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     }, []);
 
     const assetKeyVal = filteredAssetLocations.find(([_, { multiLocation }]) => {
-      const xcmPalletMatch = data.type === 'xcmPallet' && multiLocation.generalIndex === data.assetGeneralIndex;
+      const xcmPalletMatch =
+        data.type === 'xcmPallet' &&
+        (!data.assetParachain || multiLocation.parachainId === data.assetParachain) &&
+        (multiLocation.generalIndex === data.assetGeneralIndex || data.assetGeneralIndex.length === 0);
 
       const xTokensMatch =
         data.type === 'xTokens' &&
@@ -325,4 +341,50 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     value: data.amount,
     dest: data.destAccountId,
   };
+}
+
+function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
+  if (!chain.parentId) return chain;
+
+  return chains[chain.parentId];
+}
+
+async function getDeliveryFeeFromConfig({
+  config,
+  originChain,
+  destinationChain,
+  originApi,
+  destinationChainId,
+  extrinsic,
+}: {
+  config: XcmConfig;
+  originChain: string;
+  destinationChain: Chain;
+  originApi: ApiPromise;
+  destinationChainId: number;
+  extrinsic: SubmittableExtrinsic<'promise'>;
+}): Promise<BN> {
+  const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
+
+  const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
+
+  if (!deliveryFeeConfig) return new BN(0);
+
+  let deliveryFactor: string;
+
+  if (direction === 'toParent') {
+    deliveryFactor = (
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
+    ).toString();
+  } else {
+    deliveryFactor = (
+      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
+    ).toString();
+  }
+
+  const weight = new BN(extrinsic.length).add(SET_TOPIC_SIZE);
+  const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
+  const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
+
+  return deliveryFee;
 }

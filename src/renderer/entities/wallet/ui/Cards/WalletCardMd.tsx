@@ -1,8 +1,8 @@
-import { type MouseEvent, type ReactNode } from 'react';
+import { type MouseEvent, type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, IconButton } from '@/shared/ui';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
@@ -11,12 +11,17 @@ type Props = {
   description?: string | ReactNode;
   prefix?: ReactNode;
   hideIcon?: boolean;
-  className?: string;
   onClick?: () => void;
-  onInfoClick?: () => void;
 };
 
-export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className, onClick, onInfoClick }: Props) => {
+export const WalletCardMd = ({
+  wallet,
+  description,
+  prefix,
+  hideIcon,
+  children,
+  onClick,
+}: PropsWithChildren<Props>) => {
   const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   const handleClick = (fn?: () => void) => {
@@ -33,19 +38,28 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
       className={cnTw(
         'group relative flex w-full items-center rounded transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
-        className,
       )}
     >
       <button
-        className={cnTw('flex w-full items-center gap-x-2 rounded px-2 py-1.5', { 'pe-6': onInfoClick })}
+        className={cnTw('flex w-full items-center gap-x-2 rounded px-2 py-1.5', {
+          'pointer-events-none': nullable(onClick),
+          'pr-6': nonNullable(children),
+        })}
         onClick={handleClick(onClick)}
       >
         {prefix}
 
-        {!hideIcon && <WalletIcon type={wallet.type} size={20} />}
+        {!hideIcon && <WalletIcon type={wallet.type} size={20} className="shrink-0" />}
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-x-2">
-            <FootnoteText className="truncate text-text-primary">{wallet.name}</FootnoteText>
+            <BodyText
+              className={cnTw(
+                'truncate text-text-secondary transition-colors',
+                'group-focus-within:text-text-primary group-hover:text-text-primary',
+              )}
+            >
+              {wallet.name}
+            </BodyText>
             {isWalletConnect && (
               <span
                 className={cnTw(
@@ -63,16 +77,14 @@ export const WalletCardMd = ({ wallet, description, prefix, hideIcon, className,
         </div>
       </button>
 
-      {onInfoClick && (
-        <IconButton
-          className={cnTw(
-            'absolute right-2 opacity-0 transition-opacity',
-            'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
-          )}
-          name="details"
-          onClick={handleClick(onInfoClick)}
-        />
-      )}
+      <div
+        className={cnTw(
+          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
+          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };

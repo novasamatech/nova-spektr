@@ -11,7 +11,6 @@ const meta: Meta<typeof TextArea> = {
   component: TextArea,
   args: {
     value: LONG_TEXT,
-    testId: 'text-area',
   },
 };
 
@@ -29,7 +28,7 @@ export const Default: Story = {
 
   async play({ args, canvasElement }) {
     const canvas = within(canvasElement);
-    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('text-area');
+    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('TextArea');
     expect(textArea.value).toEqual(args.value);
     expect(textArea.placeholder).toEqual(args.placeholder);
   },
@@ -42,33 +41,31 @@ export const Filled: Story = {
 
   async play({ args, canvasElement }) {
     const canvas = within(canvasElement);
-    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('text-area');
+    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('TextArea');
     expect(textArea.value).toEqual(args.value);
   },
 };
 
 export const Invalid: Story = {
   args: {
-    rows: 1,
     invalid: true,
   },
 
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
-    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('text-area');
+    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('TextArea');
     expect(textArea).toHaveClass('border-filter-border-negative');
   },
 };
 
 export const Disabled: Story = {
   args: {
-    rows: 1,
     disabled: true,
   },
 
   async play({ args, canvasElement }) {
     const canvas = within(canvasElement);
-    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('text-area');
+    const textArea = await canvas.findByTestId<HTMLTextAreaElement>('TextArea');
     expect(textArea.disabled).toEqual(args.disabled);
   },
 };

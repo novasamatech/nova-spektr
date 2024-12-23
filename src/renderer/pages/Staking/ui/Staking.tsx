@@ -26,7 +26,7 @@ import {
 } from '@/entities/staking';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletSelectModel } from '@/features/wallets';
+import { walletDetailsFeature } from '@/features/wallet-details';
 import * as Operations from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -36,6 +36,10 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+const {
+  views: { WalletDetails },
+} = walletDetailsFeature;
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -60,6 +64,7 @@ export const Staking = () => {
 
   const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
   const [selectedStash, setSelectedStash] = useState<Address>('');
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const identities = useStoreMap({
     store: identityDomain.identity.$list,
@@ -347,7 +352,7 @@ export const Staking = () => {
             {networkIsActive && activeWallet && accounts.length === 0 && (
               <EmptyList message={<EmptyAccountMessage walletType={activeWallet.type} />}>
                 {walletUtils.isPolkadotVault(activeWallet) && (
-                  <Button variant="text" onClick={() => walletSelectModel.events.walletIdSet(activeWallet.id)}>
+                  <Button variant="text" onClick={() => setShowWalletDetails(true)}>
                     {t('emptyState.addNewAccountButton')}
                   </Button>
                 )}
@@ -367,6 +372,12 @@ export const Staking = () => {
         explorers={explorers}
         isOpen={isShowNominators}
         onClose={toggleNominators}
+      />
+
+      <WalletDetails
+        isOpen={showWalletDetails}
+        wallet={activeWallet ?? null}
+        onClose={() => setShowWalletDetails(false)}
       />
 
       <Operations.BondNominate />

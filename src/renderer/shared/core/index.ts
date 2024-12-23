@@ -13,6 +13,7 @@ export type {
   SingleShardWallet,
   MultiShardWallet,
   MultisigWallet,
+  FlexibleMultisigWallet,
   WatchOnlyWallet,
   WalletConnectWallet,
   NovaWalletWallet,
@@ -30,6 +31,7 @@ export type {
   BaseAccount,
   ChainAccount,
   MultisigAccount,
+  FlexibleMultisigAccount,
   WcAccount,
   ProxiedAccount,
   ShardAccount,
@@ -63,10 +65,17 @@ export type {
   PartialProxiedAccount,
   ProxyDeposits,
   ProxyGroup,
+  ProxyType,
 } from './types/proxy';
-export { ProxyType, ProxyVariant } from './types/proxy';
+export { ProxyVariant } from './types/proxy';
 
-export type { Notification, MultisigCreated, MultisigOperation, ProxyAction } from './types/notification';
+export type {
+  Notification,
+  MultisigCreated,
+  FlexibleMultisigCreated,
+  MultisigOperation,
+  ProxyAction,
+} from './types/notification';
 export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
@@ -79,6 +88,7 @@ export type {
   DecodedTransaction,
   MultisigEvent,
   MultisigTransaction,
+  FlexibleMultisigTransaction,
   MultisigTransactionKey,
   TxWrapper,
   TxWrappers_OLD,

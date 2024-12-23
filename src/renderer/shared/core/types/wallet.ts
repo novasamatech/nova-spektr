@@ -2,6 +2,7 @@ import {
   type Account,
   type BaseAccount,
   type ChainAccount,
+  type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxiedAccount,
   type ShardAccount,
@@ -45,6 +46,13 @@ export interface MultisigWallet extends Wallet {
   accounts: MultisigAccount[];
 }
 
+// TODO: try to move signatories data out of account
+export interface FlexibleMultisigWallet extends Wallet {
+  type: WalletType.FLEXIBLE_MULTISIG;
+  activated: boolean;
+  accounts: FlexibleMultisigAccount[];
+}
+
 export interface ProxiedWallet extends Wallet {
   type: WalletType.PROXIED;
   accounts: ProxiedAccount[];
@@ -68,6 +76,7 @@ export const enum WalletType {
   WATCH_ONLY = 'wallet_wo',
   POLKADOT_VAULT = 'wallet_pv',
   MULTISIG = 'wallet_ms',
+  FLEXIBLE_MULTISIG = 'wallet_fxms',
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
   PROXIED = 'wallet_pxd',
@@ -87,6 +96,7 @@ export type SignableWalletFamily =
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
   | WalletType.MULTISIG
+  | WalletType.FLEXIBLE_MULTISIG
   | WalletType.WATCH_ONLY
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET

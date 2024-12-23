@@ -16,34 +16,37 @@ export function splice<T>(collection: T[], item: T, position: number): T[] {
 }
 
 /**
- * Create dictionary with given key and value Keys can only be type of string,
- * number or symbol
+ * Create dictionary with given key and transformer value. Keys can only be type
+ * of string, number or symbol
  *
  * @param collection Array of items
- * @param property Field to be used as key
- * @param predicate Transformer function
+ * @param key Property to be used as key
+ * @param transformer Transformer function or plain value
  *
  * @returns {Object}
  */
-export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfType<T, PropertyKey>>(
+export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfType<T, PropertyKey>, R = T>(
   collection: T[],
-  property: K,
-  predicate?: (item: T) => any,
-): Record<T[K], any> {
-  return collection.reduce(
-    (acc, item) => {
-      const element = item[property];
+  key: K,
+  transformer?: ((item: T) => R) | R,
+): Record<T[K], R> {
+  const result: Record<T[K], R> = {} as Record<T[K], R>;
 
-      if (predicate) {
-        acc[element] = predicate(item);
-      } else {
-        acc[element] = item;
-      }
+  for (const item of collection) {
+    const element = item[key];
 
-      return acc;
-    },
-    {} as Record<T[K], any>,
-  );
+    if (!element) continue;
+
+    if (!transformer) {
+      result[element] = item as unknown as R;
+    } else if (typeof transformer === 'function') {
+      result[element] = (transformer as (item: T) => R)(item);
+    } else {
+      result[element] = transformer as R;
+    }
+  }
+
+  return result;
 }
 
 export function getRepeatedIndex(index: number, base: number): number {
@@ -97,11 +100,17 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], tr
 type MergeParams<T> = {
   a: T[];
   b: T[];
-  mergeBy: (value: T) => PropertyKey;
+  mergeBy: (value: T) => PropertyKey | PropertyKey[];
+  merge?: (a: T, b: T) => T;
   sort?: (a: T, b: T) => number;
+  filter?: (a: T, b: T) => boolean;
 };
 
-export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
+const createMergeKey = (key: PropertyKey | PropertyKey[]) => {
+  return Array.isArray(key) ? key.join('|') : key;
+};
+
+export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>) => {
   if (a.length === 0) {
     return b;
   }
@@ -118,8 +127,10 @@ export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
       continue;
     }
 
-    map[mergeBy(item)] = item;
+    map[createMergeKey(mergeBy(item))] = item;
   }
+
+  let hadAnyChanges = false;
 
   for (let i = 0; i < b.length; i++) {
     const item = b[i];
@@ -127,17 +138,32 @@ export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
       continue;
     }
 
-    map[mergeBy(item)] = item;
+    const key = createMergeKey(mergeBy(item));
+
+    if (key in map) {
+      const prev = map[key];
+      if (!filter || filter(prev, item)) {
+        hadAnyChanges = true;
+        map[key] = merge ? merge(prev, item) : item;
+      }
+    } else {
+      hadAnyChanges = true;
+      map[key] = item;
+    }
   }
 
-  const res = Object.values(map);
+  if (hadAnyChanges) {
+    const res = Object.values(map);
 
-  return isFunction(sort) ? res.sort(sort) : res;
+    return isFunction(sort) ? res.sort(sort) : res;
+  } else {
+    return isFunction(sort) ? a.sort(sort) : a;
+  }
 };
 
 export const groupBy = <const T, const K extends PropertyKey>(
   iterable: Iterable<T>,
-  map: (value: T) => K,
+  map: (value: NoInfer<T>) => K,
 ): Record<K, T[]> => {
   const groups: Partial<Record<K, T[]>> = {};
 
@@ -154,4 +180,8 @@ export const groupBy = <const T, const K extends PropertyKey>(
   }
 
   return groups as Record<K, T[]>;
+};
+
+export const entries = <K extends PropertyKey, T>(values: Record<K, T>): [key: K, value: T][] => {
+  return Object.entries(values) as [key: K, value: T][];
 };

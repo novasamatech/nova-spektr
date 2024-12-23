@@ -6,7 +6,7 @@ import { signatoryModel } from '../signatory-model';
 
 import { initiatorWallet, signatoryWallet, signerWallet } from './mock';
 
-describe('widgets/CreateWallet/model/signatory-model', () => {
+describe('Create multisig wallet signatory-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
@@ -70,5 +70,23 @@ describe('widgets/CreateWallet/model/signatory-model', () => {
       params: { index: 0, name: 'test', address: toAddress(signerWallet.accounts[0].accountId), walletId: '1' },
     });
     expect(scope.getState(signatoryModel.$ownedSignatoriesWallets)?.length).toEqual(1);
+  });
+
+  test('should have duplicated signatories', async () => {
+    const unique = '5ERebGRitMv68YJzXdzWce3rEM9XRZdunEZYtAi69rhgcoNe';
+    const duplicate = '5FefkbR4NLFdKxtwDmuiq9f7uq3p2pVqhh4thf7NuqAdzYEP';
+
+    const scope = fork({
+      values: new Map().set(signatoryModel.$signatories, [
+        { name: 'address_1', address: unique, walletId: '1' },
+        { name: 'address_2', address: duplicate },
+      ]),
+    });
+
+    await allSettled(signatoryModel.events.changeSignatory, {
+      scope,
+      params: { index: 2, name: 'address_3', address: duplicate },
+    });
+    expect(scope.getState(signatoryModel.$duplicateSignatories)).toEqual({ [unique]: [], [duplicate]: [2] });
   });
 });

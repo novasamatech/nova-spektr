@@ -1,5 +1,5 @@
 import { type BaseAccount, type ProxyAccount, type ProxyDeposits, type Wallet, type WcAccount } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, ProxyType, SigningType, WalletType } from '@/shared/core';
+import { AccountType, ChainType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 const oldProxy: ProxyAccount = {
@@ -7,7 +7,7 @@ const oldProxy: ProxyAccount = {
   accountId: TEST_ACCOUNTS[0],
   proxiedAccountId: TEST_ACCOUNTS[1],
   chainId: '0x05',
-  proxyType: ProxyType.ANY,
+  proxyType: 'Any',
   delay: 0,
 };
 
@@ -16,7 +16,7 @@ const newProxy: ProxyAccount = {
   accountId: TEST_ACCOUNTS[1],
   proxiedAccountId: TEST_ACCOUNTS[2],
   chainId: '0x04',
-  proxyType: ProxyType.CANCEL_PROXY,
+  proxyType: 'CancelProxy',
   delay: 0,
 };
 
@@ -86,7 +86,7 @@ const proxyAccounts: ProxyAccount[] = [
     accountId: '0x01',
     proxiedAccountId: '0x02',
     chainId: '0x05',
-    proxyType: ProxyType.CANCEL_PROXY,
+    proxyType: 'CancelProxy',
     delay: 0,
   },
   {
@@ -94,7 +94,7 @@ const proxyAccounts: ProxyAccount[] = [
     accountId: '0x01',
     proxiedAccountId: '0x02',
     chainId: '0x05',
-    proxyType: ProxyType.GOVERNANCE,
+    proxyType: 'CancelProxy',
     delay: 0,
   },
   {
@@ -102,7 +102,7 @@ const proxyAccounts: ProxyAccount[] = [
     accountId: '0x01',
     proxiedAccountId: '0x02',
     chainId: '0x05',
-    proxyType: ProxyType.NON_TRANSFER,
+    proxyType: 'NonTransfer',
     delay: 0,
   },
 ];

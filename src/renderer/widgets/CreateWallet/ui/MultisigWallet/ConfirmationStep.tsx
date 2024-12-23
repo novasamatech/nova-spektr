@@ -4,10 +4,11 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { Step } from '../../lib/types';
 import { confirmModel } from '../../model/confirm-model';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
@@ -35,60 +36,70 @@ export const ConfirmationStep = () => {
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
 
   return (
-    <section className="relative flex h-full flex-1 flex-col px-5 py-4">
-      <div className="flex max-h-full flex-1 flex-col">
-        <div className="mb-6 flex flex-col items-center">
-          <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
-        </div>
-        <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
-        <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signatoriesLabel')}>
-          <>
-            <Counter className="mr-2" variant="neutral">
-              {signatories.length}
-            </Counter>
-            <IconButton
-              name="info"
-              className="cursor-pointer hover:text-icon-hover"
-              size={16}
-              onClick={toggleSignatoriesModalOpen}
-            />
-          </>
-        </DetailRow>
-        <DetailRow label={t('createMultisigAccount.thresholdName')}>
-          {t('createMultisigAccount.thresholdOutOf', {
-            threshold: threshold.value,
-            signatoriesLength: signatories.length,
-          })}
-        </DetailRow>
-        <Separator className="my-4 border-filter-border" />
-        <DetailRow label={t('createMultisigAccount.signingWallet')}>
-          <WalletItem
-            name={signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
-            type={signerWallet?.type || WalletType.POLKADOT_VAULT}
-          />
-        </DetailRow>
-        <Separator className="my-4 border-filter-border" />
-        {chain ? (
-          <div className="mb-4 flex flex-1 flex-col gap-y-4">
-            <MultisigDepositWithLabel
-              api={api}
-              asset={chain.assets[0]}
-              threshold={threshold.value}
-              onDepositChange={flowModel.events.multisigDepositChanged}
-            />
-            <FeeWithLabel
-              api={api}
-              asset={chain.assets[0]}
-              transaction={fakeTx}
-              onFeeChange={flowModel.events.feeChanged}
-              onFeeLoading={flowModel.events.isFeeLoadingChanged}
-            />
-            <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
-              <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
-            </Alert>
+    <>
+      <Modal.Content>
+        <section className="relative flex h-full w-modal flex-1 flex-col px-5">
+          <div className="flex max-h-full flex-1 flex-col">
+            <div className="mb-6 flex flex-col items-center">
+              <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
+            </div>
+            <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
+            <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signatoriesLabel')}>
+              <>
+                <Counter className="mr-2" variant="neutral">
+                  {signatories.length}
+                </Counter>
+                <IconButton
+                  name="info"
+                  className="cursor-pointer hover:text-icon-hover"
+                  size={16}
+                  onClick={toggleSignatoriesModalOpen}
+                />
+              </>
+            </DetailRow>
+            <DetailRow label={t('createMultisigAccount.thresholdName')}>
+              {t('createMultisigAccount.thresholdOutOf', {
+                threshold: threshold.value,
+                signatoriesLength: signatories.length,
+              })}
+            </DetailRow>
+            <Separator className="my-4 border-filter-border" />
+            <DetailRow label={t('createMultisigAccount.signingWallet')}>
+              <WalletItem
+                name={signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
+                type={signerWallet?.type || WalletType.POLKADOT_VAULT}
+              />
+            </DetailRow>
+            <Separator className="my-4 border-filter-border" />
+            {chain ? (
+              <div className="mb-4 flex flex-1 flex-col gap-y-4">
+                <MultisigDepositWithLabel
+                  api={api}
+                  asset={chain.assets[0]}
+                  threshold={threshold.value}
+                  onDepositChange={flowModel.events.multisigDepositChanged}
+                />
+                <FeeWithLabel
+                  api={api}
+                  asset={chain.assets[0]}
+                  transaction={fakeTx}
+                  onFeeChange={flowModel.events.feeChanged}
+                  onFeeLoading={flowModel.events.isFeeLoadingChanged}
+                />
+                <Alert
+                  variant="error"
+                  title={t('createMultisigAccount.notEnoughTokensTitle')}
+                  active={!isEnoughBalance}
+                >
+                  <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
+                </Alert>
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <div className="mt-3 flex items-center justify-between">
+        </section>
+      </Modal.Content>
+      <Modal.Footer>
+        <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
           <Button
             variant="text"
             onClick={() => {
@@ -101,19 +112,23 @@ export const ConfirmationStep = () => {
           >
             {t('createMultisigAccount.backButton')}
           </Button>
+
           <SignButton
             disabled={!isEnoughBalance}
             type={signerWallet?.type || WalletType.POLKADOT_VAULT}
             onClick={confirmModel.output.formSubmitted}
           />
-        </div>
-      </div>
-      <SelectedSignatoriesModal
-        isOpen={isSignatoriesModalOpen}
-        signatories={signatories}
-        addressPrefix={chain?.addressPrefix}
-        onClose={toggleSignatoriesModalOpen}
-      />
-    </section>
+        </Box>
+      </Modal.Footer>
+
+      {nonNullable(chain) ? (
+        <SelectedSignatoriesModal
+          chain={chain}
+          isOpen={isSignatoriesModalOpen}
+          signatories={signatories}
+          onClose={toggleSignatoriesModalOpen}
+        />
+      ) : null}
+    </>
   );
 };

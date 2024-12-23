@@ -1,6 +1,6 @@
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { Accordion, FootnoteText } from '@/shared/ui';
@@ -13,8 +13,8 @@ import { OperationFullInfo } from './OperationFullInfo';
 import { Status } from './Status';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account?: MultisigAccount;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 const Operation = ({ tx, account }: Props) => {
@@ -25,8 +25,9 @@ const Operation = ({ tx, account }: Props) => {
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
   const initEvent = approvals.find((e) => e.accountId === tx.depositor);
   const date = new Date(tx.dateCreated || initEvent?.dateCreated || Date.now());
-  const asset =
-    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
+
+  const assetId = tx.transaction?.args.assetId || tx.transaction?.args.asset;
+  const asset = getAssetById(assetId, chainsService.getChainById(tx.chainId)?.assets);
   const amount = tx.transaction && getTransactionAmount(tx.transaction);
 
   return (

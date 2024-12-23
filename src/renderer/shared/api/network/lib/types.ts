@@ -14,6 +14,12 @@ export type Subscription = {
   cb: ProviderInterfaceCallback;
 };
 
+export type ProviderMetadata = {
+  metadata: HexString;
+  metadataVersion: number;
+  runtimeVersion: number;
+};
+
 export interface ProviderWithMetadata extends ProviderInterface {
-  updateMetadata: (metadata: HexString) => void;
+  onMetadataReceived: (callback: (value: ProviderMetadata) => unknown) => VoidFunction;
 }

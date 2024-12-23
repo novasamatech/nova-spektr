@@ -53,6 +53,7 @@ export const CONFIG: XcmConfig = {
       Action.DEPOSIT_ASSET,
     ],
   },
+  networkDeliveryFee: {},
   networkBaseWeight: {
     b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: '1000000000',
     baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b: '200000000',
@@ -262,6 +263,51 @@ export const XCMPALLET_TRANSFER_HUB_ASTAR = {
         },
         fun: {
           Fungible: '176,500,000',
+        },
+      },
+    ],
+  },
+};
+
+export const XCMPALLET_TRANSFER_PAH_MYTH = {
+  dest: {
+    V2: {
+      parents: '1',
+      interior: {
+        X1: {
+          Parachain: '3,369',
+        },
+      },
+    },
+  },
+  beneficiary: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountKey20: {
+            network: 'Any',
+            key: '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
+          },
+        },
+      },
+    },
+  },
+  assets: {
+    V2: [
+      {
+        id: {
+          Concrete: {
+            parents: '1',
+            interior: {
+              X1: {
+                Parachain: '3,369',
+              },
+            },
+          },
+        },
+        fun: {
+          Fungible: '1327680000000000065',
         },
       },
     ],
