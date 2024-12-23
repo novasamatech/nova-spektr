@@ -13,7 +13,6 @@ const accountDBKey = (x: Pick<AnyAccount, 'accountId' | 'walletId'>): [AccountId
 };
 
 const $accounts = createStore<AnyAccount[]>([]);
-const $activeAccounts = createStore<AnyAccount[]>([]);
 
 const $populated = restore(
   once($accounts.updates).map(() => true),
@@ -92,7 +91,6 @@ sample({
 });
 
 export const accountsDomainModel = {
-  $active: $activeAccounts,
   $list: readonly($accounts),
   $populated: readonly($populated),
 

@@ -96,6 +96,14 @@ class DexieStorage extends Dexie {
       metadata: '++id',
     });
 
+    this.version(26).stores({
+      accounts2: '[accountId+chainId+type]',
+    });
+
+    this.version(27).stores({
+      accounts2: null,
+    });
+
     this.version(26)
       .stores({
         accounts2: '[accountId+chainId+type]',
@@ -140,6 +148,8 @@ class DexieStorage extends Dexie {
               // @ts-expect-error Mapping of type which no longer exists.
               res.baseAccountId = baseAccountId;
             }
+
+            return res;
           })
           .filter(nonNullable);
 

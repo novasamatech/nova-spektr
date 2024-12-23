@@ -67,6 +67,11 @@ const $activeWallet = combine(
   { skipVoid: false },
 );
 
+// TODO: ideally it should be a feature
+const $activeAccounts = $activeWallet.map((wallet) => {
+  return wallet?.accounts ?? [];
+});
+
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
   const wallets = await storageService.wallets.readAll();
 
@@ -361,6 +366,7 @@ export const walletModel = {
   $allWallets: readonly($allWallets),
   $hiddenWallets,
   $activeWallet,
+  $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
   events: {
