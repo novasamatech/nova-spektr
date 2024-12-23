@@ -40,8 +40,10 @@ function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
   return accounts.filter(account => account.walletId === walletId);
 }
 
-function uniqId(account: Pick<AnyAccount, 'accountId' | 'walletId'>) {
-  return `${account.accountId} ${account.walletId}`;
+function uniqId(account: Pick<AnyAccount, 'type' | 'accountId' | 'walletId' | 'chainId'>) {
+  return isUniversalAccount(account)
+    ? `${account.walletId} ${account.accountId} universal`
+    : `${account.walletId} ${account.accountId} ${account.chainId}`;
 }
 
 export const accountsService = {

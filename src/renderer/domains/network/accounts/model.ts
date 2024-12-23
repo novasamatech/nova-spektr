@@ -3,14 +3,9 @@ import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { merge, nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { accountsService } from './service';
 import { type AnyAccount, type AnyAccountDraft } from './types';
-
-const accountDBKey = (x: Pick<AnyAccount, 'accountId' | 'walletId'>): [AccountId, WalletId: number] => {
-  return [x.accountId, x.walletId];
-};
 
 const $accounts = createStore<AnyAccount[]>([]);
 
@@ -22,13 +17,17 @@ const $populated = restore(
 const populateFx = createEffect((): Promise<AnyAccount[]> => storageService.accounts2.readAll());
 
 const createAccountsFx = createEffect(async (accounts: AnyAccount[]): Promise<AnyAccount[]> => {
-  return storageService.accounts2.createAll(accounts).then(x => x ?? []);
+  return storageService.accounts2
+    .createAll(accounts.map(a => ({ ...a, id: accountsService.uniqId(a) })))
+    .then(x => x ?? []);
 });
 
 const updateAccountFx = createEffect(async (account: AnyAccountDraft | null): Promise<boolean> => {
   if (nullable(account)) return false;
 
-  return storageService.accounts2.update(accountDBKey(account), account).then(nonNullable);
+  const id = accountsService.uniqId(account);
+
+  return storageService.accounts2.update(id, account).then(nonNullable);
 });
 
 const updateAccount = attach({
@@ -45,7 +44,7 @@ const updateAccount = attach({
 
 const deleteAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
   // TODO set correct id
-  await storageService.accounts2.deleteAll(accounts.map(accountDBKey));
+  await storageService.accounts2.deleteAll(accounts.map(accountsService.uniqId));
 
   return accounts;
 });
@@ -62,7 +61,7 @@ sample({
     merge({
       a: accounts,
       b: newAccounts,
-      mergeBy: accountDBKey,
+      mergeBy: accountsService.uniqId,
     }),
   target: $accounts,
 });
@@ -74,7 +73,9 @@ sample({
   fn: (accounts, { params: draft }) => {
     const draftId = accountsService.uniqId(draft);
 
-    return accounts.map(a => (accountsService.uniqId(a) === draftId ? { ...a, ...draft } : a));
+    return accounts.map(a =>
+      accountsService.uniqId(a) === draftId ? ({ ...a, ...draft } as AnyAccount) : a,
+    ) as AnyAccount[];
   },
   target: $accounts,
 });

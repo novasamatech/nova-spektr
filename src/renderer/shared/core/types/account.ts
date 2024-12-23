@@ -3,17 +3,15 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { type ChainAccount, type UniversalAccount } from '@/domains/network';
 
-import { type ID, type NoID } from './general';
+import { type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
 export type VaultBaseAccount = UniversalAccount<{
-  id: ID;
   accountType: AccountType.BASE;
 }>;
 
 export type VaultChainAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.CHAIN;
   baseAccountId?: AccountId;
   keyType: KeyType;
@@ -21,7 +19,6 @@ export type VaultChainAccount = ChainAccount<{
 }>;
 
 export type VaultShardAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.SHARD;
   groupId: string;
   keyType: KeyType;
@@ -29,14 +26,12 @@ export type VaultShardAccount = ChainAccount<{
 }>;
 
 export type MultisigAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
 }>;
 
 export type FlexibleMultisigAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.FLEXIBLE_MULTISIG;
   signatories: Signatory[];
   threshold: number;
@@ -44,13 +39,11 @@ export type FlexibleMultisigAccount = ChainAccount<{
 }>;
 
 export type WcAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.WALLET_CONNECT;
   signingExtras: Record<string, any>;
 }>;
 
 export type ProxiedAccount = ChainAccount<{
-  id: ID;
   accountType: AccountType.PROXIED;
   proxyAccountId: AccountId;
   delay: number;

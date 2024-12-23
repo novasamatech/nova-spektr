@@ -10,6 +10,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
  * restrictions).
  */
 export type UniversalAccount<Additional extends NonNullable<unknown> = object> = Additional & {
+  id: string;
   type: 'universal';
   name: string;
   walletId: ID;
@@ -24,6 +25,7 @@ export type UniversalAccount<Additional extends NonNullable<unknown> = object> =
  * have "one to one" relations with other entities in the system.
  */
 export type ChainAccount<Additional extends NonNullable<unknown> = object> = Additional & {
+  id: string;
   type: 'chain';
   name: string;
   walletId: ID;
@@ -38,4 +40,4 @@ export type AnyAccount = XOR<UniversalAccount, ChainAccount>;
 /**
  * Utility type for working with partial account data
  */
-export type AnyAccountDraft = Pick<AnyAccount, 'accountId' | 'walletId'> & Record<string, unknown>;
+export type AnyAccountDraft = Pick<AnyAccount, 'type' | 'accountId' | 'walletId' | 'chainId'> & Record<string, unknown>;

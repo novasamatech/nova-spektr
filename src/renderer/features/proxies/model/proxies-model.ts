@@ -270,7 +270,7 @@ sample({
 
 sample({
   clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.id),
+  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
   target: balanceModel.events.balancesRemoved,
 });
 

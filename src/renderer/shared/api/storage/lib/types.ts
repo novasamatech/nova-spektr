@@ -78,7 +78,7 @@ type WithID<T extends NonNullable<unknown>> = { id?: ID } & T;
 export type MultisigTransactionDS = WithID<MultisigTransaction>;
 export type FlexibleMultisigTransactionDS = WithID<FlexibleMultisigTransaction>;
 export type MultisigEventDS = WithID<MultisigEvent>;
-export type AnyAccountDS = AnyAccount & { id: [accountId: AccountId, walletId: number] };
+export type AnyAccountDS = AnyAccount & { id: string };
 
 export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;

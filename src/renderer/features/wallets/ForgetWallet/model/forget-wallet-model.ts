@@ -2,7 +2,7 @@ import { attach, createApi, createEffect, createEvent, createStore, sample, spli
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import { type ID, type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
@@ -40,8 +40,8 @@ type CheckForProxiedWalletsParams = {
   walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
 };
 type CheckForProxiedWalletsResult = {
-  proxiedWalletsToDelete: ID[];
-  proxiedAccountsToDelete: ID[];
+  proxiedWalletsToDelete: number[];
+  proxiedAccountsToDelete: AccountId[];
   proxiesToDelete: ProxyAccount[];
   proxyGroupsToDelete: ProxyGroup[];
 };
@@ -76,7 +76,7 @@ const findProxiedWalletsFx = createEffect(
     return {
       proxiedWalletsToDelete,
       proxiesToDelete,
-      proxiedAccountsToDelete: proxiedAccountsToDelete.map((a) => a.id),
+      proxiedAccountsToDelete: proxiedAccountsToDelete.map((a) => a.accountId),
       proxyGroupsToDelete,
     };
   },
@@ -105,7 +105,7 @@ sample({
 });
 
 sample({
-  source: findProxiedWalletsFx.doneData,
+  clock: findProxiedWalletsFx.doneData,
   target: spread({
     proxiesToDelete: proxyModel.events.proxiesRemoved,
     proxiedWalletsToDelete: walletModel.events.walletsRemoved,
@@ -116,7 +116,7 @@ sample({
 
 sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
-  fn: (wallet) => wallet.accounts.map((a) => a.id),
+  fn: (wallet) => wallet.accounts.map((a) => a.accountId),
   target: balanceModel.events.balancesRemoved,
 });
 

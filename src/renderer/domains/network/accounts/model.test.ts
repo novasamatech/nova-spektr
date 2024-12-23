@@ -8,6 +8,7 @@ import { type AnyAccount, type AnyAccountDraft } from './types';
 
 const accounts: AnyAccount[] = [
   {
+    id: 'test',
     type: 'chain',
     accountId: createAccountId('1'),
     chainId: '0x01',
@@ -17,6 +18,7 @@ const accounts: AnyAccount[] = [
     cryptoType: CryptoType.SR25519,
   },
   {
+    id: 'test 2',
     type: 'universal',
     accountId: createAccountId('2'),
     name: '',
@@ -56,7 +58,13 @@ describe('accounts model', () => {
       handlers: [[accountsDomainModel.__test.updateAccountFx, () => true]],
     });
 
-    const draft: AnyAccountDraft = { accountId: createAccountId('1'), walletId: 0, name: 'test' };
+    const draft: AnyAccountDraft = {
+      accountId: createAccountId('1'),
+      chainId: '0x01',
+      walletId: 0,
+      type: 'chain',
+      name: 'test',
+    };
 
     await allSettled(accountsDomainModel.updateAccount, {
       scope,
@@ -72,7 +80,13 @@ describe('accounts model', () => {
       handlers: [[accountsDomainModel.__test.updateAccountFx, () => false]],
     });
 
-    const draft: AnyAccountDraft = { accountId: createAccountId('3'), walletId: 0, name: 'test' };
+    const draft: AnyAccountDraft = {
+      accountId: createAccountId('3'),
+      chainId: '0x01',
+      walletId: 0,
+      type: 'chain',
+      name: 'test',
+    };
 
     await allSettled(accountsDomainModel.updateAccount, {
       scope,

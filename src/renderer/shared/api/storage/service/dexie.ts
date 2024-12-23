@@ -98,7 +98,7 @@ class DexieStorage extends Dexie {
 
     this.version(26)
       .stores({
-        accounts2: '[accountId+chainId+type]',
+        accounts2: 'id',
       })
       .upgrade(async (t) => {
         const oldAccounts = await t.db.table<Account>('accounts').toArray();
@@ -135,6 +135,14 @@ class DexieStorage extends Dexie {
                 signingType: wallet.signingType,
               };
             }
+
+            const id =
+              res.type === 'universal'
+                ? `${res.walletId} ${res.accountId} universal`
+                : // @ts-expect-error Mapping of type which no longer exists.
+                  `${res.walletId} ${res.accountId} ${res.chainId}`;
+
+            res.id = id;
 
             if (baseAccountId) {
               // @ts-expect-error Mapping of type which no longer exists.
