@@ -12,6 +12,7 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -113,7 +114,7 @@ const checkMaxWeightReachedFx = createEffect(
         chain,
         balance: formatAmount('1', chain.assets[0].precision),
         conviction: 'Locked1x',
-        accountId: '0x0000000000000000000000000000000000000000',
+        accountId: '0x0000000000000000000000000000000000000000' as AccountId,
         target: '0x0000000000000000000000000000000000000000',
       });
 

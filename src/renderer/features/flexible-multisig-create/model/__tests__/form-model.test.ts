@@ -2,12 +2,14 @@ import { allSettled, fork } from 'effector';
 
 import { ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { networkDomain } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
 
 import {
+  accounts,
   initiatorWallet,
   multisigWallet,
   signatoryWallet,
@@ -33,7 +35,7 @@ describe('Create flexible multisig wallet form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: '' });
@@ -48,7 +50,8 @@ describe('Create flexible multisig wallet form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet, multisigWallet])
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet, multisigWallet])
+        .set(networkDomain.accounts.__test.$list, accounts)
         .set(signatoryModel.$signatories, []),
     });
 
@@ -72,7 +75,7 @@ describe('Create flexible multisig wallet form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet, wrongChainWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet, wrongChainWallet]),
     });
 
     await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
@@ -89,7 +92,7 @@ describe('Create flexible multisig wallet form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet, multisigWallet])
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet, multisigWallet])
         .set(signatoryModel.$signatories, []),
     });
 

@@ -1,4 +1,5 @@
 import { type Wallet, WalletType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { signatoryUtils } from '../utils';
 
 describe('entities/signatory/lib/onChainUtils', () => {
@@ -17,7 +18,7 @@ describe('entities/signatory/lib/onChainUtils', () => {
       },
     ] as unknown as Wallet[];
 
-    const signatory = signatoryUtils.getSignatoryWallet(wallets, '0x01');
+    const signatory = signatoryUtils.getSignatoryWallet(wallets, '0x01' as AccountId);
 
     expect(signatory).toEqual(wallets[1]);
   });

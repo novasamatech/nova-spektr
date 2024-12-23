@@ -1,6 +1,8 @@
 import { type BN } from '@polkadot/util';
 
-import { type AccountId, type ChainId, type ID } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type ChainId, type ID } from './general';
 
 export type Balance = AssetBalance & {
   id: ID;

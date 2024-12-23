@@ -6,7 +6,7 @@ import { combineEvents } from 'patronum';
 import { AccountType, type HexString, type WcAccount } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type InitReconnectParams, walletConnectModel } from '@/entities/walletConnect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { ReconnectStep } from '../lib/types';
@@ -149,13 +149,14 @@ sample({
       const accountId = toAccountId(address);
       const chain = Object.values(chains).find((chain) => chain.chainId.includes(chainId));
 
-      if (!chain || !oldAccount) continue;
+      if (!chain || !oldAccount || !accountUtils.isWcAccount(oldAccount)) continue;
 
       updatedAccounts.push({
         ...oldAccount,
         chainId: chain.chainId,
-        type: AccountType.WALLET_CONNECT,
+        accountType: AccountType.WALLET_CONNECT,
         accountId,
+        signingExtras: oldAccount.signingExtras,
       });
     }
 

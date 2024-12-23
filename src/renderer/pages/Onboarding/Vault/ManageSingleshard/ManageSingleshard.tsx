@@ -4,16 +4,9 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { type Chain } from '@/shared/core';
-import {
-  AccountType,
-  ChainType,
-  CryptoType,
-  CryptoTypeString,
-  ErrorType,
-  SigningType,
-  WalletType,
-} from '@/shared/core';
+import { AccountType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, HeaderTitleText, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { Field, Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -38,7 +31,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const accountId = u8aToHex(seedInfo[0].multiSigner?.public);
+  const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner?.public));
   const {
     handleSubmit,
     control,
@@ -75,8 +68,9 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
           accountId,
           name: walletName.trim(),
           cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.BASE,
+          signingType: SigningType.PARITY_SIGNER,
+          accountType: AccountType.BASE,
+          type: 'universal',
         },
       ],
     });

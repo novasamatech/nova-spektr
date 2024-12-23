@@ -11,7 +11,13 @@ type AccountsGroup = {
   chains: ChainAccount[][];
   shards: ShardAccount[][];
 };
-function groupAccounts(accounts: Omit<BaseAccount | ChainAccount | ShardAccount, 'id' | 'walletId'>[]) {
+function groupAccounts(
+  accounts: (
+    | Omit<BaseAccount, 'id' | 'walletId'>
+    | Omit<ChainAccount, 'id' | 'walletId'>
+    | Omit<ShardAccount, 'id' | 'walletId'>
+  )[],
+) {
   return accounts.reduce<AccountsGroup>(
     (acc, account) => {
       const lastBaseIndex = acc.base.length - 1;

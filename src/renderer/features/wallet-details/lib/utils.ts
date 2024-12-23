@@ -90,7 +90,7 @@ function getMultishardMap(accounts: MultiShardWallet['accounts']): MultishardMap
 
     if (accountUtils.isChainAccount(account)) {
       for (const [baseAccount, chainMap] of acc.entries()) {
-        if (baseAccount.id !== account.baseId) continue;
+        if (baseAccount.accountId !== account.baseAccountId) continue;
 
         if (chainMap[account.chainId]) {
           chainMap[account.chainId].push(account);

@@ -96,7 +96,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         importedDerivations,
       );
 
-      const shardedDerivations = mergedDerivations.filter((d) => d.type === AccountType.SHARD);
+      const shardedDerivations = mergedDerivations.filter((d) => d.accountType === AccountType.SHARD);
       const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
 
       expect(shardedDerivations.length).toEqual(20);

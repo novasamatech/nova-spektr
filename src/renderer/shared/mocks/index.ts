@@ -8,7 +8,6 @@ import {
   type Chain,
   type ChainAccount,
   type ChainId,
-  ChainType,
   CryptoType,
   type PolkadotVaultWallet,
   type ProxiedAccount,
@@ -21,10 +20,12 @@ import {
   type WcAccount,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 const testKeyring = createTestKeyring();
 
 export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+export const kusamaChainId: ChainId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
 
 export const dotAsset: Asset = {
   assetId: 0,
@@ -62,30 +63,34 @@ export const polkadotChain: Chain = {
   ],
 };
 
-export const createAccountId = (seed: string) => {
+export const createAccountId = (seed: string = '0') => {
   const derivationPathSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-  return toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address);
+  return pjsSchema.helpers.toAccountId(toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address));
 };
 
 export const createBaseAccount = (id: number = Math.round(Math.random() * 10)): BaseAccount => ({
   id,
   accountId: createAccountId(`Base account ${id}`),
-  chainType: ChainType.SUBSTRATE,
+  signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
   name: `Base Account ${id}`,
-  type: AccountType.BASE,
+  accountType: AccountType.BASE,
   walletId: 1,
+  type: 'universal',
 });
 
 export const createWcAccount = (id: number = Math.round(Math.random() * 10)): WcAccount => ({
   id,
   accountId: createAccountId(`Wc account ${id}`),
   chainId: polkadotChainId,
-  chainType: ChainType.SUBSTRATE,
+  signingType: SigningType.POLKADOT_VAULT,
+  cryptoType: CryptoType.SR25519,
   name: `WalletConnect Account ${id}`,
-  type: AccountType.WALLET_CONNECT,
+  accountType: AccountType.WALLET_CONNECT,
   walletId: 1,
+  type: 'chain',
+  signingExtras: {},
 });
 
 export const createProxiedAccount = (id: number = Math.round(Math.random() * 10)): ProxiedAccount => ({
@@ -98,9 +103,10 @@ export const createProxiedAccount = (id: number = Math.round(Math.random() * 10)
   chainId: polkadotChainId,
   cryptoType: CryptoType.SR25519,
   name: `Proxied Account ${id}`,
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
+  signingType: SigningType.POLKADOT_VAULT,
   walletId: 1,
-  chainType: ChainType.SUBSTRATE,
+  type: 'chain',
 });
 
 export const createPolkadotWallet = (

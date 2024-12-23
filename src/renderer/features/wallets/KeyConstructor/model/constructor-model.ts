@@ -7,10 +7,10 @@ import {
   type Chain,
   type ChainAccount,
   type ChainId,
-  ChainType,
   CryptoType,
   KeyType,
   type ShardAccount,
+  SigningType,
 } from '@/shared/core';
 import { derivationHasPassword, nonNullable, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -152,16 +152,17 @@ const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): ChainAcc
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
   const base = {
+    type: 'chain',
     name: formValues.keyName,
-    keyType: formValues.keyType,
+    keyType: formValues.keyType as KeyType,
     chainId: formValues.chainId,
-    type: AccountType.CHAIN,
+    accountType: AccountType.CHAIN,
     cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     derivationPath: formValues.derivationPath,
-  };
+  } as ChainAccount;
 
-  if (!formValues.isSharded) return base as ChainAccount;
+  if (!formValues.isSharded) return base;
 
   const groupId = crypto.randomUUID();
 
@@ -171,9 +172,9 @@ const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): ChainAcc
       ({
         ...base,
         groupId,
-        type: AccountType.SHARD,
+        accountType: AccountType.SHARD,
         derivationPath: `${formValues.derivationPath}//${index}`,
-      }) as ShardAccount,
+      }) satisfies ShardAccount,
   );
 });
 

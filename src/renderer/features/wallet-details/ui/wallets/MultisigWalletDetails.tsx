@@ -2,16 +2,11 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type AccountId,
-  type Contact,
-  type FlexibleMultisigWallet,
-  type MultisigWallet,
-  type Wallet,
-} from '@/shared/core';
+import { type Contact, type FlexibleMultisigWallet, type MultisigWallet, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';

@@ -2,6 +2,9 @@ import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BaseModal, Icon } from '@/shared/ui';
+// TODO in new paradigm this component should be somewhere in features related to signing
+// eslint-disable-next-line boundaries/element-types
+import { networkDomain } from '@/domains/network';
 import { accountUtils } from '../../lib/account-utils';
 import { AccountAddress } from '../AccountAddress/AccountAddress';
 
@@ -27,7 +30,7 @@ export const AccountSelectModal = ({ isOpen, accounts, chain, onClose, onSelect 
     >
       <ul className={cnTw('mt-1', accounts.length > 7 && 'max-h-[332px] overflow-y-auto')}>
         {accounts.map((account) => (
-          <li key={account.id}>
+          <li key={networkDomain.accountsService.uniqId(account)}>
             <button
               className={cnTw(
                 'group flex w-full items-center rounded px-2 py-1.5 text-text-secondary',

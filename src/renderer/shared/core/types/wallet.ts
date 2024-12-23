@@ -14,6 +14,13 @@ export interface Wallet {
   id: ID;
   name: string;
   type: WalletType;
+  /**
+   * @deprecated You should use accounts directly from
+   *   `networkDomain.accounts.$list` or filtered in some form. Filtering by
+   *   wallet can be done by
+   *   `networkDomain.accountsService.filterAccountsByWallet(accounts,
+   *   walletId)`.
+   */
   accounts: Account[];
   isActive: boolean;
   signingType: SigningType;

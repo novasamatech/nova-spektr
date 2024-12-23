@@ -11,6 +11,8 @@ const {
 const IDENTIFIERS_SUFFIXES = {
   createSlot: 'Slot',
   createPipeline: 'Pipeline',
+  createAsyncPipeline: 'AsyncPipeline',
+  createAnyOf: 'AnyOf',
 };
 
 const fixName = (name, suffix) => camelCase(name.replace(new RegExp(suffix, 'gi'), '').replace(/\$/g, '') + suffix);

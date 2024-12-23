@@ -334,7 +334,7 @@ module.exports = {
               },
               {
                 from: 'widgets',
-                allow: ['app', 'shared', 'entities', 'features', /* TODO fix */ 'pages', 'widgets'],
+                allow: ['app', 'shared', 'entities', 'features', 'domains', /* TODO fix */ 'pages', 'widgets'],
               },
             ],
           },

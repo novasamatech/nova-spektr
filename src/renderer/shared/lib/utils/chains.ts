@@ -1,14 +1,7 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import {
-  type AccountId,
-  type Address,
-  type Chain,
-  type ChainId,
-  ChainOptions,
-  type Explorer,
-  type HexString,
-} from '@/shared/core';
+import { type Address, type Chain, type ChainId, ChainOptions, type Explorer, type HexString } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
 import { RelayChains, SS58_DEFAULT_PREFIX } from './constants';

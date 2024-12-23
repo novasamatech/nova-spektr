@@ -57,42 +57,42 @@ const proxiedWallet = {
 // Accounts
 
 const anyProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'Any',
 } as ProxiedAccount;
 
 const nonTransferProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'NonTransfer',
 } as ProxiedAccount;
 
 const stakingProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'Staking',
 } as ProxiedAccount;
 
 const auctionProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'Auction',
 } as ProxiedAccount;
 
 const cancelProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'CancelProxy',
 } as ProxiedAccount;
 
 const governanceProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'Governance',
 } as ProxiedAccount;
 
 const identityJudgementProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'IdentityJudgement',
 } as ProxiedAccount;
 
 const nominationPoolsProxyAccount = {
-  type: AccountType.PROXIED,
+  accountType: AccountType.PROXIED,
   proxyType: 'NominationPools',
 } as ProxiedAccount;
 

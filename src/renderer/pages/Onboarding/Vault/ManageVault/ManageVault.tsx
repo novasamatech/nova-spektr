@@ -10,7 +10,6 @@ import {
   AccountType,
   type ChainAccount,
   type ChainId,
-  ChainType,
   CryptoType,
   type DraftAccount,
   type ShardAccount,
@@ -20,6 +19,7 @@ import {
 import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
 import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Accordion,
   Button,
@@ -73,7 +73,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     fields: { name },
   } = useForm(manageVaultModel.$walletForm);
 
-  const publicKey = u8aToHex(seedInfo[0].multiSigner.public);
+  const publicKey = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner.public));
   const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
   const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
 
@@ -115,7 +115,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsAddressModalOpen();
   };
 
-  const handleCreateVault = (accounts: Omit<ChainAccount | ShardAccount, 'id' | 'walletId'>[]) => {
+  const handleCreateVault = (
+    accounts: (Omit<ChainAccount, 'id' | 'walletId'> | Omit<ShardAccount, 'id' | 'walletId'>)[],
+  ) => {
     manageVaultModel.events.vaultCreated({
       wallet: {
         name: walletName.trim(),
@@ -126,8 +128,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         name: '',
         accountId: publicKey,
         cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.BASE,
+        signingType: SigningType.POLKADOT_VAULT,
+        accountType: AccountType.BASE,
+        type: 'universal',
       },
       accounts,
     });
@@ -141,7 +144,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     });
   };
 
-  const handleImportKeys = (keys: DraftAccount<ShardAccount | ChainAccount>[]) => {
+  const handleImportKeys = (keys: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
     manageVaultModel.events.derivationsImported(keys);
     toggleIsImportModalOpen();
   };

@@ -7,9 +7,10 @@ import {
   type DraftAccount,
   type NoID,
   type ShardAccount,
+  SigningType,
   type Wallet,
 } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
+import { AccountType, CryptoType, KeyType } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -24,13 +25,13 @@ export type Callbacks = {
 type VaultCreateParams = {
   root: Omit<NoID<BaseAccount>, 'walletId'>;
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-  accounts: Omit<NoID<ChainAccount | ShardAccount>, 'walletId'>[];
+  accounts: (Omit<NoID<ChainAccount>, 'walletId'> | Omit<NoID<ShardAccount>, 'walletId'>)[];
 };
 
 const formInitiated = createEvent<SeedInfo[]>();
-const keysRemoved = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const keysRemoved = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
+const keysAdded = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
+const derivationsImported = createEvent<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -38,7 +39,7 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $keys = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+const $keys = createStore<(DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]>([]);
 
 const $keysGroups = combine($keys, (accounts): (ChainAccount | ShardAccount[])[] => {
   return accountUtils.getAccountsAndShardGroups(accounts as (ChainAccount | ShardAccount)[]);
@@ -89,9 +90,10 @@ sample({
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
         cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.CHAIN,
+        signingType: SigningType.POLKADOT_VAULT,
+        accountType: AccountType.CHAIN,
         keyType: KeyType.MAIN,
+        type: 'chain',
       });
 
       return acc;

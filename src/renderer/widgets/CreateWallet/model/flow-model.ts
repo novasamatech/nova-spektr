@@ -6,7 +6,6 @@ import { delay, spread } from 'patronum';
 import {
   type Account,
   AccountType,
-  ChainType,
   type Contact,
   CryptoType,
   type MultisigAccount,
@@ -240,9 +239,10 @@ sample({
       name: name.trim(),
       accountId: accountId,
       threshold: threshold,
-      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-      type: AccountType.MULTISIG,
+      cryptoType,
+      signingType: SigningType.MULTISIG,
+      accountType: AccountType.MULTISIG,
+      type: 'chain',
     };
 
     return {

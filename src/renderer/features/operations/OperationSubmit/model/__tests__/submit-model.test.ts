@@ -30,7 +30,7 @@ describe('widgets/AddPureProxyModal/model/submit-model', () => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, { '0x00': testApi })
-        .set(walletModel._test.$allWallets, [initiatorWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet]),
     });
 
     const store = {

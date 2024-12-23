@@ -5,7 +5,6 @@ import { createEndpoint } from '@remote-ui/rpc';
 import * as Sc from '@substrate/connect';
 
 import {
-  type AccountId,
   type BaseAccount,
   type Chain,
   type ChainId,
@@ -20,6 +19,7 @@ import {
   ProxyVariant,
 } from '@/shared/core';
 import { proxyPallet } from '@/shared/pallet/proxy';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {

@@ -1,5 +1,7 @@
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
 import { type Account, type MultisigAccount, type ProxiedAccount } from './account';
-import { type AccountId, type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
+import { type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
 import { type Signatory } from './signatory';
 import { type PartialBy } from './utility';
 

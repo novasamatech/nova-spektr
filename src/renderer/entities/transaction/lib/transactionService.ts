@@ -9,7 +9,6 @@ import { construct } from '@substrate/txwrapper-polkadot';
 
 import {
   type Account,
-  type AccountId,
   type Address,
   type HexString,
   type MultisigAccount,
@@ -24,6 +23,10 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { type TxMetadata, createTxMetadata, dictionary, nullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+// TODO transaction service should be inside network domain
+// eslint-disable-next-line boundaries/element-types
+import { networkDomain } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
@@ -192,6 +195,7 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
 
 function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
+  const signatory = signatories.at(0);
 
   const signers = wallets.reduce<Account[]>((acc, wallet) => {
     const signer = wallet.accounts.find((a) => signersMap[a.accountId]);
@@ -207,20 +211,23 @@ function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrapp
     kind: WrapperKind.MULTISIG,
     multisigAccount: account as MultisigAccount,
     signatories: signers,
-    signer: signatories[0] || ({} as Account),
+    signer: signatory || ({} as Account),
   };
 
-  if (signatories.length === 0) return [wrapper];
+  if (!signatory) return [wrapper];
 
-  const signatoryAccount = signers.find((s) => s.id === signatories[0].id);
+  const signatoryAccount = signers.find(
+    (s) => networkDomain.accountsService.uniqId(s) === networkDomain.accountsService.uniqId(signatory),
+  );
   if (!signatoryAccount) return [wrapper];
 
   const signatoryWallet = walletUtils.getWalletById(wallets, signatoryAccount.walletId);
+  if (!signatoryWallet) return [wrapper];
 
   const nextWrappers = getTxWrappers({
     wallets,
-    wallet: signatoryWallet as Wallet,
-    account: signatoryAccount as Account,
+    wallet: signatoryWallet,
+    account: signatoryAccount,
     signatories: signatories.slice(1),
   });
 

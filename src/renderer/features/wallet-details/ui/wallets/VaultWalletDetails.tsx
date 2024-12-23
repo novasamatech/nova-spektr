@@ -94,7 +94,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     }
   };
 
-  const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleImportedKeys = (keys: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
     toggleImportModal();
     const newKeys = keys.filter((key) => {
       return key.keyType === KeyType.MAIN || !(key as ChainAccount | ShardAccount).accountId;
@@ -104,7 +104,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     toggleScanModal();
   };
 
-  const handleVaultKeys = (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleVaultKeys = (accounts: (DraftAccount<ChainAccount> | DraftAccount<ShardAccount>)[]) => {
     vaultDetailsModel.events.accountsCreated({
       walletId: wallet.id,
       rootAccountId: root.accountId,

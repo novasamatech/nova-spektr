@@ -1,14 +1,8 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import {
-  type AccountId,
-  AccountType,
-  ChainOptions,
-  ConnectionType,
-  type HexString,
-  type ProxyAccount,
-} from '@/shared/core';
+import { AccountType, ChainOptions, ConnectionType, type HexString, type ProxyAccount } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
@@ -87,8 +81,8 @@ describe('features/proxies/model/proxies-model', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel._test.$allWallets, [
-          { id: 1, accounts: [{ walletId: 1, accountId: '0x01', type: AccountType.CHAIN, chainId: '0x01' }] },
+        .set(walletModel.__test.$rawWallets, [
+          { id: 1, accounts: [{ walletId: 1, accountId: '0x01', accountType: AccountType.CHAIN, chainId: '0x01' }] },
         ])
         .set(networkModel.$chains, {
           '0x01': { chainId: '0x01', name: 'Westend', options: [ChainOptions.REGULAR_PROXY] },

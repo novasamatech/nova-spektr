@@ -3,9 +3,10 @@ import groupBy from 'lodash/groupBy';
 import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
-import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, Icon } from '@/shared/ui';
 import { Accordion, Tooltip } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';

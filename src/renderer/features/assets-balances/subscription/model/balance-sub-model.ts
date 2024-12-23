@@ -5,16 +5,9 @@ import { combineEvents, once, previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
-import {
-  type AccountId,
-  type Balance,
-  type Chain,
-  type ChainId,
-  type ConnectionStatus,
-  type ID,
-  type Wallet,
-} from '@/shared/core';
+import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
 import { isFulfilled } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';

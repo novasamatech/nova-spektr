@@ -7,6 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
 import { Field } from '@/shared/ui-kit';
+import { networkDomain } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
@@ -102,12 +103,13 @@ const AccountSelector = () => {
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+    const id = networkDomain.accountsService.uniqId(account);
 
     return {
-      id: account.id.toString(),
+      id,
       value: account,
       element: (
-        <div className="flex w-full justify-between" key={account.id}>
+        <div className="flex w-full justify-between" key={id}>
           <AccountAddress
             size={20}
             type="short"
@@ -126,7 +128,7 @@ const AccountSelector = () => {
       <Select
         label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={account.value.id.toString()}
+        selectedId={networkDomain.accountsService.uniqId(account.value)}
         options={options}
         disabled={options.length === 1}
         onChange={({ value }) => account.onChange(value)}
@@ -175,12 +177,13 @@ const ProxyInput = () => {
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isShardAccount(proxyAccount);
     const address = toAddress(proxyAccount.accountId, { prefix: chain.value.addressPrefix });
+    const id = networkDomain.accountsService.uniqId(proxyAccount);
 
     return {
-      id: proxyAccount.id.toString(),
+      id,
       value: address,
       element: (
-        <div className="flex w-full justify-between" key={proxyAccount.id}>
+        <div className="flex w-full justify-between" key={id}>
           <AccountAddress
             size={20}
             type="short"

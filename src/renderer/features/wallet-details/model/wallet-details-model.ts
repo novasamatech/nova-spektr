@@ -2,15 +2,9 @@ import { combine } from 'effector';
 import { createGate } from 'effector-react';
 import { isEmpty } from 'lodash';
 
-import {
-  type AccountId,
-  type ChainId,
-  type Contact,
-  type ProxyAccount,
-  type ProxyGroup,
-  type Wallet,
-} from '@/shared/core';
+import { type ChainId, type Contact, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { dictionary, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';

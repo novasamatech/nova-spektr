@@ -2,7 +2,6 @@ import set from 'lodash/set';
 
 import {
   type Account,
-  type AccountId,
   type BaseAccount,
   type Chain,
   type ChainAccount,
@@ -11,6 +10,7 @@ import {
   type ShardAccount,
 } from '@/shared/core';
 import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
@@ -49,8 +49,8 @@ function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
 }
 
 function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
-  const { baseId, root, shards } = accounts.reduce<{
-    baseId: ID;
+  const { baseAccountId, root, shards } = accounts.reduce<{
+    baseAccountId: AccountId;
     root: SelectedStruct;
     shards: (ChainAccount | ShardAccount)[];
   }>(
@@ -58,33 +58,33 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
       if (accountUtils.isBaseAccount(account)) {
         const nonBaseAccounts = accounts.filter((acc) => !accountUtils.isBaseAccount(acc));
 
-        acc.baseId = account.id;
-        acc.root[account.id] = getChainCounter(chains);
-        acc.root[account.id].checked = nonBaseAccounts.length;
-        acc.root[account.id].total = nonBaseAccounts.length;
+        acc.baseAccountId = account.accountId;
+        acc.root[account.accountId] = getChainCounter(chains);
+        acc.root[account.accountId].checked = nonBaseAccounts.length;
+        acc.root[account.accountId].total = nonBaseAccounts.length;
       } else {
         acc.shards.push(account as ChainAccount | ShardAccount);
       }
 
       return acc;
     },
-    { baseId: 0, root: {}, shards: [] },
+    { baseAccountId: '' as AccountId, root: {}, shards: [] },
   );
 
   for (const shard of shards) {
-    root[baseId][shard.chainId].checked += 1;
-    root[baseId][shard.chainId].total += 1;
-    root[baseId][shard.chainId].accounts[shard.accountId] = true;
+    root[baseAccountId][shard.chainId].checked += 1;
+    root[baseAccountId][shard.chainId].total += 1;
+    root[baseAccountId][shard.chainId].accounts[shard.accountId] = true;
 
     if (accountUtils.isShardAccount(shard)) {
-      const existingGroup = root[baseId][shard.chainId].sharded[shard.groupId];
+      const existingGroup = root[baseAccountId][shard.chainId].sharded[shard.groupId];
       if (existingGroup) {
         existingGroup.checked += 1;
         existingGroup.total += 1;
         existingGroup[shard.accountId] = true;
       } else {
-        root[baseId][shard.chainId].sharded[shard.groupId] = { checked: 1, total: 1 };
-        root[baseId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
+        root[baseAccountId][shard.chainId].sharded[shard.groupId] = { checked: 1, total: 1 };
+        root[baseAccountId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
       }
     }
   }
@@ -99,9 +99,9 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
   }>(
     (acc, account) => {
       if (accountUtils.isBaseAccount(account)) {
-        acc.roots[account.id] = getChainCounter(chains);
-        acc.roots[account.id].checked = 0;
-        acc.roots[account.id].total = 0;
+        acc.roots[account.accountId] = getChainCounter(chains);
+        acc.roots[account.accountId].checked = 0;
+        acc.roots[account.accountId].total = 0;
       } else {
         acc.shards.push(account as ChainAccount);
       }
@@ -112,7 +112,7 @@ function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: A
   );
 
   for (const shard of shards) {
-    const root = roots[shard.baseId!];
+    const root = roots[shard.accountId];
     root.checked += 1;
     root.total += 1;
     root[shard.chainId].checked += 1;
@@ -191,10 +191,10 @@ function getStructForMultishard<T>(accounts: Account[], chainsMap: ChainsMap<T>)
 
     if (accountUtils.isChainAccount(account)) {
       const existingChain = chainsMap[account.chainId];
-      if (existingChain[account.baseId!]) {
-        existingChain[account.baseId!].push(account as T);
+      if (existingChain[account.baseAccountId!]) {
+        existingChain[account.baseAccountId!].push(account as T);
       } else {
-        chainsMap[account.chainId][account.baseId!] = [account as T];
+        chainsMap[account.chainId][account.baseAccountId!] = [account as T];
       }
     }
   }

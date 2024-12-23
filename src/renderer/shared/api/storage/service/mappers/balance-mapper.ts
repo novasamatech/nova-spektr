@@ -1,17 +1,18 @@
 import { BN } from '@polkadot/util';
 
-import { type Balance } from '@/shared/core';
+import { type Balance, type Serializable } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
-import { type BnToString } from '../../lib/types';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export const balanceMapper = {
   fromDB,
   toDB,
 };
 
-function fromDB(balance: BnToString<Balance>): Balance {
+function fromDB(balance: Serializable<Balance>): Balance {
   return {
     ...balance,
+    accountId: pjsSchema.helpers.toAccountId(balance.accountId),
     free: balance.free ? new BN(balance.free) : undefined,
     frozen: balance.frozen ? new BN(balance.frozen) : undefined,
     reserved: balance.reserved ? new BN(balance.reserved) : undefined,
@@ -25,7 +26,7 @@ function fromDB(balance: BnToString<Balance>): Balance {
   };
 }
 
-function toDB(balance: Balance): BnToString<Balance> {
+function toDB(balance: Balance): Serializable<Balance> {
   return {
     ...balance,
     free: balance.free?.toString(),

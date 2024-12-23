@@ -6,6 +6,7 @@ import { type ShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
+import { networkDomain } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { useStakingData } from '@/entities/staking';
@@ -129,7 +130,7 @@ export const ShardedList = ({
       <CardStack.Content>
         <ul className="pl-6">
           {shardsStake.map((shard) => (
-            <li key={shard.account.id}>
+            <li key={networkDomain.accountsService.uniqId(shard.account)}>
               <NominatorsItem
                 isStakingLoading={isStakingLoading}
                 content={getContent(shard)}

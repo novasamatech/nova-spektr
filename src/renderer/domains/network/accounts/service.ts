@@ -1,0 +1,57 @@
+import { type Chain, CryptoType } from '@/shared/core';
+import { createAnyOf } from '@/shared/di';
+import { networkUtils } from '@/entities/network';
+
+import { type AnyAccount, type ChainAccount, type UniversalAccount } from './types';
+
+const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
+
+function isCryptoMatch(account: AnyAccount, chain: Chain): boolean {
+  const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+
+  return account.cryptoType === cryptoType;
+}
+
+function isChainAccount(account: AnyAccount): account is ChainAccount {
+  return account.type === 'chain';
+}
+
+function isUniversalAccount(account: AnyAccount): account is UniversalAccount {
+  return account.type === 'universal';
+}
+
+function filterAccountOnChain(accounts: AnyAccount[], chain: Chain) {
+  return accounts.filter(account => {
+    if (isCryptoMatch(account, chain) === false) {
+      return false;
+    }
+
+    if (isChainAccount(account)) {
+      return account.chainId === chain.chainId;
+    }
+
+    if (isUniversalAccount(account)) {
+      return accountAvailabilityOnChainAnyOf.check({ account, chain });
+    }
+  });
+}
+
+function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
+  return accounts.filter(account => account.walletId === walletId);
+}
+
+function uniqId(account: Pick<AnyAccount, 'accountId' | 'walletId'>) {
+  return `${account.accountId} ${account.walletId}`;
+}
+
+export const accountsService = {
+  accountAvailabilityOnChainAnyOf,
+
+  uniqId,
+
+  isChainAccount,
+  isUniversalAccount,
+
+  filterAccountOnChain,
+  filterAccountsByWallet,
+};

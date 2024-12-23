@@ -2,14 +2,8 @@ import { attach, createApi, createEffect, createEvent, createStore, sample, spli
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import {
-  type AccountId,
-  type ID,
-  type MultisigAccount,
-  type ProxyAccount,
-  type ProxyGroup,
-  type Wallet,
-} from '@/shared/core';
+import { type ID, type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
 import { proxyModel } from '@/entities/proxy';

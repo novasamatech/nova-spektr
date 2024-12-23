@@ -4,7 +4,6 @@ import { storageService } from '@/shared/api/storage';
 import {
   AccountType,
   type BaseAccount,
-  ChainType,
   CryptoType,
   ProxyVariant,
   SigningType,
@@ -12,6 +11,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
+import { type AnyAccount, networkDomain } from '@/domains/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
@@ -43,21 +43,23 @@ const wallet = {
     {
       id: 1,
       walletId: 1,
-      chainType: ChainType.SUBSTRATE,
+      type: 'universal',
+      signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
-      type: AccountType.BASE,
+      accountType: AccountType.BASE,
       name: 'first account',
       accountId: TEST_ACCOUNTS[0],
-    } as BaseAccount,
+    } satisfies BaseAccount,
     {
       id: 2,
       walletId: 1,
-      chainType: ChainType.SUBSTRATE,
+      type: 'universal',
+      signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
-      type: AccountType.BASE,
+      accountType: AccountType.BASE,
       name: 'second account',
-      accountId: '0x00',
-    } as BaseAccount,
+      accountId: TEST_ACCOUNTS[1],
+    } satisfies BaseAccount,
   ],
 } as Wallet;
 
@@ -78,7 +80,7 @@ const proxiedWallet = {
       proxyVariant: ProxyVariant.REGULAR,
       walletId: 2,
       name: 'proxied',
-      type: AccountType.PROXIED,
+      accountType: AccountType.PROXIED,
       chainType: 0,
       cryptoType: 0,
     },
@@ -90,13 +92,11 @@ describe('features/wallets/ForgetModel', () => {
     jest.restoreAllMocks();
   });
 
-  test('should call success calback after wallet delete', async () => {
+  test('should call success callback after wallet delete', async () => {
     const spyCallback = jest.fn();
-    storageService.wallets.delete = jest.fn();
-    storageService.accounts.deleteAll = jest.fn();
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [wallet]),
+      values: new Map().set(walletModel.__test.$rawWallets, [wallet]),
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
@@ -107,20 +107,23 @@ describe('features/wallets/ForgetModel', () => {
 
   test('should delete wallet and accounts', async () => {
     const spyDeleteWallet = jest.fn();
-    const spyDeleteAccounts = jest.fn();
+    const spyDeleteAccounts = jest.fn().mockImplementation((accounts: AnyAccount[]) => accounts);
 
     storageService.wallets.delete = spyDeleteWallet;
-    storageService.accounts.deleteAll = spyDeleteAccounts;
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [wallet]),
+      values: [
+        [walletModel.__test.$rawWallets, [wallet]],
+        [networkDomain.accounts.__test.$list, wallet.accounts],
+      ],
+      handlers: [[networkDomain.accounts.deleteAccounts, spyDeleteAccounts]],
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
     expect(spyDeleteWallet).toHaveBeenCalledWith(1);
-    expect(spyDeleteAccounts).toHaveBeenCalledWith([1, 2]);
+    expect(spyDeleteAccounts).toHaveBeenCalledWith(wallet.accounts);
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {
@@ -129,7 +132,7 @@ describe('features/wallets/ForgetModel', () => {
 
     const scope = fork({
       values: new Map()
-        .set(walletModel._test.$allWallets, [wallet, proxiedWallet])
+        .set(walletModel.__test.$rawWallets, [wallet, proxiedWallet])
         .set(proxyModel.$proxies, {
           '0x01': [
             {
@@ -157,6 +160,6 @@ describe('features/wallets/ForgetModel', () => {
 
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
-    expect(scope.getState(walletModel._test.$allWallets)).toEqual([]);
+    expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
   });
 });

@@ -1,5 +1,6 @@
 import { chainsService } from '@/shared/api/network';
-import { type AccountId, type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
 export const exportKeysUtils = {

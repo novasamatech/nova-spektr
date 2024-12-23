@@ -12,7 +12,7 @@ import { Button, ConfirmModal, Countdown, FootnoteText, SmallTitleText, StatusMo
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
 import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { operationSignUtils } from '../lib/operation-sign-utils';
@@ -44,6 +44,10 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   const transaction = payload.transaction;
   const account = payload.signatory || payload.account;
 
+  if (!accountUtils.isWcAccount(account)) {
+    throw new Error(`Account is not Wallet Connect account, got ${JSON.stringify(account, null, 2)}`);
+  }
+
   useGate(operationSignModel.SignerGate, account);
 
   useEffect(() => {
@@ -51,7 +55,9 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
     const sessions = provider.client.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
-    const storedSession = sessions.find((s) => s.topic === storedAccount?.signingExtras?.sessionTopic);
+    const storedSession = accountUtils.isWcAccount(storedAccount)
+      ? sessions.find((s) => s.topic === storedAccount.signingExtras.sessionTopic)
+      : null;
 
     if (storedSession) {
       walletConnectModel.events.sessionUpdated(storedSession);

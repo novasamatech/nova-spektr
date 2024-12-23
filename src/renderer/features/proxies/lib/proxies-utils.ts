@@ -1,5 +1,4 @@
 import {
-  type AccountId,
   type Chain,
   type ChainId,
   ChainOptions,
@@ -10,6 +9,7 @@ import {
   type Wallet,
   type WalletType,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyUtils } from '@/entities/proxy';
 import { walletUtils } from '@/entities/wallet';
 

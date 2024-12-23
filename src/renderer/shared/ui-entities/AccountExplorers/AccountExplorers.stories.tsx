@@ -1,11 +1,10 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
 import { type Chain } from '@/shared/core';
+import { createAccountId } from '@/shared/mocks';
 import { FootnoteText } from '@/shared/ui';
 
 import { AccountExplorers } from './AccountExplorers';
-
-const testAccountId = '0x9e9bf57d2420cc050723e9609afd5a1c326aceaf6b3f4175fda2eb26044d1f64';
 
 const kusamaChain = {
   name: 'Kusama Asset Hub',
@@ -31,7 +30,7 @@ const meta: Meta<typeof AccountExplorers> = {
   title: 'Design System/entities/AccountExplorers',
   component: AccountExplorers,
   args: {
-    accountId: testAccountId,
+    accountId: createAccountId('account explorers'),
     chain: kusamaChain as Chain,
   },
   parameters: {

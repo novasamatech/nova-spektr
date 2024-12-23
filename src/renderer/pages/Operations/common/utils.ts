@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 
 import {
   type Account,
-  type AccountId,
   type Address,
   type Chain,
   type ChainId,
@@ -21,6 +20,7 @@ import {
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';

@@ -1,4 +1,6 @@
-import { type AccountId, type Address, type ID } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type Address, type ID } from './general';
 
 export type Contact = {
   id: ID;

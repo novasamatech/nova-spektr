@@ -5,7 +5,6 @@ import { type AnyJson } from '@polkadot/types/types';
 import { type Args } from '@substrate/txwrapper-polkadot';
 
 import {
-  type AccountId,
   type Address,
   type CallData,
   type DecodedTransaction,
@@ -13,6 +12,7 @@ import {
   type Timepoint,
   type Transaction,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 // =====================================================
 // =========== ITransactionService interface ===========

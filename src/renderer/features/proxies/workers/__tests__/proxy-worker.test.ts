@@ -6,13 +6,14 @@ import {
   type BaseAccount,
   type Chain,
   type ChainId,
-  ChainType,
   type Connection,
   CryptoType,
   type ProxiedAccount,
   type ProxyAccount,
   ProxyVariant,
+  SigningType,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({
@@ -146,9 +147,10 @@ describe('features/proxies/workers/proxy-worker', () => {
         id: 1,
         walletId: 1,
         name: 'Account 1',
-        type: AccountType.BASE,
-        accountId: '0x01',
-        chainType: ChainType.SUBSTRATE,
+        type: 'universal',
+        accountType: AccountType.BASE,
+        accountId: '0x01' as AccountId,
+        signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
       } as BaseAccount,
     };
@@ -182,10 +184,10 @@ describe('features/proxies/workers/proxy-worker', () => {
       proxyAccountId: '0x02',
       chainId: '0x01',
       name: 'Proxied Account 1',
-      type: AccountType.PROXIED,
+      accountType: AccountType.PROXIED,
       delay: 0,
       accountId: '0x01',
-      chainType: ChainType.SUBSTRATE,
+      signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
       proxyType: 'Governance',
       proxyVariant: ProxyVariant.REGULAR,
@@ -214,9 +216,10 @@ describe('features/proxies/workers/proxy-worker', () => {
         id: 1,
         walletId: 1,
         name: 'Account 1',
-        type: AccountType.BASE,
-        accountId: '0x01',
-        chainType: ChainType.SUBSTRATE,
+        type: 'universal',
+        accountType: AccountType.BASE,
+        accountId: '0x01' as AccountId,
+        signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
       } as BaseAccount,
     };

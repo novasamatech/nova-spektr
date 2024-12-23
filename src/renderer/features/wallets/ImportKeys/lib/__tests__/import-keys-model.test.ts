@@ -1,5 +1,6 @@
 import { allSettled, fork } from 'effector';
 
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { importKeysModel } from '../../model/import-keys-model';
 import { importKeysModelMock } from '../mocks/import-keys-model.mock';
 import { DerivationValidationError, ValidationError } from '../types';
@@ -9,7 +10,10 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
     const scope = fork();
     const file = { type: 'application/yaml', text: async () => importKeysModelMock.invalidFileStructure };
 
-    await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
+    await allSettled(importKeysModel.events.resetValues, {
+      scope,
+      params: { root: '0x00' as AccountId, derivations: [] },
+    });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_FILE_STRUCTURE);
@@ -19,7 +23,10 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
     const scope = fork();
     const file = { type: 'text/plain', text: async () => importKeysModelMock.invalidFileStructure };
 
-    await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
+    await allSettled(importKeysModel.events.resetValues, {
+      scope,
+      params: { root: '0x00' as AccountId, derivations: [] },
+    });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_FILE_STRUCTURE);
@@ -29,7 +36,10 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
     const scope = fork();
     const file = { type: 'application/yaml', text: async () => importKeysModelMock.fileData };
 
-    await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x01', derivations: [] } });
+    await allSettled(importKeysModel.events.resetValues, {
+      scope,
+      params: { root: '0x01' as AccountId, derivations: [] },
+    });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     expect(scope.getState(importKeysModel.$validationError)?.error).toEqual(ValidationError.INVALID_ROOT);
@@ -39,7 +49,10 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
     const scope = fork();
     const file = { type: 'application/yaml', text: async () => importKeysModelMock.invalidPaths };
 
-    await allSettled(importKeysModel.events.resetValues, { scope, params: { root: '0x00', derivations: [] } });
+    await allSettled(importKeysModel.events.resetValues, {
+      scope,
+      params: { root: '0x00' as AccountId, derivations: [] },
+    });
     await allSettled(importKeysModel.events.fileUploaded, { scope, params: file });
 
     const validationError = {

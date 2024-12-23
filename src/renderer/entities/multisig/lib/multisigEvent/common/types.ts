@@ -1,12 +1,12 @@
 import { type ID, type MultisigEventDS } from '@/shared/api/storage';
 import {
-  type AccountId,
   type CallHash,
   type ChainId,
   type MultisigEvent,
   type MultisigTransactionKey,
   type SigningStatus,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export interface IMultisigEventService {
   getEvent: (eventId: ID) => Promise<MultisigEventDS | undefined>;

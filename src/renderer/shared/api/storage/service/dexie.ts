@@ -1,9 +1,16 @@
 import { default as Dexie } from 'dexie';
 
+import { type Account, ChainType, CryptoType, type Wallet } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
+// TODO don't know what to do here, looks like it's impossible to decouple storage service because of version migration code.
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
 import {
   type DataStorage,
   type IStorage,
   type TAccount,
+  type TAccount2,
   type TBalance,
   type TBasketTransaction,
   type TConnection,
@@ -26,6 +33,7 @@ class DexieStorage extends Dexie {
   balances: TBalance;
   wallets: TWallet;
   accounts: TAccount;
+  accounts2: TAccount2;
   contacts: TContact;
   multisigTransactions: TMultisigTransaction;
   multisigEvents: TMultisigEvent;
@@ -88,10 +96,61 @@ class DexieStorage extends Dexie {
       metadata: '++id',
     });
 
+    this.version(26)
+      .stores({
+        accounts2: '[accountId+chainId+type]',
+      })
+      .upgrade(async (t) => {
+        const oldAccounts = await t.db.table<Account>('accounts').toArray();
+        const wallets = await t.db.table<Wallet>('wallets').toArray();
+
+        const newAccounts = oldAccounts
+          // @ts-expect-error Mapping of type which no longer exists.
+          .map<AnyAccount | null>((old) => {
+            const wallet = wallets.find((x) => x.id === old.walletId);
+            if (!wallet) return null;
+            // @ts-expect-error Mapping of type which no longer exists.
+            const { chainType, baseId, ...mappable } = old;
+            const baseAccountId = nonNullable(baseId) ? oldAccounts.find((x) => x.id === baseId) : null;
+
+            let res;
+
+            if ('chainId' in old) {
+              res = {
+                ...mappable,
+                type: 'chain',
+                accountId: pjsSchema.helpers.toAccountId(old.accountId),
+                chainId: old.chainId,
+                cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
+                name: old.name,
+                signingType: wallet.signingType,
+              };
+            } else {
+              res = {
+                ...mappable,
+                type: 'universal',
+                accountId: pjsSchema.helpers.toAccountId(old.accountId),
+                cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
+                name: old.name,
+                signingType: wallet.signingType,
+              };
+            }
+
+            if (baseAccountId) {
+              // @ts-expect-error Mapping of type which no longer exists.
+              res.baseAccountId = baseAccountId;
+            }
+          })
+          .filter(nonNullable);
+
+        await t.table('accounts2').bulkPut(newAccounts);
+      });
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
+    this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
     this.multisigTransactions = this.table('multisigTransactions');
     this.multisigEvents = this.table('multisigEvents');
@@ -129,6 +188,7 @@ export const storage = new StorageFactory(dexie);
 export const dexieStorage = {
   wallets: dexie.wallets,
   accounts: dexie.accounts,
+  accounts2: dexie.accounts2,
   contacts: dexie.contacts,
   connections: dexie.connections,
   proxies: dexie.proxies,

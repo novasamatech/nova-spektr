@@ -5,7 +5,6 @@ import keyBy from 'lodash/keyBy';
 // TODO: resolve cross import
 import {
   type Account,
-  type AccountId,
   type BaseAccount,
   type Chain,
   type ChainAccount,
@@ -19,8 +18,9 @@ import {
   type Wallet,
   type WcAccount,
 } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, ProxyVariant } from '@/shared/core';
+import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
@@ -60,27 +60,27 @@ export const accountUtils = {
 // Account types
 
 function isBaseAccount(account: Partial<Account>): account is BaseAccount {
-  return account.type === AccountType.BASE;
+  return account.accountType === AccountType.BASE;
 }
 
 function isChainAccount(account: Partial<Account>): account is ChainAccount {
-  return account.type === AccountType.CHAIN;
+  return account.accountType === AccountType.CHAIN;
 }
 
 function isWcAccount(account: Partial<Account>): account is WcAccount {
-  return account.type === AccountType.WALLET_CONNECT;
+  return account.accountType === AccountType.WALLET_CONNECT;
 }
 
 function isShardAccount(account: Partial<Account>): account is ShardAccount {
-  return account.type === AccountType.SHARD;
+  return account.accountType === AccountType.SHARD;
 }
 
 function isRegularMultisigAccount(account: Partial<Account>): account is MultisigAccount {
-  return account.type === AccountType.MULTISIG;
+  return account.accountType === AccountType.MULTISIG;
 }
 
 function isFlexibleMultisigAccount(account: Partial<Account>): account is FlexibleMultisigAccount {
-  return account.type === AccountType.FLEXIBLE_MULTISIG;
+  return account.accountType === AccountType.FLEXIBLE_MULTISIG;
 }
 
 function isMultisigAccount(account: Partial<Account>): account is MultisigAccount | FlexibleMultisigAccount {
@@ -88,7 +88,7 @@ function isMultisigAccount(account: Partial<Account>): account is MultisigAccoun
 }
 
 function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
-  return account.type === AccountType.PROXIED;
+  return account.accountType === AccountType.PROXIED;
 }
 
 function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
@@ -130,20 +130,17 @@ function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
 }
 
 function isEthereumBased(account: Account): boolean {
-  return account.chainType === ChainType.ETHEREUM;
+  return account.cryptoType === CryptoType.ETHEREUM;
 }
 
 // Get specific accounts
 
-function getMultisigAccountId(
-  ids: AccountId[],
-  threshold: MultisigThreshold,
-  cryptoType = CryptoType.SR25519,
-): AccountId {
+function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cryptoType: CryptoType): AccountId {
   const accountId = createKeyMulti(ids, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
-  return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId);
+  // TODO WTF
+  return pjsSchema.helpers.toAccountId(u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId));
 }
 
 function getAccountsAndShardGroups(accounts: Account[]): (ChainAccount | ShardAccount[])[] {

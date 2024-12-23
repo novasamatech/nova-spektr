@@ -1,5 +1,6 @@
-import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type DdAddressInfoDecoded,
   type DynamicDerivationRequestInfo,
@@ -21,10 +22,10 @@ function createDerivationsRequest(
   }));
 }
 
-function createDerivedAccounts<T extends ShardAccount | ChainAccount>(
+function createDerivedAccounts<T extends DraftAccount<ShardAccount> | DraftAccount<ChainAccount>>(
   derivedKeys: Record<string, DdAddressInfoDecoded>,
-  accounts: DraftAccount<T>[],
-): (DraftAccount<T> & { accountId: AccountId })[] {
+  accounts: T[],
+): (T & { accountId: AccountId })[] {
   return accounts.map((account) => {
     const derivationPath = `${account.derivationPath}${cryptoTypeToMultisignerIndex(account.cryptoType)}`;
 
