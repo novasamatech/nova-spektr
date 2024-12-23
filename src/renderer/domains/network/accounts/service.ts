@@ -12,11 +12,11 @@ function isCryptoMatch(account: AnyAccount, chain: Chain): boolean {
   return account.cryptoType === cryptoType;
 }
 
-function isChainAccount(account: AnyAccount): account is ChainAccount {
+function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAccount {
   return account.type === 'chain';
 }
 
-function isUniversalAccount(account: AnyAccount): account is UniversalAccount {
+function isUniversalAccount(account: Pick<AnyAccount, 'type'>): account is UniversalAccount {
   return account.type === 'universal';
 }
 

@@ -21,6 +21,9 @@ import {
 import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+// TODO all this type checks should be defined in features with own context
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount, networkDomain } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
@@ -59,28 +62,58 @@ export const accountUtils = {
 
 // Account types
 
-function isBaseAccount(account: Partial<Account>): account is BaseAccount {
-  return account.accountType === AccountType.BASE;
+function isBaseAccount(account: Partial<AnyAccount>): account is BaseAccount {
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isUniversalAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.BASE
+  );
 }
 
 function isChainAccount(account: Partial<Account>): account is ChainAccount {
-  return account.accountType === AccountType.CHAIN;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.CHAIN
+  );
 }
 
 function isWcAccount(account: Partial<Account>): account is WcAccount {
-  return account.accountType === AccountType.WALLET_CONNECT;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.WALLET_CONNECT
+  );
 }
 
 function isShardAccount(account: Partial<Account>): account is ShardAccount {
-  return account.accountType === AccountType.SHARD;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.SHARD
+  );
 }
 
 function isRegularMultisigAccount(account: Partial<Account>): account is MultisigAccount {
-  return account.accountType === AccountType.MULTISIG;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.MULTISIG
+  );
 }
 
 function isFlexibleMultisigAccount(account: Partial<Account>): account is FlexibleMultisigAccount {
-  return account.accountType === AccountType.FLEXIBLE_MULTISIG;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.FLEXIBLE_MULTISIG
+  );
 }
 
 function isMultisigAccount(account: Partial<Account>): account is MultisigAccount | FlexibleMultisigAccount {
@@ -88,7 +121,12 @@ function isMultisigAccount(account: Partial<Account>): account is MultisigAccoun
 }
 
 function isProxiedAccount(account: Partial<Account>): account is ProxiedAccount {
-  return account.accountType === AccountType.PROXIED;
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.PROXIED
+  );
 }
 
 function isPureProxiedAccount(account: Partial<Account>): account is ProxiedAccount {

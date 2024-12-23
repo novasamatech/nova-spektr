@@ -15,7 +15,7 @@ import {
   type Wallet,
   type WcAccount,
 } from '@/shared/core';
-import { dictionary, groupBy, nonNullable } from '@/shared/lib/utils';
+import { dictionary, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, type UniversalAccount, networkDomain } from '@/domains/network';
@@ -68,8 +68,11 @@ const $activeWallet = combine(
 );
 
 // TODO: ideally it should be a feature
-const $activeAccounts = $activeWallet.map((wallet) => {
-  return wallet?.accounts ?? [];
+const $activeAccounts = combine($activeWallet, networkDomain.accounts.$list, (wallet, accounts) => {
+  if (nullable(wallet)) return [];
+
+  // TODO remove this `as Account` thing
+  return networkDomain.accountsService.filterAccountsByWallet(accounts, wallet.id) as Account[];
 });
 
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {

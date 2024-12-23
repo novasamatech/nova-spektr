@@ -96,14 +96,6 @@ class DexieStorage extends Dexie {
       metadata: '++id',
     });
 
-    this.version(26).stores({
-      accounts2: '[accountId+chainId+type]',
-    });
-
-    this.version(27).stores({
-      accounts2: null,
-    });
-
     this.version(26)
       .stores({
         accounts2: '[accountId+chainId+type]',
