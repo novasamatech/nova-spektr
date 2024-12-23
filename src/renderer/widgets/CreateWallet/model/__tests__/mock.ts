@@ -27,7 +27,7 @@ export const testChain = {
 
 export const accounts: Account[] = [
   {
-    id: 1,
+    id: '1',
     walletId: 1,
     type: 'chain',
     name: 'account 1',
@@ -39,7 +39,7 @@ export const accounts: Account[] = [
     signingExtras: {},
   },
   {
-    id: 2,
+    id: '2',
     walletId: 2,
     name: 'account 2',
     accountType: AccountType.WALLET_CONNECT,
@@ -51,7 +51,7 @@ export const accounts: Account[] = [
     signingExtras: {},
   },
   {
-    id: 4,
+    id: '4',
     walletId: 4,
     name: 'account 4',
     type: 'chain',
@@ -63,7 +63,7 @@ export const accounts: Account[] = [
     signingExtras: {},
   },
   {
-    id: 5,
+    id: '5',
     walletId: 5,
     type: 'chain',
     name: 'account 5',
@@ -75,7 +75,7 @@ export const accounts: Account[] = [
     signingExtras: {},
   },
   {
-    id: 0,
+    id: '0',
     name: '',
     walletId: 3,
     signatories: [],

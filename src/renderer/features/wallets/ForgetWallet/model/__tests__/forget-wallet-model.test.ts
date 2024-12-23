@@ -42,7 +42,7 @@ const wallet = {
   signingType: SigningType.WATCH_ONLY,
   accounts: [
     {
-      id: 1,
+      id: '1',
       walletId: 1,
       type: 'universal',
       signingType: SigningType.POLKADOT_VAULT,
@@ -52,7 +52,7 @@ const wallet = {
       accountId: TEST_ACCOUNTS[0],
     } satisfies VaultBaseAccount,
     {
-      id: 2,
+      id: '2',
       walletId: 1,
       type: 'universal',
       signingType: SigningType.POLKADOT_VAULT,

@@ -5,6 +5,7 @@ import { accountsService } from './service';
 import { type ChainAccount, type UniversalAccount } from './types';
 
 const chainAccount: ChainAccount = {
+  id: 'chain',
   type: 'chain',
   accountId: createAccountId('1'),
   chainId: polkadotChainId,
@@ -15,6 +16,7 @@ const chainAccount: ChainAccount = {
 };
 
 const kusamaChainAccount: ChainAccount = {
+  id: 'kusama',
   type: 'chain',
   accountId: createAccountId('2'),
   chainId: kusamaChainId,
@@ -25,6 +27,7 @@ const kusamaChainAccount: ChainAccount = {
 };
 
 const universalAccount: UniversalAccount = {
+  id: 'universal',
   type: 'universal',
   accountId: createAccountId('2'),
   name: '',

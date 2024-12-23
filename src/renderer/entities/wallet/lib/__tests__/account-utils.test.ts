@@ -14,7 +14,7 @@ import { accountUtils } from '../account-utils';
 
 const accounts: (VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 1,
+    id: '1',
     type: 'chain',
     accountType: AccountType.CHAIN,
     walletId: 1,
@@ -28,7 +28,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//test/path_1',
   },
   {
-    id: 2,
+    id: '2',
     type: 'chain',
     accountType: AccountType.CHAIN,
     walletId: 1,
@@ -42,7 +42,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//test/path_2',
   },
   {
-    id: 3,
+    id: '3',
     type: 'chain',
     accountType: AccountType.SHARD,
     walletId: 1,
@@ -56,7 +56,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//staking//0',
   },
   {
-    id: 4,
+    id: '4',
     type: 'chain',
     accountType: AccountType.SHARD,
     walletId: 1,
@@ -70,7 +70,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//staking//1',
   },
   {
-    id: 5,
+    id: '5',
     type: 'chain',
     accountType: AccountType.SHARD,
     walletId: 1,
@@ -84,7 +84,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//0',
   },
   {
-    id: 6,
+    id: '6',
     type: 'chain',
     accountType: AccountType.SHARD,
     walletId: 1,
@@ -98,7 +98,7 @@ const accounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//1',
   },
   {
-    id: 7,
+    id: '7',
     type: 'chain',
     accountType: AccountType.SHARD,
     walletId: 1,

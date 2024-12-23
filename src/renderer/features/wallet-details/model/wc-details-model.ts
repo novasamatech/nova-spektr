@@ -31,7 +31,7 @@ sample({
   fn: (wallets, wallet) => {
     const accounts = walletUtils.getAccountsBy(wallets, (account) => account.walletId === wallet.id);
 
-    return accounts.map((account) => account.id);
+    return accounts.map((account) => account.accountId);
   },
   target: balanceModel.events.balancesRemoved,
 });

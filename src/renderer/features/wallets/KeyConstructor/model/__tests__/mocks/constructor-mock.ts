@@ -53,7 +53,7 @@ const customKey: VaultChainAccount = {
   cryptoType: CryptoType.SR25519,
   signingType: SigningType.POLKADOT_VAULT,
   derivationPath: '//polkadot//custom',
-  id: 1,
+  id: '1',
   walletId: 1,
   accountId: createAccountId(),
 };

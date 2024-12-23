@@ -144,7 +144,7 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const accountsForProxy = {
       '0x01': {
-        id: 1,
+        id: '1',
         walletId: 1,
         name: 'Account 1',
         type: 'universal',
@@ -178,15 +178,16 @@ describe('features/proxies/workers/proxy-worker', () => {
   });
 
   test('should return array with proxied account to remove ', async () => {
-    const mockProxied = {
-      id: 1,
+    const mockProxied: ProxiedAccount = {
+      id: '1',
       walletId: 1,
-      proxyAccountId: '0x02',
+      proxyAccountId: '0x02' as AccountId,
       chainId: '0x01',
       name: 'Proxied Account 1',
+      type: 'chain',
       accountType: AccountType.PROXIED,
       delay: 0,
-      accountId: '0x01',
+      accountId: '0x01' as AccountId,
       signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
       proxyType: 'Governance',
@@ -213,7 +214,7 @@ describe('features/proxies/workers/proxy-worker', () => {
     const chainId = '0x01';
     const accountsForProxy = {
       '0x01': {
-        id: 1,
+        id: '1',
         walletId: 1,
         name: 'Account 1',
         type: 'universal',
@@ -225,7 +226,7 @@ describe('features/proxies/workers/proxy-worker', () => {
     };
     const accountsForProxied = {};
 
-    const proxiedAccounts = [mockProxied] as ProxiedAccount[];
+    const proxiedAccounts = [mockProxied];
     const proxies = [] as ProxyAccount[];
 
     const result = await proxyWorker.getProxies({

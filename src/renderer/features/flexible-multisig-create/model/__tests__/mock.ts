@@ -34,7 +34,7 @@ export const multisigWallet = {
   signingType: SigningType.MULTISIG,
   accounts: [
     {
-      id: 3,
+      id: '3',
       walletId: 3,
       type: 'chain',
       accountId: '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' as AccountId,
@@ -57,7 +57,7 @@ export const signerWallet = {
   signingType: SigningType.WALLET_CONNECT,
   accounts: [
     {
-      id: 2,
+      id: '2',
       walletId: 2,
       name: 'account 2',
       type: 'chain',
@@ -79,7 +79,7 @@ export const signatoryWallet = {
   signingType: SigningType.WALLET_CONNECT,
   accounts: [
     {
-      id: 5,
+      id: '5',
       walletId: 5,
       accountId: '0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d' as AccountId,
       chainId: polkadotChainId,
@@ -101,7 +101,7 @@ export const initiatorWallet = {
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
-      id: 1,
+      id: '1',
       walletId: 1,
       accountId: '0x960d75eab8e58bffcedf1fa51d85e2acb37d107e9bd7009a3473d3809122493c' as AccountId,
       chainId: polkadotChainId,
@@ -123,7 +123,7 @@ export const wrongChainWallet = {
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
-      id: 4,
+      id: '4',
       walletId: 4,
       accountId: createAccountId(`Wc account 4`),
       chainId: '0x00',

@@ -51,7 +51,7 @@ jest.mock('../AssetCard/AssetCard', () => ({
 
 const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 1,
+    id: '1',
     walletId: 1,
     type: 'universal',
     name: 'test',

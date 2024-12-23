@@ -14,7 +14,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 2,
+    id: '2',
     walletId: 1,
     name: 'Shard_1 WND key',
     groupId: 'shard_1',
@@ -28,7 +28,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//westend//hot//0',
   },
   {
-    id: 3,
+    id: '3',
     walletId: 1,
     name: 'Shard_2 WND key',
     groupId: 'shard_1',
@@ -42,7 +42,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//westend//hot//1',
   },
   {
-    id: 4,
+    id: '4',
     walletId: 1,
     name: 'Main KSM key',
     type: 'chain',
@@ -55,7 +55,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//kusama//pub',
   },
   {
-    id: 5,
+    id: '5',
     walletId: 1,
     name: 'Main DOT key',
     type: 'chain',
@@ -68,7 +68,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//polkadot//main',
   },
   {
-    id: 1,
+    id: '1',
     walletId: 1,
     name: 'My ROOT',
     type: 'universal',
@@ -81,7 +81,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
 
 const multishardAccounts = [
   {
-    id: 2,
+    id: '2',
     baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
     walletId: 2,
     name: 'Main KSM key',
@@ -92,7 +92,7 @@ const multishardAccounts = [
     derivationPath: '//kusama//pub',
   },
   {
-    id: 3,
+    id: '3',
     baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
     walletId: 2,
     name: 'Main DOT key',
@@ -103,7 +103,7 @@ const multishardAccounts = [
     derivationPath: '//polkadot//main',
   },
   {
-    id: 1,
+    id: '1',
     walletId: 2,
     name: 'My First ROOT',
     type: 'universal',
@@ -111,7 +111,7 @@ const multishardAccounts = [
     accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11',
   },
   {
-    id: 5,
+    id: '5',
     baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
     walletId: 2,
     name: 'Second WND key',
@@ -122,7 +122,7 @@ const multishardAccounts = [
     derivationPath: '//westend//pub',
   },
   {
-    id: 6,
+    id: '6',
     baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
     walletId: 2,
     name: 'Second ACA key',
@@ -133,7 +133,7 @@ const multishardAccounts = [
     derivationPath: '//acala//main',
   },
   {
-    id: 4,
+    id: '4',
     walletId: 2,
     name: 'My Second ROOT',
     type: 'universal',

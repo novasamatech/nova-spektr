@@ -16,7 +16,7 @@ import { createAccountId } from '@/shared/mocks';
 
 const accounts: Account[] = [
   {
-    id: 1,
+    id: '1',
     walletId: 1,
     name: 'My base account',
     type: 'universal',
@@ -26,7 +26,7 @@ const accounts: Account[] = [
     cryptoType: CryptoType.SR25519,
   } satisfies VaultBaseAccount,
   {
-    id: 2,
+    id: '2',
     walletId: 1,
     baseAccountId: createAccountId('1'),
     name: 'My chain account',
@@ -40,7 +40,7 @@ const accounts: Account[] = [
     derivationPath: '//test/path_1',
   } satisfies VaultChainAccount,
   {
-    id: 3,
+    id: '3',
     walletId: 2,
     name: 'My base account',
     type: 'universal',
@@ -51,7 +51,7 @@ const accounts: Account[] = [
   } satisfies VaultBaseAccount,
   {
     type: 'chain',
-    id: 4,
+    id: '4',
     walletId: 2,
     baseAccountId: createAccountId('3'),
     name: 'My chain account',
@@ -64,7 +64,7 @@ const accounts: Account[] = [
     derivationPath: '//test/path_2',
   } satisfies VaultChainAccount,
   {
-    id: 5,
+    id: '5',
     walletId: 3,
     name: 'My base account',
     type: 'universal',
@@ -115,7 +115,7 @@ const newWallet = {
 
 const newAccounts: Account[] = [
   {
-    id: 4,
+    id: '4',
     walletId: 3,
     type: 'universal',
     name: 'My base account',
@@ -125,7 +125,7 @@ const newAccounts: Account[] = [
     cryptoType: CryptoType.SR25519,
   } satisfies VaultBaseAccount,
   {
-    id: 5,
+    id: '5',
     walletId: 3,
     baseAccountId: createAccountId('4'),
     type: 'chain',

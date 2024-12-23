@@ -36,7 +36,7 @@ const wallets: Wallet[] = [
     signingType: SigningType.MULTISIG,
     accounts: [
       {
-        id: 1,
+        id: '1',
         walletId: 1,
         type: 'universal',
         name: 'My base account',
@@ -55,7 +55,7 @@ const wallets: Wallet[] = [
     signingType: SigningType.WALLET_CONNECT,
     accounts: [
       {
-        id: 2,
+        id: '2',
         walletId: 2,
         type: 'chain',
         name: 'Chain 1',
@@ -67,7 +67,7 @@ const wallets: Wallet[] = [
         signingExtras: {},
       } satisfies WcAccount,
       {
-        id: 3,
+        id: '3',
         walletId: 2,
         type: 'chain',
         name: 'Chain 2',
