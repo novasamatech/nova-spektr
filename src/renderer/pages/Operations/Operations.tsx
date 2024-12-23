@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
 import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
@@ -25,8 +25,7 @@ export const Operations = () => {
   const account = useUnit(operationsContextModel.$account);
   const txs = useUnit(operationsContextModel.$availableTransaction);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
-
-  const [filteredTxs, setFilteredTxs] = useState<MultisigTransactionDS[] | FlexibleMultisigTransactionDS[]>([]);
+  const filteredTxs = useUnit(operationsModel.$filteredTxs);
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
     return events.filter((e) => {
@@ -59,10 +58,6 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  useEffect(() => {
-    setFilteredTxs([]);
-  }, [account]);
-
   if (incompleteFlexibleMultisigTx && account && accountUtils.isFlexibleMultisigAccount(account)) {
     return (
       <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx as FlexibleMultisigTransactionDS} account={account} />
@@ -73,7 +68,7 @@ export const Operations = () => {
     <div className="relative flex h-full flex-col items-center">
       <Header title={t('operations.title')} />
 
-      {txs.length > 0 && <OperationsFilter txs={txs} onChange={setFilteredTxs} />}
+      {txs.length > 0 && <OperationsFilter txs={txs} />}
 
       {filteredTxs.length === 0 && (
         <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />

@@ -103,7 +103,7 @@ sample({
   clock: [forgetWallet, forgetWcWallet],
   source: {
     proxies: proxyModel.$proxies,
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     walletsProxyGroups: proxyModel.$walletsProxyGroups,
   },
   fn: (params, wallet) => ({ ...params, wallet }),

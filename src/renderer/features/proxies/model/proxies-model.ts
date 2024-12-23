@@ -16,7 +16,6 @@ import {
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyDeposits,
-  type ProxyGroup,
   type Wallet,
   type WalletsMap,
 } from '@/shared/core';
@@ -41,11 +40,9 @@ import { proxiesUtils } from '../lib/proxies-utils';
 
 const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
-const proxiedWalletsCreated = createEvent<ProxiedWalletsParams>();
+const proxiedWalletsCreated = createEvent<Omit<ProxiedWalletsParams, 'wallets'>>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
-
-const walletsAdded = createEvent<Wallet[]>();
 
 const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
@@ -99,10 +96,11 @@ const getProxiesFx = createEffect(
     const chainProxies = proxies.filter((p) => p.chainId === chainId);
 
     const walletsMap = keyBy(wallets, 'id');
+    const filteredAccounts = accounts.filter((a) => !walletsMap[a.walletId].isHidden);
 
-    const accountsForProxy = keyBy(accounts, 'accountId');
+    const accountsForProxy = keyBy(filteredAccounts, 'accountId');
     const accountsForProxied = keyBy(
-      accounts.filter((a) => proxiesUtils.isProxiedAvailable(walletsMap[a.walletId])),
+      filteredAccounts.filter((a) => proxiesUtils.isProxiedAvailable(walletsMap[a.walletId])),
       'accountId',
     );
 
@@ -152,15 +150,25 @@ const disconnectFx = createEffect(async ({ chainId, endpoint }: { chainId: Chain
 type ProxiedWalletsParams = {
   proxiedAccounts: PartialProxiedAccount[];
   chains: Record<ChainId, Chain>;
+  wallets: Wallet[];
 };
 
-const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains }: ProxiedWalletsParams) => {
+const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains, wallets }: ProxiedWalletsParams) => {
   return proxiedAccounts.map((proxied) => {
     const walletName = proxyUtils.getProxiedName(proxied, chains[proxied.chainId].addressPrefix);
+
+    const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      accountFn: (a) => accountUtils.isChainIdMatch(a, proxied.chainId) && a.accountId === proxied.proxyAccountId,
+    });
+
+    const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
+
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
       name: walletName,
       type: WalletType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
+      isHidden,
     };
 
     const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
@@ -212,7 +220,7 @@ sample({
   source: {
     chains: networkModel.$chains,
     proxies: proxyModel.$proxies,
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     endpoint: $endpoint,
   },
   filter: ({ endpoint }) => Boolean(endpoint),
@@ -238,8 +246,8 @@ spread({
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
     proxiedAccountsToAdd: attach({
-      source: networkModel.$chains,
-      mapParams: (proxiedAccounts: ProxiedAccount[], chains) => ({ proxiedAccounts, chains }),
+      source: { chains: networkModel.$chains, wallets: walletModel.$wallets },
+      mapParams: (proxiedAccounts: ProxiedAccount[], { chains, wallets }) => ({ proxiedAccounts, chains, wallets }),
       effect: createProxiedWalletsFx,
     }),
     deposits: depositsReceived,
@@ -277,34 +285,6 @@ sample({
 sample({
   clock: createProxiedWalletsFx.doneData,
   target: series(walletModel.events.proxiedCreated),
-});
-
-sample({
-  clock: walletsAdded,
-  source: {
-    groups: proxyModel.$proxyGroups,
-    deposits: $deposits,
-  },
-  filter: ({ deposits }) => deposits.length > 0,
-  fn: ({ groups, deposits }, wallets) => {
-    const initial: { toAdd: NoID<ProxyGroup>[]; toUpdate: NoID<ProxyGroup>[] } = {
-      toAdd: [],
-      toUpdate: [],
-    };
-
-    return deposits.reduce((acc, deposit) => {
-      const { toAdd, toUpdate } = proxyUtils.createProxyGroups(wallets, groups, deposit);
-
-      return {
-        toAdd: acc.toAdd.concat(toAdd),
-        toUpdate: acc.toUpdate.concat(toUpdate),
-      };
-    }, initial);
-  },
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-  }),
 });
 
 sample({
@@ -358,6 +338,8 @@ sample({
 
 sample({
   clock: proxiedWalletsCreated,
+  source: walletModel.$wallets,
+  fn: (wallets, params) => ({ ...params, wallets }),
   target: createProxiedWalletsFx,
 });
 
