@@ -54,6 +54,8 @@ export const Vault = ({ isOpen, onClose, onComplete }: Props) => {
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>();
   const [qrType, setQrType] = useState<QrCodeType>();
 
+  console.log({ qrType });
+
   useEffect(() => {
     if (isOpen) {
       setActiveStep(Step.SCAN);
