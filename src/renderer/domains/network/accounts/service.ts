@@ -40,6 +40,12 @@ function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
   return accounts.filter(account => account.walletId === walletId);
 }
 
+/**
+ * ATTENTION! This method used as source of stable id for different types of
+ * account. If you want to change implementation you should also write db
+ * migrations and make regress testing across application to verify that new
+ * account id has no collisions and used properly.
+ */
 function uniqId(account: Pick<AnyAccount, 'type' | 'accountId' | 'walletId' | 'chainId'>) {
   return isUniversalAccount(account)
     ? `${account.walletId} ${account.accountId} universal`
