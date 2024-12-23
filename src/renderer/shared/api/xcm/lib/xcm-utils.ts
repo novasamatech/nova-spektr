@@ -245,6 +245,10 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId) {
 }
 
 function getJunctionCols<T>(interior: Record<string, object>, path: string): T {
+  if (path === 'X1') {
+    return get(interior, path) as T;
+  }
+
   return Object.values(get(interior, path)).reduce((acc, item) => {
     return { ...acc, ...item };
   }, {});

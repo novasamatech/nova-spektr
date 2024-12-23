@@ -25,7 +25,8 @@ const Operation = ({ tx, account }: Props) => {
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
   const initEvent = approvals.find((e) => e.accountId === tx.depositor);
   const date = new Date(tx.dateCreated || initEvent?.dateCreated || Date.now());
-  const assetId = tx.transaction && (tx.transaction.args.assetId || tx.transaction.args.asset);
+
+  const assetId = tx.transaction?.args.assetId || tx.transaction?.args.asset;
   const asset = getAssetById(assetId, chainsService.getChainById(tx.chainId)?.assets);
   const amount = tx.transaction && getTransactionAmount(tx.transaction);
 

@@ -5,8 +5,9 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Account, type AccountId, type Asset, type Balance, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ZERO_BALANCE, cnTw, includes, totalAmount } from '@/shared/lib/utils';
-import { Accordion, CaptionText, Icon, Tooltip } from '@/shared/ui';
+import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
+import { CaptionText, Icon } from '@/shared/ui';
+import { Accordion, Tooltip } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -17,14 +18,13 @@ import { AssetCard } from '../AssetCard/AssetCard';
 import { NetworkFiatBalance } from '../NetworkFiatBalance';
 
 type Props = {
-  searchSymbolOnly?: boolean;
   chain: Chain | ExtendedChain;
   accounts: Account[];
   query: string;
   hideZeroBalances: boolean;
 };
 
-export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, searchSymbolOnly }: Props) => {
+export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }: Props) => {
   const { t } = useI18n();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -71,13 +71,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, s
 
   useEffect(() => {
     const filteredAssets = chain.assets.filter((asset) => {
-      if (query) {
-        const hasSymbol = includes(asset.symbol, query);
-        const hasAssetName = includes(asset.name, query);
-        const hasChainName = includes(chain.name, query);
-
-        return hasSymbol || hasAssetName || (!searchSymbolOnly && hasChainName);
-      }
+      if (query) return true;
 
       const balance = balancesObject[asset.assetId];
 
@@ -98,44 +92,42 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, s
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <li className="w-[736px]">
-      <Accordion isDefaultOpen>
-        <Accordion.Button
-          buttonClass={cnTw(
-            'sticky top-0 z-10 bg-background-default px-2 py-1.5',
-            'rounded transition-colors hover:bg-block-background-hover focus-visible:bg-block-background-hover',
-          )}
-        >
-          <div className="flex w-full items-center justify-between gap-x-2">
-            <div className="flex items-center gap-x-2">
-              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <Accordion initialOpen>
+      <Accordion.Trigger sticky>
+        <div className="flex w-full items-center justify-between gap-x-2">
+          <div className="flex items-center gap-x-2">
+            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-              {hasFailedVerification && (
-                <div className="flex items-center gap-x-2 text-text-warning">
-                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                  <Tooltip content={t('balances.verificationTooltip')} pointer="up">
-                    <Icon name="warn" className="cursor-pointer" size={16} />
-                  </Tooltip>
-                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-                </div>
-              )}
-            </div>
-            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
+            {hasFailedVerification && (
+              <div className="flex items-center gap-x-2 text-text-warning">
+                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div tabIndex={0}>
+                      <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
+                </Tooltip>
+                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+              </div>
+            )}
           </div>
-        </Accordion.Button>
-        <Accordion.Content className="mt-1">
-          <ul className="flex flex-col gap-y-1.5">
-            {filteredAssets.map((asset) => (
-              <AssetCard
-                key={asset.assetId}
-                chainId={chain.chainId}
-                asset={asset}
-                balance={balancesObject[asset.assetId.toString()]}
-              />
-            ))}
-          </ul>
-        </Accordion.Content>
-      </Accordion>
-    </li>
+          <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
+        </div>
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <ul className="mt-1 flex flex-col gap-y-1.5">
+          {filteredAssets.map((asset) => (
+            <AssetCard
+              key={asset.assetId}
+              chainId={chain.chainId}
+              asset={asset}
+              balance={balancesObject[asset.assetId.toString()]}
+            />
+          ))}
+        </ul>
+      </Accordion.Content>
+    </Accordion>
   );
 });

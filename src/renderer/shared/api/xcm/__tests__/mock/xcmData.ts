@@ -269,6 +269,51 @@ export const XCMPALLET_TRANSFER_HUB_ASTAR = {
   },
 };
 
+export const XCMPALLET_TRANSFER_PAH_MYTH = {
+  dest: {
+    V2: {
+      parents: '1',
+      interior: {
+        X1: {
+          Parachain: '3,369',
+        },
+      },
+    },
+  },
+  beneficiary: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountKey20: {
+            network: 'Any',
+            key: '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
+          },
+        },
+      },
+    },
+  },
+  assets: {
+    V2: [
+      {
+        id: {
+          Concrete: {
+            parents: '1',
+            interior: {
+              X1: {
+                Parachain: '3,369',
+              },
+            },
+          },
+        },
+        fun: {
+          Fungible: '1327680000000000065',
+        },
+      },
+    ],
+  },
+};
+
 export const XTOKENS_ACA_DOT = {
   asset: {
     V2: {

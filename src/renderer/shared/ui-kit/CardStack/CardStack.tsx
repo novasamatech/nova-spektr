@@ -43,7 +43,10 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 
   return (
     <RadixAccordion.Header asChild>
-      <div className={cnTw('relative z-10 block w-full', sticky && open && 'sticky top-0 z-10')}>
+      <div className={cnTw('relative z-10 block w-full', sticky && open && 'sticky top-2 z-10')}>
+        {sticky && open && (
+          <div className="absolute -top-2 left-0 right-0 -z-10 h-4 w-full bg-top-nav-bar-background" />
+        )}
         <RadixAccordion.Trigger
           className={cnTw(
             'group flex w-full items-center gap-x-2 bg-row-background py-1 pl-3 pr-2',
