@@ -60,9 +60,11 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
     store: networkModel.$apis,
     keys: [transaction],
     fn: (apis, [transaction]) => {
-      if (!transaction || !isXcmTransaction(transaction)) return null;
+      if (transaction && isXcmTransaction(transaction)) {
+        return apis[transaction.args.destinationChain] ?? null;
+      }
 
-      return apis[transaction.args.destinationChain] ?? null;
+      return null;
     },
   });
 
