@@ -32,11 +32,7 @@ const saveConfigFx = attach({ effect: xcmModel.effects.saveConfigFx });
 const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
 
 const getXcmParaIdFx = createEffect((api: ApiPromise): Promise<number | null> => {
-  try {
-    return getParachainId(api);
-  } catch {
-    return Promise.resolve(null);
-  }
+  return getParachainId(api);
 });
 
 const $xcmAsset = combine(
@@ -136,7 +132,7 @@ const $txDestination = combine(
   (params) => {
     const { api, destination, network, xcmParaId, transferDirection } = params;
 
-    if (!api || !network || xcmParaId === null || !transferDirection) return undefined;
+    if (!api || !network || !transferDirection) return undefined;
 
     if (transferDirection.type === XcmTransferType.XTOKENS && destination) {
       return xcmService.getVersionedDestinationLocation(
@@ -257,7 +253,12 @@ sample({
 
 sample({
   clock: getXcmParaIdFx.doneData,
-  filter: (xcmParaId) => xcmParaId !== null,
+  target: $xcmParaId,
+});
+
+sample({
+  clock: getXcmParaIdFx.fail,
+  fn: () => null,
   target: $xcmParaId,
 });
 
