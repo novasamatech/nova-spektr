@@ -27,6 +27,7 @@ type InnerRequestParams = {
 const {
   $: $list,
   request: requestIdentity,
+  fulfilled,
   pending,
   fail,
 } = createDataSource<IdentityStore, InnerRequestParams, IdentityData>({
@@ -103,6 +104,7 @@ sample({
 
 export const identityDomainModel = {
   $list,
+  $fulfilled: fulfilled,
   request,
   pending,
   fail,

@@ -105,7 +105,7 @@ const Item = memo(({ id, children }: ItemProps) => {
 
   return transitions((styles, item) =>
     item ? (
-      <animated.section className="relative w-full" style={styles}>
+      <animated.section className="relative min-h-full w-full" style={styles}>
         {children}
       </animated.section>
     ) : null,
@@ -125,7 +125,10 @@ const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {
   });
 
   return (
-    <section className="relative w-full overflow-hidden transition-all duration-200 ease-in-out" style={{ height }}>
+    <section
+      className="relative min-h-full w-full overflow-hidden transition-all duration-200 ease-in-out contain-inline-size"
+      style={{ height }}
+    >
       <div ref={setRef}>{children}</div>
     </section>
   );

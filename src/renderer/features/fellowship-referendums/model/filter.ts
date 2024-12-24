@@ -1,5 +1,5 @@
 import { combine, createEvent, restore, sample } from 'effector';
-import { debounce } from 'patronum';
+import { readonly } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
@@ -15,7 +15,7 @@ const selectTracks = createEvent<TrackId[]>();
 const selectVotingStatus = createEvent<null | 'voted' | 'notVoted'>();
 const filtersReset = createEvent();
 
-const $query = restore(debounce(queryChanged, 100), '');
+const $query = restore(queryChanged, '');
 const $selectedTracks = restore(selectTracks, []);
 const $selectedVotingStatus = restore(selectVotingStatus, null);
 
@@ -34,11 +34,11 @@ sample({
 });
 
 export const filterModel = {
-  $query,
+  $query: readonly($query),
   $tracks,
-  $selectedTracks,
-  $selectedVotingStatus,
-  $isFiltersSelected,
+  $selectedTracks: readonly($selectedTracks),
+  $selectedVotingStatus: readonly($selectedVotingStatus),
+  $isFiltersSelected: readonly($isFiltersSelected),
 
   events: {
     queryChanged,
