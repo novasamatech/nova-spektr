@@ -105,16 +105,6 @@ function createJunctionFromObject(data: Record<string, unknown>) {
 
   if (entries.length === 0) return 'Here';
 
-  if (entries.length === 1) {
-    return {
-      X1: [
-        {
-          [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
-        },
-      ],
-    };
-  }
-
   return {
     [`X${entries.length}`]: entries
       .sort((a, b) => sortJunctions(a[0], b[0]))
