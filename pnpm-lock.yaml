@@ -421,10 +421,10 @@ importers:
         specifier: 4.0.2
         version: 4.0.2
       favicons:
-        specifier: ^7.2.0
+        specifier: 7.2.0
         version: 7.2.0
       favicons-webpack-plugin:
-        specifier: ^6.0.1
+        specifier: 6.0.1
         version: 6.0.1(favicons@7.2.0)(webpack@5.95.0)
       file-loader:
         specifier: 6.2.0
