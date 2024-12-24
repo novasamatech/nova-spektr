@@ -150,8 +150,6 @@ function getDestinationLocation(
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
-  console.log('xcm', originChain, destinationParaId, accountId);
-
   if (originChain.parentId && destinationParaId) {
     return getSiblingLocation(destinationParaId, accountId);
   }
