@@ -29,7 +29,7 @@ export const MultisigCreationFees = memo(({ api, asset, threshold, onDepositChan
   const [isDepositLoading, setIsDepositLoading] = useState(true);
 
   const [deposit, setDeposit] = useState<BN>(BN_ZERO);
-  const [networkFee, setNeworkFee] = useState<BN>(BN_ZERO);
+  const [networkFee, setNetworkFee] = useState<BN>(BN_ZERO);
   const fee = useMemo(() => deposit.add(networkFee), [deposit, networkFee]);
 
   const isLoading = useMemo(() => isNetworkFeeLoading || isDepositLoading, [isNetworkFeeLoading, isDepositLoading]);
@@ -52,9 +52,9 @@ export const MultisigCreationFees = memo(({ api, asset, threshold, onDepositChan
     setIsNetworkFeeLoading(true);
     transactionService
       .getTransactionFee(transaction, api)
-      .then((fee) => setNeworkFee(new BN(fee)))
+      .then((fee) => setNetworkFee(new BN(fee)))
       .catch((error) => {
-        setNeworkFee(BN_ZERO);
+        setNetworkFee(BN_ZERO);
         console.info('Error getting fee - ', error);
       })
       .finally(() => setIsNetworkFeeLoading(false));
