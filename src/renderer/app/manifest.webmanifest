@@ -1,0 +1,6 @@
+{
+    "name": "Nova Spektr",
+    "short_name": "Spektr",
+    "display": "standalone",
+    "start_url": "/"
+}
