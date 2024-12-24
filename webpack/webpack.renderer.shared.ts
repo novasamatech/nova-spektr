@@ -2,7 +2,7 @@ import { resolve } from 'path';
 
 import { default as CopyWebpackPlugin } from 'copy-webpack-plugin';
 import { default as CssMinimizerPlugin } from 'css-minimizer-webpack-plugin';
-import FaviconsWebpackPlugin from 'favicons-webpack-plugin';
+import { default as FaviconsWebpackPlugin } from 'favicons-webpack-plugin';
 import { default as HtmlWebpackPlugin } from 'html-webpack-plugin';
 import { default as MiniCssExtractPlugin } from 'mini-css-extract-plugin';
 import { default as TerserPlugin } from 'terser-webpack-plugin';
