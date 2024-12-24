@@ -5,16 +5,17 @@ import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Step, nonNullable } from '@/shared/lib/utils';
-import { Alert, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../../model/confirm-model';
 import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
-import { SelectedSignatoriesModal, WalletItem } from './components';
+import { SelectedSignatoriesModal } from './components';
 
 export const ConfirmationStep = () => {
   const { t } = useI18n();
@@ -65,10 +66,15 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <Separator className="my-4 border-filter-border" />
             <DetailRow label={t('createMultisigAccount.signingWallet')}>
-              <WalletItem
-                name={signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
-                type={signerWallet?.type || WalletType.POLKADOT_VAULT}
-              />
+              <div className="flex w-full items-center justify-end gap-x-2">
+                <WalletIcon type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
+
+                <div className="flex max-w-[348px] flex-col">
+                  <BodyText as="span" className="truncate tracking-tight text-text-secondary">
+                    {signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
+                  </BodyText>
+                </div>
+              </div>
             </DetailRow>
             <Separator className="my-4 border-filter-border" />
             {chain ? (
