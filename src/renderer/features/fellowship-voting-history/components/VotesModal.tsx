@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
-import { Box, Carousel, Modal, SearchInput, Tooltip } from '@/shared/ui-kit';
+import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
 import { votingHistoryFeatureStatus } from '../model/status';
 import { votesModel } from '../model/votes';
 
@@ -72,23 +72,6 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
         <Box padding={[4, 5, 2]}>
           <Tabs panelClassName="m-0" tabsClassName="mb-6" items={tabs} onChange={setSelectedTab} />
           <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-
-          <Box direction="row" horizontalAlign="space-between" padding={[6, 2, 0]}>
-            <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
-            <Box gap={1} direction="row" verticalAlign="center">
-              <FootnoteText className="text-text-tertiary">
-                {t('governance.voteHistory.listColumnVotingPower')}
-              </FootnoteText>
-              <Tooltip>
-                <Tooltip.Trigger>
-                  <div>
-                    <Icon name="info" size={16} />
-                  </div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>{t('fellowship.votingHistory.votingPowerDescription')}</Tooltip.Content>
-              </Tooltip>
-            </Box>
-          </Box>
         </Box>
       </Modal.HeaderContent>
       <Modal.Content>

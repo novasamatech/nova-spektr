@@ -28,7 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       type = 'text',
-      height = 'md',
+      height = 'sm',
       name,
       value,
       placeholder,

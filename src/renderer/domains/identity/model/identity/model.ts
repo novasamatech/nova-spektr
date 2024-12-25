@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent, sample } from 'effector';
+import { attach } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
@@ -74,15 +74,10 @@ const {
 
 const { $apis, $chains } = networkModel;
 
-const request = createEvent<RequestParams>();
-
-sample({
-  clock: request,
-  source: {
-    apis: $apis,
-    chains: $chains,
-  },
-  fn: ({ apis, chains }, { chainId, accounts }) => {
+const request = attach({
+  effect: requestIdentity,
+  source: { apis: $apis, chains: $chains },
+  mapParams: ({ chainId, accounts }: RequestParams, { apis, chains }) => {
     const identityChain = identityService.findIdentityChain(chains, chainId);
     if (nullable(identityChain)) {
       throw new Error(`Chain path from ${chainId} is broken, trace chain.parentId fields in config.`);
@@ -99,7 +94,6 @@ sample({
       api,
     };
   },
-  target: requestIdentity,
 });
 
 export const identityDomainModel = {

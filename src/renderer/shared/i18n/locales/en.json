@@ -373,6 +373,9 @@
       "showHistoryButton": "View vote history",
       "emptyList": "There is no vote history",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+    },
+    "details": {
+      "noDetails": "Details not found"
     }
   },
   "general": {

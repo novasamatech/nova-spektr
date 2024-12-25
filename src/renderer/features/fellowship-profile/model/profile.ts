@@ -28,7 +28,10 @@ const $identity = combine($currentMember, $identities, (member, identities) => {
   return identities[member.accountId] ?? null;
 });
 
-const accountUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
+const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));
+const $pendingIdentity = and(identityDomain.identity.pending, $identity.map(nullable));
+
+const memberUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
 
 sample({
   clock: profileFeatureStatus.running,
@@ -41,16 +44,13 @@ sample({
 });
 
 sample({
-  clock: accountUpdate,
+  clock: memberUpdate,
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,
     accounts: member ? [member.accountId] : [],
   }),
   target: identityDomain.identity.request,
 });
-
-const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));
-const $pendingIdentity = and(identityDomain.identity.pending, $identity.map(nullable));
 
 export const profileModel = {
   $currentMember,
