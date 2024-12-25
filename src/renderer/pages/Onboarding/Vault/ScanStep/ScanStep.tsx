@@ -14,7 +14,7 @@ const ScanStep = ({ onBack, onNextStep }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full w-full">
       <div className="flex-1 rounded-l-lg bg-white">
         <div className="flex h-full flex-col px-5 py-4">
           <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>

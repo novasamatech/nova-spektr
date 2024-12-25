@@ -3,8 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { Accordion, CaptionText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { Accordion, Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { referendumListModel } from '../../model/list';
 
@@ -37,28 +36,28 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
   if (!pending && referendums.length === 0) return null;
 
   return (
-    <Accordion isDefaultOpen>
-      <Accordion.Button buttonClass="py-1.5 px-2">
+    <Accordion initialOpen>
+      <Accordion.Trigger>
         <Box direction="row" gap={2} verticalAlign="center">
-          <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
-            {t('governance.referendums.completed')}
-          </CaptionText>
-          <CaptionText className="font-semibold text-text-tertiary">
+          <span>{t('governance.referendums.completed')}</span>
+          <span className="text-text-tertiary">
             <Skeleton active={shouldRenderLoadingState}>{referendums.length.toString()}</Skeleton>
-          </CaptionText>
+          </span>
         </Box>
-      </Accordion.Button>
-      <Accordion.Content className="mt-2 flex flex-col gap-y-2">
-        {(!shouldRenderLoadingState || mixLoadingWithData) &&
-          deferredReferendums.map(referendum => (
-            <ReferendumItem
-              key={referendum.id}
-              referendum={referendum}
-              isTitlesLoading={isTitlesLoading}
-              onSelect={onSelect}
-            />
-          ))}
-        {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <Box gap={2} padding={[2, 0, 0]}>
+          {(!shouldRenderLoadingState || mixLoadingWithData) &&
+            deferredReferendums.map(referendum => (
+              <ReferendumItem
+                key={referendum.id}
+                referendum={referendum}
+                isTitlesLoading={isTitlesLoading}
+                onSelect={onSelect}
+              />
+            ))}
+          {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+        </Box>
       </Accordion.Content>
     </Accordion>
   );

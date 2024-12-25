@@ -29,14 +29,16 @@ export const Vote = ({ item, chain }: Props) => {
   });
 
   return (
-    <RankedAccount
-      rank={member?.rank || 0}
-      isActive={(member as CoreMember)?.isActive || false}
-      name={identity?.name}
-      accountId={item.accountId}
-      chain={chain}
-    >
-      <BodyText>{t('fellowship.votingHistory.votes', { count: item.votes })}</BodyText>
-    </RankedAccount>
+    <div className="rounded-md pe-2 text-text-secondary hover:bg-action-background-hover hover:text-text-primary">
+      <RankedAccount
+        rank={member?.rank || 0}
+        isActive={(member as CoreMember)?.isActive || false}
+        name={identity?.name}
+        accountId={item.accountId}
+        chain={chain}
+      >
+        <BodyText>{t('fellowship.votingHistory.votes', { count: item.votes })}</BodyText>
+      </RankedAccount>
+    </div>
   );
 };

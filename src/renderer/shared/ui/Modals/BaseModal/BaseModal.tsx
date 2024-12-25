@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
+import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
 import { IconButton } from '../../Buttons';
 import { HeaderTitleText } from '../../Typography';
 
@@ -16,6 +17,7 @@ type Props = {
   closeButton?: boolean;
   actionButton?: ReactNode;
   onClose: () => void;
+  testId?: string;
 };
 
 /**
@@ -33,12 +35,14 @@ export const BaseModal = ({
   children,
   panelStyle,
   onClose,
+  testId = 'BaseModal',
 }: PropsWithChildren<Props>) => {
+  const { portalContainer } = useTheme();
   const headerExist = title || actionButton || closeButton;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
+      <Dialog.Portal container={portalContainer}>
         <Dialog.Overlay
           className={cnTw(
             'absolute inset-0 flex min-h-full items-center justify-center overflow-hidden p-4',
@@ -54,6 +58,7 @@ export const BaseModal = ({
               'duration-300 animate-in fade-in zoom-in-95',
               panelClass,
             )}
+            data-testid={testId}
           >
             {headerExist && (
               <Dialog.Title asChild>
