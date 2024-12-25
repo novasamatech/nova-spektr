@@ -26,7 +26,7 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
 
-const SUPPORTED_VERSIONS = ['V3', 'V4'];
+const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
 /**
@@ -180,7 +180,7 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   const enumValues = getTypeEnumValues(api, typeName);
   const supportedVersions = enumValues.filter((value) => SUPPORTED_VERSIONS.includes(value));
 
-  return supportedVersions.pop() || '';
+  return supportedVersions.at(-1) || '';
 };
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {

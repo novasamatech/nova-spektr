@@ -126,20 +126,29 @@ function getAssetLocation(
   amount: BN,
   isArray = true,
 ): NonNullable<unknown> | undefined {
+  const type = getTypeName(api, transferType, isArray ? 'assets' : 'asset');
+  const assetVersionType = getTypeVersion(api, type || '');
+
   const PathMap: Record<PathType, () => NonNullable<unknown> | undefined> = {
-    relative: () => xcmUtils.getRelativeAssetLocation(assets[asset.assetLocation].multiLocation),
-    absolute: () => xcmUtils.getAbsoluteAssetLocation(assets[asset.assetLocation].multiLocation),
-    concrete: () => xcmUtils.getConcreteAssetLocation(asset.assetLocationPath.path),
+    relative: () => xcmUtils.getRelativeAssetLocation(assetVersionType, assets[asset.assetLocation].multiLocation),
+    absolute: () => xcmUtils.getAbsoluteAssetLocation(assetVersionType, assets[asset.assetLocation].multiLocation),
+    concrete: () => xcmUtils.getConcreteAssetLocation(assetVersionType, asset.assetLocationPath.path),
   };
 
   const location = PathMap[asset.assetLocationPath.type]();
 
-  const type = getTypeName(api, transferType, isArray ? 'assets' : 'asset');
-  const assetVersionType = getTypeVersion(api, type || '');
-  const assetObject = {
-    id: {
+  let id;
+
+  if (['V2', 'V3'].includes(assetVersionType)) {
+    id = {
       Concrete: location,
-    },
+    };
+  } else {
+    id = location;
+  }
+
+  const assetObject = {
+    id,
     fun: {
       Fungible: amount.toString(),
     },
@@ -157,7 +166,7 @@ function getVersionedDestinationLocation(
 ) {
   const type = getTypeName(api, transferType, 'dest');
   const version = getTypeVersion(api, type || '');
-  const location = xcmUtils.getDestinationLocation(originChain, destinationParaId, accountId);
+  const location = xcmUtils.getDestinationLocation(version, originChain, destinationParaId, accountId);
 
   if (!version) return location;
 
