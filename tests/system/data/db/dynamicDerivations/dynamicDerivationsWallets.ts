@@ -10,10 +10,10 @@ export const vaultDPPolkadotTestWallet: IndexedDBData = {
 
 export const vaultDPPolkadotTestAccount: IndexedDBData = {
   database: 'spektr',
-  table: 'accounts',
+  table: 'accounts2',
   injectingData: [
     {
-      id: 1,
+      id: '1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal',
       accountId: '0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c',
       cryptoType: 0,
       name: '',
@@ -28,7 +28,7 @@ export const vaultDPPolkadotTestAccount: IndexedDBData = {
       chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       cryptoType: 0,
       derivationPath: '//polkadot',
-      id: 2,
+      id: '1 0x2a8f1ce5d56835b49e439e447a38aa1f22295d4093df756cab5e5bb39bd9f563 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       keyType: 'main',
       name: 'Main',
       signingType: 'signing_pv',
