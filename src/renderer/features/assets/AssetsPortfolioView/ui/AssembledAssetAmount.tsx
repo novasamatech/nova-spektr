@@ -16,13 +16,14 @@ type Props = PropsWithChildren & {
 
 export const AssembledAssetAmount = ({ balance, asset }: Props) => {
   const { t } = useI18n();
+
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   if (!balance?.free) {
     return (
       <div className="flex flex-col items-end gap-y-1">
-        <Skeleton width={20} height={5} />
-        {fiatFlag && <Skeleton width={14} height={5} />}
+        <Skeleton width={20} height={4} />
+        {fiatFlag && <Skeleton width={14} height={4} />}
       </div>
     );
   }
