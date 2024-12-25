@@ -157,7 +157,7 @@ function subscribeStatemineAssetsChange(
     throw new Error(`Pallet ${pallet} not found.`);
   }
 
-  const type = api.tx.foreignAssets.transfer.meta.args[0].type;
+  const type = api.tx[pallet]?.transfer.meta.args[0].type;
   if (nullable(type)) {
     return Promise.resolve(noop);
   }
