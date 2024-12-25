@@ -164,7 +164,7 @@ function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
 function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
-  return isWcAccount(account) || (account as VaultBaseAccount).cryptoType === cryptoType;
+  return isWcAccount(account) || account.cryptoType === cryptoType;
 }
 
 function isEthereumBased(account: Account): boolean {

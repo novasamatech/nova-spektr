@@ -1,19 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import {
-  type Account,
-  type Address,
-  type ChainId,
-  type Transaction,
-  type VaultBaseAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
-  type Wallet,
-} from '@/shared/core';
+import { type Account, type Address, type ChainId, type Transaction } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
@@ -23,8 +15,7 @@ type Props = {
   chainId: ChainId;
   address: Address;
   transaction: Transaction;
-  account?: Account;
-  signerWallet: Wallet;
+  account: Account;
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;
@@ -37,7 +28,6 @@ export const ScanSingleframeQr = ({
   transaction,
   address,
   account,
-  signerWallet,
   countdown,
   onGoBack,
   onResetCountdown,
@@ -67,17 +57,22 @@ export const ScanSingleframeQr = ({
     }
   };
 
+  const derivationPath =
+    accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
+      ? account.derivationPath
+      : undefined;
+
   return (
     <>
       <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
         {txPayload && (
           <QrTxGenerator
             payload={txPayload}
-            signingType={signerWallet.signingType}
             address={address}
             genesisHash={chainId}
-            derivationPath={(account as VaultChainAccount | VaultShardAccount).derivationPath}
-            cryptoType={(account as VaultBaseAccount).cryptoType || CryptoType.SR25519}
+            derivationPath={derivationPath}
+            signingType={account.signingType}
+            cryptoType={account.cryptoType || CryptoType.SR25519}
           />
         )}
       </QrGeneratorContainer>

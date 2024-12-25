@@ -16,11 +16,11 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
 import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
 import { operationSignUtils } from '../lib/operation-sign-utils';
-import { type InnerSigningProps } from '../lib/types';
+import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { signWcModel } from '../model/sign-wc-model';
 
-export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: InnerSigningProps) => {
+export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const payload = signingPayloads[0];

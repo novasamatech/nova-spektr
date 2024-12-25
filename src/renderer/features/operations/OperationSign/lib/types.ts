@@ -21,8 +21,6 @@ export type SigningProps = {
   onResult: (signatures: HexString[], txPayloads: Uint8Array[]) => void;
 };
 
-export type InnerSigningProps = SigningProps & { wallet: Wallet };
-
 export type SigningPayload = {
   chain: Chain;
   account: Account;

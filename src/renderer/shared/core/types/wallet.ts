@@ -23,6 +23,10 @@ export interface Wallet {
    */
   accounts: Account[];
   isActive: boolean;
+  /**
+   * @deprecated You should use `account.signingType` field instead. Wallet
+   *   shouldn't be part of signing process.
+   */
   signingType: SigningType;
   isHidden?: boolean;
 }
