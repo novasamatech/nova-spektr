@@ -12,7 +12,7 @@ const $list = fellowshipModel.$store.map(
 
 const $pendingMembers = and(
   collectiveDomain.members.pending,
-  $list.map(x => x.length === 0),
+  $list.map(member => member.length === 0),
 );
 
 sample({
