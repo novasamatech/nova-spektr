@@ -227,6 +227,10 @@ export const getPalletAndCallByXcmTransferType = (
     return { pallet, call: 'limitedTeleportAssets' };
   }
 
+  if (transferType === XcmTransferType.XCMPALLET_TRANSFER_ASSETS) {
+    return { pallet, call: 'transferAssets' };
+  }
+
   // Should never be reached as all transferType cases are covered
   throw new Error('Invalid transferType');
 };
