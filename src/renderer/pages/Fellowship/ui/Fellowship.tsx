@@ -32,7 +32,7 @@ export const Fellowship = () => {
   const selectedChain = useUnit(fellowshipNetworkFeature.model.network.$selectedChainId);
 
   useLayoutEffect(() => {
-    if (chainId && chainId.startsWith('0x')) {
+    if (chainId?.startsWith('0x')) {
       fellowshipNetworkFeature.model.network.selectCollective({ chainId: chainId as ChainId });
     } else {
       // navigate to default chain

@@ -19,6 +19,7 @@ const $input = combine(
       chainId: network.chainId,
       palletType: network.palletType,
       accounts: wallet.accounts,
+      wallet,
     };
   },
 );

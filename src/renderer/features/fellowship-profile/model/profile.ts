@@ -1,15 +1,17 @@
 import { combine, sample } from 'effector';
-import { and, not, or } from 'patronum';
+import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
+import { accountUtils } from '@/entities/wallet';
 
 import { fellowshipModel } from './fellowship';
 import { profileFeatureStatus } from './status';
 
-const $members = fellowshipModel.$store.map(x => x?.members ?? []);
+const $members = fellowshipModel.$store.map(store => store?.members ?? []);
+
 const $identities = combine(profileFeatureStatus.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
@@ -19,13 +21,23 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
 const $currentMember = combine(profileFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput) || members.length === 0) return null;
 
-  return collectiveDomain.membersService.findMachingMember(featureInput.accounts, members, featureInput.chain);
+  const { wallet, accounts, chain } = featureInput;
+
+  return collectiveDomain.membersService.findMatchingMember(wallet, accounts, chain, members);
 });
 
 const $identity = combine($currentMember, $identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;
+});
+
+const $isAccountExist = profileFeatureStatus.input.map(store => {
+  if (!store) return false;
+
+  return store.accounts.some(account => {
+    return !accountUtils.isBaseAccount(account) && accountUtils.isChainAndCryptoMatch(account, store.chain);
+  });
 });
 
 const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));
@@ -55,6 +67,6 @@ sample({
 export const profileModel = {
   $currentMember,
   $identity,
+  $isAccountExist,
   $pending: or($pendingMember, $pendingIdentity, profileFeatureStatus.isStarting),
-  $fulfilled: and($currentMember.map(nonNullable), not($pendingMember), not($pendingIdentity)),
 };
