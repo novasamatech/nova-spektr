@@ -230,6 +230,15 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
       return xcmService.decodeXcm(chainId, parsedData);
     },
+    [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded, chainId): Record<string, any> => {
+      const parsedData = xcmService.parseXcmPalletExtrinsic({
+        dest: decoded.args[0].toHuman(),
+        beneficiary: decoded.args[1].toHuman(),
+        assets: decoded.args[2].toHuman(),
+      });
+
+      return xcmService.decodeXcm(chainId, parsedData);
+    },
     [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId): Record<string, any> => {
       const parsedData = xcmService.parseXTokensExtrinsic({
         asset: decoded.args[0].toHuman(),

@@ -45,6 +45,25 @@ export function limitedTeleportAssets(
   );
 }
 
+export function transferAssets(
+  pallet: XcmPallet,
+  args: XcmPalletTransferArgs,
+  info: BaseTxInfo,
+  options: OptionsWithMeta,
+): UnsignedTransaction {
+  return defineMethod(
+    {
+      method: {
+        args,
+        name: 'transferAssets',
+        pallet,
+      },
+      ...info,
+    },
+    options,
+  );
+}
+
 export function transferMultiAsset(
   args: XTokenPalletTransferArgs,
   info: BaseTxInfo,

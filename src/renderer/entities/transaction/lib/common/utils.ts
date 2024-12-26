@@ -221,6 +221,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.XCM_TELEPORT]: 'operations.titles.crossChainTransfer',
   [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'operations.titles.crossChainTransfer',
   [TransactionType.POLKADOT_XCM_TELEPORT]: 'operations.titles.crossChainTransfer',
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: 'operations.titles.crossChainTransfer',
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'operations.titles.crossChainTransfer',
   // Staking
   [TransactionType.BOND]: 'operations.titles.startStaking',
@@ -232,7 +233,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.UNSTAKE]: 'operations.titles.unstake',
   // Technical
   [TransactionType.CHILL]: 'operations.titles.unstake',
-  [TransactionType.BATCH_ALL]: 'operations.titles.unknown',
+  [TransactionType.BATCH_ALL]: 'operations.titles.batchAll',
   // Proxy
   [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
   [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
@@ -272,6 +273,8 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (crossChain) =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.POLKADOT_XCM_TELEPORT]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (crossChain) =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (crossChain) =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,

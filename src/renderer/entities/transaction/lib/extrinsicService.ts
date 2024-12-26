@@ -199,6 +199,20 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (transaction, info, options) => {
+    return xcmMethods.transferAssets(
+      'polkadotXcm',
+      {
+        dest: transaction.args.xcmDest,
+        beneficiary: transaction.args.xcmBeneficiary,
+        assets: transaction.args.xcmAsset,
+        feeAssetItem: DEFAULT_FEE_ASSET_ITEM,
+        weightLimit: { Unlimited: true },
+      },
+      info,
+      options,
+    );
+  },
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (transaction, info, options) => {
     return xcmMethods.transferMultiAsset(
       {
@@ -524,6 +538,11 @@ export const getExtrinsic: Record<
   },
   [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
     return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
+      Unlimited: true,
+    });
+  },
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
+    return api.tx.polkadotXcm.transferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
       Unlimited: true,
     });
   },

@@ -1089,6 +1089,7 @@
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
       "approveMultisig": "Approve multisig operation",
+      "batchAll": "Batch All",
       "createPureProxy": "Create pure proxy",
       "crossChainTransfer": "Cross-chain transfer",
       "delegate": "Delegate",
