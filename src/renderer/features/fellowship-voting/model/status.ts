@@ -20,9 +20,9 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
+      accounts: wallet.accounts,
       wallets,
       wallet,
-      accounts: wallet.accounts,
     };
   },
 );
