@@ -40,6 +40,7 @@ export const XcmTypes = [
   TransactionType.XCM_LIMITED_TRANSFER,
   TransactionType.POLKADOT_XCM_TELEPORT,
   TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
+  TransactionType.POLKADOT_XCM_TRANSFER_ASSETS,
   TransactionType.XTOKENS_TRANSFER_MULTIASSET,
 ];
 
@@ -53,6 +54,7 @@ export type XcmTransactionTypes =
   | TransactionType.XCM_LIMITED_TRANSFER
   | TransactionType.POLKADOT_XCM_TELEPORT
   | TransactionType.POLKADOT_XCM_LIMITED_TRANSFER
+  | TransactionType.POLKADOT_XCM_TRANSFER_ASSETS
   | TransactionType.XTOKENS_TRANSFER_MULTIASSET;
 
 export type MultisigTransactionTypes =

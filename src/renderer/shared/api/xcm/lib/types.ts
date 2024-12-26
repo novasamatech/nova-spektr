@@ -87,6 +87,7 @@ export const enum XcmTransferType {
   XTOKENS = 'xtokens',
   XCMPALLET = 'xcmpallet',
   XCMPALLET_TELEPORT = 'xcmpallet-teleport',
+  XCMPALLET_TRANSFER_ASSETS = 'xcmpallet-transferAssets',
 }
 export type PathType = 'absolute' | 'relative' | 'concrete';
 

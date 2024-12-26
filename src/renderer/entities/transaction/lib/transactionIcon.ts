@@ -16,6 +16,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.XCM_TELEPORT]: 'crossChain',
   [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: 'crossChain',
   [TransactionType.POLKADOT_XCM_TELEPORT]: 'crossChain',
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: 'crossChain',
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: 'crossChain',
   // Staking
   [TransactionType.BOND]: 'startStakingMst',

@@ -16,6 +16,7 @@ export const enum TransactionType {
   XCM_TELEPORT = 'xcm_limited_teleport_assets',
   POLKADOT_XCM_LIMITED_TRANSFER = 'polkadotxcm_limited_reserve_transfer_assets',
   POLKADOT_XCM_TELEPORT = 'polkadotxcm_limited_teleport_assets',
+  POLKADOT_XCM_TRANSFER_ASSETS = 'polkadotxcm_transfer_assets',
   XTOKENS_TRANSFER_MULTIASSET = 'xtokens_transfer_multiasset',
 
   BOND = 'bond',
