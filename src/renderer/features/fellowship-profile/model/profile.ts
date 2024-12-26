@@ -10,7 +10,8 @@ import { accountUtils } from '@/entities/wallet';
 import { fellowshipModel } from './fellowship';
 import { profileFeatureStatus } from './status';
 
-const $members = fellowshipModel.$store.map(x => x?.members ?? []);
+const $members = fellowshipModel.$store.map(store => store?.members ?? []);
+
 const $identities = combine(profileFeatureStatus.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
