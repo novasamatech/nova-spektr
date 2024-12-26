@@ -137,7 +137,9 @@ export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Tran
     return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
   }
 
-  return coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+  const supportedTransaction = coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
+
+  return supportedTransaction || coreTx.args?.transactions?.[0];
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
@@ -348,7 +350,9 @@ export const getModalTransactionTitle = (
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
-    return getModalTransactionTitle(crossChain, t, transaction.args?.transactions?.[0]);
+    const txMatch = findCoreBatchAll(transaction);
+
+    return getModalTransactionTitle(crossChain, t, txMatch);
   }
 
   if (transaction.type === TransactionType.PROXY) {
