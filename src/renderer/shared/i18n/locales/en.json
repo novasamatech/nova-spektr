@@ -307,6 +307,9 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
+    "details": {
+      "noDetails": "Details not found"
+    },
     "errors": {
       "disconnect": {
         "action": "Open network settings",
@@ -322,22 +325,7 @@
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members"
     },
-    "voting": {
-      "voted": "Voted:",
-      "errors": {
-        "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
-      },
-      "votingStatus": "Voting status",
-      "summary": "Summary",
-      "title": "Vote on",
-      "threshold": "Threshold",
-      "aye": "Aye",
-      "nay": "Nay",
-      "confirmation": {
-        "vote": "Vote",
-        "fee": "Fee"
-      }
-    },
+    "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "referendums": {
       "tracks": {
@@ -365,7 +353,26 @@
       }
     },
     "title": "Fellowship",
-    "yourProfile": "Your profile",
+    "tooltips": {
+      "noProfile": "You are not a fellowship member",
+      "noAccount": "Please add or create account to the { chain } network"
+    },
+    "voting": {
+      "voted": "Voted:",
+      "errors": {
+        "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
+      },
+      "votingStatus": "Voting status",
+      "summary": "Summary",
+      "title": "Vote on",
+      "threshold": "Threshold",
+      "aye": "Aye",
+      "nay": "Nay",
+      "confirmation": {
+        "vote": "Vote",
+        "fee": "Fee"
+      }
+    },
     "votingHistory": {
       "modalTitle": "Vote history",
       "votes_one": "{count} vote",
@@ -374,9 +381,7 @@
       "emptyList": "There is no vote history",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     },
-    "details": {
-      "noDetails": "Details not found"
-    }
+    "yourProfile": "Your profile"
   },
   "general": {
     "actions": {

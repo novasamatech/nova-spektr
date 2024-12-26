@@ -4,7 +4,7 @@ import { accountUtils } from '@/entities/wallet';
 
 import { type CoreMember, type Member } from './types';
 
-const findMachingMember = (accounts: Account[], members: Member[], chain: Chain) => {
+const findMatchingMember = (accounts: Account[], members: Member[], chain: Chain) => {
   const walletAccounts = accounts.filter(account => {
     return !accountUtils.isBaseAccount(account) && accountUtils.isChainAndCryptoMatch(account, chain);
   });
@@ -13,7 +13,7 @@ const findMachingMember = (accounts: Account[], members: Member[], chain: Chain)
   return members.find(member => member.accountId in accountsDictionary) ?? null;
 };
 
-const findMachingAccount = (accounts: Account[], member: Member) => {
+const findMatchingAccount = (accounts: Account[], member: Member) => {
   return accounts.find(a => a.accountId === member.accountId) ?? null;
 };
 
@@ -26,7 +26,7 @@ const isCoreMember = (member: Member | CoreMember): member is CoreMember => {
 };
 
 export const membersService = {
-  findMachingMember,
-  findMachingAccount,
+  findMatchingMember,
+  findMatchingAccount,
   isCoreMember,
 };
