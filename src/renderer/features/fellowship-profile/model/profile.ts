@@ -21,7 +21,9 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
 const $currentMember = combine(profileFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput) || members.length === 0) return null;
 
-  return collectiveDomain.membersService.findMatchingMember(featureInput.accounts, members, featureInput.chain);
+  const { wallet, accounts, chain } = featureInput;
+
+  return collectiveDomain.membersService.findMatchingMember(wallet, accounts, chain, members);
 });
 
 const $identity = combine($currentMember, $identities, (member, identities) => {

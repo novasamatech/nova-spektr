@@ -36,7 +36,7 @@ export const ProfileCard = memo(() => {
               <Box direction="row" gap={1} verticalAlign="center">
                 <SmallTitleText className="text-text-tertiary">{t('fellowship.noAccount')}</SmallTitleText>
 
-                <Tooltip sideOffset={1}>
+                <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
                       <Icon name="questionOutline" size={14} />
@@ -53,7 +53,7 @@ export const ProfileCard = memo(() => {
               <Box direction="row" gap={1} verticalAlign="center">
                 <SmallTitleText className="text-text-tertiary">{t('fellowship.noProfile')}</SmallTitleText>
 
-                <Tooltip sideOffset={1}>
+                <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
                       <Icon name="questionOutline" size={14} />
