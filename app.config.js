@@ -43,6 +43,7 @@ module.exports = {
         RENDERER: 'src/renderer/app/index.tsx',
       },
 
+      APP_ROOT: 'src/renderer/app',
       INDEX_HTML: 'src/renderer/app/index.html',
       RESOURCES: 'src/main/resources',
       DEV_BUILD: 'release/build/',

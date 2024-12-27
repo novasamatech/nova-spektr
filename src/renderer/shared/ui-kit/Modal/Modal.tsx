@@ -96,9 +96,17 @@ const Title = ({ action, close, children }: TitleProps) => {
   );
 };
 
+const HeaderContent = ({ children }: PropsWithChildren) => {
+  return (
+    <header aria-level={2} className="shrink-0">
+      {children}
+    </header>
+  );
+};
+
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
   return disableScroll ? (
-    <div className="h-full flex-grow overflow-hidden">{children}</div>
+    <div className="flex h-full flex-grow flex-col overflow-hidden">{children}</div>
   ) : (
     <ScrollArea>{children}</ScrollArea>
   );
@@ -115,6 +123,7 @@ const Footer = ({ children }: PropsWithChildren) => {
 export const Modal = Object.assign(Root, {
   Trigger,
   Title,
+  HeaderContent,
   Content,
   Footer,
 });

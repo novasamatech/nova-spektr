@@ -100,10 +100,18 @@ function sortJunctions(a: JunctionTypeKey, b: JunctionTypeKey): number {
   return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
 }
 
-function createJunctionFromObject(data: Record<string, unknown>) {
+function createJunctionFromObject(version: string, data: Record<string, unknown>) {
   const entries = Object.entries(data);
 
   if (entries.length === 0) return 'Here';
+
+  if (['V2', 'V3'].includes(version) && entries.length === 1) {
+    return {
+      X1: {
+        [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
+      },
+    };
+  }
 
   return {
     [`X${entries.length}`]: entries
@@ -114,52 +122,53 @@ function createJunctionFromObject(data: Record<string, unknown>) {
   };
 }
 
-function getRelativeAssetLocation(assetLocation?: LocalMultiLocation) {
+function getRelativeAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
   return {
     parents: 0,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation) {
+function getAbsoluteAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(assetLocation),
+    interior: createJunctionFromObject(version, assetLocation),
   };
 }
 
-function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
+function getConcreteAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
   return {
     parents,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
 function getDestinationLocation(
+  version: string,
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(destinationParaId, accountId);
+    return getSiblingLocation(version, destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(accountId);
+    return getParentLocation(version, accountId);
   }
 
   if (destinationParaId) {
-    return getChildLocation(destinationParaId, accountId);
+    return getChildLocation(version, destinationParaId, accountId);
   }
 
   return undefined;
@@ -183,7 +192,7 @@ function getAccountLocation(accountId?: AccountId) {
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId) {
+function getChildLocation(version: string, parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -196,11 +205,11 @@ function getChildLocation(parachainId: number, accountId?: AccountId) {
 
   return {
     parents: 0,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getParentLocation(accountId?: AccountId) {
+function getParentLocation(version: string, accountId?: AccountId) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -213,11 +222,11 @@ function getParentLocation(accountId?: AccountId) {
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId) {
+function getSiblingLocation(version: string, parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
@@ -230,7 +239,7 @@ function getSiblingLocation(parachainId: number, accountId?: AccountId) {
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 

@@ -1,5 +1,6 @@
 import '@/app/index.css';
 import '@/app/styles/theme/default.css';
+import './theme/root.css';
 
 import { I18Provider } from '@/shared/i18n';
 import { ThemeProvider } from '@/shared/ui-kit';

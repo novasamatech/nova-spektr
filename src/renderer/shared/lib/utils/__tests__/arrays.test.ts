@@ -60,7 +60,7 @@ describe('merge', () => {
     expect(res).toEqual(['1', '2', '3', '4', '5']);
   });
 
-  it('should return first array if second is empty', () => {
+  test('should return first array if second is empty', () => {
     const list1 = ['1', '2', '3', '4'];
 
     const res = merge({
@@ -120,7 +120,7 @@ describe('merge', () => {
     expect(res).toEqual([{ id: 1, v: 3 }, { id: 3 }, { id: 5 }]);
   });
 
-  it('should replace and sort objects', () => {
+  test('should replace and sort objects', () => {
     const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
     const list2 = [{ id: 3 }, { id: 2 }];
 
@@ -238,7 +238,7 @@ describe('dictionary', () => {
   });
 
   describe('groupBy', () => {
-    it('should group', () => {
+    test('should group', () => {
       const list = [
         { type: 'a', v: 1 },
         { type: 'b', v: 1 },

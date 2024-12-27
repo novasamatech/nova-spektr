@@ -25,7 +25,7 @@ export const ThemeProvider = ({ bodyAsPortalContainer, iconStyle, theme, childre
   return (
     <ThemeContext.Provider value={value}>
       <div className="contents text-body text-text-primary">{children}</div>
-      <div ref={setPortal} className="absolute z-100" />
+      <div ref={setPortal} className="pointer-events-none absolute inset-0 z-100 [&>*]:pointer-events-auto" />
     </ThemeContext.Provider>
   );
 };

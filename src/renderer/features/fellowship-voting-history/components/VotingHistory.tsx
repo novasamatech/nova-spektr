@@ -23,11 +23,11 @@ export const VotingHistory = ({ referendumId }: Props) => {
   const pending = useUnit(votesModel.$pending);
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
-  if (pending || isNetworkDisabled) return <Skeleton width={20} height={5}></Skeleton>;
+  if (pending || isNetworkDisabled) return <Skeleton width="10ch" height="1lh"></Skeleton>;
 
   return (
     <VotesModal>
-      <Button size="sm" variant="text" className="p-0">
+      <Button size="sm" variant="text" className="h-auto p-0">
         {t('fellowship.votingHistory.showHistoryButton')}
       </Button>
     </VotesModal>

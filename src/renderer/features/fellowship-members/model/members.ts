@@ -1,5 +1,5 @@
 import { sample } from 'effector';
-import { or } from 'patronum';
+import { and, or } from 'patronum';
 
 import { collectiveDomain } from '@/domains/collectives';
 
@@ -8,6 +8,11 @@ import { membersFeatureStatus } from './status';
 
 const $list = fellowshipModel.$store.map(
   store => store?.members?.filter(collectiveDomain.membersService.isCoreMember) ?? [],
+);
+
+const $pendingMembers = and(
+  collectiveDomain.members.pending,
+  $list.map(member => member.length === 0),
 );
 
 sample({
@@ -22,6 +27,6 @@ sample({
 
 export const membersModel = {
   $list,
-  $pending: or(collectiveDomain.members.pending, membersFeatureStatus.isStarting),
+  $pending: or($pendingMembers, membersFeatureStatus.isStarting),
   $fulfilled: collectiveDomain.members.fulfilled,
 };

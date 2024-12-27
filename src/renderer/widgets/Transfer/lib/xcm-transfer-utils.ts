@@ -12,6 +12,10 @@ function getXcmTransferType(api: ApiPromise, type: XcmTransferType): Transaction
     return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
   }
 
+  if (type === XcmTransferType.XCMPALLET_TRANSFER_ASSETS) {
+    return TransactionType.POLKADOT_XCM_TRANSFER_ASSETS;
+  }
+
   if (type === XcmTransferType.XCMPALLET_TELEPORT) {
     return api.tx.xcmPallet ? TransactionType.XCM_TELEPORT : TransactionType.POLKADOT_XCM_TELEPORT;
   }

@@ -32,7 +32,7 @@ export const Fellowship = () => {
   const selectedChain = useUnit(fellowshipNetworkFeature.model.network.$selectedChainId);
 
   useLayoutEffect(() => {
-    if (chainId && chainId.startsWith('0x')) {
+    if (chainId?.startsWith('0x')) {
       fellowshipNetworkFeature.model.network.selectCollective({ chainId: chainId as ChainId });
     } else {
       // navigate to default chain
@@ -42,15 +42,15 @@ export const Fellowship = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
+      <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px] shrink-0">
         <div className="w-[230px]">
           <Search />
         </div>
       </Header>
 
       <ScrollArea>
-        <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
-          <Box width="736px" height="100%" gap={5}>
+        <Box horizontalAlign="center" fillContainer padding={[6, 0]}>
+          <Box width="736px" gap={5}>
             <div className="grid grid-cols-3 gap-3">
               <ProfileCard />
               <MembersCard onClick={() => {}} />

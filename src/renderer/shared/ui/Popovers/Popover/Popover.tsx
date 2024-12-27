@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 
 import { useDebounce } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
+import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
 import { type Horizontal, type Vertical } from '../common/types';
 import { useParentScrollLock } from '../common/useParentScrollLock';
 
@@ -45,6 +46,8 @@ export const Popover = ({
   tabIndex = 0,
   children,
 }: PropsWithChildren<Props>) => {
+  const { portalContainer } = useTheme();
+
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -109,7 +112,7 @@ export const Popover = ({
             <div className={cnTw('relative', contentClass)}>{content}</div>
           </Popup.Panel>
         </Transition>,
-        document.body,
+        portalContainer ?? document.body,
       )}
     </Popup>
   );

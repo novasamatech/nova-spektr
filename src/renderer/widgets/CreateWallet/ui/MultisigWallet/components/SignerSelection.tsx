@@ -8,9 +8,9 @@ import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
-import { flowModel } from '@/widgets/CreateWallet/model/flow-model';
-import { formModel } from '@/widgets/CreateWallet/model/form-model';
-import { signatoryModel } from '@/widgets/CreateWallet/model/signatory-model';
+import { flowModel } from '../../../model/flow-model';
+import { formModel } from '../../../model/form-model';
+import { signatoryModel } from '../../../model/signatory-model';
 
 import { Signer } from './Signer';
 
