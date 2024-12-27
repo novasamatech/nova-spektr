@@ -4,10 +4,20 @@ inputs:
   html_report_url_path:
     type: string
     description: The path to the HTML report
+  checkout_token:
+    type: string
+    description: The token to use for checking out the repository
 
 runs:
   using: 'composite'
   steps:
+    - name: Checkout GitHub Pages Branch
+        uses: actions/checkout@v4
+        with:
+          repository: novasamatech/spektr-reports
+          ref: main
+          token: ${{ inputs.checkout_token }}
+
     - name: Set Git User
       shell: bash
       run: |

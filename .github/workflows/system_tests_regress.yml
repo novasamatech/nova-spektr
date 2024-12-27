@@ -60,17 +60,12 @@ jobs:
       # Unique URL path for each workflow run attempt
       HTML_REPORT_URL_PATH: reports/${{ github.ref_name }}/${{ github.run_id }}/${{ github.run_attempt }}
     steps:
-      - name: Checkout GitHub Pages Branch
-        uses: actions/checkout@v2
-        with:
-          repository: novasamatech/spektr-reports
-          ref: main
-          token: ${{ secrets.CREATE_TAG_PAT }}
-
+      - uses: actions/checkout@v4
       - name: Publish test results
         uses: ./.github/workflows/publish-test-results
         with:
           html_report_url_path: ${{ env.HTML_REPORT_URL_PATH }}
+          checkout_token: ${{ secrets.CREATE_TAG_PAT }}
 
       - name: Notify Telegram channel
         uses: appleboy/telegram-action@master
