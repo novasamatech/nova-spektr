@@ -66,7 +66,6 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
             !typedParams.multisigError &&
             isProxyTypeTransaction(multisigTx.transaction)
           ) {
-            //TODO: check if subscribe to createPureProxy event is better
             proxiesModel.events.workerStarted();
           }
 

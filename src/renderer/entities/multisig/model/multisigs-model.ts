@@ -317,9 +317,7 @@ const updateAccountsFx = createEffect(async ({ walletId, accounts }: UpdateAccou
 
 sample({
   clock: $flexibleWithProxy,
-  filter: (flexibleWithProxy) => {
-    return nonNullable(flexibleWithProxy);
-  },
+  filter: nonNullable,
   fn: (flexibleWithProxy) => {
     return {
       walletId: flexibleWithProxy!.id,
