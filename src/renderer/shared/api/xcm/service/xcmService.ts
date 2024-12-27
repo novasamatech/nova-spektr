@@ -118,20 +118,29 @@ function getEstimatedRequiredDestWeight(
   return weight.gte(reserveWeight) ? weight : reserveWeight;
 }
 
+function getFixedVersion(location: string) {
+  return {
+    // TODO: check Interlay transfer later
+    INTR: 'V2',
+  }[location];
+}
+
 function getAssetLocation(
   api: ApiPromise,
   transferType: XcmTransferType,
   asset: AssetXCM,
-  assets: Record<AssetName, AssetLocation>,
+  assetsConfig: Record<AssetName, AssetLocation>,
   amount: BN,
   isArray = true,
 ): NonNullable<unknown> | undefined {
   const type = getTypeName(api, transferType, isArray ? 'assets' : 'asset');
-  const assetVersionType = getTypeVersion(api, type || '');
+  const assetVersionType = getFixedVersion(asset.assetLocation) || getTypeVersion(api, type || '');
 
   const PathMap: Record<PathType, () => NonNullable<unknown> | undefined> = {
-    relative: () => xcmUtils.getRelativeAssetLocation(assetVersionType, assets[asset.assetLocation].multiLocation),
-    absolute: () => xcmUtils.getAbsoluteAssetLocation(assetVersionType, assets[asset.assetLocation].multiLocation),
+    relative: () =>
+      xcmUtils.getRelativeAssetLocation(assetVersionType, assetsConfig[asset.assetLocation].multiLocation),
+    absolute: () =>
+      xcmUtils.getAbsoluteAssetLocation(assetVersionType, assetsConfig[asset.assetLocation].multiLocation),
     concrete: () => xcmUtils.getConcreteAssetLocation(assetVersionType, asset.assetLocationPath.path),
   };
 
