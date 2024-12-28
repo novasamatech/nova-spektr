@@ -34,6 +34,10 @@ runs:
         name: playwright-report
         path: ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
 
+    - name: Create reports directory
+      shell: bash
+      run: mkdir -p ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
+
     - name: Push HTML Report
       shell: bash
       # commit report, then try push-rebase-loop until it's able to merge the HTML report to the gh-pages branch
