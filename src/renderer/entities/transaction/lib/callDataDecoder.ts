@@ -74,7 +74,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     api: ApiPromise,
   ): DecodedTransaction => {
     let transactionType: TransactionType | undefined;
-    if (method === 'batchAll' && section === 'utility') {
+    if (['batchAll', 'batch', 'forceBatch'].includes(method) && section === 'utility') {
       transactionType = TransactionType.BATCH_ALL;
     }
 
@@ -438,7 +438,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {
-    return section === 'utility' && method === 'batchAll';
+    return section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(method);
   };
 
   const isProxyExtrinsic = (method: string, section: string): boolean => {
