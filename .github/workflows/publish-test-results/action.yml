@@ -30,7 +30,6 @@ runs:
 
     - name: Download zipped HTML report
       uses: actions/download-artifact@v4
-      shell: bash
       with:
         name: playwright-report
         path: ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
