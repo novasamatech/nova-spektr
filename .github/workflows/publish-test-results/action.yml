@@ -35,7 +35,6 @@ runs:
         path: ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
 
     - name: Push HTML Report
-      timeout-minutes: 3
       shell: bash
       # commit report, then try push-rebase-loop until it's able to merge the HTML report to the gh-pages branch
       # this is necessary when this job is running at least twice at the same time (e.g. through two pushes at the same time)
