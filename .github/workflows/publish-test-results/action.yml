@@ -8,6 +8,9 @@ inputs:
     type: string
     description: The token to use for checking out the repository
 
+env:
+  REPORTS_REPO_PATH: spektr-reports
+
 runs:
   using: 'composite'
   steps:
@@ -17,6 +20,7 @@ runs:
           repository: novasamatech/spektr-reports
           ref: main
           token: ${{ inputs.checkout_token }}
+          path: ${{ env.REPORTS_REPO_PATH }}
 
     - name: Set Git User
       shell: bash
@@ -29,7 +33,7 @@ runs:
       shell: bash
       with:
         name: playwright-report
-        path: ${{ inputs.html_report_url_path }}
+        path: ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
 
     - name: Push HTML Report
       timeout-minutes: 3
@@ -37,6 +41,7 @@ runs:
       # commit report, then try push-rebase-loop until it's able to merge the HTML report to the gh-pages branch
       # this is necessary when this job is running at least twice at the same time (e.g. through two pushes at the same time)
       run: |
+        cd ${{ env.REPORTS_REPO_PATH }}
         git add .
         git commit -m "workflow: add HTML report for run-id ${{ github.run_id }} (attempt:  ${{ github.run_attempt }})"
 
@@ -62,28 +67,3 @@ runs:
         echo "FULL_HTML_REPORT_URL<<EOF" >> $GITHUB_ENV
         echo "$FULL_HTML_REPORT_URL" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-
-    - run: |
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          COMMIT_INFO="Branch: dev"
-          RUN_TYPE_INFO="🤑 Fee loading"
-        else
-          COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
-          RUN_TYPE_INFO="✔ Regression"
-        fi
-        echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
-        echo "$COMMIT_INFO" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        echo "RUN_TYPE_INFO<<EOF" >> $GITHUB_ENV
-        echo "$RUN_TYPE_INFO" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Set Status
-      shell: bash
-      run: |
-        if [[ "${{ needs.system-tests.result }}" == 'failure' ]]; then
-          echo "STATUS=❌" >> $GITHUB_ENV
-        else
-          echo "STATUS=✅" >> $GITHUB_ENV
-        fi
