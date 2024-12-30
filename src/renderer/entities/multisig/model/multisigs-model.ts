@@ -3,8 +3,10 @@ import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { interval } from 'patronum';
 
+import { storageService } from '@/shared/api/storage';
 import {
   type Account,
+  AccountType,
   type Chain,
   type ChainId,
   ExternalType,
@@ -16,6 +18,7 @@ import {
   type MultisigWallet,
   type NoID,
   NotificationType,
+  type ProxiedAccount,
   type ProxyAccount,
   SigningType,
   WalletType,
@@ -106,11 +109,11 @@ const getMultisigsFx = createEffect(
           // filter out multisigs that already exists
           .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
+            // TODO: run a proxy worker for new multisiig since we don't have these proxies at the moment
             const proxiesList = proxies[accountId];
 
             const proxy = nonNullable(proxiesList)
-              ? // TODO check if it's a pure proxy
-                (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
+              ? (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
               : null;
 
             // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
@@ -273,6 +276,60 @@ sample({
     });
   },
   target: notificationModel.events.notificationsAdded,
+});
+
+// Bond flexible multisig with proxy
+const $flexibleWithProxy = createStore<FlexibleMultisigWallet | null>(null);
+
+sample({
+  clock: walletModel.events.walletCreatedDone,
+  source: walletModel.$wallets,
+  filter: (_, { accounts }) => {
+    const account = accounts.at(0);
+
+    return nonNullable(account) && account.type === AccountType.PROXIED && account.proxyType === 'Any';
+  },
+  fn: (wallets, { accounts }) => {
+    const account = accounts.at(0)! as ProxiedAccount;
+
+    const proxiedWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      accountFn: (a) => a.accountId === account.proxyAccountId,
+    }) as FlexibleMultisigWallet | null;
+
+    if (!proxiedWallet) return null;
+
+    // Proxy accountId or entire account?
+    return {
+      ...proxiedWallet,
+      accounts: proxiedWallet.accounts.map((acc) => ({ ...acc, proxyAccountId: account.accountId })),
+    };
+  },
+  target: $flexibleWithProxy,
+});
+
+type UpdateAccounts = { walletId: number; accounts: Account[] };
+const updateAccountsFx = createEffect(async ({ walletId, accounts }: UpdateAccounts): Promise<UpdateAccounts> => {
+  await storageService.accounts.updateAll(accounts);
+
+  return { walletId, accounts };
+});
+
+sample({
+  clock: $flexibleWithProxy,
+  filter: nonNullable,
+  fn: (flexibleWithProxy) => {
+    return {
+      walletId: flexibleWithProxy!.id,
+      accounts: flexibleWithProxy!.accounts,
+    };
+  },
+  target: updateAccountsFx,
+});
+
+sample({
+  clock: updateAccountsFx.doneData,
+  target: walletModel.events.updateAccounts,
 });
 
 export const multisigsModel = {

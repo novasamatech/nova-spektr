@@ -6,6 +6,7 @@ import { type ChainId, type MultisigTransaction, TransactionType } from '@/share
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { operationsModel } from '@/entities/operations';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { UNKNOWN_TYPE } from '../lib/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
@@ -31,10 +32,9 @@ const mapValues = (result: DropdownResult) => result.value;
 
 type Props = {
   txs: MultisigTransactionDS[];
-  onChange: (filteredTxs: MultisigTransaction[]) => void;
 };
 
-export const OperationsFilter = ({ txs, onChange }: Props) => {
+export const OperationsFilter = ({ txs }: Props) => {
   const { t } = useI18n();
 
   const [availableChains, setAvailableChains] = useState<{ chainId: ChainId; name: string }[]>([]);
@@ -57,7 +57,7 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
-    onChange(txs);
+    operationsModel.events.changeFilteredTxs(txs);
   }, [txs, availableChains]);
 
   const getFilterableTxType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
@@ -131,12 +131,12 @@ export const OperationsFilter = ({ txs, onChange }: Props) => {
     setSelectedOptions(newSelectedOptions);
 
     const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
-    onChange(filteredTxs);
+    operationsModel.events.changeFilteredTxs(filteredTxs);
   };
 
   const clearFilters = () => {
     setSelectedOptions(EmptySelected);
-    onChange(txs);
+    operationsModel.events.changeFilteredTxs(txs);
   };
 
   const filtersSelected =

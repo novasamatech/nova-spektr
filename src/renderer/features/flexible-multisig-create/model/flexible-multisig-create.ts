@@ -188,10 +188,10 @@ type GetDepositParams = {
 };
 
 const getProxyDepositFx = createEffect(async ({ api, asset }: GetDepositParams): Promise<BN> => {
-  const minDeposit = await balanceService.getExistentialDeposit(api, asset);
+  const existentialDeposit = await balanceService.getExistentialDeposit(api, asset);
   const proxyDeposit = new BN(proxyService.getProxyDeposit(api, '0', 1));
 
-  return BN.max(minDeposit, proxyDeposit);
+  return proxyDeposit.add(existentialDeposit);
 });
 
 sample({

@@ -16,7 +16,8 @@ import { useToggle } from '@/shared/lib/hooks';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
-import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
+import { type ExtrinsicResultParams, isProxyTypeTransaction, transactionService } from '@/entities/transaction';
+import { proxiesModel } from '@/features/proxies';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -58,6 +59,14 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
 
           if (typedParams.isFinalApprove) {
             updatedTx.status = typedParams.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
+          }
+
+          if (
+            typedParams.isFinalApprove &&
+            !typedParams.multisigError &&
+            isProxyTypeTransaction(multisigTx.transaction)
+          ) {
+            proxiesModel.events.workerStarted();
           }
 
           if (isReject) {

@@ -23,7 +23,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, toAccountId } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable, toAccountId } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
@@ -181,6 +181,8 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
     return getMultisigWrapper(params);
   }
 
+  // TODO add flexible multisig wrapper
+
   if (walletUtils.isProxied(wallet)) {
     return getProxyWrapper(params);
   }
@@ -235,6 +237,8 @@ function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappers
 
     return acc;
   }, []);
+
+  if (nullable(proxiesMap.at(0))) return [];
 
   const wrapper: ProxyTxWrapper = {
     kind: WrapperKind.PROXY,

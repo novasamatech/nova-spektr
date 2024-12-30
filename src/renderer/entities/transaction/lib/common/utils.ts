@@ -65,6 +65,16 @@ export const isManageProxyTransaction = (transaction?: Transaction | DecodedTran
   return ManageProxyTypes.includes(transaction.type);
 };
 
+export const isProxyTypeTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
+  return (
+    isProxyTransaction(transaction) ||
+    isAddProxyTransaction(transaction) ||
+    isRemoveProxyTransaction(transaction) ||
+    isCreatePureProxyTransaction(transaction) ||
+    isRemovePureProxyTransaction(transaction)
+  );
+};
+
 export const isAddProxyTransaction = (transaction?: Transaction | DecodedTransaction): boolean => {
   return transaction?.type === TransactionType.ADD_PROXY;
 };
