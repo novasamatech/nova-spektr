@@ -3,10 +3,8 @@ import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { interval } from 'patronum';
 
-import { storageService } from '@/shared/api/storage';
 import {
   type Account,
-  AccountType,
   type Chain,
   type ChainId,
   ExternalType,
@@ -25,6 +23,7 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { networkDomain } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -287,13 +286,13 @@ sample({
   filter: (_, { accounts }) => {
     const account = accounts.at(0);
 
-    return nonNullable(account) && account.type === AccountType.PROXIED && account.proxyType === 'Any';
+    return nonNullable(account) && accountUtils.isProxiedAccount(account) && account.proxyType === 'Any';
   },
   fn: (wallets, { accounts }) => {
     const account = accounts.at(0)! as ProxiedAccount;
 
     const proxiedWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+      walletFn: walletUtils.isFlexibleMultisig,
       accountFn: (a) => a.accountId === account.proxyAccountId,
     }) as FlexibleMultisigWallet | null;
 
@@ -308,28 +307,11 @@ sample({
   target: $flexibleWithProxy,
 });
 
-type UpdateAccounts = { walletId: number; accounts: Account[] };
-const updateAccountsFx = createEffect(async ({ walletId, accounts }: UpdateAccounts): Promise<UpdateAccounts> => {
-  await storageService.accounts.updateAll(accounts);
-
-  return { walletId, accounts };
-});
-
 sample({
   clock: $flexibleWithProxy,
   filter: nonNullable,
-  fn: (flexibleWithProxy) => {
-    return {
-      walletId: flexibleWithProxy!.id,
-      accounts: flexibleWithProxy!.accounts,
-    };
-  },
-  target: updateAccountsFx,
-});
-
-sample({
-  clock: updateAccountsFx.doneData,
-  target: walletModel.events.updateAccounts,
+  fn: (flexibleWithProxy) => flexibleWithProxy!.accounts,
+  target: series(networkDomain.accounts.updateAccount),
 });
 
 export const multisigsModel = {

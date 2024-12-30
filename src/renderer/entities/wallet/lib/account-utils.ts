@@ -4,7 +4,6 @@ import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
 import {
-  type Account,
   type Chain,
   type ChainId,
   type FlexibleMultisigAccount,
@@ -24,7 +23,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, networkDomain } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
@@ -146,17 +145,17 @@ function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedA
 
 // Matchers
 
-function isAccountWithShards(accounts: Account | VaultShardAccount[]): accounts is VaultShardAccount[] {
+function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accounts is VaultShardAccount[] {
   return Array.isArray(accounts) && isVaultShardAccount(accounts[0]);
 }
 
-function isChainDependant(account: Partial<Account>): boolean {
-  if (isVaultBaseAccount(account)) return false;
+function isChainDependant(account: AnyAccountDraft): boolean {
+  if (networkDomain.accountsService.isUniversalAccount(account)) return false;
 
   return !isMultisigAccount(account) || Boolean(account.chainId);
 }
 
-function isChainIdMatch(account: Account, chainId: ChainId): boolean {
+function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   if (!isChainDependant(account)) return true;
 
   const chainAccountMatch = isVaultChainAccount(account) && account.chainId === chainId;
@@ -168,17 +167,17 @@ function isChainIdMatch(account: Account, chainId: ChainId): boolean {
   return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch;
 }
 
-function isChainAndCryptoMatch(account: Account, chain: Chain): boolean {
+function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
   return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
 }
 
-function isCryptoTypeMatch(account: Account, chain: Chain): boolean {
+function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
   return isWcAccount(account) || account.cryptoType === cryptoType;
 }
 
-function isEthereumBased(account: Account): boolean {
+function isEthereumBased(account: AnyAccount): boolean {
   return account.cryptoType === CryptoType.ETHEREUM;
 }
 
@@ -192,7 +191,7 @@ function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cr
   return u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId) as AccountId;
 }
 
-function getAccountsAndShardGroups(accounts: Account[]): (VaultChainAccount | VaultShardAccount[])[] {
+function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount | VaultShardAccount[])[] {
   const shardsIndexes: Record<string, number> = {};
 
   return accounts.reduce<(VaultChainAccount | VaultShardAccount[])[]>((acc, account) => {
@@ -217,7 +216,7 @@ function getAccountsAndShardGroups(accounts: Account[]): (VaultChainAccount | Va
   }, []);
 }
 
-function getBaseAccount(accounts: Account[], walletId?: ID): VaultBaseAccount | undefined {
+function getBaseAccount(accounts: AnyAccount[], walletId?: ID): VaultBaseAccount | undefined {
   return accounts.find((a) => {
     const walletMatch = !walletId || walletId === a.walletId;
 
@@ -256,7 +255,13 @@ function isGovernanceProxyType(account: ProxiedAccount): boolean {
   return account.proxyType === 'Governance';
 }
 
-function isNonBaseVaultAccount(account: Account, wallet: Wallet): boolean {
+/**
+ * @deprecated This predicate exists only because both "watch only" and PV
+ *   "root" accounts implemented with BaseAccount interface. After introducing
+ *   `WatchOnly` account type this check can be reduced to
+ *   `!accountUtils.isVaultBaseAccount(account)`.
+ */
+function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
 }
 

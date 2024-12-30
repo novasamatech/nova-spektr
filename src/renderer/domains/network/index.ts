@@ -7,4 +7,4 @@ export const networkDomain = {
   accountsService,
 };
 
-export type { AnyAccount, ChainAccount, UniversalAccount } from './accounts/types';
+export type { AnyAccount, AnyAccountDraft, ChainAccount, UniversalAccount } from './accounts/types';
