@@ -26,7 +26,7 @@ export const testChain = {
   type: ChainType.SUBSTRATE,
 } as unknown as Chain;
 
-export const multisigWallet = {
+export const multisigWallet: Wallet = {
   id: 3,
   name: 'multisig Wallet',
   isActive: false,
@@ -47,9 +47,9 @@ export const multisigWallet = {
       signatories: [],
     } satisfies MultisigAccount,
   ],
-} as Wallet;
+};
 
-export const signerWallet = {
+export const signerWallet: Wallet = {
   id: 2,
   name: 'Signer Wallet',
   isActive: true,
@@ -69,9 +69,9 @@ export const signerWallet = {
       signingExtras: {},
     },
   ],
-} as Wallet;
+};
 
-export const signatoryWallet = {
+export const signatoryWallet: Wallet = {
   id: 5,
   name: 'Signer Wallet',
   isActive: true,
@@ -91,9 +91,9 @@ export const signatoryWallet = {
       signingExtras: {},
     },
   ],
-} as Wallet;
+};
 
-export const initiatorWallet = {
+export const initiatorWallet: Wallet = {
   id: 1,
   name: 'Wallet',
   isActive: true,
@@ -113,9 +113,9 @@ export const initiatorWallet = {
       signingExtras: {},
     },
   ],
-} as Wallet;
+};
 
-export const wrongChainWallet = {
+export const wrongChainWallet: Wallet = {
   id: 4,
   name: 'Wallet Wrong Chain',
   isActive: true,
@@ -135,7 +135,7 @@ export const wrongChainWallet = {
       signingExtras: {},
     },
   ],
-} as Wallet;
+};
 
 export const accounts = [
   ...multisigWallet.accounts,

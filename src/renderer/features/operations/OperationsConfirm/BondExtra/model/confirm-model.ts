@@ -1,14 +1,8 @@
 import { combine, createEvent, restore } from 'effector';
 
-import {
-  type Account,
-  type Asset,
-  type Chain,
-  type ProxiedAccount,
-  type Transaction,
-  type Wallet,
-} from '@/shared/core';
+import { type Asset, type Chain, type ProxiedAccount, type Transaction, type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -18,9 +12,9 @@ type Input = {
   chain: Chain;
   asset: Asset;
 
-  shards: Account[];
+  shards: AnyAccount[];
   proxiedAccount?: ProxiedAccount;
-  signatory: Account | null;
+  signatory: AnyAccount | null;
   amount: string;
 
   fee: string;

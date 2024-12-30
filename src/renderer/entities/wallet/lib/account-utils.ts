@@ -16,6 +16,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
+  type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
@@ -29,6 +30,7 @@ import { networkUtils } from '@/entities/network';
 import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
+  isWatchOnlyAccount,
   isVaultBaseAccount,
   isVaultChainAccount,
   isVaultShardAccount,
@@ -61,6 +63,15 @@ export const accountUtils = {
 };
 
 // Account types
+
+function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyAccount {
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    networkDomain.accountsService.isUniversalAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.WATCH_ONLY
+  );
+}
 
 function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {
   return (

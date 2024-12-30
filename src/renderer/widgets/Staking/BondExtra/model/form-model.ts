@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -12,14 +12,15 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   amount: string;
 };
 
@@ -29,15 +30,15 @@ const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
-  proxyAccount: Account | null;
-  signatories: Account[][];
+  proxyAccount: AnyAccount | null;
+  signatories: AnyAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $accountsBalances = createStore<string[]>([]);
@@ -45,8 +46,8 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<Account[][]>([]);
-const $proxyAccount = createStore<Account | null>(null);
+const $availableSignatories = createStore<AnyAccount[][]>([]);
+const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
@@ -56,7 +57,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [],
       rules: [
         {
           name: 'noProxyFee',
@@ -160,7 +161,7 @@ const $bondForm = createForm<FormParams>({
             const feeBN = new BN(feeData.fee);
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
-            return form.shards.every((_: Account, index: number) => {
+            return form.shards.every((_: AnyAccount, index: number) => {
               return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
             });
           },
@@ -218,7 +219,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 

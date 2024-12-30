@@ -4,7 +4,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type BasketTransaction,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
@@ -14,6 +13,7 @@ import {
 } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -118,7 +118,7 @@ sample({
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

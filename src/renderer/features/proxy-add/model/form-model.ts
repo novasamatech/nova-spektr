@@ -7,7 +7,6 @@ import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import {
-  type Account,
   type Address,
   type Chain,
   type MultisigTxWrapper,
@@ -31,6 +30,7 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
@@ -48,8 +48,8 @@ type ProxyAccounts = {
 
 type FormParams = {
   chain: Chain;
-  account: Account;
-  signatory: Account | null;
+  account: AnyAccount;
+  signatory: AnyAccount | null;
   delegate: Address;
   proxyType: ProxyType;
 };
@@ -61,7 +61,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     multisigDeposit: string;
@@ -330,7 +330,7 @@ const $signatories = combine(
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+    return wallets.reduce<{ signer: AnyAccount; balance: string }[]>((acc, wallet) => {
       if (!permissionUtils.canCreateMultisigTx(wallet)) return acc;
 
       const signer = wallet.accounts.find((a) => {

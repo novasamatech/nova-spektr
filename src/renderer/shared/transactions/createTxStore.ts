@@ -1,8 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createStore } from 'effector';
 
-import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
+import { type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
@@ -14,8 +16,8 @@ type Params = {
   $coreTx: Store<Transaction | null>;
   $activeWallet: Store<Wallet | null | undefined>;
   $wallets: Store<Wallet[]>;
-  $account: Store<Account | null>;
-  $signatory?: Store<Account | null>;
+  $account: Store<AnyAccount | null>;
+  $signatory?: Store<AnyAccount | null>;
 };
 
 export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, $account, $signatory }: Params) => {

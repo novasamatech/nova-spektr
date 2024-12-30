@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
-  type Account,
   type BasketTransaction,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
@@ -15,6 +14,7 @@ import {
 } from '@/shared/core';
 import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
 import { votingService } from '@/entities/governance';
@@ -48,7 +48,7 @@ const $walletData = combine({
 const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
 const $tracks = createStore<number[]>([]).reset(flowFinished);
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
-const $accounts = createStore<Account[]>([]).reset(flowFinished);
+const $accounts = createStore<AnyAccount[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
@@ -142,7 +142,7 @@ sample({
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

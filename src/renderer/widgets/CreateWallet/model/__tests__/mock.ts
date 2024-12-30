@@ -1,15 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import {
-  type Account,
   AccountType,
   type Chain,
   ChainOptions,
   ChainType,
   CryptoType,
+  type MultisigAccount,
   SigningType,
   type Wallet,
   WalletType,
+  type WcAccount,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -25,7 +26,7 @@ export const testChain = {
   type: ChainType.SUBSTRATE,
 } as unknown as Chain;
 
-export const accounts: Account[] = [
+export const accounts: (WcAccount | MultisigAccount)[] = [
   {
     id: '1',
     walletId: 1,

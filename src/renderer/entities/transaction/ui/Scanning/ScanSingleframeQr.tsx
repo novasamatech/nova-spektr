@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { type Account, type Address, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type ChainId, type Transaction } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
@@ -15,7 +16,7 @@ type Props = {
   chainId: ChainId;
   address: Address;
   transaction: Transaction;
-  account: Account;
+  account: AnyAccount;
   countdown: number;
   onGoBack: () => void;
   onResetCountdown: () => void;

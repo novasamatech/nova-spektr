@@ -2,7 +2,7 @@ import { type Chain, CryptoType } from '@/shared/core';
 import { createAnyOf } from '@/shared/di';
 import { networkUtils } from '@/entities/network';
 
-import { type AnyAccount, type ChainAccount, type UniversalAccount } from './types';
+import { type AnyAccount, type AnyAccountDraft, type ChainAccount, type UniversalAccount } from './types';
 
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 
@@ -46,7 +46,7 @@ function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
  * migrations and make regress testing across application to verify that new
  * account id has no collisions and used properly.
  */
-function uniqId(account: Pick<AnyAccount, 'type' | 'accountId' | 'walletId' | 'chainId'>) {
+function uniqId(account: AnyAccountDraft) {
   return isUniversalAccount(account)
     ? `${account.walletId} ${account.accountId} universal`
     : `${account.walletId} ${account.accountId} ${account.chainId}`;

@@ -1,5 +1,7 @@
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
+
 import {
-  type Account,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type ProxiedAccount,
@@ -21,7 +23,7 @@ export interface Wallet {
    *   `networkDomain.accountsService.filterAccountsByWallet(accounts,
    *   walletId)`.
    */
-  accounts: Account[];
+  accounts: AnyAccount[];
   isActive: boolean;
   /**
    * @deprecated You should use `account.signingType` field instead. Wallet

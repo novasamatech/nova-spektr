@@ -1,23 +1,23 @@
 import { BN_ZERO } from '@polkadot/util';
 
-import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Asset, type Balance, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
-import { networkDomain } from '@/domains/network';
+import { type AnyAccount, networkDomain } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { locksService } from '@/entities/governance';
 
 type Props = {
-  value: Account | null;
-  accounts: { account: Account; balance: Balance | null }[];
+  value: AnyAccount | null;
+  accounts: { account: AnyAccount; balance: Balance | null }[];
   hasError: boolean;
   errorText: string;
   asset: Asset;
   chain: Chain;
-  onChange: (value: Account) => void;
+  onChange: (value: AnyAccount) => void;
 };
 
 export const AccountsSelector = ({ value, accounts, asset, chain, hasError, errorText, onChange }: Props) => {

@@ -1,7 +1,6 @@
 import { default as BigNumber } from 'bignumber.js';
 import { combine } from 'effector';
 
-import { type Account } from '@/shared/core';
 import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -22,7 +21,7 @@ const $walletBalance = combine(
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const accountMap = dictionary(wallet.accounts as Account[], 'accountId');
+    const accountMap = dictionary(wallet.accounts, 'accountId');
 
     return balances.reduce<BigNumber>((acc, balance) => {
       const account = accountMap[balance.accountId];

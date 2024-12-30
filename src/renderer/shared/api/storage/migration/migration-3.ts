@@ -16,21 +16,20 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
   const wallets = await t.db.table<Wallet>('wallets').toArray();
 
   const newAccounts = oldAccounts
-    // @ts-expect-error Mapping of type which no longer exists.
-    .map<AnyAccount | null>((old) => {
+    .map<Account | null>((old) => {
       const wallet = wallets.find((x) => x.id === old.walletId);
       if (!wallet) return null;
-      // @ts-expect-error Mapping of type which no longer exists.
       const { chainType, baseId, type, ...mappable } = old;
       const baseAccountId = nonNullable(baseId) ? oldAccounts.find((x) => x.id === baseId) : null;
 
-      let res;
+      const finalType = wallet.type === 'wallet_wo' ? 'watch_only' : type;
+      let res: Account;
 
       if ('chainId' in old) {
         res = {
           ...mappable,
           type: 'chain',
-          accountType: type,
+          accountType: finalType,
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           chainId: old.chainId,
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
@@ -41,7 +40,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
         res = {
           ...mappable,
           type: 'universal',
-          accountType: type,
+          accountType: finalType,
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
           name: old.name,
@@ -53,13 +52,11 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
       const id =
         res.type === 'universal'
           ? `${res.walletId} ${res.accountId} universal`
-          : // @ts-expect-error Mapping of type which no longer exists.
-            `${res.walletId} ${res.accountId} ${res.chainId}`;
+          : `${res.walletId} ${res.accountId} ${res.chainId}`;
 
       res.id = id;
 
       if (baseAccountId) {
-        // @ts-expect-error Mapping of type which no longer exists.
         res.baseAccountId = baseAccountId;
       }
 

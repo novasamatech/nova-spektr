@@ -34,7 +34,7 @@ jest.mock('@walletconnect/utils', () => ({
   getSdkError: jest.fn(),
 }));
 
-const wallet = {
+const wallet: Wallet = {
   id: 1,
   name: 'My wallet',
   isActive: false,
@@ -62,7 +62,7 @@ const wallet = {
       accountId: createAccountId('proxied account'),
     } satisfies VaultBaseAccount,
   ],
-} as Wallet;
+};
 
 const proxiedWallet = {
   id: 2,

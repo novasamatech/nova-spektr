@@ -1,4 +1,4 @@
-import { type ChainId, type CryptoType, type ID, type SigningType, type XOR } from '@/shared/core';
+import { type ChainId, type CryptoType, type ID, type SigningType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 /**
@@ -9,7 +9,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
  * additional checks before performing business logic (e.g. chains
  * restrictions).
  */
-export type UniversalAccount<Additional extends NonNullable<unknown> = object> = Additional & {
+export type UniversalAccount<Additional extends NonNullable<unknown> = Record<string, unknown>> = Additional & {
   id: string;
   type: 'universal';
   name: string;
@@ -24,7 +24,7 @@ export type UniversalAccount<Additional extends NonNullable<unknown> = object> =
  * Account related to specific chain. This is most common case and such accounts
  * have "one to one" relations with other entities in the system.
  */
-export type ChainAccount<Additional extends NonNullable<unknown> = object> = Additional & {
+export type ChainAccount<Additional extends NonNullable<unknown> = Record<string, unknown>> = Additional & {
   id: string;
   type: 'chain';
   name: string;
@@ -35,9 +35,13 @@ export type ChainAccount<Additional extends NonNullable<unknown> = object> = Add
   signingType: SigningType;
 };
 
-export type AnyAccount = XOR<UniversalAccount, ChainAccount>;
+export type AnyAccount = (UniversalAccount | ChainAccount) & Record<string, any>;
 
 /**
  * Utility type for working with partial account data
  */
-export type AnyAccountDraft = Pick<AnyAccount, 'type' | 'accountId' | 'walletId' | 'chainId'> & Record<string, unknown>;
+export type AnyAccountDraft = (
+  | Pick<ChainAccount, 'type' | 'accountId' | 'walletId' | 'chainId'>
+  | Pick<UniversalAccount, 'type' | 'accountId' | 'walletId'>
+) &
+  Record<string, unknown>;

@@ -26,7 +26,7 @@ import { type TxMetadata, createTxMetadata, dictionary, nullable, toAccountId } 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
-import { networkDomain } from '@/domains/network';
+import { type AnyAccount, networkDomain } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
@@ -166,8 +166,8 @@ function hasProxy(txWrappers: TxWrapper[]): boolean {
 type TxWrappersParams = {
   wallets: Wallet[];
   wallet: Wallet;
-  account: Account;
-  signatories?: Account[];
+  account: AnyAccount;
+  signatories?: AnyAccount[];
 };
 
 /**
@@ -197,7 +197,7 @@ function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrapp
   const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
   const signatory = signatories.at(0);
 
-  const signers = wallets.reduce<Account[]>((acc, wallet) => {
+  const signers = wallets.reduce<AnyAccount[]>((acc, wallet) => {
     const signer = wallet.accounts.find((a) => signersMap[a.accountId]);
 
     if (signer) {
@@ -211,7 +211,7 @@ function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrapp
     kind: WrapperKind.MULTISIG,
     multisigAccount: account as MultisigAccount,
     signatories: signers,
-    signer: signatory || ({} as Account),
+    signer: signatory || ({} as AnyAccount),
   };
 
   if (!signatory) return [wrapper];

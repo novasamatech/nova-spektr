@@ -1,6 +1,8 @@
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
 
-import { type Account, type MultisigAccount, type ProxiedAccount } from './account';
+import { type MultisigAccount, type ProxiedAccount } from './account';
 import { type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
 import { type Signatory } from './signatory';
 import { type PartialBy } from './utility';
@@ -133,13 +135,13 @@ export const enum WrapperKind {
 export type MultisigTxWrapper = {
   kind: WrapperKind.MULTISIG;
   multisigAccount: MultisigAccount;
-  signatories: Account[];
-  signer: Account;
+  signatories: AnyAccount[];
+  signer: AnyAccount;
 };
 
 export type ProxyTxWrapper = {
   kind: WrapperKind.PROXY;
-  proxyAccount: Account;
+  proxyAccount: AnyAccount;
   proxiedAccount: ProxiedAccount;
 };
 

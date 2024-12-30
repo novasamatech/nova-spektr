@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Account, AccountType } from '@/shared/core';
+import { AccountType, type VaultBaseAccount } from '@/shared/core';
 import { networkDomain } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { renameWalletModel } from '../rename-wallet-model';
@@ -41,7 +41,7 @@ describe('entities/wallet/model/wallet-model', () => {
       name: newName,
       accounts: [
         { cryptoType: 0, name: 'New wallet name', accountType: AccountType.BASE, type: 'universal', walletId: 1 },
-      ] as Account[],
+      ] as VaultBaseAccount[],
     };
 
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(updatedWallet.id);

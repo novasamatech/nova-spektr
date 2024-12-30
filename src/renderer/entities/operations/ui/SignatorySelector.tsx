@@ -1,22 +1,23 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Asset } from '@/shared/core';
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
 
 type Props = {
-  signatory?: Account | null;
-  signatories: { signer: Account; balance: BN | string }[];
+  signatory?: AnyAccount | null;
+  signatories: { signer: AnyAccount; balance: BN | string }[];
   asset?: Asset;
   addressPrefix: number;
   hasError: boolean;
   errorText: string;
-  onChange: (signatory: Account) => void;
+  onChange: (signatory: AnyAccount) => void;
 };
 
 export const SignatorySelector = ({
