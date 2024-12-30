@@ -20,9 +20,12 @@ import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
 export const initModel = () => {
   networkDomain.accounts.populate();
+
+  walletWatchOnlyFeature.start();
 
   assetsNavigationFeature.start();
   stakingNavigationFeature.start();

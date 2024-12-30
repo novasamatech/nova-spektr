@@ -4,7 +4,7 @@ import { syncApplyImpl } from './syncApplyImpl';
 import { type Identifier } from './types';
 
 // Public interface
-type AnyOfHandler<Value> = (value: Value) => boolean;
+type AnyOfHandler<Value> = (value: Value) => boolean | void;
 
 export type AnyOfIdentifier<Value> = Identifier<Value, boolean, AnyOfHandler<Value>> & {
   check(value: Value): boolean;
@@ -20,7 +20,7 @@ export const createAnyOf = <Value>(config?: { name?: string }): AnyOfIdentifier<
     name: config?.name ?? 'unknownAnyOf',
     processHandler: (handler) => ({
       available: handler.available,
-      body: ({ acc, input }) => acc || handler.body(input),
+      body: ({ acc, input }) => (acc || handler.body(input)) ?? acc,
     }),
   });
 

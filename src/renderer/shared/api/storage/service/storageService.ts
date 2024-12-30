@@ -134,7 +134,6 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
 
 export const storageService = {
   wallets: new StorageService(dexieStorage.wallets),
-  accounts: new StorageService(dexieStorage.accounts),
   accounts2: new StorageService(dexieStorage.accounts2),
   contacts: new StorageService(dexieStorage.contacts),
   connections: new StorageService(dexieStorage.connections),

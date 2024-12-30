@@ -19,4 +19,15 @@ describe('createAnyOf', () => {
 
     expect(res).toEqual(true);
   });
+
+  it('should skip void', () => {
+    const flag = createAnyOf<unknown>();
+
+    flag.registerHandler({ body: isNumber, available: () => false });
+    flag.registerHandler({ body: () => undefined, available: () => true });
+
+    const res = flag.check('');
+
+    expect(res).toEqual(false);
+  });
 });

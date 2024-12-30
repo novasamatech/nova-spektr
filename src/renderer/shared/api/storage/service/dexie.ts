@@ -26,6 +26,10 @@ class DexieStorage extends Dexie {
   connections: TConnection;
   balances: TBalance;
   wallets: TWallet;
+  /**
+   * @deprecated For now it's replaced by accounts2 table, but not wiped for
+   *   backup.
+   */
   accounts: TAccount;
   accounts2: TAccount2;
   contacts: TContact;

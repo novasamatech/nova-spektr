@@ -5,6 +5,7 @@ import { networkUtils } from '@/entities/network';
 import { type AnyAccount, type AnyAccountDraft, type ChainAccount, type UniversalAccount } from './types';
 
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
+const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 
 function isCryptoMatch(account: AnyAccount, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
@@ -40,11 +41,15 @@ function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
   return accounts.filter(account => account.walletId === walletId);
 }
 
+function hasPermissionToMakeActions(account: AnyAccount) {
+  return accountActionPermissionAnyOf.check({ account });
+}
+
 /**
- * ATTENTION! This method used as source of stable id for different types of
+ * ATTENTION! This method is the source of stable id for different types of
  * account. If you want to change implementation you should also write db
  * migrations and make regress testing across application to verify that new
- * account id has no collisions and used properly.
+ * account id has no collisions.
  */
 function uniqId(account: AnyAccountDraft) {
   return isUniversalAccount(account)
@@ -54,11 +59,14 @@ function uniqId(account: AnyAccountDraft) {
 
 export const accountsService = {
   accountAvailabilityOnChainAnyOf,
+  accountActionPermissionAnyOf,
 
   uniqId,
 
   isChainAccount,
   isUniversalAccount,
+
+  hasPermissionToMakeActions,
 
   filterAccountOnChain,
   filterAccountsByWallet,
