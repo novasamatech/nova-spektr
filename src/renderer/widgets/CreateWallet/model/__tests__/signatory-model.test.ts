@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { toAddress } from '@/shared/lib/utils';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { signatoryModel } from '../signatory-model';
 

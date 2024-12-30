@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../form-model';

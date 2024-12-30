@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { type Account, type ChainId, ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';

@@ -11,7 +11,7 @@ import { series } from '@/shared/effector';
 import { nonNullable } from '@/shared/lib/utils';
 // TODO wallet connect model should be in feature, not entities
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import {
   DEFAULT_APP_METADATA,
@@ -148,8 +148,8 @@ const logProviderIdFx = createEffect(async (client: Provider) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic, provider, walletId }: SessionTopicParams & { provider: Provider }) => {
-    const account = accounts.at(0);
+  async ({ accounts: accountsToUpdate, topic, provider, walletId }: SessionTopicParams & { provider: Provider }) => {
+    const account = accountsToUpdate.at(0);
     if (!account) {
       return {
         walletId,
@@ -173,7 +173,7 @@ const sessionTopicUpdatedFx = createEffect(
       console.error(e);
     }
 
-    const updatedAccounts = accounts.map<Account>((account) => {
+    const updatedAccounts = accountsToUpdate.map<AnyAccount>((account) => {
       if (accountUtils.isWcAccount(account)) {
         return {
           ...account,
@@ -184,7 +184,7 @@ const sessionTopicUpdatedFx = createEffect(
       return account;
     });
 
-    await Promise.all(updatedAccounts.map(networkDomain.accounts.updateAccount));
+    await Promise.all(updatedAccounts.map(accounts.updateAccount));
 
     if (oldSession) {
       await disconnectFx({ provider, session: oldSession });
@@ -205,8 +205,8 @@ const removePairingFx = createEffect(
   },
 );
 
-const updateWcAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
-  return Promise.all(accounts.map(networkDomain.accounts.updateAccount));
+const updateWcAccountsFx = createEffect(async (wcAccounts: AnyAccount[]) => {
+  return Promise.all(wcAccounts.map(accounts.updateAccount));
 });
 
 type DisconnectParams = {

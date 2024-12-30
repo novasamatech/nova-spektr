@@ -58,7 +58,7 @@ const apis = { '0x01': {}, '0x02': {} };
 export const balanceSubMock = {
   wallets,
   newWallets,
-  accounts,
+  accountMocks: accounts,
   chains,
   apis,
 };

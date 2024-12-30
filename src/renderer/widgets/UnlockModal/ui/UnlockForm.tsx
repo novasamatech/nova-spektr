@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';

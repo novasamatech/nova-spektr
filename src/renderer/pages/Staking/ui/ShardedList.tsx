@@ -6,7 +6,7 @@ import { type VaultShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { useStakingData } from '@/entities/staking';

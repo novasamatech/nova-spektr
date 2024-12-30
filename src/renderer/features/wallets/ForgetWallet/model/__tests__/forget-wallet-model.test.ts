@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
@@ -116,9 +116,9 @@ describe('features/wallets/ForgetModel', () => {
     const scope = fork({
       values: [
         [walletModel.__test.$rawWallets, [wallet]],
-        [networkDomain.accounts.__test.$list, wallet.accounts],
+        [accounts.__test.$list, wallet.accounts],
       ],
-      handlers: [[networkDomain.accounts.deleteAccounts, spyDeleteAccounts]],
+      handlers: [[accounts.deleteAccounts, spyDeleteAccounts]],
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
@@ -135,7 +135,7 @@ describe('features/wallets/ForgetModel', () => {
     const scope = fork({
       values: new Map()
         .set(walletModel.__test.$rawWallets, [wallet, proxiedWallet])
-        .set(networkDomain.accounts.__test.$list, [...wallet.accounts, ...proxiedWallet.accounts])
+        .set(accounts.__test.$list, [...wallet.accounts, ...proxiedWallet.accounts])
         .set(proxyModel.$proxies, {
           '0x01': [
             {

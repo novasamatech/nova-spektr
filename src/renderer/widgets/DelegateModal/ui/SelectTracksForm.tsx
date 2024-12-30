@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, SmallTitleText, Tooltip } from '@/shared/ui';
 import { Checkbox, Modal } from '@/shared/ui-kit';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {

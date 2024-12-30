@@ -6,7 +6,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { locksService } from '@/entities/governance';
 
@@ -24,7 +24,7 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
   const { t } = useI18n();
 
   const selectAccount = (id: string) => {
-    const selectedAccount = accounts.find(({ account }) => id === networkDomain.accountsService.uniqId(account));
+    const selectedAccount = accounts.find(({ account }) => id === account.id);
     if (!selectedAccount) return;
 
     onChange(selectedAccount.account);
@@ -35,16 +35,15 @@ export const AccountsSelector = ({ value, accounts, asset, chain, hasError, erro
       <Select
         placeholder={t('governance.vote.field.accountsPlaceholder')}
         invalid={hasError}
-        value={value ? networkDomain.accountsService.uniqId(value) : null}
+        value={value?.id ?? null}
         onChange={(id) => selectAccount(id)}
       >
         {accounts.map(({ account, balance }) => {
           const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
           const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
-          const id = networkDomain.accountsService.uniqId(account);
 
           return (
-            <Select.Item key={id} value={id}>
+            <Select.Item key={account.id} value={account.id}>
               <div className="flex w-full items-center justify-between gap-2 text-start text-body">
                 <Address
                   showIcon

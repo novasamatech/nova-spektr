@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { type Account, type Chain } from '@/shared/core';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../confirm-model';

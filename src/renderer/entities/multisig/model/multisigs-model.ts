@@ -22,7 +22,7 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -310,7 +310,7 @@ sample({
   clock: $flexibleWithProxy,
   filter: nonNullable,
   fn: (flexibleWithProxy) => flexibleWithProxy!.accounts,
-  target: series(networkDomain.accounts.updateAccount),
+  target: series(accounts.updateAccount),
 });
 
 export const multisigsModel = {

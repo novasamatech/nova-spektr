@@ -3,7 +3,7 @@ import { allSettled, fork } from 'effector';
 import { storageService } from '@/shared/api/storage';
 import { AccountType, ChainOptions, ConnectionType, type HexString, type ProxyAccount } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';

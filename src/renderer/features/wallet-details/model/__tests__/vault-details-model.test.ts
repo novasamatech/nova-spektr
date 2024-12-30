@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { type Chain, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { vaultDetailsModel } from '../vault-details-model';
 
 describe('widgets/WalletDetails/model/vault-details-model', () => {
@@ -39,38 +39,36 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   });
 
   test('should update accounts on keysRemoved', async () => {
-    const accounts = [
+    const testAccounts = [
       { accountId: '0x00', walletId: 1, name: 'My first shard' },
       { accountId: '0x01', walletId: 1, name: 'My second shard' },
     ];
 
     const scope = fork({
-      values: [[networkDomain.accounts.__test.$list, accounts]],
-      handlers: [[networkDomain.accounts.updateAccount, () => {}]],
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.updateAccount, () => {}]],
     });
 
-    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [accounts[0]] });
-    expect(scope.getState(networkDomain.accounts.$list)).toEqual([accounts[1]]);
+    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [testAccounts[0]] });
+    expect(scope.getState(accounts.$list)).toEqual([testAccounts[1]]);
   });
 
   // TODO check
   test('should update accounts on accountsCreated', async () => {
     const walletId = 1;
-    const accounts = [{ accountId: '0x00', walletId, name: 'My first shard' }];
+    const testAccounts = [{ accountId: '0x00', walletId, name: 'My first shard' }];
 
     const key = { name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
     const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
     const newAccount = { walletId, ...key };
 
     const scope = fork({
-      values: [[networkDomain.accounts.__test.$list, accounts]],
-      handlers: [[networkDomain.accounts.createAccounts, (accounts: AnyAccount) => accounts]],
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.createAccounts, (accounts: AnyAccount) => accounts]],
     });
 
     await allSettled(vaultDetailsModel.events.accountsCreated, { scope, params });
 
-    console.log(scope.getState(networkDomain.accounts.$list));
-
-    expect(scope.getState(networkDomain.accounts.$list)).toEqual([...accounts, newAccount]);
+    expect(scope.getState(accounts.$list)).toEqual([...testAccounts, newAccount]);
   });
 });

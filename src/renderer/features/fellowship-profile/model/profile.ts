@@ -5,7 +5,7 @@ import { attachToFeatureInput } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
-import { networkDomain } from '@/domains/network';
+import { accountsService } from '@/domains/network';
 
 import { fellowshipModel } from './fellowship';
 import { profileFeatureStatus } from './status';
@@ -19,7 +19,7 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
 });
 
 const $chainAccounts = profileFeatureStatus.input.map(store => {
-  return store ? networkDomain.accountsService.filterAccountOnChain(store.accounts, store.chain) : [];
+  return store ? accountsService.filterAccountOnChain(store.accounts, store.chain) : [];
 });
 
 const $currentMember = combine($chainAccounts, $members, (accounts, members) => {
@@ -35,7 +35,7 @@ const $identity = combine($currentMember, $identities, (member, identities) => {
 const $isAccountExist = profileFeatureStatus.input.map(store => {
   if (!store) return false;
 
-  return networkDomain.accountsService.filterAccountOnChain(store.accounts, store.chain).length > 0;
+  return accountsService.filterAccountOnChain(store.accounts, store.chain).length > 0;
 });
 
 const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));

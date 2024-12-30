@@ -5,7 +5,7 @@ import { not } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
 export type Callbacks = {

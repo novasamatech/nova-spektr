@@ -4,7 +4,7 @@ import { AccountType, ChainOptions, ConnectionType, ExternalType, WalletType } f
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO multisig model should be in some kind of feature
 // eslint-disable-next-line boundaries/element-types
-import { networkDomain } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { multisigService } from '../../api';
@@ -52,7 +52,7 @@ describe('multisigs model', () => {
             accounts: [],
           },
         ])
-        .set(networkDomain.accounts.__test.$list, [
+        .set(accounts.__test.$list, [
           { walletId: 1, accountId: '0x03', type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x01' },
         ])
         .set(networkModel.$chains, mockChains)
@@ -83,7 +83,7 @@ describe('multisigs model', () => {
             accounts: [],
           },
         ])
-        .set(networkDomain.accounts.__test.$list, [
+        .set(accounts.__test.$list, [
           { walletId: 1, accountId: '0x03', accountType: AccountType.WALLET_CONNECT, chainId: '0x01' },
           { walletId: 2, accountId: '0x00', accountType: AccountType.MULTISIG, chainId: '0x01' },
         ])

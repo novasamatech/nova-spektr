@@ -18,7 +18,13 @@ import {
 import { dictionary, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type UniversalAccount, networkDomain } from '@/domains/network';
+import {
+  type AnyAccount,
+  type ChainAccount,
+  type UniversalAccount,
+  accounts,
+  accountsService,
+} from '@/domains/network';
 import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
@@ -50,7 +56,7 @@ const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>()
 
 const $rawWallets = createStore<DbWallet[]>([]);
 
-const $allWallets = combine($rawWallets, networkDomain.accounts.$list, (wallets, accounts) => {
+const $allWallets = combine($rawWallets, accounts.$list, (wallets, accounts) => {
   const grouped = groupBy(accounts, (a) => a.walletId);
 
   return wallets.map((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] })) as Wallet[];
@@ -68,11 +74,10 @@ const $activeWallet = combine(
 );
 
 // TODO: ideally it should be a feature
-const $activeAccounts = combine($activeWallet, networkDomain.accounts.$list, (wallet, accounts) => {
+const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
 
-  // TODO remove this `as Account` thing
-  return networkDomain.accountsService.filterAccountsByWallet(accounts, wallet.id) as Account[];
+  return accountsService.filterAccountsByWallet(accounts, wallet.id);
 });
 
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
@@ -103,16 +108,16 @@ type CreateResult = {
   external: boolean;
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts, external }: CreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts: accountDrafts, external }: CreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
 
-    const accountsPayload = accounts.map(
-      (account) => ({ ...account, walletId: dbWallet.id }) as VaultChainAccount | UniversalAccount,
+    const accountsPayload = accountDrafts.map(
+      (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
     );
 
-    const dbAccounts = await networkDomain.accounts.createAccounts(accountsPayload);
+    const dbAccounts = await accounts.createAccounts(accountsPayload);
 
     return { wallet: dbWallet, accounts: dbAccounts, external };
   },
@@ -121,20 +126,20 @@ const walletCreatedFx = createEffect(
 const multishardCreatedFx = createEffect(
   async ({
     wallet,
-    accounts,
+    accounts: accountDrafts,
     external,
   }: UnitValue<typeof multishardCreated>): Promise<(CreateResult & { external: boolean }) | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
 
-    const { base, chains, shards } = modelUtils.groupAccounts(accounts);
+    const { base, chains, shards } = modelUtils.groupAccounts(accountDrafts);
 
     const multishardAccounts = [];
 
     for (const [index, baseAccount] of base.entries()) {
       // TODO fix
-      const [dbBaseAccount] = await networkDomain.accounts.createAccounts([{ ...baseAccount, walletId: dbWallet.id }]);
+      const [dbBaseAccount] = await accounts.createAccounts([{ ...baseAccount, walletId: dbWallet.id }]);
       if (!dbBaseAccount) return undefined;
 
       multishardAccounts.push(dbBaseAccount);
@@ -164,7 +169,7 @@ const multishardCreatedFx = createEffect(
       }
 
       // @ts-expect-error fix it later
-      const dbChainAccounts = await networkDomain.accounts.createAccounts(accountPayloads);
+      const dbChainAccounts = await accounts.createAccounts(accountPayloads);
       if (!dbChainAccounts.length) return undefined;
 
       multishardAccounts.push(...dbChainAccounts);
@@ -175,21 +180,21 @@ const multishardCreatedFx = createEffect(
 );
 
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
-  await Promise.all([networkDomain.accounts.deleteAccounts(wallet.accounts), storageService.wallets.delete(wallet.id)]);
+  await Promise.all([accounts.deleteAccounts(wallet.accounts), storageService.wallets.delete(wallet.id)]);
 
   return wallet.id;
 });
 
 const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
   const walletIds: ID[] = [];
-  let accounts: AnyAccount[] = [];
+  let accountstoRemove: AnyAccount[] = [];
 
   for (const wallet of wallets) {
     walletIds.push(wallet.id);
-    accounts = accounts.concat(wallet.accounts);
+    accountstoRemove = accountstoRemove.concat(wallet.accounts);
   }
 
-  await Promise.all([storageService.wallets.deleteAll(walletIds), networkDomain.accounts.deleteAccounts(accounts)]);
+  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountstoRemove)]);
 
   return walletIds;
 });
@@ -220,7 +225,7 @@ const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined
 
 sample({
   clock: walletStarted,
-  target: [networkDomain.accounts.populate, fetchAllWalletsFx],
+  target: [accounts.populate, fetchAllWalletsFx],
 });
 
 sample({

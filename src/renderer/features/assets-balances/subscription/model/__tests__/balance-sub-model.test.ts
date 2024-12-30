@@ -3,7 +3,7 @@ import { type Scope, allSettled, fork } from 'effector';
 import { balanceService } from '@/shared/api/balances';
 import { storageService } from '@/shared/api/storage';
 import { type ChainId, ConnectionStatus } from '@/shared/core';
-import { networkDomain } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -12,14 +12,14 @@ import { balanceSubModel } from '../balance-sub-model';
 import { balanceSubMock } from './mocks/balance-sub-mock';
 
 describe('features/balances/subscription/model/balance-sub-model', () => {
-  const { wallets, newWallets, accounts } = balanceSubMock;
+  const { wallets, newWallets, accountMocks } = balanceSubMock;
 
   const setupInitialState = async (scope: Scope) => {
-    const { chains, wallets, accounts } = balanceSubMock;
+    const { chains, wallets, accountMocks } = balanceSubMock;
 
     const actions = Promise.all([
       allSettled(networkModel.$chains, { scope, params: chains }),
-      allSettled(networkDomain.accounts.__test.$list, { scope, params: accounts }),
+      allSettled(accounts.__test.$list, { scope, params: accountMocks }),
       allSettled(walletModel.__test.$rawWallets, { scope, params: wallets }),
     ]);
 
@@ -52,8 +52,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await setupInitialState(scope);
 
     expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
-      '0x01': { [wallets[0].id]: [accounts[0].accountId] },
-      '0x02': { [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId] },
+      '0x01': { [wallets[0].id]: [accountMocks[0].accountId] },
+      '0x02': { [wallets[0].id]: [accountMocks[0].accountId, accountMocks[1].accountId] },
     });
   });
 
@@ -88,8 +88,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await action;
 
     expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
-      '0x01': { [wallets[1].id]: [accounts[2].accountId] },
-      '0x02': { [wallets[1].id]: [accounts[2].accountId, accounts[3].accountId] },
+      '0x01': { [wallets[1].id]: [accountMocks[2].accountId] },
+      '0x02': { [wallets[1].id]: [accountMocks[2].accountId, accountMocks[3].accountId] },
     });
   });
 
@@ -98,8 +98,8 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await setupInitialState(scope);
 
     expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
-      '0x01': { [wallets[0].id]: [accounts[0].accountId] },
-      '0x02': { [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId] },
+      '0x01': { [wallets[0].id]: [accountMocks[0].accountId] },
+      '0x02': { [wallets[0].id]: [accountMocks[0].accountId, accountMocks[1].accountId] },
     });
 
     const action = allSettled(balanceSubModel.events.walletToSubSet, { scope, params: wallets[1] });
@@ -108,10 +108,10 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
     await action;
 
     expect(scope.getState(balanceSubModel._test.$subAccounts)).toEqual({
-      '0x01': { [wallets[0].id]: [accounts[0].accountId], [wallets[1].id]: [accounts[2].accountId] },
+      '0x01': { [wallets[0].id]: [accountMocks[0].accountId], [wallets[1].id]: [accountMocks[2].accountId] },
       '0x02': {
-        [wallets[0].id]: [accounts[0].accountId, accounts[1].accountId],
-        [wallets[1].id]: [accounts[2].accountId, accounts[3].accountId],
+        [wallets[0].id]: [accountMocks[0].accountId, accountMocks[1].accountId],
+        [wallets[1].id]: [accountMocks[2].accountId, accountMocks[3].accountId],
       },
     });
   });
@@ -244,14 +244,14 @@ describe('features/balances/subscription/model/balance-sub-model', () => {
 
   test('should update $balancesBuffer on $subAccounts change ', async () => {
     const subAccounts = {
-      '0x01': { [wallets[1].id]: [accounts[2].accountId] },
-      '0x02': { [wallets[1].id]: [accounts[2].accountId, accounts[3].accountId] },
+      '0x01': { [wallets[1].id]: [accountMocks[2].accountId] },
+      '0x02': { [wallets[1].id]: [accountMocks[2].accountId, accountMocks[3].accountId] },
     };
 
     const newBalances = [
-      { id: 1, chainId: '0x01' as ChainId, accountId: accounts[2].accountId, assetId: '1' },
-      { id: 2, chainId: '0x02' as ChainId, accountId: accounts[3].accountId, assetId: '1' },
-      { id: 3, chainId: '0x02' as ChainId, accountId: accounts[0].accountId, assetId: '1' },
+      { id: 1, chainId: '0x01' as ChainId, accountId: accountMocks[2].accountId, assetId: '1' },
+      { id: 2, chainId: '0x02' as ChainId, accountId: accountMocks[3].accountId, assetId: '1' },
+      { id: 3, chainId: '0x02' as ChainId, accountId: accountMocks[0].accountId, assetId: '1' },
     ];
 
     jest.spyOn(storageService.balances, 'readAll').mockResolvedValue(newBalances);

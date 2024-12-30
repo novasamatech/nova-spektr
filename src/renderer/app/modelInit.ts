@@ -1,5 +1,5 @@
 import { kernelModel } from '@/shared/core';
-import { networkDomain } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
 import { multisigsModel } from '@/entities/multisig';
@@ -23,7 +23,7 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
 export const initModel = () => {
-  networkDomain.accounts.populate();
+  accounts.populate();
 
   walletWatchOnlyFeature.start();
 

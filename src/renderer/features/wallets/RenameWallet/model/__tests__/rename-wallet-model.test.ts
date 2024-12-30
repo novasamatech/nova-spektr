@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { AccountType, type VaultBaseAccount } from '@/shared/core';
-import { networkDomain } from '@/domains/network';
+import * as networkDomain from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { renameWalletModel } from '../rename-wallet-model';
 

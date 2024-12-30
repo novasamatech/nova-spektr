@@ -3,7 +3,7 @@ import { allSettled, fork } from 'effector';
 import { storageService } from '@/shared/api/storage';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { walletModel } from '../wallet-model';
 
 import { walletMock } from './mocks/wallet-mock';
@@ -21,7 +21,7 @@ describe('entities/wallet/model/wallet-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(1);
 
     const scope = fork({
-      handlers: [[networkDomain.accounts.populate, () => walletMock.accounts]],
+      handlers: [[accounts.populate, () => walletMock.accounts]],
     });
 
     await allSettled(walletModel.events.walletStarted, { scope });
@@ -38,9 +38,9 @@ describe('entities/wallet/model/wallet-model', () => {
     const scope = fork({
       values: [
         [walletModel.__test.$rawWallets, wallets],
-        [networkDomain.accounts.__test.$list, walletMock.accounts],
+        [accounts.__test.$list, walletMock.accounts],
       ],
-      handlers: [[networkDomain.accounts.deleteAccounts, (accounts: AnyAccount[]) => accounts]],
+      handlers: [[accounts.deleteAccounts, (accounts: AnyAccount[]) => accounts]],
     });
 
     await allSettled(walletModel.events.walletRemoved, { scope, params: removedWallet.id });
@@ -60,9 +60,9 @@ describe('entities/wallet/model/wallet-model', () => {
     const scope = fork({
       values: [
         [walletModel.__test.$rawWallets, wallets],
-        [networkDomain.accounts.__test.$list, walletMock.accounts],
+        [accounts.__test.$list, walletMock.accounts],
       ],
-      handlers: [[networkDomain.accounts.deleteAccounts, accoutsDeleteSpy]],
+      handlers: [[accounts.deleteAccounts, accoutsDeleteSpy]],
     });
 
     await allSettled(walletModel.events.walletsRemoved, { scope, params: [removedWallet.id] });
@@ -77,7 +77,7 @@ describe('entities/wallet/model/wallet-model', () => {
     const visibleWallets = wallets.filter((wallet) => !wallet?.isHidden);
 
     const scope = fork({
-      values: [[networkDomain.accounts.__test.$list, walletMock.accounts]],
+      values: [[accounts.__test.$list, walletMock.accounts]],
     });
 
     await allSettled(walletModel.__test.$rawWallets, { scope, params: wallets });

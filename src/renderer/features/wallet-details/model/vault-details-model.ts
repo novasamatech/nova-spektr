@@ -10,7 +10,7 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, networkDomain } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { proxiesModel } from '@/features/proxies';
 
@@ -43,8 +43,8 @@ sample({
 
 sample({
   clock: $shards,
-  filter: (shards) => shards.length > 0,
-  fn: (shards) => shards[0].chainId,
+  filter: shards => shards.length > 0,
+  fn: shards => shards[0].chainId,
   target: chainSetFx,
 });
 
@@ -56,21 +56,21 @@ sample({
 
 sample({
   clock: keysAdded,
-  filter: (keys) => keys.length > 0,
+  filter: keys => keys.length > 0,
   target: $keysToAdd,
 });
 
 sample({
   clock: keysRemoved,
-  filter: (keys) => keys.length > 0,
-  target: networkDomain.accounts.deleteAccounts,
+  filter: keys => keys.length > 0,
+  target: accounts.deleteAccounts,
 });
 
 sample({
   clock: accountsCreated,
   fn: ({ accounts, walletId, rootAccountId }) => {
     // @ts-expect-error some types missaligment (no accountId)
-    const accountsToCreate: AnyAccount[] = accounts.map((account) =>
+    const accountsToCreate: AnyAccount[] = accounts.map(account =>
       accountUtils.isVaultChainAccount(account)
         ? { ...account, baseAccountId: rootAccountId, walletId }
         : { ...account, walletId },
@@ -78,11 +78,11 @@ sample({
 
     return accountsToCreate;
   },
-  target: networkDomain.accounts.createAccounts,
+  target: accounts.createAccounts,
 });
 
 sample({
-  clock: networkDomain.accounts.createAccounts.doneData,
+  clock: accounts.createAccounts.done,
   target: proxiesModel.events.workerStarted,
 });
 
