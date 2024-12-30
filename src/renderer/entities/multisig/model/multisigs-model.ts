@@ -4,7 +4,6 @@ import { uniq } from 'lodash';
 import { interval } from 'patronum';
 
 import {
-  type Account,
   type Chain,
   type ChainId,
   ExternalType,
@@ -23,7 +22,7 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { networkDomain } from '@/domains/network';
+import { type AnyAccount, networkDomain } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -33,7 +32,7 @@ import { multisigUtils } from '../lib/mulitisigs-utils';
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
 const subscribe = createEvent();
-const request = createEvent<Account[]>();
+const request = createEvent<AnyAccount[]>();
 
 const $multisigAccounts = walletModel.$allWallets
   .map(walletUtils.getAllAccounts)
@@ -68,8 +67,8 @@ const $multisigChains = combine(networkModel.$chains, (chains) => {
 
 type GetMultisigsParams = {
   chains: Chain[];
-  accounts: Account[];
-  multisigAccounts: Account[];
+  accounts: AnyAccount[];
+  multisigAccounts: AnyAccount[];
   proxies: Record<ChainId, ProxyAccount[]>;
 };
 
