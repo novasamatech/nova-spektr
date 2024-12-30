@@ -1,0 +1,19 @@
+projects:
+  SubQuery Governance:
+    schema: https://subquery-governance-polkadot-prod.novasama-tech.org
+    include:
+      - src/renderer/shared/api/governance/**
+
+  SubQuery Proxy:
+    schema: https://subquery-proxy-polkadot-prod.novasama-tech.org
+    include:
+      - src/renderer/entities/multisig/**
+      - src/renderer/entities/proxy/**
+
+  SubQuery History:
+    schema: https://subquery-history-polkadot-prod.novasama-tech.org
+
+  SubQuery Collectives:
+    schema: https://subquery-collectives-polkadot-prod.novasama-tech.org
+    include:
+      - src/renderer/domains/collectives/**
