@@ -23,7 +23,7 @@ export type {
   ProxiedWallet,
   SignableWalletFamily,
 } from './types/wallet';
-export { WalletType, SigningType } from './types/wallet';
+export { WalletType, WalletIconType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
 export type {

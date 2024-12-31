@@ -6,8 +6,10 @@ import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
@@ -24,6 +26,7 @@ export const ConfirmationStep = () => {
   const api = useUnit(flexibleMultisigModel.$api);
   const transaction = useUnit(flexibleMultisigModel.$transaction);
   const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
+  const proxyDeposit = useUnit(flexibleMultisigModel.$proxyDeposit);
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
@@ -79,7 +82,12 @@ export const ConfirmationStep = () => {
             <Separator className="my-4 border-filter-border" />
             {chain && asset ? (
               <div className="mb-4 flex flex-1 flex-col gap-y-4">
-                <ProxyDepositWithLabel asset={asset} proxyNumber={1} deposit="0" api={api} className="text-footnote" />
+                <ProxyDepositLabel>
+                  <div className="flex flex-col items-end gap-y-0.5">
+                    <AssetBalance value={proxyDeposit} asset={asset} className="text-footnote" />
+                    <AssetFiatBalance asset={asset} amount={proxyDeposit.toString()} />
+                  </div>
+                </ProxyDepositLabel>
                 <MultisigDepositWithLabel
                   className="text-footnote"
                   asset={asset}
