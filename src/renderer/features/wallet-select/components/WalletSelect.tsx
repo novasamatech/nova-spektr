@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { type Wallet, type WalletFamily } from '@/shared/core';
+import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Popover, SearchInput, Skeleton } from '@/shared/ui-kit';
@@ -20,18 +21,24 @@ const {
   views: { WalletFiatBalance },
 } = walletsFiatBalanceFeature;
 
-type Props = {
-  action?: ReactNode;
-};
+export const walletGroupSlot = createSlot<{ query: string; onSelect: (wallet: Wallet) => void }>();
+export const walletSelectActionsSlot = createSlot();
 
-export const WalletSelect = ({ action }: Props) => {
+export const WalletSelect = () => {
   const { t } = useI18n();
-
   const activeWallet = useUnit(walletModel.$activeWallet);
   const filterQuery = useUnit(walletSelectModel.$filterQuery);
   const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
+
+  const actions = useSlot(walletSelectActionsSlot);
+  const walletGroups = useSlot(walletGroupSlot, {
+    props: {
+      query: filterQuery,
+      onSelect: setSelectedWallet,
+    },
+  });
 
   useEffect(() => {
     // TODO: WTF
@@ -39,7 +46,7 @@ export const WalletSelect = ({ action }: Props) => {
   }, []);
 
   if (!activeWallet) {
-    return <Skeleton width={52} height={14} />;
+    return <Skeleton width={52} height={16} />;
   }
 
   return (
@@ -64,7 +71,7 @@ export const WalletSelect = ({ action }: Props) => {
           <section className="relative flex max-h-[700px] w-[300px] flex-col bg-card-background">
             <header className="flex items-center justify-between border-b border-divider px-5 py-3">
               <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-              <div className="min-w-[140px]">{action}</div>
+              <div className="min-w-[140px]">{actions}</div>
             </header>
 
             <div className="border-b border-divider p-2">
@@ -75,7 +82,7 @@ export const WalletSelect = ({ action }: Props) => {
               />
             </div>
 
-            <div className="flex max-h-[530px] flex-col divide-y divide-divider overflow-y-auto px-1">
+            <div className="flex max-h-[530px] flex-col gap-1 divide-y divide-divider overflow-y-auto px-1 pb-1">
               {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
                 if (wallets.length === 0) {
                   return null;
@@ -90,6 +97,8 @@ export const WalletSelect = ({ action }: Props) => {
                   />
                 );
               })}
+
+              {walletGroups}
             </div>
           </section>
         </Popover.Content>

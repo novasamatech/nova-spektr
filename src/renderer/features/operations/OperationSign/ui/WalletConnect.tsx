@@ -14,7 +14,7 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
-import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
+import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';

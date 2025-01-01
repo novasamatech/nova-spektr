@@ -11,7 +11,7 @@ import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { MultiAccountsList } from '@/entities/wallet';
 import { walletConnectModel } from '@/entities/walletConnect';
-import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
+import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
 

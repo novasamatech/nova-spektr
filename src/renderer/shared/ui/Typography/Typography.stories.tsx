@@ -19,7 +19,7 @@ export default {
 const LargeTitleTemplate: StoryFn<typeof TextBase> = (args) => <LargeTitleText {...args} />;
 export const LargeTitle = LargeTitleTemplate.bind({});
 LargeTitle.args = {
-  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et ',
+  children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et',
 };
 
 const TitleTemplate: StoryFn<typeof TextBase> = (args) => <TitleText {...args} />;

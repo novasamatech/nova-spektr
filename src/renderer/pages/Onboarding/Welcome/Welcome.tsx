@@ -1,21 +1,21 @@
 import throttle from 'lodash/throttle';
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { TEST_IDS } from '@/shared/constants';
-import { WalletType } from '@/shared/core';
+import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, TitleText } from '@/shared/ui';
-import { walletPairingModel } from '@/features/wallets';
 
 import PrivacyPolicy from './PrivacyPolicy';
-import { WelcomeCard } from './WelcomeCard';
 
 const LOGO_WIDTH = 232;
 const RIGHT_PADDING = 225;
 
+export const onboardingActionsSlot = createSlot();
+
 export const Welcome = () => {
   const { t } = useI18n();
+  const wizards = useSlot(onboardingActionsSlot);
 
   const logo = useRef<HTMLDivElement>(null);
   const [fixed, setFixed] = useState(true);
@@ -41,46 +41,7 @@ export const Welcome = () => {
         <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
 
         {/* TODO: move Cards to WalletPairing feature */}
-        <div className="flex flex-col gap-4">
-          <WelcomeCard
-            title={t('onboarding.welcome.polkadotVaultTitle')}
-            description={t('onboarding.welcome.polkadotVaultDescription')}
-            iconName="vaultOnboarding"
-            testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
-            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.novaWalletTitle')}
-            description={t('onboarding.welcome.novaWalletDescription')}
-            iconName="novaWalletOnboarding"
-            testId={TEST_IDS.ONBOARDING.NOVA_WALLET_BUTTON}
-            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.walletConnectTitle')}
-            description={t('onboarding.welcome.walletConnectDescription')}
-            iconName="walletConnectOnboarding"
-            testId={TEST_IDS.ONBOARDING.WALLET_CONNECT_BUTTON}
-            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}
-          />
-
-          <WelcomeCard
-            title={t('onboarding.welcome.watchOnlyTitle')}
-            description={t('onboarding.welcome.watchOnlyDescription')}
-            iconName="watchOnlyOnboarding"
-            testId={TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON}
-            onClick={() => walletPairingModel.events.walletTypeSet(WalletType.WATCH_ONLY)}
-          />
-          <WelcomeCard
-            title={t('onboarding.welcome.ledgerTitle')}
-            description={t('onboarding.welcome.ledgerDescription')}
-            iconName="ledgerOnboarding"
-            disabled
-            testId={TEST_IDS.ONBOARDING.LEDGER_BUTTON}
-          />
-        </div>
+        <div className="flex flex-col gap-4">{wizards}</div>
 
         <div className="flex flex-1 items-end">
           <PrivacyPolicy />

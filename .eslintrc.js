@@ -326,7 +326,15 @@ module.exports = {
               },
               {
                 from: 'features',
-                allow: ['app', 'shared', 'entities', /* TODO fix */ 'widgets', /* TODO fix */ 'features', 'domains'],
+                allow: [
+                  'app',
+                  'shared',
+                  'entities',
+                  /* TODO fix */ 'pages',
+                  /* TODO fix */ 'widgets',
+                  /* TODO fix */ 'features',
+                  'domains',
+                ],
               },
               {
                 from: 'pages',

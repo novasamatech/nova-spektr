@@ -39,7 +39,7 @@ import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { walletPairingModel } from '@/features/wallets';
+import { walletPairingModel } from '@/features/wallet-pairing';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
