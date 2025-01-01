@@ -80,7 +80,7 @@ describe('wallet-select-model', () => {
   });
 
   test('should explicitly set $activeWallet if there is no active wallet', async () => {
-    const inactiveWallets = wallets.map((wallet) => ({ ...wallet, isActive: false }));
+    const inactiveWallets = wallets.map(wallet => ({ ...wallet, isActive: false }));
 
     jest.spyOn(storageService.wallets, 'readAll').mockResolvedValue(inactiveWallets);
     jest.spyOn(storageService.wallets, 'updateAll').mockResolvedValue([]);

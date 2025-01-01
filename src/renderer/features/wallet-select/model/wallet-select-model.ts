@@ -40,7 +40,7 @@ const $walletBalance = combine(
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
   },
-  (params) => {
+  params => {
     const { wallet, chains, balances, prices, currency } = params;
 
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
@@ -53,7 +53,7 @@ const $walletBalance = combine(
       if (!account) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chains[balance.chainId]?.assets?.find((asset) => asset.assetId.toString() === balance.assetId);
+      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId.toString() === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
@@ -75,8 +75,8 @@ sample({
 
 const select = sample({
   clock: walletModel.$wallets,
-  filter: (wallets) => wallets.every((wallet) => !wallet.isActive),
-  fn: (wallets) => walletSelectService.getFirstWallet(wallets)?.id ?? null,
+  filter: wallets => wallets.every(wallet => !wallet.isActive),
+  fn: wallets => walletSelectService.getFirstWallet(wallets)?.id ?? null,
 });
 
 sample({
@@ -103,14 +103,14 @@ sample({
   filter: (wallet, walletId) => walletId !== wallet?.id,
   target: attach({
     source: $callbacks,
-    effect: (state) => state?.onClose(),
+    effect: state => state?.onClose(),
   }),
 });
 
 sample({
   clock: once(walletModel.$wallets),
-  filter: (wallets) => wallets.length > 0 && wallets.every((wallet) => !wallet.isActive),
-  fn: (wallets) => {
+  filter: wallets => wallets.length > 0 && wallets.every(wallet => !wallet.isActive),
+  fn: wallets => {
     const groups = walletSelectService.getWalletByGroups(wallets);
 
     return Object.values(groups).flat()[0].id;

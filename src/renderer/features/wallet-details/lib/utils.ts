@@ -133,7 +133,7 @@ function exportVaultWallet(wallet: Wallet, root: VaultBaseAccount, accounts: Vau
 }
 
 function getMainAccounts(accounts: (VaultChainAccount | VaultShardAccount[])[]): VaultChainAccount[] {
-  return accounts.filter((account) => {
+  return accounts.filter(account => {
     return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
   }) as VaultChainAccount[];
 }

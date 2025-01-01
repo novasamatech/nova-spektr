@@ -66,10 +66,10 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [chains, setChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    const filteredChains = Object.values(allChains).filter((c) => {
+    const filteredChains = Object.values(allChains).filter(c => {
       const accounts = Object.values(accountsMap).flat(2);
 
-      return accounts.some((a) => accountUtils.isChainAndCryptoMatch(a, c));
+      return accounts.some(a => accountUtils.isChainAndCryptoMatch(a, c));
     });
 
     setChains(filteredChains);
@@ -96,7 +96,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
   const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     toggleImportModal();
-    const newKeys = keys.filter((key) => {
+    const newKeys = keys.filter(key => {
       return key.keyType === KeyType.MAIN || !(key as VaultChainAccount | VaultShardAccount).accountId;
     });
 
@@ -160,7 +160,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {Options.map((option) => (
+        {Options.map(option => (
           <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>

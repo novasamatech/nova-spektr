@@ -15,13 +15,13 @@ const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: nul
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
-const $multiShardAccounts = $wallet.map((wallet) => {
+const $multiShardAccounts = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultiShard(wallet)) return new Map();
 
   return walletDetailsUtils.getMultishardMap(wallet.accounts);
 });
 
-const $canCreateProxy = $wallet.map((wallet) => {
+const $canCreateProxy = $wallet.map(wallet => {
   if (nullable(wallet)) return false;
 
   const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -30,7 +30,7 @@ const $canCreateProxy = $wallet.map((wallet) => {
   return canCreateAnyProxy || canCreateNonAnyProxy;
 });
 
-const $vaultAccounts = $wallet.map((wallet) => {
+const $vaultAccounts = $wallet.map(wallet => {
   if (!wallet || !walletUtils.isPolkadotVault(wallet)) return null;
 
   const root = accountUtils.getBaseAccount(wallet.accounts);
@@ -41,7 +41,7 @@ const $vaultAccounts = $wallet.map((wallet) => {
   return { root, accountsMap };
 });
 
-const $multisigAccount = $wallet.map((wallet) => {
+const $multisigAccount = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
   return wallet.accounts.at(0) ?? null;
@@ -138,14 +138,14 @@ const $proxyWallet = combine(
     if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
     return walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isWatchOnly(w),
-      accountFn: (a) => a.accountId === wallet.accounts[0].proxyAccountId,
+      walletFn: w => !walletUtils.isWatchOnly(w),
+      accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
     });
   },
 );
 
-const $hasProxies = combine($chainsProxies, (chainsProxies) => {
-  return Object.values(chainsProxies).some((accounts) => accounts.length > 0);
+const $hasProxies = combine($chainsProxies, chainsProxies => {
+  return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
 
 export const walletDetailsModel = {

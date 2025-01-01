@@ -29,9 +29,9 @@ sample({
   clock: forgetButtonClicked,
   source: walletModel.$wallets,
   fn: (wallets, wallet) => {
-    const accounts = walletUtils.getAccountsBy(wallets, (account) => account.walletId === wallet.id);
+    const accounts = walletUtils.getAccountsBy(wallets, account => account.walletId === wallet.id);
 
-    return accounts.map((account) => account.accountId);
+    return accounts.map(account => account.accountId);
   },
   target: balanceModel.events.balancesRemoved,
 });
@@ -91,7 +91,7 @@ sample({
     for (const newAccount of newAccounts) {
       const [_, chainId, address] = newAccount.split(':');
 
-      const fullChainId = chainIds.find((chain) => chain.includes(chainId));
+      const fullChainId = chainIds.find(chain => chain.includes(chainId));
       const chain = fullChainId && chains[fullChainId as ChainId];
       if (!chain) continue;
 
@@ -114,7 +114,7 @@ sample({
 sample({
   clock: walletConnectModel.events.connectionRejected,
   source: $reconnectStep,
-  filter: (step) => step === ReconnectStep.RECONNECTING,
+  filter: step => step === ReconnectStep.RECONNECTING,
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
@@ -129,7 +129,7 @@ sample({
 sample({
   clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
   source: networkModel.$chains,
-  fn: (chains) => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
+  fn: chains => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
   target: walletConnectModel.events.connect,
 });
 
@@ -143,7 +143,7 @@ sample({
   clock: forgetButtonClicked,
   source: $wallet,
   filter: nonNullable,
-  fn: (wallet) => {
+  fn: wallet => {
     const account = wallet!.accounts.at(0);
     if (!account || !accountUtils.isWcAccount(account)) {
       throw new Error('Not Wallet Connect account.');
@@ -170,7 +170,7 @@ sample({
   clock: forgetButtonClicked,
   source: $wallet,
   filter: nonNullable,
-  fn: (wallet) => wallet!.id,
+  fn: wallet => wallet!.id,
   target: walletModel.events.walletRemoved,
 });
 
