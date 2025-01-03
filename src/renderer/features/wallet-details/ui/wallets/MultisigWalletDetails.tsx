@@ -10,18 +10,11 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
-import { AccountExplorers, Address, RootExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import {
-  AccountsList,
-  ContactItem,
-  WalletCardLg,
-  WalletCardMd,
-  accountUtils,
-  permissionUtils,
-} from '@/entities/wallet';
+import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -206,10 +199,12 @@ export const MultisigWalletDetails = ({
   }
 
   if (!singleChain) {
+    const accounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
+
     const TabAccountList = {
       id: 1,
       title: t('walletDetails.multisig.networksTab'),
-      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} />,
+      panel: <ChainAccountsList accounts={accounts} />,
     };
 
     const TabSignatories = {

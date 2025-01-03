@@ -7,9 +7,10 @@ import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
+import { ChainAccountsList } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { AccountsList, WalletCardLg, WalletIcon, permissionUtils } from '@/entities/wallet';
+import { WalletCardLg, WalletIcon, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
@@ -85,11 +86,15 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) =>
     </Dropdown>
   );
 
+  const account = wallet.accounts.at(0);
+  const chain = account ? chains[account.chainId] : null;
+  const accounts = account && chain ? [[chain, account.accountId] as const] : [];
+
   const tabItems: TabItem[] = [
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <AccountsList accountId={wallet.accounts[0].accountId} chains={[chains[wallet.accounts[0].chainId]]} />,
+      panel: <ChainAccountsList accounts={accounts} />,
     },
     {
       id: 'proxies',

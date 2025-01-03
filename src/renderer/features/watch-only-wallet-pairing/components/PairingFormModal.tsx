@@ -5,8 +5,8 @@ import { type PropsWithChildren } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon, IconButton, Identicon, InputHint, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
-import { AccountsList } from '@/entities/wallet';
 import { pairingFormModel } from '../model/form';
 
 import { EmptyState } from './EmptyState';
@@ -27,6 +27,8 @@ export const PairingFormModal = ({ children }: Props) => {
       pairingFormModel.flow.close();
     }
   };
+
+  const accounts = chains.map((chain) => [chain, accountDraft.accountId] as const);
 
   return (
     <Modal size="xl" isOpen={open} onToggle={toggleModal}>
@@ -97,7 +99,7 @@ export const PairingFormModal = ({ children }: Props) => {
             </form>
           </div>
 
-          <div className="relative flex min-h-0 w-[50%] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
+          <div className="relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg bg-input-background-disabled pt-4">
             <div className="absolute right-3 top-3 m-1">
               <IconButton name="close" size={20} onClick={() => toggleModal(false)} />
             </div>
@@ -105,7 +107,7 @@ export const PairingFormModal = ({ children }: Props) => {
             {fields.address.value && fields.address.isValid ? (
               <>
                 <SmallTitleText className="mt-[52px] px-5">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
-                <AccountsList chains={chains} accountId={accountDraft.accountId} />
+                <ChainAccountsList accounts={accounts} />
               </>
             ) : (
               <EmptyState />
