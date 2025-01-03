@@ -20,7 +20,7 @@ export const WalletCardLg = ({ wallet, description, full, className }: Props) =>
   const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
 
   const type =
-    walletUtils.isFlexibleMultisig(wallet) && !wallet.accounts.at(0)?.proxyAccountId
+    walletUtils.isFlexibleMultisig(wallet) && !wallet.activated
       ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
       : wallet.type;
 
