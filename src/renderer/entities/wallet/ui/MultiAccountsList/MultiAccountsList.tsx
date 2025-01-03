@@ -22,7 +22,7 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
     <div className="flex flex-col">
       <div className={cnTw('flex px-5 py-4', headerClassName)}>
         <FootnoteText className="w-[214px] text-text-tertiary">
-          {t('accountList.networksColumn', { chains: accounts.length })}
+          {t('accountList.networksColumn', { count: accounts.length })}
         </FootnoteText>
         <FootnoteText className="w-[214px] text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>

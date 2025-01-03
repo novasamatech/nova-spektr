@@ -85,7 +85,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
       <Modal.Content>
         {nonNullable(account) ? (
           <Carousel item={step}>
-            <Carousel.Item id="confirm">
+            <Carousel.Item id="confirm" index={0}>
               <Box>
                 <Box padding={[4, 5]}>
                   <VotingConfirmation
@@ -108,7 +108,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
                 </Modal.Footer>
               </Box>
             </Carousel.Item>
-            <Carousel.Item id="sign">
+            <Carousel.Item id="sign" index={1}>
               <OperationSign onGoBack={() => setStep('confirm')} />
             </Carousel.Item>
           </Carousel>

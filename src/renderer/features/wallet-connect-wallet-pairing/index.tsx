@@ -2,8 +2,10 @@ import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { WalletCard } from '@/shared/ui-entities';
-import { walletPairingDropdownOptionsPipeline, walletPairingModel } from '@/features/wallet-pairing';
+import { WalletOnboardingCard } from '@/shared/ui-entities';
+import { Dropdown } from '@/shared/ui-kit';
+import { WalletIcon } from '@/entities/wallet';
+import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 // TODO this component should be injected, not exported
@@ -11,11 +13,11 @@ export { WalletConnectQrCode } from './components/WalletConnectQrCode';
 
 // TODO implement
 
-export const walletPairingWalletConnectFeature = createFeature({
+export const walletConnectWalletPairingFeature = createFeature({
   name: 'wallet pairing/wallet connect',
 });
 
-walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
+walletConnectWalletPairingFeature.inject(onboardingActionsSlot, {
   order: 1,
   render() {
     const { t } = useI18n();
@@ -23,7 +25,7 @@ walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
     // nova wallet pairing is basically the same, let's keep it here for now
     return (
       <>
-        <WalletCard
+        <WalletOnboardingCard
           title={t('onboarding.welcome.novaWalletTitle')}
           description={t('onboarding.welcome.novaWalletDescription')}
           iconName="novaWalletOnboarding"
@@ -31,7 +33,7 @@ walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
           onClick={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}
         />
 
-        <WalletCard
+        <WalletOnboardingCard
           title={t('onboarding.welcome.walletConnectTitle')}
           description={t('onboarding.welcome.walletConnectDescription')}
           iconName="walletConnectOnboarding"
@@ -43,10 +45,21 @@ walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
   },
 });
 
-walletPairingWalletConnectFeature.inject(walletPairingDropdownOptionsPipeline, (options, { t }) => {
-  return options.concat([
+walletConnectWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
+  order: 2,
+  render({ t }) {
     // nova wallet pairing is basically the same, let's keep it here for now
-    { title: t('wallets.addNovaWallet'), walletType: WalletType.NOVA_WALLET, order: 2 },
-    { title: t('wallets.addWalletConnect'), walletType: WalletType.WALLET_CONNECT, order: 3 },
-  ]);
+    return (
+      <>
+        <Dropdown.Item onSelect={() => walletPairingModel.events.walletTypeSet(WalletType.NOVA_WALLET)}>
+          <WalletIcon type={WalletType.NOVA_WALLET} />
+          {t('wallets.addNovaWallet')}
+        </Dropdown.Item>
+        <Dropdown.Item onSelect={() => walletPairingModel.events.walletTypeSet(WalletType.WALLET_CONNECT)}>
+          <WalletIcon type={WalletType.WALLET_CONNECT} />
+          {t('wallets.addWalletConnect')}
+        </Dropdown.Item>
+      </>
+    );
+  },
 });

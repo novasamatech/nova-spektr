@@ -15,6 +15,7 @@ type ContextProps = {
   align?: 'start' | 'center' | 'end';
   alignOffset?: number;
   width?: 'auto' | 'trigger';
+  keepOpen?: boolean;
   testId?: string;
 };
 
@@ -35,12 +36,13 @@ const Root = ({
   align = 'center',
   alignOffset = 0,
   width = 'auto',
+  keepOpen = false,
   testId = 'Dropdown',
   children,
 }: RootProps) => {
   const ctx = useMemo(
-    () => ({ side, sideOffset, align, alignOffset, width, testId }),
-    [side, sideOffset, align, alignOffset, width, testId],
+    () => ({ side, sideOffset, align, alignOffset, width, keepOpen, testId }),
+    [side, sideOffset, align, alignOffset, width, keepOpen, testId],
   );
 
   return (
@@ -122,17 +124,28 @@ const Group = ({ label, children }: GroupProps) => {
 type ItemProps = PropsWithChildren<{
   disabled?: boolean;
   onSelect?: VoidFunction;
+  onClick?: VoidFunction;
 }>;
 
-const Item = ({ onSelect, disabled, children }: ItemProps) => {
+const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
+  const { keepOpen } = useContext(Context);
+
+  const callback = keepOpen
+    ? (e: Event) => {
+        e.preventDefault();
+        onSelect?.();
+      }
+    : onSelect;
+
   return (
     <DropdownMenu.Item
       className={cnTw(
-        'flex rounded px-3 py-2 text-footnote text-text-secondary',
+        'flex items-center gap-2 rounded px-3 py-2 text-footnote text-text-secondary',
         'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
       )}
       disabled={disabled}
-      onSelect={onSelect}
+      onSelect={callback}
+      onClick={onClick}
     >
       {children}
     </DropdownMenu.Item>

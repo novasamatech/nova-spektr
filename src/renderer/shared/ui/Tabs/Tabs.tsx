@@ -14,6 +14,9 @@ type Props = {
   onChange?: (index: number) => void;
 };
 
+/**
+ * @deprecated Use `import { Tabs } from '@/shared/ui-kit' instead.`
+ */
 export const Tabs = ({
   items,
   unmount = true,

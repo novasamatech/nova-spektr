@@ -1,7 +1,7 @@
 import { TEST_IDS } from '@/shared/constants';
 import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { WalletCard } from '@/shared/ui-entities';
+import { WalletOnboardingCard } from '@/shared/ui-entities';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 /**
@@ -19,7 +19,7 @@ walletPairingLedgerFeature.inject(onboardingActionsSlot, {
     const { t } = useI18n();
 
     return (
-      <WalletCard
+      <WalletOnboardingCard
         title={t('onboarding.welcome.ledgerTitle')}
         description={t('onboarding.welcome.ledgerDescription')}
         iconName="ledgerOnboarding"

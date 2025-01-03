@@ -9,7 +9,7 @@ import { Combobox } from './Combobox';
 const meta: Meta<typeof Combobox> = {
   title: 'Design System/kit/Combobox',
   component: Combobox,
-  render: (params) => {
+  render: params => {
     const [value, setValue] = useState('');
 
     return (
@@ -20,7 +20,7 @@ const meta: Meta<typeof Combobox> = {
           { text: '🍊 Orange', value: 'Orange' },
           { text: '🍓 Strawberry', value: 'Strawberry' },
           { text: '🍉 Watermelon', value: 'Watermelon' },
-        ].map((item) => (
+        ].map(item => (
           <Combobox.Item key={item.text} value={item.value}>
             {item.text}
           </Combobox.Item>
@@ -64,7 +64,7 @@ export const Groups: Story = {
           {[
             { text: '🍎 Apple', value: 'Apple' },
             { text: '🍇 Grape', value: 'Grape' },
-          ].map((item) => (
+          ].map(item => (
             <Combobox.Item key={item.text} value={item.value}>
               {item.text}
             </Combobox.Item>
@@ -75,7 +75,7 @@ export const Groups: Story = {
             { text: '🍊 Orange', value: 'Orange' },
             { text: '🍓 Strawberry', value: 'Strawberry' },
             { text: '🍉 Watermelon', value: 'Watermelon' },
-          ].map((item) => (
+          ].map(item => (
             <Combobox.Item key={item.text} value={item.value}>
               {item.text}
             </Combobox.Item>
@@ -104,7 +104,7 @@ export const NestedGroups: Story = {
             {[
               { text: 'Item 1', value: 'Item 1' },
               { text: 'Item 2', value: 'Item 2' },
-            ].map((item) => (
+            ].map(item => (
               <Combobox.Item key={item.text} value={item.value}>
                 {item.text}
               </Combobox.Item>
@@ -121,7 +121,7 @@ export const NestedGroups: Story = {
             {[
               { text: 'Item 3', value: 'Item 3' },
               { text: 'Item 4', value: 'Item 4' },
-            ].map((item) => (
+            ].map(item => (
               <Combobox.Item key={item.text} value={item.value}>
                 {item.text}
               </Combobox.Item>

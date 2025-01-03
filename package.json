@@ -85,6 +85,7 @@
     "@radix-ui/react-scroll-area": "1.2.0",
     "@radix-ui/react-select": "2.1.4",
     "@radix-ui/react-slider": "1.2.2",
+    "@radix-ui/react-tabs": "1.1.2",
     "@radix-ui/react-tooltip": "1.1.6",
     "@react-spring/web": "9.7.5",
     "@remote-ui/rpc": "^1.4.4",

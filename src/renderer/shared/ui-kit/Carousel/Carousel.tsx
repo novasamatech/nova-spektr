@@ -1,86 +1,62 @@
 import { animated, easings, useTransition } from '@react-spring/web';
-import { isObject } from 'lodash';
-import { Children, type PropsWithChildren, createContext, memo, useContext, useState } from 'react';
+import { type PropsWithChildren, createContext, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePrevious } from '@/shared/lib/hooks';
-import { nonNullable } from '@/shared/lib/utils';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 
 type ContextProps = {
   item: string;
-  items: string[];
   direction: number;
-  setItem: (item: string) => unknown;
+  registerItem: (id: string, index: number) => void;
 };
 
 const Context = createContext<ContextProps>({
   item: '',
-  items: [],
   direction: 0,
-  setItem: () => {},
+  registerItem: () => {},
 });
 
 type RootProps = PropsWithChildren<{
   item: string;
-  onNext?: (item: string) => unknown;
-  onPrev?: (item: string) => unknown;
-  onItemChange?: (item: string) => unknown;
+  fixedHeight?: boolean;
 }>;
 
-const Root = memo(({ children, item, onNext, onPrev, onItemChange }: PropsWithChildren<RootProps>) => {
+const Root = memo(({ children, fixedHeight, item }: PropsWithChildren<RootProps>) => {
   const prevItem = usePrevious(item);
+  const indecies = useRef<Record<string, number>>({});
 
-  const items = Children.toArray(children).reduce<string[]>((items, child) => {
-    if (nonNullable(child) && isObject(child) && 'type' in child && child.type === Item) {
-      items.push(child.props.id);
-    }
-
-    return items;
-  }, []);
-
-  const itemIndex = items.indexOf(item);
-  const prevItemIndex = items.indexOf(prevItem);
+  const itemIndex = indecies.current[item] ?? 0;
+  const prevItemIndex = indecies.current[prevItem] ?? 0;
   const direction = itemIndex - prevItemIndex;
 
-  const setItem = (nextItem: string) => {
-    if (item === nextItem) {
-      return;
-    }
-
-    const itemIndex = items.indexOf(item);
-    const selectedItemIndex = items.indexOf(item);
-    const nextDirection = selectedItemIndex - itemIndex;
-
-    onItemChange?.(nextItem);
-    if (nextDirection > 0) {
-      onNext?.(item);
-    }
-    if (nextDirection < 0) {
-      onPrev?.(item);
-    }
-  };
+  const value = useMemo(() => {
+    return {
+      item,
+      direction,
+      registerItem: (id: string, index: number) => {
+        indecies.current[id] = index;
+      },
+    };
+  }, [direction, item]);
 
   return (
-    <Context.Provider
-      // eslint-disable-next-line react/jsx-no-constructed-context-values
-      value={{
-        direction,
-        item,
-        items,
-        setItem,
-      }}
-    >
-      <AnimatedResizableBlock>{children}</AnimatedResizableBlock>
+    <Context.Provider value={value}>
+      {fixedHeight ? children : <AnimatedResizableBlock>{children}</AnimatedResizableBlock>}
     </Context.Provider>
   );
 });
 
 type ItemProps = PropsWithChildren<{
   id: string;
+  index: number;
 }>;
 
-const Item = memo(({ id, children }: ItemProps) => {
-  const { item, direction } = useContext(Context);
+const Item = memo(({ id, index, children }: ItemProps) => {
+  const { item, direction, registerItem } = useContext(Context);
+
+  useEffect(() => {
+    registerItem(id, index);
+  }, [id, index]);
 
   const offset = 25;
   const transitions = useTransition(id === item, {
@@ -118,7 +94,7 @@ const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {
   const [height, setHeight] = useState<number | string>('auto');
   const [ref, setRef] = useState<HTMLElement | null>(null);
 
-  useResizeObserver(ref, (resizeEntity) => {
+  useResizeObserver(ref, resizeEntity => {
     const height = resizeEntity.borderBoxSize.reduce((a, x) => a + x.blockSize, 0);
 
     setHeight(height);

@@ -11,18 +11,23 @@ type Props = {
   title?: string;
   chain: Chain;
   variant?: 'truncate' | 'short';
+  addressTestId?: string;
+  explorersTestId?: string;
 };
 
-export const Account = memo(({ accountId, title, variant = 'truncate', chain }: Props) => {
-  return (
-    <div className="flex w-max min-w-0 max-w-full items-center gap-2">
-      <Address
-        showIcon
-        variant={variant}
-        title={title}
-        address={toAddress(accountId, { prefix: chain.addressPrefix })}
-      />
-      <AccountExplorers accountId={accountId} chain={chain} />
-    </div>
-  );
-});
+export const Account = memo(
+  ({ accountId, title, variant = 'truncate', chain, addressTestId, explorersTestId }: Props) => {
+    return (
+      <div className="flex w-max min-w-0 max-w-full items-center gap-2">
+        <Address
+          showIcon
+          variant={variant}
+          title={title}
+          address={toAddress(accountId, { prefix: chain.addressPrefix })}
+          testId={addressTestId}
+        />
+        <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />
+      </div>
+    );
+  },
+);

@@ -71,7 +71,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) =>
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {Options.map((option) => (
+        {Options.map(option => (
           <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
@@ -84,13 +84,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) =>
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: (
-        <AccountsList
-          accountId={wallet.accounts[0].accountId}
-          chains={[chains[wallet.accounts[0].chainId]]}
-          className="h-[327px]"
-        />
-      ),
+      panel: <AccountsList accountId={wallet.accounts[0].accountId} chains={[chains[wallet.accounts[0].chainId]]} />,
     },
     {
       id: 'proxies',

@@ -128,7 +128,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
 
         <SmallTitleText className="mt-[52px] px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <AccountsList chains={chains} accountId={accountId} className="h-[424px] py-2" />
+        <AccountsList chains={chains} accountId={accountId} />
       </div>
     </>
   );

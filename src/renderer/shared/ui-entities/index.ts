@@ -8,4 +8,5 @@ export { AccountExplorers } from './AccountExplorers/AccountExplorers';
 export { RootExplorers } from './RootExplorer/RootExplorers';
 export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';
-export { WalletCard } from './WalletCard/WalletCard';
+export { WalletOnboardingCard } from './WalletOnboardingCard/WalletOnboardingCard';
+export { ChainAccountsList } from './ChainAccountsList/ChainAccountsList';

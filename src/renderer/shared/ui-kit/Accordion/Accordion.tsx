@@ -21,10 +21,11 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
   return (
     <Context.Provider value={ctx}>
       <RadixAccordion.Root
+        className="w-full"
         collapsible
         type="single"
         value={open ? id : ''}
-        onValueChange={(value) => setOpen(value === id)}
+        onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id}>{children}</RadixAccordion.Item>
       </RadixAccordion.Root>

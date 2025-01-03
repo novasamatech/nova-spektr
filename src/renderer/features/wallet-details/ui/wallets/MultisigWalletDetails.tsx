@@ -204,7 +204,7 @@ export const MultisigWalletDetails = ({
     const TabAccountList = {
       id: 1,
       title: t('walletDetails.multisig.networksTab'),
-      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
+      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} />,
     };
 
     const TabSignatories = {

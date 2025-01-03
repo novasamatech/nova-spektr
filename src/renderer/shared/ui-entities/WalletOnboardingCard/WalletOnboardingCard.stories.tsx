@@ -2,11 +2,11 @@ import { type Meta, type StoryObj } from '@storybook/react';
 
 import { Box } from '@/shared/ui-kit';
 
-import { WalletCard } from './WalletCard';
+import { WalletOnboardingCard } from './WalletOnboardingCard';
 
-const meta: Meta<typeof WalletCard> = {
-  title: 'Design System/entities/WalletCard',
-  component: WalletCard,
+const meta: Meta<typeof WalletOnboardingCard> = {
+  title: 'Design System/entities/WalletOnboardingCard',
+  component: WalletOnboardingCard,
   decorators: [
     Story => (
       <Box width="400px">
@@ -18,7 +18,7 @@ const meta: Meta<typeof WalletCard> = {
 
 export default meta;
 
-type Story = StoryObj<typeof WalletCard>;
+type Story = StoryObj<typeof WalletOnboardingCard>;
 
 export const Default: Story = {
   args: {

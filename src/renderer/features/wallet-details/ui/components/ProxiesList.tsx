@@ -4,7 +4,8 @@ import { type ProxiedAccount, type ProxyAccount, ProxyVariant, type Wallet } fro
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { Accordion } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -44,7 +45,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
+    const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
     const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
@@ -68,7 +69,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
     if (!proxyForRemoval || !wallet) return;
 
-    const account = wallet.accounts.find((a) => {
+    const account = wallet.accounts.find(a => {
       return (
         accountUtils.isNonBaseVaultAccount(a, wallet) &&
         accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
@@ -92,9 +93,9 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
           return (
             <li key={chainId} className="flex items-center py-2">
-              <Accordion isDefaultOpen>
-                <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex items-center justify-between gap-x-2 pr-2">
+              <Accordion initialOpen>
+                <Accordion.Trigger>
+                  <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}
@@ -107,10 +108,10 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
                       />
                     </HelpText>
                   </div>
-                </Accordion.Button>
+                </Accordion.Trigger>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
-                    {chainsProxies[chainId].map((proxy) => (
+                    {chainsProxies[chainId].map(proxy => (
                       <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
                         <ProxyAccountWithActions
                           account={proxy}

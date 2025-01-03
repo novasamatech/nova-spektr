@@ -4,7 +4,7 @@ import { walletSelectActionsSlot } from '@/features/wallet-select';
 import { WalletPairingSelect } from './components/WalletPairingSelect';
 
 export { walletPairingModel } from './model/wallet-pairing-model';
-export { walletPairingDropdownOptionsPipeline } from './components/WalletPairingSelect';
+export { walletPairingDropdownOptionsSlot } from './components/WalletPairingSelect';
 
 export const walletPairingFeature = createFeature({
   name: 'wallet-pairing/flow',
