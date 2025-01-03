@@ -1,6 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { type Chain } from '@/shared/core';
@@ -8,10 +8,11 @@ import { AccountType, CryptoType, CryptoTypeString, ErrorType, SigningType, Wall
 import { useI18n } from '@/shared/i18n';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, HeaderTitleText, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList } from '@/shared/ui-entities';
 import { Field, Input } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
-import { AccountsList, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 
 type WalletForm = {
   walletName: string;
@@ -32,6 +33,9 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   const [chains, setChains] = useState<Chain[]>([]);
 
   const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner?.public));
+
+  const accounts = useMemo(() => chains.map((chain) => [chain, accountId] as const), [chains, accountId]);
+
   const {
     handleSubmit,
     control,
@@ -128,7 +132,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
 
         <SmallTitleText className="mt-[52px] px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <AccountsList chains={chains} accountId={accountId} className="h-[424px] py-2" />
+        <ChainAccountsList accounts={accounts} />
       </div>
     </>
   );

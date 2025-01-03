@@ -76,10 +76,10 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       </Modal.HeaderContent>
       <Modal.Content>
         <Carousel item={selectedTab.toString()}>
-          <Carousel.Item id="0">
+          <Carousel.Item id="0" index={0}>
             <VotingHistoryList query={query} chain={chain} items={ayes} loading={isLoading} />
           </Carousel.Item>
-          <Carousel.Item id="1">
+          <Carousel.Item id="1" index={1}>
             <VotingHistoryList query={query} chain={chain} items={nays} loading={isLoading} />
           </Carousel.Item>
         </Carousel>

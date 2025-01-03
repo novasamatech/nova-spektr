@@ -29,7 +29,7 @@ const $input = combine(
 );
 
 export const profileFeatureStatus = createFeature({
-  name: 'profile',
+  name: 'fellowship/profile',
   input: $input,
   filter: input => {
     return input.api.isConnected

@@ -1,23 +1,14 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import {
-  BaseModal,
-  Button,
-  ConfirmModal,
-  DropdownIconButton,
-  FootnoteText,
-  SmallTitleText,
-  StatusModal,
-  Tabs,
-} from '@/shared/ui';
+import { Button, ConfirmModal, FootnoteText, Icon, IconButton, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { type TabItem } from '@/shared/ui/types';
+import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
 import { walletConnectUtils } from '@/entities/walletConnect';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -54,7 +45,9 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const forgetStep = useUnit(wcDetailsModel.$forgetStep);
   const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
+  const [_, startTransition] = useTransition();
 
+  const [tab, setTab] = useState('accounts');
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -77,7 +70,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const Options = [
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -96,7 +89,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -104,7 +97,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
@@ -112,129 +105,128 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map(option => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
-  const tabItems: TabItem[] = [
-    {
-      id: 'accounts',
-      title: t('walletDetails.common.accountTabTitle'),
-      panel: <WalletConnectAccounts wallet={wallet} />,
-    },
-    {
-      id: 'proxies',
-      title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList className="mt-6 h-[379px]" wallet={wallet} canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction
-          className="mt-6 h-[379px]"
-          canCreateProxy={canCreateProxy}
-          onAddProxy={addProxy.events.flowStarted}
-        />
-      ),
-    },
-  ];
+  const changeTab = (tab: string) => {
+    startTransition(() => {
+      setTab(tab);
+    });
+  };
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal"
-      title={t('walletDetails.common.title')}
-      actionButton={ActionButton}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
-      <div className="flex h-full w-full flex-col gap-y-4">
-        <div className="border-b border-divider px-5 py-6">
-          <WalletCardLg full wallet={wallet} />
-        </div>
-        <div className="flex-1 px-3">
-          <Tabs
-            items={tabItems}
-            panelClassName=""
-            tabClassName="whitespace-nowrap"
-            tabsClassName="mx-5"
-            unmount={false}
-          />
-        </div>
+    <>
+      <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+        <Modal.Title close action={ActionButton}>
+          {t('walletDetails.common.title')}
+        </Modal.Title>
+        <Modal.Content disableScroll>
+          <div className="flex h-full w-full flex-col gap-y-4">
+            <div className="border-b border-divider px-5 py-6">
+              <WalletCardLg full wallet={wallet} />
+            </div>
+            <div className="flex min-h-0 flex-1 shrink-0 flex-col">
+              <Tabs value={tab} onChange={changeTab}>
+                <div className="px-5">
+                  <Tabs.List>
+                    <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
+                    <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+                  </Tabs.List>
+                </div>
+                <Tabs.Content value="accounts">
+                  <WalletConnectAccounts wallet={wallet} />
+                </Tabs.Content>
+                <Tabs.Content value="proxies">
+                  {hasProxies ? (
+                    <ProxiesList className="h-[379px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+                  ) : (
+                    <NoProxiesAction
+                      className="h-[379px]"
+                      canCreateProxy={canCreateProxy}
+                      onAddProxy={addProxy.events.flowStarted}
+                    />
+                  )}
+                </Tabs.Content>
+              </Tabs>
+            </div>
+          </div>
+        </Modal.Content>
+      </Modal>
 
-        <ConfirmModal
-          panelClass="w-[300px]"
-          isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
-          confirmText={t('walletDetails.walletConnect.confirmButton')}
-          cancelText={t('walletDetails.common.cancelButton')}
-          onConfirm={reconnect}
-          onClose={wcDetailsModel.events.reconnectAborted}
-        >
-          <SmallTitleText className="mb-2" align="center">
-            {t('walletDetails.walletConnect.reconnectConfirmTitle')}
-          </SmallTitleText>
-          <FootnoteText className="text-text-tertiary" align="center">
-            {t('walletDetails.walletConnect.reconnectConfirmDescription')}
-          </FootnoteText>
-        </ConfirmModal>
+      <ConfirmModal
+        panelClass="w-[300px]"
+        isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
+        confirmText={t('walletDetails.walletConnect.confirmButton')}
+        cancelText={t('walletDetails.common.cancelButton')}
+        onConfirm={reconnect}
+        onClose={wcDetailsModel.events.reconnectAborted}
+      >
+        <SmallTitleText className="mb-2" align="center">
+          {t('walletDetails.walletConnect.reconnectConfirmTitle')}
+        </SmallTitleText>
+        <FootnoteText className="text-text-tertiary" align="center">
+          {t('walletDetails.walletConnect.reconnectConfirmDescription')}
+        </FootnoteText>
+      </ConfirmModal>
 
-        <ConfirmModal
-          panelClass="w-[240px]"
-          isOpen={isConfirmForgetOpen}
-          confirmText={t('walletDetails.common.removeButton')}
-          cancelText={t('walletDetails.common.cancelButton')}
-          confirmPallet="error"
-          onConfirm={handleForgetWallet}
-          onClose={toggleConfirmForget}
-        >
-          <SmallTitleText className="mb-2" align="center">
-            {t('walletDetails.common.removeTitle')}
-          </SmallTitleText>
-          <FootnoteText className="text-text-tertiary" align="center">
-            {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
-          </FootnoteText>
-        </ConfirmModal>
+      <ConfirmModal
+        panelClass="w-[240px]"
+        isOpen={isConfirmForgetOpen}
+        confirmText={t('walletDetails.common.removeButton')}
+        cancelText={t('walletDetails.common.cancelButton')}
+        confirmPallet="error"
+        onConfirm={handleForgetWallet}
+        onClose={toggleConfirmForget}
+      >
+        <SmallTitleText className="mb-2" align="center">
+          {t('walletDetails.common.removeTitle')}
+        </SmallTitleText>
+        <FootnoteText className="text-text-tertiary" align="center">
+          {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
+        </FootnoteText>
+      </ConfirmModal>
 
-        <StatusModal
-          isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
-          title={t(
-            forgetStep === ForgetStep.FORGETTING
-              ? 'walletDetails.common.removingWallet'
-              : 'walletDetails.common.walletRemoved',
-          )}
-          content={
-            forgetStep === ForgetStep.FORGETTING ? (
-              <Animation variant="loading" loop />
-            ) : (
-              <Animation variant="success" />
-            )
-          }
-          onClose={wcDetailsModel.events.forgetModalClosed}
-        />
+      <StatusModal
+        isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
+        title={t(
+          forgetStep === ForgetStep.FORGETTING
+            ? 'walletDetails.common.removingWallet'
+            : 'walletDetails.common.walletRemoved',
+        )}
+        content={
+          forgetStep === ForgetStep.FORGETTING ? <Animation variant="loading" loop /> : <Animation variant="success" />
+        }
+        onClose={wcDetailsModel.events.forgetModalClosed}
+      />
 
-        <StatusModal
-          isOpen={wcDetailsUtils.isRejected(reconnectStep)}
-          title={t('walletDetails.walletConnect.rejectTitle')}
-          description={t('walletDetails.walletConnect.rejectDescription')}
-          content={<Animation variant="error" />}
-          onClose={wcDetailsModel.events.reconnectAborted}
-        >
-          <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
-            {t('walletDetails.walletConnect.abortRejectButton')}
-          </Button>
-        </StatusModal>
-      </div>
+      <StatusModal
+        isOpen={wcDetailsUtils.isRejected(reconnectStep)}
+        title={t('walletDetails.walletConnect.rejectTitle')}
+        description={t('walletDetails.walletConnect.rejectDescription')}
+        content={<Animation variant="error" />}
+        onClose={wcDetailsModel.events.reconnectAborted}
+      >
+        <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
+          {t('walletDetails.walletConnect.abortRejectButton')}
+        </Button>
+      </StatusModal>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
-    </BaseModal>
+    </>
   );
 };

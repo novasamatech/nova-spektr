@@ -24,7 +24,7 @@ const $input = combine(
 );
 
 export const referendumsFeatureStatus = createFeature({
-  name: 'referendums',
+  name: 'fellowship/referendums',
   input: $input,
   filter: input => {
     return input.api.isConnected

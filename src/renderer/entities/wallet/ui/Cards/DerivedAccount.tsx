@@ -29,12 +29,12 @@ export const DerivedAccount = ({
   const chainWithAccountId = !isShardedAccount && account.accountId;
   const chainWithoutAccountId = !isShardedAccount && !account.accountId;
 
-  const handleClick = (fn?: () => void) => {
+  const handleClick = (fn?: (e: MouseEvent<HTMLButtonElement>) => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
 
       event.stopPropagation();
-      fn();
+      fn(event);
     };
   };
 

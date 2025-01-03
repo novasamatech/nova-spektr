@@ -13,7 +13,15 @@ const IconButtonStyle =
 
 type HTMLButtonProps = Pick<
   ComponentProps<'button'>,
-  'onClick' | 'onMouseDown' | 'onPointerDown' | 'onPointerMove' | 'onPointerLeave' | 'disabled' | 'tabIndex' | 'type'
+  | 'onClick'
+  | 'onMouseDown'
+  | 'onPointerDown'
+  | 'onPointerMove'
+  | 'onPointerLeave'
+  | 'onKeyDown'
+  | 'disabled'
+  | 'tabIndex'
+  | 'type'
 >;
 
 type Props = HTMLButtonProps &
@@ -34,6 +42,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       onPointerDown,
       onPointerMove,
       onPointerLeave,
+      onKeyDown,
       testId,
       ...iconProps
     },
@@ -51,6 +60,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
+      onKeyDown={onKeyDown}
     >
       <Icon size={size} className="text-inherit" {...iconProps} />
     </button>

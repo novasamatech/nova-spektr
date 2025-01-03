@@ -29,6 +29,7 @@ export const createAbstractIdentifier = <
   sample({
     clock: registerHandler,
     source: $handlers,
+    filter: (handlers, handler) => !handlers.includes(handler),
     fn: (handlers, handler) => handlers.concat(handler),
     target: $handlers,
   });

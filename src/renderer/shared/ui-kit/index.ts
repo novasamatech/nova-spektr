@@ -23,4 +23,5 @@ export { Label } from './Label/Label';
 export { Modal } from './Modal/Modal';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
+export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';

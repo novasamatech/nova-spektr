@@ -32,6 +32,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
   'ChildKeys',
   'RootWeights',
   'SudoUncheckedSetCode',
+  'Owner',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;

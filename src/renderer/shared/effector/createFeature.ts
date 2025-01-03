@@ -17,7 +17,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 // TODO implement features dependency graph (and somehow merge it with input store, i like that idea).
 
 type Params<T> = {
-  name: string;
+  name: `${Uncapitalize<string>}/${Uncapitalize<string>}`;
   enable?: Store<boolean>;
   input?: Store<T | null>;
   filter?: (input: T) => IdleState | Omit<FailedState<T>, 'data'> | null;
@@ -273,6 +273,8 @@ export const createFeature = <T = object>({
   // Combine
 
   return {
+    name,
+
     status: readonly($status),
     state: readonly($state),
     input: readonly($input),

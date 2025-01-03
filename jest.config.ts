@@ -55,6 +55,8 @@ const config: Config = {
     '<rootDir>/src/renderer/features/proxy-add-pure/model/__tests__/add-pure-proxied-model.test.ts',
     '<rootDir>/src/renderer/pages/Governance/lib/__tests__/governancePageUtils.test.ts',
     '<rootDir>/src/renderer/pages/Onboarding/Vault/ManageVault/model/__tests__/manage-vault-model.test.ts',
+    '<rootDir>/src/renderer/widgets/CreateWallet/model/__tests__/flow-model.test.ts',
+    '<rootDir>/src/renderer/features/flexible-multisig-create/model/__tests__/flexible-multisig-model.test.ts',
   ],
   collectCoverageFrom: [
     'src/renderer/**/*.{js,ts}',

@@ -10,7 +10,7 @@ import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button, HeaderTitleText, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
-import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
+import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { wcOnboardingModel } from '@/pages/Onboarding/WalletConnect/model/wc-onboarding-model';
 
 import { ManageStep } from './ManageStep';

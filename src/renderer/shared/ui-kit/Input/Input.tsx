@@ -63,7 +63,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           },
         )}
       >
-        {prefixElement}
+        {prefixElement ? <div className="shrink-0">{prefixElement}</div> : prefixElement}
         <input
           className={cnTw(
             'h-full w-full appearance-none placeholder:text-text-secondary focus:outline-none',
@@ -89,7 +89,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           onPaste={event => onPaste?.(event)}
           {...props}
         />
-        {suffixElement}
+        {suffixElement ? <div className="shrink-0">{suffixElement}</div> : suffixElement}
       </label>
     );
   },

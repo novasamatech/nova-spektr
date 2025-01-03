@@ -73,7 +73,7 @@ const $input = combine(
 );
 
 export const multisigOperationsFeatureStatus = createFeature({
-  name: 'multisigOperations',
+  name: 'multisig/operations',
   input: $input,
 });
 

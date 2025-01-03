@@ -4,7 +4,7 @@ import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const governanceNavigationFeature = createFeature({
-  name: 'Governance navigation',
+  name: 'governance/navigation',
   enable: $features.map(({ governance }) => governance),
 });
 

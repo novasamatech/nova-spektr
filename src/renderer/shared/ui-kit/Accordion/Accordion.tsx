@@ -21,6 +21,7 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
   return (
     <Context.Provider value={ctx}>
       <RadixAccordion.Root
+        className="w-full"
         collapsible
         type="single"
         value={open ? id : ''}

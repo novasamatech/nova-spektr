@@ -35,7 +35,7 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { walletPairingModel } from '@/features/wallets';
+import { walletPairingModel } from '@/features/wallet-pairing';
 import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
 import { confirmModel } from './confirm-model';

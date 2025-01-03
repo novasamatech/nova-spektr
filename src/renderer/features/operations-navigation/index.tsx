@@ -11,7 +11,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const operationsNavigationFeature = createFeature({
-  name: 'Operations navigation',
+  name: 'operations/navigation',
   enable: $features.map(({ operations }) => operations),
 });
 

@@ -8,7 +8,7 @@ describe('attachToFeatureInput', () => {
     const scope = fork();
     const $input = createStore<string>('hello');
     const $store = createStore<string>('world');
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     const combinedEvent = attachToFeatureInput(featureStatus, $store);
     const $testStore = createStore<unknown>({});
@@ -42,7 +42,7 @@ describe('attachToFeatureInput', () => {
     const scope = fork();
     const $input = createStore<string>('hello');
     const event = createEvent<string>();
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     const combinedEvent = attachToFeatureInput(featureStatus, event);
     const $testStore = createStore<unknown>({});
@@ -61,7 +61,7 @@ describe('attachToFeatureInput', () => {
     const scope = fork();
     const $input = createStore<string>('hello');
     const event = createEvent<string>();
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     const combinedEvent = attachToFeatureInput(featureStatus, event);
     const $testStore = createStore<unknown>({});
@@ -80,7 +80,7 @@ describe('attachToFeatureInput', () => {
     const scope = fork();
     const $input = createStore<string>('hello');
     const event = createEvent<string>();
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     const combinedEvent = attachToFeatureInput(featureStatus, event);
     const $testStore = createStore<unknown>({});
@@ -100,7 +100,7 @@ describe('attachToFeatureInput', () => {
     const scope = fork();
     const $input = createStore<string>('hello');
     const event = createEvent<string>();
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     const combinedEvent = attachToFeatureInput(featureStatus, event);
     const $updates = createStore(0);

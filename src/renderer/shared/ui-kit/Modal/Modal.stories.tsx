@@ -166,6 +166,32 @@ export const Trigger: Story = {
   },
 };
 
+export const ControlledWithTrigger: Story = {
+  decorators: [
+    (Story, { args }) => {
+      const [isOpen, onToggle] = useState(false);
+
+      return (
+        <Box gap={2}>
+          <Button onClick={() => onToggle(x => !x)}>Toggle Modal (External state: {isOpen.toString()})</Button>
+          <Story args={{ ...args, isOpen, onToggle }} />
+        </Box>
+      );
+    },
+  ],
+  render(args) {
+    return (
+      <Modal {...args}>
+        <Modal.Trigger>
+          <Button>Toggle modal with trigger</Button>
+        </Modal.Trigger>
+        <Modal.Title close>Hello! I am a modal</Modal.Title>
+        <Modal.Content>{exampleBox}</Modal.Content>
+      </Modal>
+    );
+  },
+};
+
 export const Small: Story = {
   args: {
     size: 'sm',

@@ -4,7 +4,7 @@ import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const fellowshipNavigationFeature = createFeature({
-  name: 'Fellowship navigation',
+  name: 'fellowship/navigation',
   enable: $features.map(({ fellowship }) => fellowship),
 });
 

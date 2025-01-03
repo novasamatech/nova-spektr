@@ -5,11 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { type WalletFamily, WalletType } from '@/shared/core';
 import { Paths } from '@/shared/routes';
 import { proxiesModel } from '@/features/proxies';
-import { walletPairingModel } from '@/features/wallets';
+import { walletPairingModel } from '@/features/wallet-pairing';
 import { Vault } from '@/pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@/pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@/pages/Onboarding/WalletConnect/WalletConnect';
-import WatchOnly from '@/pages/Onboarding/WatchOnly/WatchOnly';
 import { walletProviderModel } from '../model/wallet-provider-model';
 
 import { SelectMultisigWalletType } from './MultisigWallet/SelectMultisigWalletType';
@@ -21,7 +20,8 @@ type ModalProps = {
 };
 const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | null> = {
   [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
-  [WalletType.WATCH_ONLY]: (props) => <WatchOnly isOpen {...props} />,
+  // moved to features/watch-only-wallet-pairing
+  [WalletType.WATCH_ONLY]: () => null,
   [WalletType.MULTISIG]: (props) => <SelectMultisigWalletType isOpen {...props} />,
   [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
   [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
