@@ -4,7 +4,7 @@ import { Paths } from '@/shared/routes';
 import { navigationBottomLinksPipeline } from '@/features/app-shell';
 
 export const settingsNavigationFeature = createFeature({
-  name: 'Settings navigation',
+  name: 'settings/navigation',
   enable: $features.map(({ settings }) => settings),
 });
 

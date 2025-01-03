@@ -10,7 +10,7 @@ describe('createFeature', () => {
   it('should work', async () => {
     const scope = fork();
     const $input = createStore<{ ready: true } | null>(null);
-    const featureStatus = createFeature({ name: 'test', input: $input });
+    const featureStatus = createFeature({ name: 'test/test', input: $input });
 
     await allSettled(featureStatus.start, { scope });
 
@@ -33,12 +33,12 @@ describe('createFeature', () => {
 
     expect(scope.getState(featureStatus.state)).toEqual({ status: 'running', data: { ready: true } });
 
-    await allSettled(featureStatus.fail, { scope, params: { type: 'fatal', error: new Error('test') } });
+    await allSettled(featureStatus.fail, { scope, params: { type: 'fatal', error: new Error('test/test') } });
 
     expect(scope.getState(featureStatus.state)).toEqual({
       status: 'failed',
       type: 'fatal',
-      error: new Error('test'),
+      error: new Error('test/test'),
       data: { ready: true },
     });
 
@@ -51,7 +51,7 @@ describe('createFeature', () => {
     const scope = fork();
 
     const pipeline = createPipeline<string[], string>();
-    const featureStatus = createFeature({ name: 'test', scope });
+    const featureStatus = createFeature({ name: 'test/test', scope });
     await allSettled(featureStatus.start, { scope });
 
     featureStatus.inject(pipeline, (list, meta) => list.concat('1', meta));
@@ -63,7 +63,7 @@ describe('createFeature', () => {
     const scope = fork();
 
     const slot = createSlot();
-    const featureStatus = createFeature({ name: 'test', scope });
+    const featureStatus = createFeature({ name: 'test/test', scope });
 
     featureStatus.inject(slot, () => <span>feature</span>);
     featureStatus.inject(slot, {
@@ -88,7 +88,7 @@ describe('createFeature', () => {
 
     const slot = createSlot();
     const $input = createStore<{ ready: true }>({ ready: true });
-    const featureStatus = createFeature({ name: 'test', input: $input, scope });
+    const featureStatus = createFeature({ name: 'test/test', input: $input, scope });
 
     featureStatus.inject(slot, () => <span>feature</span>);
 
@@ -106,7 +106,7 @@ describe('createFeature', () => {
 
     const slot = createSlot();
     const $input = createStore<{ ready: true }>({ ready: true });
-    const featureStatus = createFeature({ name: 'test', input: $input, enable: createStore(false), scope });
+    const featureStatus = createFeature({ name: 'test/test', input: $input, enable: createStore(false), scope });
 
     featureStatus.inject(slot, () => <span>feature</span>);
 

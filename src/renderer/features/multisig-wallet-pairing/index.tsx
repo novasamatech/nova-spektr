@@ -4,11 +4,11 @@ import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';
 
-export const multisigWalletPairingFeature = createFeature({
+export const walletPairingMultisigFeature = createFeature({
   name: 'wallet pairing/multisig',
 });
 
-multisigWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
+walletPairingMultisigFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 1,
   render({ t }) {
     return (

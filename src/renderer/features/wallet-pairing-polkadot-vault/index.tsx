@@ -8,11 +8,11 @@ import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
-export const polkadotVaultWalletPairingFeature = createFeature({
+export const walletPairingPolkadotVaultFeature = createFeature({
   name: 'wallet pairing/polkadot vault',
 });
 
-polkadotVaultWalletPairingFeature.inject(onboardingActionsSlot, {
+walletPairingPolkadotVaultFeature.inject(onboardingActionsSlot, {
   order: 0,
   render() {
     const { t } = useI18n();
@@ -29,7 +29,7 @@ polkadotVaultWalletPairingFeature.inject(onboardingActionsSlot, {
   },
 });
 
-polkadotVaultWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
+walletPairingPolkadotVaultFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 0,
   render({ t }) {
     return (

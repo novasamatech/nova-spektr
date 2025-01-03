@@ -34,7 +34,7 @@ const form = createForm<FormValues>({
         {
           name: 'maxLength',
           errorText: 'onboarding.watchOnly.walletNameMaxLenError',
-          validator: (value) => !value || value.length <= 256,
+          validator: value => !value || value.length <= 256,
         },
       ],
     },
@@ -84,9 +84,9 @@ const $chains = combine($accountDraft, networkModel.$chains, (account, chains) =
   switch (account.cryptoType) {
     case CryptoType.ETHEREUM:
     case CryptoType.ECDSA:
-      return chainsList.filter((c) => networkUtils.isEthereumBased(c.options));
+      return chainsList.filter(c => networkUtils.isEthereumBased(c.options));
     case CryptoType.SR25519:
-      return chainsList.filter((c) => !networkUtils.isEthereumBased(c.options));
+      return chainsList.filter(c => !networkUtils.isEthereumBased(c.options));
     default:
       return [];
   }

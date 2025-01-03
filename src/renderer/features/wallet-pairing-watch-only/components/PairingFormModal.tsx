@@ -28,7 +28,7 @@ export const PairingFormModal = ({ children }: Props) => {
     }
   };
 
-  const accounts = chains.map((chain) => [chain, accountDraft.accountId] as const);
+  const accounts = chains.map(chain => [chain, accountDraft.accountId] as const);
 
   return (
     <Modal size="xl" isOpen={open} onToggle={toggleModal}>
@@ -39,7 +39,7 @@ export const PairingFormModal = ({ children }: Props) => {
             <Modal.Title>{t('onboarding.watchOnly.title')}</Modal.Title>
             <form
               className="flex h-full flex-col gap-4 px-5 py-4"
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault();
                 submit();
               }}

@@ -10,11 +10,11 @@ import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 import { PairingFormModal } from './components/PairingFormModal';
 
-export const watchOnlyWalletPairingFeature = createFeature({
+export const walletPairingWatchOnlyFeature = createFeature({
   name: 'wallet pairing/watch only',
 });
 
-watchOnlyWalletPairingFeature.inject(onboardingActionsSlot, {
+walletPairingWatchOnlyFeature.inject(onboardingActionsSlot, {
   order: 2,
   render() {
     const { t } = useI18n();
@@ -32,7 +32,7 @@ watchOnlyWalletPairingFeature.inject(onboardingActionsSlot, {
   },
 });
 
-watchOnlyWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
+walletPairingWatchOnlyFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 3,
   render({ t }) {
     return (

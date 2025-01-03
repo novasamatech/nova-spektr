@@ -2,10 +2,10 @@ import { createFeature } from '@/shared/effector';
 import { navigationHeaderSlot } from '@/features/app-shell';
 import { WalletSelect } from '../components/WalletSelect';
 
-export const walletsSelectFeatureStatus = createFeature({
-  name: 'Wallets select',
+export const walletSelectFeatureStatus = createFeature({
+  name: 'wallet/select',
 });
 
-walletsSelectFeatureStatus.inject(navigationHeaderSlot, () => {
+walletSelectFeatureStatus.inject(navigationHeaderSlot, () => {
   return <WalletSelect />;
 });

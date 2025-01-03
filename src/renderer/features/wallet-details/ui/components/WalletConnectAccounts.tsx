@@ -11,10 +11,9 @@ import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { walletConnectModel } from '@/entities/walletConnect';
+import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
-
-import { WalletConnectQrCode } from 'src/renderer/features/wallet-connect-wallet-pairing';
 
 type AccountItem = [chain: Chain, accountId: AccountId];
 

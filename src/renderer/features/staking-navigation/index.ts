@@ -6,7 +6,7 @@ import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const stakingNavigationFeature = createFeature({
-  name: 'Staking',
+  name: 'staking/navigation',
   input: createStore({}),
   enable: $features.map(({ staking }) => staking),
 });

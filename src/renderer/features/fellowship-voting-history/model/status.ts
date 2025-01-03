@@ -5,7 +5,7 @@ import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { ERROR } from '../constants';
 
 export const votingHistoryFeatureStatus = createFeature({
-  name: 'votingHistory',
+  name: 'fellowship/voting history',
   input: fellowshipNetworkFeature.model.network.$network,
   filter: input => {
     if (input.api.isConnected) return null;

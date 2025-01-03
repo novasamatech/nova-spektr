@@ -1,8 +1,8 @@
 import { WalletFiatBalance } from './components/WalletFiatBalance';
-import { walletsFiatBalanceFeatureStatus } from './model/feature';
+import { walletFiatBalanceFeatureStatus } from './model/feature';
 
 export const walletsFiatBalanceFeature = {
-  feature: walletsFiatBalanceFeatureStatus,
+  feature: walletFiatBalanceFeatureStatus,
   views: {
     WalletFiatBalance,
   },
