@@ -63,7 +63,7 @@ describe('pages/Assets/AssetCard', () => {
 
   test('should navigate to receive asset modal', async () => {
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [
+      values: new Map().set(walletModel.__test.$rawWallets, [
         {
           walletId: 1,
           type: WalletType.POLKADOT_VAULT,

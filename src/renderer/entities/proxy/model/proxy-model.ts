@@ -2,7 +2,8 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import groupBy from 'lodash/groupBy';
 
 import { storageService } from '@/shared/api/storage';
-import { type AccountId, type ID, type NoID, type ProxyAccount, type ProxyGroup } from '@/shared/core';
+import { type ID, type NoID, type ProxyAccount, type ProxyGroup } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyUtils } from '../lib/proxy-utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;

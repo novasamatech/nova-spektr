@@ -2,6 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { type Account, type ChainId, ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
+import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -12,7 +13,7 @@ import { flowModel } from '../flow-model';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
 
-import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
+import { accounts, initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
 jest.mock('@/entities/transaction/lib/extrinsicService', () => ({
   wrapAsMulti: jest.fn().mockResolvedValue({
@@ -40,7 +41,8 @@ describe('Create multisig wallet flow-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet])
+        .set(networkDomain.accounts.__test.$list, accounts),
     });
 
     await allSettled(signatoryModel.events.changeSignatory, {

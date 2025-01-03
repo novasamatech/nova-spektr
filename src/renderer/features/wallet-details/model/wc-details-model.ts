@@ -2,11 +2,11 @@ import { createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { combineEvents, spread } from 'patronum';
 
-import { AccountType, type ChainId, type Wallet, type WcAccount } from '@/shared/core';
+import { type ChainId, type Wallet, type WcAccount } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type InitConnectParams, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
 import { ForgetStep, ReconnectStep } from '../lib/constants';
 
@@ -29,9 +29,9 @@ sample({
   clock: forgetButtonClicked,
   source: walletModel.$wallets,
   fn: (wallets, wallet) => {
-    const accounts = walletUtils.getAccountsBy(wallets, (account) => account.walletId === wallet.id);
+    const accounts = walletUtils.getAccountsBy(wallets, account => account.walletId === wallet.id);
 
-    return accounts.map((account) => account.id);
+    return accounts.map(account => account.accountId);
   },
   target: balanceModel.events.balancesRemoved,
 });
@@ -91,16 +91,18 @@ sample({
     for (const newAccount of newAccounts) {
       const [_, chainId, address] = newAccount.split(':');
 
-      const fullChainId = chainIds.find((chain) => chain.includes(chainId));
+      const fullChainId = chainIds.find(chain => chain.includes(chainId));
       const chain = fullChainId && chains[fullChainId as ChainId];
-
       if (!chain) continue;
 
+      const account = wallet!.accounts.at(0);
+      if (!account || !accountUtils.isWcAccount(account)) continue;
+
       updatedAccounts.push({
-        ...wallet!.accounts[0],
-        type: AccountType.WALLET_CONNECT,
+        ...account,
         chainId: chain.chainId,
         accountId: toAccountId(address),
+        signingExtras: account.signingExtras || {},
       });
     }
 
@@ -112,7 +114,7 @@ sample({
 sample({
   clock: walletConnectModel.events.connectionRejected,
   source: $reconnectStep,
-  filter: (step) => step === ReconnectStep.RECONNECTING,
+  filter: step => step === ReconnectStep.RECONNECTING,
   fn: () => ReconnectStep.REJECTED,
   target: $reconnectStep,
 });
@@ -127,7 +129,7 @@ sample({
 sample({
   clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
   source: networkModel.$chains,
-  fn: (chains) => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
+  fn: chains => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
   target: walletConnectModel.events.connect,
 });
 
@@ -141,10 +143,17 @@ sample({
   clock: forgetButtonClicked,
   source: $wallet,
   filter: nonNullable,
-  fn: (wallet) => ({
-    sessionTopic: wallet!.accounts[0].signingExtras?.sessionTopic,
-    pairingTopic: wallet!.accounts[0].signingExtras?.pairingTopic,
-  }),
+  fn: wallet => {
+    const account = wallet!.accounts.at(0);
+    if (!account || !accountUtils.isWcAccount(account)) {
+      throw new Error('Not Wallet Connect account.');
+    }
+
+    return {
+      sessionTopic: account.signingExtras.sessionTopic ?? '',
+      pairingTopic: account.signingExtras.pairingTopic ?? '',
+    };
+  },
   target: spread({
     sessionTopic: walletConnectModel.events.disconnectStarted,
     pairingTopic: walletConnectModel.events.pairingRemoved,
@@ -161,7 +170,7 @@ sample({
   clock: forgetButtonClicked,
   source: $wallet,
   filter: nonNullable,
-  fn: (wallet) => wallet!.id,
+  fn: wallet => wallet!.id,
   target: walletModel.events.walletRemoved,
 });
 

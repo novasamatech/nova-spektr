@@ -33,7 +33,7 @@ export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
         // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
         style={{ width: iconSize, height: iconSize }}
         alt={asset.name}
-        onLoad={(e) => {
+        onLoad={e => {
           loaded.add(e.currentTarget.src);
           setImgLoaded(true);
         }}

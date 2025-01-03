@@ -49,13 +49,15 @@ const $possibleAccountsForVoting = combine(
     const accounts = wallet.accounts.filter((a) => {
       return (
         accountUtils.isChainAndCryptoMatch(a, chain) &&
-        (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+        (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
       );
     });
 
     if (accounts.length > 0) return accounts;
 
-    return wallet.accounts.filter((a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain));
+    return wallet.accounts.filter(
+      (a) => accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+    );
   },
 );
 

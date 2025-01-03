@@ -36,7 +36,7 @@ describe('widgets/AddPureProxyModal/model/sign-model', () => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, { '0x00': testApi })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
     const payload = {

@@ -1,13 +1,14 @@
-import { type Account, type Chain, TransactionType } from '@/shared/core';
+import { type Chain, TransactionType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
+import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../../lib/types';
 
 import { type VotingTransaction } from './types';
 
 type VoteTransactionParams = {
   pallet: CollectivePalletsType;
-  account: Account;
+  account: AnyAccount;
   chain: Chain;
   rank: number;
   referendumId: ReferendumId;

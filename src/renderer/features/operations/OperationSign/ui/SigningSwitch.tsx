@@ -1,13 +1,10 @@
-import { useUnit } from 'effector-react';
-
 import { SigningType } from '@/shared/core';
-import { walletModel } from '@/entities/wallet';
-import { type InnerSigningProps, type SigningProps } from '../lib/types';
+import { type SigningProps } from '../lib/types';
 
 import { Vault } from './Vault';
 import { WalletConnect } from './WalletConnect';
 
-const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element | null> = {
+const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <Vault {...props} />,
   [SigningType.POLKADOT_VAULT]: (props) => <Vault {...props} />,
   [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
@@ -16,12 +13,11 @@ const SigningFlow: Record<SigningType, (props: InnerSigningProps) => JSX.Element
 };
 
 export const SigningSwitch = (props: SigningProps) => {
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const wallet = props.signerWallet || activeWallet;
+  const firstPayload = props.signingPayloads.at(0);
+  // TODO show empty payload error
+  if (!firstPayload) return null;
 
-  if (!wallet) {
-    return null;
-  }
+  const signingType = firstPayload.signatory?.signingType ?? firstPayload.account?.signingType;
 
-  return SigningFlow[wallet.signingType]({ ...props, wallet });
+  return SigningFlow[signingType](props);
 };

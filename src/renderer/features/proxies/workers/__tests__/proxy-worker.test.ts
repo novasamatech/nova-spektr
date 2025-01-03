@@ -3,16 +3,17 @@ import set from 'lodash/set';
 
 import {
   AccountType,
-  type BaseAccount,
   type Chain,
   type ChainId,
-  ChainType,
   type Connection,
   CryptoType,
   type ProxiedAccount,
   type ProxyAccount,
   ProxyVariant,
+  SigningType,
+  type VaultBaseAccount,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorker, state } from '../proxy-worker';
 
 jest.mock('@polkadot/rpc-provider', () => ({
@@ -143,14 +144,15 @@ describe('features/proxies/workers/proxy-worker', () => {
 
     const accountsForProxy = {
       '0x01': {
-        id: 1,
+        id: '1',
         walletId: 1,
         name: 'Account 1',
-        type: AccountType.BASE,
-        accountId: '0x01',
-        chainType: ChainType.SUBSTRATE,
+        type: 'universal',
+        accountType: AccountType.BASE,
+        accountId: '0x01' as AccountId,
+        signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
-      } as BaseAccount,
+      } as VaultBaseAccount,
     };
     const accountsForProxied = {};
 
@@ -176,16 +178,17 @@ describe('features/proxies/workers/proxy-worker', () => {
   });
 
   test('should return array with proxied account to remove ', async () => {
-    const mockProxied = {
-      id: 1,
+    const mockProxied: ProxiedAccount = {
+      id: '1',
       walletId: 1,
-      proxyAccountId: '0x02',
+      proxyAccountId: '0x02' as AccountId,
       chainId: '0x01',
       name: 'Proxied Account 1',
-      type: AccountType.PROXIED,
+      type: 'chain',
+      accountType: AccountType.PROXIED,
       delay: 0,
-      accountId: '0x01',
-      chainType: ChainType.SUBSTRATE,
+      accountId: '0x01' as AccountId,
+      signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
       proxyType: 'Governance',
       proxyVariant: ProxyVariant.REGULAR,
@@ -211,18 +214,19 @@ describe('features/proxies/workers/proxy-worker', () => {
     const chainId = '0x01';
     const accountsForProxy = {
       '0x01': {
-        id: 1,
+        id: '1',
         walletId: 1,
         name: 'Account 1',
-        type: AccountType.BASE,
-        accountId: '0x01',
-        chainType: ChainType.SUBSTRATE,
+        type: 'universal',
+        accountType: AccountType.BASE,
+        accountId: '0x01' as AccountId,
+        signingType: SigningType.POLKADOT_VAULT,
         cryptoType: CryptoType.SR25519,
-      } as BaseAccount,
+      } as VaultBaseAccount,
     };
     const accountsForProxied = {};
 
-    const proxiedAccounts = [mockProxied] as ProxiedAccount[];
+    const proxiedAccounts = [mockProxied];
     const proxies = [] as ProxyAccount[];
 
     const result = await proxyWorker.getProxies({

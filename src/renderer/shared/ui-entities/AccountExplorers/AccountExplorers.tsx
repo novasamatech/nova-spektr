@@ -1,8 +1,9 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
@@ -22,7 +23,7 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
   return (
     <Popover align="end" dialog testId="AddressExplorer">
       <Popover.Trigger>
-        <IconButton name="details" className="text-icon-default" testId={testId} onClick={(e) => e.stopPropagation()} />
+        <IconButton name="details" className="text-icon-default" testId={testId} onClick={e => e.stopPropagation()} />
       </Popover.Trigger>
       <Popover.Content>
         <Box gap={2} padding={4} width="230px">
@@ -47,7 +48,7 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
             <>
               <Separator />
               <div className="relative -mx-1.5 flex flex-col gap-2">
-                {explorers.map((explorer) => (
+                {explorers.map(explorer => (
                   <ExplorerLink
                     key={explorer.name}
                     name={explorer.name}

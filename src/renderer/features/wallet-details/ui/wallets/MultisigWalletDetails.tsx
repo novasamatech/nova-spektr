@@ -2,16 +2,11 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type AccountId,
-  type Contact,
-  type FlexibleMultisigWallet,
-  type MultisigWallet,
-  type Wallet,
-} from '@/shared/core';
+import { type Contact, type FlexibleMultisigWallet, type MultisigWallet, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
@@ -70,7 +65,7 @@ export const MultisigWalletDetails = ({
   const singleChain = multisigAccount.chainId ? chains[multisigAccount.chainId] : undefined;
 
   const multisigChains = useMemo(() => {
-    return Object.values(chains).filter((chain) => {
+    return Object.values(chains).filter(chain => {
       const isAccountChain = multisigAccount.chainId === chain.chainId;
       const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(multisigAccount, chain);
@@ -132,7 +127,7 @@ export const MultisigWalletDetails = ({
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {Options.map((option) => (
+        {Options.map(option => (
           <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>
@@ -179,7 +174,7 @@ export const MultisigWalletDetails = ({
                   </WalletCardMd>
                 </li>
               ))}
-              {signatoryContacts.map((signatory) => (
+              {signatoryContacts.map(signatory => (
                 <li key={signatory.accountId} className="-mx-2">
                   <ContactItem
                     name={signatory.name}
@@ -190,7 +185,7 @@ export const MultisigWalletDetails = ({
                   </ContactItem>
                 </li>
               ))}
-              {signatoryPeople.map((accountId) => (
+              {signatoryPeople.map(accountId => (
                 <li key={accountId} className="-mx-2">
                   <ContactItem address={accountId} addressPrefix={singleChain.addressPrefix}>
                     <AccountExplorers accountId={accountId} chain={singleChain} />
@@ -257,7 +252,7 @@ export const MultisigWalletDetails = ({
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2">
-                  {signatoryContacts.map((signatory) => (
+                  {signatoryContacts.map(signatory => (
                     <li key={signatory.accountId} className="-mx-2">
                       <ContactItem name={signatory.name} address={signatory.accountId}>
                         <RootExplorers accountId={signatory.accountId} />

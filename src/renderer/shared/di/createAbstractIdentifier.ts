@@ -22,6 +22,7 @@ export const createAbstractIdentifier = <
   type ResultIdentifier = Identifier<Input, Output, HandlerBody, ProcessedHandlerBody>;
 
   const $handlers = createStore<Handler<ProcessedHandlerBody>[]>([]);
+  const resetHandlers = createEvent<void>();
   const registerHandler = createEvent<Handler<ProcessedHandlerBody>>();
   const forceUpdate = createEvent();
 
@@ -32,10 +33,17 @@ export const createAbstractIdentifier = <
     target: $handlers,
   });
 
+  sample({
+    clock: resetHandlers,
+    fn: () => [],
+    target: $handlers,
+  });
+
   const identifier: ResultIdentifier = {
     type,
     name,
     $handlers: readonly($handlers),
+    resetHandlers,
     registerHandler: registerHandler.prepend(processHandler),
     updateHandlers: forceUpdate,
     __BRAND: 'Identifier',

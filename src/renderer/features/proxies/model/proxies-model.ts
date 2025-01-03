@@ -6,7 +6,6 @@ import { once, spread } from 'patronum';
 
 import {
   type Account,
-  type AccountId,
   type Chain,
   type ChainId,
   type Connection,
@@ -21,7 +20,6 @@ import {
 } from '@/shared/core';
 import {
   AccountType,
-  ChainType,
   CryptoType,
   ExternalType,
   NotificationType,
@@ -31,6 +29,7 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -176,9 +175,10 @@ const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains, wa
     const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
       {
         ...proxied,
+        type: 'chain',
         name: walletName,
-        type: AccountType.PROXIED,
-        chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+        accountType: AccountType.PROXIED,
+        signingType: SigningType.WATCH_ONLY,
         cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       },
     ];
@@ -270,7 +270,7 @@ sample({
 
 sample({
   clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.id),
+  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
   target: balanceModel.events.balancesRemoved,
 });
 

@@ -13,7 +13,7 @@ const meta: Meta<typeof Popover> = {
   parameters: {
     layout: 'centered',
   },
-  render: (params) => {
+  render: params => {
     return (
       <Popover {...params}>
         <Popover.Trigger>

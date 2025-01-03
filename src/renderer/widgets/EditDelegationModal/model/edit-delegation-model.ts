@@ -23,6 +23,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
 import { votingService } from '@/entities/governance';
@@ -155,7 +156,7 @@ sample({
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

@@ -1,93 +1,72 @@
-import {
-  type AccountId,
-  type ChainId,
-  type ChainType,
-  type CryptoType,
-  type ID,
-  type MultisigThreshold,
-  type NoID,
-} from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+// TODO we should move each account type into separated feature that implements logic around it.
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount, type ChainAccount, type UniversalAccount } from '@/domains/network';
+
+import { type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
-type GenericAccount = {
-  id: ID;
-  walletId: ID;
-  name: string;
-  accountId: AccountId;
-  chainType: ChainType;
-  signingExtras?: Record<string, any>;
-};
+export type WatchOnlyAccount = UniversalAccount<{
+  accountType: AccountType.WATCH_ONLY;
+}>;
 
-export type BaseAccount = GenericAccount & {
-  type: AccountType.BASE;
-  cryptoType: CryptoType;
-};
+export type VaultBaseAccount = UniversalAccount<{
+  accountType: AccountType.BASE;
+}>;
 
-export type ChainAccount = GenericAccount & {
-  type: AccountType.CHAIN;
-  baseId?: ID;
+export type VaultChainAccount = ChainAccount<{
+  accountType: AccountType.CHAIN;
+  baseAccountId?: AccountId;
   keyType: KeyType;
   derivationPath: string;
-  chainId: ChainId;
-  cryptoType: CryptoType;
-};
+}>;
 
-export type ShardAccount = GenericAccount & {
-  type: AccountType.SHARD;
+export type VaultShardAccount = ChainAccount<{
+  accountType: AccountType.SHARD;
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
-  chainId: ChainId;
-  cryptoType: CryptoType;
-};
+}>;
 
-export type MultisigAccount = GenericAccount & {
-  type: AccountType.MULTISIG;
+export type MultisigAccount = ChainAccount<{
+  accountType: AccountType.MULTISIG;
   signatories: Signatory[];
-  threshold: MultisigThreshold;
-  chainId: ChainId;
-  cryptoType: CryptoType;
-};
+  threshold: number;
+}>;
 
-export type FlexibleMultisigAccount = GenericAccount & {
-  type: AccountType.FLEXIBLE_MULTISIG;
+export type FlexibleMultisigAccount = ChainAccount<{
+  accountType: AccountType.FLEXIBLE_MULTISIG;
   signatories: Signatory[];
-  threshold: MultisigThreshold;
-  chainId: ChainId;
-  cryptoType: CryptoType;
+  threshold: number;
   proxyAccountId?: AccountId; // we have accountId only after proxy is created
-};
+}>;
 
-export type WcAccount = GenericAccount & {
-  type: AccountType.WALLET_CONNECT;
-  chainId: ChainId;
-};
+export type WcAccount = ChainAccount<{
+  accountType: AccountType.WALLET_CONNECT;
+  signingExtras: Record<string, any>;
+}>;
 
-export type ProxiedAccount = GenericAccount & {
-  type: AccountType.PROXIED;
+export type ProxiedAccount = ChainAccount<{
+  accountType: AccountType.PROXIED;
   proxyAccountId: AccountId;
   delay: number;
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
   blockNumber?: number;
   extrinsicIndex?: number;
-  chainId: ChainId;
-  cryptoType: CryptoType;
-};
+}>;
 
-export type Account =
-  | BaseAccount
-  | ChainAccount
-  | ShardAccount
-  | MultisigAccount
-  | WcAccount
-  | ProxiedAccount
-  | FlexibleMultisigAccount;
+/**
+ * @deprecated Use `import { type AnyAccount } from '@/domains/network'`
+ *   instead.
+ */
+export type Account = AnyAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseId'>;
+export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseAccountId'>;
 
 export const enum AccountType {
+  WATCH_ONLY = 'watch_only',
   BASE = 'base',
   CHAIN = 'chain',
   SHARD = 'shard',

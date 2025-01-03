@@ -1,7 +1,6 @@
 import { u8aConcat } from '@polkadot/util';
 
-import { type ChainId, type SigningType } from '@/shared/core';
-import { CryptoType } from '@/shared/core';
+import { type ChainId, type CryptoType, type SigningType } from '@/shared/core';
 
 import { DEFAULT_FRAME_DELAY, SUBSTRATE_ID } from './common/constants';
 import useGenerator from './common/useGenerator';
@@ -10,6 +9,7 @@ import { createSubstrateSignPayload } from './common/utils';
 type Props = {
   address: string;
   signingType: SigningType;
+  cryptoType: CryptoType;
   genesisHash: Uint8Array | ChainId;
   payload: Uint8Array | string;
   derivationPath?: string;
@@ -17,7 +17,6 @@ type Props = {
   skipEncoding?: boolean;
   bgColor?: string;
   delay?: number;
-  cryptoType?: CryptoType;
 };
 
 export const QrTxGenerator = ({
@@ -30,7 +29,7 @@ export const QrTxGenerator = ({
   skipEncoding = false,
   bgColor = 'none',
   delay = DEFAULT_FRAME_DELAY,
-  cryptoType = CryptoType.SR25519,
+  cryptoType,
 }: Props) => {
   const signPayload = u8aConcat(
     SUBSTRATE_ID,

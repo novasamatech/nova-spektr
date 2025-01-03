@@ -2,7 +2,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 
 import { type MultisigEventDS, storage } from '@/shared/api/storage';
 import {
-  type AccountId,
   type CallHash,
   type ChainId,
   type MultisigEvent,
@@ -10,6 +9,7 @@ import {
   type SigningStatus,
 } from '@/shared/core';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type IMultisigEventService } from './common/types';
 

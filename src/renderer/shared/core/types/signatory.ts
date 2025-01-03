@@ -1,4 +1,6 @@
-import { type AccountId, type Address } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type Address } from './general';
 
 export type Signatory = {
   name?: string;

@@ -1,16 +1,10 @@
-import {
-  type AccountId,
-  type BaseAccount,
-  type ChainAccount,
-  type ChainId,
-  type ID,
-  type ShardAccount,
-} from '@/shared/core';
+import { type ChainId, type VaultBaseAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-export type RootTuple = [BaseAccount, ChainTuple[]];
-export type ChainTuple = [ChainId, (ChainAccount | ShardAccount[])[]];
+export type RootTuple = [VaultBaseAccount, ChainTuple[]];
+export type ChainTuple = [ChainId, (VaultChainAccount | VaultShardAccount[])[]];
 
-export type RootToggleParams = { root: ID; value: boolean };
+export type RootToggleParams = { root: AccountId; value: boolean };
 export type ChainToggleParams = RootToggleParams & { chainId: ChainId };
 export type AccountToggleParams = ChainToggleParams & { accountId: AccountId };
 export type ShardedToggleParams = ChainToggleParams & { groupId: string };
@@ -22,7 +16,7 @@ export type CheckedCounter = {
 };
 
 export type SelectedStruct = {
-  [baseId: ID]: CheckedCounter & {
+  [baseAccountId: AccountId]: CheckedCounter & {
     [chainId: ChainId]: CheckedCounter & {
       accounts: {
         [accountId: AccountId]: boolean;
@@ -36,8 +30,6 @@ export type SelectedStruct = {
   };
 };
 
-export type ChainsMap<T> = {
-  [chainId: ChainId]: {
-    [key: string]: T[];
-  };
+export type ChainsMap<T, K extends string = string> = {
+  [chainId: ChainId]: Record<K, T[]>;
 };

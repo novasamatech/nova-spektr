@@ -1,4 +1,5 @@
-import { type AccountId, type CallHash, type ChainId, type MultisigTransaction } from '@/shared/core';
+import { type CallHash, type ChainId, type MultisigTransaction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type IMultisigTransactionStorage, type MultisigTransactionDS, type TMultisigTransaction } from '../lib/types';
 
 export const useTransactionStorage = (db: TMultisigTransaction): IMultisigTransactionStorage => ({

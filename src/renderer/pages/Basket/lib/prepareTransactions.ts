@@ -4,7 +4,6 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { proxyService } from '@/shared/api/proxy';
 import {
   type Account,
-  type AccountId,
   type Address,
   type Asset,
   type Balance,
@@ -22,6 +21,7 @@ import {
 } from '@/shared/core';
 import { getAssetById, redeemableAmount, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkUtils } from '@/entities/network';

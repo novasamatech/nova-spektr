@@ -3,8 +3,9 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
-import { type AccountId, type Chain, type ChainId, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { chainsService } from '../../network';

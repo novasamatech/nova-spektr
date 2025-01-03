@@ -27,7 +27,7 @@ export const WithIcon: Story = {
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
     const icon = await canvas.findByTestId(`identicon-${TEST_ADDRESS}`);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     expect(icon).toBeTruthy();
   },
 };
@@ -37,7 +37,7 @@ export const Full: Story = {
     variant: 'full',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="200px">
         <Story />
       </Box>
@@ -55,7 +55,7 @@ export const Truncate: Story = {
     variant: 'truncate',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="200px">
         <Story />
       </Box>
@@ -64,7 +64,7 @@ export const Truncate: Story = {
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
     const address = await canvas.findByTestId('Address');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     expect(address.innerText).toBe('1ChFWeNRLarA...eWz7jX7iTVZ');
   },
 };
@@ -86,7 +86,7 @@ export const WithTitle: Story = {
     variant: 'truncate',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="200px">
         <Story />
       </Box>
@@ -101,7 +101,7 @@ export const ReplaceAddressWithTitle: Story = {
     showIcon: true,
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="200px">
         <Story />
       </Box>

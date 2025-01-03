@@ -1,12 +1,12 @@
 import {
   AccountType,
-  type ChainAccount,
   type ChainId,
-  ChainType,
   CryptoType,
   type DraftAccount,
   KeyType,
-  type ShardAccount,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { type DerivationWithPath } from '../types';
 
@@ -81,35 +81,38 @@ const validDerivations = [
 ];
 
 const existingShardsGroupId = '1';
-const existingShards: DraftAccount<ShardAccount>[] = [...Array(10).keys()].map((index) => ({
+const existingShards: DraftAccount<VaultShardAccount>[] = [...Array(10).keys()].map((index) => ({
   groupId: existingShardsGroupId,
   name: '',
-  chainType: ChainType.SUBSTRATE,
   cryptoType: CryptoType.SR25519,
+  signingType: SigningType.POLKADOT_VAULT,
   derivationPath: `//polkadot//hot//${index}`,
-  type: AccountType.SHARD,
+  accountType: AccountType.SHARD,
   keyType: KeyType.HOT,
   chainId: chainId,
+  type: 'chain',
 }));
 
-const existingChainDerivations: DraftAccount<ShardAccount | ChainAccount>[] = [
+const existingChainDerivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[] = [
   {
     name: '',
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//polkadot',
-    type: AccountType.CHAIN,
+    accountType: AccountType.CHAIN,
     keyType: KeyType.MAIN,
     chainId: chainId,
+    type: 'chain',
   },
   {
     name: '',
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//polkadot//hot//some_key',
-    type: AccountType.CHAIN,
+    accountType: AccountType.CHAIN,
     keyType: KeyType.HOT,
     chainId: chainId,
+    type: 'chain',
   },
   ...existingShards,
 ];

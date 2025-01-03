@@ -1033,7 +1033,8 @@
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
-    "xcmFee": "Cross-chain fee"
+    "xcmFee": "Cross-chain fee",
+    "errorWatchOnly": "Can't sign with watch only account."
   },
   "operations": {
     "callData": {

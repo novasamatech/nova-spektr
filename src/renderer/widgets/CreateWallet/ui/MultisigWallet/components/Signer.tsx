@@ -1,17 +1,18 @@
 import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
-import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
 import { WalletIcon } from '@/entities/wallet';
 
 interface Props {
-  onSubmit: (event: FormEvent, account: Account) => void;
-  account: Account;
+  onSubmit: (event: FormEvent, account: AnyAccount) => void;
+  account: AnyAccount;
   wallet: Wallet;
   chain: Chain;
 }

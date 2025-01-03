@@ -1,6 +1,13 @@
-import { type BaseAccount, type ProxyAccount, type ProxyDeposits, type Wallet, type WcAccount } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, SigningType, WalletType } from '@/shared/core';
+import {
+  type ProxyAccount,
+  type ProxyDeposits,
+  type VaultBaseAccount,
+  type Wallet,
+  type WcAccount,
+} from '@/shared/core';
+import { AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 const oldProxy: ProxyAccount = {
   id: 1,
@@ -29,14 +36,15 @@ const wallets: Wallet[] = [
     signingType: SigningType.MULTISIG,
     accounts: [
       {
-        id: 1,
+        id: '1',
         walletId: 1,
+        type: 'universal',
         name: 'My base account',
-        type: AccountType.BASE,
+        accountType: AccountType.BASE,
         accountId: TEST_ACCOUNTS[0],
-        chainType: ChainType.SUBSTRATE,
+        signingType: SigningType.MULTISIG,
         cryptoType: CryptoType.SR25519,
-      } as BaseAccount,
+      } satisfies VaultBaseAccount,
     ],
   },
   {
@@ -47,25 +55,29 @@ const wallets: Wallet[] = [
     signingType: SigningType.WALLET_CONNECT,
     accounts: [
       {
-        id: 2,
+        id: '2',
         walletId: 2,
+        type: 'chain',
         name: 'Chain 1',
-        type: AccountType.WALLET_CONNECT,
+        accountType: AccountType.WALLET_CONNECT,
         accountId: TEST_ACCOUNTS[1],
-        chainType: ChainType.SUBSTRATE,
+        signingType: SigningType.WALLET_CONNECT,
         cryptoType: CryptoType.SR25519,
         chainId: '0x001',
-      } as WcAccount,
+        signingExtras: {},
+      } satisfies WcAccount,
       {
-        id: 3,
+        id: '3',
         walletId: 2,
+        type: 'chain',
         name: 'Chain 2',
-        type: AccountType.WALLET_CONNECT,
+        accountType: AccountType.WALLET_CONNECT,
         accountId: TEST_ACCOUNTS[1],
-        chainType: ChainType.SUBSTRATE,
+        signingType: SigningType.WALLET_CONNECT,
         cryptoType: CryptoType.SR25519,
         chainId: '0x002',
-      } as WcAccount,
+        signingExtras: {},
+      } satisfies WcAccount,
     ],
   },
 ];
@@ -83,24 +95,24 @@ const deposits: ProxyDeposits[] = [
 const proxyAccounts: ProxyAccount[] = [
   {
     id: 1,
-    accountId: '0x01',
-    proxiedAccountId: '0x02',
+    accountId: '0x01' as AccountId,
+    proxiedAccountId: '0x02' as AccountId,
     chainId: '0x05',
     proxyType: 'CancelProxy',
     delay: 0,
   },
   {
     id: 2,
-    accountId: '0x01',
-    proxiedAccountId: '0x02',
+    accountId: '0x01' as AccountId,
+    proxiedAccountId: '0x02' as AccountId,
     chainId: '0x05',
     proxyType: 'CancelProxy',
     delay: 0,
   },
   {
     id: 3,
-    accountId: '0x01',
-    proxiedAccountId: '0x02',
+    accountId: '0x01' as AccountId,
+    proxiedAccountId: '0x02' as AccountId,
     chainId: '0x05',
     proxyType: 'NonTransfer',
     delay: 0,

@@ -1,48 +1,61 @@
-import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
+import {
+  AccountType,
+  CryptoType,
+  KeyType,
+  type NoID,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { createAccountId } from '@/shared/mocks';
 
 const defaultKeys = [
   {
+    type: 'chain',
+    accountType: AccountType.CHAIN,
     name: 'Main DOT key',
     keyType: KeyType.MAIN,
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    type: AccountType.CHAIN,
     cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     derivationPath: '//polkadot//MAIN',
-  },
+  } satisfies Omit<NoID<VaultChainAccount>, 'accountId' | 'walletId'>,
   {
+    type: 'chain',
     name: 'Shard_1 DOT key',
     groupId: 'shard_1',
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
-    type: AccountType.SHARD,
+    accountType: AccountType.SHARD,
     derivationPath: '//polkadot//hot//0',
-  },
+  } satisfies Omit<NoID<VaultShardAccount>, 'accountId' | 'walletId'>,
   {
+    type: 'chain',
     name: 'Shard_2 DOT key',
     groupId: 'shard_1',
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
     keyType: KeyType.PUBLIC,
-    type: AccountType.SHARD,
+    accountType: AccountType.SHARD,
     derivationPath: '//polkadot//hot//1',
-  },
+  } satisfies Omit<NoID<VaultShardAccount>, 'accountId' | 'walletId'>,
 ];
 
-const customKey = {
+const customKey: VaultChainAccount = {
+  type: 'chain',
   name: 'custom key',
   keyType: KeyType.CUSTOM,
   chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-  type: AccountType.CHAIN,
+  accountType: AccountType.CHAIN,
   cryptoType: CryptoType.SR25519,
-  chainType: ChainType.SUBSTRATE,
+  signingType: SigningType.POLKADOT_VAULT,
   derivationPath: '//polkadot//custom',
-  id: 1,
+  id: '1',
   walletId: 1,
-  accountId: '0x00',
+  accountId: createAccountId(),
 };
 
 const chainsMap = {

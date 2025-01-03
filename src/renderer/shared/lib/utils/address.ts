@@ -1,7 +1,8 @@
 import { hexToU8a, isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { type AccountId, type Address, type Chain } from '@/shared/core';
+import { type Address, type Chain, type HexString } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { isEvmChain } from './chains';
 import {
@@ -22,7 +23,7 @@ import { truncate } from './strings';
  *
  * @returns {String}
  */
-export const toAddress = (value: Address | AccountId, params?: { chunk?: number; prefix?: number }): Address => {
+export const toAddress = (value: string, params?: { chunk?: number; prefix?: number }): Address => {
   const chunkValue = params?.chunk;
   const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
@@ -58,9 +59,10 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
  */
 export const toAccountId = (address: Address): AccountId => {
   try {
-    return u8aToHex(decodeAddress(address));
+    return u8aToHex(decodeAddress(address)) as AccountId;
   } catch {
-    return '0x00';
+    // TODO WTF
+    return '0x00' as AccountId;
   }
 };
 
@@ -71,7 +73,7 @@ export const toAccountId = (address: Address): AccountId => {
  *
  * @returns {Boolean}
  */
-export const isCorrectAccountId = (accountId?: AccountId): boolean => {
+export const isCorrectAccountId = (accountId?: HexString): boolean => {
   if (!accountId) return false;
 
   const trimmedValue = accountId.replace(/^0x/, '');
@@ -79,7 +81,17 @@ export const isCorrectAccountId = (accountId?: AccountId): boolean => {
   return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
-export const isEthereumAccountId = (accountId?: AccountId): boolean => {
+export const isSubstrateAccountId = (accountId?: HexString): boolean => {
+  if (!accountId) return false;
+
+  try {
+    return hexToU8a(accountId).length === 32;
+  } catch {
+    return false;
+  }
+};
+
+export const isEthereumAccountId = (accountId?: HexString): boolean => {
   if (!accountId) return false;
 
   try {

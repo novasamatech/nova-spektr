@@ -1,6 +1,7 @@
-import { type AccountId, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';

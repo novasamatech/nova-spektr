@@ -10,7 +10,6 @@ import { spread } from 'patronum';
 import { type XcmConfig, xcmService } from '@/shared/api/xcm';
 import {
   type Account,
-  type AccountId,
   type Address,
   type Chain,
   type ChainId,
@@ -32,7 +31,9 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
+import * as networkDomain from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
@@ -297,7 +298,7 @@ const $accounts = combine(
 
     const { chain, asset } = network;
     const walletAccounts = walletUtils.getAccountsBy([wallet], (a, w) => {
-      const isBase = accountUtils.isBaseAccount(a);
+      const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
       return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
@@ -390,7 +391,7 @@ const $destinationAccounts = combine(
     if (!isXcm || !wallet || !chain.chainId) return [];
 
     return walletUtils.getAccountsBy([wallet], (a, w) => {
-      const isBase = accountUtils.isBaseAccount(a);
+      const isBase = accountUtils.isVaultBaseAccount(a);
       const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
       return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -530,7 +531,8 @@ sample({
   clock: $transferForm.fields.account.onChange,
   source: $accounts,
   fn: (accounts, account) => {
-    const match = accounts.find((a) => a.account.id === account.id);
+    const id = networkDomain.accountsService.uniqId(account);
+    const match = accounts.find((a) => networkDomain.accountsService.uniqId(a.account) === id);
 
     return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },
@@ -576,7 +578,12 @@ sample({
     return !isEmpty(signatories) && nonNullable(signatory);
   },
   fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
+    if (!signatory) {
+      return ZERO_BALANCE;
+    }
+
+    const id = networkDomain.accountsService.uniqId(signatory);
+    const match = signatories[0].find(({ signer }) => networkDomain.accountsService.uniqId(signer) === id);
 
     return match?.balance || ZERO_BALANCE;
   },

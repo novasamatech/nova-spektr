@@ -6,7 +6,6 @@ import { spread } from 'patronum';
 
 import { type ClaimChunkWithAddress } from '@/shared/api/governance';
 import {
-  type Account,
   type Asset,
   type Chain,
   type MultisigTxWrapper,
@@ -15,6 +14,7 @@ import {
   type Transaction,
 } from '@/shared/core';
 import { ZERO_BALANCE, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -31,7 +31,7 @@ type Accounts = {
 
 type FormParams = {
   shards: AccountWithClaim[];
-  signatory: Account | null;
+  signatory: AnyAccount | null;
   amount: string;
 };
 
@@ -42,7 +42,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     chain: Chain;
     asset: Asset;
     fee: string;
@@ -67,7 +67,7 @@ const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 const $accounts = createStore<Accounts[]>([]);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
@@ -178,7 +178,7 @@ const $shards = combine(
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
-        const isBaseAccount = accountUtils.isBaseAccount(account);
+        const isBaseAccount = accountUtils.isVaultBaseAccount(account);
         const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
         const hasManyAccounts = collection.length > 1;
 
@@ -206,7 +206,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -263,7 +263,7 @@ const $signatories = combine(
   ({ chainId, network, txWrappers, balances }) => {
     if (!chainId || !network || !txWrappers) return [];
 
-    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
@@ -420,7 +420,7 @@ sample({
 
 sample({
   clock: $unlockForm.fields.signatory.$value,
-  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
+  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });

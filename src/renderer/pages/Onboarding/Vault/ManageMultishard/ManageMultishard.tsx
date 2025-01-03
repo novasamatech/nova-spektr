@@ -4,8 +4,15 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { chainsService } from '@/shared/api/network';
-import { type BaseAccount, type Chain, type ChainAccount, type ChainId, type HexString } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  type HexString,
+  type NoID,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+} from '@/shared/core';
+import { AccountType, CryptoType, ErrorType, KeyType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
@@ -134,25 +141,22 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
     }
   };
 
-  const createDerivedAccounts = (
-    derivedKeys: AddressInfo[],
-    chainId: ChainId,
-    accountIndex: number,
-  ): ChainAccount[] => {
-    return derivedKeys.reduce<ChainAccount[]>((acc, derivedKey, index) => {
+  const createDerivedAccounts = (derivedKeys: AddressInfo[], chainId: ChainId, accountIndex: number) => {
+    return derivedKeys.reduce<Omit<NoID<VaultChainAccount>, 'walletId'>[]>((acc, derivedKey, index) => {
       const accountId = getAccountId(accountIndex, chainId, index);
 
       if (!inactiveAccounts[accountId]) {
         acc.push({
           chainId,
+          type: 'chain',
           name: accountNames[accountId],
           accountId: toAccountId(derivedKey.address),
           derivationPath: derivedKey.derivationPath || '',
-          type: AccountType.CHAIN,
-          chainType: ChainType.SUBSTRATE,
+          accountType: AccountType.CHAIN,
+          signingType: SigningType.POLKADOT_VAULT,
           cryptoType: CryptoType.SR25519,
           keyType: KeyType.CUSTOM,
-        } as ChainAccount);
+        });
       }
 
       return acc;
@@ -160,14 +164,17 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   };
 
   const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const accountsToSave = accounts.reduce<(BaseAccount | ChainAccount)[]>((acc, account, index) => {
+    const accountsToSave = accounts.reduce<
+      (Omit<NoID<VaultBaseAccount>, 'walletId'> | Omit<NoID<VaultChainAccount>, 'walletId'>)[]
+    >((acc, account, index) => {
       acc.push({
         name: accountNames[getAccountId(index)],
         accountId: toAccountId(account.address),
         cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.BASE,
-      } as BaseAccount);
+        signingType: SigningType.POLKADOT_VAULT,
+        accountType: AccountType.BASE,
+        type: 'universal',
+      });
 
       const derivedAccounts = Object.entries(account.derivedKeys)
         .map(([chainId, chainDerivedKeys]) => {

@@ -28,13 +28,14 @@ export { WalletType, SigningType } from './types/wallet';
 export { AccountType, KeyType } from './types/account';
 export type {
   Account,
-  BaseAccount,
-  ChainAccount,
+  WatchOnlyAccount,
+  VaultBaseAccount,
+  VaultChainAccount,
   MultisigAccount,
   FlexibleMultisigAccount,
   WcAccount,
   ProxiedAccount,
-  ShardAccount,
+  VaultShardAccount,
   DraftAccount,
 } from './types/account';
 

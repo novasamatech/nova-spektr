@@ -2,6 +2,7 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import cloneDeep from 'lodash/cloneDeep';
 
 import { type Account, type Wallet } from '@/shared/core';
+import { keys } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { selectorUtils } from '../lib/selector-utils';
@@ -115,8 +116,8 @@ const $totalSelected = combine($selectedStructure, (selectedStructure): number =
 });
 
 const $isAllChecked = combine($selectedStructure, (struct): boolean => {
-  return Object.keys(struct).every((root) => {
-    const { checked, total } = struct[Number(root)];
+  return keys(struct).every((root) => {
+    const { checked, total } = struct[root];
 
     return checked === total;
   });

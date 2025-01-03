@@ -1,9 +1,8 @@
 import { allSettled, fork } from 'effector';
 
-import { storageService } from '@/shared/api/storage';
-import { type Chain, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type Chain, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
-import { walletModel } from '@/entities/wallet';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { vaultDetailsModel } from '../vault-details-model';
 
 describe('widgets/WalletDetails/model/vault-details-model', () => {
@@ -12,7 +11,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   });
 
   test('should set $shards on shardsSelected', async () => {
-    const shard = { id: 1, name: 'My shard' } as ShardAccount;
+    const shard = { name: 'My shard' } as VaultShardAccount;
     const scope = fork();
 
     await allSettled(vaultDetailsModel.events.shardsSelected, { scope, params: [shard] });
@@ -22,7 +21,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   test('should clear $shards & $chain on shardsCleared', async () => {
     const scope = fork({
       values: new Map()
-        .set(vaultDetailsModel.$shards, [{ id: 1, name: 'My shard' } as ShardAccount])
+        .set(vaultDetailsModel.$shards, [{ name: 'My shard' } as VaultShardAccount])
         .set(vaultDetailsModel.$chain, { chainId: '0x00' } as unknown as Chain),
     });
 
@@ -32,50 +31,44 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   });
 
   test('should set $keysToAdd on keysAdded', async () => {
-    const key = { name: 'My shard' } as DraftAccount<ChainAccount>;
+    const key = { name: 'My shard' } as DraftAccount<VaultChainAccount>;
     const scope = fork();
 
     await allSettled(vaultDetailsModel.events.keysAdded, { scope, params: [key] });
     expect(scope.getState(vaultDetailsModel.$keysToAdd)).toEqual([key]);
   });
 
-  test('should update $wallets on keysRemoved', async () => {
-    const wallet = {
-      id: 1,
-      name: 'My wallet',
-      accounts: [
-        { id: 1, walletId: 1, name: 'My first shard' },
-        { id: 2, walletId: 1, name: 'My second shard' },
-      ],
-    };
-    jest.spyOn(storageService.accounts, 'deleteAll').mockResolvedValue([1]);
+  test('should update accounts on keysRemoved', async () => {
+    const testAccounts = [
+      { accountId: '0x00', walletId: 1, name: 'My first shard' },
+      { accountId: '0x01', walletId: 1, name: 'My second shard' },
+    ];
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [wallet]),
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.updateAccount, () => {}]],
     });
 
-    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [wallet.accounts[0]] });
-    expect(scope.getState(walletModel.$wallets)).toEqual([{ ...wallet, accounts: [wallet.accounts[1]] }]);
+    await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [testAccounts[0]] });
+    expect(scope.getState(accounts.$list)).toEqual([testAccounts[1]]);
   });
 
-  test('should update $wallets on accountsCreated', async () => {
-    const wallet = {
-      id: 1,
-      name: 'My wallet',
-      accounts: [{ id: 1, walletId: 1, name: 'My first shard' }],
-    };
+  // TODO check
+  test('should update accounts on accountsCreated', async () => {
+    const walletId = 1;
+    const testAccounts = [{ accountId: '0x00', walletId, name: 'My first shard' }];
 
-    const key = { id: 2, name: 'My second shard' } as unknown as DraftAccount<ChainAccount>;
-    const params = { walletId: wallet.id, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
-    const newAccount = { walletId: wallet.id, ...key } as ChainAccount;
-
-    jest.spyOn(storageService.accounts, 'createAll').mockResolvedValue([newAccount]);
+    const key = { name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
+    const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
+    const newAccount = { walletId, ...key };
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [wallet]),
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.createAccounts, (accounts: AnyAccount) => accounts]],
     });
 
     await allSettled(vaultDetailsModel.events.accountsCreated, { scope, params });
-    expect(scope.getState(walletModel.$wallets)).toEqual([{ ...wallet, accounts: [wallet.accounts[0], newAccount] }]);
+
+    expect(scope.getState(accounts.$list)).toEqual([...testAccounts, newAccount]);
   });
 });

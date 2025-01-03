@@ -4,10 +4,9 @@ import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 import { useStatusContext } from '@/app/providers';
 import { chainsService } from '@/shared/api/network';
 import {
-  type AccountId,
   AccountType,
   type Chain,
-  ChainType,
+  CryptoType,
   ErrorType,
   type NoID,
   SigningType,
@@ -16,6 +15,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, HeaderTitleText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Field, Input } from '@/shared/ui-kit';
@@ -94,13 +94,17 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
       const chain = chains.find((chain) => chain.chainId.includes(chainId));
 
       return {
+        type: 'chain',
         name: walletName.trim(),
         accountId: toAccountId(address),
-        type: AccountType.WALLET_CONNECT,
-        chainType: ChainType.SUBSTRATE,
-        chainId: chain?.chainId,
+        accountType: AccountType.WALLET_CONNECT,
+        signingType: SigningType.WALLET_CONNECT,
+        // TODO check
+        cryptoType: CryptoType.SR25519,
+        // TODO and if it's ommited?
+        chainId: chain!.chainId,
         signingExtras: { pairingTopic, sessionTopic },
-      } as Omit<NoID<WcAccount>, 'walletId'>;
+      } satisfies Omit<NoID<WcAccount>, 'walletId'>;
     });
 
     walletModel.events.walletConnectCreated({

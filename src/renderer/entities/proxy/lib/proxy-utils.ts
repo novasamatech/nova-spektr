@@ -3,7 +3,6 @@ import uniqBy from 'lodash/uniqBy';
 
 import {
   type Account,
-  type AccountId,
   type ChainId,
   type NoID,
   type PartialProxiedAccount,
@@ -15,6 +14,7 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
 import { ProxyTypeName } from './constants';

@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, BaseModal, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile } from '@/shared/ui-kit';
 import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
@@ -13,8 +14,8 @@ import { importKeysModel } from '../model/import-keys-model';
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
-  onConfirm: (keys: DraftAccount<ChainAccount | ShardAccount>[]) => void;
+  existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
+  onConfirm: (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => void;
   onClose: () => void;
 };
 

@@ -50,7 +50,7 @@ export const InModal: Story = {
     const [item, setItem] = useState('1');
 
     const next = () => {
-      setItem((item) => {
+      setItem(item => {
         switch (item) {
           case '1':
             return '2';
@@ -63,7 +63,7 @@ export const InModal: Story = {
     };
 
     const prev = () => {
-      setItem((item) => {
+      setItem(item => {
         switch (item) {
           case '3':
             return '2';

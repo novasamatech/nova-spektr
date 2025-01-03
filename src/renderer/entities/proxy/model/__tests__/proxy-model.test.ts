@@ -1,7 +1,8 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type AccountId, type HexString, type ProxyAccount, type ProxyGroup } from '@/shared/core';
+import { type HexString, type ProxyAccount, type ProxyGroup } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyModel } from '../proxy-model';
 
 const proxyMock = {

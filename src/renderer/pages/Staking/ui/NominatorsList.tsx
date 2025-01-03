@@ -2,7 +2,14 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Account, type Address, type Asset, type BaseAccount, type Chain, type ShardAccount } from '@/shared/core';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Chain,
+  type VaultBaseAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
@@ -15,7 +22,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: (NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[])[];
+  nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;

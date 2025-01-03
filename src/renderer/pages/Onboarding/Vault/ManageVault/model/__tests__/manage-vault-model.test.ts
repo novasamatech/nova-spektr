@@ -1,7 +1,7 @@
 import { hexToU8a } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { AccountType, type ChainAccount, ChainType, CryptoType, KeyType } from '@/shared/core';
+import { AccountType, CryptoType, KeyType, SigningType, type VaultChainAccount } from '@/shared/core';
 import { TEST_HASH } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -10,12 +10,13 @@ import { manageVaultModel } from '../manage-vault-model';
 describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
   const defaultKeys = [
     {
+      type: 'chain',
       name: 'Main DOT key',
       keyType: KeyType.MAIN,
       chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      type: AccountType.CHAIN,
+      accountType: AccountType.CHAIN,
       cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
+      signingType: SigningType.POLKADOT_VAULT,
       derivationPath: '//polkadot//MAIN',
     },
   ];
@@ -24,9 +25,10 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
     name: 'My new Key',
     keyType: KeyType.PUBLIC,
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    type: AccountType.CHAIN,
+    type: 'chain',
+    accountType: AccountType.CHAIN,
     cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     derivationPath: '//polkadot//PUBLIC',
   };
 
@@ -82,18 +84,21 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
     const POLKADOT_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
     const MAIN_POLKAODT_ACCOUNT = {
       chainId: POLKADOT_CHAIN_ID,
-      chainType: 0,
-      cryptoType: 0,
+      signingType: SigningType.POLKADOT_VAULT,
+      cryptoType: CryptoType.SR25519,
       derivationPath: '//polkadot',
       keyType: 'main',
       name: 'Main',
+      accountType: 'chain',
       type: 'chain',
     };
 
     expect(scope.getState(manageVaultModel.$walletForm.$values)).toEqual({ name: 'test' });
     expect(scope.getState(manageVaultModel.$keys).length).toEqual(3); // Polkadot, Kusama, Westend
     expect(
-      scope.getState(manageVaultModel.$keys).find((account) => (account as ChainAccount).chainId === POLKADOT_CHAIN_ID),
+      scope
+        .getState(manageVaultModel.$keys)
+        .find((account) => (account as VaultChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
 

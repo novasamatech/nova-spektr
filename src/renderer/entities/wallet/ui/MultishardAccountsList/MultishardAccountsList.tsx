@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { type BaseAccount, type Chain, type ChainAccount, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId, type VaultBaseAccount, type VaultChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw } from '@/shared/lib/utils';
 import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
@@ -10,7 +10,7 @@ import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];
-  accounts: Map<BaseAccount, Record<ChainId, ChainAccount[]>>;
+  accounts: Map<VaultBaseAccount, Record<ChainId, VaultChainAccount[]>>;
   className?: string;
 };
 

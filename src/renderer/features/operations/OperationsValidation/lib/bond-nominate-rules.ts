@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account, RewardsDestination, type ShardAccount } from '@/shared/core';
+import { type Account, RewardsDestination, type VaultShardAccount } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
 import {
   type AmountFeeStore,
@@ -110,7 +110,7 @@ export const BondNominateRules = {
       source,
       validator: (
         amount: string,
-        form: { shards: ShardAccount[] },
+        form: { shards: VaultShardAccount[] },
         { network, feeData, isMultisig, accountsBalances }: AmountFeeStore,
       ) => {
         if (isMultisig) return true;

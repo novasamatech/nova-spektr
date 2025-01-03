@@ -1,15 +1,16 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Asset, type Chain, type Wallet } from '@/shared/core';
+import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { collectiveDomain } from '@/domains/collectives';
+import { type AnyAccount } from '@/domains/network';
 
 type Props = {
-  account: Account;
+  account: AnyAccount;
   rank: number;
   wallets: Wallet[];
   chain: Chain;

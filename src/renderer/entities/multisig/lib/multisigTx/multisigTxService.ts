@@ -4,7 +4,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { chainsService } from '@/shared/api/network';
 import { type MultisigTransactionDS, storage } from '@/shared/api/storage';
 import {
-  type AccountId,
   type CallData,
   type MultisigAccount,
   type MultisigTransaction,
@@ -13,6 +12,7 @@ import {
 } from '@/shared/core';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
 import { getCurrentBlockNumber, getExpectedBlockTime, toAddress, validateCallData } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useCallDataDecoder } from '@/entities/transaction';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 

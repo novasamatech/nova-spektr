@@ -1,5 +1,6 @@
 export type ID = number;
-export type NoID<T extends { id: K }, K = ID> = Omit<T, 'id'>;
+export type NoID<T extends NonNullable<unknown>> = Omit<T, 'id'>;
+export type WithID<T, K = ID> = T & { id: K };
 
 export type HexString = `0x${string}`;
 export type Metadata = HexString;
@@ -7,7 +8,6 @@ export type ChainId = HexString;
 export type BlockHeight = number;
 
 export type Address = string;
-export type AccountId = HexString;
 export type MultisigThreshold = number;
 
 export type CallData = HexString;

@@ -47,7 +47,7 @@ export const Overflow: Story = {
     children: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas a.',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="150px">
         <Story />
       </Box>
