@@ -50,7 +50,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
         })}
         style={{ minWidth: formattedMinWidth }}
       >
-        {Children.map(children, (child) => (isString(child) ? <span>{child}</span> : child))}
+        {Children.map(children, child => (isString(child) ? <span>{child}</span> : child))}
       </span>
     );
   }

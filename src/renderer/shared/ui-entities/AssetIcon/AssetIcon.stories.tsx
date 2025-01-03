@@ -14,7 +14,7 @@ import { AssetIcon } from './AssetIcon';
 const meta: Meta<typeof AssetIcon> = {
   title: 'Design System/entities/AssetIcon',
   component: AssetIcon,
-  render: (args) => <AssetIcon {...args} />,
+  render: args => <AssetIcon {...args} />,
 };
 
 export default meta;
@@ -45,7 +45,7 @@ export const VariantsDerivedFromConfig: Story = {
     style: 'colored',
     size: 32,
   },
-  render: (args) => {
+  render: args => {
     const [query, setQuery] = useState('');
 
     const assets = performSearch({
@@ -63,7 +63,7 @@ export const VariantsDerivedFromConfig: Story = {
           <SearchInput placeholder="Search asset..." value={query} height="sm" onChange={setQuery} />
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] items-start justify-items-center gap-3">
-          {assets.map((asset) => (
+          {assets.map(asset => (
             <div key={asset.symbol} className="flex w-fit flex-col items-center justify-center gap-1.5">
               <AssetIcon {...args} asset={asset} />
               <FootnoteText className="text-center text-text-secondary">

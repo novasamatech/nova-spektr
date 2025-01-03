@@ -52,7 +52,7 @@ const Root = <T extends string>({
         disabled={disabled}
         value={value || ''}
         onOpenChange={onToggle}
-        onValueChange={(value) => onChange(value as T)}
+        onValueChange={value => onChange(value as T)}
       >
         <Button name={name} placeholder={placeholder} />
         <Content>{children}</Content>

@@ -66,7 +66,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
           defaultValue={value}
           defaultSelectedValue={value}
           setSelectedValue={onChange}
-          setValue={(value) => startTransition(() => onChange(value))}
+          setValue={value => startTransition(() => onChange(value))}
         >
           <Trigger {...inputProps} onChange={onInput} />
           <Content>{children}</Content>
@@ -110,8 +110,8 @@ const Content = ({ children }: PropsWithChildren) => {
         style={{ width: `${anchorRef.current.getBoundingClientRect().width}px` }}
         collisionPadding={gridSpaceConverter(2)}
         sideOffset={gridSpaceConverter(2)}
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onInteractOutside={(event) => {
+        onOpenAutoFocus={e => e.preventDefault()}
+        onInteractOutside={event => {
           const target = event.target as Element | null;
           const isCombobox = target === comboboxRef?.current;
           const inListbox = target && listboxRef?.current?.contains(target);

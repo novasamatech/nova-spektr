@@ -71,15 +71,15 @@ const getResizeObserver = (): ResizeObserverSingleton => {
     });
   };
 
-  const observer = new ResizeObserver((entries) => {
+  const observer = new ResizeObserver(entries => {
     accumulatedEntries = accumulatedEntries.concat(entries);
     startEntriesProcessing();
   });
 
   observerSingleton = getObserverSingleton(
     callbacks,
-    (target) => observer.observe(target),
-    (target) => observer.unobserve(target),
+    target => observer.observe(target),
+    target => observer.unobserve(target),
   );
 
   return observerSingleton;

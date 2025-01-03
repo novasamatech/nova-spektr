@@ -82,11 +82,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           name={name}
           value={value}
           placeholder={placeholder}
-          onChange={(event) => {
+          onChange={event => {
             onChange?.(event.target.value);
             onChangeEvent?.(event);
           }}
-          onPaste={(event) => onPaste?.(event)}
+          onPaste={event => onPaste?.(event)}
           {...props}
         />
         {suffixElement}
