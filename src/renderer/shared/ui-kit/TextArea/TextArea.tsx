@@ -37,7 +37,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
         value={value}
         data-testid={testId}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={event => onChange(event.target.value)}
         {...props}
       />
     );

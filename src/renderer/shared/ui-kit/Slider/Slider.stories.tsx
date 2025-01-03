@@ -64,7 +64,7 @@ export const Labels: Story = {
     value: 5,
     min: 0,
     max: 9,
-    renderLabel: (value) => {
+    renderLabel: value => {
       return <span className="text-footnote">{value}</span>;
     },
   },

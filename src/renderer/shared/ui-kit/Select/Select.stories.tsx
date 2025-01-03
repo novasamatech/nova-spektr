@@ -10,7 +10,7 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
-  render: (params) => {
+  render: params => {
     const [value, onChange] = useState('');
 
     return (
@@ -33,7 +33,7 @@ type Story = StoryObj<typeof Select>;
 export const Default: Story = {};
 
 export const RichContent: Story = {
-  render: (args) => {
+  render: args => {
     const [value, onChange] = useState('item_4');
 
     return (
@@ -82,7 +82,7 @@ export const Disabled: Story = {
 };
 
 export const Groups: Story = {
-  render: (params) => {
+  render: params => {
     const [value, onChange] = useState('');
 
     return (

@@ -7,7 +7,7 @@ import { Progress } from './Progress';
 const meta: Meta<typeof Progress> = {
   title: 'Design System/kit/Progress',
   component: Progress,
-  render: (args) => {
+  render: args => {
     return (
       <Box width="500px" fitContainer>
         <Progress {...args} />

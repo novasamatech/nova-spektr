@@ -81,7 +81,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {Options.map((option) => (
+        {Options.map(option => (
           <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>

@@ -26,7 +26,7 @@ const meta: Meta<typeof TransactionDetails> = {
     chain: polkadotChain,
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="400px">
         <Story />
       </Box>

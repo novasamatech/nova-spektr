@@ -29,14 +29,14 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
 
   const initiatorWallet = useMemo(() => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: (a) => a.accountId === initiator[0]?.accountId,
+      accountFn: a => a.accountId === initiator[0]?.accountId,
     });
   }, [wallets, initiator]);
 
   const signatoryWallet = useMemo(() => {
     return signatory
       ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: (a) => a.accountId === signatory.accountId,
+          accountFn: a => a.accountId === signatory.accountId,
         })
       : null;
   }, [wallets, signatory]);
@@ -44,7 +44,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
   const proxiedWallet = useMemo(() => {
     return proxied
       ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: (a) => a.accountId === proxied.accountId,
+          accountFn: a => a.accountId === proxied.accountId,
         })
       : null;
   }, [wallets, proxied]);

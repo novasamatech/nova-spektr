@@ -27,7 +27,7 @@ type Story = StoryObj<typeof AccountSelectModal>;
 
 export const Default: Story = {
   args: {
-    options: accounts.map((account) => ({
+    options: accounts.map(account => ({
       account,
     })),
   },
@@ -54,7 +54,7 @@ export const WithTitles: Story = {
 export const CloseButton: Story = {
   args: {
     closeButton: true,
-    options: accounts.map((account) => ({ account })),
+    options: accounts.map(account => ({ account })),
   },
 };
 

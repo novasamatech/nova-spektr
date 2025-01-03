@@ -19,7 +19,7 @@ type Story = StoryObj<typeof Account>;
 
 export const Default: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       return (
         <div className="w-96 resize-x overflow-hidden">
           <Story />

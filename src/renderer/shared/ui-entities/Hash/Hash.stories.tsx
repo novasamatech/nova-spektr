@@ -23,7 +23,7 @@ export const Full: Story = {
     variant: 'full',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="200px">
         <Story />
       </Box>
@@ -41,7 +41,7 @@ export const Truncate: Story = {
     variant: 'truncate',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-[200px] resize-x overflow-hidden">
         <Story />
       </div>
@@ -50,7 +50,7 @@ export const Truncate: Story = {
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
     const Hash = await canvas.findByTestId('Hash');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     expect(Hash.innerText).toBe('0x91b171bb15...da7a70ce90c3');
   },
 };
@@ -62,7 +62,7 @@ export const TruncateWithoutBoundaries: Story = {
   async play({ canvasElement }) {
     const canvas = within(canvasElement);
     const Hash = await canvas.findByTestId('Hash');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500));
     expect(Hash.innerText).toBe(TEST_HASH);
   },
 };
