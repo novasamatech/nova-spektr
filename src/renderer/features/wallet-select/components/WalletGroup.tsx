@@ -44,7 +44,7 @@ export const WalletGroup = ({ type, wallets, onInfoClick }: Props) => {
       </Accordion.Button>
       <Accordion.Content>
         <ul className="flex flex-col">
-          {wallets.map((wallet) => (
+          {wallets.map(wallet => (
             <li key={wallet.id} className="mb-2">
               <WalletCardMd
                 hideIcon
