@@ -1,7 +1,8 @@
 import { type ComponentProps, type PropsWithChildren } from 'react';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Identicon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';

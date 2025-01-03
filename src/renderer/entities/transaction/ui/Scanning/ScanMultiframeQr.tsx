@@ -3,7 +3,7 @@ import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq';
 import { useEffect, useState } from 'react';
 
-import { type Address, type BaseAccount, type ChainId, type ShardAccount, type Wallet } from '@/shared/core';
+import { type Address, type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -87,13 +87,19 @@ export const ScanMultiframeQr = ({
         address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
       }
 
+      const derivationPath =
+        accountUtils.isVaultShardAccount(signingPayload.account) ||
+        accountUtils.isVaultChainAccount(signingPayload.account)
+          ? signingPayload.account.derivationPath
+          : undefined;
+
       const signPayload = createSubstrateSignPayload(
         address,
         info.payload,
         chainId,
-        signerWallet.signingType,
-        (signingPayload.account as ShardAccount).derivationPath,
-        (signingPayload.account as BaseAccount).cryptoType,
+        signingPayload.account.signingType,
+        derivationPath,
+        signingPayload.account.cryptoType,
       );
 
       return {

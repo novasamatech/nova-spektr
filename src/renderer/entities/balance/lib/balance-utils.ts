@@ -1,6 +1,7 @@
 import keyBy from 'lodash/keyBy';
 
-import { type AccountId, type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
+import { type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const balanceUtils = {
   getAssetBalances,

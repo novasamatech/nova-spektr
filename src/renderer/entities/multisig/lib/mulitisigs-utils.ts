@@ -1,15 +1,15 @@
 import {
-  type AccountId,
   AccountType,
   type Chain,
   ChainOptions,
-  ChainType,
   CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
+  SigningType,
 } from '@/shared/core';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const multisigUtils = {
   isMultisigSupported,
@@ -49,8 +49,9 @@ function buildMultisigAccount({ threshold, accountId, signatories, chain }: Buil
     name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
     chainId: chain.chainId,
     cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
-    type: AccountType.MULTISIG,
+    signingType: SigningType.MULTISIG,
+    accountType: AccountType.MULTISIG,
+    type: 'chain',
   };
 
   return account;
@@ -82,8 +83,9 @@ function buildFlexibleMultisigAccount({
     name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
     chainId: chain.chainId,
     cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
-    type: AccountType.FLEXIBLE_MULTISIG,
+    signingType: SigningType.MULTISIG,
+    accountType: AccountType.FLEXIBLE_MULTISIG,
+    type: 'chain',
   };
 
   return account;

@@ -121,7 +121,7 @@ const $availableAccounts = combine(
       return isValidWallet && isChainMatch;
     });
 
-    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isBaseAccount(a) && a.name);
+    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isVaultBaseAccount(a) && a.name);
 
     return [...filteredAccounts, ...baseAccounts];
   },

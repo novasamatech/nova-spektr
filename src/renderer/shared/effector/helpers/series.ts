@@ -1,4 +1,4 @@
-import { type Effect, type EventCallable, createEffect, createEvent, sample } from 'effector';
+import { type Effect, type EventCallable, createEffect } from 'effector';
 
 /**
  * Triggers target unit on each element of the input list.
@@ -18,18 +18,9 @@ import { type Effect, type EventCallable, createEffect, createEvent, sample } fr
  * ```
  */
 export const series = <T>(target: EventCallable<T> | Effect<T, any>) => {
-  const push = createEvent<Iterable<T>>();
-
-  const callFx = createEffect((data: Iterable<T>) => {
+  return createEffect((data: Iterable<T>) => {
     for (const value of data) {
       target(value);
     }
   });
-
-  sample({
-    clock: push,
-    target: callFx,
-  });
-
-  return push;
 };

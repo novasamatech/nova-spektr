@@ -1,3 +1,4 @@
+export { createAnyOf, isAnyOfIdentifier } from './createAnyOf';
 export { createAsyncPipeline } from './createAsyncPipeline';
 export { createPipeline, isPipelineIdentifier } from './createPipeline';
 export { createSlot, isSlotIdentifier, normalizeSlotHandler } from './createSlot';

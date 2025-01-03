@@ -5,7 +5,6 @@ import { combineEvents, delay, spread } from 'patronum';
 
 import {
   type Account,
-  type AccountId,
   type BasketTransaction,
   type NoID,
   type PartialProxiedAccount,
@@ -16,6 +15,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
 import { basketModel } from '@/entities/basket';
 import { subscriptionService } from '@/entities/chain';
@@ -58,12 +58,12 @@ const $txWrappers = combine(
     signatories: $selectedSignatories,
   },
   ({ wallet, store, wallets, signatories }) => {
-    if (!wallet || !store?.chain || !store.account.id) return [];
+    if (!wallet || !store?.chain || !store.account) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, store.chain);
@@ -115,7 +115,7 @@ const getPureProxyFx = createEffect(
         unsubscribe?.then((fn) => fn());
 
         resolve({
-          accountId: event.data[0].toHex(),
+          accountId: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
           blockNumber: timepoint.height,
           extrinsicIndex: timepoint.index,
         });
@@ -282,7 +282,7 @@ sample({
   clock: getPureProxyFx.doneData,
   source: $addProxyStore,
   filter: (addProxyStore: AddPureProxiedStore | null): addProxyStore is AddPureProxiedStore => {
-    return Boolean(addProxyStore);
+    return nonNullable(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
     const proxiedAccount: PartialProxiedAccount = {

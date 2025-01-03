@@ -5,12 +5,12 @@ import { spread } from 'patronum';
 import {
   AccountType,
   type Chain,
-  type ChainAccount,
   type ChainId,
-  ChainType,
   CryptoType,
   KeyType,
-  type ShardAccount,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { derivationHasPassword, nonNullable, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -18,13 +18,13 @@ import { KEY_NAMES, SHARDED_KEY_NAMES, accountUtils } from '@/entities/wallet';
 
 export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-const formInitiated = createEvent<(ChainAccount | ShardAccount)[]>();
+const formInitiated = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
 const formStarted = createEvent();
 const keyRemoved = createEvent<number>();
 
-const $existingKeys = createStore<(ChainAccount | ShardAccount[])[]>([]);
-const $keysToAdd = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
-const $keysToRemove = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
+const $existingKeys = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]);
+const $keysToAdd = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]).reset(formStarted);
+const $keysToRemove = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]).reset(formStarted);
 
 const $keys = combine(
   {
@@ -108,7 +108,7 @@ const $constructorForm = createForm<FormValues>({
           name: 'duplicated',
           source: $keys,
           errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
-          validator: (value, { chainId }, keys: (ChainAccount | ShardAccount[])[]) => {
+          validator: (value, { chainId }, keys: (VaultChainAccount | VaultShardAccount[])[]) => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
 
@@ -148,20 +148,21 @@ type AddKeyParams = {
   chain: Chain;
   formValues: FormValues;
 };
-const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): ChainAccount | ShardAccount[] => {
+const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): VaultChainAccount | VaultShardAccount[] => {
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
   const base = {
+    type: 'chain',
     name: formValues.keyName,
-    keyType: formValues.keyType,
+    keyType: formValues.keyType as KeyType,
     chainId: formValues.chainId,
-    type: AccountType.CHAIN,
+    accountType: AccountType.CHAIN,
     cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     derivationPath: formValues.derivationPath,
-  };
+  } as VaultChainAccount;
 
-  if (!formValues.isSharded) return base as ChainAccount;
+  if (!formValues.isSharded) return base;
 
   const groupId = crypto.randomUUID();
 
@@ -171,16 +172,16 @@ const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): ChainAcc
       ({
         ...base,
         groupId,
-        type: AccountType.SHARD,
+        accountType: AccountType.SHARD,
         derivationPath: `${formValues.derivationPath}//${index}`,
-      }) as ShardAccount,
+      }) satisfies VaultShardAccount,
   );
 });
 
 sample({
   clock: formInitiated,
   fn: (keys) => {
-    return accountUtils.getAccountsAndShardGroups(keys as (ChainAccount | ShardAccount)[]);
+    return accountUtils.getAccountsAndShardGroups(keys as (VaultChainAccount | VaultShardAccount)[]);
   },
   target: $existingKeys,
 });

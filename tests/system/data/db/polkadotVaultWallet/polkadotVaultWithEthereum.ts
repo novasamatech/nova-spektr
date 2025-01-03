@@ -10,15 +10,16 @@ export const vaultAndEthereumWallet: IndexedDBData = {
 
 export const vaultAndEthereumAccount: IndexedDBData = {
   database: 'spektr',
-  table: 'accounts',
+  table: 'accounts2',
   injectingData: [
     {
       accountId: '0xaccace4056a930745218328bf086369fbd61c212',
-      chainType: 1,
+      signingType: 'signing_pv',
       cryptoType: 3,
-      id: 31,
+      id: '31 0xaccace4056a930745218328bf086369fbd61c212 universal',
       name: 'vaultAndEthereumWallet',
-      type: 'base',
+      accountType: 'base',
+      type: 'universal',
       walletId: 31,
     },
   ],

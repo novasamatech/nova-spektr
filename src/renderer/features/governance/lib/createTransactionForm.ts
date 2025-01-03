@@ -126,7 +126,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
         const shards = wallet.accounts.filter((a) => {
           return (
             accountUtils.isChainAndCryptoMatch(a, chain) &&
-            (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+            (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
           );
         });
 
@@ -134,7 +134,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           walletAccounts = shards;
         } else {
           walletAccounts = wallet.accounts.filter(
-            (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+            (a) => accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
           );
         }
       } else {

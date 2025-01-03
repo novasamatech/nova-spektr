@@ -20,13 +20,13 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
   const { portalContainer } = useTheme();
 
   const arrayChildren = Children.toArray(children);
-  const triggerNode = arrayChildren.find((child) => {
+  const triggerNode = arrayChildren.find(child => {
     return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
   });
-  const modalNodes = triggerNode ? arrayChildren.filter((child) => child !== triggerNode) : arrayChildren;
+  const modalNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
 
   const hasTitle =
-    modalNodes.find((child) => {
+    modalNodes.find(child => {
       return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
     }) !== null;
 

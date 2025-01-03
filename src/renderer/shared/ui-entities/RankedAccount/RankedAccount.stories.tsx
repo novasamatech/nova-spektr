@@ -4,7 +4,7 @@ import { createBaseAccount, polkadotChain } from '@/shared/mocks';
 
 import { RankedAccount } from './RankedAccount';
 
-const account = createBaseAccount(1);
+const account = createBaseAccount('1');
 
 const meta: Meta<typeof RankedAccount> = {
   title: 'Design System/entities/RankedAccount',

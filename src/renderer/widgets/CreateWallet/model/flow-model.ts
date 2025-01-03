@@ -6,7 +6,6 @@ import { delay, spread } from 'patronum';
 import {
   type Account,
   AccountType,
-  ChainType,
   type Contact,
   CryptoType,
   type MultisigAccount,
@@ -28,6 +27,7 @@ import {
   toAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -49,7 +49,7 @@ const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const flowFinished = createEvent();
-const signerSelected = createEvent<Account>();
+const signerSelected = createEvent<AnyAccount>();
 
 const walletCreated = createEvent<{
   name: string;
@@ -65,7 +65,7 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-const $signer = restore<Account | null>(signerSelected, null).reset(flowFinished);
+const $signer = restore(signerSelected, null).reset(flowFinished);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   return walletUtils.getWalletFilteredAccounts(wallets, {
@@ -240,9 +240,10 @@ sample({
       name: name.trim(),
       accountId: accountId,
       threshold: threshold,
-      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-      type: AccountType.MULTISIG,
+      cryptoType,
+      signingType: SigningType.MULTISIG,
+      accountType: AccountType.MULTISIG,
+      type: 'chain',
     };
 
     return {

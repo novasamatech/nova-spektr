@@ -12,7 +12,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     this.dexieTable = table;
   }
 
-  async create(item: NoID<T, K>): Promise<T | undefined> {
+  async create(item: NoID<T>): Promise<T | undefined> {
     try {
       const id = await this.dexieTable.add(item as T);
       if (!id) return undefined;
@@ -25,7 +25,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async createAll(items: NoID<T, K>[]): Promise<T[] | undefined> {
+  async createAll(items: NoID<T>[]): Promise<T[] | undefined> {
     try {
       const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
       if (!ids) return undefined;
@@ -38,7 +38,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async put(item: NoID<T, K>): Promise<T | undefined> {
+  async put(item: NoID<T>): Promise<T | undefined> {
     try {
       const id = await this.dexieTable.put(item as T);
       if (!id) return undefined;
@@ -71,7 +71,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async update(id: K, item: Partial<NoID<T, K>>): Promise<K | undefined> {
+  async update(id: K, item: Partial<NoID<T>>): Promise<K | undefined> {
     try {
       const isUpdated = await this.dexieTable.update(id, item);
 
@@ -134,7 +134,7 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
 
 export const storageService = {
   wallets: new StorageService(dexieStorage.wallets),
-  accounts: new StorageService(dexieStorage.accounts),
+  accounts2: new StorageService(dexieStorage.accounts2),
   contacts: new StorageService(dexieStorage.contacts),
   connections: new StorageService(dexieStorage.connections),
   proxies: new StorageService(dexieStorage.proxies),

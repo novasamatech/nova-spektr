@@ -50,7 +50,7 @@ describe('wallet-select-model', () => {
     };
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, wallets),
+      values: new Map().set(walletModel.__test.$rawWallets, wallets),
     });
 
     expect(scope.getState(walletSelectModel.$filteredWalletGroups)).toEqual({
@@ -71,7 +71,7 @@ describe('wallet-select-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(2);
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, wallets),
+      values: new Map().set(walletModel.__test.$rawWallets, wallets),
     });
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
@@ -80,7 +80,7 @@ describe('wallet-select-model', () => {
   });
 
   test('should explicitly set $activeWallet if there is no active wallet', async () => {
-    const inactiveWallets = wallets.map((wallet) => ({ ...wallet, isActive: false }));
+    const inactiveWallets = wallets.map(wallet => ({ ...wallet, isActive: false }));
 
     jest.spyOn(storageService.wallets, 'readAll').mockResolvedValue(inactiveWallets);
     jest.spyOn(storageService.wallets, 'updateAll').mockResolvedValue([]);
@@ -89,7 +89,7 @@ describe('wallet-select-model', () => {
     const scope = fork();
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(undefined);
-    await allSettled(walletModel._test.$allWallets, { scope, params: inactiveWallets });
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: inactiveWallets });
     expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...inactiveWallets[0], isActive: true });
   });
 
@@ -101,7 +101,7 @@ describe('wallet-select-model', () => {
     const scope = fork();
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(undefined);
-    await allSettled(walletModel._test.$allWallets, { scope, params: wallets });
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: wallets });
 
     expect(spyRead).not.toHaveBeenCalled();
     expect(spyUpdateAll).not.toHaveBeenCalled();
@@ -117,11 +117,11 @@ describe('wallet-select-model', () => {
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(newWallet.id);
 
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, extendedWallets),
+      values: new Map().set(walletModel.__test.$rawWallets, extendedWallets),
     });
 
     expect(scope.getState(walletModel.$activeWallet)).toEqual(extendedWallets[0]);
-    await allSettled(walletModel._test.$allWallets, { scope, params: extendedWallets.slice(1) });
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: extendedWallets.slice(1) });
     expect(scope.getState(walletModel.$activeWallet)).toEqual({ ...extendedWallets[2], isActive: true });
   });
 });

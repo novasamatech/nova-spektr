@@ -4,14 +4,15 @@ import Provider from '@walletconnect/universal-provider';
 import { getSdkError } from '@walletconnect/utils';
 import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import isEmpty from 'lodash/isEmpty';
-import keyBy from 'lodash/keyBy';
 
 import { localStorageService } from '@/shared/api/local-storage';
-import { storageService } from '@/shared/api/storage';
-import { type Account, type ID, type Wallet, kernelModel } from '@/shared/core';
+import { type Account, type ID, kernelModel } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { nonNullable } from '@/shared/lib/utils';
+// TODO wallet connect model should be in feature, not entities
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount, accounts } from '@/domains/network';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
@@ -147,8 +148,23 @@ const logProviderIdFx = createEffect(async (client: Provider) => {
 });
 
 const sessionTopicUpdatedFx = createEffect(
-  async ({ accounts, topic, provider, walletId }: SessionTopicParams & { provider: Provider }) => {
-    const oldSessionTopic = accounts[0]?.signingExtras?.sessionTopic;
+  async ({ accounts: accountsToUpdate, topic, provider, walletId }: SessionTopicParams & { provider: Provider }) => {
+    const account = accountsToUpdate.at(0);
+    if (!account) {
+      return {
+        walletId,
+        accounts: [],
+      };
+    }
+
+    if (!accountUtils.isWcAccount(account)) {
+      return {
+        walletId,
+        accounts: [],
+      };
+    }
+
+    const oldSessionTopic = account.signingExtras?.sessionTopic;
     let oldSession: SessionTypes.Struct | undefined;
 
     try {
@@ -157,23 +173,21 @@ const sessionTopicUpdatedFx = createEffect(
       console.error(e);
     }
 
-    const updatedAccounts = accounts.map(({ signingExtras, ...rest }) => {
-      const newSigningExtras = { ...signingExtras, sessionTopic: topic };
+    const updatedAccounts = accountsToUpdate.map<AnyAccount>((account) => {
+      if (accountUtils.isWcAccount(account)) {
+        return {
+          ...account,
+          signingExtras: { ...account.signingExtras, sessionTopic: topic },
+        };
+      }
 
-      return { ...rest, signingExtras: newSigningExtras };
+      return account;
     });
 
-    const updated = await storageService.accounts.updateAll(updatedAccounts);
+    await Promise.all(updatedAccounts.map(accounts.updateAccount));
 
     if (oldSession) {
       await disconnectFx({ provider, session: oldSession });
-    }
-
-    if (!updated) {
-      return {
-        walletId,
-        accounts: [],
-      };
     }
 
     return {
@@ -191,24 +205,8 @@ const removePairingFx = createEffect(
   },
 );
 
-type UpdateParams = {
-  wallet: Wallet;
-  accounts: Account[];
-};
-const updateWcAccountsFx = createEffect(async ({ wallet, accounts }: UpdateParams): Promise<Account[] | undefined> => {
-  const oldAccountIds = wallet.accounts.map((account) => account.id);
-  const newAccountsWithoutId = accounts.map((account) => {
-    const { id: _, ...newAccount } = account;
-
-    return newAccount;
-  });
-
-  const [_, newAccounts] = await Promise.all([
-    storageService.accounts.deleteAll(oldAccountIds),
-    storageService.accounts.createAll(newAccountsWithoutId),
-  ]);
-
-  return newAccounts;
+const updateWcAccountsFx = createEffect(async (wcAccounts: AnyAccount[]) => {
+  return Promise.all(wcAccounts.map(accounts.updateAccount));
 });
 
 type DisconnectParams = {
@@ -242,21 +240,9 @@ sample({
 
 sample({
   clock: accountsUpdated,
-  source: walletModel.$wallets,
-  filter: (_, { accounts }) => !isEmpty(accounts),
-  fn: (wallets, { accounts, walletId }) => {
-    const wallet = wallets.find((wallet) => wallet.id === walletId)!;
-
-    return { wallet, accounts };
-  },
+  filter: ({ accounts }) => !isEmpty(accounts),
+  fn: ({ accounts }) => accounts,
   target: updateWcAccountsFx,
-});
-
-sample({
-  clock: updateWcAccountsFx.done,
-  filter: ({ result: accounts }) => nonNullable(accounts) && accounts.length > 0,
-  fn: ({ params, result: accounts }) => ({ walletId: params.wallet.id, accounts: accounts! }),
-  target: walletModel.events.updateAccounts,
 });
 
 sample({
@@ -356,24 +342,6 @@ sample({
   filter: nonNullable,
   fn: (provider, params) => ({ provider: provider!, ...params }),
   target: sessionTopicUpdatedFx,
-});
-
-sample({
-  clock: sessionTopicUpdatedFx.doneData,
-  source: walletModel.$allWallets,
-  filter: (_, { accounts }) => accounts.length > 0,
-  fn: (wallets, { accounts, walletId }) => {
-    const wallet = wallets.find((w) => w.id === walletId);
-    if (nullable(wallet)) {
-      return { walletId, accounts };
-    }
-
-    const updatedMap = keyBy(accounts, 'id');
-    const updatedAccounts = wallet.accounts.map((account) => updatedMap[account.id] || account);
-
-    return { walletId, accounts: updatedAccounts };
-  },
-  target: walletModel.events.updateAccounts,
 });
 
 sample({

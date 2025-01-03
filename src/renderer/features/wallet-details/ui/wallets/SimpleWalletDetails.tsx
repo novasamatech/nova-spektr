@@ -47,7 +47,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const isEthereumBased = accountUtils.isEthereumBased(wallet.accounts[0]);
 
   useEffect(() => {
-    const filteredChains = Object.values(allChains).filter((c) => {
+    const filteredChains = Object.values(allChains).filter(c => {
       return isEthereumBased ? networkUtils.isEthereumBased(c.options) : !networkUtils.isEthereumBased(c.options);
     });
 
@@ -86,7 +86,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const ActionButton = (
     <DropdownIconButton name="more">
       <DropdownIconButton.Items>
-        {Options.map((option) => (
+        {Options.map(option => (
           <DropdownIconButton.Item key={option.title}>
             <DropdownIconButton.Option option={option} />
           </DropdownIconButton.Item>

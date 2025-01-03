@@ -271,10 +271,10 @@ const $destinationAccounts = combine(
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       if (isBaseAccount && isPvWallet) return false;
 
-      const isShardAccount = accountUtils.isShardAccount(account);
+      const isShardAccount = accountUtils.isVaultShardAccount(account);
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 

@@ -1,14 +1,16 @@
-import { type Account, type AccountId, type Asset, type ChainId } from '@/shared/core';
+import { type Asset, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, stakeableAmount, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, BodyText, HelpText, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { useAssetBalances } from '@/entities/balance';
 
 type Props = {
   isOpen: boolean;
-  accounts: Account[];
+  accounts: AnyAccount[];
   amounts?: string[];
   asset: Asset;
   chainId: ChainId;

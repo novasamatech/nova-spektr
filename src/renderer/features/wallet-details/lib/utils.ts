@@ -1,11 +1,11 @@
 import {
-  type BaseAccount,
-  type ChainAccount,
   type ChainId,
   KeyType,
   type MultiShardWallet,
   type PolkadotVaultWallet,
-  type ShardAccount,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
 import { accountUtils } from '@/entities/wallet';
@@ -83,14 +83,14 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
 }
 
 function getMultishardMap(accounts: MultiShardWallet['accounts']): MultishardMap {
-  return accounts.reduce<Map<BaseAccount, Record<ChainId, ChainAccount[]>>>((acc, account) => {
-    if (accountUtils.isBaseAccount(account)) {
+  return accounts.reduce<Map<VaultBaseAccount, Record<ChainId, VaultChainAccount[]>>>((acc, account) => {
+    if (accountUtils.isVaultBaseAccount(account)) {
       acc.set(account, {});
     }
 
-    if (accountUtils.isChainAccount(account)) {
+    if (accountUtils.isVaultChainAccount(account)) {
       for (const [baseAccount, chainMap] of acc.entries()) {
-        if (baseAccount.id !== account.baseId) continue;
+        if (baseAccount.accountId !== account.baseAccountId) continue;
 
         if (chainMap[account.chainId]) {
           chainMap[account.chainId].push(account);
@@ -120,7 +120,7 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   downloadFiles(downloadData);
 }
 
-function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap) {
+function exportVaultWallet(wallet: Wallet, root: VaultBaseAccount, accounts: VaultMap) {
   const accountsFlat = Object.values(accounts).flat();
   const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
 
@@ -132,8 +132,8 @@ function exportVaultWallet(wallet: Wallet, root: BaseAccount, accounts: VaultMap
   ]);
 }
 
-function getMainAccounts(accounts: (ChainAccount | ShardAccount[])[]): ChainAccount[] {
-  return accounts.filter((account) => {
+function getMainAccounts(accounts: (VaultChainAccount | VaultShardAccount[])[]): VaultChainAccount[] {
+  return accounts.filter(account => {
     return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
-  }) as ChainAccount[];
+  }) as VaultChainAccount[];
 }

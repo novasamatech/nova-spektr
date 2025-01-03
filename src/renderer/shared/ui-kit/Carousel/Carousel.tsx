@@ -118,7 +118,7 @@ const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {
   const [height, setHeight] = useState<number | string>('auto');
   const [ref, setRef] = useState<HTMLElement | null>(null);
 
-  useResizeObserver(ref, (resizeEntity) => {
+  useResizeObserver(ref, resizeEntity => {
     const height = resizeEntity.borderBoxSize.reduce((a, x) => a + x.blockSize, 0);
 
     setHeight(height);

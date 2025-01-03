@@ -1,3 +1,5 @@
+import { createAccountId } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { xcmUtils } from '../lib/xcm-utils';
 
 import { CONFIG } from './mock/xcmData';
@@ -51,17 +53,19 @@ describe('shared/api/xcm/lib/xcm-utils', () => {
   });
 
   test('should calculate correct address location for parent parachain', () => {
-    const location = xcmUtils.getDestinationLocation('V2', { parentId: '0x00' }, undefined, '0x00') as any;
+    const accountId = createAccountId();
+    const location = xcmUtils.getDestinationLocation('V2', { parentId: '0x00' }, undefined, accountId) as any;
 
     expect(location.parents).toEqual(1);
-    expect(location.interior.X1.AccountId32.id).toEqual('0x00');
+    expect(location.interior.X1.AccountId32.id).toEqual(accountId);
   });
 
   test('should calculate correct address location for parent parachain V4', () => {
-    const location = xcmUtils.getDestinationLocation('V4', { parentId: '0x00' }, undefined, '0x00') as any;
+    const accountId = createAccountId();
+    const location = xcmUtils.getDestinationLocation('V4', { parentId: '0x00' }, undefined, accountId) as any;
 
     expect(location.parents).toEqual(1);
-    expect(location.interior.X1[0].AccountId32.id).toEqual('0x00');
+    expect(location.interior.X1[0].AccountId32.id).toEqual(accountId);
   });
 
   test('should calculate correct address location for parent parachain V4', () => {
@@ -69,7 +73,7 @@ describe('shared/api/xcm/lib/xcm-utils', () => {
       'V4',
       { parentId: '0x00' },
       undefined,
-      '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
+      '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c' as AccountId,
     ) as any;
 
     expect(location.parents).toEqual(1);

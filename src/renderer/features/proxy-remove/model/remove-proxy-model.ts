@@ -2,7 +2,6 @@ import { combine, createEvent, createStore, restore, sample, split } from 'effec
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type BasketTransaction,
   type Chain,
   type ChainId,
@@ -18,6 +17,7 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
 import { networkModel } from '@/entities/network';
@@ -40,7 +40,7 @@ const wentBackFromConfirm = createEvent();
 const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
-  account: Account;
+  account: AnyAccount;
   proxy: ProxyAccount;
 };
 const flowStarted = createEvent<Input>();
@@ -54,10 +54,10 @@ const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
-const $availableSignatories = createStore<Account[][]>([]);
+const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $chain = $removeProxyStore.map((store) => store?.chain, { skipVoid: false });
@@ -94,7 +94,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -153,7 +153,7 @@ const $signatories = combine(
   ({ chain, availableSignatories, balances }) => {
     if (!chain) return [];
 
-    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(
           balances,
@@ -188,7 +188,7 @@ const $initiatorWallet = combine(
 sample({
   clock: $txWrappers,
   fn: (txWrappers: TxWrapper[]) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
+    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
 
       return acc;

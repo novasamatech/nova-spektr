@@ -5,7 +5,7 @@ import { attachToFeatureInput } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
-import { accountUtils } from '@/entities/wallet';
+import { accountsService } from '@/domains/network';
 
 import { fellowshipModel } from './fellowship';
 import { profileFeatureStatus } from './status';
@@ -18,12 +18,12 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
   return list[featureInput.chainId] ?? {};
 });
 
-const $currentMember = combine(profileFeatureStatus.input, $members, (featureInput, members) => {
-  if (nullable(featureInput) || members.length === 0) return null;
+const $chainAccounts = profileFeatureStatus.input.map(store => {
+  return store ? accountsService.filterAccountOnChain(store.accounts, store.chain) : [];
+});
 
-  const { wallet, accounts, chain } = featureInput;
-
-  return collectiveDomain.membersService.findMatchingMember(wallet, accounts, chain, members);
+const $currentMember = combine($chainAccounts, $members, (accounts, members) => {
+  return collectiveDomain.membersService.findMatchingMember(accounts, members);
 });
 
 const $identity = combine($currentMember, $identities, (member, identities) => {
@@ -35,9 +35,7 @@ const $identity = combine($currentMember, $identities, (member, identities) => {
 const $isAccountExist = profileFeatureStatus.input.map(store => {
   if (!store) return false;
 
-  return store.accounts.some(account => {
-    return !accountUtils.isBaseAccount(account) && accountUtils.isChainAndCryptoMatch(account, store.chain);
-  });
+  return accountsService.filterAccountOnChain(store.accounts, store.chain).length > 0;
 });
 
 const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));

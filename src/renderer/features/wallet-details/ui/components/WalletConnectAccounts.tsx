@@ -4,8 +4,9 @@ import { useMemo } from 'react';
 
 import wallet_connect_reconnect from '@/shared/assets/video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@/shared/assets/video/wallet_connect_reconnect.webm';
-import { type AccountId, type Chain, type WalletConnectGroup } from '@/shared/core';
+import { type Chain, type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { MultiAccountsList } from '@/entities/wallet';

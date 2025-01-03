@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { type AccountId, type Balance, type ChainId } from '@/shared/core';
+import { type Balance, type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
 import { balanceModel } from '../model/balance-model';
 

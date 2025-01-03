@@ -4,6 +4,7 @@ import {
   type DataStorage,
   type IStorage,
   type TAccount,
+  type TAccount2,
   type TBalance,
   type TBasketTransaction,
   type TConnection,
@@ -16,7 +17,7 @@ import {
   type TProxyGroup,
   type TWallet,
 } from '../lib/types';
-import { migrateEvents, migrateWallets } from '../migration';
+import { migrateAccounts, migrateEvents, migrateWallets } from '../migration';
 
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { useTransactionStorage } from './transactionStorage';
@@ -25,7 +26,12 @@ class DexieStorage extends Dexie {
   connections: TConnection;
   balances: TBalance;
   wallets: TWallet;
+  /**
+   * @deprecated For now it's replaced by accounts2 table, but not wiped for
+   *   backup.
+   */
   accounts: TAccount;
+  accounts2: TAccount2;
   contacts: TContact;
   multisigTransactions: TMultisigTransaction;
   multisigEvents: TMultisigEvent;
@@ -88,10 +94,17 @@ class DexieStorage extends Dexie {
       metadata: '++id',
     });
 
+    this.version(26)
+      .stores({
+        accounts2: 'id',
+      })
+      .upgrade(migrateAccounts);
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
+    this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
     this.multisigTransactions = this.table('multisigTransactions');
     this.multisigEvents = this.table('multisigEvents');
@@ -129,6 +142,7 @@ export const storage = new StorageFactory(dexie);
 export const dexieStorage = {
   wallets: dexie.wallets,
   accounts: dexie.accounts,
+  accounts2: dexie.accounts2,
   contacts: dexie.contacts,
   connections: dexie.connections,
   proxies: dexie.proxies,

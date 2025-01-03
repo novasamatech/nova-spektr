@@ -2,12 +2,11 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
-import { accountUtils } from '@/entities/wallet';
+import { type AnyAccount, accountsService } from '@/domains/network';
 import { flowModel } from '../../../model/flow-model';
 import { formModel } from '../../../model/form-model';
 import { signatoryModel } from '../../../model/signatory-model';
@@ -22,7 +21,7 @@ export const SignerSelection = () => {
 
   const { submit } = useForm(formModel.$createMultisigForm);
 
-  const onSubmit = (event: FormEvent, account: Account) => {
+  const onSubmit = (event: FormEvent, account: AnyAccount) => {
     flowModel.events.signerSelected(account);
     event.preventDefault();
     submit();
@@ -35,9 +34,8 @@ export const SignerSelection = () => {
           {ownedSignatoriesWallets.map((wallet) => {
             if (!chain) return null;
 
-            const account = wallet.accounts.find((account) => {
-              return accountUtils.isBaseAccount(account) || account.chainId === chain.chainId;
-            });
+            const accounts = accountsService.filterAccountOnChain(wallet.accounts, chain);
+            const account = accounts.at(0);
 
             if (!account) return null;
 

@@ -1,19 +1,15 @@
-import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
-import { accountUtils } from '@/entities/wallet';
+import { type AnyAccount } from '@/domains/network';
 
 import { type CoreMember, type Member } from './types';
 
-const findMatchingMember = (wallet: Wallet, accounts: Account[], chain: Chain, members: Member[]) => {
-  const walletAccounts = accounts.filter(account => {
-    return accountUtils.isNonBaseVaultAccount(account, wallet) && accountUtils.isChainAndCryptoMatch(account, chain);
-  });
-  const accountsDictionary = dictionary(walletAccounts, 'accountId');
+const findMatchingMember = (accounts: AnyAccount[], members: Member[]) => {
+  const accountsDictionary = dictionary(accounts, 'accountId');
 
   return members.find(member => member.accountId in accountsDictionary) ?? null;
 };
 
-const findMatchingAccount = (accounts: Account[], member: Member) => {
+const findMatchingAccount = (accounts: AnyAccount[], member: Member) => {
   return accounts.find(a => a.accountId === member.accountId) ?? null;
 };
 

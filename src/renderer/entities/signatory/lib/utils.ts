@@ -1,4 +1,5 @@
-import { type AccountId, type Wallet } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { walletUtils } from '@/entities/wallet';
 
 export const signatoryUtils = {

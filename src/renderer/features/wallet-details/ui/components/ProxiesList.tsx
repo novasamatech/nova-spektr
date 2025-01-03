@@ -44,7 +44,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
     const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    const anyProxies = chainProxies.filter((proxy) => proxy.proxyType === 'Any');
+    const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
     const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
     const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
@@ -68,7 +68,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
     if (!proxyForRemoval || !wallet) return;
 
-    const account = wallet.accounts.find((a) => {
+    const account = wallet.accounts.find(a => {
       return (
         accountUtils.isNonBaseVaultAccount(a, wallet) &&
         accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
@@ -110,7 +110,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
                 </Accordion.Button>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
-                    {chainsProxies[chainId].map((proxy) => (
+                    {chainsProxies[chainId].map(proxy => (
                       <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
                         <ProxyAccountWithActions
                           account={proxy}

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BaseModal, Button } from '@/shared/ui';
 import { constructorModel } from '../model/constructor-model';
@@ -13,9 +13,12 @@ import { WarningModal } from './WarningModal';
 type Props = {
   title: string;
   isOpen: boolean;
-  existingKeys: DraftAccount<ChainAccount | ShardAccount>[];
+  existingKeys: DraftAccount<VaultChainAccount | VaultShardAccount>[];
   onClose: () => void;
-  onConfirm: (keysToAdd: (ChainAccount | ShardAccount[])[], keysToRemove: (ChainAccount | ShardAccount[])[]) => void;
+  onConfirm: (
+    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
+    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
+  ) => void;
 };
 
 export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
@@ -29,7 +32,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   useEffect(() => {
     if (!isOpen) return;
 
-    constructorModel.events.formInitiated(existingKeys as (ChainAccount | ShardAccount)[]);
+    constructorModel.events.formInitiated(existingKeys as (VaultChainAccount | VaultShardAccount)[]);
   }, [isOpen]);
 
   const closeConstructor = () => {

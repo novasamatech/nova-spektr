@@ -2,14 +2,15 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 
 import {
-  type BaseAccount,
-  type ChainAccount,
   type DraftAccount,
   type NoID,
-  type ShardAccount,
+  SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
+import { AccountType, CryptoType, KeyType } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -22,15 +23,15 @@ export type Callbacks = {
 };
 
 type VaultCreateParams = {
-  root: Omit<NoID<BaseAccount>, 'walletId'>;
+  root: Omit<NoID<VaultBaseAccount>, 'walletId'>;
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-  accounts: Omit<NoID<ChainAccount | ShardAccount>, 'walletId'>[];
+  accounts: (Omit<NoID<VaultChainAccount>, 'walletId'> | Omit<NoID<VaultShardAccount>, 'walletId'>)[];
 };
 
 const formInitiated = createEvent<SeedInfo[]>();
-const keysRemoved = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const keysAdded = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
-const derivationsImported = createEvent<DraftAccount<ChainAccount | ShardAccount>[]>();
+const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -38,10 +39,10 @@ const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
 });
 
-const $keys = createStore<DraftAccount<ChainAccount | ShardAccount>[]>([]);
+const $keys = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>([]);
 
-const $keysGroups = combine($keys, (accounts): (ChainAccount | ShardAccount[])[] => {
-  return accountUtils.getAccountsAndShardGroups(accounts as (ChainAccount | ShardAccount)[]);
+const $keysGroups = combine($keys, (accounts): (VaultChainAccount | VaultShardAccount[])[] => {
+  return accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
 });
 
 const $hasKeys = combine($keys, (keys): boolean => {
@@ -81,7 +82,7 @@ sample({
   fn: (chains) => {
     const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
 
-    return defaultChains.reduce<DraftAccount<ChainAccount>[]>((acc, chain) => {
+    return defaultChains.reduce<DraftAccount<VaultChainAccount>[]>((acc, chain) => {
       if (!chain.specName) return acc;
 
       acc.push({
@@ -89,9 +90,10 @@ sample({
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
         cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        type: AccountType.CHAIN,
+        signingType: SigningType.POLKADOT_VAULT,
+        accountType: AccountType.CHAIN,
         keyType: KeyType.MAIN,
+        type: 'chain',
       });
 
       return acc;

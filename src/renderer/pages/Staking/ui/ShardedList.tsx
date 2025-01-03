@@ -2,10 +2,11 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { type Address, type Asset, type Chain, type Explorer } from '@/shared/core';
-import { type ShardAccount } from '@/shared/core/types/account';
+import { type VaultShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { useStakingData } from '@/entities/staking';
@@ -14,7 +15,7 @@ import { type NominatorInfo } from '../lib/types';
 import { NominatorsItem } from './NominatorItem';
 
 type Props = {
-  shardsStake: NominatorInfo<ShardAccount>[];
+  shardsStake: NominatorInfo<VaultShardAccount>[];
   isStakingLoading: boolean;
   era?: number;
   asset?: Asset;
@@ -23,7 +24,7 @@ type Props = {
   addressPrefix?: number;
   onCheckValidators: (stash?: Address) => void;
   onToggleNominator: (nominator: Address, value?: boolean) => void;
-  getContent: (stake: NominatorInfo<ShardAccount>) => ReactNode;
+  getContent: (stake: NominatorInfo<VaultShardAccount>) => ReactNode;
 };
 
 export const ShardedList = ({
@@ -129,7 +130,7 @@ export const ShardedList = ({
       <CardStack.Content>
         <ul className="pl-6">
           {shardsStake.map((shard) => (
-            <li key={shard.account.id}>
+            <li key={networkDomain.accountsService.uniqId(shard.account)}>
               <NominatorsItem
                 isStakingLoading={isStakingLoading}
                 content={getContent(shard)}

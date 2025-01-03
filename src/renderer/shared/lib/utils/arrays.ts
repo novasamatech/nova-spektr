@@ -83,8 +83,8 @@ export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]
 export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
   new Date(dateA) > new Date(dateB) ? 1 : -1;
 
-export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], true> => {
-  const res: Record<string, true> = {};
+export const toKeysRecord = <T extends PropertyKey[]>(array: T): Record<T[number], true> => {
+  const res: Record<PropertyKey, true> = {};
 
   for (let i = 0; i < array.length; i++) {
     const item = array[i];
@@ -100,13 +100,13 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], tr
 type MergeParams<T> = {
   a: T[];
   b: T[];
-  mergeBy: (value: T) => PropertyKey | PropertyKey[];
+  mergeBy: (value: T) => PropertyKey | (PropertyKey | undefined)[];
   merge?: (a: T, b: T) => T;
   sort?: (a: T, b: T) => number;
   filter?: (a: T, b: T) => boolean;
 };
 
-const createMergeKey = (key: PropertyKey | PropertyKey[]) => {
+const createMergeKey = (key: PropertyKey | (PropertyKey | undefined)[]) => {
   return Array.isArray(key) ? key.join('|') : key;
 };
 
@@ -180,6 +180,10 @@ export const groupBy = <const T, const K extends PropertyKey>(
   }
 
   return groups as Record<K, T[]>;
+};
+
+export const keys = <K extends PropertyKey>(values: Record<K, unknown>): K[] => {
+  return Object.keys(values) as K[];
 };
 
 export const entries = <K extends PropertyKey, T>(values: Record<K, T>): [key: K, value: T][] => {

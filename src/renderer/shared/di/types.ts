@@ -24,6 +24,7 @@ export type Identifier<
   $handlers: Store<Handler<ProcessedHandlerBody>[]>;
   registerHandler: EventCallable<Handler<HandlerBody>>;
   updateHandlers: EventCallable<void>;
+  resetHandlers: EventCallable<void>;
   __BRAND: 'Identifier';
 };
 

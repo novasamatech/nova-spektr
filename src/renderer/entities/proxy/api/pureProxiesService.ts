@@ -1,6 +1,6 @@
 import { type GraphQLClient } from 'graphql-request';
 
-import { type AccountId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { FILTER_PURE_PROXIED_ACCOUNT_IDS } from './graphql/queries/pureProxies';
 

@@ -1,7 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
-import { type AccountId, type Explorer, type SigningStatus } from '@/shared/core';
+import { type Explorer, type SigningStatus } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Icon, type IconNames } from '@/shared/ui';
 import { ExplorersPopover } from '@/entities/wallet';
 

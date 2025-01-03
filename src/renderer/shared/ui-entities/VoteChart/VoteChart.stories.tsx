@@ -11,7 +11,7 @@ const meta: Meta<typeof VoteChart> = {
     layout: 'centered',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="400px">
         <Story />
       </Box>

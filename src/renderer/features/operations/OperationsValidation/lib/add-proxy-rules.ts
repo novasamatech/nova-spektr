@@ -1,8 +1,9 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type ChainProxyStore, type SignatoryStore } from '../types/types';
 

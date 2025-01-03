@@ -1,10 +1,11 @@
 import { allSettled, fork } from 'effector';
 
 import { toAddress } from '@/shared/lib/utils';
+import * as networkDomain from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { signatoryModel } from '../signatory-model';
 
-import { initiatorWallet, signatoryWallet, signerWallet } from './mock';
+import { accounts, initiatorWallet, signatoryWallet, signerWallet } from './mock';
 
 describe('Create multisig wallet signatory-model', () => {
   beforeEach(() => {
@@ -55,7 +56,9 @@ describe('Create multisig wallet signatory-model', () => {
 
   test('should have correct value for $ownSignatoryWallets', async () => {
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+      values: new Map()
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet])
+        .set(networkDomain.accounts.__test.$list, accounts),
     });
 
     await allSettled(signatoryModel.events.changeSignatory, {

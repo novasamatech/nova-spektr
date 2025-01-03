@@ -10,7 +10,7 @@ const meta: Meta<typeof ScrollArea> = {
   parameters: {
     layout: 'centered',
   },
-  render: (params) => {
+  render: params => {
     return (
       <div className="h-80 w-60 border">
         <ScrollArea {...params}>

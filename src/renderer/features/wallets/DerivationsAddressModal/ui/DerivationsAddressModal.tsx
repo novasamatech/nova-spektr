@@ -1,9 +1,10 @@
 import keyBy from 'lodash/keyBy';
 import { useEffect, useState } from 'react';
 
-import { type AccountId, type ChainAccount, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button, InfoLink, SmallTitleText } from '@/shared/ui';
 import { type DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@/entities/transaction';
 import { derivationAddressUtils } from '../lib/utils';
@@ -18,8 +19,10 @@ const enum Step {
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
-  keys: DraftAccount<ShardAccount | ChainAccount>[];
-  onComplete: (accounts: Omit<ChainAccount | ShardAccount, 'id' | 'walletId'>[]) => void;
+  keys: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+  onComplete: (
+    accounts: (Omit<VaultChainAccount, 'id' | 'walletId'> | Omit<VaultShardAccount, 'id' | 'walletId'>)[],
+  ) => void;
   onClose: () => void;
 };
 export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, onComplete }: Props) => {
@@ -36,7 +39,8 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
   const handleScanResult = (result: DdAddressInfoDecoded[]) => {
     const derivedKeys = keyBy(result, (d) => `${d.derivationPath}${d.encryption}`);
     const accounts = derivationAddressUtils.createDerivedAccounts(derivedKeys, keys);
-    const newAccounts = accounts.filter((account) => !(account as ShardAccount | ChainAccount).id);
+    // TODO fix in lol
+    const newAccounts = accounts.filter((account) => !(account as VaultShardAccount | VaultChainAccount).id);
 
     onComplete(newAccounts);
   };

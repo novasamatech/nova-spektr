@@ -15,7 +15,7 @@ const $activeWalletBalance = combine(
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
   },
-  (params) => {
+  params => {
     const { wallet, chains, balances, prices, currency } = params;
 
     if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices) || balances.length === 0) {
@@ -30,9 +30,9 @@ const $activeWalletBalance = combine(
       const account = accountMap[balance.accountId];
       const chain = chains[balance.chainId];
       if (nullable(account) || nullable(chain)) return acc;
-      if (accountUtils.isBaseAccount(account) && isPolkadotVault) return acc;
+      if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chain.assets.find((asset) => asset.assetId.toString() === balance.assetId);
+      const asset = chain.assets.find(asset => asset.assetId.toString() === balance.assetId);
       if (nullable(asset?.priceId)) return acc;
       const pricesMap = prices[asset.priceId];
       if (nullable(pricesMap)) return acc;

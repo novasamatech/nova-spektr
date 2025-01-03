@@ -7,7 +7,6 @@ import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type Address,
   type Asset,
   type Chain,
@@ -25,6 +24,7 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
@@ -35,8 +35,8 @@ import { type NetworkStore } from '../lib/types';
 type BalanceMap = { balance: string; withdraw: string };
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   amount: string;
 };
 
@@ -47,7 +47,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     totalFee: string;
@@ -72,7 +72,7 @@ const $era = restore(eraSet, null);
 const $stakingUnsub = createStore<() => void>(noop);
 const $eraUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -86,12 +86,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 
 const $withdrawForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [],
       rules: [
         {
           name: 'noProxyFee',
@@ -162,7 +162,7 @@ const $withdrawForm = createForm<FormParams>({
           validator: (value, form, { fee, isMultisig, accountsBalances }) => {
             if (isMultisig) return true;
 
-            return form.shards.every((_: Account, index: number) => {
+            return form.shards.every((_: AnyAccount, index: number) => {
               return new BN(fee).lte(new BN(accountsBalances[index].balance));
             });
           },
@@ -211,7 +211,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
@@ -296,7 +296,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
@@ -503,7 +503,7 @@ sample({
 
 sample({
   clock: $withdrawForm.fields.signatory.$value,
-  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
+  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });

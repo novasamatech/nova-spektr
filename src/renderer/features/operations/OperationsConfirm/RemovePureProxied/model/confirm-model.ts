@@ -3,7 +3,6 @@ import { combine, createEvent, restore } from 'effector';
 
 import {
   type Account,
-  type AccountId,
   type Chain,
   type ChainId,
   type ProxiedAccount,
@@ -12,6 +11,7 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';

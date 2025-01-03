@@ -1,8 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type AccountId } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
 import { salaryClaimantStatus, salaryStatusType } from './schema';

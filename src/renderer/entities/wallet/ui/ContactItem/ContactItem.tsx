@@ -1,7 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
-import { type AccountId, type Address, type KeyType } from '@/shared/core';
+import { type Address, type KeyType } from '@/shared/core';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText, Icon, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';
 import { KeyIcon } from '../../lib/constants';

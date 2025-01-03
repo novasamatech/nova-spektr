@@ -25,7 +25,7 @@ export const ShardsList = () => {
       onClose={closeModal}
     >
       <ul className="flex max-h-[530px] flex-col gap-y-2 overflow-y-auto">
-        {shards.map((shard) => (
+        {shards.map(shard => (
           <li key={shard.accountId} className="px-3">
             <ExplorersPopover
               button={

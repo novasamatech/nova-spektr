@@ -10,7 +10,6 @@ import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
 import {
-  type AccountId,
   type Address,
   type Asset,
   AssetType,
@@ -20,6 +19,7 @@ import {
   type OrmlExtras,
 } from '@/shared/core';
 import { getAssetId, getRepeatedIndex, groupBy, isHex, nullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type NoIdBalance = Omit<Balance, 'id'>;
 

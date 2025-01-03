@@ -11,7 +11,6 @@ import {
   AccountType,
   type Asset,
   type Chain,
-  ChainType,
   type Contact,
   CryptoType,
   type FlexibleMultisigAccount,
@@ -356,8 +355,9 @@ sample({
           accountId: multisigAccountId!,
           threshold: addMultisigStore!.threshold,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.MULTISIG,
+          signingType: SigningType.MULTISIG,
+          accountType: AccountType.MULTISIG,
+          type: 'chain',
         } as MultisigAccount,
         coreTxs: [coreTx!],
         wrappedTxs: [wrappedTx!],
@@ -455,8 +455,9 @@ sample({
       accountId: multisigAccoutId!,
       threshold: threshold,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      chainType: isEthereumChain ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-      type: AccountType.FLEXIBLE_MULTISIG,
+      signingType: SigningType.MULTISIG,
+      accountType: AccountType.FLEXIBLE_MULTISIG,
+      type: 'chain',
     };
 
     return {

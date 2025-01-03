@@ -32,8 +32,8 @@ export type Serializable<T> = T extends string | number | null | undefined | boo
               }
             : never;
 
-type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+export type Without<T, U extends PropertyKey> = { [P in Exclude<keyof T, U>]?: never };
 
-export type XOR<T, U = object> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+export type XOR<T, U = object> = T | U extends object ? (Without<T, keyof U> & U) | (Without<U, keyof T> & T) : T | U;
 
 export type ArrayElement<T extends unknown[]> = T extends (infer E)[] ? E : never;

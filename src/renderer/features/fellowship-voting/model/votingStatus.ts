@@ -27,9 +27,7 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
 const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
-  const { wallet, accounts, chain } = featureInput;
-
-  return collectiveDomain.membersService.findMatchingMember(wallet, accounts, chain, members);
+  return collectiveDomain.membersService.findMatchingMember(featureInput.accounts, members);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {

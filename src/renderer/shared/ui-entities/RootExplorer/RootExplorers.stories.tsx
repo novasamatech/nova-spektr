@@ -1,16 +1,15 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
+import { createAccountId } from '@/shared/mocks';
 import { FootnoteText } from '@/shared/ui';
 
 import { RootExplorers } from './RootExplorers';
-
-const testAccountId = '0x9e9bf57d2420cc050723e9609afd5a1c326aceaf6b3f4175fda2eb26044d1f64';
 
 const meta: Meta<typeof RootExplorers> = {
   title: 'Design System/entities/RootExplorers',
   component: RootExplorers,
   args: {
-    accountId: testAccountId,
+    accountId: createAccountId('root explorers'),
   },
   parameters: {
     layout: 'centered',

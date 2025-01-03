@@ -24,7 +24,7 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
         collapsible
         type="single"
         value={open ? id : ''}
-        onValueChange={(value) => setOpen(value === id)}
+        onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id} className="group/stack card-stack">
           {children}

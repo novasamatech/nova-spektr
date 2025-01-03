@@ -6,7 +6,7 @@ import { createBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/s
 
 import { AccountSelectModal } from './AccountSelectModal';
 
-const accounts = [createBaseAccount(1), createWcAccount(2), createBaseAccount(3), createBaseAccount(4)];
+const accounts = [createBaseAccount('1'), createWcAccount('2'), createBaseAccount('3'), createBaseAccount('4')];
 
 const meta: Meta<typeof AccountSelectModal> = {
   title: 'Design System/entities/AccountSelectModal',
@@ -27,7 +27,7 @@ type Story = StoryObj<typeof AccountSelectModal>;
 
 export const Default: Story = {
   args: {
-    options: accounts.map((account) => ({
+    options: accounts.map(account => ({
       account,
     })),
   },
@@ -54,7 +54,7 @@ export const WithTitles: Story = {
 export const CloseButton: Story = {
   args: {
     closeButton: true,
-    options: accounts.map((account) => ({ account })),
+    options: accounts.map(account => ({ account })),
   },
 };
 

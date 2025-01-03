@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type AccountId, type Chain } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, ErrorType, SigningType, WalletType } from '@/shared/core';
+import { type Chain } from '@/shared/core';
+import { AccountType, CryptoType, ErrorType, SigningType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION, isEthereumAccountId, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   BaseModal,
   Button,
@@ -92,8 +93,9 @@ const WatchOnly = ({ isOpen, onClose, onComplete }: Props) => {
           name: walletName.trim(),
           accountId: toAccountId(address),
           cryptoType: isEthereum ? CryptoType.ETHEREUM : CryptoType.SR25519,
-          chainType: isEthereum ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
-          type: AccountType.BASE,
+          signingType: SigningType.WATCH_ONLY,
+          accountType: AccountType.BASE,
+          type: 'universal',
         },
       ],
     });

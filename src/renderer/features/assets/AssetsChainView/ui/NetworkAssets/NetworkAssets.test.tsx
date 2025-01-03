@@ -3,8 +3,15 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 
 import chains from '@/shared/config/chains/chains.json';
-import { type BaseAccount, type Chain, type ChainAccount, type ShardAccount } from '@/shared/core';
-import { AccountType, ChainType, CryptoType } from '@/shared/core';
+import {
+  AccountType,
+  type Chain,
+  CryptoType,
+  SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 
@@ -42,17 +49,18 @@ jest.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
-const accounts = [
+const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 1,
+    id: '1',
     walletId: 1,
+    type: 'universal',
     name: 'test',
-    type: AccountType.BASE,
+    accountType: AccountType.BASE,
     accountId: TEST_ACCOUNTS[0],
     cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
   },
-] as (BaseAccount | ChainAccount | ShardAccount)[];
+];
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({

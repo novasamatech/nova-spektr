@@ -5,8 +5,6 @@ import { createEndpoint } from '@remote-ui/rpc';
 import * as Sc from '@substrate/connect';
 
 import {
-  type AccountId,
-  type BaseAccount,
   type Chain,
   type ChainId,
   type Connection,
@@ -18,8 +16,10 @@ import {
   type ProxyDeposits,
   type ProxyType,
   ProxyVariant,
+  type VaultBaseAccount,
 } from '@/shared/core';
 import { proxyPallet } from '@/shared/pallet/proxy';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
 export const proxyWorker = {
@@ -97,8 +97,8 @@ async function disconnect(chainId: ChainId) {
 
 type GetProxiesParams = {
   chainId: ChainId;
-  accountsForProxy: Record<AccountId, BaseAccount>;
-  accountsForProxied: Record<AccountId, BaseAccount>;
+  accountsForProxy: Record<AccountId, VaultBaseAccount>;
+  accountsForProxied: Record<AccountId, VaultBaseAccount>;
   proxiedAccounts: ProxiedAccount[];
   proxies: ProxyAccount[];
 };

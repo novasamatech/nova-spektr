@@ -1,4 +1,5 @@
-import { type Account, type ChainId, type Transaction } from '@/shared/core';
+import { type ChainId, type Transaction } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 
 export type FormParams = {
   threshold: number;
@@ -13,7 +14,7 @@ export type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
-    signer: Account;
+    signer: AnyAccount;
     fee: string;
     multisigDeposit: string;
   };

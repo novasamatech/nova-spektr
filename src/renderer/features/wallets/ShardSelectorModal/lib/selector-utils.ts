@@ -1,4 +1,4 @@
-import { type AccountId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
   type AccountToggleParams,
@@ -23,7 +23,7 @@ export const selectorUtils = {
 
 function getSelectedAll(struct: SelectedStruct, value: boolean): SelectedStruct {
   return Object.keys(struct).reduce<SelectedStruct>((acc, root) => {
-    return getSelectedRoot(acc, { root: Number(root), value });
+    return getSelectedRoot(acc, { root: root as AccountId, value });
   }, struct);
 }
 

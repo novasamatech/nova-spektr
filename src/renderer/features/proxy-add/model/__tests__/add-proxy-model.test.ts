@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type BaseAccount, ConnectionStatus, type Transaction } from '@/shared/core';
+import { ConnectionStatus, type Transaction, type VaultBaseAccount } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -37,7 +37,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(addProxyModel.events.flowStarted, { scope });
@@ -55,7 +55,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: { accountId: '0x00' } as unknown as BaseAccount,
+          account: { accountId: '0x00' } as unknown as VaultBaseAccount,
           delegate: '0x00',
           proxyType: 'Any',
           proxyDeposit: '1',
