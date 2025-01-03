@@ -14,6 +14,7 @@ export const createAsyncPipeline = <Value, Meta = void>(config?: {
     type: 'asyncPipeline',
     name: config?.name ?? 'unknownAsyncPipeline',
     processHandler: (handler) => ({
+      key: handler.key,
       available: handler.available,
       body: ({ acc, input }) => acc.then((value) => handler.body(value, input)),
     }),

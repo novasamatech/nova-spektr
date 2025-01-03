@@ -9,6 +9,10 @@ export type HandlerInput<Input, Output> = {
 export type DefaultHandlerBody<Input, Output> = (handlerInput: HandlerInput<Input, Output>) => Output;
 
 export type Handler<HandlerBody> = {
+  /**
+   * Optional key, can be used as identifier for deduplication.
+   */
+  key?: string;
   available(): boolean;
   body: HandlerBody;
 };

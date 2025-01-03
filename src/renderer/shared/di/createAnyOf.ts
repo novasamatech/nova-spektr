@@ -19,6 +19,7 @@ export const createAnyOf = <Value>(config?: { name?: string }): AnyOfIdentifier<
     type: 'anyOf',
     name: config?.name ?? 'unknownAnyOf',
     processHandler: (handler) => ({
+      key: handler.key,
       available: handler.available,
       body: ({ acc, input }) => (acc || handler.body(input)) ?? acc,
     }),

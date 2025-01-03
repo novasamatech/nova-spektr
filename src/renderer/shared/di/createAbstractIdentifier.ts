@@ -30,7 +30,18 @@ export const createAbstractIdentifier = <
     clock: registerHandler,
     source: $handlers,
     filter: (handlers, handler) => !handlers.includes(handler),
-    fn: (handlers, handler) => handlers.concat(handler),
+    fn: (handlers, handler) => {
+      if (handler.key) {
+        const index = handlers.findIndex((h) => h.key === handler.key);
+        if (index === -1) {
+          return handlers.concat(handler);
+        } else {
+          return handlers.map((h) => (h.key === handler.key ? handler : h));
+        }
+      } else {
+        return handlers.concat(handler);
+      }
+    },
     target: $handlers,
   });
 
