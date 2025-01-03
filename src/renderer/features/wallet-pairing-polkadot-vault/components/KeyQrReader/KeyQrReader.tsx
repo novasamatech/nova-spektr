@@ -23,11 +23,10 @@ const RESULT_DELAY = 250;
 
 type Props = {
   size?: number | [number, number];
-  className?: string;
-  onResult: (payload: SeedInfo[]) => void;
+  onComplete: (payload: SeedInfo[]) => void;
 };
 
-const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
+const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -47,7 +46,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
   ].includes(cameraState);
 
   const onCameraList = (cameras: VideoInput[]) => {
-    const formattedCameras = cameras.map((camera) => ({
+    const formattedCameras = cameras.map(camera => ({
       title: camera.label,
       value: camera.id,
     }));
@@ -90,7 +89,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       }
 
       setIsScanComplete(true);
-      setTimeout(() => onResult(qrPayload), RESULT_DELAY);
+      setTimeout(() => onComplete(qrPayload), RESULT_DELAY);
     } catch {
       setCameraState(CameraState.INVALID_ERROR);
       resetCamera();
@@ -184,7 +183,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cnTw('relative overflow-hidden', isCameraPending && 'hidden', className)} style={sizeStyle}>
+        <div className={cnTw('relative overflow-hidden rounded-2lg', isCameraPending && 'hidden')} style={sizeStyle}>
           <QrReader
             bgVideo
             size={size}
@@ -193,7 +192,7 @@ const KeyQrReader = ({ size = 300, className, onResult }: Props) => {
             onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
-            onResult={(result) => onScanResult(result as SeedInfo[])}
+            onResult={result => onScanResult(result as SeedInfo[])}
             onError={onError}
           />
 

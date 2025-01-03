@@ -107,7 +107,7 @@ const HeaderContent = ({ children }: PropsWithChildren) => {
 
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
   return disableScroll ? (
-    <div className="flex h-full flex-grow flex-col overflow-hidden">{children}</div>
+    <div className="flex h-full min-h-0 flex-grow flex-col overflow-hidden">{children}</div>
   ) : (
     <ScrollArea>{children}</ScrollArea>
   );

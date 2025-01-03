@@ -5,8 +5,10 @@ import { useI18n } from '@/shared/i18n';
 import { WalletOnboardingCard } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
-import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';
+import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
+
+import { PairingFormModal } from './components/PairingFormModal';
 
 export const walletPairingPolkadotVaultFeature = createFeature({
   name: 'wallet pairing/polkadot vault',
@@ -18,13 +20,14 @@ walletPairingPolkadotVaultFeature.inject(onboardingActionsSlot, {
     const { t } = useI18n();
 
     return (
-      <WalletOnboardingCard
-        title={t('onboarding.welcome.polkadotVaultTitle')}
-        description={t('onboarding.welcome.polkadotVaultDescription')}
-        iconName="vaultOnboarding"
-        testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
-        onClick={() => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}
-      />
+      <PairingFormModal>
+        <WalletOnboardingCard
+          title={t('onboarding.welcome.polkadotVaultTitle')}
+          description={t('onboarding.welcome.polkadotVaultDescription')}
+          iconName="vaultOnboarding"
+          testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
+        />
+      </PairingFormModal>
     );
   },
 });
@@ -33,10 +36,12 @@ walletPairingPolkadotVaultFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 0,
   render({ t }) {
     return (
-      <Dropdown.Item onSelect={() => walletPairingModel.events.walletTypeSet(WalletType.POLKADOT_VAULT)}>
-        <WalletIcon type={WalletType.POLKADOT_VAULT} />
-        {t('wallets.addPolkadotVault')}
-      </Dropdown.Item>
+      <PairingFormModal>
+        <Dropdown.Item>
+          <WalletIcon type={WalletType.POLKADOT_VAULT} />
+          {t('wallets.addPolkadotVault')}
+        </Dropdown.Item>
+      </PairingFormModal>
     );
   },
 });

@@ -1730,7 +1730,8 @@
     "shards": "Shards",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only"
+    "watchOnlyLabel": "Watch-only",
+    "emptyList": "Wallets not found"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

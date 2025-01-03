@@ -98,7 +98,7 @@ describe('pages/Onboarding/Vault/ManageVault/model/manage-vault-model', () => {
     expect(
       scope
         .getState(manageVaultModel.$keys)
-        .find((account) => (account as VaultChainAccount).chainId === POLKADOT_CHAIN_ID),
+        .find(account => (account as VaultChainAccount).chainId === POLKADOT_CHAIN_ID),
     ).toEqual(MAIN_POLKAODT_ACCOUNT);
   });
 

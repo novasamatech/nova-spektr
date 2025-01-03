@@ -29,7 +29,7 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
     test('should render component', () => {
       (QrReader as jest.Mock).mockImplementation(() => 'qr_reader');
 
-      render(<KeyQrReader onResult={() => {}} />);
+      render(<KeyQrReader onComplete={() => {}} />);
 
       const qrReader = screen.getByText('qr_reader');
       const loading = screen.getByText('onboarding.paritySigner.startCameraLabel');
@@ -48,7 +48,7 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
         </button>
       ));
 
-      render(<KeyQrReader onResult={() => {}} />);
+      render(<KeyQrReader onComplete={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
@@ -67,7 +67,7 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
         </button>
       ));
 
-      render(<KeyQrReader onResult={() => {}} />);
+      render(<KeyQrReader onComplete={() => {}} />);
 
       const checkmarkBefore = screen.queryByTestId('checkmarkCutout-svg');
       expect(checkmarkBefore).not.toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
         </button>
       ));
 
-      render(<KeyQrReader onResult={() => {}} />);
+      render(<KeyQrReader onComplete={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());
@@ -108,7 +108,7 @@ describe('pages/Onboarding/Vault/KeyQrReader', () => {
         </button>
       ));
 
-      render(<KeyQrReader onResult={() => {}} />);
+      render(<KeyQrReader onComplete={() => {}} />);
 
       const qrButton = screen.getByRole('button');
       act(() => qrButton.click());

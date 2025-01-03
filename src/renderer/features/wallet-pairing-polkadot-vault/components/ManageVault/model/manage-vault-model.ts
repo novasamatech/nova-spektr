@@ -46,7 +46,7 @@ const $keysGroups = combine($keys, (accounts): (VaultChainAccount | VaultShardAc
 });
 
 const $hasKeys = combine($keys, (keys): boolean => {
-  return keys.some((key) => {
+  return keys.some(key => {
     const keyData = Array.isArray(key) ? key[0] : key;
 
     return keyData.keyType !== KeyType.MAIN;
@@ -79,7 +79,7 @@ sample({
 sample({
   clock: formInitiated,
   source: networkModel.$chains,
-  fn: (chains) => {
+  fn: chains => {
     const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
 
     return defaultChains.reduce<DraftAccount<VaultChainAccount>[]>((acc, chain) => {
@@ -109,7 +109,7 @@ sample({
   fn: (existingKeys, keysToRemove) => {
     const derivationsMap = dictionary(keysToRemove, 'derivationPath', () => true);
 
-    return existingKeys.filter((key) => !derivationsMap[key.derivationPath]);
+    return existingKeys.filter(key => !derivationsMap[key.derivationPath]);
   },
   target: $keys,
 });
@@ -141,7 +141,7 @@ sample({
   filter: ({ wallet }) => walletUtils.isPolkadotVault(wallet as Wallet),
   target: attach({
     source: $callbacks,
-    effect: (state) => state?.onSubmit(),
+    effect: state => state?.onSubmit(),
   }),
 });
 

@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { type Wallet, type WalletFamily } from '@/shared/core';
 import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Icon, SmallTitleText } from '@/shared/ui';
-import { Box, Popover, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { WalletCardLg, walletModel } from '@/entities/wallet';
 import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -21,7 +21,11 @@ const {
   views: { WalletFiatBalance },
 } = walletsFiatBalanceFeature;
 
-export const walletGroupSlot = createSlot<{ query: string; onSelect: (wallet: Wallet) => void }>();
+export const walletGroupSlot = createSlot<{
+  query: string;
+  onSelect: (wallet: Wallet) => void;
+  onDetailsRequest: (wallet: Wallet) => void;
+}>();
 export const walletSelectActionsSlot = createSlot();
 
 export const WalletSelect = () => {
@@ -36,7 +40,8 @@ export const WalletSelect = () => {
   const walletGroups = useSlot(walletGroupSlot, {
     props: {
       query: filterQuery,
-      onSelect: setSelectedWallet,
+      onSelect: w => walletSelectModel.events.walletSelected(w.id),
+      onDetailsRequest: setSelectedWallet,
     },
   });
 
@@ -68,7 +73,7 @@ export const WalletSelect = () => {
         </Popover.Trigger>
 
         <Popover.Content>
-          <section className="relative flex max-h-[700px] w-[300px] flex-col bg-card-background">
+          <section className="relative flex max-h-[800px] w-[300px] flex-col overflow-hidden bg-card-background">
             <header className="flex items-center justify-between border-b border-divider px-5 py-3">
               <SmallTitleText>{t('wallets.title')}</SmallTitleText>
               <div className="min-w-[140px]">{actions}</div>
@@ -82,24 +87,30 @@ export const WalletSelect = () => {
               />
             </div>
 
-            <div className="flex max-h-[530px] flex-col gap-1 divide-y divide-divider overflow-y-auto px-1 pb-1">
-              {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
-                if (wallets.length === 0) {
-                  return null;
-                }
+            <ScrollArea>
+              <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
+                {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
+                  if (wallets.length === 0) {
+                    return null;
+                  }
 
-                return (
-                  <WalletGroup
-                    key={walletType}
-                    type={walletType as WalletFamily}
-                    wallets={wallets}
-                    onInfoClick={setSelectedWallet}
-                  />
-                );
-              })}
+                  return (
+                    <WalletGroup
+                      key={walletType}
+                      type={walletType as WalletFamily}
+                      wallets={wallets}
+                      onInfoClick={setSelectedWallet}
+                    />
+                  );
+                })}
 
-              {walletGroups}
-            </div>
+                {walletGroups}
+              </div>
+              <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
+                <Icon as="img" name="emptyList" alt={t('wallets.emptyList')} size={64} />
+                <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
+              </div>
+            </ScrollArea>
           </section>
         </Popover.Content>
       </Popover>

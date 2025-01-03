@@ -56,7 +56,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
     const chainsMap = keyBy(chains, 'chainId');
     setChainsObject(chainsMap);
 
-    const filteredQrData = seedInfo.map((data) => filterByExistingChains(data, chainsMap));
+    const filteredQrData = seedInfo.map(data => filterByExistingChains(data, chainsMap));
 
     const names = filteredQrData.reduce((acc, data, index) => ({ ...acc, [getAccountId(index)]: data.name }), {});
     setAccountNames(names);
@@ -64,7 +64,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   }, []);
 
   const filterByExistingChains = (seedInfo: SeedInfo, chainsMap: Record<ChainId, Chain>): SeedInfo => {
-    const derivedKeysForChsains = seedInfo.derivedKeys.filter((key) => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
+    const derivedKeysForChsains = seedInfo.derivedKeys.filter(key => Boolean(chainsMap[u8aToHex(key.genesisHash)]));
 
     return { ...seedInfo, derivedKeys: derivedKeysForChsains };
   };
@@ -97,7 +97,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   };
 
   const updateAccountName = (name: string, accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
-    setAccountNames((prev) => {
+    setAccountNames(prev => {
       const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
 
       return { ...prev, [accountId]: name };
@@ -107,20 +107,20 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   const toggleAccount = (accountIndex: number, chainId?: string, derivedKeyIndex?: number) => {
     const accountId = getAccountId(accountIndex, chainId, derivedKeyIndex);
 
-    setInactiveAccounts((prev) => {
+    setInactiveAccounts(prev => {
       return { ...prev, [accountId]: !prev[accountId] };
     });
   };
 
   const walletIds = accounts.reduce<string[]>((acc, { derivedKeys }, accountIndex) => {
-    const derivedKeysIds = Object.keys(derivedKeys).map((chainId) =>
+    const derivedKeysIds = Object.keys(derivedKeys).map(chainId =>
       derivedKeys[chainId as HexString].map((_, index) => getAccountId(accountIndex, chainId, index)),
     );
 
     return [...acc, getAccountId(accountIndex), ...derivedKeysIds.flat()];
   }, []);
 
-  const activeWalletsHaveName = walletIds.every((walletId) => inactiveAccounts[walletId] || accountNames[walletId]);
+  const activeWalletsHaveName = walletIds.every(walletId => inactiveAccounts[walletId] || accountNames[walletId]);
 
   const fillAccountNames = () => {
     for (const account of accounts) {
@@ -286,7 +286,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                     disabled={inactiveAccounts[getAccountId(index)]}
                     placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                     value={accountNames[getAccountId(index)] || ''}
-                    onChange={(value) => updateAccountName(value, index)}
+                    onChange={value => updateAccountName(value, index)}
                   />
                 </div>
                 <ul className="flex flex-col gap-2.5">
@@ -326,7 +326,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
                                 disabled={inactiveAccounts[getAccountId(index, chainId, derivedKeyIndex)]}
                                 placeholder={t('onboarding.paritySigner.accountNamePlaceholder')}
                                 value={accountNames[getAccountId(index, chainId, derivedKeyIndex)] || ''}
-                                onChange={(value) => updateAccountName(value, index, chainId, derivedKeyIndex)}
+                                onChange={value => updateAccountName(value, index, chainId, derivedKeyIndex)}
                               />
                               <IconButton
                                 name={

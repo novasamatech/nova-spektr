@@ -27,9 +27,23 @@ import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-pol
 import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
 import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
 export const initModel = () => {
+  accounts.populate();
+
+  kernelModel.events.appStarted();
+  governanceModel.events.governanceStarted();
+  proxiesModel.events.workerStarted();
+  walletModel.events.walletStarted();
+  networkModel.events.networkStarted();
+  proxyModel.events.proxyStarted();
+  assetsSettingsModel.events.assetsStarted();
+  notificationModel.events.notificationsStarted();
+  basketModel.events.basketStarted();
+  multisigsModel.events.subscribe();
+
   registerFeatures([
     assetsNavigationFeature,
     stakingNavigationFeature,
@@ -40,9 +54,17 @@ export const initModel = () => {
     notificationsNavigationFeature,
     settingsNavigationFeature,
     walletSelectFeature.feature,
-  ]);
 
-  accounts.populate();
+    walletPairingFeature,
+    walletPairingMultisigFeature,
+    walletPairingPolkadotVaultFeature,
+    walletPairingWalletConnectFeature,
+    walletPairingWatchOnlyFeature,
+    walletPairingLedgerFeature,
+
+    walletWalletConnectFeature,
+    walletWatchOnlyFeature,
+  ]);
 
   walletPairingFeature.start();
   walletPairingMultisigFeature.start();
@@ -51,6 +73,7 @@ export const initModel = () => {
   walletPairingWatchOnlyFeature.start();
   walletPairingLedgerFeature.start();
 
+  walletWalletConnectFeature.start();
   walletWatchOnlyFeature.start();
 
   assetsNavigationFeature.start();
@@ -65,15 +88,4 @@ export const initModel = () => {
   flexibleMultisigNavigationFeature.start();
 
   walletSelectFeature.feature.start();
-
-  kernelModel.events.appStarted();
-  governanceModel.events.governanceStarted();
-  proxiesModel.events.workerStarted();
-  walletModel.events.walletStarted();
-  networkModel.events.networkStarted();
-  proxyModel.events.proxyStarted();
-  assetsSettingsModel.events.assetsStarted();
-  notificationModel.events.notificationsStarted();
-  basketModel.events.basketStarted();
-  multisigsModel.events.subscribe();
 };

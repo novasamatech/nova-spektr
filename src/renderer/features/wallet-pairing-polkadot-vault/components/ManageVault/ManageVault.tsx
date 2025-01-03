@@ -1,7 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useStatusContext } from '@/app/providers';
@@ -21,9 +21,7 @@ import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
 import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
-  Accordion,
   Button,
-  ContextMenu,
   FootnoteText,
   HeaderTitleText,
   HelpText,
@@ -33,7 +31,8 @@ import {
   SmallTitleText,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { Field, Input } from '@/shared/ui-kit';
+import { Address } from '@/shared/ui-entities';
+import { Accordion, Box, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
@@ -55,8 +54,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
   const isAltPressed = useAltOrCtrlKeyPressed();
-
-  const accordions = useRef<Record<string, { el: null | HTMLButtonElement; isOpen: boolean }>>({});
 
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
@@ -96,17 +93,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
     setChainElements(Object.entries(chainsMap));
   }, [keysGroups]);
-
-  useEffect(() => {
-    for (const item of Object.values(accordions.current)) {
-      const toOpen = isAltPressed && !item.isOpen;
-      const toClose = !isAltPressed && item.isOpen;
-
-      if (toOpen || toClose) {
-        item.el?.click();
-      }
-    }
-  }, [isAltPressed]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -175,7 +161,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   );
 
   return (
-    <>
+    <div className="flex h-full w-full">
       <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
         <HeaderTitleText className="mb-10">{t('onboarding.vault.title')}</HeaderTitleText>
         <SmallTitleText className="mb-6">{t('onboarding.vault.manageTitle')}</SmallTitleText>
@@ -205,8 +191,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         </form>
       </div>
 
-      <div className="relative flex w-[472px] flex-col rounded-r-lg border-l border-divider pt-4">
-        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={() => onClose()} />
+      <div className="relative flex h-full w-[472px] flex-col overflow-hidden rounded-r-lg border-l pt-4">
+        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={onClose} />
 
         <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
           <div className="flex items-center gap-x-1.5">
@@ -229,67 +215,85 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </HelpText>
         </div>
 
-        <div className="h-[470px] overflow-y-auto pl-3 pr-3.5">
+        <div className="min-h-0 pl-3 pr-3.5">
           <div className="flex w-full items-center justify-between gap-2 pb-4">
-            <ContextMenu button={<RootAccountLg name={walletName} accountId={publicKey} />}>
-              <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
-                <div className="flex items-center gap-x-2">
-                  <HelpText className="break-all text-text-secondary">{publicKeyAddress}</HelpText>
-                  <IconButton
-                    className="shrink-0"
-                    name="copy"
-                    size={20}
-                    onClick={() => copyToClipboard(publicKeyAddress)}
-                  />
+            <Popover align="end">
+              <Popover.Trigger>
+                <div className="w-full">
+                  <RootAccountLg name={walletName} accountId={publicKey} />
                 </div>
-              </ContextMenu.Group>
-            </ContextMenu>
+              </Popover.Trigger>
+              <Popover.Content>
+                <Box padding={[4, 3]} width="230px">
+                  <FootnoteText className="pb-[2px] text-text-tertiary">
+                    {t('general.explorers.publicKeyTitle')}
+                  </FootnoteText>
+                  <Box direction="row" gap={2} verticalAlign="center">
+                    <HelpText className="text-text-secondary">
+                      <Address variant="full" address={publicKeyAddress} />
+                    </HelpText>
+                    <IconButton
+                      className="shrink-0"
+                      name="copy"
+                      size={20}
+                      onClick={() => copyToClipboard(publicKeyAddress)}
+                    />
+                  </Box>
+                </Box>
+              </Popover.Content>
+            </Popover>
           </div>
 
           <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
-          <div className="ml-9 flex flex-col gap-2 divide-y">
-            {chainElements.map(([chainId, chainAccounts]) => {
-              if (chainAccounts.length === 0) return;
+          <ScrollArea>
+            <div className="ml-9 flex flex-col gap-2 divide-y">
+              {chainElements.map(([chainId, chainAccounts]) => {
+                if (chainAccounts.length === 0) return;
 
-              return (
-                <Accordion key={chainId} className="pt-2">
-                  <Accordion.Button
-                    ref={(el) => (accordions.current[chainId] = { el, isOpen: false })}
-                    buttonClass="mb-2 p-2"
-                    onClick={() => (accordions.current[chainId].isOpen = !accordions.current[chainId].isOpen)}
-                  >
-                    <div className="flex gap-x-2">
-                      <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
-                      <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
-                    </div>
-                  </Accordion.Button>
-                  <Accordion.Content as="ul">
-                    {chainAccounts.map((account) => (
-                      <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
-                        <ContextMenu
-                          button={
-                            <DerivedAccount
-                              key={accountUtils.getDerivationPath(account)}
-                              account={account}
-                              showInfoButton={false}
-                              showSuffix={isAltPressed}
-                            />
-                          }
-                        >
-                          <ContextMenu.Group title={t('general.explorers.derivationTitle')}>
-                            <HelpText className="break-all text-text-secondary">
-                              {accountUtils.getDerivationPath(account)}
-                            </HelpText>
-                          </ContextMenu.Group>
-                        </ContextMenu>
-                      </li>
-                    ))}
-                  </Accordion.Content>
-                </Accordion>
-              );
-            })}
-          </div>
+                return (
+                  <Box key={chainId} padding={[2, 0, 0]}>
+                    <Accordion open={isAltPressed}>
+                      <Accordion.Trigger>
+                        <div className="flex gap-x-2 normal-case">
+                          <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                          <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
+                        </div>
+                      </Accordion.Trigger>
+                      <Accordion.Content>
+                        {chainAccounts.map(account => {
+                          const derivationPath = accountUtils.getDerivationPath(account);
+
+                          return (
+                            <Popover key={derivationPath} align="end">
+                              <Popover.Trigger>
+                                <div className="w-full pt-2">
+                                  <DerivedAccount
+                                    key={derivationPath}
+                                    account={account}
+                                    showInfoButton={false}
+                                    showSuffix={isAltPressed}
+                                  />
+                                </div>
+                              </Popover.Trigger>
+                              <Popover.Content>
+                                <Box padding={[4, 3]} width="230px">
+                                  <FootnoteText className="pb-[2px] text-text-tertiary">
+                                    {t('general.explorers.publicKeyTitle')}
+                                  </FootnoteText>
+                                  <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
+                                </Box>
+                              </Popover.Content>
+                            </Popover>
+                          );
+                        })}
+                      </Accordion.Content>
+                    </Accordion>
+                  </Box>
+                );
+              })}
+            </div>
+          </ScrollArea>
         </div>
       </div>
 
@@ -316,6 +320,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />
-    </>
+    </div>
   );
 };

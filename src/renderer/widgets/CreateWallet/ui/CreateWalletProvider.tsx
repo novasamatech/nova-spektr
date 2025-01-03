@@ -6,7 +6,6 @@ import { type WalletFamily, WalletType } from '@/shared/core';
 import { Paths } from '@/shared/routes';
 import { proxiesModel } from '@/features/proxies';
 import { walletPairingModel } from '@/features/wallet-pairing';
-import { Vault } from '@/pages/Onboarding/Vault/Vault';
 import { NovaWallet } from '@/pages/Onboarding/WalletConnect/NovaWallet';
 import { WalletConnect } from '@/pages/Onboarding/WalletConnect/WalletConnect';
 import { walletProviderModel } from '../model/wallet-provider-model';
@@ -19,8 +18,9 @@ type ModalProps = {
   onComplete: () => void;
 };
 const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | null> = {
-  [WalletType.POLKADOT_VAULT]: (props) => <Vault isOpen {...props} />,
-  // moved to features/watch-only-wallet-pairing
+  // moved to features/wallet-pairing-polkadot-vault
+  [WalletType.POLKADOT_VAULT]: () => null,
+  // moved to features/wallet-pairing-watch-only
   [WalletType.WATCH_ONLY]: () => null,
   [WalletType.MULTISIG]: (props) => <SelectMultisigWalletType isOpen {...props} />,
   [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
