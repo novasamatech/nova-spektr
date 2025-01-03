@@ -6,12 +6,14 @@ import {
   AssetType,
   type Chain,
   type ChainId,
+  ChainOptions,
   CryptoType,
   type PolkadotVaultWallet,
   type ProxiedAccount,
   type ProxiedWallet,
   ProxyVariant,
   SigningType,
+  StakingType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -33,6 +35,8 @@ export const dotAsset: Asset = {
   name: 'Polkadot',
   precision: 10,
   type: AssetType.NATIVE,
+  priceId: 'polkadot',
+  staking: StakingType.RELAYCHAIN,
   icon: {
     monochrome:
       'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg',
@@ -45,8 +49,8 @@ export const polkadotChain: Chain = {
   specName: 'polkadot',
   addressPrefix: 0,
   chainId: polkadotChainId,
-  icon: '',
-  options: [],
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg',
+  options: [ChainOptions.MULTISIG, ChainOptions.GOVERNANCE, ChainOptions.REGULAR_PROXY, ChainOptions.PURE_PROXY],
   nodes: [],
   assets: [dotAsset],
   explorers: [
@@ -55,6 +59,44 @@ export const polkadotChain: Chain = {
       extrinsic: 'https://polkadot.subscan.io/extrinsic/{hash}',
       account: 'https://polkadot.subscan.io/account/{address}',
       multisig: 'https://polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
+    },
+    {
+      name: 'Sub.ID',
+      account: 'https://sub.id/{address}',
+    },
+  ],
+};
+
+export const kusamaAsset: Asset = {
+  name: 'Kusama',
+  assetId: 0,
+  symbol: 'KSM',
+  precision: 12,
+  type: AssetType.NATIVE,
+  priceId: 'kusama',
+  staking: StakingType.RELAYCHAIN,
+  icon: {
+    monochrome:
+      'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KSM.svg',
+    colored: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KSM.svg',
+  },
+};
+
+export const kusamaChain: Chain = {
+  name: 'Kusama',
+  specName: 'kusama',
+  addressPrefix: 2,
+  chainId: kusamaChainId,
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama.svg',
+  options: [ChainOptions.MULTISIG, ChainOptions.GOVERNANCE, ChainOptions.REGULAR_PROXY, ChainOptions.PURE_PROXY],
+  nodes: [],
+  assets: [kusamaAsset],
+  explorers: [
+    {
+      name: 'Subscan',
+      extrinsic: 'https://kusama.subscan.io/extrinsic/{hash}',
+      account: 'https://kusama.subscan.io/account/{address}',
+      multisig: 'https://kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
     },
     {
       name: 'Sub.ID',

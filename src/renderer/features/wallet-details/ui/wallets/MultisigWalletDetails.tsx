@@ -7,20 +7,14 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
+import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
-import { AccountExplorers, Address, RootExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
+import { Dropdown } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import {
-  AccountsList,
-  ContactItem,
-  WalletCardLg,
-  WalletCardMd,
-  accountUtils,
-  permissionUtils,
-} from '@/entities/wallet';
+import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -95,7 +89,7 @@ export const MultisigWalletDetails = ({
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
 
-  const Options = [
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -109,7 +103,7 @@ export const MultisigWalletDetails = ({
   ];
 
   if (canCreateProxy) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -117,7 +111,7 @@ export const MultisigWalletDetails = ({
   }
 
   if (canCreatePureProxy) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
@@ -125,15 +119,19 @@ export const MultisigWalletDetails = ({
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map(option => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
   const TabItems: TabItem[] = [];
@@ -201,10 +199,12 @@ export const MultisigWalletDetails = ({
   }
 
   if (!singleChain) {
+    const accounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
+
     const TabAccountList = {
       id: 1,
       title: t('walletDetails.multisig.networksTab'),
-      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
+      panel: <ChainAccountsList accounts={accounts} />,
     };
 
     const TabSignatories = {

@@ -4,7 +4,8 @@ import { type ProxiedAccount, type ProxyAccount, ProxyVariant, type Wallet } fro
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { Accordion, ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { Accordion } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -80,7 +81,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   return (
     <div className={cnTw('flex flex-col', className)}>
-      <div className="flex items-center px-5 pb-2">
+      <div className="flex items-center px-5 py-2">
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
@@ -92,9 +93,9 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
           return (
             <li key={chainId} className="flex items-center py-2">
-              <Accordion isDefaultOpen>
-                <Accordion.Button buttonClass="p-2 rounded hover:bg-action-background-hover focus:bg-action-background-hover">
-                  <div className="flex items-center justify-between gap-x-2 pr-2">
+              <Accordion initialOpen>
+                <Accordion.Trigger>
+                  <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
                     <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
                     <HelpText className="text-text-tertiary">
                       {t('walletDetails.common.proxyDeposit')}
@@ -107,7 +108,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
                       />
                     </HelpText>
                   </div>
-                </Accordion.Button>
+                </Accordion.Trigger>
                 <Accordion.Content>
                   <ul className="flex flex-col gap-y-2">
                     {chainsProxies[chainId].map(proxy => (

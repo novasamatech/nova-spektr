@@ -4,7 +4,7 @@ import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const contactsNavigationFeature = createFeature({
-  name: 'Contacts navigation',
+  name: 'contacts/navigation',
   enable: $features.map(({ contacts }) => contacts),
 });
 

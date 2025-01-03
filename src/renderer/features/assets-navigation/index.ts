@@ -6,7 +6,7 @@ import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 
 export const assetsNavigationFeature = createFeature({
-  name: 'Assets navigation',
+  name: 'assets/navigation',
   input: createStore({}),
   enable: $features.map(({ assets }) => assets),
 });

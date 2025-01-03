@@ -1,11 +1,12 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, restore, sample } from 'effector';
+import { readonly } from 'patronum';
 
 import { type WalletFamily } from '@/shared/core';
 
 const walletTypeSet = createEvent<WalletFamily>();
 const walletTypeCleared = createEvent();
 
-const $walletType = createStore<WalletFamily | null>(null).reset(walletTypeCleared);
+const $walletType = restore(walletTypeSet, null).reset(walletTypeCleared);
 
 sample({
   clock: walletTypeSet,
@@ -13,7 +14,7 @@ sample({
 });
 
 export const walletPairingModel = {
-  $walletType,
+  $walletType: readonly($walletType),
   events: {
     walletTypeCleared,
     walletTypeSet,

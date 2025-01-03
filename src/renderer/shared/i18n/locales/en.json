@@ -1,7 +1,8 @@
 {
   "accountList": {
     "addressColumn": "Account",
-    "networksColumn": "Network { chains }"
+    "networksColumn_one": "Network {count}",
+    "networksColumn_other": "Networks {count}"
   },
   "addressBook": {
     "contactList": {

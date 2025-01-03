@@ -5,7 +5,7 @@ import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { ERROR } from '../constants';
 
 export const membersFeatureStatus = createFeature({
-  name: 'members',
+  name: 'fellowship/members',
   input: fellowshipNetworkFeature.model.network.$network,
   filter: input => {
     return input.api.isConnected

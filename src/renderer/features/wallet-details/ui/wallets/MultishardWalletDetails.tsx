@@ -3,9 +3,10 @@ import { useUnit } from 'effector-react';
 import { type MultiShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { BaseModal, DropdownIconButton, Tabs } from '@/shared/ui';
+import { BaseModal, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
+import { Dropdown } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { MultishardAccountsList, WalletCardLg, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -44,50 +45,54 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
-  const Options = [
+  const options: { icon: IconNames; title: string; onClick: VoidFunction }[] = [
     {
-      icon: 'rename' as IconNames,
+      icon: 'rename',
       title: t('walletDetails.common.renameButton'),
       onClick: toggleIsRenameModalOpen,
     },
     {
-      icon: 'export' as IconNames,
+      icon: 'export',
       title: t('walletDetails.vault.export'),
       onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
     },
     {
-      icon: 'forget' as IconNames,
+      icon: 'forget',
       title: t('walletDetails.common.forgetButton'),
       onClick: toggleConfirmForget,
     },
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    Options.push({
-      icon: 'addCircle' as IconNames,
+    options.push({
+      icon: 'addCircle',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    Options.push({
-      icon: 'addCircle' as IconNames,
+    options.push({
+      icon: 'addCircle',
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
     });
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map(option => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
   const tabItems: TabItem[] = [

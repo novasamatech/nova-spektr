@@ -1,10 +1,14 @@
 import { GROUP_LABELS, WalletGroup } from './components/WalletGroup';
-import { walletsSelectFeatureStatus } from './model/feature';
+import { walletGroupSlot, walletSelectActionsSlot } from './components/WalletSelect';
+import { walletSelectFeatureStatus } from './model/feature';
 import { walletSelectModel } from './model/wallet-select-model';
 import { walletSelectService } from './service/walletSelectService';
 
+export { walletSelectActionsSlot, walletGroupSlot };
+
+// TODO remove this mess
 export const walletSelectFeature = {
-  feature: walletsSelectFeatureStatus,
+  feature: walletSelectFeatureStatus,
   services: {
     walletSelect: walletSelectService,
   },

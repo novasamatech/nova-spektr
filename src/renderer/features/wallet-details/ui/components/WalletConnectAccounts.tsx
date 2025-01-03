@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import keyBy from 'lodash/keyBy';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import wallet_connect_reconnect from '@/shared/assets/video/wallet_connect_reconnect.mp4';
 import wallet_connect_reconnect_webm from '@/shared/assets/video/wallet_connect_reconnect.webm';
@@ -8,23 +8,20 @@ import { type Chain, type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
-import { MultiAccountsList } from '@/entities/wallet';
 import { walletConnectModel } from '@/entities/walletConnect';
-import { WalletConnectQrCode } from '@/features/wallet-connect-pairing';
+import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
 
-type AccountItem = {
-  accountId: AccountId;
-  chain: Chain;
-};
+type AccountItem = [chain: Chain, accountId: AccountId];
 
 type Props = {
   wallet: WalletConnectGroup;
 };
 
-export const WalletConnectAccounts = ({ wallet }: Props) => {
+export const WalletConnectAccounts = memo(({ wallet }: Props) => {
   const { t } = useI18n();
 
   const chains = Object.values(useUnit(networkModel.$chains));
@@ -39,18 +36,16 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
       const accountId = accountsMap[chain.chainId]?.accountId;
 
       if (accountId) {
-        acc.push({ accountId, chain });
+        acc.push([chain, accountId]);
       }
 
       return acc;
     }, []);
-  }, [wallet]);
+  }, [wallet, chains]);
 
   return (
     <>
-      {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && (
-        <MultiAccountsList accounts={accountsList} className="h-[361px]" headerClassName="pt-4 pb-2" />
-      )}
+      {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && <ChainAccountsList accounts={accountsList} />}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
         <div className="mx-auto mt-6 flex h-[390px] w-[208px] flex-col items-center justify-center">
@@ -77,4 +72,4 @@ export const WalletConnectAccounts = ({ wallet }: Props) => {
       {wcDetailsUtils.isRefreshAccounts(reconnectStep) && <WalletConnectQrCode uri={uri} type="walletconnect" />}
     </>
   );
-};
+});

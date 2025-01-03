@@ -28,6 +28,6 @@ const $input = combine(
 );
 
 export const votingFeatureStatus = createFeature({
-  name: 'fellowshipVoting',
+  name: 'fellowship/voting',
   input: $input,
 });
