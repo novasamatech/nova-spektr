@@ -81,7 +81,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   return (
     <div className={cnTw('flex flex-col', className)}>
-      <div className="flex items-center px-5 pb-2">
+      <div className="flex items-center px-5 py-2">
         <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 

@@ -25,7 +25,7 @@ const Root = ({ value, onChange, children }: RootProps) => {
 };
 
 const List = ({ children }: PropsWithChildren) => {
-  return <RadixTabs.List className="flex gap-x-1 rounded-md bg-tab-background p-0.5">{children}</RadixTabs.List>;
+  return <RadixTabs.List className="mb-2 flex gap-x-1 rounded-md bg-tab-background p-0.5">{children}</RadixTabs.List>;
 };
 
 type TriggerProps = PropsWithChildren<{
@@ -55,7 +55,7 @@ type ContentProps = PropsWithChildren<{
 
 const Content = ({ value, __index, children }: ContentProps) => {
   return (
-    <RadixTabs.Content className="relative min-h-0 transition-all data-[state=active]:mt-2" value={value} forceMount>
+    <RadixTabs.Content className="relative min-h-0" value={value} forceMount>
       <Carousel.Item id={value} index={__index ?? 0}>
         {children}
       </Carousel.Item>

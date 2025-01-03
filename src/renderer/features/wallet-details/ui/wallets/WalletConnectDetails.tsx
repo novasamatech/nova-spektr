@@ -5,10 +5,10 @@ import { chainsService } from '@/shared/api/network';
 import { type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { Button, ConfirmModal, DropdownIconButton, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
+import { Button, ConfirmModal, FootnoteText, Icon, IconButton, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { Modal, Tabs } from '@/shared/ui-kit';
+import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
 import { walletConnectUtils } from '@/entities/walletConnect';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -70,7 +70,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const Options = [
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -89,7 +89,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -97,7 +97,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
@@ -105,15 +105,19 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map(option => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
   const changeTab = (tab: string) => {

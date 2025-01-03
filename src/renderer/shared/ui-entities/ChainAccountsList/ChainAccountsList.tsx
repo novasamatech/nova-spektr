@@ -19,7 +19,7 @@ export const ChainAccountsList = memo(({ accounts }: Props) => {
   const { list } = useDeferredList({ list: accounts });
 
   return (
-    <div className="flex min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-1 px-5 py-2">
         <FootnoteText className="flex-1 text-text-tertiary">
           {t('accountList.networksColumn', { count: accounts.length })}

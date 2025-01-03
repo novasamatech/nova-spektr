@@ -2,15 +2,18 @@ import { animated, easings, useTransition } from '@react-spring/web';
 import { type PropsWithChildren, createContext, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePrevious } from '@/shared/lib/hooks';
+import { cnTw } from '@/shared/lib/utils';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 
 type ContextProps = {
   item: string;
   direction: number;
+  fixedHeight: boolean;
   registerItem: (id: string, index: number) => void;
 };
 
 const Context = createContext<ContextProps>({
+  fixedHeight: false,
   item: '',
   direction: 0,
   registerItem: () => {},
@@ -21,7 +24,7 @@ type RootProps = PropsWithChildren<{
   fixedHeight?: boolean;
 }>;
 
-const Root = memo(({ children, fixedHeight, item }: PropsWithChildren<RootProps>) => {
+const Root = memo(({ children, fixedHeight = false, item }: PropsWithChildren<RootProps>) => {
   const prevItem = usePrevious(item);
   const indecies = useRef<Record<string, number>>({});
 
@@ -33,11 +36,12 @@ const Root = memo(({ children, fixedHeight, item }: PropsWithChildren<RootProps>
     return {
       item,
       direction,
+      fixedHeight,
       registerItem: (id: string, index: number) => {
         indecies.current[id] = index;
       },
     };
-  }, [direction, item]);
+  }, [direction, item, fixedHeight]);
 
   return (
     <Context.Provider value={value}>
@@ -52,7 +56,7 @@ type ItemProps = PropsWithChildren<{
 }>;
 
 const Item = memo(({ id, index, children }: ItemProps) => {
-  const { item, direction, registerItem } = useContext(Context);
+  const { item, direction, fixedHeight, registerItem } = useContext(Context);
 
   useEffect(() => {
     registerItem(id, index);
@@ -81,7 +85,10 @@ const Item = memo(({ id, index, children }: ItemProps) => {
 
   return transitions((styles, item) =>
     item ? (
-      <animated.section className="relative min-h-full w-full" style={styles}>
+      <animated.section
+        className={cnTw('relative min-h-full w-full', fixedHeight && 'h-full overflow-hidden')}
+        style={styles}
+      >
         {children}
       </animated.section>
     ) : null,
