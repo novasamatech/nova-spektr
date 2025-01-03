@@ -103,10 +103,7 @@ function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShar
 }
 
 function isRegularMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
-  return (
-    // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.MULTISIG
-  );
+  return 'accountType' in account && account.accountType === AccountType.MULTISIG;
 }
 
 function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
