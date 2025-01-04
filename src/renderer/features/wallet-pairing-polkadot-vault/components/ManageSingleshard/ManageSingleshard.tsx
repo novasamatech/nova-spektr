@@ -89,7 +89,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   return (
     <div className="flex h-full w-full">
-      <div className="flex w-[472px] flex-col rounded-l-lg bg-white">
+      <div className="flex w-[472px] flex-col">
         <Modal.Title>{t('onboarding.vault.title')}</Modal.Title>
         <div className="flex grow flex-col gap-6">
           <div className="px-5 pt-6">

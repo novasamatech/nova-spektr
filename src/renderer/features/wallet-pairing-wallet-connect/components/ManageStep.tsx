@@ -16,9 +16,9 @@ import {
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, HeaderTitleText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { Field, Input } from '@/shared/ui-kit';
+import { Field, Input, Modal } from '@/shared/ui-kit';
 import { MultiAccountsList, walletModel } from '@/entities/wallet';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
@@ -64,7 +64,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
 
   useEffect(() => {
     const list = chains.reduce<{ chain: Chain; accountId: AccountId }[]>((acc, chain) => {
-      const account = accounts.find((account) => {
+      const account = accounts.find(account => {
         const [_, chainId] = account.split(':');
 
         return chain.chainId.includes(chainId);
@@ -89,9 +89,9 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
 
   // TODO: Rewrite with effector forms
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const wcAccounts = accounts.map((account) => {
+    const wcAccounts = accounts.map(account => {
       const [_, chainId, address] = account.split(':');
-      const chain = chains.find((chain) => chain.chainId.includes(chainId));
+      const chain = chains.find(chain => chain.chainId.includes(chainId));
 
       return {
         type: 'chain',
@@ -147,50 +147,52 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
   };
 
   return (
-    <>
-      <div className="flex w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
-        <HeaderTitleText className="mb-10">{Title[type]}</HeaderTitleText>
-        <SmallTitleText className="mb-6">{t('onboarding.walletConnect.manageTitle')}</SmallTitleText>
+    <div className="flex h-full w-full items-stretch">
+      <div className="flex w-[472px] flex-col">
+        <Modal.Title>{Title[type]}</Modal.Title>
+        <div className="flex flex-col px-5 py-4">
+          <SmallTitleText className="mb-6">{t('onboarding.walletConnect.manageTitle')}</SmallTitleText>
 
-        <form className="flex h-full flex-col gap-4" onSubmit={handleSubmit(submitHandler)}>
-          <Controller
-            name="walletName"
-            control={control}
-            rules={{ required: true, maxLength: 256 }}
-            render={({ field: { onChange, value } }) => (
-              <Field text={t('onboarding.walletNameLabel')}>
-                <Input
-                  placeholder={t('onboarding.walletNamePlaceholder')}
-                  invalid={Boolean(errors.walletName)}
-                  value={value}
-                  onChange={onChange}
-                />
-                <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
-                  {t('onboarding.watchOnly.walletNameMaxLenError')}
-                </InputHint>
-                <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
-                  {t('onboarding.watchOnly.walletNameRequiredError')}
-                </InputHint>
-              </Field>
-            )}
-          />
+          <form className="flex h-full flex-col gap-4" onSubmit={handleSubmit(submitHandler)}>
+            <Controller
+              name="walletName"
+              control={control}
+              rules={{ required: true, maxLength: 256 }}
+              render={({ field: { onChange, value } }) => (
+                <Field text={t('onboarding.walletNameLabel')}>
+                  <Input
+                    placeholder={t('onboarding.walletNamePlaceholder')}
+                    invalid={Boolean(errors.walletName)}
+                    value={value}
+                    onChange={onChange}
+                  />
+                  <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
+                    {t('onboarding.watchOnly.walletNameMaxLenError')}
+                  </InputHint>
+                  <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
+                    {t('onboarding.watchOnly.walletNameRequiredError')}
+                  </InputHint>
+                </Field>
+              )}
+            />
 
-          <div className="flex flex-1 items-end justify-between">
-            <Button variant="text" onClick={goBack}>
-              {t('onboarding.backButton')}
-            </Button>
+            <div className="flex flex-1 items-end justify-between">
+              <Button variant="text" onClick={goBack}>
+                {t('onboarding.backButton')}
+              </Button>
 
-            <Button type="submit" disabled={!isValid}>
-              {t('onboarding.continueButton')}
-            </Button>
-          </div>
-        </form>
+              <Button type="submit" disabled={!isValid}>
+                {t('onboarding.continueButton')}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div className="flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
-        <SmallTitleText className="mt-[52px] px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
+        <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
         <MultiAccountsList accounts={accountsList} className="h-[416px]" />
       </div>
-    </>
+    </div>
   );
 };

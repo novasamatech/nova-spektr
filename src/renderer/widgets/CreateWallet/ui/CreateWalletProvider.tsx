@@ -6,8 +6,6 @@ import { type WalletFamily, WalletType } from '@/shared/core';
 import { Paths } from '@/shared/routes';
 import { proxiesModel } from '@/features/proxies';
 import { walletPairingModel } from '@/features/wallet-pairing';
-import { NovaWallet } from '@/pages/Onboarding/WalletConnect/NovaWallet';
-import { WalletConnect } from '@/pages/Onboarding/WalletConnect/WalletConnect';
 import { walletProviderModel } from '../model/wallet-provider-model';
 
 import { SelectMultisigWalletType } from './MultisigWallet/SelectMultisigWalletType';
@@ -23,8 +21,10 @@ const WalletModals: Record<WalletFamily, (props: ModalProps) => JSX.Element | nu
   // moved to features/wallet-pairing-watch-only
   [WalletType.WATCH_ONLY]: () => null,
   [WalletType.MULTISIG]: (props) => <SelectMultisigWalletType isOpen {...props} />,
-  [WalletType.WALLET_CONNECT]: (props) => <WalletConnect isOpen {...props} />,
-  [WalletType.NOVA_WALLET]: (props) => <NovaWallet isOpen {...props} />,
+  // moved to features/wallet-pairing-wallet-connect
+  [WalletType.WALLET_CONNECT]: () => null,
+  // moved to features/wallet-pairing-wallet-connect
+  [WalletType.NOVA_WALLET]: () => null,
   [WalletType.FLEXIBLE_MULTISIG]: () => null,
   [WalletType.PROXIED]: () => null,
 };
