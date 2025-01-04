@@ -45,7 +45,7 @@ sample({
   target: $step,
 });
 
-export const wcOnboardingModel = {
+export const pairingForm = {
   flow,
   $step,
   reset,

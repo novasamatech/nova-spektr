@@ -11,7 +11,7 @@ import { walletConnectModel } from '@/entities/walletConnect';
 import novawallet_onboarding_tutorial from '../assets/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from '../assets/novawallet_onboarding_tutorial.webm';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';
-import { wcOnboardingModel } from '../model/wc-onboarding-model';
+import { pairingForm } from '../model/pairingForm';
 
 import { ManageStep } from './ManageStep';
 import { WalletConnectQrCode } from './WalletConnectQrCode';
@@ -25,8 +25,8 @@ export const PairingModal = memo(({ variant, children }: Props) => {
 
   const session = useUnit(walletConnectModel.$session);
   const uri = useUnit(walletConnectModel.$uri);
-  const step = useUnit(wcOnboardingModel.$step);
-  const open = useUnit(wcOnboardingModel.flow.state) === variant;
+  const step = useUnit(pairingForm.$step);
+  const open = useUnit(pairingForm.flow.state) === variant;
 
   const { showStatus } = useStatusContext();
 
@@ -49,16 +49,16 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   }, [step]);
 
   const goToScan = () => {
-    wcOnboardingModel.reset();
-    wcOnboardingModel.flow.open(variant);
+    pairingForm.reset();
+    pairingForm.flow.open(variant);
   };
 
   const toggleModal = (open: boolean) => {
     if (open) {
-      wcOnboardingModel.flow.open(variant);
+      pairingForm.flow.open(variant);
     } else {
-      wcOnboardingModel.reset();
-      wcOnboardingModel.flow.close(null);
+      pairingForm.reset();
+      pairingForm.flow.close(null);
     }
   };
 
@@ -70,7 +70,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
     <Modal size="xl" height="lg" isOpen={open} onToggle={toggleModal}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Content disableScroll>
-        <Carousel item={step.toString()}>
+        <Carousel item={step.toString()} fixedHeight>
           <Carousel.Item id={Step.SCAN.toString()} index={0}>
             <div className="flex h-full w-full">
               <div className="flex w-full min-w-96 max-w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
