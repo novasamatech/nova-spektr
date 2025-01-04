@@ -1,29 +1,25 @@
 /* eslint-disable import-x/max-dependencies */
 
-import CrossChainImg, { ReactComponent as CrossChainSvg } from '@/shared/assets/images/arrows/cross-chain-arrow.svg';
-import ArrowCurveLeftRightImg, {
-  ReactComponent as ArrowCurveLeftRightSvg,
-} from '@/shared/assets/images/arrows/curve-left-right.svg';
-import arrowDoubleDownImg, {
-  ReactComponent as arrowDoubleDownSvg,
-} from '@/shared/assets/images/arrows/double-down.svg';
-import arrowDoubleUpImg, { ReactComponent as arrowDoubleUpSvg } from '@/shared/assets/images/arrows/double-up.svg';
-import ArrowLeftImg, { ReactComponent as ArrowLeftSvg } from '@/shared/assets/images/arrows/left.svg';
-import ReceiveArrowImg, { ReactComponent as ReceiveArrowSvg } from '@/shared/assets/images/arrows/receive-arrow.svg';
-import ArrowRightImg, { ReactComponent as ArrowRightSvg } from '@/shared/assets/images/arrows/right.svg';
-import SendArrowImg, { ReactComponent as SendArrowSvg } from '@/shared/assets/images/arrows/send-arrow.svg';
-import SwapArrowImg, { ReactComponent as SwapArrowSvg } from '@/shared/assets/images/arrows/swap-arrow.svg';
+import CrossChainIcon from '@/shared/assets/images/arrows/cross-chain-arrow.svg?jsx';
+import ArrowCurveLeftRightIcon from '@/shared/assets/images/arrows/curve-left-right.svg?jsx';
+import arrowDoubleDownIcon from '@/shared/assets/images/arrows/double-down.svg?jsx';
+import arrowDoubleUpIcon from '@/shared/assets/images/arrows/double-up.svg?jsx';
+import ArrowLeftIcon from '@/shared/assets/images/arrows/left.svg?jsx';
+import ReceiveArrowIcon from '@/shared/assets/images/arrows/receive-arrow.svg?jsx';
+import ArrowRightIcon from '@/shared/assets/images/arrows/right.svg?jsx';
+import SendArrowIcon from '@/shared/assets/images/arrows/send-arrow.svg?jsx';
+import SwapArrowIcon from '@/shared/assets/images/arrows/swap-arrow.svg?jsx';
 
 const ArrowImages = {
-  arrowLeft: { svg: ArrowLeftSvg, img: ArrowLeftImg },
-  arrowRight: { svg: ArrowRightSvg, img: ArrowRightImg },
-  sendArrow: { svg: SendArrowSvg, img: SendArrowImg },
-  receiveArrow: { svg: ReceiveArrowSvg, img: ReceiveArrowImg },
-  swapArrow: { svg: SwapArrowSvg, img: SwapArrowImg },
-  crossChain: { svg: CrossChainSvg, img: CrossChainImg },
-  arrowCurveLeftRight: { svg: ArrowCurveLeftRightSvg, img: ArrowCurveLeftRightImg },
-  arrowDoubleDown: { svg: arrowDoubleDownSvg, img: arrowDoubleDownImg },
-  arrowDoubleUp: { svg: arrowDoubleUpSvg, img: arrowDoubleUpImg },
+  arrowLeft: { svg: ArrowLeftIcon },
+  arrowRight: { svg: ArrowRightIcon },
+  sendArrow: { svg: SendArrowIcon },
+  receiveArrow: { svg: ReceiveArrowIcon },
+  swapArrow: { svg: SwapArrowIcon },
+  crossChain: { svg: CrossChainIcon },
+  arrowCurveLeftRight: { svg: ArrowCurveLeftRightIcon },
+  arrowDoubleDown: { svg: arrowDoubleDownIcon },
+  arrowDoubleUp: { svg: arrowDoubleUpIcon },
 } as const;
 
 export type Arrow = keyof typeof ArrowImages;

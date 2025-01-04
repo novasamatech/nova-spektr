@@ -1,53 +1,41 @@
 /* eslint-disable import-x/max-dependencies */
 
-import DelegateImg, { ReactComponent as DelegateSvg } from '@/shared/assets/images/functionals/opengov-delegate.svg';
-import EditDelegationImg, {
-  ReactComponent as EditDelegationSvg,
-} from '@/shared/assets/images/functionals/opengov-edit-delegation.svg';
-import RetractImg, { ReactComponent as RetractSvg } from '@/shared/assets/images/functionals/opengov-retract.svg';
-import RevoteImg, { ReactComponent as RevoteSvg } from '@/shared/assets/images/functionals/opengov-revote.svg';
-import UndelegateImg, {
-  ReactComponent as UndelegateSvg,
-} from '@/shared/assets/images/functionals/opengov-undelegate.svg';
-import UnlockImg, { ReactComponent as UnlockSvg } from '@/shared/assets/images/functionals/opengov-unlock.svg';
-import VoteImg, { ReactComponent as VoteSvg } from '@/shared/assets/images/functionals/opengov-vote.svg';
-import ChangeValidatorsImg, {
-  ReactComponent as ChangeValidatorsSvg,
-} from '@/shared/assets/images/mst/change-validators-mst.svg';
-import DelegatedAuthoritiesImg, {
-  ReactComponent as DelegatedAuthoritiesSvg,
-} from '@/shared/assets/images/mst/delegated-authorities.svg';
-import RedeemImg, { ReactComponent as RedeemSvg } from '@/shared/assets/images/mst/redeem-mst.svg';
-import ReturnToStakeImg, {
-  ReactComponent as ReturnToStakeSvg,
-} from '@/shared/assets/images/mst/return-to-stake-mst.svg';
-import DestinationImg, {
-  ReactComponent as DestinationSvg,
-} from '@/shared/assets/images/mst/rewards-destination-mst.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@/shared/assets/images/mst/stake-more-mst.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@/shared/assets/images/mst/staking.svg';
-import TransferImg, { ReactComponent as TransferSvg } from '@/shared/assets/images/mst/transfer.svg';
-import UnknownImg, { ReactComponent as UnknownSvg } from '@/shared/assets/images/mst/unknown.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@/shared/assets/images/mst/unstake-mst.svg';
+import DelegateIcon from '@/shared/assets/images/functionals/opengov-delegate.svg?jsx';
+import EditDelegationIcon from '@/shared/assets/images/functionals/opengov-edit-delegation.svg?jsx';
+import RetractIcon from '@/shared/assets/images/functionals/opengov-retract.svg?jsx';
+import RevoteIcon from '@/shared/assets/images/functionals/opengov-revote.svg?jsx';
+import UndelegateIcon from '@/shared/assets/images/functionals/opengov-undelegate.svg?jsx';
+import UnlockIcon from '@/shared/assets/images/functionals/opengov-unlock.svg?jsx';
+import VoteIcon from '@/shared/assets/images/functionals/opengov-vote.svg?jsx';
+import ChangeValidatorsIcon from '@/shared/assets/images/mst/change-validators-mst.svg?jsx';
+import DelegatedAuthoritiesIcon from '@/shared/assets/images/mst/delegated-authorities.svg?jsx';
+import RedeemIcon from '@/shared/assets/images/mst/redeem-mst.svg?jsx';
+import ReturnToStakeIcon from '@/shared/assets/images/mst/return-to-stake-mst.svg?jsx';
+import DestinationIcon from '@/shared/assets/images/mst/rewards-destination-mst.svg?jsx';
+import StakeMoreIcon from '@/shared/assets/images/mst/stake-more-mst.svg?jsx';
+import StartStakingIcon from '@/shared/assets/images/mst/staking.svg?jsx';
+import TransferIcon from '@/shared/assets/images/mst/transfer.svg?jsx';
+import UnknownIcon from '@/shared/assets/images/mst/unknown.svg?jsx';
+import UnstakeIcon from '@/shared/assets/images/mst/unstake-mst.svg?jsx';
 
 const MstImages = {
-  transferMst: { svg: TransferSvg, img: TransferImg },
-  unknownMst: { svg: UnknownSvg, img: UnknownImg },
-  startStakingMst: { svg: StartStakingSvg, img: StartStakingImg },
-  redeemMst: { svg: RedeemSvg, img: RedeemImg },
-  unstakeMst: { svg: UnstakeSvg, img: UnstakeImg },
-  destinationMst: { svg: DestinationSvg, img: DestinationImg },
-  stakeMoreMst: { svg: StakeMoreSvg, img: StakeMoreImg },
-  changeValidatorsMst: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
-  returnToStakeMst: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
-  proxyMst: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
-  voteMst: { svg: VoteSvg, img: VoteImg },
-  revoteMst: { svg: RevoteSvg, img: RevoteImg },
-  retractMst: { svg: RetractSvg, img: RetractImg },
-  unlockMst: { svg: UnlockSvg, img: UnlockImg },
-  delegateMst: { svg: DelegateSvg, img: DelegateImg },
-  undelegateMst: { svg: UndelegateSvg, img: UndelegateImg },
-  editDelegationMst: { svg: EditDelegationSvg, img: EditDelegationImg },
+  transferMst: { svg: TransferIcon },
+  unknownMst: { svg: UnknownIcon },
+  startStakingMst: { svg: StartStakingIcon },
+  redeemMst: { svg: RedeemIcon },
+  unstakeMst: { svg: UnstakeIcon },
+  destinationMst: { svg: DestinationIcon },
+  stakeMoreMst: { svg: StakeMoreIcon },
+  changeValidatorsMst: { svg: ChangeValidatorsIcon },
+  returnToStakeMst: { svg: ReturnToStakeIcon },
+  proxyMst: { svg: DelegatedAuthoritiesIcon },
+  voteMst: { svg: VoteIcon },
+  revoteMst: { svg: RevoteIcon },
+  retractMst: { svg: RetractIcon },
+  unlockMst: { svg: UnlockIcon },
+  delegateMst: { svg: DelegateIcon },
+  undelegateMst: { svg: UndelegateIcon },
+  editDelegationMst: { svg: EditDelegationIcon },
 } as const;
 
 export type Mst = keyof typeof MstImages;

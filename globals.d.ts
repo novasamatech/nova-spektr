@@ -40,6 +40,12 @@ declare module '*.svg' {
   export default content;
 }
 
+declare module '*.svg?jsx' {
+  import { type FC, type SVGProps } from 'react';
+  const content: FC<SVGProps<SVGSVGElement>>;
+  export default content;
+}
+
 declare module 'units-css' {
   const content: any;
   export default content;
