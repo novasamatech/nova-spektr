@@ -12,6 +12,7 @@ export const $features = createStore({
   governance: true,
   // TODO: Dev only
   fellowship: isDev(),
+  importDB: isDev(),
   operations: true,
   basket: true,
   contacts: true,

@@ -14,7 +14,7 @@ export const walletPairingLedgerFeature = createFeature({
 });
 
 walletPairingLedgerFeature.inject(onboardingActionsSlot, {
-  order: 10,
+  order: 5,
   render() {
     const { t } = useI18n();
 

@@ -1,4 +1,5 @@
 import { default as Dexie } from 'dexie';
+import { exportDB, importInto } from 'dexie-export-import';
 
 import {
   type DataStorage,
@@ -136,6 +137,19 @@ class StorageFactory implements IStorage {
 }
 
 const dexie = new DexieStorage();
+
+export const exportDb = async () => {
+  const blob = await exportDB(dexie, {
+    prettyJson: true,
+    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions', 'connections'],
+  });
+
+  return { blob, fileName: 'spektr-database.json' };
+};
+
+export const importDb = async (blob: Blob) => {
+  await importInto(dexie, blob, { acceptVersionDiff: true });
+};
 
 export const storage = new StorageFactory(dexie);
 
