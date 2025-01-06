@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import { exportDb } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
 import { governanceModel } from '@/entities/governance';
@@ -119,20 +119,22 @@ export const GeneralActions = () => {
         </Link>
       </Plate>
 
-      <Plate>
-        <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
-          <Icon name="warn" size={12} className="text-inherit" />
-          {/* eslint-disable i18next/no-literal-string */}
-          <span>DEV MODE</span>
-        </BodyText>
-        <Button
-          pallet="secondary"
-          className="w-full border border-alert bg-alert-background-warning"
-          onClick={exportDatabase}
-        >
-          {t('importDB.exportButton')}
-        </Button>
-      </Plate>
+      {isDev() && (
+        <Plate>
+          <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
+            <Icon name="warn" size={12} className="text-inherit" />
+            {/* eslint-disable i18next/no-literal-string */}
+            <span>DEV MODE</span>
+          </BodyText>
+          <Button
+            pallet="secondary"
+            className="w-full border border-alert bg-alert-background-warning"
+            onClick={exportDatabase}
+          >
+            {t('importDB.exportButton')}
+          </Button>
+        </Plate>
+      )}
 
       {isAutoUpdateSupported && (
         <Plate className="p-0">
