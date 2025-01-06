@@ -48,7 +48,7 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
       {wcDetailsUtils.isNotStarted(reconnectStep, wallet.isConnected) && <ChainAccountsList accounts={accountsList} />}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, wallet.isConnected) && (
-        <div className="mx-auto mt-6 flex h-[390px] w-[208px] flex-col items-center justify-center">
+        <div className="mx-auto flex h-[390px] w-[208px] flex-col items-center justify-center">
           <Icon name="document" size={64} className="mb-6 text-icon-default" />
           <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
           <FootnoteText className="mb-4 text-text-tertiary" align="center">

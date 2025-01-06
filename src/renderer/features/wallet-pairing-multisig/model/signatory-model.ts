@@ -15,7 +15,7 @@ const resetSignatories = createEvent();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
-const $duplicateSignatories = combine($signatories, (signatories) => {
+const $duplicateSignatories = combine($signatories, signatories => {
   const duplicates: Record<Address, number[]> = {};
 
   for (const [index, signer] of signatories.entries()) {
@@ -31,15 +31,15 @@ const $duplicateSignatories = combine($signatories, (signatories) => {
   return duplicates;
 });
 
-const $hasDuplicateSignatories = $duplicateSignatories.map((signatories) => {
-  return Object.values(signatories).some((duplicates) => duplicates.length > 0);
+const $hasDuplicateSignatories = $duplicateSignatories.map(signatories => {
+  return Object.values(signatories).some(duplicates => duplicates.length > 0);
 });
 
-const $hasEmptySignatories = $signatories.map((signatories) => {
+const $hasEmptySignatories = $signatories.map(signatories => {
   return signatories.some(({ address }) => !address.trim());
 });
 
-const $hasEmptySignatoryName = $signatories.map((signatories) => {
+const $hasEmptySignatoryName = $signatories.map(signatories => {
   return signatories.some(({ name }) => !name.trim());
 });
 
@@ -50,8 +50,8 @@ const $ownedSignatoriesWallets = combine(
   },
   ({ wallets, signatories }) => {
     const matchWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isValidSignatory(w),
-      accountFn: (a) => signatories.some((s) => toAccountId(s.address) === a.accountId),
+      walletFn: w => walletUtils.isValidSignatory(w),
+      accountFn: a => signatories.some(s => toAccountId(s.address) === a.accountId),
     });
 
     return matchWallets || [];
@@ -73,7 +73,7 @@ sample({
   clock: addSignatory,
   source: $signatories,
   fn: (signatories, { name, address, walletId }) => {
-    return produce(signatories, (draft) => {
+    return produce(signatories, draft => {
       draft.push({ name, address, walletId });
     });
   },
@@ -84,7 +84,7 @@ sample({
   clock: changeSignatory,
   source: $signatories,
   fn: (signatories, { index, name, address, walletId }) => {
-    return produce(signatories, (draft) => {
+    return produce(signatories, draft => {
       if (index >= draft.length) {
         draft.push({ name, address, walletId });
       } else {
@@ -100,7 +100,7 @@ sample({
   source: $signatories,
   filter: (signatories, index) => signatories.length > index,
   fn: (signatories, index) => {
-    return produce(signatories, (draft) => {
+    return produce(signatories, draft => {
       draft.splice(index, 1);
     });
   },

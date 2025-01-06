@@ -7,8 +7,8 @@ import { Step, cnTw, isStep } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
+import { flowModel } from '../model/flow-model';
+import { formModel } from '../model/form-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
 import { NameNetworkSelection } from './NameNetworkSelection';

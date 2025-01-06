@@ -1,8 +1,9 @@
 import { memo } from 'react';
 
 import { type Wallet, type WalletType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { performSearch } from '@/shared/lib/utils';
-import { Icon, IconButton } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { WalletCardMd, WalletIcon } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -12,16 +13,17 @@ const {
   views: { WalletFiatBalance },
 } = walletsFiatBalanceFeature;
 
+export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
+
 type Props = {
   title: string;
   walletType: WalletType;
   wallets: Wallet[];
   query: string;
   onSelect: (wallet: Wallet) => unknown;
-  onDetailsRequest: (wallet: Wallet) => unknown;
 };
 
-export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect, onDetailsRequest }: Props) => {
+export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -59,7 +61,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect, 
                 }
                 onClick={() => onSelect(wallet)}
               >
-                <IconButton name="details" onClick={() => onDetailsRequest(wallet)} />
+                <Slot id={walletActionsSlot} props={{ wallet }} />
               </WalletCardMd>
             ))}
           </Box>

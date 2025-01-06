@@ -7,7 +7,7 @@ import { HeaderTitleText, HelpText } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { ContactItem, WalletCardMd, walletModel, walletUtils } from '@/entities/wallet';
-import { type SignatoryInfo } from '@/widgets/CreateWallet/lib/types';
+import { type SignatoryInfo } from '../../lib/types';
 
 type Props = {
   chain: Chain;

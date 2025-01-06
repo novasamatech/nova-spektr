@@ -16,7 +16,7 @@ type Props = {
 
 export const ChainAccountsList = memo(({ accounts }: Props) => {
   const { t } = useI18n();
-  const { list } = useDeferredList({ list: accounts });
+  const { list } = useDeferredList({ list: accounts, forceFirstRender: true });
 
   return (
     <div className="flex h-full min-h-0 flex-col">

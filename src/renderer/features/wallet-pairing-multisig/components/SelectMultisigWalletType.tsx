@@ -1,12 +1,13 @@
-import { type ReactNode, useState } from 'react';
+import { type PropsWithChildren, type ReactNode, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { BodyText, Button, Icon, RadioGroup } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+// TODO move @/features/flexible-multisig-create inside this feature
 import { FlexibleMultisigWallet, flexibleMultisigModel } from '@/features/flexible-multisig-create';
-import { flowModel } from '../../model/flow-model';
+import { flowModel } from '../model/flow-model';
 
 import { MultisigWallet } from './MultisigWallet';
 import { type MultisigWalletType, descriptionMultisig } from './common/constants';
@@ -16,11 +17,11 @@ const MultisigModals: Record<MultisigWalletType, (onClose: VoidFunction, onBack:
   flexibleMultisig: (onClose, onBack) => <FlexibleMultisigWallet onClose={onClose} onGoBack={onBack} />,
 };
 
-type Props = {
+type Props = PropsWithChildren<{
   isOpen: boolean;
-};
+}>;
 
-export const SelectMultisigWalletType = ({ isOpen }: Props) => {
+export const SelectMultisigWalletType = ({ isOpen, children }: Props) => {
   // TODO: make null when we're ready to work with flexible multisig
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
 
@@ -32,6 +33,7 @@ export const SelectMultisigWalletType = ({ isOpen }: Props) => {
   if (nullable(selectedFlow)) {
     return (
       <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
+        <Modal.Trigger>{children}</Modal.Trigger>
         <SelectMultisig onContinue={setSelectedFlow} />
       </Modal>
     );
@@ -72,11 +74,11 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
           className="mx-5 my-4 flex gap-x-6"
           activeId={walletType}
           options={[flexibleMultisigOption, regularMultisigOption]}
-          onChange={(option) => setWalletType(option.value)}
+          onChange={option => setWalletType(option.value)}
         >
           <RadioGroup.CardOption option={flexibleMultisigOption}>
             <div className="flex flex-col gap-4">
-              {descriptionMultisig.map((item) => (
+              {descriptionMultisig.map(item => (
                 <div className="flex items-start gap-x-2" key={item.text}>
                   <Icon name="checkmarkOutline" className="mt-1 shrink-0 text-text-positive" size={14} />
                   <BodyText>
@@ -91,7 +93,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
           </RadioGroup.CardOption>
           <RadioGroup.CardOption option={regularMultisigOption}>
             <div className="flex flex-col gap-4">
-              {descriptionMultisig.map((item) => (
+              {descriptionMultisig.map(item => (
                 <div className="flex items-start gap-x-2" key={item.text}>
                   {item.onlyFlexible ? (
                     <Icon name="closeOutline" className="mt-1 shrink-0 text-text-negative" size={14} />

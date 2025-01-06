@@ -27,7 +27,7 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
   return (
     <li
       className="flex cursor-pointer items-center justify-between gap-x-6 py-4 pl-2 pr-2 text-text-secondary hover:bg-hover"
-      onClick={(e) => onSubmit(e, account)}
+      onClick={e => onSubmit(e, account)}
     >
       <div className="flex items-center gap-x-2 truncate">
         <WalletIcon type={wallet.type} className="shrink-0" />

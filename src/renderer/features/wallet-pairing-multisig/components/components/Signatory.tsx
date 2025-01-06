@@ -12,8 +12,8 @@ import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { formModel } from '@/widgets/CreateWallet/model/form-model';
-import { signatoryModel } from '../../../model/signatory-model';
+import { formModel } from '../../model/form-model';
+import { signatoryModel } from '../../model/signatory-model';
 
 const { services, constants } = walletSelectFeature;
 
@@ -59,8 +59,8 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
-      accountFn: (a) => {
+      walletFn: w => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
+      accountFn: a => {
         if (!chain) return false;
 
         const accountIdMatch = toAccountId(signatoryAddress) === a.accountId;
@@ -71,7 +71,7 @@ export const Signatory = ({
     })?.[0]?.name || '';
 
   const contactAccountName =
-    contacts.filter((contact) => toAccountId(contact.address) === toAccountId(signatoryAddress))?.[0]?.name || '';
+    contacts.filter(contact => toAccountId(contact.address) === toAccountId(signatoryAddress))?.[0]?.name || '';
 
   const displayName = useMemo(() => {
     const hasDuplicateName = !!ownAccountName && !!contactAccountName;

@@ -28,7 +28,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { removeProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { removeProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { proxiesModel } from '@/features/proxies';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';

@@ -1,8 +1,6 @@
 /* eslint-disable import-x/max-dependencies */
 
-import Computer from '@/shared/assets/images/misc/computer.webp';
 import DocumentIcon from '@/shared/assets/images/misc/document.svg?jsx';
-import EmptyList from '@/shared/assets/images/misc/empty-list.webp';
 import LogoTitleIcon from '@/shared/assets/images/misc/logo-title.svg?jsx';
 import LogoIcon from '@/shared/assets/images/misc/logo.svg?jsx';
 import NoResultsIcon from '@/shared/assets/images/misc/no-results.svg?jsx';
@@ -16,8 +14,6 @@ const MiscImages = {
   noResults: { svg: NoResultsIcon },
   noWallets: { svg: NoWalletsIcon },
   document: { svg: DocumentIcon, img: Document },
-  emptyList: { svg: null, img: EmptyList },
-  computer: { svg: null, img: Computer },
 } as const;
 
 export type Misc = keyof typeof MiscImages;

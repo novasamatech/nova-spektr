@@ -7,7 +7,7 @@ import { BodyText } from '@/shared/ui';
 import { basketModel } from '@/entities/basket';
 import { walletModel } from '@/entities/wallet';
 import { navigationBottomLinksPipeline } from '@/features/app-shell';
-import { basketUtils } from '@/features/operations/OperationsConfirm';
+import { basketUtils } from '@/features/operations/OperationsConfirm/lib/basket-utils';
 
 export const basketNavigationFeature = createFeature({
   name: 'basket/navigation',

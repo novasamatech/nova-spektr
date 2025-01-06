@@ -1,5 +1,3 @@
-import axios, { type AxiosResponse } from 'axios';
-
 export interface TestAccounts {
   chainId: string;
   name: string;
@@ -7,14 +5,14 @@ export interface TestAccounts {
 }
 
 export async function getTestAccounts(url: string) {
-  const accounts = await httpRequest(url);
+  const accounts = await httpRequest(url).then((r) => r?.json());
 
-  return <TestAccounts[]>(<unknown>accounts?.data);
+  return <TestAccounts[]>accounts;
 }
 
-export async function httpRequest(url: string): Promise<AxiosResponse | undefined> {
+export async function httpRequest(url: string): Promise<Response | undefined> {
   try {
-    const response = await axios.get(url);
+    const response = await fetch(url);
 
     return response;
   } catch (exception) {

@@ -1,8 +1,6 @@
 const { writeFile } = require('fs/promises');
 const { resolve } = require('path');
 
-const axios = require('axios');
-
 const SPEKTR_CONFIG_VERSION = process.env.TOKENS_VERSION || 'v1';
 const CONFIG_PATH = 'src/renderer/shared/config/tokens';
 const SPEKTR_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${SPEKTR_CONFIG_VERSION}/`;
@@ -11,9 +9,9 @@ const TOKENS_ENV = ['tokens_dev.json', 'tokens.json'];
 
 async function getDataViaHttp(url, filePath) {
   try {
-    const response = await axios.get(url + filePath);
+    const response = await fetch(url + filePath).then((r) => r.json());
 
-    return response.data;
+    return response;
   } catch (error) {
     console.log('Error: ', error?.message || 'getDataViaHttp failed');
   }

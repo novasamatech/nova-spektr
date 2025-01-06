@@ -7,9 +7,9 @@ import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type AnyAccount, accountsService } from '@/domains/network';
-import { flowModel } from '../../../model/flow-model';
-import { formModel } from '../../../model/form-model';
-import { signatoryModel } from '../../../model/signatory-model';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
+import { signatoryModel } from '../../model/signatory-model';
 
 import { Signer } from './Signer';
 
@@ -31,7 +31,7 @@ export const SignerSelection = () => {
     <>
       <Modal.Content>
         <ul className="my-1 flex max-h-[660px] w-full max-w-[368px] flex-col gap-y-2 px-3">
-          {ownedSignatoriesWallets.map((wallet) => {
+          {ownedSignatoriesWallets.map(wallet => {
             if (!chain) return null;
 
             const accounts = accountsService.filterAccountOnChain(wallet.accounts, chain);

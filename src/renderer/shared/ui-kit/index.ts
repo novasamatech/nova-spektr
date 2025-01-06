@@ -14,6 +14,7 @@ export { Dropdown } from './Dropdown/Dropdown';
 export { Skeleton } from './Skeleton/Skeleton';
 export { Carousel } from './Carousel/Carousel';
 export { TextArea } from './TextArea/TextArea';
+export { Graphics } from './Graphics/Graphics';
 export { Tooltip } from './Tooltip/Tooltip';
 export { Popover } from './Popover/Popover';
 export { Surface } from './Surface/Surface';

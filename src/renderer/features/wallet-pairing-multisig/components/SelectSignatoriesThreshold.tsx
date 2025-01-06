@@ -8,9 +8,9 @@ import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
-import { signatoryModel } from '../../model/signatory-model';
+import { flowModel } from '../model/flow-model';
+import { formModel } from '../model/form-model';
+import { signatoryModel } from '../model/signatory-model';
 
 import { MultisigCreationFees } from './components';
 import { Signatory } from './components/Signatory';
@@ -92,7 +92,7 @@ export const SelectSignatoriesThreshold = () => {
                   value={(threshold.value || '').toString()}
                   invalid={threshold.hasError()}
                   disabled={[0, 1].includes(signatories.length)}
-                  onChange={(value) => threshold.onChange(Number(value))}
+                  onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
                     <Select.Item key={index} value={(index + 2).toString()}>

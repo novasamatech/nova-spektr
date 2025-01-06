@@ -10,10 +10,10 @@ import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
-import { confirmModel } from '../../model/confirm-model';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
-import { signatoryModel } from '../../model/signatory-model';
+import { confirmModel } from '../model/confirm-model';
+import { flowModel } from '../model/flow-model';
+import { formModel } from '../model/form-model';
+import { signatoryModel } from '../model/signatory-model';
 
 import { SelectedSignatoriesModal } from './components';
 

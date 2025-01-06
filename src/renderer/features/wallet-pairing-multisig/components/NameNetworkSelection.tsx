@@ -8,8 +8,8 @@ import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import { flowModel } from '../../model/flow-model';
-import { formModel } from '../../model/form-model';
+import { flowModel } from '../model/flow-model';
+import { formModel } from '../model/form-model';
 
 import { MultisigCreationFees } from './components';
 
@@ -63,11 +63,11 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                 <Select
                   placeholder={t('createMultisigAccount.chainPlaceholder')}
                   value={chainId.value}
-                  onChange={(value) => chainId.onChange(value as ChainId)}
+                  onChange={value => chainId.onChange(value as ChainId)}
                 >
                   {Object.values(chains)
-                    .filter((c) => networkUtils.isMultisigSupported(c.options))
-                    .map((chain) => (
+                    .filter(c => networkUtils.isMultisigSupported(c.options))
+                    .map(chain => (
                       <Select.Item key={chain.chainId} value={chain.chainId}>
                         <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
                       </Select.Item>

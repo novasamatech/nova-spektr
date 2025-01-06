@@ -3,13 +3,9 @@ import { format as fnsFormatDate } from 'date-fns/format';
 import { enGB } from 'date-fns/locale/en-GB';
 import i18next from 'i18next';
 import { type TFunction } from 'i18next';
-import { type FC, type PropsWithChildren, createContext, useContext } from 'react';
+import { type PropsWithChildren, createContext, useContext } from 'react';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
-// TODO fix cycle
-import { LanguageSwitcher } from '@/shared/ui/LanguageSwitcher/LanguageSwitcher';
-
-import { LanguageOptions } from './lib/constants';
 import { useTranslationService } from './lib/translationService';
 import { type LanguageItem, type SupportedLocale } from './lib/types';
 
@@ -24,12 +20,6 @@ i18next
     throw new Error('Failed to configure react-i18next');
   });
 
-type Props = {
-  className?: string;
-  short?: boolean;
-  top?: boolean;
-};
-
 type I18nContextProps = {
   t: TFunction<'translation'>;
   locale: SupportedLocale;
@@ -37,7 +27,6 @@ type I18nContextProps = {
   formatDate: typeof fnsFormatDate;
   locales: LanguageItem[];
   changeLocale: (locale: SupportedLocale) => Promise<void>;
-  LocaleComponent: FC<Props>;
 };
 
 const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
@@ -54,17 +43,6 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
       throw new Error(`Locale ${locale} not found or configured wrong`);
     }
   };
-
-  const LocaleComponent = ({ className, short, top }: Props) => (
-    <LanguageSwitcher
-      className={className}
-      short={short}
-      top={top}
-      languages={LanguageOptions}
-      selected={i18n.language}
-      onChange={(value) => onLocaleChange(value)}
-    />
-  );
 
   const locale = getLocale();
   const locales = getLocales();
@@ -84,7 +62,6 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
     dateLocale,
     formatDate,
     changeLocale: onLocaleChange,
-    LocaleComponent,
   };
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

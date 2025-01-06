@@ -2,6 +2,15 @@ import './index.css';
 import './document.css';
 import './styles/theme/default.css';
 
+import '@/shared/assets/fonts/Inter/Inter-400.woff2';
+import '@/shared/assets/fonts/Inter/Inter-500.woff2';
+import '@/shared/assets/fonts/Inter/Inter-600.woff2';
+import '@/shared/assets/fonts/Inter/Inter-800.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-400.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-500.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-600.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-800.woff2';
+
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';

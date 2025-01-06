@@ -170,11 +170,7 @@ export const AmountInput = ({
 
   const suffixElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex items-center gap-x-2">
-      <IconButton
-        name="swapArrow"
-        alt={t(currencyMode ? 'transfer.swapToCryptoModeAlt' : 'transfer.swapToCurrencyModeAlt')}
-        onClick={toggleCurrencyMode}
-      />
+      <IconButton name="swapArrow" onClick={toggleCurrencyMode} />
       <FootnoteText className="uppercase text-text-tertiary">
         {currencyMode
           ? `${altValue}${altValueSuffix} ${asset.symbol}`

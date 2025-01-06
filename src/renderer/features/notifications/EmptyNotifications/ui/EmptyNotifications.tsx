@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Icon } from '@/shared/ui';
+import { BodyText } from '@/shared/ui';
+import { Graphics } from '@/shared/ui-kit';
 import { notificationModel } from '@/entities/notification';
 
 export const EmptyNotifications = () => {
@@ -15,7 +16,7 @@ export const EmptyNotifications = () => {
 
   return (
     <div className="flex h-full flex-col items-center justify-center">
-      <Icon as="img" name="emptyList" size={178} />
+      <Graphics name="emptyList" size={178} />
       <BodyText className="text-text-tertiary">{t('notifications.noNotificationsDescription')}</BodyText>
     </div>
   );

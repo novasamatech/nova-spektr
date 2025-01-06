@@ -1,8 +1,6 @@
 const { writeFile } = require('fs/promises');
 const { resolve } = require('path');
 
-const axios = require('axios');
-
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
 const CONFIG_PATH = 'src/renderer/shared/config/chains';
 const SPEKTR_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${SPEKTR_CONFIG_VERSION}/`;
@@ -11,9 +9,9 @@ const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
 
 async function getDataViaHttp(url, filePath) {
   try {
-    const response = await axios.get(url + filePath);
+    const response = await fetch(url + filePath).then((r) => r.json());
 
-    return response.data;
+    return response;
   } catch (error) {
     console.log('Error: ', error?.message || 'getDataViaHttp failed');
   }

@@ -1,13 +1,13 @@
 import { createFeature } from '@/shared/effector';
 import { walletSelectActionsSlot } from '@/features/wallet-select';
 
-import { WalletPairingSelect } from './components/WalletPairingSelect';
+import { WalletPairingSelect, walletPairingDropdownOptionsSlot } from './components/WalletPairingSelect';
+import { walletPairingModel } from './model/wallet-pairing-model';
 
-export { walletPairingModel } from './model/wallet-pairing-model';
-export { walletPairingDropdownOptionsSlot } from './components/WalletPairingSelect';
+export { walletPairingModel, walletPairingDropdownOptionsSlot };
 
 export const walletPairingFeature = createFeature({
-  name: 'wallet-pairing/flow',
+  name: 'wallet pairing/flow',
 });
 
 walletPairingFeature.inject(walletSelectActionsSlot, () => {

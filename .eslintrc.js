@@ -43,11 +43,18 @@ module.exports = {
       {
         alphabetize: { order: 'asc', orderImportKind: 'asc' },
         groups: ['builtin', 'external', 'parent', ['sibling', 'index']],
-        pathGroups: boundaryTypes.map((type) => ({
-          group: 'parent',
-          pattern: `@/${type}/**`,
-          position: 'before',
-        })),
+        pathGroups: [
+          ...boundaryTypes.map((type) => ({
+            group: 'parent',
+            pattern: `@/${type}/**`,
+            position: 'before',
+          })),
+          {
+            group: 'external',
+            pattern: '~config',
+            position: 'before',
+          },
+        ],
         'newlines-between': 'always',
         distinctGroup: false,
       },
@@ -83,7 +90,7 @@ module.exports = {
       extends: ['plugin:json/recommended'],
     },
     {
-      files: ['*.js'],
+      files: ['*.js', '*.mjs', '*.cjs'],
       env: {
         node: true,
       },

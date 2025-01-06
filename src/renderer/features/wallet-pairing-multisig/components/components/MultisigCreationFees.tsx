@@ -52,8 +52,8 @@ export const MultisigCreationFees = memo(({ api, asset, threshold, onDepositChan
     setIsNetworkFeeLoading(true);
     transactionService
       .getTransactionFee(transaction, api)
-      .then((fee) => setNetworkFee(new BN(fee)))
-      .catch((error) => {
+      .then(fee => setNetworkFee(new BN(fee)))
+      .catch(error => {
         setNetworkFee(BN_ZERO);
         console.info('Error getting fee - ', error);
       })

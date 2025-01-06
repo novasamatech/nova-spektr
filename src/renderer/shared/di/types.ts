@@ -42,3 +42,5 @@ export type AnyIdentifier<Input = any, Output = any, HandlerBody = any, Processe
 export type InferInput<T extends AnyIdentifier> = T extends AnyIdentifier<infer Input> ? Input : never;
 export type InferOutput<T extends AnyIdentifier> = T extends AnyIdentifier<any, infer Output> ? Output : never;
 export type InferHandlerBody<T extends AnyIdentifier> = T extends AnyIdentifier<any, any, infer Fn> ? Fn : never;
+export type InferProcessedHandlerBody<T extends AnyIdentifier> =
+  T extends AnyIdentifier<any, any, any, infer Fn> ? Fn : never;
