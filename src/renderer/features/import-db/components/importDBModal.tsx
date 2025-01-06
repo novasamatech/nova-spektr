@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
 import { importDbModel } from '../model/import-db-model';
@@ -11,7 +11,7 @@ export const ImportDBModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   const validationError = useUnit(importDbModel.$validationError);
-  const file = useUnit(importDbModel.$file);
+  const isDisabled = useUnit(importDbModel.$isDisabled);
 
   return (
     <Modal size="sm" onToggle={() => importDbModel.events.resetValues()}>
@@ -36,10 +36,7 @@ export const ImportDBModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.Content>
       <Modal.Footer>
-        <Button
-          disabled={nonNullable(validationError) || nullable(file)}
-          onClick={() => importDbModel.events.importDatabase(file!)}
-        >
+        <Button disabled={isDisabled} onClick={() => importDbModel.events.importDatabase()}>
           {t('importDB.continueButton')}
         </Button>
       </Modal.Footer>

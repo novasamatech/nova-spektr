@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay } from 'patronum';
+import { delay, or } from 'patronum';
 
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -9,7 +9,7 @@ import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';
 
 const fileUploaded = createEvent<File>();
-const importDatabase = createEvent<File>();
+const importDatabase = createEvent();
 const resetValues = createEvent();
 
 const $validationError = createStore<string | null>(null).reset(resetValues);
@@ -44,9 +44,12 @@ sample({
 
 sample({
   clock: importDatabase,
-  source: $validationError,
-  filter: (error) => nullable(error),
-  fn: (_, file) => file,
+  source: {
+    error: $validationError,
+    file: $file,
+  },
+  filter: ({ error }) => nullable(error) && nonNullable($file),
+  fn: ({ file }) => file!,
   target: updateDBFx,
 });
 
@@ -65,6 +68,12 @@ sample({
 export const importDbModel = {
   $validationError,
   $file,
+  $isDisabled: or(
+    updateDBFx.pending,
+    walletModel.$isLoadingWallets,
+    $validationError.map(nonNullable),
+    $file.map(nullable),
+  ),
 
   events: {
     fileUploaded,
