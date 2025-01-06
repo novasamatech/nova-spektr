@@ -73,8 +73,12 @@ const config: UserConfigFn = async ({ mode }) => {
       }),
       svgr({
         include: '**/*.svg?jsx',
+        esbuildOptions: { jsx: 'automatic' },
         svgrOptions: {
           plugins: ['@svgr/plugin-svgo', '@svgr/plugin-jsx'],
+          memo: true,
+          ref: true,
+          jsxRuntime: 'automatic',
           svgo: true,
           svgoConfig: {
             plugins: [

@@ -1,4 +1,4 @@
-import { Suspense, lazy, memo } from 'react';
+import { type Ref, Suspense, forwardRef, lazy, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Shimmering } from '../Shimmering/Shimmering';
@@ -14,7 +14,7 @@ type Props = {
 const LazyIcon = lazy(async () => {
   const icons = await import('./data').then((x) => x.default);
 
-  const InternalIcon = ({ name, size = 24, className }: Props) => {
+  const InternalIcon = ({ name, size = 24, className, innerRef }: Props & { innerRef: Ref<SVGSVGElement> }) => {
     if (!name) {
       return null;
     }
@@ -29,6 +29,7 @@ const LazyIcon = lazy(async () => {
 
     return (
       <IconComponent
+        ref={innerRef}
         className={cnTw('pointer-events-none select-none text-icon-default', className)}
         width={size}
         height={size}
@@ -41,14 +42,16 @@ const LazyIcon = lazy(async () => {
   return { default: InternalIcon };
 });
 
-export const Icon = memo<Props>(({ name, size = 24, ...props }) => {
-  if (!name) {
-    return null;
-  }
+export const Icon = memo(
+  forwardRef<SVGSVGElement, Props>(({ name, size = 24, className }, ref) => {
+    if (!name) {
+      return null;
+    }
 
-  return (
-    <Suspense fallback={<Shimmering circle width={size} height={size} />}>
-      <LazyIcon name={name} size={size} {...props} />
-    </Suspense>
-  );
-});
+    return (
+      <Suspense fallback={<Shimmering circle width={size} height={size} />}>
+        <LazyIcon name={name} size={size} innerRef={ref} className={className} />
+      </Suspense>
+    );
+  }),
+);

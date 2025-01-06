@@ -12,7 +12,8 @@
     "config": "node config/bin.mjs",
     "electron": "electron .",
 
-    "start": "pnpm build:stage && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
+    "start": "pnpm build:dev && concurrently \"pnpm renderer:preview\" \"pnpm electron\"",
+    "start:renderer": "pnpm renderer:dev:watch",
     "start:dev": "pnpm r clean:build main:dev preload:dev && concurrently \"pnpm main:dev:watch\" \"pnpm preload:dev:watch\" \"pnpm renderer:dev:watch\" \"pnpm electron\"",
 
     "renderer:dev": "cross-env CHAINS_FILE=chains-dev TOKENS_FILE=tokens-dev LOGGER=false vite build -c vite.config.renderer.ts",
@@ -31,9 +32,9 @@
     "main:stage": "vite build --mode stage -c vite.config.main.ts",
     "main:prod": "vite build -c vite.config.main.ts",
 
-    "build": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens pnpm r clean:prod renderer:prod preload:prod main:prod",
-    "build:dev": "cross-env CHAINS_FILE=chains_dev TOKENS_FILE=tokens_dev pnpm r clean:prod renderer:dev preload:dev main:dev",
-    "build:stage": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens pnpm r clean:prod renderer:stage main:stage",
+    "build": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens pnpm r clean:prod main:prod preload:prod renderer:prod",
+    "build:dev": "cross-env CHAINS_FILE=chains-dev TOKENS_FILE=tokens-dev pnpm r clean:prod main:dev preload:dev renderer:dev",
+    "build:stage": "cross-env CHAINS_FILE=chains TOKENS_FILE=tokens pnpm r clean:prod renderer:stage preload:stage main:stage",
 
     "postbuild": "node scripts/postbuild.js",
     "postbuild:stage": "node scripts/postbuild.js stage",
@@ -44,7 +45,7 @@
     "clean:prod": "rimraf $(pnpm --silent run config folders.prodBuild)",
 
     "stage:sequence": "pnpm r clean:build clean:prod build:stage postbuild:stage dist:stage",
-    "prod:sequence": "pnpm run clean:build && pnpm run clean:prod && pnpm run build && pnpm run postbuild && pnpm run dist",
+    "prod:sequence": "pnpm r clean:build clean:prod build postbuild dist",
 
     "test": "jest --config=jest.config.ts --json --outputFile=jest-unit-results.json",
     "test:integration": "jest --config=tests/integrations/jest.config.ts --group=integration --json --outputFile=jest-results.json",
