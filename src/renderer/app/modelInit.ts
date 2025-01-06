@@ -15,6 +15,7 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { importDBFeature } from '@/features/import-db';
 import { walletPairingMultisigFeature } from '@/features/multisig-wallet-pairing';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
@@ -50,6 +51,7 @@ export const initModel = () => {
   walletPairingWalletConnectFeature.start();
   walletPairingWatchOnlyFeature.start();
   walletPairingLedgerFeature.start();
+  importDBFeature.start();
 
   walletWatchOnlyFeature.start();
 

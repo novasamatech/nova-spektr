@@ -3,12 +3,14 @@ import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { exportDb } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
+import { BodyText, Button, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
 import { governanceModel } from '@/entities/governance';
 import { currencyModel, priceProviderModel } from '@/entities/price';
+import { downloadFiles } from '@/features/wallets/ExportKeys';
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
@@ -52,6 +54,12 @@ export const GeneralActions = () => {
   //     console.warn(error);
   //   }
   // };
+
+  const exportDatabase = () => {
+    exportDb().then((data) => {
+      downloadFiles([data]);
+    });
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -110,6 +118,24 @@ export const GeneralActions = () => {
           {fiatFlag && <FootnoteText className="ml-auto text-text-tertiary">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
+
+      {isDev() && (
+        <Plate>
+          <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
+            <Icon name="warn" size={12} className="text-inherit" />
+            {/* eslint-disable i18next/no-literal-string */}
+            <span>DEV MODE</span>
+          </BodyText>
+          <Button
+            pallet="secondary"
+            className="w-full border border-alert bg-alert-background-warning"
+            onClick={exportDatabase}
+          >
+            {t('importDB.exportButton')}
+          </Button>
+        </Plate>
+      )}
+
       {isAutoUpdateSupported && (
         <Plate className="p-0">
           <div className="flex w-full items-center gap-x-2 rounded p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
