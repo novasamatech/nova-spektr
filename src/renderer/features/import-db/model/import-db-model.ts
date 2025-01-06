@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, or } from 'patronum';
+import { delay, once, or } from 'patronum';
 
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -59,7 +59,7 @@ sample({
 });
 
 sample({
-  clock: walletModel.$activeWallet,
+  clock: once(walletModel.$activeWallet),
   filter: nonNullable,
   fn: () => Paths.ASSETS,
   target: navigationModel.events.navigateTo,
