@@ -1,12 +1,22 @@
-const { writeFile } = require('fs/promises');
-const { resolve } = require('path');
+import { readFileSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-const { folders } = require('../config/index.mjs');
-const packageJSON = require('../package.json');
+import { folders } from '../config/index.mjs';
+
+const packageJSON = JSON.parse(readFileSync('./package.json', { encoding: 'utf-8' }));
 
 async function createPackageJSONDistVersion() {
   // eslint-disable-next-line no-unused-vars
-  const { main, scripts: _1, dependencies: _2, devDependencies: _3, ...restOfPackageJSON } = packageJSON;
+  const {
+    main,
+    scripts: _1,
+    dependencies: _2,
+    devDependencies: _3,
+    sideEffects: _4,
+    engines: _5,
+    ...restOfPackageJSON
+  } = packageJSON;
 
   const entry = main?.split('/')?.reverse()?.[0];
   const packageJSONDistVersion = {
