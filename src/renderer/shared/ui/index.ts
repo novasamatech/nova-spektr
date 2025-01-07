@@ -18,7 +18,6 @@ export {
 } from './Typography';
 
 export { Plate } from './Plate/Plate';
-export { Card } from './Card/Card';
 export { OperationStatus } from './OperationStatus/OperationStatus';
 export { Separator } from './Separator/Separator';
 export { InputHint } from './InputHint/InputHint';

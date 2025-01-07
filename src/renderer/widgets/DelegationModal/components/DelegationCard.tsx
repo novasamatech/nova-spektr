@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Card, FootnoteText } from '@/shared/ui';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { DelegateName, networkSelectorModel } from '@/features/governance';
 
@@ -16,7 +16,7 @@ export const DelegationCard = ({ delegate }: Props) => {
   const chain = useUnit(networkSelectorModel.$governanceChain);
 
   return (
-    <Card as="li">
+    <li className="rounded border border-container-border bg-white p-4 shadow-card-shadow">
       <div className="flex flex-col gap-4">
         <DelegateName delegate={delegate} titleClassName="max-w-[200px]" />
         <div className="flex flex-col gap-2.5">
@@ -48,6 +48,6 @@ export const DelegationCard = ({ delegate }: Props) => {
           </div>
         </div>
       </div>
-    </Card>
+    </li>
   );
 };

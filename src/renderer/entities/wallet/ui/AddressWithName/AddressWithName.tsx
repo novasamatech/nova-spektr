@@ -1,7 +1,6 @@
 import { cnTw, copyToClipboard, toShortAddress } from '@/shared/lib/utils';
-import { IconButton, Truncate } from '@/shared/ui';
+import { IconButton, Identicon, Truncate } from '@/shared/ui';
 import { type AccountAddressProps, getAddress } from '../AccountAddress/AccountAddress';
-import { AddressWithTwoLines } from '../AddressWithTwoLines/AddressWithTwoLines';
 
 type Props = {
   canCopySubName?: boolean;
@@ -52,14 +51,12 @@ export const AddressWithName = ({
   );
 
   return (
-    <AddressWithTwoLines
-      showIcon={showIcon}
-      size={size}
-      canCopy={canCopy}
-      firstLine={firstLine}
-      secondLine={secondLine}
-      className={className}
-      {...props}
-    />
+    <div className={cnTw('flex w-full min-w-0 items-center gap-x-2', className)}>
+      {showIcon && <Identicon address={getAddress(props)} size={size} background={false} canCopy={canCopy} />}
+      <div className="w-full truncate">
+        {firstLine}
+        {secondLine}
+      </div>
+    </div>
   );
 };
