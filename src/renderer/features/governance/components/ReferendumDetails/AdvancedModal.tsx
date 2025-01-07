@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { copyToClipboard, formatAsset } from '@/shared/lib/utils';
 import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
-import { AddressWithName } from '@/entities/wallet';
+import { Address } from '@/shared/ui-entities';
 import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {
@@ -33,20 +33,12 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
       closeButton
       isOpen={isOpen}
       panelClass="w-modal"
-      contentClass="flex flex-col gap-4 py-4 ps-5 pe-3"
+      contentClass="flex flex-col gap-4 py-4 ps-5 pe-3 "
       title={t('governance.advanced.title')}
       onClose={closeModal}
     >
-      <DetailRow label={t('governance.advanced.fields.proposer')}>
-        {submissionDeposit && (
-          <AddressWithName
-            className="px-2"
-            address={submissionDeposit.who}
-            addressFont="text-footnote text-text-secondary"
-            type="short"
-            symbols={8}
-          />
-        )}
+      <DetailRow label={t('governance.advanced.fields.proposer')} className="px-2 text-footnote text-text-secondary">
+        {submissionDeposit && <Address address={submissionDeposit.who} variant="short" canCopy={false} showIcon />}
       </DetailRow>
 
       <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>

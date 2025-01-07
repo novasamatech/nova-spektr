@@ -13,10 +13,10 @@ import {
   DetailRow,
   FootnoteText,
   LabelHelpBox,
-  Popover,
   Shimmering,
   SmallTitleText,
 } from '@/shared/ui';
+import { Popover } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { locksPeriodsAggregate } from '@/features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
@@ -68,8 +68,17 @@ export const VoteForm = ({ chain, asset }: Props) => {
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
         <div className="flex">
-          <Popover offsetPx={5} horizontal="right" panelClass="w-90" content={<AboutVoting />}>
-            <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
+          <Popover align="start">
+            <Popover.Trigger>
+              <div>
+                <LabelHelpBox>{t('governance.voting.aboutLabel')}</LabelHelpBox>
+              </div>
+            </Popover.Trigger>
+            <Popover.Content>
+              <div className="w-90">
+                <AboutVoting />
+              </div>
+            </Popover.Content>
           </Popover>
         </div>
         <div className="flex flex-col gap-4">
