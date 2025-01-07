@@ -4,8 +4,6 @@ export { BaseModal, ConfirmModal, StatusModal } from './Modals';
 
 export { Select, Combobox, MultiSelect, DropdownIconButton } from './Dropdowns';
 
-export { Popover, useParentScrollLock } from './Popovers';
-
 export {
   LargeTitleText,
   TitleText,

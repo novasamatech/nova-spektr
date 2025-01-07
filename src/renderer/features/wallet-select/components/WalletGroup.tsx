@@ -1,12 +1,10 @@
 import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { CaptionText, Icon, IconButton } from '@/shared/ui';
-import { Accordion } from '@/shared/ui-kit';
+import { CaptionText, FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { Accordion, Tooltip } from '@/shared/ui-kit';
 import { WalletCardMd, WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletSelectModel } from '../model/wallet-select-model';
-
-import { ProxiedTooltip } from './ProxiedTooltip';
 
 const {
   views: { WalletFiatBalance },
@@ -41,7 +39,21 @@ export const WalletGroup = ({ type, wallets, onInfoClick }: Props) => {
               {t(GROUP_LABELS[type as WalletFamily])}
             </CaptionText>
             <CaptionText className="font-semibold text-text-tertiary">{wallets.length}</CaptionText>
-            {walletUtils.isProxied(wallets[0]) && <ProxiedTooltip />}
+            {walletUtils.isProxied(wallets[0]) && (
+              <Tooltip sideOffset={3}>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={14} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <div className="m-[-5px] flex w-[360px] flex-col gap-y-4 border border-token-container-border bg-white p-4 shadow-card-shadow">
+                    <FootnoteText className="text-text-secondary">{t('proxy.tooltipPart1')}</FootnoteText>
+                    <FootnoteText className="text-text-secondary">{t('proxy.tooltipPart2')}</FootnoteText>
+                  </div>
+                </Tooltip.Content>
+              </Tooltip>
+            )}
           </div>
         </Accordion.Trigger>
         <Accordion.Content>
