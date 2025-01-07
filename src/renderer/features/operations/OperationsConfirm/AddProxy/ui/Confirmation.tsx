@@ -3,8 +3,9 @@ import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
@@ -88,8 +89,13 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
             <>
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('proxy.proxyDepositLabel')}</FootnoteText>
-              <Tooltip content={t('proxy.proxyDepositHint')} offsetPx={-60}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('proxy.proxyDepositHint')}</Tooltip.Content>
               </Tooltip>
             </>
           }

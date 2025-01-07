@@ -5,9 +5,9 @@ import { Trans } from 'react-i18next';
 import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, FootnoteText, Icon, IconButton, Tooltip } from '@/shared/ui';
+import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
-import { Box, Checkbox, Modal } from '@/shared/ui-kit';
+import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { allTracks, votingService } from '@/entities/governance';
 import { ContactItem, accountUtils, walletModel } from '@/entities/wallet';
@@ -146,17 +146,19 @@ export const YourDelegations = () => {
                   </FootnoteText>
                 </div>
                 <div className="w-[62px] px-3">
-                  <Tooltip
-                    content={[...activeTracks[address]]
-                      .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
-                      .join(', ')}
-                    pointer="up"
-                  >
-                    <div className="flex gap-1">
-                      <FootnoteText>{activeTracks[address].size || 0}</FootnoteText>
+                  <Tooltip side="bottom">
+                    <Tooltip.Trigger>
+                      <div className="flex gap-1">
+                        <FootnoteText>{activeTracks[address].size || 0}</FootnoteText>
 
-                      <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-                    </div>
+                        <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>
+                      {[...activeTracks[address]]
+                        .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
+                        .join(', ')}
+                    </Tooltip.Content>
                   </Tooltip>
                 </div>
                 <div className="w-11 items-center justify-center">

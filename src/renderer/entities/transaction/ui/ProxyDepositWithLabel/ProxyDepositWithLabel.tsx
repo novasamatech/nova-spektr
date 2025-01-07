@@ -2,7 +2,8 @@ import { type ComponentProps } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText, Icon, Tooltip } from '@/shared/ui';
+import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { ProxyDeposit } from '../ProxyDeposit/ProxyDeposit';
 
 type Props = ComponentProps<typeof ProxyDeposit> & {
@@ -18,8 +19,13 @@ export const ProxyDepositWithLabel = ({ wrapperClassName, ...depositProps }: Pro
         <>
           <Icon className="text-text-tertiary" name="lock" size={12} />
           <FootnoteText className="text-text-tertiary">{t('proxy.proxyDepositLabel')}</FootnoteText>
-          <Tooltip content={t('proxy.proxyDepositHint')} offsetPx={-60}>
-            <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div tabIndex={0}>
+                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+              </div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('proxy.proxyDepositHint')}</Tooltip.Content>
           </Tooltip>
         </>
       }
