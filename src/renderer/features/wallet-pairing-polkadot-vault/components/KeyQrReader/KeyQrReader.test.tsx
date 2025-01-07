@@ -1,18 +1,18 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { QrError, QrReader } from '@/entities/transaction';
 
 import KeyQrReader from './KeyQrReader';
-
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@/entities/transaction');
+vi.mock('@/entities/transaction');
 
-jest.mock('@/shared/ui', () => ({
+vi.mock('@/shared/ui', () => ({
   Button: ({ children }: any) => <button type="button">{children}</button>,
   Loader: () => '',
   Icon: () => '',

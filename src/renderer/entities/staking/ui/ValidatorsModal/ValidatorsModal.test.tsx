@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { type Asset } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 
 import { ValidatorsModal } from './ValidatorsModal';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

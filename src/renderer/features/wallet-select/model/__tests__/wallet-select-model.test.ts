@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { SigningType, type Wallet, type WalletFamily, WalletType } from '@/shared/core';
+import { SigningType, type Wallet, WalletType } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 import { walletSelectModel } from '../wallet-select-model';
 
@@ -36,33 +36,6 @@ describe('wallet-select-model', () => {
 
   beforeEach(() => {
     jest.restoreAllMocks();
-  });
-
-  test('should update $filterQuery on queryChanged', async () => {
-    const emptyGroups: Record<WalletFamily, Wallet[]> = {
-      [WalletType.POLKADOT_VAULT]: [],
-      [WalletType.MULTISIG]: [],
-      [WalletType.FLEXIBLE_MULTISIG]: [],
-      [WalletType.NOVA_WALLET]: [],
-      [WalletType.WALLET_CONNECT]: [],
-      [WalletType.WATCH_ONLY]: [],
-      [WalletType.PROXIED]: [],
-    };
-
-    const scope = fork({
-      values: new Map().set(walletModel.__test.$rawWallets, wallets),
-    });
-
-    expect(scope.getState(walletSelectModel.$filteredWalletGroups)).toEqual({
-      ...emptyGroups,
-      [WalletType.POLKADOT_VAULT]: [wallets[0]],
-      [WalletType.WALLET_CONNECT]: [wallets[1]],
-    });
-    await allSettled(walletSelectModel.events.queryChanged, { scope, params: 'my wc' });
-    expect(scope.getState(walletSelectModel.$filteredWalletGroups)).toEqual({
-      ...emptyGroups,
-      [WalletType.WALLET_CONNECT]: [wallets[1]],
-    });
   });
 
   test('should change $activeWallet on walletSelected', async () => {

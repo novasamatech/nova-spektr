@@ -2,8 +2,8 @@ const path = require('node:path');
 
 const { default: importResolve } = require('eslint-module-utils/resolve');
 
-const { isLiteral } = require('../astHelpers');
-const { getPackageName } = require('../utils');
+const { isLiteral } = require('../astHelpers.cjs');
+const { getPackageName } = require('../utils.cjs');
 
 /**
  * @type {import('eslint').Rule.RuleModule}

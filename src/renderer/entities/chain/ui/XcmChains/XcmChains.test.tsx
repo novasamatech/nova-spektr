@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { XcmChains } from './XcmChains';
 
-jest.mock('../ChainTitle/ChainTitle', () => ({
+vi.mock('../ChainTitle/ChainTitle', () => ({
   ChainTitle: ({ chainId }: any) => <span>{chainId}</span>,
 }));
 

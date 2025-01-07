@@ -1,8 +1,10 @@
+/// <reference types="vitest/config" />
+
 import { resolve } from 'node:path';
 
 import { type UserConfigFn } from 'vite';
 
-import { folders, renderer, title, version } from './config/index.mjs';
+import { folders, renderer, title, version } from './config';
 
 const config: UserConfigFn = async ({ mode }) => {
   const { defineConfig } = await import('vite');
@@ -20,17 +22,9 @@ const config: UserConfigFn = async ({ mode }) => {
   const isStage = mode === 'stage';
 
   const commonPlugins = [
+    tsconfigPaths(),
     nodePolyfills({
       include: ['buffer', 'events', 'crypto', 'stream'],
-    }),
-    tsconfigPaths(),
-    compression({
-      algorithm: 'gzip',
-      include: /.+/,
-      threshold: 0,
-      compressionOptions: {
-        level: 9,
-      },
     }),
   ];
 
@@ -41,8 +35,8 @@ const config: UserConfigFn = async ({ mode }) => {
       'process.env.PRODUCT_NAME': JSON.stringify(title),
       'process.env.VERSION': JSON.stringify(version),
       'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
-      'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE),
-      'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE),
+      'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
+      'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
     },
     worker: {
@@ -109,7 +103,21 @@ const config: UserConfigFn = async ({ mode }) => {
           },
         },
       ),
+
+      compression({
+        algorithm: 'gzip',
+        include: /.+/,
+        threshold: 0,
+        compressionOptions: {
+          level: 9,
+        },
+      }),
     ],
+    resolve: {
+      alias: {
+        '@polkadot/util': resolve('./node_modules/@polkadot/util/index.js'),
+      },
+    },
   });
 };
 

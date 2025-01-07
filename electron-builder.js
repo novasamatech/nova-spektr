@@ -7,7 +7,7 @@ const CURRENT_YEAR = new Date().getFullYear();
  *
  * @see https://www.electron.build/configuration/configuration
  */
-module.exports = {
+export default {
   appId: appId,
   productName: title,
   copyright: `Copyright © ${CURRENT_YEAR} — ${author.name}`,

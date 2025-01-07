@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import set from 'lodash/set';
+import { vi } from 'vitest';
 
 import {
   AccountType,
@@ -16,7 +17,7 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorker, state } from '../proxy-worker';
 
-jest.mock('@polkadot/rpc-provider', () => ({
+vi.mock('@polkadot/rpc-provider', () => ({
   ScProvider: function () {
     throw new Error('Some error');
   },

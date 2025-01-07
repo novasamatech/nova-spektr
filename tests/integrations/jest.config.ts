@@ -21,7 +21,6 @@ const swcConfig = {
   },
 };
 const config: Config = {
-  testEnvironment: 'jest-environment-jsdom',
   coverageReporters: ['json-summary', 'text', 'text-summary'],
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   setupFiles: ['<rootDir>/setup.integration.tests.ts'],
@@ -35,7 +34,7 @@ const config: Config = {
   },
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest', swcConfig],
-    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>../../scripts/fileTransform.js',
+    '^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)': '<rootDir>../../scripts/jestAssetsTransform.js',
     '^.+\\.mjs$': 'babel-jest',
   },
   transformIgnorePatterns: ['node_modules/(?!(dexie)/)'],

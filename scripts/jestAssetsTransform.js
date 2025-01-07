@@ -1,6 +1,6 @@
-const path = require('path');
+import path from 'path';
 
-const camelcase = require('camelcase');
+import camelcase from 'camelcase';
 
 /**
  * Custom Jest transformer turning file imports into filenames
@@ -8,7 +8,6 @@ const camelcase = require('camelcase');
  */
 function process(src, filename) {
   const assetFilename = JSON.stringify(path.basename(filename));
-
   if (!filename.match(/\.svg/)) {
     return {
       code: `module.exports = ${assetFilename};`,
@@ -38,4 +37,4 @@ function process(src, filename) {
   };
 }
 
-module.exports = { process };
+export default { process };

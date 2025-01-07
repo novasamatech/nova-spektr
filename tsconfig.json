@@ -30,7 +30,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "types": ["@testing-library/jest-dom"]
+    "types": ["@testing-library/jest-dom", "vitest/globals"]
   },
   "include": ["src", ".storybook", "tests", "globals.d.ts", "vite-env.d.ts", "./*.config*.ts"],
   "exclude": ["node_modules"]

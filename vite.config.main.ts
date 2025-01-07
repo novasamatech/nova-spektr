@@ -1,6 +1,6 @@
 import { type UserConfigFn } from 'vite';
 
-import { folders, title, version } from './config/index.mjs';
+import { folders, title, version } from './config';
 
 const config: UserConfigFn = async ({ mode }) => {
   const { defineConfig } = await import('vite');

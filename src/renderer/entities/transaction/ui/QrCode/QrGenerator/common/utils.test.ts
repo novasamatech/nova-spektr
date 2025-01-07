@@ -1,5 +1,4 @@
-import { stringToU8a, u8aToHex } from '@polkadot/util';
-import { u8aConcat } from '@polkadot/util/u8a/concat';
+import { stringToU8a, u8aConcat, u8aToHex } from '@polkadot/util';
 
 import { SigningType } from '@/shared/core';
 

@@ -1,12 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN_MILLION } from '@polkadot/util';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { DEFAULT_QR_LIFETIME } from '@/shared/lib/utils';
 import { useCountdown } from '../useCountdown';
 
-jest.mock('@/shared/lib/utils', () => ({
+vi.mock('@/shared/lib/utils', () => ({
   getExpectedBlockTime: jest.fn().mockReturnValue(BN_MILLION.muln(2)),
+  DEFAULT_QR_LIFETIME: 64,
 }));
 
 describe('hooks/useToggle', () => {

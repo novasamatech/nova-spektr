@@ -17,19 +17,17 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:import-x/recommended',
-    'plugin:import-x/errors',
-    'plugin:import-x/warnings',
-    'plugin:prettier/recommended',
-  ],
+  globals: {
+    vi: true,
+  },
+  extends: ['eslint:recommended', 'plugin:import-x/recommended', 'plugin:import-x/errors', 'plugin:import-x/warnings'],
   plugins: ['prettier', 'import-x', 'unused-imports'],
   parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2022,
   },
   rules: {
+    'prettier/prettier': 'error',
     'sort-imports': ['error', { ignoreDeclarationSort: true }],
     // For debugging purpose, too slow for every day usage
     // 'import-x/no-cycle': ['error', { maxDepth: Number.Infinity }],

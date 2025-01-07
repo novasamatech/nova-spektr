@@ -1,8 +1,6 @@
-#!/usr/bin/env node
-
 import { get } from 'lodash-es';
 
-import * as variables from './index.mjs';
+import * as variables from './index.js';
 
 const selectedVariable = process.argv.slice(2)[0];
 

@@ -6,7 +6,7 @@ const {
   isMemberExpression,
   isImportedFrom,
   getCalleeNameFromExpression,
-} = require('../astHelpers');
+} = require('../astHelpers.cjs');
 
 const IDENTIFIERS_SUFFIXES = {
   createSlot: 'Slot',

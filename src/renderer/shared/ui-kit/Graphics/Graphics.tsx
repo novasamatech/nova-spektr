@@ -21,7 +21,7 @@ export const Graphics = ({ name, size, alt, testId = 'Graphics' }: Props) => {
       alt={alt}
       width={size}
       height={size}
-      data-testid={testId}
+      data-testid={`${testId}:${name}`}
     />
   );
 };

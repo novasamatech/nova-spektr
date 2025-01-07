@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
 import { AccountType, type VaultBaseAccount } from '@/shared/core';
@@ -8,11 +9,11 @@ import { renameWalletModel } from '../rename-wallet-model';
 
 import { walletMock } from './mocks/wallet-mock';
 
-jest.mock('@walletconnect/utils', () => ({
+vi.mock('@walletconnect/utils', () => ({
   getSdkError: jest.fn(),
 }));
 
-jest.mock('@walletconnect/universal-provider', () => ({
+vi.mock('@walletconnect/universal-provider', () => ({
   Provider: {},
 }));
 
@@ -34,7 +35,7 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(renameWalletModel.$walletForm.$isValid)).toEqual(false);
   });
 
-  xtest('should updated wallet name after form submit', async () => {
+  test.skip('should updated wallet name after form submit', async () => {
     const newName = 'New wallet name';
     const updatedWallet = {
       ...walletMock.wallet1,

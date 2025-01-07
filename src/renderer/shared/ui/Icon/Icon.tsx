@@ -9,12 +9,13 @@ type Props = {
   name: IconNames;
   size?: number;
   className?: string;
+  testId?: string;
 };
 
 const LazyIcon = lazy(async () => {
   const icons = await import('./data').then((x) => x.default);
 
-  const InternalIcon = ({ name, size = 24, className, innerRef }: Props & { innerRef: Ref<SVGSVGElement> }) => {
+  const InternalIcon = ({ name, size = 24, className, innerRef, testId }: Props & { innerRef: Ref<SVGSVGElement> }) => {
     if (!name) {
       return null;
     }
@@ -24,7 +25,7 @@ const LazyIcon = lazy(async () => {
     if (!IconComponent) {
       console.warn(`Icon "${name}" doesn't exist`);
 
-      return <Shimmering circle width={size} height={size} />;
+      return <Shimmering circle width={size} height={size} testId={testId} />;
     }
 
     return (
@@ -43,14 +44,14 @@ const LazyIcon = lazy(async () => {
 });
 
 export const Icon = memo(
-  forwardRef<SVGSVGElement, Props>(({ name, size = 24, className }, ref) => {
+  forwardRef<SVGSVGElement, Props>(({ name, size = 24, className, testId = 'Icon' }, ref) => {
     if (!name) {
       return null;
     }
 
     return (
-      <Suspense fallback={<Shimmering circle width={size} height={size} />}>
-        <LazyIcon name={name} size={size} innerRef={ref} className={className} />
+      <Suspense fallback={<Shimmering circle width={size} height={size} testId={`${testId}:${name}`} />}>
+        <LazyIcon name={name} size={size} innerRef={ref} className={className} testId={`${testId}:${name}`} />
       </Suspense>
     );
   }),

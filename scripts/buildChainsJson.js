@@ -1,5 +1,5 @@
-const { writeFile } = require('fs/promises');
-const { resolve } = require('path');
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
 const CONFIG_PATH = 'src/renderer/shared/config/chains';

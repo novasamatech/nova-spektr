@@ -28,7 +28,7 @@ export const toAddress = (value: string, params?: { chunk?: number; prefix?: num
 
   let address = '';
   try {
-    address = encodeAddress(decodeAddress(value), prefixValue);
+    address = encodeAddress(value, prefixValue);
   } catch {
     address = value;
   }

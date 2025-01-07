@@ -19,11 +19,6 @@ import {
   wrongChainWallet,
 } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
-  getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
-}));
-
 describe('Create multisig wallet form-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
