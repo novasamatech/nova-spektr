@@ -1,13 +1,13 @@
 import { memo } from 'react';
 
-import { type Chain } from '@/shared/core';
+import { type Address as AddresssType, type Chain } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
 type Props = {
-  accountId: AccountId;
+  accountId: AccountId | AddresssType;
   title?: string;
   chain: Chain;
   variant?: 'truncate' | 'short';

@@ -1,5 +1,3 @@
-export { AddressWithExplorers } from './AddressWithExplorers/AddressWithExplorers';
-export { AddressWithName } from './AddressWithName/AddressWithName';
 export { AccountAddress, getAddress } from './AccountAddress/AccountAddress';
 export { WalletIcon } from './WalletIcon/WalletIcon';
 export { WalletCardSm } from './Cards/WalletCardSm';

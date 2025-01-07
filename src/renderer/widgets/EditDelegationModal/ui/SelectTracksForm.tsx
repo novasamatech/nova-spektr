@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Alert, Button, FootnoteText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
@@ -16,7 +17,7 @@ import {
   getTrackTitles,
   getTreasuryTrackDescription,
 } from '@/entities/governance';
-import { AccountAddress, AddressWithName, ExplorersPopover, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { editDelegationModel } from '../model/edit-delegation-model';
@@ -283,11 +284,11 @@ const AccountsSelector = () => {
               id: account.id.toString(),
               value: account,
               element: (
-                <AccountAddress
-                  size={20}
-                  type="short"
+                <Address
                   address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
+                  variant="short"
                   canCopy={false}
+                  showIcon
                 />
               ),
               additionalElement: (
@@ -302,17 +303,7 @@ const AccountsSelector = () => {
       return {
         id: shards.id.toString(),
         value: shards,
-        element: (
-          <AddressWithName
-            size={20}
-            symbols={16}
-            address={address}
-            name={shards.name}
-            nameFont="text-text-secondary"
-            type="short"
-            canCopy={false}
-          />
-        ),
+        element: <Address title={shards.name} address={address} variant="short" canCopy={false} showIcon />,
         additionalElement: <AccountInfo account={shards} chain={chain} balance={accountsBalances[shards.accountId]} />,
       };
     }) || [];
@@ -349,12 +340,7 @@ type AccountProps = {
 const AccountInfo = ({ account, chain, balance }: AccountProps) => (
   <div className="flex w-full items-center text-center">
     <div className="w-8">
-      <ExplorersPopover
-        button={<IconButton name="details" />}
-        address={account.accountId}
-        explorers={chain.explorers}
-        addressPrefix={chain.addressPrefix}
-      />
+      <AccountExplorers accountId={account.accountId} chain={chain} />
     </div>
     <AssetBalance
       value={balance}
