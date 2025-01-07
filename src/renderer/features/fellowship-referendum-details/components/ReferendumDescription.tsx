@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText, HeaderTitleText, Icon, Markdown } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { FootnoteText, HeaderTitleText, Markdown } from '@/shared/ui';
+import { Box, Graphics, Skeleton } from '@/shared/ui-kit';
 import { referendumDetailsModel } from '../model/details';
 
 import { ProposerName } from './ProposerName';
@@ -31,7 +31,7 @@ export const ReferendumDescription = () => {
       )}
       {empty && (
         <Box gap={2} horizontalAlign="center">
-          <Icon name="emptyList" size={64} />
+          <Graphics name="emptyList" size={64} />
           <FootnoteText>{t('fellowship.details.noDetails')}</FootnoteText>
         </Box>
       )}

@@ -11,6 +11,9 @@ const config: UserConfigFnPromise = async (options) => {
     test: {
       coverage: {
         provider: 'v8',
+        ignoreEmptyLines: true,
+        reporter: 'text-lcov',
+        reportsDirectory: resolve('./.coverage'),
         thresholds: {
           branches: 25,
           functions: 47,
@@ -18,7 +21,6 @@ const config: UserConfigFnPromise = async (options) => {
           statements: 50,
         },
       },
-      reporters: ['default'],
       root: folders.rendererRoot,
       globals: true,
       environment: 'happy-dom',

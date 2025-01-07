@@ -12,7 +12,6 @@ const Template: StoryFn<typeof Icon> = (args) => <Icon {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {
-  as: 'img',
   size: 40,
   name: 'settings',
 };
