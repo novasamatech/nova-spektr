@@ -29,8 +29,9 @@ const config: UserConfigFn = async ({ mode }) => {
   ];
 
   return defineConfig({
-    mode,
+    mode: isStage ? 'production' : mode,
     root: resolve(folders.rendererRoot, 'app'),
+    base: '/',
     define: {
       'process.env.PRODUCT_NAME': JSON.stringify(title),
       'process.env.VERSION': JSON.stringify(version),
@@ -107,17 +108,13 @@ const config: UserConfigFn = async ({ mode }) => {
       compression({
         algorithm: 'gzip',
         include: /.+/,
+        skipIfLargerOrEqual: true,
         threshold: 0,
         compressionOptions: {
           level: 9,
         },
       }),
     ],
-    resolve: {
-      alias: {
-        '@polkadot/util': resolve('./node_modules/@polkadot/util/index.js'),
-      },
-    },
   });
 };
 

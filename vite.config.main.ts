@@ -21,7 +21,7 @@ const config: UserConfigFn = async ({ mode }) => {
       emptyOutDir: false,
       lib: {
         entry: folders.entrypoint.main,
-        fileName: 'main',
+        fileName: () => 'main.cjs',
         formats: ['cjs'],
       },
       rollupOptions: {

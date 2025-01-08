@@ -20,7 +20,7 @@ const config: UserConfigFn = async ({ mode }) => {
       emptyOutDir: false,
       lib: {
         entry: folders.entrypoint.bridge,
-        fileName: 'preload',
+        fileName: () => 'preload.cjs',
         formats: ['cjs'],
       },
       rollupOptions: {

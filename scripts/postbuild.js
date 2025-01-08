@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { folders } from '../config';
+import { folders } from '../config/index.js';
 
 const packageJSON = JSON.parse(readFileSync('./package.json', { encoding: 'utf-8' }));
 

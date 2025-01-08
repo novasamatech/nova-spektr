@@ -17,9 +17,6 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  globals: {
-    vi: true,
-  },
   extends: ['eslint:recommended', 'plugin:import-x/recommended', 'plugin:import-x/errors', 'plugin:import-x/warnings'],
   plugins: ['prettier', 'import-x', 'unused-imports'],
   parserOptions: {
@@ -58,6 +55,7 @@ module.exports = {
       },
     ],
 
+    'no-unused-vars': 'off',
     'unused-imports/no-unused-imports': 'error',
     'unused-imports/no-unused-vars': [
       'error',
@@ -71,7 +69,6 @@ module.exports = {
 
     'no-irregular-whitespace': 'off',
     'newline-before-return': 'error',
-    'prettier/prettier': 'error',
 
     'no-restricted-properties': [
       'error',
@@ -102,14 +99,15 @@ module.exports = {
       },
     },
     {
-      files: ['*.test.ts', '*.test.tsx', 'jest*.js'],
-      plugins: ['jest-dom'],
-      extends: ['plugin:jest-dom/recommended'],
+      files: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx'],
       rules: {
         'no-restricted-properties': 'off',
       },
       env: {
         jest: true,
+      },
+      globals: {
+        vi: true,
       },
     },
     {

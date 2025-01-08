@@ -41,7 +41,7 @@ const config: UserConfigFnPromise = async (options) => {
 
       reporters: ['basic', 'junit'],
       outputFile: {
-        junit: './junit.xml',
+        junit: resolve(folders.root, './junit.xml'),
       },
       sequence: {
         sequencer: Seqencer,
