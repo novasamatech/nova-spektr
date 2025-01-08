@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
@@ -12,6 +13,7 @@ import { PairingFormModal } from './components/PairingFormModal';
 
 export const walletPairingPolkadotVaultFeature = createFeature({
   name: 'wallet pairing/polkadot vault',
+  enable: $features.map(f => f.polkadotVault),
 });
 
 walletPairingPolkadotVaultFeature.inject(onboardingActionsSlot, {

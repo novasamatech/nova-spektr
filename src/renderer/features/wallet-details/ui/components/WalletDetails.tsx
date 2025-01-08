@@ -21,7 +21,6 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
 
   const multiShardAccounts = useUnit(walletDetailsModel.$multiShardAccounts);
-  const vaultAccounts = useUnit(walletDetailsModel.$vaultAccounts);
   const signatories = useUnit(walletDetailsModel.$signatories);
   const proxyWallet = useUnit(walletDetailsModel.$proxyWallet);
 
@@ -54,15 +53,8 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return <WalletConnectDetails wallet={wallet} onClose={onClose} />;
   }
 
-  if (walletUtils.isPolkadotVault(wallet) && vaultAccounts) {
-    return (
-      <VaultWalletDetails
-        wallet={wallet}
-        root={vaultAccounts.root}
-        accountsMap={vaultAccounts.accountsMap}
-        onClose={onClose}
-      />
-    );
+  if (walletUtils.isPolkadotVault(wallet)) {
+    return <VaultWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isProxied(wallet) && proxyWallet) {

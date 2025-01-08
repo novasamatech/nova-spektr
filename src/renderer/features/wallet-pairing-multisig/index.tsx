@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
 import { Dropdown } from '@/shared/ui-kit';
@@ -13,6 +14,7 @@ import { SelectMultisigWalletType } from './components/SelectMultisigWalletType'
 
 export const walletPairingMultisigFeature = createFeature({
   name: 'wallet pairing/multisig',
+  enable: $features.map(f => f.multisig),
 });
 
 walletPairingMultisigFeature.inject(walletPairingDropdownOptionsSlot, {

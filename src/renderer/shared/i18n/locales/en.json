@@ -1701,7 +1701,8 @@
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "shardsTitle": "Shards"
+      "shardsTitle": "Shards",
+      "noAccounts": "No actual accounts data"
     },
     "walletConnect": {
       "abortRejectButton": "Close",

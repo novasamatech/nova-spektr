@@ -34,7 +34,7 @@ export const combineIdentifiers = <HandlerBody>(
   });
 
   return {
-    type: types[0] ?? 'unknownType',
+    type: types.at(0) ?? 'unknownType',
     name: `combined(${names.join(', ')})`,
     $handlers,
     registerHandler,

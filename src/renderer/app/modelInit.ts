@@ -28,6 +28,7 @@ import { walletPairingMultisigFeature } from '@/features/wallet-pairing-multisig
 import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-polkadot-vault';
 import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
 import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
+import { walletPolkadotVaultFeature } from '@/features/wallet-polkadot-vault';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
@@ -66,6 +67,7 @@ export const initModel = () => {
     walletPairingLedgerFeature,
 
     walletDetailsFeature,
+    walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
   ]);
@@ -78,6 +80,7 @@ export const initModel = () => {
   walletPairingLedgerFeature.start();
   importDBFeature.start();
 
+  walletPolkadotVaultFeature.start();
   walletWalletConnectFeature.start();
   walletWatchOnlyFeature.start();
 

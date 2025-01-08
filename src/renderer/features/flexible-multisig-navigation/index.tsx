@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { and } from 'patronum';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/effector';
@@ -13,17 +14,21 @@ import { navigationModel } from '@/features/navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 
-const isNavFeaturesReady =
-  stakingNavigationFeature.isRunning &&
-  operationsNavigationFeature.isRunning &&
-  contactsNavigationFeature.isRunning &&
-  governanceNavigationFeature.isRunning &&
-  assetsNavigationFeature.isRunning &&
-  fellowshipNavigationFeature.isRunning;
+const isNavFeaturesReady = and(
+  stakingNavigationFeature.isRunning,
+  operationsNavigationFeature.isRunning,
+  contactsNavigationFeature.isRunning,
+  governanceNavigationFeature.isRunning,
+  assetsNavigationFeature.isRunning,
+  fellowshipNavigationFeature.isRunning,
+);
 
 export const flexibleMultisigNavigationFeature = createFeature({
   name: 'flexible/navigation',
-  enable: $features.map(({ flexible }) => flexible) && isNavFeaturesReady,
+  enable: and(
+    isNavFeaturesReady,
+    $features.map(({ flexibleMultisig }) => flexibleMultisig),
+  ),
 });
 
 flexibleMultisigNavigationFeature.inject(navigationTopLinksPipeline, (items) => {

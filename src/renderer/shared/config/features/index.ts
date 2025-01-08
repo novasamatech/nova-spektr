@@ -18,7 +18,13 @@ export const $features = createStore({
   contacts: true,
   notifications: true,
   settings: true,
-  flexible: true,
+
+  multisig: true,
+  flexibleMultisig: true,
+  polkadotVault: true,
+  walletConnect: true,
+  watchOnly: true,
+  ledger: true,
 });
 
 persist({

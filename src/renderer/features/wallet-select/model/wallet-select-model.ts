@@ -35,6 +35,10 @@ const $filteredWalletGroups = combine(
     // @ts-expect-error can't delete in terms on types
     delete groups[WalletType.WATCH_ONLY];
 
+    // Implementation moved to `@/features/wallet-polkadot-vault`
+    // @ts-expect-error can't delete in terms on types
+    delete groups[WalletType.POLKADOT_VAULT];
+
     // Implementation moved to `@/features/wallet-wallet-connect`
     // @ts-expect-error can't delete in terms on types
     delete groups[WalletType.NOVA_WALLET];

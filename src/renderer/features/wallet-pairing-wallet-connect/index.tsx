@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
@@ -17,6 +18,7 @@ export { WalletConnectQrCode } from './components/WalletConnectQrCode';
 
 export const walletPairingWalletConnectFeature = createFeature({
   name: 'wallet pairing/wallet connect',
+  enable: $features.map(f => f.walletConnect),
 });
 
 walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {

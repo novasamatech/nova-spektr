@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
@@ -12,6 +13,7 @@ export { walletActionsSlot };
 
 export const walletWalletConnectFeature = createFeature({
   name: 'wallet/wallet connect',
+  enable: $features.map(f => f.walletConnect),
 });
 
 walletWalletConnectFeature.inject(walletGroupSlot, ({ query, onSelect }) => {

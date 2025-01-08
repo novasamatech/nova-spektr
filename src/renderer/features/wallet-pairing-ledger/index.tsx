@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
 import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
@@ -11,6 +12,7 @@ import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 export const walletPairingLedgerFeature = createFeature({
   name: 'wallet pairing/ledger',
+  enable: $features.map(f => f.multisig),
 });
 
 walletPairingLedgerFeature.inject(onboardingActionsSlot, {
