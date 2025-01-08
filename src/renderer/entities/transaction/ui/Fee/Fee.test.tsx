@@ -1,28 +1,29 @@
 import { type ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
+import { vi } from 'vitest';
 
 import { type Asset, type Transaction } from '@/shared/core';
 
 import { Fee } from './Fee';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('../FeeLoader/FeeLoader', () => ({
+vi.mock('../FeeLoader/FeeLoader', () => ({
   FeeLoader: ({ fiatFlag }: any) => <div>{fiatFlag ? 'fiat' : 'crypto'}</div>,
 }));
 
-jest.mock('../../lib', () => ({
+vi.mock('../../lib', () => ({
   transactionService: {
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   },
 }));
 
-jest.mock('@/entities/asset', () => ({
+vi.mock('@/entities/asset', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 

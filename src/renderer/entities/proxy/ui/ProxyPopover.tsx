@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, Icon, LabelHelpBox, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, IconButton, LabelHelpBox, SmallTitleText } from '@/shared/ui';
 import { Popover } from '@/shared/ui-kit';
 
 // const WIKI_LINK = '';
@@ -16,11 +16,11 @@ export const ProxyPopover = ({ children }: PropsWithChildren) => {
   return (
     <Popover>
       <Popover.Trigger>
-        <div>
+        <div className="h-4">
           {children ? (
             <LabelHelpBox className="mb-6 mt-4">{children}</LabelHelpBox>
           ) : (
-            <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
+            <IconButton name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={16} />
           )}
         </div>
       </Popover.Trigger>

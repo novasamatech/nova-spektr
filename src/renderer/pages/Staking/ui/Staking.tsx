@@ -26,7 +26,7 @@ import {
 } from '@/entities/staking';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletDetailsFeature } from '@/features/wallet-details';
+import { WalletDetails } from '@/features/wallet-details';
 import * as Operations from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -36,10 +36,6 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
-
-const {
-  views: { WalletDetails },
-} = walletDetailsFeature;
 
 export const Staking = () => {
   const { t } = useI18n();

@@ -14,7 +14,7 @@ function init() {
   if (!isElectron()) return;
 
   log.variables.version = process.env.VERSION;
-  log.variables.env = process.env.NODE_ENV;
+  log.variables.env = import.meta.env.MODE;
   log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
   log.transports.console.useStyles = true;
 

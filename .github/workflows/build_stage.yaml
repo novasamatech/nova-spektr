@@ -108,7 +108,7 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          pnpm stage:sequence
+          pnpm staging:sequence
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -185,5 +185,5 @@ jobs:
               - <b>Linux:</b> ${{ steps.interact_with_storage.outputs.linux_app }}
               - <b>MacOS:</b> ${{ steps.interact_with_storage.outputs.macos_app }}
               - <b>MacOS_arm:</b> ${{ steps.interact_with_storage.outputs.macos_64_app }}
-              
+
               <b>Stage web:</b> https://spektr-stg.novasama-tech.org/

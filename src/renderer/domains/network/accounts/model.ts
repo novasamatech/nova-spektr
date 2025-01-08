@@ -26,8 +26,10 @@ const updateAccountFx = createEffect(async (account: AnyAccountDraft | null): Pr
   if (nullable(account)) return false;
 
   const id = accountsService.uniqId(account);
+  const record = { ...account };
+  delete record['id'];
 
-  return storageService.accounts2.update(id, account).then(nonNullable);
+  return storageService.accounts2.update(id, record).then(nonNullable);
 });
 
 const updateAccount = attach({

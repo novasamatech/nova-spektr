@@ -1,6 +1,5 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
-import { isEmpty } from 'lodash';
 
 import { type ChainId, type Contact, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { dictionary, nullable } from '@/shared/lib/utils';
@@ -8,7 +7,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletDetailsUtils } from '../lib/utils';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -28,17 +27,6 @@ const $canCreateProxy = $wallet.map(wallet => {
   const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
 
   return canCreateAnyProxy || canCreateNonAnyProxy;
-});
-
-const $vaultAccounts = $wallet.map(wallet => {
-  if (!wallet || !walletUtils.isPolkadotVault(wallet)) return null;
-
-  const root = accountUtils.getBaseAccount(wallet.accounts);
-  const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
-
-  if (!root || isEmpty(accountsMap)) return null;
-
-  return { root, accountsMap };
 });
 
 const $multisigAccount = $wallet.map(wallet => {
@@ -129,21 +117,6 @@ const $walletProxyGroups = combine(
   },
 );
 
-const $proxyWallet = combine(
-  {
-    wallet: $wallet,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallet, wallets }): Wallet | null => {
-    if (!wallet || !walletUtils.isProxied(wallet)) return null;
-
-    return walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: w => !walletUtils.isWatchOnly(w),
-      accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
-    });
-  },
-);
-
 const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
@@ -151,13 +124,11 @@ const $hasProxies = combine($chainsProxies, chainsProxies => {
 export const walletDetailsModel = {
   flow,
 
-  $vaultAccounts,
   $multiShardAccounts,
   $signatories,
 
   $chainsProxies,
   $walletProxyGroups,
-  $proxyWallet,
   $hasProxies,
   $canCreateProxy,
 };

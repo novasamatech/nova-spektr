@@ -25,7 +25,7 @@ import { delegateRegistryAggregate, networkSelectorModel, tracksAggregate } from
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { delegateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { delegateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/Delegate';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';

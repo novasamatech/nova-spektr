@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { type ProxiedWallet, type ProxyType, type Wallet } from '@/shared/core';
+import { type ProxiedWallet, type ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
@@ -10,7 +10,7 @@ import { type TabItem } from '@/shared/ui/types';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { WalletCardLg, WalletIcon, permissionUtils } from '@/entities/wallet';
+import { WalletCardLg, WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
@@ -40,19 +40,30 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
 
 type Props = {
   wallet: ProxiedWallet;
-  proxyWallet: Wallet;
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+
+  if (!wallet || !walletUtils.isProxied(wallet)) return null;
+
+  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: w => !walletUtils.isWatchOnly(w),
+    accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
+  });
+
+  if (!proxyWallet) {
+    return null;
+  }
 
   const options = [
     {

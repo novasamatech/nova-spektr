@@ -123,7 +123,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
                 target="_blank"
                 className="px-1.5 py-1"
               >
-                <Icon size={16} as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
+                <Icon size={16} name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} />
               </a>
             </li>
           ))}

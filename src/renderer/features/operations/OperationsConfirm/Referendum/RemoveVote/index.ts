@@ -1,2 +1,2 @@
-export { confirmModel as removeVoteConfirmModel } from './model/confirm-model';
+export { confirmModel as removeVoteConfirmModel, type RemoveVoteConfirm } from './model/confirm-model';
 export { Confirmation as RemoveVoteConfirmation } from './ui/Confirmation';

@@ -1,22 +1,24 @@
-import * as RadixAccordion from '@radix-ui/react-accordion';
-import { type PropsWithChildren, createContext, useContext, useId, useMemo, useState } from 'react';
+import './Accordion.css';
 
+import * as RadixAccordion from '@radix-ui/react-accordion';
+import { type PropsWithChildren, createContext, useContext, useId, useMemo } from 'react';
+
+import { useExternalState } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-
-import './Accordion.css';
 
 const Context = createContext<{ open: boolean }>({ open: false });
 
 type RootProps = PropsWithChildren<{
   initialOpen?: boolean;
+  open?: boolean;
+  onToggle?: (open: boolean) => unknown;
 }>;
 
-const Root = ({ initialOpen = false, children }: RootProps) => {
+const Root = ({ initialOpen = false, open: externalOpen, onToggle, children }: RootProps) => {
   const id = useId();
-  const [open, setOpen] = useState(initialOpen);
-
-  const ctx = useMemo(() => ({ open }), [open]);
+  const [open, setOpen] = useExternalState(initialOpen || externalOpen, onToggle);
+  const ctx = useMemo(() => ({ open: open ?? false }), [open]);
 
   return (
     <Context.Provider value={ctx}>
@@ -50,7 +52,7 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
             sticky && 'bg-background-default',
           )}
         >
-          <div className="flex min-w-0 grow gap-2 truncate text-start">{children}</div>
+          <div className="flex min-w-0 grow items-center gap-2 truncate text-start">{children}</div>
           <Icon
             className="shrink-0 text-icon-default transition-colors duration-100 group-hover:text-icon-hover"
             name={open ? 'up' : 'down'}

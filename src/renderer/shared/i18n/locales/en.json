@@ -1701,7 +1701,8 @@
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "shardsTitle": "Shards"
+      "shardsTitle": "Shards",
+      "noAccounts": "No actual accounts data"
     },
     "walletConnect": {
       "abortRejectButton": "Close",
@@ -1739,7 +1740,8 @@
     "shards": "Shards",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only"
+    "watchOnlyLabel": "Watch-only",
+    "emptyList": "Wallets not found"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

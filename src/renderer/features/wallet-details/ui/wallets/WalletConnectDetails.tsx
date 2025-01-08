@@ -132,36 +132,34 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         <Modal.Title close action={ActionButton}>
           {t('walletDetails.common.title')}
         </Modal.Title>
-        <Modal.Content disableScroll>
-          <div className="flex h-full w-full flex-col gap-y-4">
-            <div className="border-b border-divider px-5 py-6">
-              <WalletCardLg full wallet={wallet} />
-            </div>
-            <div className="flex min-h-0 flex-1 shrink-0 flex-col">
-              <Tabs value={tab} onChange={changeTab}>
-                <div className="px-5">
-                  <Tabs.List>
-                    <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
-                    <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
-                  </Tabs.List>
-                </div>
-                <Tabs.Content value="accounts">
-                  <WalletConnectAccounts wallet={wallet} />
-                </Tabs.Content>
-                <Tabs.Content value="proxies">
-                  {hasProxies ? (
-                    <ProxiesList className="h-[379px]" wallet={wallet} canCreateProxy={canCreateProxy} />
-                  ) : (
-                    <NoProxiesAction
-                      className="h-[379px]"
-                      canCreateProxy={canCreateProxy}
-                      onAddProxy={addProxy.events.flowStarted}
-                    />
-                  )}
-                </Tabs.Content>
-              </Tabs>
-            </div>
+        <Modal.HeaderContent>
+          <div className="mb-5 border-b border-divider px-5 py-6">
+            <WalletCardLg full wallet={wallet} />
           </div>
+        </Modal.HeaderContent>
+        <Modal.Content disableScroll>
+          <Tabs value={tab} onChange={changeTab}>
+            <div className="px-5">
+              <Tabs.List>
+                <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
+                <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </div>
+            <Tabs.Content value="accounts">
+              <WalletConnectAccounts wallet={wallet} />
+            </Tabs.Content>
+            <Tabs.Content value="proxies">
+              {hasProxies ? (
+                <ProxiesList className="h-[379px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+              ) : (
+                <NoProxiesAction
+                  className="h-[379px]"
+                  canCreateProxy={canCreateProxy}
+                  onAddProxy={addProxy.events.flowStarted}
+                />
+              )}
+            </Tabs.Content>
+          </Tabs>
         </Modal.Content>
       </Modal>
 

@@ -22,16 +22,6 @@ const callbacksApi = createApi($callbacks, {
 
 const $filterQuery = restore(queryChanged, '');
 
-const $filteredWalletGroups = combine(
-  {
-    query: $filterQuery,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallets, query }) => {
-    return walletSelectService.getWalletByGroups(wallets, query);
-  },
-);
-
 const $walletBalance = combine(
   {
     wallet: walletModel.$activeWallet,
@@ -120,7 +110,6 @@ sample({
 
 export const walletSelectModel = {
   $filterQuery,
-  $filteredWalletGroups,
   $walletBalance,
 
   events: {

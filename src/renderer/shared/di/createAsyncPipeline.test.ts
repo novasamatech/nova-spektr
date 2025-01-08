@@ -7,7 +7,7 @@ describe('createAsyncPipeline', () => {
     const asyncPipeline = createAsyncPipeline<string[]>();
 
     asyncPipeline.registerHandler({
-      body: (v) => setTimeout(100).then(() => [...v, '1']),
+      body: (v) => setTimeout(0).then(() => [...v, '1']),
       available: () => true,
     });
     asyncPipeline.registerHandler({

@@ -1,4 +1,4 @@
-import { type Encoder } from 'raptorq';
+import { type Encoder } from 'raptorq/raptorq';
 
 import { DEFAULT_FRAME_DELAY } from './common/constants';
 import useGenerator from './common/useGenerator';

@@ -96,7 +96,7 @@ export const extrinsicTests = [
     callData: '0x0600070010a5d4e80308eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
   },
   {
-    testName: '',
+    testName: 'should create extrinsic for payee and get call data',
     args: { payee: { Account: TEST_ACCOUNTS[0] } },
     transactionType: TransactionType.DESTINATION,
     callData: '0x06070308eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',

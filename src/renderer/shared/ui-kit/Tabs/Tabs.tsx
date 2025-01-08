@@ -25,7 +25,11 @@ const Root = ({ value, onChange, children }: RootProps) => {
 };
 
 const List = ({ children }: PropsWithChildren) => {
-  return <RadixTabs.List className="mb-2 flex gap-x-1 rounded-md bg-tab-background p-0.5">{children}</RadixTabs.List>;
+  return (
+    <RadixTabs.List className="mb-2 flex shrink-0 gap-x-1 rounded-md bg-tab-background p-0.5">
+      {children}
+    </RadixTabs.List>
+  );
 };
 
 type TriggerProps = PropsWithChildren<{

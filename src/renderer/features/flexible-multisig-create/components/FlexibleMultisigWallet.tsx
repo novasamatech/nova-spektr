@@ -1,6 +1,6 @@
 import { useForm } from 'effector-forms';
 import { useGate, useUnit } from 'effector-react';
-import { type ComponentProps } from 'react';
+import { type ComponentProps, type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep } from '@/shared/lib/utils';
@@ -25,12 +25,13 @@ const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'he
   [Step.SUBMIT]: { size: 'md', height: 'fit' },
 };
 
-type Props = {
-  onClose: () => void;
+type Props = PropsWithChildren<{
+  isOpen: boolean;
+  onToggle: (open: boolean) => void;
   onGoBack: () => void;
-};
+}>;
 
-export const FlexibleMultisigWallet = ({ onClose, onGoBack }: Props) => {
+export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) => {
   const { t } = useI18n();
   useGate(flexibleMultisigFeature.gate);
 
@@ -40,7 +41,7 @@ export const FlexibleMultisigWallet = ({ onClose, onGoBack }: Props) => {
   } = useForm(formModel.$createMultisigForm);
 
   if (isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen onClose={onClose} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => onToggle(false)} />;
   }
 
   const modalTitle = (
@@ -62,7 +63,13 @@ export const FlexibleMultisigWallet = ({ onClose, onGoBack }: Props) => {
   );
 
   return (
-    <Modal isOpen size={MODAL_SIZE[activeStep].size} height={MODAL_SIZE[activeStep].height} onToggle={onClose}>
+    <Modal
+      isOpen={isOpen}
+      size={MODAL_SIZE[activeStep].size}
+      height={MODAL_SIZE[activeStep].height}
+      onToggle={onToggle}
+    >
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{modalTitle}</Modal.Title>
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}

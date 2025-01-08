@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
-import init, { Encoder } from 'raptorq';
+import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
 
 import { type Address, type ChainId, type Wallet } from '@/shared/core';

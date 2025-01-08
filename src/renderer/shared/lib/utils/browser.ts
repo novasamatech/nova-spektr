@@ -6,7 +6,7 @@
  */
 export const getOperatingSystem = (): string => {
   // @ts-expect-error userAgentData is not defined
-  const platform = window.navigator.userAgentData?.platform;
+  const platform = navigator.userAgentData?.platform;
 
   if (platform) return platform;
 
@@ -29,5 +29,5 @@ export const isElectron = () => {
 };
 
 export const isDev = () => {
-  return process.env.NODE_ENV === 'development';
+  return import.meta.env.MODE === 'development';
 };

@@ -22,11 +22,8 @@
   - [Changelog](#changelog)
 - [Development](#development)
   - [Requirements](#requirements)
-  - [Install dependencies](#install-dependencies)
-  - [Start in production mode](#start-in-production-mode)
-  - [Start in development mode](#start-in-development-mode)
+  - [Commands](#commands)
   - [Project localisation](#project-localisation)
-- [Production build](#production-build)
 - [Contributing](#contributing)
 - [Support](#support)
 <!-- /TOC -->
@@ -48,121 +45,134 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 
 ## Changelog
 
-Detailed changelog with releases description is located in the [changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md)
+Detailed changelog with releases description is located in the
+[changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md).
 
 # Development
 
 ## Requirements
 
-Minimum version of `Node.js` is `v18.x`.
+Minimum version of `Node.js` is `v20.x`.
 
-Minimum version of `pnpm` is `v8.x`.
+Minimum version of `pnpm` is `v9.x`.
 
-## Install dependencies
+## Commands
 
-To install all dependencies:
-
-```bash
+```sh
+# Setup dev environment.
 pnpm install
 ```
-Husky hooks will be installed automatically after installing project dependencies:
 
-```bash
-"prepare": "husky install"
+```sh
+# Start Electron and prebuild app in staging mode. You can also access app with browser.
+pnpm preview
 ```
-**P.S. don't update pre-commit file to `npm githook:pre-commit`**
 
-## Start in production mode
-The `production` run configuration is the same as [production build](#production-build) except that the application won't be
-installed in the operating system and source code hot-reload will be used.
+```sh
+# Start Electron app in dev mode. You can also access app with browser.
+pnpm start
+```
+
+```sh
+# Start renderer without Electron (not recommended).
+pnpm start:renderer
+```
+
+```sh
+# Run unit tests for renderer.
+pnpm test
+```
+
+```sh
+# Run linter.
+pnpm lint
+```
+
+```sh
+# Run typescript typechecker.
+pnpm types
+```
+
+```sh
+# Build app in staging mode.
+pnpm staging:sequence
+```
+
+```sh
+# Build app in production mode.
+pnpm prod:sequence
+```
+
+## Difference between environments
+
+Development configuration uses:
+
+1. [`chains_dev.json`](/src/renderer/shared/config/chains/chains_dev.json) file that contains testnets in order to debug
+   and test new features
+2. debug tools are enabled by default
+3. error handling is turned off in order to pay developer's attention to errors
+
+Stage configuration uses:
+
+1. [`chains.json`](/src/renderer/shared/config/chains/chains.json) file for chains configuration
+2. debug tools are enabled by default
+3. errors are handled in a smooth way in order not to interrupt the user
+
 
 Production configuration uses:
+
 1. [`chains.json`](/src/renderer/shared/config/chains/chains.json) file for chains configuration
 2. debug tools are disabled by default
 3. errors are handled in a smooth way in order not to interrupt the user
 
-Use the following instructions in order to start application in the `production` environment with hot-reload:
-
-Electron (desktop) environment - recommended:
-```bash
-pnpm start
-```
-Web (browser) environment - not recommended:
-```bash
-pnpm start:renderer
-```
-
-## Start in development mode
-The `dev` run configuration **shouldn't be** used for production. This configuration is only for developing new features and
-debugging errors.
-
-Development configuration uses:
-1. [`chains_dev.json`](/src/renderer/shared/config/chains/chains_dev.json) file that contains testnets in order to debug and test new features
-2. debug tools are enabled by default
-3. error handling is turned off in order to pay developer's attention to errors
-
-Use the following instructions in order to start application in the `dev` environment with hot-reload:
-
-Electron (desktop) environment - recommended:
-```bash
-pnpm start:dev
-```
-Web (browser) environment - not recommended:
-```bash
-pnpm start:renderer:dev
-```
-
 ## Project localisation
 
-All the localisation files are stored in the `/src/shared/locale` folder.
+All the localisation files are stored in the `/src/shared/i18n/locales` folder.
 
 ESlint checks if localisation files are well-formed and valid including:
+
 1. Valid json formatting
 2. Json files contain the same set of keys
 3. Each key contains the same amount of placeholders for all locales
 4. All `tsx` files are translated
 
-### How to run localisation check
-1. `pnpm lint:i18n-locale` checks if localization files are well-formed and valid
-2. `pnpm lint:i18n-fix` fixes the keys sorting order
-3. `pnpm lint:i18n-tsx` checks if `tsx` files are translated
-
 ### How to ignore localisation errors
+
 In some cases there is no need to translate the text, so ESlint ignore rules should be used.
+
 ```tsx
 <span className="font-bold">
   {/* eslint-disable-next-line i18next/no-literal-string */}
   {data?.asset.symbol} ({data?.asset.name})
 </span>
 ```
+
 or
-```typescript
+
+```ts
 //eslint-disable-next-line i18next/no-literal-string
 const qrCodePayload = `substrate:${address}:${wallet.accountId}`;
 ```
 
-# Production build
-
-To package application for the local platform:
-
-```bash
-pnpm build
-pnpm postbuild
-pnpm dist
-```
 ## Troubleshooting
+
 Log files help to solve your problem. Logs are collected in the `nova-spektr.log` that is located in the folder:
-1. macOS `~/Library/Logs/nova-spektr/nova-spektr.log` 
+
+1. macOS `~/Library/Logs/nova-spektr/nova-spektr.log`
 2. Windows `%USERPROFILE%\AppData\Roaming\nova-spektr\logs\nova-spektr.log`
 3. Linux `~/.config/nova-spektr/logs/nova-spektr.log`
 
 Sharing logs when you're contacting the support will speed up the problem fix.
 
 # Contributing
-Contributing guide is described in the [CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
+
+Contributing guide is described in the
+[CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
 
 # Support
+
 Check the official support channels:
+
 1. wiki (https://docs.novaspektr.io)
 2. [Telegram group](https://t.me/NovaSpektr)
 3. GitHub [issues](https://github.com/orgs/novasamatech/projects/4)
@@ -170,9 +180,11 @@ Check the official support channels:
 All issues are being tracked in the [Nova Spektr Support project](https://github.com/orgs/novasamatech/projects/4)
 
 # Feedback
-Your feedback is welcome. Use GitHub issues for submitting the feedback.
-All feedback is being tracked in the [Nova Spektr Feedback project](https://github.com/orgs/novasamatech/projects/5)
+
+Your feedback is welcome. Use GitHub issues for submitting the feedback. All feedback is being tracked in the
+[Nova Spektr Feedback project](https://github.com/orgs/novasamatech/projects/5)
 
 ## License
-Nova Spektr - Polkadot, Kusama enterprise application is available under the Apache 2.0 license. See the LICENSE file for more info.
-© Novasama Technologies GmbH 2023
+
+Nova Spektr - Polkadot, Kusama enterprise application is available under the Apache 2.0 license. See the LICENSE file
+for more info. © Novasama Technologies GmbH 2023

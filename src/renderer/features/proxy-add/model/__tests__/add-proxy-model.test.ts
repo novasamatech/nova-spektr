@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
 import { ConnectionStatus, type Transaction, type VaultBaseAccount } from '@/shared/core';
@@ -6,15 +7,15 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/AddProxy';
 import { Step } from '../../lib/types';
 import { addProxyModel } from '../add-proxy-model';
 import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
+vi.mock('@/shared/lib/utils', async () => ({
+  ...(await vi.importActual('@/shared/lib/utils')),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 

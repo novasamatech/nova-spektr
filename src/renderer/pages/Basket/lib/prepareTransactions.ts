@@ -29,7 +29,7 @@ import { eraService, useStakingData, validatorsService } from '@/entities/stakin
 import { transactionService } from '@/entities/transaction';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import { type CollectiveVoteConfirm, type VoteConfirm } from '@/features/operations/OperationsConfirm';
-import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
+import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 
 import { getCoreTx } from './utils';

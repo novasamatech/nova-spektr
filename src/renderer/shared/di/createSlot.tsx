@@ -1,4 +1,4 @@
-import { isFunction, isNumber } from 'lodash';
+import { isFunction } from 'lodash';
 import { type ComponentType, type FunctionComponent, type ReactNode, memo } from 'react';
 
 import { createAbstractIdentifier } from './createAbstractIdentifier';
@@ -30,12 +30,11 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>>({
     type: 'slot',
     name: config?.name ?? 'unknownSlot',
-    processHandler: (handler) => {
-      return {
-        available: handler.available,
-        body: normalizeSlotHandler(handler.body),
-      };
-    },
+    processHandler: (handler) => ({
+      key: handler.key,
+      available: handler.available,
+      body: normalizeSlotHandler(handler.body),
+    }),
   });
 
   return {
@@ -49,20 +48,21 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
       const result: ReactNode[] = [];
       const order = new Map<ReactNode, number>();
       let shouldReorder = false;
+      let handler, node;
 
       for (let index = 0; index < handlers.length; index++) {
-        const handler = handlers[index];
+        handler = handlers[index];
         if (!handler) {
           continue;
         }
 
         try {
           if (handler.available()) {
-            const node = <SlotWrapper key={index} component={handler.body.render} props={props} />;
+            node = <SlotWrapper key={index} component={handler.body.render} props={props} />;
             result.push(node);
             order.set(node, handler.body.order ?? index);
 
-            if (isNumber(handler.body.order)) {
+            if (typeof handler.body.order === 'number') {
               shouldReorder = true;
             }
           }

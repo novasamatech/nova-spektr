@@ -7,7 +7,6 @@ import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { CreateWalletProvider } from '@/widgets/CreateWallet';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { initModel } from './modelInit';
@@ -35,10 +34,7 @@ export const App = () => {
     <MultisigChainProvider>
       <ConfirmDialogProvider>
         <StatusModalProvider>
-          <GraphqlProvider>
-            {appRoutes}
-            <CreateWalletProvider />
-          </GraphqlProvider>
+          <GraphqlProvider>{appRoutes}</GraphqlProvider>
         </StatusModalProvider>
       </ConfirmDialogProvider>
     </MultisigChainProvider>

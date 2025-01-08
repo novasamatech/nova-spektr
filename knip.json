@@ -1,12 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/renderer/**/index.{ts,tsx}", "src/main/index.ts", "tests/**/*", "webpack/*.ts", "scripts/*.js"],
+  "entry": ["src/renderer/**/index.{ts,tsx}", "src/main/index.ts", "tests/**/*", "scripts/*.js"],
   "project": ["src/renderer/**/*.{js,ts,tsx}", "src/main/**/*.{js,ts,tsx}", "tests/**/*.{js,ts,tsx}"],
-  "webpack": {
-    "config": [
-      "webpack/*.ts"
-    ]
-  },
   "playwright": true,
   "storybook": true,
   "tailwind": true,

@@ -179,7 +179,6 @@ export const YourDelegations = () => {
                   {accounts?.length > 1 && (
                     <IconButton
                       name="delete"
-                      alt={t('governance.delegationDetails.revokeDelegationButton', { count: selectedAccounts.length })}
                       onClick={() =>
                         delegate &&
                         revokeDelegationModel.events.flowStarted({
