@@ -64,7 +64,7 @@ pnpm install
 ```
 
 ```sh
-# Start Electron and prebuild app in stage mode. You can also access app with browser.
+# Start Electron and prebuild app in staging mode. You can also access app with browser.
 pnpm preview
 ```
 
@@ -94,8 +94,8 @@ pnpm types
 ```
 
 ```sh
-# Build app in stage mode.
-pnpm stage:sequence
+# Build app in staging mode.
+pnpm staging:sequence
 ```
 
 ```sh

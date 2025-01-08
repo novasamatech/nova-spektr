@@ -24,8 +24,8 @@ async function createPackageJSONDistVersion() {
     ...restOfPackageJSON,
   };
 
-  // Check if the script was run with the 'stage' argument
-  if (process.argv.includes('stage')) {
+  // Check if the script was run with the 'staging' argument
+  if (process.argv.includes('staging')) {
     packageJSONDistVersion.name += '-stage';
   }
 

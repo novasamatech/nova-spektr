@@ -28,16 +28,18 @@ export function createWindow(): BrowserWindow {
 
     webPreferences: {
       nodeIntegration: false,
-      preload: join(__dirname, 'preload.js'),
+      preload: join(__dirname, 'preload.cjs'),
     },
   });
 
-  if (ENVIRONMENT.IS_DEV) {
+  if (ENVIRONMENT.RENDERER_SOURCE === 'localhost') {
     window.loadURL(`${renderer.server.protocol}${renderer.server.host}:${renderer.server.port}`);
-
-    window.webContents.openDevTools({ mode: 'bottom' });
   } else {
     window.loadURL('file://' + __dirname + '/index.html');
+  }
+
+  if (ENVIRONMENT.IS_DEV) {
+    window.webContents.openDevTools({ mode: 'bottom' });
   }
 
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {

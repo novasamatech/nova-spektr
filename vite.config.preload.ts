@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 import { type UserConfigFn } from 'vite';
 
 import { folders, title, version } from './config';
@@ -9,6 +11,7 @@ const config: UserConfigFn = async ({ mode }) => {
 
   return defineConfig({
     mode,
+    cacheDir: resolve(folders.cache, 'vite-preload'),
     define: {
       'process.env.PRODUCT_NAME': JSON.stringify(title),
       'process.env.VERSION': JSON.stringify(version),

@@ -17,8 +17,7 @@ const config: UserConfigFn = async ({ mode }) => {
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
 
   const isDev = mode === 'development';
-  const isProd = mode === 'production';
-  const isStage = mode === 'stage';
+  const isStage = mode === 'staging';
 
   const commonPlugins = [
     tsconfigPaths(),
@@ -29,8 +28,8 @@ const config: UserConfigFn = async ({ mode }) => {
 
   return defineConfig({
     mode: isStage ? 'production' : mode,
+    cacheDir: resolve(folders.cache, 'vite-renderer'),
     root: resolve(folders.rendererRoot, 'app'),
-    base: '/',
     define: {
       'process.env.PRODUCT_NAME': JSON.stringify(title),
       'process.env.VERSION': JSON.stringify(version),
@@ -45,7 +44,7 @@ const config: UserConfigFn = async ({ mode }) => {
     },
     build: {
       sourcemap: isStage || undefined,
-      minify: isProd,
+      minify: !isDev,
       outDir: folders.devBuild,
       emptyOutDir: false,
       target: 'es2021',

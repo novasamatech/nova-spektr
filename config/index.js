@@ -19,10 +19,10 @@ export const author = AUTHOR;
 export const version = VERSION;
 export const description = DESCRIPTION;
 export const electronProtocol =
-  process.env.NODE_ENV === 'stage' ? `${NAME.replace('-', '')}-stage` : NAME.replace('-', '');
-export const title = process.env.NODE_ENV === 'stage' ? 'Nova Spektr Stage' : 'Nova Spektr';
+  process.env.NODE_ENV === 'staging' ? `${NAME.replace('-', '')}-stage` : NAME.replace('-', '');
+export const title = process.env.NODE_ENV === 'staging' ? 'Nova Spektr Stage' : 'Nova Spektr';
 export const appId =
-  process.env.NODE_ENV === 'stage'
+  process.env.NODE_ENV === 'staging'
     ? `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}.stage`.toLowerCase()
     : `com.${AUTHOR_IN_KEBAB_CASE}.${NAME}`.toLowerCase();
 
@@ -59,4 +59,5 @@ export const folders = {
   storybookBuild: resolve('release/storybook'),
 
   coverage: resolve('./.coverage'),
+  cache: resolve('./node_modules/.cache'),
 };
