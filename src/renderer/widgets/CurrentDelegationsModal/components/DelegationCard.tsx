@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Card, FootnoteText } from '@/shared/ui';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 import { DelegateName, networkSelectorModel } from '@/features/governance';
@@ -29,7 +29,7 @@ export const DelegationCard = ({ delegate, votes, tracks }: Props) => {
   );
 
   return (
-    <Card as="li">
+    <li className="rounded border border-container-border bg-white p-4 shadow-card-shadow">
       <div className="flex flex-col gap-4">
         <DelegateName
           delegate={delegate}
@@ -67,6 +67,6 @@ export const DelegationCard = ({ delegate, votes, tracks }: Props) => {
           </div>
         </div>
       </div>
-    </Card>
+    </li>
   );
 };

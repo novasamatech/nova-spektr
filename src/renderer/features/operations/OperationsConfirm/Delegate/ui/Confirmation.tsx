@@ -5,9 +5,9 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader, Tooltip } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
+import { Box, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -168,8 +168,13 @@ export const Confirmation = ({
               <>
                 <Icon className="text-text-tertiary" name="lock" size={12} />
                 <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-                  <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div tabIndex={0}>
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
                 </Tooltip>
               </>
             }

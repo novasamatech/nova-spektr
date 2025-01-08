@@ -12,7 +12,7 @@ import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
@@ -272,14 +272,16 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <ProxyDepositWithLabel
-        api={api}
-        deposit={oldProxyDeposit}
-        proxyNumber={activeProxies.length + 1}
-        asset={chain.value.assets[0]}
-        onDepositChange={formModel.events.proxyDepositChanged}
-        onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
-      />
+      <ProxyDepositLabel>
+        <ProxyDeposit
+          api={api}
+          deposit={oldProxyDeposit}
+          proxyNumber={activeProxies.length + 1}
+          asset={chain.value.assets?.[0]}
+          onDepositChange={formModel.events.proxyDepositChanged}
+          onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
+        />
+      </ProxyDepositLabel>
 
       {isMultisig && (
         <MultisigDepositWithLabel

@@ -751,6 +751,15 @@
       "totalVotesCount": "{value} votes"
     }
   },
+  "importDB": {
+    "continueButton": "Continue",
+    "errors": {
+      "invalidStructure": "Invalid file structure"
+    },
+    "exportButton": "Export database",
+    "fileInputPlaceholder": "Select .json file on your computer",
+    "importTitle": "Import database"
+  },
   "log": {
     "cancelledMessage": "rejected this operation",
     "error": "Error",

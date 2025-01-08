@@ -122,6 +122,9 @@ importers:
       dexie:
         specifier: 3.2.7
         version: 3.2.7
+      dexie-export-import:
+        specifier: ^4.1.2
+        version: 4.1.4(dexie@3.2.7)
       dexie-react-hooks:
         specifier: 1.1.7
         version: 1.1.7(@types/react@18.0.14)(dexie@3.2.7)(react@18.3.1)
@@ -4239,6 +4242,11 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+
+  dexie-export-import@4.1.4:
+    resolution: {integrity: sha512-3bw171qUuOTWSYLXI7C/0M6p1X65Rho3tu1IvD9By8jn0+3t3dLSkDlZ1BC6MbABl3kRlhtGigzC+SF+qcS5Og==}
+    peerDependencies:
+      dexie: ^2.0.4 || ^3.0.0 || ^4.0.1
 
   dexie-react-hooks@1.1.7:
     resolution: {integrity: sha512-Lwv5W0Hk+uOW3kGnsU9GZoR1er1B7WQ5DSdonoNG+focTNeJbHW6vi6nBoX534VKI3/uwHebYzSw1fwY6a7mTw==}
@@ -13463,6 +13471,10 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
+
+  dexie-export-import@4.1.4(dexie@3.2.7):
+    dependencies:
+      dexie: 3.2.7
 
   dexie-react-hooks@1.1.7(@types/react@18.0.14)(dexie@3.2.7)(react@18.3.1):
     dependencies:

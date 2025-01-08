@@ -2,11 +2,12 @@ import { type Chain, type FlexibleMultisigTransaction, type MultisigTransaction,
 import { useI18n } from '@/shared/i18n';
 import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { signatoryUtils } from '@/entities/signatory';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm } from '@/entities/wallet';
-import { AddressStyle, InteractionStyle } from '../common/constants';
+import { ExplorersPopover, WalletCardSm } from '@/entities/wallet';
+import { InteractionStyle } from '../common/constants';
 import { getMultisigExtrinsicLink } from '../common/utils';
 
 type Props = {
@@ -63,23 +64,22 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
 
       {depositorSignatory && (
         <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-          <div className="-mr-2">
+          <div className="min-w-min text-footnote">
             {depositorWallet ? (
-              <ExplorersPopover
-                button={<WalletCardSm wallet={depositorWallet} />}
-                address={depositorSignatory.accountId}
-                explorers={chain.explorers}
-                addressPrefix={chain.addressPrefix}
-              />
+              <div className="-mr-2">
+                <ExplorersPopover
+                  button={<WalletCardSm wallet={depositorWallet} />}
+                  address={depositorSignatory.accountId}
+                  explorers={chain.explorers}
+                  addressPrefix={chain.addressPrefix}
+                />
+              </div>
             ) : (
-              <AddressWithExplorers
-                explorers={chain.explorers}
+              <Account
+                title={depositorSignatory.name}
+                chain={chain}
                 accountId={depositorSignatory.accountId}
-                name={depositorSignatory.name}
-                addressFont={AddressStyle}
-                addressPrefix={chain.addressPrefix}
-                wrapperClassName="min-w-min"
-                type="short"
+                variant="short"
               />
             )}
           </div>

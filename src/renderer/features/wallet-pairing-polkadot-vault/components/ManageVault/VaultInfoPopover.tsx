@@ -1,17 +1,19 @@
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, Icon, Popover, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Popover } from '@/shared/ui-kit';
 
 export const VaultInfoPopover = () => {
   const { t } = useI18n();
 
   return (
-    <Popover
-      offsetPx={4}
-      contentClass="p-4"
-      panelClass="w-[360px]"
-      wrapperClass="w-max"
-      content={
-        <div className="flex flex-col gap-y-4">
+    <Popover>
+      <Popover.Trigger>
+        <div>
+          <Icon name="questionOutline" size={16} />
+        </div>
+      </Popover.Trigger>
+      <Popover.Content>
+        <div className="flex w-[360px] flex-col gap-y-4 p-4">
           <section className="flex flex-col gap-y-2">
             <SmallTitleText>{t('onboarding.vault.info.vaultTitle')}</SmallTitleText>
           </section>
@@ -30,9 +32,7 @@ export const VaultInfoPopover = () => {
             </FootnoteText>
           </section>
         </div>
-      }
-    >
-      <Icon name="questionOutline" size={16} />
+      </Popover.Content>
     </Popover>
   );
 };

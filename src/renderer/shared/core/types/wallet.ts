@@ -126,3 +126,7 @@ export const enum SigningType {
   POLKADOT_VAULT = 'signing_pv',
   WALLET_CONNECT = 'signing_wc',
 }
+
+export enum WalletIconType {
+  FLEXIBLE_MULTISIG_INACTIVE = 'wallet_fxms_inactive',
+}

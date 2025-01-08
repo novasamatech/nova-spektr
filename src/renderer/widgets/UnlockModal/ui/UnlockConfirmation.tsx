@@ -4,9 +4,9 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button, DetailRow, FootnoteText, Icon, Loader, Tooltip } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
+import { Box, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -115,8 +115,13 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
                 <>
                   <Icon className="text-text-tertiary" name="lock" size={12} />
                   <FootnoteText className="text-text-tertiary">{t('operation.details.deposit')}</FootnoteText>
-                  <Tooltip content={t('transfer.networkDepositHint')} offsetPx={-90}>
-                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <div tabIndex={0}>
+                        <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('transfer.networkDepositHint')}</Tooltip.Content>
                   </Tooltip>
                 </>
               }

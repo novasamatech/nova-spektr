@@ -12,13 +12,14 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 import { contactModel } from '@/entities/contact';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
-import { AddressWithName, WalletIcon, walletModel } from '@/entities/wallet';
+import { WalletIcon, walletModel } from '@/entities/wallet';
 import { getSignatoryName, getSignatoryStatus } from '../common/utils';
 
 import LogModal from './LogModal';
@@ -136,20 +137,18 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   status={getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
-                  <AddressWithName
-                    name={getSignatoryName(
+                  <Address
+                    title={getSignatoryName(
                       signatory.accountId,
                       signatories,
                       contacts,
                       wallets,
                       connection.addressPrefix,
                     )}
-                    symbols={8}
-                    type="short"
-                    addressFont="text-inherit text-left"
-                    accountId={signatory.accountId}
-                    className="flex-1"
-                    addressPrefix={connection.addressPrefix}
+                    address={toAddress(signatory.accountId)}
+                    variant="short"
+                    canCopy={false}
+                    showIcon
                   />
                 </SignatoryCard>
               ))}
