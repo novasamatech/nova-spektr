@@ -48,10 +48,15 @@ export const folders = {
     renderer: resolve('src/renderer/app/index.html'),
   },
 
+  root: resolve('./'),
+  source: resolve('./src'),
   mainRoot: resolve('src/main'),
   rendererRoot: resolve('src/renderer'),
   resources: resolve('src/main/resources'),
+
   devBuild: resolve('release/build'),
   prodBuild: resolve('release/dist'),
   storybookBuild: resolve('release/storybook'),
+
+  coverage: resolve('./.coverage'),
 };

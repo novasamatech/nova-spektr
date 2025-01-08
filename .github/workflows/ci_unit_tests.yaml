@@ -1,4 +1,4 @@
-name: Run unit tests
+name: Unit tests
 
 on:
   pull_request:
@@ -27,9 +27,9 @@ jobs:
 
       - name: 📄 Post results
         if: always()
-        uses: im-open/process-jest-test-results@v2.0.6
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
+          files: ./junit.xml
+          check_name: 'Unit Test Results'
+          comment_mode: 'changes'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          results-file: jest-unit-results.json
-          report-name: 'Jest Unit tests results'
-          create-status-check: true

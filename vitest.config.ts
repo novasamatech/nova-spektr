@@ -1,19 +1,55 @@
 import { resolve } from 'node:path';
 
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
+import { BaseSequencer, type WorkspaceSpec } from 'vitest/node';
 
 import { folders } from './config';
 import rendererConfig from './vite.config.renderer';
 
+// priority order
+const testsPriority = [
+  resolve(folders.rendererRoot, 'domains'),
+  resolve(folders.rendererRoot, 'features'),
+  resolve(folders.rendererRoot, 'entities'),
+  resolve(folders.rendererRoot, 'shared'),
+];
+
+class Seqencer extends BaseSequencer {
+  async sort(files: WorkspaceSpec[]) {
+    return files.sort((a, b) => {
+      const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
+      const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));
+
+      if (ac === -1) return 1;
+      if (bc === -1) return -1;
+
+      return ac - bc;
+    });
+  }
+}
+
 const config: UserConfigFnPromise = async (options) => {
   const base = await rendererConfig(options);
   const config: ViteUserConfig = {
+    cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
     test: {
+      root: folders.root,
+      dir: folders.source,
+      globals: true,
+      environment: 'happy-dom',
+      setupFiles: resolve(folders.root, './vitest.setup.js'),
+
+      reporters: ['basic', 'junit'],
+      outputFile: {
+        junit: './junit.xml',
+      },
+      sequence: {
+        sequencer: Seqencer,
+      },
       coverage: {
         provider: 'v8',
         ignoreEmptyLines: true,
-        reporter: 'text-lcov',
-        reportsDirectory: resolve('./.coverage'),
+        reportsDirectory: folders.coverage,
         thresholds: {
           branches: 25,
           functions: 47,
@@ -21,14 +57,9 @@ const config: UserConfigFnPromise = async (options) => {
           statements: 50,
         },
       },
-      root: folders.rendererRoot,
-      globals: true,
-      environment: 'happy-dom',
-      setupFiles: resolve('./vitest.setup.js'),
-      pool: 'threads',
-      deps: {
-        optimizer: { web: { enabled: true } },
-      },
+      pool: 'forks',
+      maxConcurrency: 8,
+      deps: { optimizer: { web: { enabled: true } } },
     },
   };
 
