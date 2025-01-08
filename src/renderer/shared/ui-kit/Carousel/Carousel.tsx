@@ -1,8 +1,9 @@
-import { animated, easings, useTransition } from '@react-spring/web';
+import { animated, useTransition } from '@react-spring/web';
 import { type PropsWithChildren, createContext, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePrevious } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
+import { defaultEasing } from '../_helpers/easing';
 import { useResizeObserver } from '../hooks/useResizeObserver';
 
 type ContextProps = {
@@ -71,15 +72,15 @@ const Item = memo(({ id, index, children }: ItemProps) => {
     },
     enter: { opacity: 1, transform: 'translateX(0%)' },
     leave: {
-      opacity: 0,
       top: 0,
       left: 0,
+      opacity: 0,
       transform: `translateX(${direction > 0 ? offset * -1 : offset}%)`,
       position: 'absolute',
     },
     config: {
       duration: 200,
-      easing: easings.easeInOutSine,
+      easing: defaultEasing,
     },
   });
 

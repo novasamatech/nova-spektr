@@ -15,7 +15,6 @@ const config: UserConfigFn = async ({ mode }) => {
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression } = await import('vite-plugin-compression2');
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
-  // const { default: target } = await import('vite-plugin-target');
 
   const isDev = mode === 'development';
   const isProd = mode === 'production';
