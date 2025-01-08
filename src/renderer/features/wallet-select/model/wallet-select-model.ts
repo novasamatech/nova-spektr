@@ -2,7 +2,6 @@ import { default as BigNumber } from 'bignumber.js';
 import { attach, combine, createApi, createEvent, createStore, restore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { WalletType } from '@/shared/core';
 import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -22,32 +21,6 @@ const callbacksApi = createApi($callbacks, {
 });
 
 const $filterQuery = restore(queryChanged, '');
-
-const $filteredWalletGroups = combine(
-  {
-    query: $filterQuery,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallets, query }) => {
-    const groups = walletSelectService.getWalletByGroups(wallets, query);
-
-    // Implementation moved to `@/features/wallet-watch-only`
-    // @ts-expect-error can't delete in terms on types
-    delete groups[WalletType.WATCH_ONLY];
-
-    // Implementation moved to `@/features/wallet-polkadot-vault`
-    // @ts-expect-error can't delete in terms on types
-    delete groups[WalletType.POLKADOT_VAULT];
-
-    // Implementation moved to `@/features/wallet-wallet-connect`
-    // @ts-expect-error can't delete in terms on types
-    delete groups[WalletType.NOVA_WALLET];
-    // @ts-expect-error can't delete in terms on types
-    delete groups[WalletType.WALLET_CONNECT];
-
-    return groups;
-  },
-);
 
 const $walletBalance = combine(
   {
@@ -137,7 +110,6 @@ sample({
 
 export const walletSelectModel = {
   $filterQuery,
-  $filteredWalletGroups,
   $walletBalance,
 
   events: {

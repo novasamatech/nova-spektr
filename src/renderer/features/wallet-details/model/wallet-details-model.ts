@@ -117,21 +117,6 @@ const $walletProxyGroups = combine(
   },
 );
 
-const $proxyWallet = combine(
-  {
-    wallet: $wallet,
-    wallets: walletModel.$wallets,
-  },
-  ({ wallet, wallets }): Wallet | null => {
-    if (!wallet || !walletUtils.isProxied(wallet)) return null;
-
-    return walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: w => !walletUtils.isWatchOnly(w),
-      accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
-    });
-  },
-);
-
 const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
@@ -144,7 +129,6 @@ export const walletDetailsModel = {
 
   $chainsProxies,
   $walletProxyGroups,
-  $proxyWallet,
   $hasProxies,
   $canCreateProxy,
 };

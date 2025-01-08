@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { type Wallet, type WalletFamily } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
@@ -9,8 +9,6 @@ import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/sha
 import { WalletCardLg, walletModel } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletSelectModel } from '../model/wallet-select-model';
-
-import { WalletGroup } from './WalletGroup';
 
 const {
   views: { WalletFiatBalance },
@@ -27,7 +25,6 @@ export const WalletSelect = () => {
   const { t } = useI18n();
   const activeWallet = useUnit(walletModel.$activeWallet);
   const filterQuery = useUnit(walletSelectModel.$filterQuery);
-  const filteredWalletGroups = useUnit(walletSelectModel.$filteredWalletGroups);
 
   const actions = useSlot(walletSelectActionsSlot);
   const walletGroups = useSlot(walletGroupSlot, {
@@ -80,24 +77,7 @@ export const WalletSelect = () => {
           </div>
 
           <ScrollArea>
-            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
-              {Object.entries(filteredWalletGroups).map(([walletType, wallets]) => {
-                if (wallets.length === 0) {
-                  return null;
-                }
-
-                return (
-                  <WalletGroup
-                    key={walletType}
-                    type={walletType as WalletFamily}
-                    wallets={wallets}
-                    onInfoClick={() => console.error('No details')}
-                  />
-                );
-              })}
-
-              {walletGroups}
-            </div>
+            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">{walletGroups}</div>
             <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
               <Graphics name="emptyList" size={64} />
               <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
