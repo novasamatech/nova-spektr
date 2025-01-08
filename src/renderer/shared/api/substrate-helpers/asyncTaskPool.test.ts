@@ -1,8 +1,12 @@
 import { createAsyncTaskPool } from './asyncTaskPool';
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('asyncTaskPool', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should exec sync task', async () => {
     const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: () => 0 });
     const result = await pool.call(() => 'test');
@@ -12,7 +16,7 @@ describe('asyncTaskPool', () => {
 
   it('should exec async task', async () => {
     const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: () => 0 });
-    const result = await pool.call(() => delay(10).then(() => 'test'));
+    const result = await pool.call(() => delay().then(() => 'test'));
 
     expect(result).toBe('test');
   });
@@ -37,7 +41,7 @@ describe('asyncTaskPool', () => {
 
   it('should handle queue', async () => {
     const pool = createAsyncTaskPool({ poolSize: 2, retryCount: 0, retryDelay: () => 0 });
-    const spy = jest.fn();
+    const spy = vi.fn();
 
     await Promise.all([pool.call(spy), pool.call(spy), pool.call(spy), pool.call(spy)]);
 
@@ -48,12 +52,16 @@ describe('asyncTaskPool', () => {
     const pool = createAsyncTaskPool({ poolSize: 2, retryCount: 0, retryDelay: () => 0 });
     const result: number[] = [];
 
-    await Promise.all([
+    vi.useFakeTimers();
+    const res = Promise.all([
       pool.call(() => delay(800).then(() => result.push(1))),
       pool.call(() => delay(100).then(() => result.push(2))),
       pool.call(() => delay(500).then(() => result.push(3))),
       pool.call(() => delay(100).then(() => result.push(4))),
     ]);
+
+    await vi.runAllTimersAsync();
+    await res;
 
     expect(result).toEqual([2, 3, 4, 1]);
   });
@@ -74,7 +82,7 @@ describe('asyncTaskPool', () => {
   });
 
   it('should throw on retry limit exceeding', async () => {
-    const spy = jest.fn(() => 0);
+    const spy = vi.fn(() => 0);
     const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 1, retryDelay: spy });
     let tries = 0;
 
@@ -87,11 +95,11 @@ describe('asyncTaskPool', () => {
     });
 
     expect(spy).toBeCalledTimes(1);
-    expect(result).rejects.toThrowError();
+    await expect(result).rejects.toThrowError();
   });
 
   it('should correctly calculate retry delay', async () => {
-    const spy = jest.fn((retry: number) => retry * 10);
+    const spy = vi.fn((retry: number) => retry * 10);
     const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 2, retryDelay: spy });
     let tries = 0;
 

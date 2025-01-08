@@ -19,7 +19,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   let provider: MockProvider;
   let api: ApiPromise;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     provider = new MockProvider(registry);
     const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
 
@@ -33,9 +33,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     });
   });
 
-  afterEach(async () => {
-    await provider.disconnect();
-  });
+  afterAll(() => provider.disconnect());
 
   test('should decode add proxy transaction', async () => {
     const transaction = decodeCallData(
