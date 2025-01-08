@@ -1,10 +1,10 @@
+import './CardStack.css';
+
 import * as RadixAccordion from '@radix-ui/react-accordion';
 import { type PropsWithChildren, createContext, useContext, useId, useMemo, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-
-import './CardStack.css';
 
 const Context = createContext<{ open: boolean }>({ open: false });
 
