@@ -19,7 +19,7 @@ const $createMultisigForm = createForm<FormParams>({
       rules: [
         {
           name: 'notEmpty',
-          validator: (name) => name !== '',
+          validator: name => name !== '',
         },
       ],
     },
@@ -55,7 +55,7 @@ const $multisigAccountId = combine(
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
     return accountUtils.getMultisigAccountId(
-      signatories.map((s) => toAccountId(s.address)),
+      signatories.map(s => toAccountId(s.address)),
       threshold,
       cryptoType,
     );
@@ -71,7 +71,7 @@ const $multisigAlreadyExists = combine(
   ({ multisigAccountId, wallets, formValues: { chainId } }) => {
     const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: walletUtils.isMultisig,
-      accountFn: (multisigAccount) => {
+      accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
 
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;
@@ -94,7 +94,7 @@ const $hiddenMultisig = combine(
   ({ multisigAccountId, hiddenWallets, formValues: { chainId } }) => {
     return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
       walletFn: walletUtils.isMultisig,
-      accountFn: (multisigAccount) => {
+      accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
 
         const isSameAccountId = multisigAccount.accountId === multisigAccountId;
@@ -121,7 +121,7 @@ const $availableAccounts = combine(
       return isValidWallet && isChainMatch;
     });
 
-    const baseAccounts = filteredAccounts.filter((a) => accountUtils.isVaultBaseAccount(a) && a.name);
+    const baseAccounts = filteredAccounts.filter(a => accountUtils.isVaultBaseAccount(a) && a.name);
 
     return [...filteredAccounts, ...baseAccounts];
   },
@@ -160,7 +160,7 @@ const $canSubmit = combine(
   ({ invalidAddresses, threshold, ...params }) => {
     if (invalidAddresses.length > 0 || threshold < MIN_THRESHOLD) return false;
 
-    return Object.values(params).every((param) => nullable(param) || !param);
+    return Object.values(params).every(param => nullable(param) || !param);
   },
 );
 

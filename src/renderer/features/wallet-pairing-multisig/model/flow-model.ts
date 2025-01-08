@@ -69,8 +69,8 @@ const $signer = restore(signerSelected, null).reset(flowFinished);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   return walletUtils.getWalletFilteredAccounts(wallets, {
-    accountFn: (a) => a.accountId === signer?.accountId,
-    walletFn: (w) => walletUtils.isValidSignatory(w) && w.id === signer?.walletId,
+    accountFn: a => a.accountId === signer?.accountId,
+    walletFn: w => walletUtils.isValidSignatory(w) && w.id === signer?.walletId,
   });
 });
 
@@ -122,7 +122,7 @@ const $transaction = combine(
   ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
     if (!chain || !remarkTx || !signer) return undefined;
 
-    const signatoriesWrapped = Array.from(signatories.values()).map((s) => ({
+    const signatoriesWrapped = Array.from(signatories.values()).map(s => ({
       accountId: toAccountId(s.address),
       address: s.address,
     }));
@@ -139,7 +139,7 @@ const $transaction = combine(
             signatories: signatoriesWrapped,
             threshold,
           } as unknown as MultisigAccount,
-          signatories: Array.from(signatories.values()).map((s) => ({
+          signatories: Array.from(signatories.values()).map(s => ({
             accountId: toAccountId(s.address),
           })) as Account[],
           signer,
@@ -225,13 +225,13 @@ sample({
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
-      Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
+      Array.from(signatories.values()).map(a => ({ address: a.address, accountId: toAccountId(a.address) })),
       'accountId',
     );
 
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
     const cryptoType = isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519;
-    const accountIds = sortedSignatories.map((s) => s.accountId);
+    const accountIds = sortedSignatories.map(s => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
@@ -392,7 +392,7 @@ sample({
 sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
-  filter: (step) => isStep(step, Step.SUBMIT),
+  filter: step => isStep(step, Step.SUBMIT),
   target: flowFinished,
 });
 
@@ -404,7 +404,7 @@ sample({
   },
   fn: ({ signatories, contacts }) => {
     const signatoriesWithoutSigner = signatories.slice(1);
-    const contactMap = new Map(contacts.map((c) => [c.accountId, c]));
+    const contactMap = new Map(contacts.map(c => [c.accountId, c]));
     const updatedContacts: Contact[] = [];
 
     for (const { address, name } of signatoriesWithoutSigner) {
@@ -430,11 +430,11 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
-    const contactsSet = new Set(contacts.map((c) => c.accountId));
+    const contactsSet = new Set(contacts.map(c => c.accountId));
 
     return signatories
       .slice(1)
-      .filter((signatory) => !contactsSet.has(toAccountId(signatory.address)))
+      .filter(signatory => !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
