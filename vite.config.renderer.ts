@@ -4,9 +4,9 @@ import { resolve } from 'node:path';
 
 import { type UserConfigFn } from 'vite';
 
-import { folders, renderer, title, version } from './config';
+import { folders, renderer, title, version } from './config/index.js';
 
-const config: UserConfigFn = async ({ mode }) => {
+const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
   const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
   const { default: svgr } = await import('vite-plugin-svgr');
@@ -59,7 +59,7 @@ const config: UserConfigFn = async ({ mode }) => {
     plugins: [
       ...commonPlugins,
 
-      mkcert(),
+      command === 'serve' && mkcert(),
 
       react({
         plugins: isDev ? [['@effector/swc-plugin', {}]] : [],

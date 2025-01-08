@@ -2,7 +2,7 @@ import { resolve } from 'path';
 
 import { type UserConfigFn } from 'vite';
 
-import { folders, title, version } from './config';
+import { folders, title, version } from './config/index.js';
 
 const config: UserConfigFn = async ({ mode }) => {
   const { defineConfig } = await import('vite');

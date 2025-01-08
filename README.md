@@ -1,6 +1,10 @@
 <div align="center">
   <img src="src/renderer/shared/assets/images/misc/logo.svg" width="160" alt="Nova Spektr logo">
+  <h1>Nova Spektr</h1>
+  <p>Polkadot & Kusama ecosystem Enterprise Desktop application.</p>
 </div>
+
+<br/>
 
 <div align="center">
 
@@ -15,26 +19,23 @@
 
 </div>
 
-<!-- TOC -->
-- [Introduction](#introduction)
-- [What is Nova Spektr](#what-is-nova-spektr)
-  - [Key features](#key-features)
-  - [Changelog](#changelog)
+<!-- TOC start -->
+- [Key features](#key-features)
+- [Changelog](#changelog)
 - [Development](#development)
-  - [Requirements](#requirements)
-  - [Commands](#commands)
-  - [Project localisation](#project-localisation)
+  * [Requirements](#requirements)
+  * [Commands](#commands)
+  * [Difference between environments](#difference-between-environments)
+  * [Project localisation](#project-localisation)
+    + [How to ignore localisation errors](#how-to-ignore-localisation-errors)
+  * [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Support](#support)
-<!-- /TOC -->
+- [Feedback](#feedback)
+  * [License](#license)
+<!-- TOC end -->
 
-# Introduction
-
-## What is Nova Spektr
-
-Polkadot & Kusama ecosystem Enterprise Desktop application.
-
-## Key features
+# Key features
 
 1. Hardware wallet (Polkadot Vault) support
 2. Multishard wallet and multishard operations
@@ -43,7 +44,7 @@ Polkadot & Kusama ecosystem Enterprise Desktop application.
 5. Multisig account and transactions without passing callData off-chain
 6. Relay Chain staking
 
-## Changelog
+# Changelog
 
 Detailed changelog with releases description is located in the
 [changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md).
@@ -173,7 +174,7 @@ Contributing guide is described in the
 
 Check the official support channels:
 
-1. wiki (https://docs.novaspektr.io)
+1. [Wiki](https://docs.novaspektr.io)
 2. [Telegram group](https://t.me/NovaSpektr)
 3. GitHub [issues](https://github.com/orgs/novasamatech/projects/4)
 
@@ -187,4 +188,4 @@ Your feedback is welcome. Use GitHub issues for submitting the feedback. All fee
 ## License
 
 Nova Spektr - Polkadot, Kusama enterprise application is available under the Apache 2.0 license. See the LICENSE file
-for more info. © Novasama Technologies GmbH 2023
+for more info. © Novasama Technologies GmbH 2025
