@@ -6,12 +6,12 @@ import { BaseSequencer, type WorkspaceSpec } from 'vitest/node';
 import { folders } from './config';
 import rendererConfig from './vite.config.renderer';
 
-// priority order
 const testsPriority = [
   resolve(folders.rendererRoot, 'domains'),
   resolve(folders.rendererRoot, 'features'),
   resolve(folders.rendererRoot, 'entities'),
   resolve(folders.rendererRoot, 'shared'),
+  // ... other
 ];
 
 class Seqencer extends BaseSequencer {
@@ -38,7 +38,6 @@ const config: UserConfigFnPromise = async (options) => {
       globals: true,
       environment: 'happy-dom',
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-
       reporters: ['basic', 'junit'],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
@@ -49,6 +48,7 @@ const config: UserConfigFnPromise = async (options) => {
       coverage: {
         provider: 'v8',
         ignoreEmptyLines: true,
+        exclude: ['**/node_modules/**'],
         reportsDirectory: folders.coverage,
         thresholds: {
           branches: 25,
