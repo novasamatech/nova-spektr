@@ -1,4 +1,4 @@
-import QRCodeStyling from 'qr-code-styling';
+import { default as QRCodeStyling } from 'qr-code-styling';
 import { useEffect, useState } from 'react';
 
 import { Loader } from '@/shared/ui';

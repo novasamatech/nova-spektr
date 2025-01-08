@@ -17,8 +17,10 @@ on:
   schedule:
     - cron: '0 6 * * *' # 9:00 GMT+3
   pull_request:
+    branches:
+      - 'test/**'
     paths:
-      - 'tests/**'
+      - 'tests/system/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -50,32 +52,32 @@ jobs:
           PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).importers['.'].devDependencies['@playwright/test'].version)")
           echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
       - name: Cache playwright binaries
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: |
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-      - run: npx playwright install --with-deps
+      - run: pnpx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-      
+
       - name: Install allurectl
         uses: allure-framework/setup-allurectl@v1
 
       - name: Run Playwright tests
         if: github.event_name != 'schedule'
-        run: allurectl watch -- npx playwright test --grep @regress
+        run: allurectl watch -- pnpx playwright test --grep @regress
 
       - name: Run Playwright tests for schedule event
         if: github.event_name == 'schedule'
-        run: allurectl watch -- npx playwright test --grep @fee-test
+        run: allurectl watch -- pnpx playwright test --grep @fee-test
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
-  
+
   publish_report:
     name: Publish HTML Report
     if: success() || needs.system-tests.result == 'failure'
@@ -108,14 +110,14 @@ jobs:
         run: |
           git add .
           git commit -m "workflow: add HTML report for run-id ${{ github.run_id }} (attempt:  ${{ github.run_attempt }})"
-  
+
           while true; do
             git pull --rebase
             if [ $? -ne 0 ]; then
               echo "Failed to rebase. Please review manually."
               exit 1
             fi
-  
+
             git push
             if [ $? -eq 0 ]; then
               echo "Successfully pushed HTML report to repo."
@@ -125,7 +127,7 @@ jobs:
       - name: Output Report URL as Worfklow Annotation
         run: |
           FULL_HTML_REPORT_URL=https://novasamatech.github.io/spektr-reports/$HTML_REPORT_URL_PATH
-  
+
           echo "::notice title=📋 Published Playwright Test Report::$FULL_HTML_REPORT_URL"
           echo "FULL_HTML_REPORT_URL<<EOF" >> $GITHUB_ENV
           echo "$FULL_HTML_REPORT_URL" >> $GITHUB_ENV

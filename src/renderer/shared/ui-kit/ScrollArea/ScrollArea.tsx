@@ -7,6 +7,7 @@ import {
   type PropsWithChildren,
   type UIEventHandler,
   memo,
+  useCallback,
   useState,
 } from 'react';
 
@@ -25,14 +26,18 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
 
-  const handlerScroll: UIEventHandler<HTMLDivElement> = e => {
-    setShowTopFade(e.currentTarget.scrollTop > 0);
-    setShowBottomFade(e.currentTarget.scrollTop + e.currentTarget.clientHeight < e.currentTarget.scrollHeight);
+  const recalculateFade = useCallback((n: HTMLDivElement) => {
+    setShowTopFade(n.scrollTop > 0);
+    setShowBottomFade(n.scrollTop + n.clientHeight < n.scrollHeight);
+  }, []);
+
+  const handlerScroll = useCallback<UIEventHandler<HTMLDivElement>>(e => {
+    recalculateFade(e.currentTarget);
 
     if (onScroll) {
       onScroll(e);
     }
-  };
+  }, []);
 
   const style = {
     '--scroll-area-top-fade': showTopFade && '4px',

@@ -4,6 +4,7 @@
 .pnp.js
 
 # testing
+/.coverage
 /coverage
 coverage.txt
 junit.xml

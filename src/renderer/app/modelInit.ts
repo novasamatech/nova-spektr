@@ -15,14 +15,15 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
-import { walletPairingMultisigFeature } from '@/features/multisig-wallet-pairing';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
+import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletPairingFeature } from '@/features/wallet-pairing';
 import { walletPairingLedgerFeature } from '@/features/wallet-pairing-ledger';
+import { walletPairingMultisigFeature } from '@/features/wallet-pairing-multisig';
 import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-polkadot-vault';
 import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
 import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
@@ -54,6 +55,7 @@ export const initModel = () => {
     notificationsNavigationFeature,
     settingsNavigationFeature,
     walletSelectFeature.feature,
+    walletDetailsFeature,
 
     walletPairingFeature,
     walletPairingMultisigFeature,
@@ -62,6 +64,7 @@ export const initModel = () => {
     walletPairingWatchOnlyFeature,
     walletPairingLedgerFeature,
 
+    walletDetailsFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
   ]);

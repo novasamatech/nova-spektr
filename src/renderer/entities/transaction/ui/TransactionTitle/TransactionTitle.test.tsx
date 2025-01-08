@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { TEST_ADDRESS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 
 import { TransactionTitle } from './TransactionTitle';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

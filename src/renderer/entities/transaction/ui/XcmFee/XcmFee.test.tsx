@@ -1,24 +1,25 @@
 import { type ApiPromise } from '@polkadot/api';
 import { act, render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { type ChainXCM, type XcmConfig } from '@/shared/api/xcm';
 import { type Asset, type Transaction } from '@/shared/core';
 
 import { XcmFee } from './XcmFee';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('@/entities/transaction', () => ({
+vi.mock('@/entities/transaction', () => ({
   useTransaction: jest.fn().mockReturnValue({
     getTransactionFee: jest.fn().mockResolvedValue('12'),
   }),
 }));
 
-jest.mock('@/entities/asset/ui', () => ({
+vi.mock('@/entities/asset/ui', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 

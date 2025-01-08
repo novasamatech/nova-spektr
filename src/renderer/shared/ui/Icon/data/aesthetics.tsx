@@ -1,49 +1,47 @@
 /* eslint-disable import-x/max-dependencies */
 
-import ChatImg, { ReactComponent as ChatSvg } from '@/shared/assets/images/aesthetics/chat.svg';
-import ClockImg, { ReactComponent as ClockSvg } from '@/shared/assets/images/aesthetics/clock.svg';
-import FellowshipImg, { ReactComponent as FellowshipSvg } from '@/shared/assets/images/aesthetics/fellowship.svg';
-import FireImg, { ReactComponent as FireSvg } from '@/shared/assets/images/aesthetics/fire.svg';
-import GlobeImg, { ReactComponent as GlobeSvg } from '@/shared/assets/images/aesthetics/globe.svg';
-import HotkeyCtrlImg, { ReactComponent as HotkeyCtrlSvg } from '@/shared/assets/images/aesthetics/hotkey-ctrl.svg';
-import HotkeyOptionImg, {
-  ReactComponent as HotkeyOptionSvg,
-} from '@/shared/assets/images/aesthetics/hotkey-option.svg';
-import IndividualImg, { ReactComponent as IndividualSvg } from '@/shared/assets/images/aesthetics/individual.svg';
-import InfoImg, { ReactComponent as InfoSvg } from '@/shared/assets/images/aesthetics/info.svg';
-import LoaderImg, { ReactComponent as LoaderSvg } from '@/shared/assets/images/aesthetics/loader.svg';
-import MembersImg, { ReactComponent as MembersSvg } from '@/shared/assets/images/aesthetics/members.svg';
-import OrganizationImg, { ReactComponent as OrganizationSvg } from '@/shared/assets/images/aesthetics/organization.svg';
-import PolkadotImg, { ReactComponent as PolkadotSvg } from '@/shared/assets/images/aesthetics/polkadot.svg';
-import ProfileImg, { ReactComponent as ProfileSvg } from '@/shared/assets/images/aesthetics/profile.svg';
-import QuestionImg, { ReactComponent as QuestionSvg } from '@/shared/assets/images/aesthetics/question.svg';
-import RocketImg, { ReactComponent as RocketSvg } from '@/shared/assets/images/aesthetics/rocket.svg';
-import StakingImg, { ReactComponent as StakingSvg } from '@/shared/assets/images/aesthetics/staking.svg';
-import TreasuryImg, { ReactComponent as TreasurySvg } from '@/shared/assets/images/aesthetics/treasury.svg';
-import VotingImg, { ReactComponent as VotingSvg } from '@/shared/assets/images/aesthetics/voting.svg';
-import WarnImg, { ReactComponent as WarnSvg } from '@/shared/assets/images/aesthetics/warning.svg';
+import ChatIcon from '@/shared/assets/images/aesthetics/chat.svg?jsx';
+import ClockIcon from '@/shared/assets/images/aesthetics/clock.svg?jsx';
+import FellowshipIcon from '@/shared/assets/images/aesthetics/fellowship.svg?jsx';
+import FireIcon from '@/shared/assets/images/aesthetics/fire.svg?jsx';
+import GlobeIcon from '@/shared/assets/images/aesthetics/globe.svg?jsx';
+import HotkeyCtrlIcon from '@/shared/assets/images/aesthetics/hotkey-ctrl.svg?jsx';
+import HotkeyOptionIcon from '@/shared/assets/images/aesthetics/hotkey-option.svg?jsx';
+import IndividualIcon from '@/shared/assets/images/aesthetics/individual.svg?jsx';
+import InfoIcon from '@/shared/assets/images/aesthetics/info.svg?jsx';
+import LoaderIcon from '@/shared/assets/images/aesthetics/loader.svg?jsx';
+import MembersIcon from '@/shared/assets/images/aesthetics/members.svg?jsx';
+import OrganizationIcon from '@/shared/assets/images/aesthetics/organization.svg?jsx';
+import PolkadotIcon from '@/shared/assets/images/aesthetics/polkadot.svg?jsx';
+import ProfileIcon from '@/shared/assets/images/aesthetics/profile.svg?jsx';
+import QuestionIcon from '@/shared/assets/images/aesthetics/question.svg?jsx';
+import RocketIcon from '@/shared/assets/images/aesthetics/rocket.svg?jsx';
+import StakingIcon from '@/shared/assets/images/aesthetics/staking.svg?jsx';
+import TreasuryIcon from '@/shared/assets/images/aesthetics/treasury.svg?jsx';
+import VotingIcon from '@/shared/assets/images/aesthetics/voting.svg?jsx';
+import WarnIcon from '@/shared/assets/images/aesthetics/warning.svg?jsx';
 
 const AestheticImages = {
-  loader: { svg: LoaderSvg, img: LoaderImg },
-  fire: { svg: FireSvg, img: FireImg },
-  clock: { svg: ClockSvg, img: ClockImg },
-  globe: { svg: GlobeSvg, img: GlobeImg },
-  info: { svg: InfoSvg, img: InfoImg },
-  warn: { svg: WarnSvg, img: WarnImg },
-  chat: { svg: ChatSvg, img: ChatImg },
-  question: { svg: QuestionSvg, img: QuestionImg },
-  hotkeyCtrl: { svg: HotkeyCtrlSvg, img: HotkeyCtrlImg },
-  hotkeyOption: { svg: HotkeyOptionSvg, img: HotkeyOptionImg },
-  fellowship: { svg: FellowshipSvg, img: FellowshipImg },
-  polkadot: { svg: PolkadotSvg, img: PolkadotImg },
-  rocket: { svg: RocketSvg, img: RocketImg },
-  stake: { svg: StakingSvg, img: StakingImg },
-  treasury: { svg: TreasurySvg, img: TreasuryImg },
-  voting: { svg: VotingSvg, img: VotingImg },
-  individual: { svg: IndividualSvg, img: IndividualImg },
-  organization: { svg: OrganizationSvg, img: OrganizationImg },
-  members: { svg: MembersSvg, img: MembersImg },
-  profile: { svg: ProfileSvg, img: ProfileImg },
+  loader: { svg: LoaderIcon },
+  fire: { svg: FireIcon },
+  clock: { svg: ClockIcon },
+  globe: { svg: GlobeIcon },
+  info: { svg: InfoIcon },
+  warn: { svg: WarnIcon },
+  chat: { svg: ChatIcon },
+  question: { svg: QuestionIcon },
+  hotkeyCtrl: { svg: HotkeyCtrlIcon },
+  hotkeyOption: { svg: HotkeyOptionIcon },
+  fellowship: { svg: FellowshipIcon },
+  polkadot: { svg: PolkadotIcon },
+  rocket: { svg: RocketIcon },
+  stake: { svg: StakingIcon },
+  treasury: { svg: TreasuryIcon },
+  voting: { svg: VotingIcon },
+  individual: { svg: IndividualIcon },
+  organization: { svg: OrganizationIcon },
+  members: { svg: MembersIcon },
+  profile: { svg: ProfileIcon },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

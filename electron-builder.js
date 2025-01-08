@@ -1,6 +1,4 @@
-const { APP_CONFIG } = require('./app.config');
-
-const { APP_ID, AUTHOR, TITLE, FOLDERS, ELECTRON_PROTOCOL } = APP_CONFIG;
+const { appId, author, title, folders, electronProtocol } = require('./config');
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -9,26 +7,26 @@ const CURRENT_YEAR = new Date().getFullYear();
  *
  * @see https://www.electron.build/configuration/configuration
  */
-module.exports = {
-  appId: APP_ID,
-  productName: TITLE,
-  copyright: `Copyright © ${CURRENT_YEAR} — ${AUTHOR.name}`,
+export default {
+  appId: appId,
+  productName: title,
+  copyright: `Copyright © ${CURRENT_YEAR} — ${author.name}`,
 
   directories: {
-    app: FOLDERS.DEV_BUILD,
-    output: FOLDERS.PROD_BUILD,
+    app: folders.devBuild,
+    output: folders.prodBuild,
   },
 
   protocols: {
-    name: TITLE,
-    schemes: [ELECTRON_PROTOCOL],
+    name: title,
+    schemes: [electronProtocol],
   },
 
   mac: {
     category: 'public.app-category.finance',
     hardenedRuntime: true,
-    icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
-    entitlements: `${FOLDERS.RESOURCES}/entitlements/entitlements.mac.plist`,
+    icon: `${folders.resources}/icons/icon.png`,
+    entitlements: `${folders.resources}/entitlements/entitlements.mac.plist`,
     extendInfo: {
       NSCameraUsageDescription: 'This app requires camera access to import accounts and sign operations',
     },
@@ -43,18 +41,18 @@ module.exports = {
   },
 
   linux: {
-    icon: `${FOLDERS.RESOURCES}/icons/icon.png`,
+    icon: `${folders.resources}/icons/icon.png`,
     category: 'Finance',
     target: ['AppImage'],
     artifactName: 'Nova-Spektr-${version}_x86_64.AppImage',
     desktop: {
-      mimeTypes: [`x-scheme-handler/${ELECTRON_PROTOCOL}`],
-      exec: `${ELECTRON_PROTOCOL} %U`,
+      mimeTypes: [`x-scheme-handler/${electronProtocol}`],
+      exec: `${electronProtocol} %U`,
     },
   },
 
   win: {
-    icon: `${FOLDERS.RESOURCES}/icons/icon.ico`,
+    icon: `${folders.resources}/icons/icon.ico`,
     target: ['nsis'],
   },
 

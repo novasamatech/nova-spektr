@@ -1,31 +1,23 @@
 /* eslint-disable import-x/max-dependencies */
 
-import ChangeValidatorsImg, {
-  ReactComponent as ChangeValidatorsSvg,
-} from '@/shared/assets/images/staking/change-validators.svg';
-import RedeemImg, { ReactComponent as RedeemSvg } from '@/shared/assets/images/staking/redeem.svg';
-import ReturnToStakeImg, {
-  ReactComponent as ReturnToStakeSvg,
-} from '@/shared/assets/images/staking/return-to-stake.svg';
-import DestinationImg, {
-  ReactComponent as DestinationSvg,
-} from '@/shared/assets/images/staking/rewards-destination.svg';
-import SetValidatorsImg, {
-  ReactComponent as SetValidatorsSvg,
-} from '@/shared/assets/images/staking/set-validators.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@/shared/assets/images/staking/stake-more.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@/shared/assets/images/staking/start-staking.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@/shared/assets/images/staking/unstake.svg';
+import ChangeValidatorsIcon from '@/shared/assets/images/staking/change-validators.svg?jsx';
+import RedeemIcon from '@/shared/assets/images/staking/redeem.svg?jsx';
+import ReturnToStakeIcon from '@/shared/assets/images/staking/return-to-stake.svg?jsx';
+import DestinationIcon from '@/shared/assets/images/staking/rewards-destination.svg?jsx';
+import SetValidatorsIcon from '@/shared/assets/images/staking/set-validators.svg?jsx';
+import StakeMoreIcon from '@/shared/assets/images/staking/stake-more.svg?jsx';
+import StartStakingIcon from '@/shared/assets/images/staking/start-staking.svg?jsx';
+import UnstakeIcon from '@/shared/assets/images/staking/unstake.svg?jsx';
 
 const StakingImages = {
-  redeem: { svg: RedeemSvg, img: RedeemImg },
-  changeValidators: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
-  setValidators: { svg: SetValidatorsSvg, img: SetValidatorsImg },
-  returnToStake: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
-  unstake: { svg: UnstakeSvg, img: UnstakeImg },
-  destination: { svg: DestinationSvg, img: DestinationImg },
-  stakeMore: { svg: StakeMoreSvg, img: StakeMoreImg },
-  startStaking: { svg: StartStakingSvg, img: StartStakingImg },
+  redeem: { svg: RedeemIcon },
+  changeValidators: { svg: ChangeValidatorsIcon },
+  setValidators: { svg: SetValidatorsIcon },
+  returnToStake: { svg: ReturnToStakeIcon },
+  unstake: { svg: UnstakeIcon },
+  destination: { svg: DestinationIcon },
+  stakeMore: { svg: StakeMoreIcon },
+  startStaking: { svg: StartStakingIcon },
 } as const;
 
 export type Staking = keyof typeof StakingImages;

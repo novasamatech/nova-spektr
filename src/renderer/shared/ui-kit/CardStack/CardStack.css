@@ -1,5 +1,5 @@
 .card-stack-plate {
-  transition: max-width 0.3s ease-in-out;
+  transition: max-width 0.3s cubic-bezier(0.87, 0, 0.13, 1);
 }
 
 .card-stack[data-state="closed"] .card-stack-plate {
@@ -11,11 +11,11 @@
 }
 
 .card-stack-content[data-state="open"] {
-  animation: cardStackSlideDown 0.3s ease-in-out;
+  animation: cardStackSlideDown 0.3s cubic-bezier(0.87, 0, 0.13, 1);
 }
 
 .card-stack-content[data-state="closed"] {
-  animation: cardStackSlideUp 0.3s ease-in-out;
+  animation: cardStackSlideUp 0.3s cubic-bezier(0.87, 0, 0.13, 1);
 }
 
 @keyframes cardStackSlideDown {

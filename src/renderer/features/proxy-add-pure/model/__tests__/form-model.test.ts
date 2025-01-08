@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { networkModel } from '@/entities/network';
@@ -7,8 +8,8 @@ import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
+vi.mock('@/shared/lib/utils', async () => ({
+  ...(await vi.importActual('@/shared/lib/utils')),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 

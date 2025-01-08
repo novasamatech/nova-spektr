@@ -7,12 +7,8 @@ import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@/shared/
 import { AssetBalance } from '@/entities/asset';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletDetailsFeature } from '@/features/wallet-details';
+import { WalletDetails } from '@/features/wallet-details';
 import { delegationAggregate } from '../../aggregates/delegation';
-
-const {
-  views: { WalletDetails },
-} = walletDetailsFeature;
 
 type Props = {
   onClick: () => void;

@@ -1,6 +1,7 @@
 import { type Options } from 'qr-code-styling';
 
-import WalletTypeImages from '@/shared/ui/Icon/data/walletType';
+import NovaWalletOnboardingIcon from '@/shared/assets/images/walletTypes/novaWalletOnboarding.svg';
+import WalletConnectOnboardingIcon from '@/shared/assets/images/walletTypes/walletConnectOnboarding.svg';
 
 const QrConfig = {
   width: 300,
@@ -38,12 +39,12 @@ const QrConfig = {
 
 export const WCQRConfig = {
   ...QrConfig,
-  image: WalletTypeImages.walletConnectOnboarding.img,
+  image: WalletConnectOnboardingIcon,
 };
 
 export const NWQRConfig = {
   ...QrConfig,
-  image: WalletTypeImages.novaWalletOnboarding.img,
+  image: NovaWalletOnboardingIcon,
 };
 
 export const enum Step {

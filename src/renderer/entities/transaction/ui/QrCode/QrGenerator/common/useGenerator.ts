@@ -1,6 +1,6 @@
 import { objectSpread } from '@polkadot/util';
 import { xxhashAsHex } from '@polkadot/util-crypto';
-import { type Encoder } from 'raptorq';
+import { type Encoder } from 'raptorq/raptorq';
 import { useEffect, useRef, useState } from 'react';
 
 import { TIMER_INC } from './constants';

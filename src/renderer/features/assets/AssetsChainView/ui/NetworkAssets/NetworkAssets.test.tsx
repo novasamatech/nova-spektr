@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
+import { vi } from 'vitest';
 
 import chains from '@/shared/config/chains/chains.json';
 import {
@@ -21,7 +22,7 @@ const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -45,7 +46,7 @@ const testBalances = [
   },
 ];
 
-jest.mock('../AssetCard/AssetCard', () => ({
+vi.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 

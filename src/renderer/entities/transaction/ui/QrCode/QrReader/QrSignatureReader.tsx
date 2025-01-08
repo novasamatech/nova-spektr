@@ -1,6 +1,6 @@
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
-import init from 'raptorq';
+import init from 'raptorq/raptorq';
 import { useEffect, useRef } from 'react';
 
 import { type HexString } from '@/shared/core';

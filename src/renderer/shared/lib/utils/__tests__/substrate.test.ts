@@ -22,7 +22,7 @@ describe('shared/lib/onChainUtils/substrate', () => {
 
   test('should get expected block time with Threshold check', () => {
     const time = getTime({ consts: { timestamp: { minimumPeriod: blockTime } } });
-    expect(time).toEqual(blockTime.muln(2));
+    expect(time.toString()).toEqual(blockTime.muln(2).toString());
   });
 
   test('should get expected block time with ParachainSystem', () => {

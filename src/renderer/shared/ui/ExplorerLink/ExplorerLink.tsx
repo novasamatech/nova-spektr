@@ -27,7 +27,7 @@ export const ExplorerLink = ({ name, href }: Props) => {
       rel="noopener noreferrer"
       target="_blank"
     >
-      <Icon as="img" name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={12} />
+      <Icon name={ExplorerIcons[name] || ExplorerIcons[DefaultExplorer]} size={12} />
       <FootnoteText
         as="span"
         className={cnTw(

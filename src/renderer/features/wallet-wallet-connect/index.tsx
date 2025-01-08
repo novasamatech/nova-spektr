@@ -5,16 +5,16 @@ import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { walletGroupSlot } from '@/features/wallet-select';
 
-import { WalletGroup } from './components/WalletGroup';
+import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
 
-// TODO implement
+export { walletActionsSlot };
 
 export const walletWalletConnectFeature = createFeature({
   name: 'wallet/wallet connect',
 });
 
-walletWalletConnectFeature.inject(walletGroupSlot, ({ query, onSelect, onDetailsRequest }) => {
+walletWalletConnectFeature.inject(walletGroupSlot, ({ query, onSelect }) => {
   const { t } = useI18n();
   const nova = useUnit(walletsModel.$novaWallets);
   const wc = useUnit(walletsModel.$walletConnectWallets);
@@ -27,7 +27,6 @@ walletWalletConnectFeature.inject(walletGroupSlot, ({ query, onSelect, onDetails
         wallets={nova}
         query={query}
         onSelect={onSelect}
-        onDetailsRequest={onDetailsRequest}
       />
       <WalletGroup
         title={t('wallets.walletConnectLabel')}
@@ -35,7 +34,6 @@ walletWalletConnectFeature.inject(walletGroupSlot, ({ query, onSelect, onDetails
         wallets={wc}
         query={query}
         onSelect={onSelect}
-        onDetailsRequest={onDetailsRequest}
       />
     </>
   );

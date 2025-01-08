@@ -1,6 +1,6 @@
 import { decodeAddress } from '@polkadot/util-crypto';
 import { BrowserCodeReader, BrowserQRCodeReader, type IScannerControls } from '@zxing/browser';
-import init, { Decoder, EncodingPacket } from 'raptorq';
+import init, { Decoder, EncodingPacket } from 'raptorq/raptorq';
 import { useEffect, useRef } from 'react';
 
 import { CryptoTypeString } from '@/shared/core';

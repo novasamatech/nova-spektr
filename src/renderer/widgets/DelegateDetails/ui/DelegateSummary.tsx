@@ -2,10 +2,10 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
+import { BodyText, FootnoteText, IconButton, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
-import { Modal, Skeleton } from '@/shared/ui-kit';
+import { Graphics, Modal, Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ExplorersPopover } from '@/entities/wallet';
 import { type AggregatedReferendum, ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
@@ -87,7 +87,7 @@ const EmptyState = () => {
 
   return (
     <div className="flex min-h-32 flex-col items-center justify-center gap-2">
-      <Icon as="img" name="emptyList" size={72} />
+      <Graphics name="emptyList" size={72} />
       <FootnoteText>{t('governance.addDelegation.summary.listEmptyState')}</FootnoteText>
     </div>
   );

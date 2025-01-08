@@ -8,13 +8,13 @@ import { Button, HeaderTitleText, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
 import { walletConnectModel } from '@/entities/walletConnect';
-import novawallet_onboarding_tutorial from '../assets/novawallet_onboarding_tutorial.mp4';
-import novawallet_onboarding_tutorial_webm from '../assets/novawallet_onboarding_tutorial.webm';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';
 import { pairingForm } from '../model/pairingForm';
 
 import { ManageStep } from './ManageStep';
 import { WalletConnectQrCode } from './WalletConnectQrCode';
+import novawallet_onboarding_tutorial from './assets/novawallet_onboarding_tutorial.mp4';
+import novawallet_onboarding_tutorial_webm from './assets/novawallet_onboarding_tutorial.webm';
 
 type Props = PropsWithChildren<{
   variant: 'novawallet' | 'walletconnect';

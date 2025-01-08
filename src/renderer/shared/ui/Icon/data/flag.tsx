@@ -1,13 +1,13 @@
 /* eslint-disable import-x/max-dependencies */
 
-import EnImg, { ReactComponent as EnSvg } from '@/shared/assets/images/flags/en.svg';
-import HuImg, { ReactComponent as HuSvg } from '@/shared/assets/images/flags/hu.svg';
-import RuImg, { ReactComponent as RuSvg } from '@/shared/assets/images/flags/ru.svg';
+import EnIcon from '@/shared/assets/images/flags/en.svg?jsx';
+import HuIcon from '@/shared/assets/images/flags/hu.svg?jsx';
+import RuIcon from '@/shared/assets/images/flags/ru.svg?jsx';
 
 const FlagImages = {
-  en: { svg: EnSvg, img: EnImg },
-  ru: { svg: RuSvg, img: RuImg },
-  hu: { svg: HuSvg, img: HuImg },
+  en: { svg: EnIcon },
+  ru: { svg: RuIcon },
+  hu: { svg: HuIcon },
 } as const;
 
 export type Flag = keyof typeof FlagImages;

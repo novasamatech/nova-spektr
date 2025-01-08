@@ -2,7 +2,7 @@ import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
 import qrcode from 'qrcode-generator';
-import { type Encoder } from 'raptorq';
+import { type Encoder } from 'raptorq/raptorq';
 
 import { type Address, type ChainId } from '@/shared/core';
 import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';

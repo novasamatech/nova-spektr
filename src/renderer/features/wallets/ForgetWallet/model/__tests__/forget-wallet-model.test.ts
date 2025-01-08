@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -17,20 +18,20 @@ import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
 
-jest.mock('@/entities/multisig', () => ({
+vi.mock('@/entities/multisig', () => ({
   useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),
 }));
 
-jest.mock('@/entities/balance', () => ({
-  ...jest.requireActual('@/entities/balance'),
+vi.mock('@/entities/balance', async () => ({
+  ...(await vi.importActual('@/entities/balance')),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 
-jest.mock('@walletconnect/universal-provider', () => ({
+vi.mock('@walletconnect/universal-provider', () => ({
   Provider: {},
 }));
 
-jest.mock('@walletconnect/utils', () => ({
+vi.mock('@walletconnect/utils', () => ({
   getSdkError: jest.fn(),
 }));
 
@@ -90,10 +91,6 @@ const proxiedWallet = {
 };
 
 describe('features/wallets/ForgetModel', () => {
-  beforeEach(() => {
-    jest.restoreAllMocks();
-  });
-
   test('should call success callback after wallet delete', async () => {
     const spyCallback = jest.fn();
 

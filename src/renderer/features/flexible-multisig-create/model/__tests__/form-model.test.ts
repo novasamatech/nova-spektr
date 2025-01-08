@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
@@ -19,16 +20,12 @@ import {
   wrongChainWallet,
 } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
-  getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
+vi.mock('@/shared/lib/utils', async () => ({
+  ...(await vi.importActual('@/shared/lib/utils')),
+  getProxyTypes: vi.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
 describe('Create flexible multisig wallet form-model', () => {
-  beforeEach(() => {
-    jest.restoreAllMocks();
-  });
-
   test('should error out for empty name', async () => {
     const scope = fork({
       values: new Map()

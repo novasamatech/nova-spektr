@@ -20,7 +20,8 @@ import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction, ProxiesList } from '../components';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 const {
   models: { addProxy },

@@ -1,10 +1,9 @@
 import { hexToU8a, isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { type Address, type Chain, type HexString } from '@/shared/core';
+import { type Address, type Chain, ChainOptions, type HexString } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { isEvmChain } from './chains';
 import {
   ADDRESS_ALLOWED_ENCODED_LENGTHS,
   ETHEREUM_PUBLIC_KEY_LENGTH_BYTES,
@@ -29,7 +28,7 @@ export const toAddress = (value: string, params?: { chunk?: number; prefix?: num
 
   let address = '';
   try {
-    address = encodeAddress(decodeAddress(value), prefixValue);
+    address = encodeAddress(value, prefixValue);
   } catch {
     address = value;
   }
@@ -100,6 +99,17 @@ export const isEthereumAccountId = (accountId?: HexString): boolean => {
     return false;
   }
 };
+
+/**
+ * Check whether chain is evm or not
+ *
+ * @param chain Value to check
+ *
+ * @returns {Boolean}
+ */
+export function isEvmChain(chain: Chain): boolean {
+  return chain.options?.includes(ChainOptions.ETHEREUM_BASED) ?? false;
+}
 
 /**
  * Check is account's address valid

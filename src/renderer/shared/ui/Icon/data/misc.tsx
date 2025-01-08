@@ -1,23 +1,19 @@
 /* eslint-disable import-x/max-dependencies */
 
-import Computer from '@/shared/assets/images/misc/computer.webp';
-import Document, { ReactComponent as DocumentSvg } from '@/shared/assets/images/misc/document.svg';
-import EmptyList from '@/shared/assets/images/misc/empty-list.webp';
-import LogoTitleImg, { ReactComponent as LogoTitleSvg } from '@/shared/assets/images/misc/logo-title.svg';
-import LogoImg, { ReactComponent as LogoSvg } from '@/shared/assets/images/misc/logo.svg';
-import NoResults, { ReactComponent as NoResultsSvg } from '@/shared/assets/images/misc/no-results.svg';
-import NoWallets, { ReactComponent as NoWalletsSvg } from '@/shared/assets/images/misc/no-wallets.svg';
-import QrFrameImg, { ReactComponent as QrFrameSvg } from '@/shared/assets/images/misc/qr-frame.svg';
+import DocumentIcon from '@/shared/assets/images/misc/document.svg?jsx';
+import LogoTitleIcon from '@/shared/assets/images/misc/logo-title.svg?jsx';
+import LogoIcon from '@/shared/assets/images/misc/logo.svg?jsx';
+import NoResultsIcon from '@/shared/assets/images/misc/no-results.svg?jsx';
+import NoWalletsIcon from '@/shared/assets/images/misc/no-wallets.svg?jsx';
+import QrFrameIcon from '@/shared/assets/images/misc/qr-frame.svg?jsx';
 
 const MiscImages = {
-  logo: { svg: LogoSvg, img: LogoImg },
-  logoTitle: { svg: LogoTitleSvg, img: LogoTitleImg },
-  qrFrame: { svg: QrFrameSvg, img: QrFrameImg },
-  noResults: { svg: NoResultsSvg, img: NoResults },
-  noWallets: { svg: NoWalletsSvg, img: NoWallets },
-  document: { svg: DocumentSvg, img: Document },
-  emptyList: { svg: null, img: EmptyList },
-  computer: { svg: null, img: Computer },
+  logo: { svg: LogoIcon },
+  logoTitle: { svg: LogoTitleIcon },
+  qrFrame: { svg: QrFrameIcon },
+  noResults: { svg: NoResultsIcon },
+  noWallets: { svg: NoWalletsIcon },
+  document: { svg: DocumentIcon, img: Document },
 } as const;
 
 export type Misc = keyof typeof MiscImages;

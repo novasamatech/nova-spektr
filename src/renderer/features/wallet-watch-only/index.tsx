@@ -3,7 +3,9 @@ import { accountsService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletGroupSlot } from '@/features/wallet-select';
 
-import { WatchOnlyGroup } from './components/WatchOnlyGroup';
+import { WatchOnlyGroup, walletActionsSlot } from './components/WatchOnlyGroup';
+
+export { walletActionsSlot };
 
 export const walletWatchOnlyFeature = createFeature({
   name: 'wallet/watch-only',
@@ -21,6 +23,6 @@ walletWatchOnlyFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, (
   return accountUtils.isWatchOnlyAccount(account);
 });
 
-walletWatchOnlyFeature.inject(walletGroupSlot, ({ query, onSelect, onDetailsRequest }) => (
-  <WatchOnlyGroup query={query} onSelect={onSelect} onDetailsRequest={onDetailsRequest} />
+walletWatchOnlyFeature.inject(walletGroupSlot, ({ query, onSelect }) => (
+  <WatchOnlyGroup query={query} onSelect={onSelect} />
 ));

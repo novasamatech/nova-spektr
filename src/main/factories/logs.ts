@@ -1,14 +1,15 @@
 import { readdirSync, renameSync, rmSync } from 'fs';
 import { join, parse } from 'path';
 
-import log, { type LogFile } from 'electron-log';
+import { type LogFile } from 'electron-log';
+import { default as log } from 'electron-log/main';
 
 const MAX_LOG_FILES_TO_KEEP = 10;
 
 export function setupLogger() {
   log.initialize({ preload: true });
   log.variables.version = process.env.VERSION;
-  log.variables.env = process.env.NODE_ENV;
+  log.variables.env = import.meta.env.MODE;
   log.transports.console.format = '{y}/{m}/{d} {h}:{i}:{s}.{ms} [{env}#{version}]-{processType} [{level}] > {text}';
   log.transports.console.useStyles = true;
 

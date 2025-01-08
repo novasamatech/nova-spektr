@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type PipelineIdentifier } from './createPipeline';
 import { type SlotIdentifier, type SlotProps } from './createSlot';
 
-type IsVoid<T> = T extends void ? true : false;
+type IsVoid<T> = T extends void | undefined ? true : false;
 
 const useForceUpdate = () => {
   const [index, setState] = useState(0);
@@ -28,6 +28,11 @@ export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArgu
   useEffect(() => slot.updateHandlers.watch(update), []);
 
   return useMemo(() => slot.render(props), [handlers, index, props]);
+};
+
+export const Slot = <Props extends SlotProps>({ id, props }: SlotOptions<Props> & { id: SlotIdentifier<Props> }) => {
+  // @ts-expect-error props typing
+  return <>{useSlot(id, { props })}</>;
 };
 
 export type UsePipelineArguments<Value, Meta> =

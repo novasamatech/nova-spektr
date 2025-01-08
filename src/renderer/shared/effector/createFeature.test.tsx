@@ -66,16 +66,10 @@ describe('createFeature', () => {
     const featureStatus = createFeature({ name: 'test/test', scope });
 
     featureStatus.inject(slot, () => <span>feature</span>);
-    featureStatus.inject(slot, {
-      render: () => <span>feature</span>,
-    });
 
     const screenIdle = render(<>{slot.render()}</>);
     expect(screenIdle.container).toMatchInlineSnapshot(`
 <div>
-  <span>
-    feature
-  </span>
   <span>
     feature
   </span>

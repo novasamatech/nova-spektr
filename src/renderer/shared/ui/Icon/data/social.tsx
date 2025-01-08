@@ -1,23 +1,23 @@
-import AppleImg, { ReactComponent as AppleSvg } from '@/shared/assets/images/social/apple.svg';
-import FacebookImg, { ReactComponent as FacebookSvg } from '@/shared/assets/images/social/facebook.svg';
-import GithubImg, { ReactComponent as GithubSvg } from '@/shared/assets/images/social/github.svg';
-import GitlabImg, { ReactComponent as GitlabSvg } from '@/shared/assets/images/social/gitlab.svg';
-import GoogleImg, { ReactComponent as GoogleSvg } from '@/shared/assets/images/social/google.svg';
-import MediumImg, { ReactComponent as MediumSvg } from '@/shared/assets/images/social/medium.svg';
-import TelegramImg, { ReactComponent as TelegramSvg } from '@/shared/assets/images/social/telegram.svg';
-import TwitterImg, { ReactComponent as TwitterSvg } from '@/shared/assets/images/social/twitter.svg';
-import YoutubeImg, { ReactComponent as YoutubeSvg } from '@/shared/assets/images/social/youtube.svg';
+import AppleIcon from '@/shared/assets/images/social/apple.svg?jsx';
+import FacebookIcon from '@/shared/assets/images/social/facebook.svg?jsx';
+import GithubIcon from '@/shared/assets/images/social/github.svg?jsx';
+import GitlabIcon from '@/shared/assets/images/social/gitlab.svg?jsx';
+import GoogleIcon from '@/shared/assets/images/social/google.svg?jsx';
+import MediumIcon from '@/shared/assets/images/social/medium.svg?jsx';
+import TelegramIcon from '@/shared/assets/images/social/telegram.svg?jsx';
+import TwitterIcon from '@/shared/assets/images/social/twitter.svg?jsx';
+import YoutubeIcon from '@/shared/assets/images/social/youtube.svg?jsx';
 
 const SocialImages = {
-  apple: { svg: AppleSvg, img: AppleImg },
-  google: { svg: GoogleSvg, img: GoogleImg },
-  facebook: { svg: FacebookSvg, img: FacebookImg },
-  github: { svg: GithubSvg, img: GithubImg },
-  gitlab: { svg: GitlabSvg, img: GitlabImg },
-  medium: { svg: MediumSvg, img: MediumImg },
-  youtube: { svg: YoutubeSvg, img: YoutubeImg },
-  twitter: { svg: TwitterSvg, img: TwitterImg },
-  telegram: { svg: TelegramSvg, img: TelegramImg },
+  apple: { svg: AppleIcon },
+  google: { svg: GoogleIcon },
+  facebook: { svg: FacebookIcon },
+  github: { svg: GithubIcon },
+  gitlab: { svg: GitlabIcon },
+  medium: { svg: MediumIcon },
+  youtube: { svg: YoutubeIcon },
+  twitter: { svg: TwitterIcon },
+  telegram: { svg: TelegramIcon },
 } as const;
 
 export type Social = keyof typeof SocialImages;

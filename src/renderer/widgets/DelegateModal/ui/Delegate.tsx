@@ -8,11 +8,9 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import {
-  ConfirmSlider,
-  DelegateConfirmation as Confirmation,
-  basketUtils,
-} from '@/features/operations/OperationsConfirm';
+import { DelegateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/Delegate';
+import { ConfirmSlider } from '@/features/operations/OperationsConfirm/common/ConfirmSlider';
+import { basketUtils } from '@/features/operations/OperationsConfirm/lib/basket-utils';
 import { delegateModel } from '../model/delegate-model';
 
 import { DelegateForm } from './DelegateForm';
