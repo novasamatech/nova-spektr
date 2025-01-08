@@ -4,7 +4,8 @@ import { Trans } from 'react-i18next';
 
 import { chainsService } from '@/shared/api/network';
 import {
-  type Address,
+  type Address as AddressType,
+  type Chain,
   type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
@@ -18,6 +19,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { identityDomain } from '@/domains/identity';
 import { AssetBalance } from '@/entities/asset';
@@ -35,8 +37,8 @@ import {
   isUndelegateTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { AddressWithExplorers, ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
-import { AddressStyle, InteractionStyle } from '../common/constants';
+import { ExplorersPopover, WalletCardSm, walletModel } from '@/entities/wallet';
+import { InteractionStyle } from '../common/constants';
 import {
   getDelegate,
   getDelegationTarget,
@@ -90,7 +92,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
-  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+  const [undelegationTarget, setUndelegationTarget] = useState<AddressType>();
 
   const identities = useStoreMap({
     store: identityDomain.identity.$list,
@@ -128,7 +130,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
     identityDomain.identity.request({ chainId: tx.chainId, accounts });
   }, [validatorsMap]);
 
-  const startStakingValidators: Address[] =
+  const startStakingValidators: AddressType[] =
     (tx.transaction?.type === TransactionType.BATCH_ALL &&
       tx.transaction.args.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args
         ?.targets) ||
@@ -142,7 +144,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
   const validatorsAsset =
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
 
-  const valueClass = 'text-text-secondary';
+  const valueClass = 'min-w-min text-text-secondary';
 
   return (
     <dl className="flex w-full flex-col gap-y-1">
@@ -163,14 +165,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
         <>
           {sender && (
             <DetailRow label={t('operation.details.sender')} className={valueClass}>
-              <AddressWithExplorers
-                explorers={explorers}
-                addressFont={AddressStyle}
-                type="short"
-                address={sender}
-                addressPrefix={addressPrefix}
-                wrapperClassName="-mr-2 min-w-min"
-              />
+              <Account chain={extendedChain as Chain} accountId={sender} variant="short" />
             </DetailRow>
           )}
 
@@ -188,53 +183,25 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {destination && (
         <DetailRow label={t('operation.details.recipient')} className={valueClass}>
-          <AddressWithExplorers
-            type="short"
-            explorers={explorers}
-            addressFont={AddressStyle}
-            address={destination}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={destination} variant="short" />
         </DetailRow>
       )}
 
       {isAddProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.delegateTo')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={delegate} variant="short" />
         </DetailRow>
       )}
 
       {isRemoveProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegate}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={delegate} variant="short" />
         </DetailRow>
       )}
 
       {isRemovePureProxyTransaction(transaction) && sender && (
         <DetailRow label={t('operation.details.revokeFor')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={sender}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={sender} variant="short" />
         </DetailRow>
       )}
 
@@ -291,27 +258,13 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
 
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={delegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={delegationTarget} variant="short" />
         </DetailRow>
       )}
 
       {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className={valueClass}>
-          <AddressWithExplorers
-            explorers={explorers}
-            addressFont={AddressStyle}
-            type="short"
-            address={undelegationTarget}
-            addressPrefix={addressPrefix}
-            wrapperClassName="-mr-2 min-w-min"
-          />
+          <Account chain={extendedChain as Chain} accountId={undelegationTarget} variant="short" />
         </DetailRow>
       )}
 
@@ -381,14 +334,7 @@ export const OperationCardDetails = ({ tx, account, extendedChain }: Props) => {
           {typeof payee === 'string' ? (
             t('staking.confirmation.restakeRewards')
           ) : (
-            <AddressWithExplorers
-              type="short"
-              explorers={explorers}
-              addressFont={AddressStyle}
-              address={payee.Account}
-              addressPrefix={addressPrefix}
-              wrapperClassName="-mr-2 min-w-min"
-            />
+            <Account chain={extendedChain as Chain} accountId={payee.Account} variant="short" />
           )}
         </DetailRow>
       )}

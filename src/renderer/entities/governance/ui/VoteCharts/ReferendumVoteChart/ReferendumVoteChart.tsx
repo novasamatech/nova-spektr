@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
-import { Tooltip } from '@/shared/ui/Popovers';
 import { FootnoteText, HelpText } from '@/shared/ui/Typography';
 import { VoteChart } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 
 type Props = {
   aye: number;
@@ -26,18 +26,17 @@ export const ReferendumVoteChart = ({
 
   if (descriptionPosition === 'tooltip') {
     return (
-      <Tooltip
-        offsetPx={-78}
-        wrapperClass="w-full"
-        content={
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div>{chartNode}</div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
           <div className="flex flex-col">
             <HelpText className="text-inherit">{`${t('voteChart.toPass')} ${pass.toFixed(2)}%`}</HelpText>
             <HelpText className="text-inherit">{`${t('voteChart.aye')} ${aye.toFixed(2)}%`}</HelpText>
             <HelpText className="text-inherit">{`${t('voteChart.nay')} ${nay.toFixed(2)}%`}</HelpText>
           </div>
-        }
-      >
-        {chartNode}
+        </Tooltip.Content>
       </Tooltip>
     );
   }

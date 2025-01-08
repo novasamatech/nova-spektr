@@ -1,6 +1,6 @@
 import { type PropsWithChildren, memo } from 'react';
 
-import { type Chain } from '@/shared/core';
+import { type Address, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -9,7 +9,7 @@ import { Box, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
-  accountId: AccountId;
+  accountId: AccountId | Address;
   chain: Chain;
   testId?: string;
 }>;
