@@ -21,7 +21,7 @@ walletPairingMultisigFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 1,
   render({ t }) {
     return (
-      <SelectMultisigWalletType isOpen={false}>
+      <SelectMultisigWalletType>
         <Dropdown.Item onSelect={() => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG)}>
           <WalletIcon type={WalletType.MULTISIG} />
           {t('wallets.addMultisig')}

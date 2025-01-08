@@ -21,6 +21,7 @@ export const $features = createStore({
 
   multisig: true,
   flexibleMultisig: true,
+  proxy: true,
   polkadotVault: true,
   walletConnect: true,
   watchOnly: true,

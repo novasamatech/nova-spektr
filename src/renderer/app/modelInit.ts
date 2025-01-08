@@ -22,6 +22,7 @@ import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { walletDetailsFeature } from '@/features/wallet-details';
+import { walletMultisigFeature } from '@/features/wallet-multisig';
 import { walletPairingFeature } from '@/features/wallet-pairing';
 import { walletPairingLedgerFeature } from '@/features/wallet-pairing-ledger';
 import { walletPairingMultisigFeature } from '@/features/wallet-pairing-multisig';
@@ -29,6 +30,7 @@ import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-pol
 import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
 import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
 import { walletPolkadotVaultFeature } from '@/features/wallet-polkadot-vault';
+import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
@@ -67,6 +69,8 @@ export const initModel = () => {
     walletPairingLedgerFeature,
 
     walletDetailsFeature,
+    walletMultisigFeature,
+    walletProxiedFeature,
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
@@ -80,6 +84,8 @@ export const initModel = () => {
   walletPairingLedgerFeature.start();
   importDBFeature.start();
 
+  walletProxiedFeature.start();
+  walletMultisigFeature.start();
   walletPolkadotVaultFeature.start();
   walletWalletConnectFeature.start();
   walletWatchOnlyFeature.start();

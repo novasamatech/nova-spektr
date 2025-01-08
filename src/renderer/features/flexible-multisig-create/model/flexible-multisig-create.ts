@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, or, spread } from 'patronum';
 
@@ -65,24 +66,25 @@ type FormSubmitEvent = {
 
 export type AddMultisigStore = FormSubmitEvent['formData'];
 
+const flow = createGate();
+
 const stepChanged = createEvent<Step>();
 const formSubmitted = createEvent<FormSubmitEvent>();
-const flowFinished = createEvent();
 const signerSelected = createEvent<Account>();
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
 
-const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 
-const $proxyDeposit = createStore(BN_ZERO).reset(flowFinished);
-const $error = createStore('').reset(flowFinished);
-const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-const $signer = restore<Account | null>(signerSelected, null).reset(flowFinished);
+const $proxyDeposit = createStore(BN_ZERO).reset(flow.close);
+const $error = createStore('').reset(flow.close);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flow.close);
+const $coreTx = createStore<Transaction | null>(null).reset(flow.close);
+const $multisigTx = createStore<Transaction | null>(null).reset(flow.close);
+const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flow.close);
+const $signer = restore<Account | null>(signerSelected, null).reset(flow.close);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   return walletUtils.getWalletFilteredAccounts(wallets, {
@@ -490,7 +492,7 @@ sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
   filter: (step) => isStep(step, Step.SUBMIT),
-  target: flowFinished,
+  target: flow.close,
 });
 
 sample({
@@ -500,7 +502,7 @@ sample({
 
 sample({
   clock: walletModel.events.walletRestoredSuccess,
-  target: flowFinished,
+  target: flow.close,
 });
 
 sample({
@@ -509,12 +511,12 @@ sample({
 });
 
 sample({
-  clock: flowFinished,
+  clock: flow.close,
   target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({
-  clock: delay(flowFinished, 2000),
+  clock: delay(flow.close, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
 });
@@ -547,7 +549,5 @@ export const flexibleMultisigModel = {
       formSubmitted,
     },
   },
-  output: {
-    flowFinished,
-  },
+  flow,
 };

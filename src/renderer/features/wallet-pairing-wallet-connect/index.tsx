@@ -52,7 +52,7 @@ walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
 });
 
 walletPairingWalletConnectFeature.inject(walletPairingDropdownOptionsSlot, {
-  order: 2,
+  order: 1,
   render({ t }) {
     // nova wallet pairing is basically the same, let's keep it here for now
     return (

@@ -11,31 +11,31 @@ import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
 
-export const walletWalletConnectFeature = createFeature({
-  name: 'wallet/wallet connect',
-  enable: $features.map(f => f.walletConnect),
+export const walletMultisigFeature = createFeature({
+  name: 'wallet/multisig',
+  enable: $features.map(f => f.multisig || f.flexibleMultisig),
 });
 
-walletWalletConnectFeature.inject(walletGroupSlot, {
-  order: 2,
+walletMultisigFeature.inject(walletGroupSlot, {
+  order: 1,
   render({ query, onSelect }) {
     const { t } = useI18n();
-    const nova = useUnit(walletsModel.$novaWallets);
-    const wc = useUnit(walletsModel.$walletConnectWallets);
+    const regular = useUnit(walletsModel.$regularMultisig);
+    const flexible = useUnit(walletsModel.$flexibleMutisig);
 
     return (
       <>
         <WalletGroup
-          title={t('wallets.novaWalletLabel')}
-          walletType={WalletType.NOVA_WALLET}
-          wallets={nova}
+          title={t('wallets.multisigLabel')}
+          walletType={WalletType.MULTISIG}
+          wallets={regular}
           query={query}
           onSelect={onSelect}
         />
         <WalletGroup
-          title={t('wallets.walletConnectLabel')}
-          walletType={WalletType.WALLET_CONNECT}
-          wallets={wc}
+          title={t('wallets.flexibleMultisigLabel')}
+          walletType={WalletType.FLEXIBLE_MULTISIG}
+          wallets={flexible}
           query={query}
           onSelect={onSelect}
         />

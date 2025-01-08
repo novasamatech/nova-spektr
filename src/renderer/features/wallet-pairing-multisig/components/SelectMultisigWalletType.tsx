@@ -1,4 +1,5 @@
-import { type PropsWithChildren, type ReactNode, useState } from 'react';
+import { useUnit } from 'effector-react';
+import { type PropsWithChildren, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
@@ -12,35 +13,47 @@ import { flowModel } from '../model/flow-model';
 import { MultisigWallet } from './MultisigWallet';
 import { type MultisigWalletType, descriptionMultisig } from './common/constants';
 
-const MultisigModals: Record<MultisigWalletType, (onClose: VoidFunction, onBack: VoidFunction) => ReactNode> = {
-  regularMultisig: (onClose, onBack) => <MultisigWallet onClose={onClose} onGoBack={onBack} />,
-  flexibleMultisig: (onClose, onBack) => <FlexibleMultisigWallet onClose={onClose} onGoBack={onBack} />,
-};
-
-type Props = PropsWithChildren<{
-  isOpen: boolean;
-}>;
-
-export const SelectMultisigWalletType = ({ isOpen, children }: Props) => {
+export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
   // TODO: make null when we're ready to work with flexible multisig
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>('regularMultisig');
+  const open = useUnit(flowModel.flow.status);
 
-  const handleClose = () => {
-    flowModel.output.flowFinished();
-    flexibleMultisigModel.output.flowFinished();
+  const toggleModal = (open: boolean) => {
+    if (open) {
+      flowModel.flow.open();
+      flexibleMultisigModel.flow.open();
+    } else {
+      flowModel.flow.close();
+      flexibleMultisigModel.flow.close();
+    }
   };
 
   if (nullable(selectedFlow)) {
     return (
-      <Modal size="fit" height="fit" isOpen={isOpen} onToggle={handleClose}>
+      <Modal size="fit" height="fit" isOpen={open} onToggle={toggleModal}>
         <Modal.Trigger>{children}</Modal.Trigger>
         <SelectMultisig onContinue={setSelectedFlow} />
       </Modal>
     );
   }
 
-  // TODO: make null when we're ready to work with flexible multisig
-  return <>{MultisigModals[selectedFlow](handleClose, () => setSelectedFlow('regularMultisig'))}</>;
+  if (selectedFlow === 'regularMultisig') {
+    return (
+      <MultisigWallet isOpen={open} onToggle={toggleModal} onGoBack={() => toggleModal(false)}>
+        {children}
+      </MultisigWallet>
+    );
+  }
+
+  if (selectedFlow === 'flexibleMultisig') {
+    return (
+      <FlexibleMultisigWallet isOpen={open} onToggle={toggleModal} onGoBack={() => toggleModal(false)}>
+        {children}
+      </FlexibleMultisigWallet>
+    );
+  }
+
+  return null;
 };
 
 type SelectProps = {

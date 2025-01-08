@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
@@ -43,29 +44,30 @@ import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
 import { walletProviderModel } from './wallet-provider-model';
 
+const flow = createGate();
+
 const stepChanged = createEvent<Step>();
 const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
-const flowFinished = createEvent();
 const signerSelected = createEvent<AnyAccount>();
 
 const walletCreated = createEvent<{
   name: string;
   threshold: number;
 }>();
-const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flowFinished);
+const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $error = createStore('').reset(flowFinished);
-const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flowFinished);
-const $signer = restore(signerSelected, null).reset(flowFinished);
+const $error = createStore('').reset(flow.close);
+const $wrappedTx = createStore<Transaction | null>(null).reset(flow.close);
+const $coreTx = createStore<Transaction | null>(null).reset(flow.close);
+const $multisigTx = createStore<Transaction | null>(null).reset(flow.close);
+const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flow.close);
+const $signer = restore(signerSelected, null).reset(flow.close);
 
 const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
   return walletUtils.getWalletFilteredAccounts(wallets, {
@@ -393,7 +395,7 @@ sample({
   clock: delay(submitModel.output.formSubmitted, 2000),
   source: $step,
   filter: step => isStep(step, Step.SUBMIT),
-  target: flowFinished,
+  target: flow.close,
 });
 
 sample({
@@ -454,27 +456,27 @@ sample({
 
 sample({
   clock: walletModel.events.walletRestoredSuccess,
-  target: flowFinished,
+  target: flow.close,
 });
 
 sample({
-  clock: flowFinished,
+  clock: flow.close,
   target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({
-  clock: flowFinished,
+  clock: flow.close,
   target: formModel.$createMultisigForm.reset,
 });
 
 sample({
-  clock: delay(flowFinished, 2000),
+  clock: delay(flow.close, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
 });
 
 sample({
-  clock: delay(flowFinished, 2000),
+  clock: delay(flow.close, 2000),
   target: signatoryModel.$signatories.reinit,
 });
 
@@ -498,7 +500,5 @@ export const flowModel = {
     //for tests
     formSubmitted,
   },
-  output: {
-    flowFinished,
-  },
+  flow,
 };

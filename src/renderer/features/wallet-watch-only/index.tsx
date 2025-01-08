@@ -23,6 +23,7 @@ walletWatchOnlyFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, (
   return accountUtils.isWatchOnlyAccount(account);
 });
 
-walletWatchOnlyFeature.inject(walletGroupSlot, ({ query, onSelect }) => (
-  <WatchOnlyGroup query={query} onSelect={onSelect} />
-));
+walletWatchOnlyFeature.inject(walletGroupSlot, {
+  order: 4,
+  render: ({ query, onSelect }) => <WatchOnlyGroup query={query} onSelect={onSelect} />,
+});
