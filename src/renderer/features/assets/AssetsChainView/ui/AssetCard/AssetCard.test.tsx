@@ -73,7 +73,7 @@ describe('pages/Assets/AssetCard', () => {
       ]),
     });
 
-    const origin = window.location.origin
+    const origin = window.location.origin;
     window.history.pushState({}, '', '/assets');
 
     await act(async () => {
@@ -92,6 +92,8 @@ describe('pages/Assets/AssetCard', () => {
 
     const chainId = defaultProps.chainId;
     const assetId = defaultProps.asset.assetId;
-    expect(window.location.href).toEqual(new URL(`/assets/receive?chainId=${chainId}&assetId=${assetId}`, origin).toString());
+    expect(window.location.href).toEqual(
+      new URL(`/assets/receive?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
+    );
   });
 });

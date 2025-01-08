@@ -1,9 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { render, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
+import { vi } from 'vitest';
+
+import { type Asset, type Transaction } from '@/shared/core';
 
 import { Fee } from './Fee';
-import { vi } from 'vitest';
+
 vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
@@ -20,7 +23,6 @@ vi.mock('../../lib', () => ({
   },
 }));
 
-import { type Asset, type Transaction } from '@/shared/core';
 vi.mock('@/entities/asset', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
