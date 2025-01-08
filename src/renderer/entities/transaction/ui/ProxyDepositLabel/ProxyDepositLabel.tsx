@@ -1,16 +1,10 @@
-import { type ComponentProps } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
-import { ProxyDeposit } from '../ProxyDeposit/ProxyDeposit';
 
-type Props = ComponentProps<typeof ProxyDeposit> & {
-  wrapperClassName?: string;
-};
-
-export const ProxyDepositWithLabel = ({ wrapperClassName, ...depositProps }: Props) => {
+export const ProxyDepositLabel = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   return (
@@ -25,13 +19,13 @@ export const ProxyDepositWithLabel = ({ wrapperClassName, ...depositProps }: Pro
                 <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
               </div>
             </Tooltip.Trigger>
-            <Tooltip.Content>{t('proxy.proxyDepositHint')}</Tooltip.Content>
+            <Tooltip.Content>{t('proxy.proxyDepositHint')} </Tooltip.Content>
           </Tooltip>
         </>
       }
-      className={cnTw('text-text-primary', wrapperClassName)}
+      className="text-text-primary"
     >
-      <ProxyDeposit {...depositProps} />
+      {children}
     </DetailRow>
   );
 };

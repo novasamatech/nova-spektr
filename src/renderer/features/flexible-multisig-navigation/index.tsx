@@ -29,8 +29,7 @@ export const flexibleMultisigNavigationFeature = createFeature({
 flexibleMultisigNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const wallet = useUnit(walletModel.$activeWallet);
 
-  //TODO check what to use here after linking proxy and flexible
-  if (wallet && walletUtils.isFlexibleMultisig(wallet) && !wallet.accounts.at(0)?.proxyAccountId) {
+  if (wallet && walletUtils.isFlexibleMultisig(wallet) && !wallet.activated) {
     navigationModel.events.navigateTo(Paths.OPERATIONS);
 
     return items.filter((item) => item.title === 'navigation.mstOperationLabel');

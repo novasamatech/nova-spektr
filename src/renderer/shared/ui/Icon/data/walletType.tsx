@@ -3,6 +3,9 @@
 import FlexibleMultisigBackgroundImg, {
   ReactComponent as FlexibleMultisigBackgroundSvg,
 } from '@/shared/assets/images/walletTypes/flexibleMultisigBackground.svg';
+import FlexibleMultisigInaciveImg, {
+  ReactComponent as FlexibleMultisigInaciveSvg,
+} from '@/shared/assets/images/walletTypes/flexibleMultisigInactiveBackground.svg';
 import LedgerOnboardingImg, {
   ReactComponent as LedgerOnboardingSvg,
 } from '@/shared/assets/images/walletTypes/ledgerOnboarding.svg';
@@ -48,6 +51,7 @@ const WalletTypeImages = {
   watchOnlyOnboarding: { svg: WatchOnlyOnboardingSvg, img: WatchOnlyOnboardingImg },
   multisigBackground: { svg: MultisigBackgroundSvg, img: MultisigBackgroundImg },
   flexibleMultisigBackground: { svg: FlexibleMultisigBackgroundSvg, img: FlexibleMultisigBackgroundImg },
+  flexibleMultisigBackgroundInactive: { svg: FlexibleMultisigInaciveSvg, img: FlexibleMultisigInaciveImg },
   vault: { svg: VaultSvg, img: VaultImg },
   vaultBackground: { svg: VaultBackgroundSvg, img: VaultBackgroundImg },
   vaultOnboarding: { svg: VaultOnboardingSvg, img: VaultOnboardingImg },

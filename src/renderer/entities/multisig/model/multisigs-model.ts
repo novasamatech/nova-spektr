@@ -301,6 +301,7 @@ sample({
     return {
       ...proxiedWallet,
       accounts: proxiedWallet.accounts.map((acc) => ({ ...acc, proxyAccountId: account.accountId })),
+      activated: true,
     };
   },
   target: $flexibleWithProxy,
@@ -311,6 +312,12 @@ sample({
   filter: nonNullable,
   fn: (flexibleWithProxy) => flexibleWithProxy!.accounts,
   target: series(accounts.updateAccount),
+});
+
+sample({
+  clock: $flexibleWithProxy,
+  filter: nonNullable,
+  target: walletModel.events.updateWalletWithDB,
 });
 
 export const multisigsModel = {

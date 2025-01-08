@@ -53,6 +53,7 @@ const walletsRemoved = createEvent<ID[]>();
 const selectWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
+const updateWalletWithDB = createEvent<Wallet>();
 
 const $rawWallets = createStore<DbWallet[]>([]);
 
@@ -183,6 +184,12 @@ const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   await Promise.all([accounts.deleteAccounts(wallet.accounts), storageService.wallets.delete(wallet.id)]);
 
   return wallet.id;
+});
+
+const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
+  await storageService.wallets.update(wallet.id, wallet);
+
+  return wallet;
 });
 
 const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
@@ -369,6 +376,17 @@ sample({
   target: $rawWallets,
 });
 
+sample({
+  clock: updateWalletWithDB,
+  target: updateWalletFx,
+});
+
+sample({
+  clock: updateWalletFx.doneData,
+  fn: (wallet) => ({ walletId: wallet.id, data: wallet }),
+  target: updateWallet,
+});
+
 export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
@@ -390,6 +408,7 @@ export const walletModel = {
     walletCreationFail,
     selectWallet,
     updateWallet,
+    updateWalletWithDB,
     walletRemoved,
     walletHidden,
     walletHiddenSuccess: hideWalletFx.done,
