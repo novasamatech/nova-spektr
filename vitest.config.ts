@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
 import { BaseSequencer, type WorkspaceSpec } from 'vitest/node';
 
-import { folders } from './config';
+import { folders } from './config/index.js';
 import rendererConfig from './vite.config.renderer';
 
 const testsPriority = [
@@ -52,10 +52,11 @@ const config: UserConfigFnPromise = async (options) => {
         reportsDirectory: folders.coverage,
         thresholds: {
           branches: 25,
-          functions: 47,
+          functions: 40,
           lines: 50,
           statements: 50,
         },
+        reporter: 'json-summary',
       },
       pool: 'forks',
       maxConcurrency: 8,

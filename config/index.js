@@ -1,16 +1,11 @@
 // const path = require('node:path');
 // const { execSync } = require('node:child_process');
 
-import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { resolve as rp } from 'node:path';
-
-const resolve = (p) => rp(gitRoot, p);
+import { resolve } from 'node:path';
 
 const packageJson = readFileSync('package.json', { encoding: 'utf-8' });
 const { author: AUTHOR, description: DESCRIPTION, name: NAME, version: VERSION } = JSON.parse(packageJson);
-
-const gitRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf8' }).trim();
 
 const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
 
