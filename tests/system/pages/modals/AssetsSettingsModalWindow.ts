@@ -1,4 +1,4 @@
-import { type Page } from 'playwright';
+import { type Page } from '@playwright/test';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';

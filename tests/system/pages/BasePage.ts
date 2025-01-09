@@ -1,4 +1,4 @@
-import { type Page } from 'playwright';
+import { type Page } from '@playwright/test';
 
 import { type BasePageElements } from './_elements/BasePageElements';
 

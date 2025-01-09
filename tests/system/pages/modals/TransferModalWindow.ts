@@ -1,5 +1,4 @@
-import { expect } from '@playwright/test';
-import { type Page } from 'playwright';
+import { type Page, expect } from '@playwright/test';
 
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';

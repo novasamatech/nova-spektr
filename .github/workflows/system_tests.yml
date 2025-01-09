@@ -17,8 +17,6 @@ on:
   schedule:
     - cron: '0 6 * * *' # 9:00 GMT+3
   pull_request:
-    branches:
-      - 'test/**'
     paths:
       - 'tests/system/**'
 
@@ -66,11 +64,11 @@ jobs:
 
       - name: Run Playwright tests
         if: github.event_name != 'schedule'
-        run: allurectl watch -- pnpx playwright test --grep @regress
+        run: allurectl watch -- pnpm test:system:regress
 
       - name: Run Playwright tests for schedule event
         if: github.event_name == 'schedule'
-        run: allurectl watch -- pnpx playwright test --grep @fee-test
+        run: allurectl watch -- pnpm test:system:load-fee
 
       - uses: actions/upload-artifact@v4
         if: always()
