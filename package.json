@@ -45,11 +45,11 @@
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
     "test:coverage-new-files": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage --changed dev",
     "test:system": "./node_modules/.bin/playwright test",
-    "test:system:regress": "./node_modules/.bin/playwright test --grep @regress",
-    "test:system:load-fee": "./node_modules/.bin/playwright test --grep @fee-test",
-    "test:system-generator": "./node_modules/.bin/playwright codegen --ignore-https-errors https://localhost:3000",
-    "test:system:ui-mod": "./node_modules/.bin/playwright test --ui",
-    "pretest:system": "./node_modules/.bin/playwright install",
+    "test:system:regress": "playwright test --grep @regress",
+    "test:system:load-fee": "playwright test --grep @fee-test",
+    "test:system-generator": "playwright codegen --ignore-https-errors https://localhost:3000",
+    "test:system:ui-mod": "playwright test --ui",
+    "pretest:system": "playwright install",
     "knip": "knip",
     "types": "tsc -p tsconfig.json --noEmit",
     "types:files": "tsc-files --noEmit",
@@ -237,9 +237,6 @@
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "2.1.8",
     "whatwg-fetch": "3.6.20"
-  },
-  "resolutions": {
-    "esbuild": "0.24.0"
   },
   "sideEffects": [
     "*.css"
