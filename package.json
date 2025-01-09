@@ -44,7 +44,7 @@
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
     "test:coverage-new-files": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage --changed dev",
-    "test:system": "./node_modules/.bin/playwright test",
+    "test:system": "playwright test",
     "test:system:regress": "playwright test --grep @regress",
     "test:system:load-fee": "playwright test --grep @fee-test",
     "test:system-generator": "playwright codegen --ignore-https-errors https://localhost:3000",
