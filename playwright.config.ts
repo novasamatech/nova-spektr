@@ -33,5 +33,5 @@ export default defineConfig({
   ],
 
   timeout: 60000,
-  globalSetup: require.resolve('./scripts/updateTestData.js'),
+  globalSetup: './scripts/updateTestData.js',
 });

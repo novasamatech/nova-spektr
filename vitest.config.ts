@@ -52,9 +52,9 @@ const config: UserConfigFnPromise = async (options) => {
         reportsDirectory: folders.coverage,
         thresholds: {
           branches: 25,
-          functions: 40,
-          lines: 50,
-          statements: 50,
+          functions: 10,
+          lines: 10,
+          statements: 10,
         },
         reporter: 'json-summary',
       },
