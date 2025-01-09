@@ -44,10 +44,12 @@
     "test:watch": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest",
     "test:coverage": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage",
     "test:coverage-new-files": "cross-env POLKADOTJS_DISABLE_ESM_CJS_WARNING=1 vitest run --coverage --changed dev",
-    "test:system": "npx playwright test -j 4",
-    "test:system-generator": "npx playwright codegen --ignore-https-errors https://localhost:3000",
-    "test:system:ui-mod": "npx playwright test --ui",
-    "pretest:system": "npx playwright install",
+    "test:system": "playwright test",
+    "test:system:regress": "playwright test --grep @regress",
+    "test:system:load-fee": "playwright test --grep @fee-test",
+    "test:system-generator": "playwright codegen --ignore-https-errors https://localhost:3000",
+    "test:system:ui-mod": "playwright test --ui",
+    "pretest:system": "playwright install",
     "knip": "knip",
     "types": "tsc -p tsconfig.json --noEmit",
     "types:files": "tsc-files --noEmit",
@@ -149,7 +151,7 @@
     "@headlessui/tailwindcss": "^0.1.2",
     "@jonasgeiler/tsc-files": "2.3.1",
     "@peterek/vite-plugin-favicons": "2.0.0",
-    "@playwright/test": "^1.44.1",
+    "@playwright/test": "^1.49.1",
     "@storybook/addon-essentials": "^8.4.7",
     "@storybook/addon-interactions": "^8.4.7",
     "@storybook/addon-links": "^8.4.7",
@@ -210,7 +212,6 @@
     "knip": "5.33.3",
     "lint-staged": "13.3.0",
     "npm-run-all": "^4.1.5",
-    "playwright": "^1.44.1",
     "pnpm": "^9.15.0",
     "postcss": "8.4.47",
     "prettier": "3.3.3",
@@ -236,9 +237,6 @@
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "2.1.8",
     "whatwg-fetch": "3.6.20"
-  },
-  "resolutions": {
-    "esbuild": "0.24.0"
   },
   "sideEffects": [
     "*.css"
