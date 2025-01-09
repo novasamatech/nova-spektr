@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
-import { BaseModal } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
 import { delegateDetailsModel } from '@/widgets/DelegateDetails';
@@ -21,21 +21,18 @@ export const DelegationModal = () => {
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), delegationModel.output.flowFinished);
 
   return (
-    <BaseModal
-      closeButton
-      headerClass="px-5 py-3"
-      panelClass="flex flex-col w-modal h-[678px] overflow-y-auto bg-white"
-      contentClass="min-h-0 h-full w-full bg-main-app-background py-4"
-      isOpen={isModalOpen}
-      title={chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
-      onClose={closeModal}
-    >
-      <DelegationList
-        onClick={delegateDetailsModel.events.flowStarted}
-        onAddCustomClick={delegationModel.events.openCustomModal}
-      />
+    <Modal isOpen={isModalOpen} size="md" height="lg" onToggle={closeModal}>
+      <Modal.Title close>
+        {chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
+      </Modal.Title>
+      <Modal.Content>
+        <DelegationList
+          onClick={delegateDetailsModel.events.flowStarted}
+          onAddCustomClick={delegationModel.events.openCustomModal}
+        />
 
-      <AddCustomDelegationModel />
-    </BaseModal>
+        <AddCustomDelegationModel />
+      </Modal.Content>
+    </Modal>
   );
 };

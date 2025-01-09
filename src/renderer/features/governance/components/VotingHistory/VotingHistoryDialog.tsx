@@ -5,8 +5,9 @@ import { type Referendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { BaseModal, Button, FootnoteText, Icon, SmallTitleText, Tabs } from '@/shared/ui';
+import { Button, FootnoteText, Icon, SmallTitleText, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/Tabs/common/types';
+import { Modal } from '@/shared/ui-kit';
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
 
 import { VoteCount } from './VoteCount';
@@ -77,33 +78,30 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   ];
 
   return (
-    <BaseModal
-      isOpen={showModal}
-      closeButton
-      panelClass="flex flex-col w-modal h-[450px] overflow-hidden"
-      headerClass="shrink-0 pl-5 pr-3 pt-3"
-      contentClass="flex flex-col pt-4 px-5 grow overflow-hidden"
-      title={t('governance.voteHistory.title')}
-      onClose={closeModal}
-    >
-      {hasError ? (
-        <div className="flex h-full flex-col items-center justify-center gap-2">
-          <Icon name="document" size={64} className="text-icon-default" />
-          <SmallTitleText className="mt-4">{t('governance.voteHistory.notAvailable')}</SmallTitleText>
-          <FootnoteText className="text-text-tertiary">
-            {t('governance.voteHistory.notAvailableDescription')}
-          </FootnoteText>
-          <Button
-            className="mt-2"
-            size="sm"
-            onClick={() => voteHistoryAggregate.events.requestVoteHistory({ referendum })}
-          >
-            {t('general.button.refreshButton')}
-          </Button>
-        </div>
-      ) : (
-        <Tabs panelClassName="overflow-y-auto grow" items={tabs} onChange={setSelectedTab} />
-      )}
-    </BaseModal>
+    <Modal isOpen={showModal} size="md" height="fit" onToggle={closeModal}>
+      <Modal.Title close>{t('governance.voteHistory.title')}</Modal.Title>
+      <Modal.Content>
+        <section className="flex h-[450px] w-modal grow flex-col px-5 pt-4">
+          {hasError ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2">
+              <Icon name="document" size={64} className="text-icon-default" />
+              <SmallTitleText className="mt-4">{t('governance.voteHistory.notAvailable')}</SmallTitleText>
+              <FootnoteText className="text-text-tertiary">
+                {t('governance.voteHistory.notAvailableDescription')}
+              </FootnoteText>
+              <Button
+                className="mt-2"
+                size="sm"
+                onClick={() => voteHistoryAggregate.events.requestVoteHistory({ referendum })}
+              >
+                {t('general.button.refreshButton')}
+              </Button>
+            </div>
+          ) : (
+            <Tabs panelClassName="overflow-y-auto grow" items={tabs} onChange={setSelectedTab} />
+          )}
+        </section>
+      </Modal.Content>
+    </Modal>
   );
 };
