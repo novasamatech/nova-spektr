@@ -157,7 +157,7 @@ export const delegateDetailsModel = {
   $delegate,
   $activeAccounts,
   $activeTracks,
-  $uniqueTracks: $activeTracks.map((tracks) => uniq(Object.values(tracks).flat()),
+  $uniqueTracks: $activeTracks.map((tracks) => uniq(Object.values(tracks).flat())),
   $activeDelegations,
 
   $isAddAvailable,
