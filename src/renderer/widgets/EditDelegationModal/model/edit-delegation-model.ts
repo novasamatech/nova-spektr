@@ -91,9 +91,10 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : undefined;
+    if (!walletData.chain) return null;
+
+    return apis[walletData.chain.chainId] || null;
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -104,7 +105,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ api, walletData, coreTxs, txWrappers }) => {
-    if (!api || !walletData.chain) return undefined;
+    if (!api || !walletData.chain) return null;
 
     return coreTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -115,7 +116,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 // Transaction & Form
@@ -475,17 +475,14 @@ sample({
     return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: walletData.wallet!.id,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
-
-    return txs;
+    return coreTxs!.map((coreTx) => {
+      return {
+        initiatorWallet: walletData.wallet!.id,
+        coreTx,
+        txWrappers,
+        groupId: Date.now(),
+      } as BasketTransaction;
+    });
   },
   target: basketModel.events.transactionsCreated,
 });

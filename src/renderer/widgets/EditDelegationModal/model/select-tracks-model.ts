@@ -34,8 +34,8 @@ const tracksSelected = createEvent<number[]>();
 const accountsChanged = createEvent<Account[]>();
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
-const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votedTracks = createStore<string[]>([]).reset(formInitiated);
+const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
 const $accounts = createStore<Account[]>([]);
@@ -122,27 +122,34 @@ sample({
 sample({
   clock: [votingAggregate.$activeWalletVotes, $addresses],
   source: {
+    tracks: $tracks,
     votes: votingAggregate.$activeWalletVotes,
     addresses: $addresses,
     delegate: $delegate,
   },
-  fn: ({ addresses, votes, delegate }) => {
+  fn: ({ tracks, addresses, votes, delegate }) => {
     const activeTracks = new Set<string>();
-    const delegatedTracks = new Set<string>();
+    const otherDelegatedTracks = new Set<string>();
+    const currentDelegatedTracks = new Set<number>();
     const votesToRemove = [];
 
     for (const [address, voteList] of Object.entries(votes)) {
       if (!addresses.includes(address)) continue;
       for (const [track, vote] of Object.entries(voteList)) {
-        const isNotCurrentDelegate =
-          votingService.isDelegating(vote) && delegate && toAccountId(delegate.accountId) !== toAccountId(vote.target);
+        const isDelegateExist = votingService.isDelegating(vote) && delegate;
+        const isCurrentDelegate = isDelegateExist && toAccountId(delegate.accountId) === toAccountId(vote.target);
+        const isOtherDelegate = isDelegateExist && toAccountId(delegate.accountId) !== toAccountId(vote.target);
 
-        if ((votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) || isNotCurrentDelegate) {
+        if ((votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) || isOtherDelegate) {
           activeTracks.add(track);
         }
 
-        if (isNotCurrentDelegate) {
-          delegatedTracks.add(track);
+        if (isOtherDelegate) {
+          otherDelegatedTracks.add(track);
+        }
+
+        if (isCurrentDelegate) {
+          currentDelegatedTracks.add(Number(track));
         }
 
         if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
@@ -154,12 +161,14 @@ sample({
     }
 
     return {
+      tracks: [...tracks, ...currentDelegatedTracks],
       votedTracks: [...activeTracks],
-      delegatedTracks: [...delegatedTracks],
+      delegatedTracks: [...otherDelegatedTracks],
       votesToRemove: [...votesToRemove],
     };
   },
   target: spread({
+    tracks: $tracks,
     votedTracks: $votedTracks,
     delegatedTracks: $delegatedTracks,
     votesToRemove: $votesToRemove,
@@ -191,7 +200,10 @@ sample({
 
 sample({
   clock: tracksSelected,
-  source: { tracks: $tracks, votedTracks: $votedTracks },
+  source: {
+    tracks: $tracks,
+    votedTracks: $votedTracks,
+  },
   fn: ({ tracks, votedTracks }, newTracks) => {
     const resultArray = newTracks.filter((num) => !votedTracks.includes(num.toString()));
 
