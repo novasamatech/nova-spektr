@@ -1,9 +1,11 @@
 import fs from 'node:fs';
-import path from 'node:path';
+import url from 'node:url';
 
 const updateChainsList = () => {
-  const chainsJsonPath = path.resolve(__dirname, '../src/renderer/shared/config/chains/chains.json');
-  const chainsListPath = path.resolve(__dirname, '../tests/system/data/chains/chainsList.ts');
+  const chainsJsonURL = new URL('../src/renderer/shared/config/chains/chains.json', import.meta.url);
+  const chainsListURL = new URL('../tests/system/data/chains/chainsList.ts', import.meta.url);
+  const chainsJsonPath = url.fileURLToPath(chainsJsonURL);
+  const chainsListPath = url.fileURLToPath(chainsListURL);
 
   const chainsJson = JSON.parse(fs.readFileSync(chainsJsonPath, 'utf-8'));
   const substrateChains = chainsJson
@@ -28,4 +30,4 @@ ${formatChains(ethChains)},
   console.log('chainsList.ts has been updated.');
 };
 
-module.exports = updateChainsList;
+export default updateChainsList;

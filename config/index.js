@@ -28,11 +28,14 @@ export const main = {
   },
 };
 
+const rendererUrl = new URL('https://localhost:3000');
+
 export const renderer = {
   server: {
-    protocol: 'https://',
-    host: 'localhost',
-    port: 3000,
+    origin: rendererUrl.origin,
+    protocol: rendererUrl.protocol,
+    host: rendererUrl.hostname,
+    port: parseInt(rendererUrl.port),
   },
 };
 
