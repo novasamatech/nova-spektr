@@ -17,6 +17,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
 
   const isDev = mode === 'development';
+  const isProd = mode === 'production';
   const isStage = mode === 'staging';
 
   const commonPlugins = [
@@ -52,6 +53,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
         treeshake: 'smallest',
       },
     },
+    assetsInclude: ['**/*.wasm'],
     server: {
       // host: renderer.server.host,
       port: renderer.server.port,
@@ -62,7 +64,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       command === 'serve' && mkcert(),
 
       react({
-        plugins: isDev ? [['@effector/swc-plugin', {}]] : [],
+        plugins: !isProd ? [['@effector/swc-plugin', {}]] : [],
       }),
       svgr({
         include: '**/*.svg?jsx',
@@ -113,6 +115,11 @@ const config: UserConfigFn = async ({ mode, command }) => {
         },
       }),
     ],
+
+    optimizeDeps: {
+      // .wasm module inside library get incorrect path when optimized by vite.
+      exclude: ['raptorq'],
+    },
   });
 };
 
