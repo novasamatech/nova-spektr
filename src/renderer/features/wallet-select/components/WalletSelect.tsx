@@ -62,7 +62,7 @@ export const WalletSelect = () => {
       </Popover.Trigger>
 
       <Popover.Content>
-        <section className="relative flex max-h-[800px] w-[300px] flex-col overflow-hidden bg-card-background">
+        <section className="flex h-full max-h-[800px] min-h-0 w-[300px] flex-col overflow-hidden">
           <header className="flex items-center justify-between border-b border-divider px-5 py-3">
             <SmallTitleText>{t('wallets.title')}</SmallTitleText>
             <div className="min-w-[140px]">{actions}</div>
