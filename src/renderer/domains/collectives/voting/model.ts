@@ -6,7 +6,7 @@ import { nullable, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Voting } from './types';
 

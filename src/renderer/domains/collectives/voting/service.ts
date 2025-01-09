@@ -2,7 +2,7 @@ import { type Chain, TransactionType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AnyAccount } from '@/domains/network';
-import { type CollectivePalletsType } from '../../lib/types';
+import { type CollectivePalletsType } from '../_lib/types';
 
 import { type VotingTransaction } from './types';
 

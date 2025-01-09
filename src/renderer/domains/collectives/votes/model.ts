@@ -5,7 +5,7 @@ import { createDataSource } from '@/shared/effector';
 import { nonNullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { mapVote } from './mapper';
 import { type Vote } from './types';

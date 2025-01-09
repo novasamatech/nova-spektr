@@ -6,7 +6,7 @@ import { createDataSource } from '@/shared/effector';
 import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { mapCurve } from './mapper';
 import { type Track } from './types';
