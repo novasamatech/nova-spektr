@@ -28,4 +28,4 @@ export type { Voting, VotingTransaction } from './voting/types';
 
 export type { Member, CoreMember } from './members/types';
 
-export type { Vote } from './votes/types';
+export type { Vote } from './votingHistory/types';

@@ -8,9 +8,9 @@ import { referendumService } from './referendum/service';
 import { referendumMetaModel } from './referendumMeta/model';
 import { tracksDomainModel } from './tracks/model';
 import { tracksService } from './tracks/service';
-import { votesDomainModel } from './votes/model';
 import { votingDomainModel } from './voting/model';
 import { votingService } from './voting/service';
+import { votesDomainModel } from './votingHistory/model';
 
 const $store = combine(
   {

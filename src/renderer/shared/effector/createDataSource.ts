@@ -24,8 +24,8 @@ type Units<Source, Target> = XOR<
 >;
 
 type FactoryParams<Params, Source, Response, Target> = Units<Source, Target> & {
-  fn(params: Params): Response | Promise<Response>;
-  map(store: Source, params: { params: Params; result: Response }): Target;
+  fn(params: Params, source: Source): Response | Promise<Response>;
+  map(source: Source, params: { params: Params; result: Response }): Target;
   mutateParams?(params: Params, store: Source): Params;
   filter?(params: Params, store: Source): boolean;
 };
@@ -57,15 +57,15 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   const $fulfilled = createStore(false);
   const $lastParams = createStore<Params | symbol>(empty);
   const retry = createEvent();
-  const fx = createEffect(fn);
+  const fx = createEffect(({ params, source }: { params: Params; source: Source }) => fn(params, source));
 
   const request = attach({
     source: $source,
-    effect: (store: Source, params: Params) => {
-      const mutatedParams = mutateParams(params, store);
+    effect: (source: Source, params: Params) => {
+      const mutatedParams = mutateParams(params, source);
 
-      if (filter(mutatedParams, store)) {
-        return fx(mutatedParams).then(() => undefined);
+      if (filter(mutatedParams, source)) {
+        return fx({ params: mutatedParams, source }).then(() => undefined);
       }
 
       return Promise.resolve(undefined);
@@ -74,7 +74,7 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
 
   sample({
     clock: fx.fail,
-    fn: ({ params }) => params,
+    fn: ({ params }) => params.params,
     target: $lastParams,
   });
 
@@ -93,7 +93,7 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   sample({
     clock: fx.done,
     source: $source,
-    fn: map,
+    fn: (source, { params, result }) => map(source, { params: params.params, result }),
     target: targetUnit,
   });
 
