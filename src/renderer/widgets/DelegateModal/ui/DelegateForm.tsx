@@ -5,8 +5,8 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance } from '@/shared/lib/utils';
-import { BaseModal, Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { Tooltip } from '@/shared/ui-kit';
+import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
@@ -36,34 +36,32 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   };
 
   return (
-    <BaseModal
-      closeButton
-      headerClass="px-5 py-3"
-      panelClass="flex h-[736px] w-modal flex-col gap-4 bg-white "
-      contentClass="min-h-0 w-full flex flex-col flex-1 bg-card-background py-4 rounded-lg overflow-y-auto"
-      isOpen={isOpen}
-      title={
-        network?.chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
-      }
-      onClose={onClose}
-    >
-      <div className="flex w-full flex-1 flex-col px-5">
-        <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
+    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
+      <Modal.Title close>
+        {network?.chain && (
+          <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
+        )}
+      </Modal.Title>
+      <Modal.Content>
+        <div className="flex max-h-[736px] w-full flex-1 flex-col px-5">
+          <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
-        <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-          <ProxyFeeAlert />
-          <Signatories />
-          <Amount />
-          <Conviction />
-        </form>
+          <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+            <ProxyFeeAlert />
+            <Signatories />
+            <Amount />
+            <Conviction />
+          </form>
 
-        <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
-          <FeeSection />
+          <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
+            <FeeSection />
+          </div>
         </div>
-
+      </Modal.Content>
+      <Modal.Footer>
         <ActionsSection onGoBack={onGoBack} />
-      </div>
-    </BaseModal>
+      </Modal.Footer>
+    </Modal>
   );
 };
 
@@ -295,7 +293,7 @@ const ActionsSection = ({ onGoBack }: { onGoBack: () => void }) => {
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="mt-4 flex items-center justify-between">
+    <div className="flex w-full items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>

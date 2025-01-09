@@ -25,7 +25,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   const sortType = useUnit(delegationModel.$sortType);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-main-app-background py-4">
       {isListLoading ? (
         <div className="flex h-full items-center justify-center">
           <Loader color="primary" size={25} />

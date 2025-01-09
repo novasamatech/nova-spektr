@@ -4,8 +4,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button, FootnoteText, HelpText, Icon, InputHint } from '@/shared/ui';
-import { Select } from '@/shared/ui-kit';
+import { Button, FootnoteText, HelpText, Icon, InputHint } from '@/shared/ui';
+import { Modal, Select } from '@/shared/ui-kit';
 import { offChainModel } from '../../model/offChain';
 
 export const OffChainDataSource = () => {
@@ -26,17 +26,21 @@ export const OffChainDataSource = () => {
   };
 
   return (
-    <BaseModal isOpen={isModalOpen} closeButton title={t('governance.offChainDataSource.title')} onClose={closeModal}>
-      <form id="offchain-datasource" className="flex flex-col gap-y-4 pb-2 pt-4" onSubmit={submitForm}>
-        <div>
-          <FootnoteText>{t('governance.offChainDataSource.formTitle')}</FootnoteText>
-          <HelpText className="text-text-tertiary">{t('governance.offChainDataSource.formDescription')}</HelpText>
-        </div>
-        <DataSourceSelector />
-      </form>
-
-      <ActionSection />
-    </BaseModal>
+    <Modal isOpen={isModalOpen} size="md" onToggle={closeModal}>
+      <Modal.Title close>{t('governance.offChainDataSource.title')}</Modal.Title>
+      <Modal.Content>
+        <form id="offchain-datasource" className="flex flex-col gap-y-4 px-5" onSubmit={submitForm}>
+          <div>
+            <FootnoteText>{t('governance.offChainDataSource.formTitle')}</FootnoteText>
+            <HelpText className="text-text-tertiary">{t('governance.offChainDataSource.formDescription')}</HelpText>
+          </div>
+          <DataSourceSelector />
+        </form>
+      </Modal.Content>
+      <Modal.Footer>
+        <ActionSection />
+      </Modal.Footer>
+    </Modal>
   );
 };
 
@@ -83,7 +87,7 @@ const ActionSection = () => {
   const canSubmit = useUnit(offChainModel.$canSubmit);
 
   return (
-    <Button form="offchain-datasource" className="ml-auto mt-7 w-fit" type="submit" disabled={!canSubmit}>
+    <Button form="offchain-datasource" className="ml-auto w-fit" type="submit" disabled={!canSubmit}>
       {t('governance.offChainDataSource.save')}
     </Button>
   );

@@ -5,7 +5,8 @@ import { useGate, useUnit } from 'effector-react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { BaseModal, Button, Plate } from '@/shared/ui';
+import { Button, Plate } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { referendumService, votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
@@ -65,69 +66,70 @@ export const ReferendumDetailsModal = ({
   );
 
   return (
-    <BaseModal
-      isOpen={isModalOpen}
-      title={t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
-      contentClass="min-h-0 h-full w-full bg-main-app-background overflow-y-auto"
-      panelClass="flex flex-col w-modal-xl h-[678px]"
-      headerClass="pl-5 pr-3 py-4 shrink-0"
-      closeButton
-      onClose={closeModal}
-    >
-      <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
-        <Plate className="min-h-0 min-w-80 grow basis-[500px] border-filter-border p-6 shadow-card-shadow">
-          <ProposalDescription chainId={chain.chainId} addressPrefix={chain.addressPrefix} referendum={referendum} />
-        </Plate>
+    <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
+      <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
+      <Modal.Content>
+        <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
+          <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
+            <Plate className="min-h-0 min-w-80 grow basis-[500px] border-filter-border p-6 shadow-card-shadow">
+              <ProposalDescription
+                chainId={chain.chainId}
+                addressPrefix={chain.addressPrefix}
+                referendum={referendum}
+              />
+            </Plate>
 
-        <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-          {referendum.voting.votes.length > 0 && (
-            <DetailsCard>
-              <VotingBalance votes={votingBalance} asset={asset} onInfoClick={toggleShowWalletVotes} />
-            </DetailsCard>
-          )}
+            <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
+              {referendum.voting.votes.length > 0 && (
+                <DetailsCard>
+                  <VotingBalance votes={votingBalance} asset={asset} onInfoClick={toggleShowWalletVotes} />
+                </DetailsCard>
+              )}
 
-          <DetailsCard title={t('governance.referendum.votingStatus')}>
-            <VotingStatus
-              api={api}
-              referendum={referendum}
-              asset={asset}
-              canVote={showActions ?? canVote}
-              hasAccount={hasAccount}
-              wallet={wallet}
-              onVoteRequest={onVoteRequest}
-              onRevoteRequest={onRevoteRequest}
-              onRemoveVoteRequest={onRemoveVoteRequest}
-            />
-          </DetailsCard>
+              <DetailsCard title={t('governance.referendum.votingStatus')}>
+                <VotingStatus
+                  api={api}
+                  referendum={referendum}
+                  asset={asset}
+                  canVote={showActions ?? canVote}
+                  hasAccount={hasAccount}
+                  wallet={wallet}
+                  onVoteRequest={onVoteRequest}
+                  onRevoteRequest={onRevoteRequest}
+                  onRemoveVoteRequest={onRemoveVoteRequest}
+                />
+              </DetailsCard>
 
-          <DetailsCard
-            title={t('governance.referendum.votingSummary')}
-            action={
-              <Button variant="text" size="sm" className="h-fit p-0" onClick={toggleShowVoteHistory}>
-                {t('governance.voteHistory.viewVoteHistory')}
-              </Button>
-            }
-          >
-            <VotingSummary referendum={referendum} chain={chain} asset={asset} />
-          </DetailsCard>
+              <DetailsCard
+                title={t('governance.referendum.votingSummary')}
+                action={
+                  <Button variant="text" size="sm" className="h-fit p-0" onClick={toggleShowVoteHistory}>
+                    {t('governance.voteHistory.viewVoteHistory')}
+                  </Button>
+                }
+              >
+                <VotingSummary referendum={referendum} chain={chain} asset={asset} />
+              </DetailsCard>
 
-          <DetailsCard title={t('governance.referendum.additional')}>
-            <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
-          </DetailsCard>
+              <DetailsCard title={t('governance.referendum.additional')}>
+                <ReferendumAdditional network={chain.specName} referendumId={referendum.referendumId} />
+              </DetailsCard>
 
-          <DetailsCard title={t('governance.referendum.timeline')}>
-            <Timeline referendumId={referendum.referendumId} />
-          </DetailsCard>
+              <DetailsCard title={t('governance.referendum.timeline')}>
+                <Timeline referendumId={referendum.referendumId} />
+              </DetailsCard>
 
-          {referendumService.isOngoing(referendum) && (
-            <DetailsCard>
-              <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={toggleShowAdvanced}>
-                {t('governance.referendum.advanced')}
-              </Button>
-            </DetailsCard>
-          )}
-        </div>
-      </div>
+              {referendumService.isOngoing(referendum) && (
+                <DetailsCard>
+                  <Button className="h-auto w-fit p-0" size="sm" variant="text" onClick={toggleShowAdvanced}>
+                    {t('governance.referendum.advanced')}
+                  </Button>
+                </DetailsCard>
+              )}
+            </div>
+          </div>
+        </section>
+      </Modal.Content>
 
       {showWalletVotes && (
         <MyVotesModal referendum={referendum} chain={chain} asset={asset} onClose={toggleShowWalletVotes} />
@@ -138,6 +140,6 @@ export const ReferendumDetailsModal = ({
       {showAdvanced && referendumService.isOngoing(referendum) && (
         <AdvancedModal asset={asset} referendum={referendum} onClose={toggleShowAdvanced} />
       )}
-    </BaseModal>
+    </Modal>
   );
 };

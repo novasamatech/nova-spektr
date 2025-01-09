@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Plate } from '@/shared/ui';
+import { Plate } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { EditDelegation } from '@/widgets/EditDelegationModal';
 import { RevokeDelegation } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
@@ -20,36 +21,31 @@ export const DelegateDetails = () => {
   const delegate = useUnit(delegateDetailsModel.$delegate);
 
   return (
-    <BaseModal
-      closeButton
-      headerClass="px-5 py-3"
-      panelClass="w-modal-xl h-[678px] flex flex-col bg-white"
-      contentClass="w-full flex-1 bg-main-app-background py-6 flex flex-col gap-6 overflow-y-auto scrollbar-stable rounded-lg"
-      isOpen={isOpen}
-      title={t('governance.addDelegation.delegateTitle')}
-      onClose={delegateDetailsModel.events.closeModal}
-    >
-      <div className="flex items-start gap-4 px-6">
-        <Plate className="flex-1 border-filter-border p-6 shadow-card-shadow">
-          {delegate && <DelegateDescription delegate={delegate} />}
-        </Plate>
+    <Modal isOpen={isOpen} size="full" height="fit" onToggle={() => delegateDetailsModel.events.closeModal()}>
+      <Modal.Title close>{t('governance.addDelegation.delegateTitle')}</Modal.Title>
+      <Modal.Content>
+        <div className="flex min-h-[678px] items-start gap-4 rounded-lg bg-main-app-background px-6 py-6">
+          <Plate className="flex-1 border-filter-border p-6 shadow-card-shadow">
+            {delegate && <DelegateDescription delegate={delegate} />}
+          </Plate>
 
-        <div className="flex flex-col gap-4">
-          <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
-            <YourDelegation />
-          </Plate>
-          <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
-            <DelegateActivity />
-          </Plate>
-          <DelegateIdentity />
+          <div className="flex flex-col gap-4">
+            <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+              <YourDelegation />
+            </Plate>
+            <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+              <DelegateActivity />
+            </Plate>
+            <DelegateIdentity />
+          </div>
         </div>
-      </div>
 
-      <YourDelegations />
+        <YourDelegations />
 
-      <RevokeDelegation />
-      <DelegateSummary />
-      <EditDelegation />
-    </BaseModal>
+        <RevokeDelegation />
+        <DelegateSummary />
+        <EditDelegation />
+      </Modal.Content>
+    </Modal>
   );
 };
