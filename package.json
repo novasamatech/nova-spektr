@@ -47,7 +47,7 @@
     "test:system": "playwright test",
     "test:system:regress": "playwright test --grep @regress",
     "test:system:load-fee": "playwright test --grep @fee-test",
-    "test:system-generator": "playwright codegen --ignore-https-errors https://localhost:3000",
+    "test:system-generator": "playwright codegen --ignore-https-errors $(pnpm --silent run config renderer.server.origin)",
     "test:system:ui-mod": "playwright test --ui",
     "pretest:system": "playwright install",
     "knip": "knip",
