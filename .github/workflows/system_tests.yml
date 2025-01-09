@@ -64,7 +64,7 @@ jobs:
 
       - name: Run Playwright tests
         if: github.event_name != 'schedule'
-        run: allurectl watch -- pnpm test:system:regression
+        run: allurectl watch -- pnpm test:system:regress
 
       - name: Run Playwright tests for schedule event
         if: github.event_name == 'schedule'
