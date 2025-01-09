@@ -4,8 +4,9 @@ import { type Asset, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { copyToClipboard, formatAsset } from '@/shared/lib/utils';
-import { BaseModal, DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
+import { DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { Modal } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {
@@ -29,44 +30,45 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
   const turnout = supportThreshold ? formatAsset(turnoutValue, asset) : null;
 
   return (
-    <BaseModal
-      closeButton
-      isOpen={isOpen}
-      panelClass="w-modal"
-      contentClass="flex flex-col gap-4 py-4 ps-5 pe-3 "
-      title={t('governance.advanced.title')}
-      onClose={closeModal}
-    >
-      <DetailRow label={t('governance.advanced.fields.proposer')} className="px-2 text-footnote text-text-secondary">
-        {submissionDeposit && <Address address={submissionDeposit.who} variant="short" canCopy={false} showIcon />}
-      </DetailRow>
+    <Modal isOpen={isOpen} size="md" onToggle={closeModal}>
+      <Modal.Title close>{t('governance.advanced.title')}</Modal.Title>
+      <Modal.Content>
+        <div className="flex flex-col gap-4 pb-4 pe-3 ps-5">
+          <DetailRow
+            label={t('governance.advanced.fields.proposer')}
+            className="px-2 text-footnote text-text-secondary"
+          >
+            {submissionDeposit && <Address address={submissionDeposit.who} variant="short" canCopy={false} showIcon />}
+          </DetailRow>
 
-      <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>
+          <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>
 
-      <Separator className="border-filter-border" />
+          <Separator className="border-filter-border" />
 
-      <div className="flex flex-col gap-2.5">
-        <DetailRow label={t('governance.advanced.fields.approveCurve')}>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          {approvalCurve && t(`governance.curves.${approvalCurve}`)}
-        </DetailRow>
+          <div className="flex flex-col gap-2.5">
+            <DetailRow label={t('governance.advanced.fields.approveCurve')}>
+              {/* eslint-disable-next-line i18next/no-literal-string */}
+              {approvalCurve && t(`governance.curves.${approvalCurve}`)}
+            </DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.supportCurve')}>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          {supportCurve && t(`governance.curves.${supportCurve}`)}
-        </DetailRow>
+            <DetailRow label={t('governance.advanced.fields.supportCurve')}>
+              {/* eslint-disable-next-line i18next/no-literal-string */}
+              {supportCurve && t(`governance.curves.${supportCurve}`)}
+            </DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.turnout')}>{turnout}</DetailRow>
+            <DetailRow label={t('governance.advanced.fields.turnout')}>{turnout}</DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
+            <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
 
-        <DetailRow label={t('governance.advanced.fields.callHash')}>
-          <div className="flex w-32 items-center gap-1 text-text-secondary">
-            <Truncate className="text-footnote" start={6} end={5} text={proposal} />
-            <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
+            <DetailRow label={t('governance.advanced.fields.callHash')}>
+              <div className="flex w-32 items-center gap-1 text-text-secondary">
+                <Truncate className="text-footnote" start={6} end={5} text={proposal} />
+                <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
+              </div>
+            </DetailRow>
           </div>
-        </DetailRow>
-      </div>
-    </BaseModal>
+        </div>
+      </Modal.Content>
+    </Modal>
   );
 };

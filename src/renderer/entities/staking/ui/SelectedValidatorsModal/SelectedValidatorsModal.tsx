@@ -2,8 +2,8 @@ import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BaseModal } from '@/shared/ui';
 // eslint-disable-next-line boundaries/element-types
+import { Modal } from '@/shared/ui-kit';
 import { type AccountIdentity } from '@/domains/identity';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
@@ -18,15 +18,9 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClos
   const { t } = useI18n();
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="pb-3 pt-2"
-      panelClass="w-modal-sm max-h-[660px] overflow-x-hidden"
-      title={t('staking.confirmation.validatorsTitle')}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      <section>
+    <Modal isOpen={isOpen} size="sm" onToggle={onClose}>
+      <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
+      <Modal.Content>
         <ul className="flex flex-col [overflow-y:overlay]">
           {validators.map((validator) => (
             <li
@@ -40,7 +34,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClos
             </li>
           ))}
         </ul>
-      </section>
-    </BaseModal>
+      </Modal.Content>
+    </Modal>
   );
 };

@@ -5,8 +5,9 @@ import { type Asset, type Chain, type Referendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, toAccountId } from '@/shared/lib/utils';
-import { BaseModal, BodyText, FootnoteText } from '@/shared/ui';
+import { BodyText, FootnoteText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
 import { SignatoryCard } from '@/entities/signatory';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -44,60 +45,67 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
   if (!activeWallet) return null;
 
   return (
-    <BaseModal
-      isOpen={isOpen}
-      title={t('governance.walletVotes.title')}
-      closeButton
-      panelClass="w-modal"
-      contentClass="py-4 px-5 grid grid-cols-12 items-center"
-      onClose={closeModal}
-    >
-      <FootnoteText className="col-span-5 px-2 pb-1 text-text-tertiary">
-        {t('governance.walletVotes.listColumnAccount')}
-      </FootnoteText>
-      <FootnoteText className="col-span-2 basis-16 px-2 pb-1 text-text-tertiary">
-        {t('governance.walletVotes.listColumnVote')}
-      </FootnoteText>
-      <FootnoteText className="col-span-5 px-2 pb-1 text-end text-text-tertiary">
-        {t('governance.walletVotes.listColumnVotingPower')}
-      </FootnoteText>
-      {votesList.map(({ address, vote }) => {
-        const account = walletUtils.getAccountBy(
-          [activeWallet],
-          (account) => account.accountId === toAccountId(address),
-        );
+    <Modal isOpen={isOpen} size="md" onToggle={closeModal}>
+      <Modal.Title close>{t('governance.walletVotes.title')}</Modal.Title>
+      <Modal.Content>
+        <div className="grid grid-cols-12 items-center px-5 pb-4">
+          <FootnoteText className="col-span-5 px-2 pb-1 text-text-tertiary">
+            {t('governance.walletVotes.listColumnAccount')}
+          </FootnoteText>
+          <FootnoteText className="col-span-2 basis-16 px-2 pb-1 text-text-tertiary">
+            {t('governance.walletVotes.listColumnVote')}
+          </FootnoteText>
+          <FootnoteText className="col-span-5 px-2 pb-1 text-end text-text-tertiary">
+            {t('governance.walletVotes.listColumnVotingPower')}
+          </FootnoteText>
+          {votesList.map(({ address, vote }) => {
+            const account = walletUtils.getAccountBy(
+              [activeWallet],
+              (account) => account.accountId === toAccountId(address),
+            );
 
-        return (
-          <>
-            <div className="col-span-5">
-              <SignatoryCard
-                key={address}
-                className="min-h-11"
-                accountId={toAccountId(address)}
-                addressPrefix={chain.addressPrefix}
-              >
-                <Address title={account?.name || ''} address={address} variant="truncate" canCopy={false} showIcon />
-              </SignatoryCard>
-            </div>
-            <BodyText key={`decision-${address}`} className="col-span-2 px-2">
-              {t(`governance.referendum.${vote.decision}`)}
-            </BodyText>
-            <div key={`votingPower-${address}`} className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
-              <BodyText className="whitespace-nowrap">
-                {t('governance.walletVotes.totalVotesCount', {
-                  value: formatBalance(vote.votingPower, asset.precision).formatted,
-                })}
-              </BodyText>
-              <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                {t('general.actions.multiply', {
-                  value: formatAsset(vote.balance, asset),
-                  multiplier: vote.conviction,
-                })}
-              </FootnoteText>
-            </div>
-          </>
-        );
-      })}
-    </BaseModal>
+            return (
+              <>
+                <div className="col-span-5">
+                  <SignatoryCard
+                    key={address}
+                    className="min-h-11"
+                    accountId={toAccountId(address)}
+                    addressPrefix={chain.addressPrefix}
+                  >
+                    <Address
+                      title={account?.name || ''}
+                      address={address}
+                      variant="truncate"
+                      canCopy={false}
+                      showIcon
+                    />
+                  </SignatoryCard>
+                </div>
+                <BodyText key={`decision-${address}`} className="col-span-2 px-2">
+                  {t(`governance.referendum.${vote.decision}`)}
+                </BodyText>
+                <div
+                  key={`votingPower-${address}`}
+                  className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2"
+                >
+                  <BodyText className="whitespace-nowrap">
+                    {t('governance.walletVotes.totalVotesCount', {
+                      value: formatBalance(vote.votingPower, asset.precision).formatted,
+                    })}
+                  </BodyText>
+                  <FootnoteText className="whitespace-nowrap text-text-tertiary">
+                    {t('general.actions.multiply', {
+                      value: formatAsset(vote.balance, asset),
+                      multiplier: vote.conviction,
+                    })}
+                  </FootnoteText>
+                </div>
+              </>
+            );
+          })}
+        </div>
+      </Modal.Content>
+    </Modal>
   );
 };

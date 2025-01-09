@@ -68,7 +68,9 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
                 <CaptionText className="text-white">{initiator.length}</CaptionText>
               </div>
             )}
-            {initiator.length === 1 && <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />}
+            {initiator.length === 1 && (
+              <AccountComponent variant="short" accountId={initiator[0]!.accountId} chain={chain} />
+            )}
             {initiator.length > 1 && (
               <button
                 type="button"
