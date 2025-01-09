@@ -1,6 +1,3 @@
-// const path = require('node:path');
-// const { execSync } = require('node:child_process');
-
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 

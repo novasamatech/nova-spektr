@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'dev'
+      - 'build/windows'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
