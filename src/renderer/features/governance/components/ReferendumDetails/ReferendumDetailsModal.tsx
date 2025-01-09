@@ -66,7 +66,7 @@ export const ReferendumDetailsModal = ({
   );
 
   return (
-    <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="xl" onToggle={closeModal}>
       <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
       <Modal.Content>
         <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
