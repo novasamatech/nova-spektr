@@ -13,6 +13,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
+  type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
 import { dictionary, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
@@ -38,7 +39,7 @@ export type CreateParams<T extends AnyAccount = AnyAccount> = {
 };
 
 const walletStarted = createEvent();
-const watchOnlyCreated = createEvent<CreateParams<VaultBaseAccount>>();
+const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
 const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();

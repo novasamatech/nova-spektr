@@ -22,8 +22,8 @@ export const WalletVotingInfo = memo(({ referendumId }: Props) => {
     return null;
   }
 
-  const ayeVotes = voting.aye ? `AYE ${voting.aye} votes` : null;
-  const nayVotes = voting.nay ? `NAY ${voting.nay} votes` : null;
+  const ayeVotes = voting.decision === 'Aye' ? `AYE ${voting.votes} votes` : null;
+  const nayVotes = voting.decision === 'Nay' ? `NAY ${voting.votes} votes` : null;
 
   return (
     <div className="rounded-lg border border-filter-border bg-card-background shadow-shadow-1">

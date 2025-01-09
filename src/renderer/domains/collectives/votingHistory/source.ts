@@ -18,6 +18,7 @@ const mapChainVote = (
 
   return {
     accountId: vote.key.accountId,
+    referendumId: vote.key.referendumId,
     votes: vote.vote.data,
     decision: vote.vote.type,
   };
@@ -34,7 +35,6 @@ const GET_VOTES_QUERY = gql`
     votes(filter: { referendumId: { equalTo: $referendumId } }) {
       nodes {
         accountId
-        referendumId
         decision
         votes
         referendum {
@@ -51,6 +51,9 @@ type SubqueryResponse = {
       accountId: AccountId;
       decision: 'aye' | 'nay';
       votes: number;
+      referendum: {
+        index: ReferendumId;
+      };
     }[];
   };
 };
@@ -58,6 +61,7 @@ type SubqueryResponse = {
 const mapSubqueryVote = (vote: ArrayElement<SubqueryResponse['votes']['nodes']>): Vote => {
   return {
     accountId: vote.accountId,
+    referendumId: vote.referendum.index,
     votes: vote.votes,
     decision: vote.decision === 'aye' ? 'Aye' : 'Nay',
   };

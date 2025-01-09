@@ -186,6 +186,6 @@ export const keys = <K extends PropertyKey>(values: Record<K, unknown>): K[] => 
   return Object.keys(values) as K[];
 };
 
-export const entries = <K extends PropertyKey, T>(values: Record<K, T>): [key: K, value: T][] => {
+export const entries = <K extends string | number, T>(values: Record<K, T>): [key: K, value: T][] => {
   return Object.entries(values) as [key: K, value: T][];
 };

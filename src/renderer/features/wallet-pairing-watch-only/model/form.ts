@@ -6,8 +6,8 @@ import {
   AccountType,
   CryptoType,
   SigningType,
-  type VaultBaseAccount,
   WalletType,
+  type WatchOnlyAccount,
   type WatchOnlyWallet,
 } from '@/shared/core';
 import { isEthereumAccountId, toAccountId, validateAddress } from '@/shared/lib/utils';
@@ -64,7 +64,7 @@ const $walletDraft = form.fields.walletName.$value.map(
   },
 );
 
-const $accountDraft = form.$values.map(({ address, walletName }): Omit<VaultBaseAccount, 'id' | 'walletId'> => {
+const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnlyAccount, 'id' | 'walletId'> => {
   const accountId = toAccountId(address);
   const cryptoType = isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
@@ -73,7 +73,7 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<VaultBase
     accountId,
     cryptoType,
     signingType: SigningType.WATCH_ONLY,
-    accountType: AccountType.BASE,
+    accountType: AccountType.WATCH_ONLY,
     type: 'universal',
   };
 });
