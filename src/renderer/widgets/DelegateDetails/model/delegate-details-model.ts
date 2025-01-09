@@ -158,7 +158,7 @@ export const delegateDetailsModel = {
   $activeAccounts,
   $activeTracks,
   $uniqueTracks: $activeTracks.map((tracks) => {
-    const flatTracks = Object.values(tracks).flatMap((tracks) => [...tracks]);
+    const flatTracks = Object.values(tracks).flat();
 
     return uniq(flatTracks);
   }),
