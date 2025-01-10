@@ -10,9 +10,9 @@ import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
-import { walletConnectUtils } from '@/entities/walletConnect';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
+import { walletConnectService } from '@/features/wallet-wallet-connect';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
@@ -58,7 +58,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   const reconnect = () => {
     wcDetailsModel.events.reconnectStarted({
-      chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
+      chains: walletConnectService.getWalletConnectChains(chainsService.getChainsData()),
       pairing: { topic: wallet.accounts[0].signingExtras?.pairingTopic },
       currentSession: wallet.accounts[0].signingExtras?.sessionTopic,
     });

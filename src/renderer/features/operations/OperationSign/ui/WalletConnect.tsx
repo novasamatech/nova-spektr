@@ -13,8 +13,8 @@ import { Animation } from '@/shared/ui/Animation/Animation';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
 import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
+import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectService } from '@/features/wallet-wallet-connect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -121,7 +121,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
 
   const reconnect = () => {
     signWcModel.events.reconnectStarted({
-      chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)),
+      chains: walletConnectService.getWalletConnectChains(Object.values(chains)),
       pairing: { topic: account.signingExtras?.pairingTopic },
     });
   };
@@ -134,7 +134,7 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
         provider,
         payload: {
           // eslint-disable-next-line i18next/no-literal-string
-          chainId: walletConnectUtils.getWalletConnectChainId(transaction.chainId),
+          chainId: walletConnectService.getWalletConnectChainId(transaction.chainId),
           topic: session.topic,
           request: {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,

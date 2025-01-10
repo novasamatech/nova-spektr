@@ -6,7 +6,7 @@ import { createEffect, createEvent, createStore, restore, sample, scopeBind } fr
 import isEmpty from 'lodash/isEmpty';
 
 import { localStorageService } from '@/shared/api/local-storage';
-import { type Account, type ID, kernelModel } from '@/shared/core';
+import { type ID, kernelModel } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { nonNullable } from '@/shared/lib/utils';
 // TODO wallet connect model should be in feature, not entities
@@ -23,18 +23,18 @@ import {
   EXTEND_PAIRING,
   WALLETCONNECT_CLIENT_ID,
 } from '../lib/constants';
+import { walletConnectService } from '../lib/service';
 import { type InitConnectParams } from '../lib/types';
-import { walletConnectUtils } from '../lib/utils';
 
 type SessionTopicParams = {
   walletId: ID;
-  accounts: Account[];
+  accounts: AnyAccount[];
   topic: string;
 };
 
 type UpdateAccountsParams = {
   walletId: ID;
-  accounts: Account[];
+  accounts: AnyAccount[];
 };
 
 const connect = createEvent<Omit<InitConnectParams, 'provider'>>();
@@ -54,7 +54,7 @@ const $session = createStore<SessionTypes.Struct | null>(null).reset(reset);
 const $uri = restore(uriUpdated, '').reset(disconnectCurrentSessionStarted);
 const $accounts = createStore<string[]>([]).reset(reset);
 
-const createProviderFx = createEffect(async (): Promise<Provider | undefined> => {
+const createProviderFx = createEffect(async () => {
   return Provider.init({
     logger: DEFAULT_LOGGER,
     relayUrl: DEFAULT_RELAY_URL,
@@ -63,25 +63,23 @@ const createProviderFx = createEffect(async (): Promise<Provider | undefined> =>
   });
 });
 
-const initConnectFx = createEffect(
-  async ({ provider, chains, pairing }: InitConnectParams): Promise<SessionTypes.Struct | undefined> => {
-    const optionalNamespaces = {
-      polkadot: {
-        chains,
-        methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
-        events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
-      },
-    };
+const initConnectFx = createEffect(async ({ provider, chains, pairing }: InitConnectParams) => {
+  const optionalNamespaces = {
+    polkadot: {
+      chains,
+      methods: [DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION],
+      events: [DEFAULT_POLKADOT_EVENTS.CHAIN_CHANGED, DEFAULT_POLKADOT_EVENTS.ACCOUNTS_CHANGED],
+    },
+  };
 
-    return provider.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
-  },
-);
+  return provider.connect({ pairingTopic: pairing?.topic, optionalNamespaces });
+});
 
 const extendSessionsFx = createEffect((client: Provider) => {
   const sessions = client.client.session.getAll();
 
   for (const s of sessions) {
-    client.client.extend({ topic: s.topic }).catch((e) => console.warn(e));
+    client.client.extend({ topic: s.topic }).catch(e => console.warn(e));
   }
 
   const pairings = client.client.pairing.getAll({ active: true });
@@ -115,11 +113,11 @@ const subscribeToEventsFx = createEffect(({ client }: Provider) => {
     boundSessionUpdated(updatedSession);
   });
 
-  client.on('session_ping', (args) => {
+  client.on('session_ping', args => {
     console.log('WC EVENT', 'session_ping', args);
   });
 
-  client.on('session_event', (args) => {
+  client.on('session_event', args => {
     console.log('WC EVENT', 'session_event', args);
   });
 
@@ -173,7 +171,7 @@ const sessionTopicUpdatedFx = createEffect(
       console.error(e);
     }
 
-    const updatedAccounts = accountsToUpdate.map<AnyAccount>((account) => {
+    const updatedAccounts = accountsToUpdate.map<AnyAccount>(account => {
       if (accountUtils.isWcAccount(account)) {
         return {
           ...account,
@@ -197,13 +195,11 @@ const sessionTopicUpdatedFx = createEffect(
   },
 );
 
-const removePairingFx = createEffect(
-  async ({ provider, topic }: { provider: Provider; topic: string }): Promise<void> => {
-    const reason = getSdkError('USER_DISCONNECTED');
+const removePairingFx = createEffect(async ({ provider, topic }: { provider: Provider; topic: string }) => {
+  const reason = getSdkError('USER_DISCONNECTED');
 
-    await provider.client.pairing.delete(topic, reason);
-  },
-);
+  await provider.client.pairing.delete(topic, reason);
+});
 
 const updateWcAccountsFx = createEffect(async (wcAccounts: AnyAccount[]) => {
   return Promise.all(wcAccounts.map(accounts.updateAccount));
@@ -252,7 +248,7 @@ sample({
 
 sample({
   clock: createProviderFx.doneData,
-  filter: (client): client is Provider => client !== null,
+  filter: nonNullable,
   target: [extendSessionsFx, subscribeToEventsFx, checkPersistedStateFx, logProviderIdFx],
 });
 
@@ -268,14 +264,14 @@ sample({
 
 sample({
   clock: createProviderFx.doneData,
-  filter: (client) => nonNullable(client),
-  fn: (client) => client!,
+  filter: client => nonNullable(client),
+  fn: client => client!,
   target: $provider,
 });
 
 sample({
   clock: createProviderFx.failData,
-  fn: (e) => console.error('Failed to create WalletConnect client', e),
+  fn: e => console.error('Failed to create WalletConnect client', e),
   target: createProviderFx,
 });
 
@@ -293,9 +289,9 @@ sample({
 sample({
   clock: initConnectFx.doneData,
   filter: nonNullable,
-  fn: (session) =>
+  fn: session =>
     Object.values(session!.namespaces)
-      .map((namespace) => namespace.accounts)
+      .map(namespace => namespace.accounts)
       .flat(),
   target: $accounts,
 });
@@ -314,8 +310,8 @@ sample({
 sample({
   clock: disconnectCurrentSessionStarted,
   source: $session,
-  filter: (session) => nonNullable(session),
-  fn: (session) => session!.topic,
+  filter: session => nonNullable(session),
+  fn: session => session!.topic,
   target: disconnectStarted,
 });
 
@@ -370,10 +366,10 @@ sample({
   },
   filter: ({ provider }) => Boolean(provider),
   fn: ({ wallets, provider }) => {
-    return wallets.filter(walletUtils.isWalletConnectGroup).map((wallet) => {
+    return wallets.filter(walletUtils.isWalletConnectGroup).map(wallet => {
       return {
         walletId: wallet.id,
-        data: { isConnected: walletConnectUtils.isConnectedByAccounts(provider!, wallet) },
+        data: { isConnected: walletConnectService.isConnectedByAccounts(provider!, wallet) },
       };
     });
   },

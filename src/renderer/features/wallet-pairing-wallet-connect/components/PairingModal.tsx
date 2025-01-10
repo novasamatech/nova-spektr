@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { Button, HeaderTitleText, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
-import { walletConnectModel } from '@/entities/walletConnect';
+import { walletConnectModel } from '@/features/wallet-wallet-connect';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';
 import { pairingForm } from '../model/pairingForm';
 

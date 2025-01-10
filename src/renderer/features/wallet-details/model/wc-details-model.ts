@@ -7,7 +7,7 @@ import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { type InitConnectParams, walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
+import { type InitConnectParams, walletConnectModel, walletConnectService } from '@/features/wallet-wallet-connect';
 import { ForgetStep, ReconnectStep } from '../lib/constants';
 
 const walletConnectDetailsFlow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -129,7 +129,7 @@ sample({
 sample({
   clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
   source: networkModel.$chains,
-  fn: chains => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
+  fn: chains => ({ chains: walletConnectService.getWalletConnectChains(Object.values(chains)) }),
   target: walletConnectModel.events.connect,
 });
 

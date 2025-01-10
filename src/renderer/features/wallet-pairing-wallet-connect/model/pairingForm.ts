@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-import { walletConnectModel, walletConnectUtils } from '@/entities/walletConnect';
+import { walletConnectModel, walletConnectService } from '@/features/wallet-wallet-connect';
 import { Step } from '../lib/constants';
 
 const reset = createEvent();
@@ -19,7 +19,7 @@ sample({
   clock: flow.open,
   source: { provider: walletConnectModel.$provider, chains: networkModel.$chains },
   filter: ({ provider }) => nonNullable(provider),
-  fn: ({ chains }) => ({ chains: walletConnectUtils.getWalletConnectChains(Object.values(chains)) }),
+  fn: ({ chains }) => ({ chains: walletConnectService.getWalletConnectChains(Object.values(chains)) }),
   target: walletConnectModel.events.connect,
 });
 

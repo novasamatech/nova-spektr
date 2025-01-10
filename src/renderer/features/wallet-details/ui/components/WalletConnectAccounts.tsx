@@ -10,8 +10,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
-import { walletConnectModel } from '@/entities/walletConnect';
 import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
+import { walletConnectModel } from '@/features/wallet-wallet-connect';
 import { wcDetailsUtils } from '../../lib/utils';
 import { wcDetailsModel } from '../../model/wc-details-model';
 

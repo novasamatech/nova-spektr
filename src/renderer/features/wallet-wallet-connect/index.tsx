@@ -8,10 +8,15 @@ import { accountsService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletGroupSlot } from '@/features/wallet-select';
 
-import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+import { WalletGroup } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
 
-export { walletActionsSlot };
+export { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+export { type InitConnectParams, type InitReconnectParams } from './lib/types';
+export { DEFAULT_POLKADOT_METHODS } from './lib/constants';
+export { walletConnectService } from './lib/service';
+export { walletConnectModel } from './model/wallet-connect-model';
+export { walletsModel } from './model/wallets';
 
 export const walletWalletConnectFeature = createFeature({
   name: 'wallet/wallet connect',

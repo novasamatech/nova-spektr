@@ -7,7 +7,7 @@ import { AccountType, type HexString, type WcAccount } from '@/shared/core';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { type InitReconnectParams, walletConnectModel } from '@/entities/walletConnect';
+import { type InitReconnectParams, walletConnectModel } from '@/features/wallet-wallet-connect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { ReconnectStep } from '../lib/types';
 
