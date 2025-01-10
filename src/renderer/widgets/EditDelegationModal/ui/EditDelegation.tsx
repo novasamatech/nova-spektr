@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep } from '@/shared/lib/utils';
+import { Step, isStep, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -32,12 +32,18 @@ export const EditDelegation = () => {
     editDelegationModel.output.flowFinished,
   );
 
-  if (!walletData) {
-    return null;
+  if (isStep(step, Step.INIT)) {
+    return (
+      <DelegateForm
+        isOpen={isStep(step, Step.INIT)}
+        onClose={closeModal}
+        onGoBack={() => editDelegationModel.events.stepChanged(Step.SELECT_TRACK)}
+      />
+    );
   }
 
-  if (isStep(step, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+  if (isStep(step, Step.SELECT_TRACK)) {
+    return <SelectTrackForm isOpen={isStep(step, Step.SELECT_TRACK)} onClose={closeModal} />;
   }
 
   if (isStep(step, Step.BASKET)) {
@@ -52,21 +58,11 @@ export const EditDelegation = () => {
     );
   }
 
-  if (isStep(step, Step.SELECT_TRACK)) {
-    return <SelectTrackForm isOpen={isStep(step, Step.SELECT_TRACK)} onClose={closeModal} />;
+  if (isStep(step, Step.SUBMIT)) {
+    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
 
-  if (isStep(step, Step.INIT)) {
-    return (
-      <DelegateForm
-        isOpen={isStep(step, Step.INIT)}
-        onClose={closeModal}
-        onGoBack={() => editDelegationModel.events.stepChanged(Step.SELECT_TRACK)}
-      />
-    );
-  }
-
-  if (transactions === undefined) {
+  if (nullable(transactions)) {
     return null;
   }
 
@@ -109,7 +105,7 @@ export const EditDelegation = () => {
             </div>
           }
         >
-          {transactions?.map((t, index) => (
+          {transactions.map((_, index) => (
             <ConfirmSlider.Item key={index}>
               <Confirmation id={index} hideSignButton />
             </ConfirmSlider.Item>
