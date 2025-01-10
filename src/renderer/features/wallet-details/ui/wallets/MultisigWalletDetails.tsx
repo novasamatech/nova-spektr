@@ -1,17 +1,16 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Contact, type FlexibleMultisigWallet, type MultisigWallet, type Wallet } from '@/shared/core';
+import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { toAddress } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
+import { useToggle } from '@/shared/lib/hooks';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
 import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
-import { Dropdown } from '@/shared/ui-kit';
+import { Dropdown, Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -19,7 +18,7 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { walletDetailsModel } from '../../model/wallet-details-model';
+import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 
@@ -35,24 +34,17 @@ const {
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
-  signatoryWallets: [Wallet, AccountId][];
-  signatoryContacts: Contact[];
-  signatoryPeople: AccountId[];
   onClose: () => void;
 };
-export const MultisigWalletDetails = ({
-  wallet,
-  signatoryWallets = [],
-  signatoryContacts = [],
-  signatoryPeople = [],
-  onClose,
-}: Props) => {
+export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
+  useGate(multisigWalletDetailsModel.flow, { wallet });
+
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
+  const signatories = useUnit(multisigWalletDetailsModel.$signatories);
 
-  const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
@@ -142,7 +134,7 @@ export const MultisigWalletDetails = ({
       id: 1,
       title: t('walletDetails.multisig.accountTab'),
       panel: (
-        <div className="h-[337px] overflow-y-auto">
+        <div className="h-[347px] overflow-y-auto">
           <div className="flex flex-col gap-y-3 px-5">
             <FootnoteText className="text-text-tertiary">{t('walletDetails.multisig.accountGroup')}</FootnoteText>
 
@@ -159,7 +151,7 @@ export const MultisigWalletDetails = ({
             </FootnoteText>
 
             <ul className="flex flex-col gap-y-2">
-              {signatoryWallets.map(([wallet, accountId]) => (
+              {signatories.wallets.map(([wallet, accountId]) => (
                 <li key={accountId} className="-mx-2">
                   <WalletCardMd
                     wallet={wallet}
@@ -173,7 +165,7 @@ export const MultisigWalletDetails = ({
                   </WalletCardMd>
                 </li>
               ))}
-              {signatoryContacts.map(signatory => (
+              {signatories.contacts.map(signatory => (
                 <li key={signatory.accountId} className="-mx-2">
                   <ContactItem
                     name={signatory.name}
@@ -184,7 +176,7 @@ export const MultisigWalletDetails = ({
                   </ContactItem>
                 </li>
               ))}
-              {signatoryPeople.map(accountId => (
+              {signatories.people.map(accountId => (
                 <li key={accountId} className="-mx-2">
                   <ContactItem address={accountId} addressPrefix={singleChain.addressPrefix}>
                     <AccountExplorers accountId={accountId} chain={singleChain} />
@@ -221,14 +213,14 @@ export const MultisigWalletDetails = ({
           </FootnoteText>
 
           <div className="mt-4 h-[337px] overflow-y-auto">
-            {signatoryWallets.length > 0 && (
+            {signatories.wallets.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <FootnoteText className="px-5 text-text-tertiary">
-                  {t('walletDetails.multisig.walletsGroup')} {signatoryWallets.length}
+                  {t('walletDetails.multisig.walletsGroup')} {signatories.wallets.length}
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2 px-5">
-                  {signatoryWallets.map(([wallet, accountId]) => (
+                  {signatories.wallets.map(([wallet, accountId]) => (
                     <li key={accountId} className="-mx-2">
                       <WalletCardMd
                         wallet={wallet}
@@ -246,14 +238,14 @@ export const MultisigWalletDetails = ({
               </div>
             )}
 
-            {signatoryContacts.length > 0 && (
+            {signatories.contacts.length > 0 && (
               <div className="mt-4 flex flex-col gap-y-2 px-5">
                 <FootnoteText className="text-text-tertiary">
-                  {t('walletDetails.multisig.contactsGroup')} {signatoryContacts.length}
+                  {t('walletDetails.multisig.contactsGroup')} {signatories.contacts.length}
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2">
-                  {signatoryContacts.map(signatory => (
+                  {signatories.contacts.map(signatory => (
                     <li key={signatory.accountId} className="-mx-2">
                       <ContactItem name={signatory.name} address={signatory.accountId}>
                         <RootExplorers accountId={signatory.accountId} />
@@ -277,10 +269,10 @@ export const MultisigWalletDetails = ({
       id: 3,
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[371px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+        <ProxiesList className="h-[347px]" wallet={wallet} canCreateProxy={canCreateProxy} />
       ) : (
         <NoProxiesAction
-          className="h-[371px]"
+          className="h-[347px]"
           canCreateProxy={canCreateProxy}
           onAddProxy={addProxy.events.flowStarted}
         />
@@ -291,47 +283,44 @@ export const MultisigWalletDetails = ({
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal w-[448px]"
-      title={t('walletDetails.common.title')}
-      actionButton={ActionButton}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
-      <div className="flex w-full flex-col gap-y-4">
-        {singleChain ? (
-          <div className="flex flex-col gap-y-2.5 border-b border-divider px-5 py-6">
+    <>
+      <Modal size="md" height="lg" isOpen onToggle={open => !open && onClose()}>
+        <Modal.Title close action={ActionButton}>
+          {t('walletDetails.common.title')}
+        </Modal.Title>
+        <Modal.HeaderContent>
+          <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 py-6">
             <WalletCardLg wallet={wallet} />
-            <div className="flex items-center">
-              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-              <div className="flex items-center text-footnote">
-                <Trans
-                  t={t}
-                  i18nKey="walletDetails.multisig.singleChainTitle"
-                  components={{
-                    chain: (
-                      <ChainTitle
-                        className="mx-1 gap-x-1"
-                        fontClass="text-text-primary"
-                        chainId={singleChain.chainId}
-                      />
-                    ),
-                  }}
-                  values={{ threshold: multisigAccount.threshold, signatories: multisigAccount.signatories.length }}
-                />
+            {nonNullable(singleChain) && (
+              <div className="flex items-center">
+                <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+                <div className="flex items-center text-footnote">
+                  <Trans
+                    t={t}
+                    i18nKey="walletDetails.multisig.singleChainTitle"
+                    components={{
+                      chain: (
+                        <ChainTitle
+                          className="mx-1 gap-x-1"
+                          fontClass="text-text-primary"
+                          chainId={singleChain.chainId}
+                        />
+                      ),
+                    }}
+                    values={{
+                      threshold: multisigAccount.threshold,
+                      signatories: multisigAccount.signatories.length,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="border-b border-divider px-5 py-6">
-            <WalletCardLg wallet={wallet} />
-          </div>
-        )}
-
-        <Tabs unmount={false} tabClassName="whitespace-nowrap" tabsClassName="mx-4" items={TabItems} />
-      </div>
+        </Modal.HeaderContent>
+        <Modal.Content>
+          <Tabs unmount={false} tabClassName="whitespace-nowrap" tabsClassName="mx-4" items={TabItems} />
+        </Modal.Content>
+      </Modal>
 
       <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
@@ -344,6 +333,6 @@ export const MultisigWalletDetails = ({
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
-    </BaseModal>
+    </>
   );
 };
