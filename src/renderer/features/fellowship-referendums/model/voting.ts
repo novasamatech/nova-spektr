@@ -1,6 +1,6 @@
 import { createStore, sample } from 'effector';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { toKeysRecord } from '@/shared/lib/utils';
 import { type Vote, collectiveDomain } from '@/domains/collectives';
 

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
 import { basketModel } from '@/entities/basket';

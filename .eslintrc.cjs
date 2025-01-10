@@ -89,6 +89,9 @@ module.exports = {
       env: {
         node: true,
       },
+      globals: {
+        vi: true,
+      },
     },
     {
       files: [path.join(localesPath, '/*.json')],

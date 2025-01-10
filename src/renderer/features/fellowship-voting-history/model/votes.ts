@@ -2,7 +2,7 @@ import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { or } from 'patronum';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { collectiveDomain } from '@/domains/collectives';

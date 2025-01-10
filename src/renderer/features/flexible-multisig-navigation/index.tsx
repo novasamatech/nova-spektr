@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { and } from 'patronum';
 
 import { $features } from '@/shared/config/features';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { navigationTopLinksPipeline } from '@/features/app-shell';

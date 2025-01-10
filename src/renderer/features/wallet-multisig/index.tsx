@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { walletGroupSlot } from '@/features/wallet-select';
 
