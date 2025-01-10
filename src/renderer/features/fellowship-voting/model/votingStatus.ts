@@ -27,13 +27,13 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
 const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
-  return collectiveDomain.membersService.findMatchingMember(featureInput.accounts, members);
+  return collectiveDomain.membersService.findMatchingMember(featureInput.activeAccounts, members);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMatchingAccount(input.accounts, member);
+  return collectiveDomain.membersService.findMatchingAccount(input.activeAccounts, member);
 });
 
 const $hasRequiredRank = combine(
@@ -69,17 +69,22 @@ const $referendumVoting = combine($walletVoting, $referendumId, (voting, referen
 sample({
   clock: attachToFeatureInput(votingFeatureStatus, $referendums),
 
-  fn: ({ input: { palletType, api, chainId, wallet }, data: referendums }) => {
+  fn: ({ input: { palletType, api, chainId, activeAccounts }, data: referendums }) => {
     return {
       palletType,
       api,
       chainId,
       referendums: referendums.map(r => r.id),
-      accounts: wallet.accounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
+      accounts: activeAccounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
     };
   },
 
-  target: collectiveDomain.voting.subscribe,
+  target: collectiveDomain.voting.subscribeAccountsVoting,
+});
+
+sample({
+  clock: votingFeatureStatus.stopped,
+  target: collectiveDomain.voting.unsubscribeAccountsVoting,
 });
 
 export const votingStatusModel = {

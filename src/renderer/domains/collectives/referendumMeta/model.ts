@@ -4,7 +4,7 @@ import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
 import { dictionary, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 

@@ -1,6 +1,6 @@
 export { collectiveDomain } from './init';
 
-export type { CollectivePalletsType } from './lib/types';
+export type { CollectivePalletsType } from './_lib/types';
 
 export type {
   ApprovedReferendum,
@@ -13,7 +13,7 @@ export type {
   RejectedReferendum,
   Tally,
   TimedOutReferendum,
-} from './model/referendum/types';
+} from './referendum/types';
 
 export type {
   LinearDecreasingCurve,
@@ -22,10 +22,10 @@ export type {
   Track,
   VotingCurve,
   VotingThreshold,
-} from './model/tracks/types';
+} from './tracks/types';
 
-export type { Voting, VotingTransaction } from './model/voting/types';
+export type { VotingTransaction } from './voting/types';
 
-export type { Member, CoreMember } from './model/members/types';
+export type { Member, CoreMember } from './members/types';
 
-export type { Vote } from './model/votes/types';
+export type { Vote } from './votingHistory/types';

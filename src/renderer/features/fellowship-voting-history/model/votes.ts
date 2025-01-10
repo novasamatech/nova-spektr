@@ -12,11 +12,11 @@ import { votingHistoryFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId }>();
 
-const $votes = fellowshipModel.$store.map(store => store?.votes ?? {});
-const $votesList = combine($votes, gate.state, (votes, { referendumId }) => {
+const $voting = fellowshipModel.$store.map(store => store?.voting ?? []);
+const $votesList = combine($voting, gate.state, (votes, { referendumId }) => {
   if (nullable(referendumId)) return [];
 
-  return votes[referendumId] ?? [];
+  return votes.filter(vote => vote.referendumId === referendumId) ?? [];
 });
 
 const referendumUpdate = attachToFeatureInput(votingHistoryFeatureStatus, gate.open);
@@ -25,13 +25,13 @@ sample({
   clock: referendumUpdate,
   filter: ({ data: { referendumId } }) => nonNullable(referendumId),
   fn: ({ data: { referendumId }, input }) => ({ ...input, referendumId }),
-  target: collectiveDomain.votes.request,
+  target: collectiveDomain.voting.request,
 });
 
 export const votesModel = {
   $votesList,
-  $pending: or(collectiveDomain.votes.pending, votingHistoryFeatureStatus.isStarting),
-  $fulfilled: collectiveDomain.votes.fulfilled,
+  $pending: or(collectiveDomain.voting.pending, votingHistoryFeatureStatus.isStarting),
+  $fulfilled: collectiveDomain.voting.fulfilled,
 
   gate,
 };
