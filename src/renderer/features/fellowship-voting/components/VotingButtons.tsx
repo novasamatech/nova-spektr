@@ -36,8 +36,8 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
 
   const buttonDiabled = !canVote || !hasRequiredRank;
 
-  const renderAyeButton = nullable(voting) || !voting.aye;
-  const renderNayButton = nullable(voting) || !voting.nay;
+  const renderAyeButton = nullable(voting) || voting.decision !== 'Aye';
+  const renderNayButton = nullable(voting) || voting.decision !== 'Nay';
 
   return (
     <>
