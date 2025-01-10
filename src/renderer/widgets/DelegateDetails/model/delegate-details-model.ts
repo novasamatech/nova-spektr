@@ -103,6 +103,12 @@ const $isRevokeAvailable = $activeDelegations.map((delegations) => {
   return Object.values(delegations).length === 1;
 });
 
+const $uniqueTracks = $activeTracks.map((tracks) => {
+  const flatTracks = Object.values(tracks).flatMap((tracks) => [...tracks]);
+
+  return uniq(flatTracks);
+});
+
 sample({
   clock: flowStarted,
   fn: () => true,
@@ -157,7 +163,7 @@ export const delegateDetailsModel = {
   $delegate,
   $activeAccounts,
   $activeTracks,
-  $uniqueTracks: $activeTracks.map((tracks) => uniq(Object.values(tracks).flat())),
+  $uniqueTracks,
   $activeDelegations,
 
   $isAddAvailable,
