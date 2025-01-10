@@ -88,11 +88,11 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   const $unsubscribeFn = createStore<UnsubscribeFn | null>(null);
   const $subscribed = $unsubscribeFn.map(nonNullable);
 
-  const subscribeFx = createEffect<Params, UnsubscribeFn>((params) => {
+  const subscribeFx = createEffect<Params, UnsubscribeFn>(params => {
     const bindedReceived = scope ? scopeBind(received, { scope }) : received;
     const bindedDone = scope ? scopeBind(done, { scope }) : done;
 
-    return fn(params, (result) => {
+    return fn(params, result => {
       if (result.done) {
         if (result.value !== undefined) {
           bindedReceived({ params, result: result.value });
@@ -107,7 +107,7 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   const unsubscribeFx = createEffect(({ fn }: { fn: UnsubscribeFn | null; resubscribe: Params | null }) => {
     if (fn) {
       if (fn instanceof Promise) {
-        return fn.then((x) => x());
+        return fn.then(x => x());
       } else {
         return fn();
       }
@@ -143,7 +143,7 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   sample({
     clock: unsubscribe,
     source: $unsubscribeFn,
-    fn: (subscribeFn) => ({ fn: subscribeFn, resubscribe: null }),
+    fn: subscribeFn => ({ fn: subscribeFn, resubscribe: null }),
     target: unsubscribeFx,
   });
 

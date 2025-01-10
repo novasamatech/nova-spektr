@@ -1,5 +1,7 @@
+/* eslint-disable import-x/max-dependencies */
+
 import { kernelModel } from '@/shared/core';
-import { registerFeatures } from '@/shared/effector';
+import { registerFeatures } from '@/shared/feature';
 import { accounts } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
@@ -57,7 +59,10 @@ export const initModel = () => {
     operationsNavigationFeature,
     contactsNavigationFeature,
     notificationsNavigationFeature,
+    basketNavigationFeature,
     settingsNavigationFeature,
+    flexibleMultisigNavigationFeature,
+
     walletSelectFeature.feature,
     walletDetailsFeature,
 
@@ -68,38 +73,12 @@ export const initModel = () => {
     walletPairingWatchOnlyFeature,
     walletPairingLedgerFeature,
 
-    walletDetailsFeature,
     walletMultisigFeature,
     walletProxiedFeature,
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
+
+    importDBFeature,
   ]);
-
-  walletPairingFeature.start();
-  walletPairingMultisigFeature.start();
-  walletPairingPolkadotVaultFeature.start();
-  walletPairingWalletConnectFeature.start();
-  walletPairingWatchOnlyFeature.start();
-  walletPairingLedgerFeature.start();
-  importDBFeature.start();
-
-  walletProxiedFeature.start();
-  walletMultisigFeature.start();
-  walletPolkadotVaultFeature.start();
-  walletWalletConnectFeature.start();
-  walletWatchOnlyFeature.start();
-
-  assetsNavigationFeature.start();
-  stakingNavigationFeature.start();
-  governanceNavigationFeature.start();
-  fellowshipNavigationFeature.start();
-  operationsNavigationFeature.start();
-  contactsNavigationFeature.start();
-  notificationsNavigationFeature.start();
-  settingsNavigationFeature.start();
-  basketNavigationFeature.start();
-  flexibleMultisigNavigationFeature.start();
-
-  walletSelectFeature.feature.start();
 };

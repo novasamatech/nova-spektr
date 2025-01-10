@@ -1,4 +1,4 @@
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { accountsService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletGroupSlot } from '@/features/wallet-select';

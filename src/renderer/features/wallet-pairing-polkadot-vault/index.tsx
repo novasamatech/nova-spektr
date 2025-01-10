@@ -1,7 +1,7 @@
 import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { WalletOnboardingCard } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';

@@ -1,6 +1,6 @@
 import { combine, sample } from 'effector';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { identityDomain } from '@/domains/identity';
 
 import { votingHistoryFeatureStatus } from './status';

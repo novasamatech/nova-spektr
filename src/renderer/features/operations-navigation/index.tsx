@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { MultisigTxInitStatus } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';

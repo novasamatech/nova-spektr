@@ -1,6 +1,6 @@
 import { sample } from 'effector';
 
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 import { ERROR } from '../constants';
 
