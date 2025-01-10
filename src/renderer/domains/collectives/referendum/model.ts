@@ -6,7 +6,7 @@ import { createDataSource, createDataSubscription, createPagesHandler } from '@/
 import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { type CollectivePalletsType, type CollectivesStruct } from '../../lib/types';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { mapReferendums } from './mapper';
 import { type Referendum } from './types';

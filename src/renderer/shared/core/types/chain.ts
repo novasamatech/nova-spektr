@@ -54,5 +54,6 @@ export const enum ExternalType {
   CROWDLOANS = 'crowdloans',
   PROXY = 'proxy',
   DELEGATIONS = 'governance-delegations',
+  COLLECTIVES = 'collectives',
 }
 type HistoryType = 'subquery' | 'github';

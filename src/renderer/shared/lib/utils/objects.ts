@@ -16,6 +16,10 @@ export const setNestedValue = <K extends string, T extends string, V>(
   innerKey: T,
   value: V,
 ): Record<string, Record<T, V>> => {
+  if (map[outerKey]?.[innerKey] === value) {
+    return map as Record<string, Record<T, V>>;
+  }
+
   return {
     ...map,
     [outerKey]: {

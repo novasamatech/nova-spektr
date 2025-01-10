@@ -415,6 +415,10 @@ module.exports = {
             message: '`combine` must be called with not more than 3 arguments.',
             selector: 'CallExpression[callee.name="combine"][arguments.length>3]',
           },
+          {
+            message: 'debug helper should be removed from production code.',
+            selector: 'ImportDeclaration[source.value="patronum"] ImportSpecifier[imported.name="debug"]',
+          },
         ],
       },
     },

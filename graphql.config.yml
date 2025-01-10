@@ -14,6 +14,6 @@ projects:
     schema: https://subquery-history-polkadot-prod.novasama-tech.org
 
   SubQuery Collectives:
-    schema: https://subquery-collectives-polkadot-prod.novasama-tech.org
+    schema: https://subquery-collectives-polkadot-stg.novasama-tech.org
     include:
       - src/renderer/domains/collectives/**

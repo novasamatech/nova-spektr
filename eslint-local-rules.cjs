@@ -3,4 +3,3 @@ module.exports = {
   'no-relative-import-from-root': require('./eslint/rules/no-relative-import-from-root.cjs'),
   'enforce-di-naming-convention': require('./eslint/rules/enforce-di-naming-convention.cjs'),
 };
-
