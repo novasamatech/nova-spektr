@@ -2,6 +2,7 @@ import { combine } from 'effector';
 
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
+import { accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
 
@@ -10,8 +11,9 @@ const $input = combine(
     network: fellowshipNetworkFeature.model.network.$network,
     wallets: walletModel.$wallets,
     wallet: walletModel.$activeWallet,
+    accounts: accounts.$list,
   },
-  ({ network, wallets, wallet }) => {
+  ({ network, wallets, wallet, accounts }) => {
     if (nullable(network) || nullable(wallet)) return null;
 
     return {
@@ -21,6 +23,7 @@ const $input = combine(
       chainId: network.chainId,
       palletType: network.palletType,
       activeAccounts: wallet.accounts,
+      accounts,
       wallets,
       wallet,
     };

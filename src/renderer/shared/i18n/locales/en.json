@@ -361,6 +361,7 @@
     "voting": {
       "voted": "Voted:",
       "errors": {
+        "noAccount": "Account for voting not found",
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
       "votingStatus": "Voting status",
