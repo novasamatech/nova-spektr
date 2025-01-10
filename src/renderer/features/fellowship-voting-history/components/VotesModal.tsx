@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
-import { Box, Modal } from '@/shared/ui-kit';
+import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
 import { votingHistoryFeatureStatus } from '../model/status';
 import { votesModel } from '../model/votes';
 
@@ -16,6 +16,7 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
   useGate(votingHistoryFeatureStatus.gate);
 
   const { t } = useI18n();
+  const [query, setQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState(0);
 
   const votes = useUnit(votesModel.$votesList);
@@ -48,7 +49,7 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
           </FootnoteText>
         </span>
       ),
-      panel: <VotingHistoryList chain={chain} items={ayes} loading={isLoading} />,
+      panel: null,
     },
     {
       id: 'nays',
@@ -59,7 +60,7 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
           {nays.length.toString()}
         </span>
       ),
-      panel: <VotingHistoryList chain={chain} items={nays} loading={isLoading} />,
+      panel: null,
     },
   ];
 
@@ -67,10 +68,21 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
     <Modal size="md" height="full">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.votingHistory.modalTitle')}</Modal.Title>
-      <Modal.Content>
-        <Box padding={[4, 5]} gap={6} fillContainer>
-          <Tabs panelClassName="overflow-y-auto grow" items={tabs} onChange={setSelectedTab} />
+      <Modal.HeaderContent>
+        <Box padding={[4, 5, 2]}>
+          <Tabs panelClassName="m-0" tabsClassName="mb-6" items={tabs} onChange={setSelectedTab} />
+          <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
         </Box>
+      </Modal.HeaderContent>
+      <Modal.Content>
+        <Carousel item={selectedTab.toString()}>
+          <Carousel.Item id="0" index={0}>
+            <VotingHistoryList query={query} chain={chain} items={ayes} loading={isLoading} />
+          </Carousel.Item>
+          <Carousel.Item id="1" index={1}>
+            <VotingHistoryList query={query} chain={chain} items={nays} loading={isLoading} />
+          </Carousel.Item>
+        </Carousel>
       </Modal.Content>
     </Modal>
   );

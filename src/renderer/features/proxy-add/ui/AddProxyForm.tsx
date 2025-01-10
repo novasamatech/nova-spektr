@@ -7,11 +7,12 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
 import { Field } from '@/shared/ui-kit';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
@@ -100,14 +101,15 @@ const AccountSelector = () => {
   }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+    const id = networkDomain.accountsService.uniqId(account);
 
     return {
-      id: account.id.toString(),
+      id,
       value: account,
       element: (
-        <div className="flex w-full justify-between" key={account.id}>
+        <div className="flex w-full justify-between" key={id}>
           <AccountAddress
             size={20}
             type="short"
@@ -126,7 +128,7 @@ const AccountSelector = () => {
       <Select
         label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={account.value.id.toString()}
+        selectedId={networkDomain.accountsService.uniqId(account.value)}
         options={options}
         disabled={options.length === 1}
         onChange={({ value }) => account.onChange(value)}
@@ -173,14 +175,15 @@ const ProxyInput = () => {
   const proxyQuery = useUnit(formModel.$proxyQuery);
 
   const options = proxyAccounts.map((proxyAccount) => {
-    const isShard = accountUtils.isShardAccount(proxyAccount);
+    const isShard = accountUtils.isVaultShardAccount(proxyAccount);
     const address = toAddress(proxyAccount.accountId, { prefix: chain.value.addressPrefix });
+    const id = networkDomain.accountsService.uniqId(proxyAccount);
 
     return {
-      id: proxyAccount.id.toString(),
+      id,
       value: address,
       element: (
-        <div className="flex w-full justify-between" key={proxyAccount.id}>
+        <div className="flex w-full justify-between" key={id}>
           <AccountAddress
             size={20}
             type="short"
@@ -269,14 +272,16 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <ProxyDepositWithLabel
-        api={api}
-        deposit={oldProxyDeposit}
-        proxyNumber={activeProxies.length + 1}
-        asset={chain.value.assets[0]}
-        onDepositChange={formModel.events.proxyDepositChanged}
-        onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
-      />
+      <ProxyDepositLabel>
+        <ProxyDeposit
+          api={api}
+          deposit={oldProxyDeposit}
+          proxyNumber={activeProxies.length + 1}
+          asset={chain.value.assets?.[0]}
+          onDepositChange={formModel.events.proxyDepositChanged}
+          onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
+        />
+      </ProxyDepositLabel>
 
       {isMultisig && (
         <MultisigDepositWithLabel

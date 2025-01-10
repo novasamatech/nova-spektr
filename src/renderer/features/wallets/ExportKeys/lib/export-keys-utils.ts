@@ -1,5 +1,6 @@
 import { chainsService } from '@/shared/api/network';
-import { type AccountId, type ChainAccount, type ChainId, type ShardAccount } from '@/shared/core';
+import { type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
 export const exportKeysUtils = {
@@ -8,7 +9,7 @@ export const exportKeysUtils = {
 
 const IMPORT_FILE_VERSION = 1;
 
-function getExportStructure(rootAccountId: AccountId, accounts: (ChainAccount | ShardAccount[])[]): string {
+function getExportStructure(rootAccountId: AccountId, accounts: (VaultChainAccount | VaultShardAccount[])[]): string {
   const set = new Set<ChainId>();
   let output = `version: ${IMPORT_FILE_VERSION}\n`;
   output += `public address: ${rootAccountId}\n`;
@@ -25,7 +26,7 @@ function getExportStructure(rootAccountId: AccountId, accounts: (ChainAccount | 
   return output;
 }
 
-function accountToDerivationExport(account: ChainAccount | ShardAccount[]): string {
+function accountToDerivationExport(account: VaultChainAccount | VaultShardAccount[]): string {
   const isSharded = accountUtils.isAccountWithShards(account);
   const data = isSharded ? account[0] : account;
   const derivationPath = isSharded

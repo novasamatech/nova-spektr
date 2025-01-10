@@ -83,8 +83,8 @@ export const sortByDateDesc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]
 export const sortByDateAsc = <T>([dateA]: [string, T[]], [dateB]: [string, T[]]): number =>
   new Date(dateA) > new Date(dateB) ? 1 : -1;
 
-export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], true> => {
-  const res: Record<string, true> = {};
+export const toKeysRecord = <T extends PropertyKey[]>(array: T): Record<T[number], true> => {
+  const res: Record<PropertyKey, true> = {};
 
   for (let i = 0; i < array.length; i++) {
     const item = array[i];
@@ -100,11 +100,17 @@ export const toKeysRecord = <T extends string[]>(array: T): Record<T[number], tr
 type MergeParams<T> = {
   a: T[];
   b: T[];
-  mergeBy: (value: T) => PropertyKey;
+  mergeBy: (value: T) => PropertyKey | (PropertyKey | undefined)[];
+  merge?: (a: T, b: T) => T;
   sort?: (a: T, b: T) => number;
+  filter?: (a: T, b: T) => boolean;
 };
 
-export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
+const createMergeKey = (key: PropertyKey | (PropertyKey | undefined)[]) => {
+  return Array.isArray(key) ? key.join('|') : key;
+};
+
+export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>) => {
   if (a.length === 0) {
     return b;
   }
@@ -121,8 +127,10 @@ export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
       continue;
     }
 
-    map[mergeBy(item)] = item;
+    map[createMergeKey(mergeBy(item))] = item;
   }
+
+  let hadAnyChanges = false;
 
   for (let i = 0; i < b.length; i++) {
     const item = b[i];
@@ -130,10 +138,54 @@ export const merge = <T>({ a, b, mergeBy, sort }: MergeParams<T>) => {
       continue;
     }
 
-    map[mergeBy(item)] = item;
+    const key = createMergeKey(mergeBy(item));
+
+    if (key in map) {
+      const prev = map[key];
+      if (!filter || filter(prev, item)) {
+        hadAnyChanges = true;
+        map[key] = merge ? merge(prev, item) : item;
+      }
+    } else {
+      hadAnyChanges = true;
+      map[key] = item;
+    }
   }
 
-  const res = Object.values(map);
+  if (hadAnyChanges) {
+    const res = Object.values(map);
 
-  return isFunction(sort) ? res.sort(sort) : res;
+    return isFunction(sort) ? res.sort(sort) : res;
+  } else {
+    return isFunction(sort) ? a.sort(sort) : a;
+  }
+};
+
+export const groupBy = <const T, const K extends PropertyKey>(
+  iterable: Iterable<T>,
+  map: (value: NoInfer<T>) => K,
+): Record<K, T[]> => {
+  const groups: Partial<Record<K, T[]>> = {};
+
+  for (const item of iterable) {
+    const itemKey = map(item);
+
+    let list = groups[itemKey];
+    if (list === undefined) {
+      list = [];
+      groups[itemKey] = list;
+    }
+
+    list.push(item);
+  }
+
+  return groups as Record<K, T[]>;
+};
+
+export const keys = <K extends PropertyKey>(values: Record<K, unknown>): K[] => {
+  return Object.keys(values) as K[];
+};
+
+export const entries = <K extends PropertyKey, T>(values: Record<K, T>): [key: K, value: T][] => {
+  return Object.entries(values) as [key: K, value: T][];
 };

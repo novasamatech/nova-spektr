@@ -10,4 +10,4 @@ RUN pnpm install sucrase @babel/register esbuild-register @swc/register
 
 COPY . .
 
-CMD [ "pnpm", "start:renderer" ]
+CMD [ "pnpm", "start:renderer", "--host", "0.0.0.0" ]

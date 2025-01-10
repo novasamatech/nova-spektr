@@ -5,7 +5,8 @@ import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance } from '@/shared/lib/utils';
-import { BaseModal, Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText, Tooltip } from '@/shared/ui';
+import { BaseModal, Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
@@ -233,8 +234,13 @@ const FeeSection = () => {
             <>
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-              <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
               </Tooltip>
             </>
           }

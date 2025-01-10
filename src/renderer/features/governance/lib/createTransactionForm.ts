@@ -14,11 +14,10 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { createTxStore } from '@/shared/transactions';
 import { balanceUtils } from '@/entities/balance';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-
-import { createTxStore } from './createTxStore';
 
 export type BasicFormParams = {
   account: Account | null;
@@ -127,7 +126,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
         const shards = wallet.accounts.filter((a) => {
           return (
             accountUtils.isChainAndCryptoMatch(a, chain) &&
-            (accountUtils.isShardAccount(a) || accountUtils.isChainAccount(a))
+            (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
           );
         });
 
@@ -135,7 +134,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           walletAccounts = shards;
         } else {
           walletAccounts = wallet.accounts.filter(
-            (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+            (a) => accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
           );
         }
       } else {
@@ -278,8 +277,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   sample({
     clock: reinitForm,
     source: $signatories,
-    filter: $signatories.map((x) => x.length < 2),
-    fn: (s) => s.at(0) ?? null,
+    filter: (signatories) => signatories.length === 1,
+    fn: (signers) => {
+      const signer = signers.at(0);
+
+      return signer ? signer.account : null;
+    },
     target: form.fields.signatory.onChange,
   });
 

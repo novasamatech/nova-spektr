@@ -12,7 +12,7 @@ import './Modal.css';
 type Props = {
   isOpen?: boolean;
   size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
-  height?: 'full' | 'fit';
+  height?: 'full' | 'lg' | 'fit';
   onToggle?: (open: boolean) => void;
 };
 
@@ -20,13 +20,13 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
   const { portalContainer } = useTheme();
 
   const arrayChildren = Children.toArray(children);
-  const triggerNode = arrayChildren.find((child) => {
+  const triggerNode = arrayChildren.find(child => {
     return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
   });
-  const modalNodes = triggerNode ? arrayChildren.filter((child) => child !== triggerNode) : arrayChildren;
+  const modalNodes = triggerNode ? arrayChildren.filter(child => child !== triggerNode) : arrayChildren;
 
   const hasTitle =
-    modalNodes.find((child) => {
+    modalNodes.find(child => {
       return nonNullable(child) && isObject(child) && 'type' in child && child.type === Title;
     }) !== null;
 
@@ -44,7 +44,9 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
           <Dialog.Content
             aria-describedby={undefined}
             className={cnTw(
-              'ui-kit-modal-height flex min-w-32 max-w-full transform flex-col overflow-hidden rounded-lg bg-white text-left align-middle text-body shadow-modal transition-all',
+              'ui-kit-modal-height flex min-w-32 max-w-full flex-col overflow-hidden',
+              'text-left align-middle text-body',
+              'transform rounded-lg bg-white shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',
@@ -55,6 +57,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
                 'w-fit': size === 'fit',
                 'h-fit': height === 'fit',
                 'h-full': height === 'full',
+                'h-modal': height === 'lg',
               },
             )}
           >
@@ -94,9 +97,17 @@ const Title = ({ action, close, children }: TitleProps) => {
   );
 };
 
+const HeaderContent = ({ children }: PropsWithChildren) => {
+  return (
+    <header aria-level={2} className="shrink-0">
+      {children}
+    </header>
+  );
+};
+
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
   return disableScroll ? (
-    <div className="h-full flex-grow overflow-hidden">{children}</div>
+    <div className="flex h-full min-h-0 flex-grow flex-col overflow-hidden">{children}</div>
   ) : (
     <ScrollArea>{children}</ScrollArea>
   );
@@ -113,6 +124,7 @@ const Footer = ({ children }: PropsWithChildren) => {
 export const Modal = Object.assign(Root, {
   Trigger,
   Title,
+  HeaderContent,
   Content,
   Footer,
 });

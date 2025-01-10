@@ -55,7 +55,7 @@ function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
-function isFlexibleMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
+function isFlexibleMultisig(wallet?: Wallet | null): wallet is FlexibleMultisigWallet {
   return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
 }
 

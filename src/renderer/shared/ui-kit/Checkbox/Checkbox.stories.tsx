@@ -19,7 +19,7 @@ export const Default: Story = {
     const [checked, onToggle] = useState(false);
 
     return (
-      <Checkbox {...args} checked={checked} onChange={(checked) => onToggle(checked)}>
+      <Checkbox {...args} checked={checked} onChange={checked => onToggle(checked)}>
         Checkbox
       </Checkbox>
     );

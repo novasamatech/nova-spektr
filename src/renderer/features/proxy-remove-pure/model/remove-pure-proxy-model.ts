@@ -15,7 +15,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { nonNullable, nullable, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
@@ -27,7 +27,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { removePureProxiedConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { removePureProxiedConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/RemovePureProxied';
 import { removePureProxyUtils } from '../lib/remove-pure-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -90,7 +90,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -140,7 +140,7 @@ const $signatories = combine(
           chain.assets[0].assetId.toString(),
         );
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);

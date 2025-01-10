@@ -10,7 +10,7 @@ export const settingsNavigationFeature = createFeature({
 
 settingsNavigationFeature.inject(navigationBottomLinksPipeline, (items) => {
   return items.concat({
-    order: 1,
+    order: 2,
     icon: 'settings',
     title: 'navigation.settingsLabel',
     link: Paths.SETTINGS,

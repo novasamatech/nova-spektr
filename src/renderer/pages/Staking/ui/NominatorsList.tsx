@@ -2,11 +2,19 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Account, type Address, type Asset, type BaseAccount, type Chain, type ShardAccount } from '@/shared/core';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Chain,
+  type VaultBaseAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, Icon, Tooltip } from '@/shared/ui';
+import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address as AddressComponent } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
@@ -15,7 +23,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: (NominatorInfo<BaseAccount> | NominatorInfo<ShardAccount>[])[];
+  nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;
@@ -43,13 +51,18 @@ export const NominatorsList = ({
     if (!nextUnstakingEra) return;
 
     return (
-      <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />}>
-        <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
-          <Icon name="unstake" className="text-icon-accent" size={14} />
-          <HelpText className="text-icon-accent">
-            <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
-          </HelpText>
-        </div>
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
+            <Icon name="unstake" className="text-icon-accent" size={14} />
+            <HelpText className="text-icon-accent">
+              <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
+            </HelpText>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <Trans t={t} i18nKey="staking.tooltips.unstakeDescription" />{' '}
+        </Tooltip.Content>
       </Tooltip>
     );
   };
@@ -58,11 +71,16 @@ export const NominatorsList = ({
     if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
-      <Tooltip offsetPx={-65} content={<Trans t={t} i18nKey="staking.tooltips.redeemDescription" />}>
-        <div className="flex items-center gap-x-1 rounded-md bg-positive-background px-2 py-0.5 text-text-positive">
-          <Icon name="redeem" className="text-text-positive" size={14} />
-          <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
-        </div>
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div className="flex items-center gap-x-1 rounded-md bg-positive-background px-2 py-0.5 text-text-positive">
+            <Icon name="redeem" className="text-text-positive" size={14} />
+            <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <Trans t={t} i18nKey="staking.tooltips.redeemDescription" />
+        </Tooltip.Content>
       </Tooltip>
     );
   };

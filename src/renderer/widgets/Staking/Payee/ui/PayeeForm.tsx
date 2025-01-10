@@ -15,9 +15,9 @@ import {
   InputHint,
   MultiSelect,
   RadioGroup,
-  Tooltip,
 } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
+import { Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
@@ -96,7 +96,7 @@ const AccountsSelector = () => {
   }
 
   const options = accounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {
@@ -191,7 +191,7 @@ const Destination = () => {
   }));
 
   const destinationOptions = destinationAccounts.map((account) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {
@@ -286,8 +286,13 @@ const FeeSection = () => {
             <>
               <Icon className="text-text-tertiary" name="lock" size={12} />
               <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-              <Tooltip content={t('staking.tooltips.depositDescription')} offsetPx={-90}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
               </Tooltip>
             </>
           }

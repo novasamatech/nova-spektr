@@ -9,7 +9,7 @@ WORKDIR /project
 RUN npm install -g pnpm
 RUN pnpm install
 RUN if [ "$BUILD_TYPE" = "development" ]; then \
-        pnpm build:stage && pnpm postbuild:stage; \
+        pnpm build:staging && pnpm postbuild:staging; \
     else\
         pnpm build && pnpm postbuild; \
     fi

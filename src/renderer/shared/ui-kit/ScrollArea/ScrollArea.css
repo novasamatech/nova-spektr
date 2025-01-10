@@ -1,0 +1,14 @@
+
+
+.scrollArea {
+  --scroll-area-top-fade: 0px;
+  --scroll-area-bottom-fade: 0px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0px,
+    black var(--scroll-area-top-fade),
+    black calc(100% - var(--scroll-area-bottom-fade)),
+    transparent 100%
+  );
+}

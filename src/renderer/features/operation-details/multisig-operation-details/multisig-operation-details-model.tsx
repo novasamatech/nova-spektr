@@ -3,25 +3,18 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { createFeature } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
+import { cnTw, copyToClipboard, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
-import { AddressStyle, InteractionStyle, Status, operationDetailsUtils, operationsModel } from '@/entities/operations';
+import { InteractionStyle, Status, operationDetailsUtils, operationsModel } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { TransactionTitle } from '@/entities/transaction';
-import {
-  AddressWithExplorers,
-  ExplorersPopover,
-  WalletCardSm,
-  WalletIcon,
-  accountUtils,
-  walletModel,
-} from '@/entities/wallet';
+import { ExplorersPopover, WalletCardSm, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 export const multisigOperationDetailsFeature = createFeature({
@@ -218,15 +211,26 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
                       addressPrefix={addressPrefix}
                     />
                   ) : (
-                    <AddressWithExplorers
-                      explorers={explorers}
-                      accountId={depositorSignatory.accountId}
-                      name={depositorSignatory.name}
-                      addressFont={AddressStyle}
-                      addressPrefix={addressPrefix}
-                      wrapperClassName="min-w-min"
-                      type="short"
-                    />
+                    <div className="flex min-w-min">
+                      <FootnoteText className="w-[180px] text-text-secondary">
+                        <Address
+                          address={toAddress(depositorSignatory.accountId, { prefix: addressPrefix })}
+                          variant="short"
+                          showIcon
+                        />
+                      </FootnoteText>
+                      <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
+                    </div>
+
+                    // <AddressWithExplorers
+                    //   explorers={explorers}
+                    //   accountId={depositorSignatory.accountId}
+                    //   name={depositorSignatory.name}
+                    //   addressFont={AddressStyle}
+                    //   addressPrefix={addressPrefix}
+                    //   wrapperClassName="min-w-min"
+                    //   type="short"
+                    // />
                   )}
                 </div>
               </DetailRow>

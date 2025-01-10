@@ -1,4 +1,4 @@
-import { type BaseAccount, type ChainAccount, type ShardAccount } from '@/shared/core';
+import { type VaultBaseAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 
 import { accountUtils } from './account-utils';
 
@@ -7,25 +7,31 @@ export const modelUtils = {
 };
 
 type AccountsGroup = {
-  base: BaseAccount[];
-  chains: ChainAccount[][];
-  shards: ShardAccount[][];
+  base: VaultBaseAccount[];
+  chains: VaultChainAccount[][];
+  shards: VaultShardAccount[][];
 };
-function groupAccounts(accounts: Omit<BaseAccount | ChainAccount | ShardAccount, 'id' | 'walletId'>[]) {
+function groupAccounts(
+  accounts: (
+    | Omit<VaultBaseAccount, 'id' | 'walletId'>
+    | Omit<VaultChainAccount, 'id' | 'walletId'>
+    | Omit<VaultShardAccount, 'id' | 'walletId'>
+  )[],
+) {
   return accounts.reduce<AccountsGroup>(
     (acc, account) => {
       const lastBaseIndex = acc.base.length - 1;
 
-      if (accountUtils.isBaseAccount(account)) {
+      if (accountUtils.isVaultBaseAccount(account)) {
         acc.base.push(account);
       }
-      if (accountUtils.isChainAccount(account)) {
+      if (accountUtils.isVaultChainAccount(account)) {
         if (!acc.chains[lastBaseIndex]) {
           acc.chains[lastBaseIndex] = [];
         }
         acc.chains[lastBaseIndex].push(account);
       }
-      if (accountUtils.isShardAccount(account)) {
+      if (accountUtils.isVaultShardAccount(account)) {
         if (!acc.shards[lastBaseIndex]) {
           acc.shards[lastBaseIndex] = [];
         }

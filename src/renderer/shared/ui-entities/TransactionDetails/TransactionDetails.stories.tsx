@@ -14,10 +14,10 @@ import { Box } from '@/shared/ui-kit';
 
 import { TransactionDetails } from './TransactionDetails';
 
-const initiatorAccount = createBaseAccount(1);
-const secondAccount = createBaseAccount(2);
-const proxyAccount = createProxiedAccount(1);
-const signatoryAccount = createWcAccount(1);
+const initiatorAccount = createBaseAccount('1');
+const secondAccount = createBaseAccount('2');
+const proxyAccount = createProxiedAccount('1');
+const signatoryAccount = createWcAccount('1');
 
 const meta: Meta<typeof TransactionDetails> = {
   title: 'Design System/entities/TransactionDetails',
@@ -26,7 +26,7 @@ const meta: Meta<typeof TransactionDetails> = {
     chain: polkadotChain,
   },
   decorators: [
-    (Story) => (
+    Story => (
       <Box width="400px">
         <Story />
       </Box>

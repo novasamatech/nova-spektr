@@ -15,6 +15,6 @@ const $input = combine(formModel.$createMultisigForm.fields.chainId.$value, netw
 });
 
 export const flexibleMultisigFeature = createFeature({
-  name: 'flexible multisig/create',
+  name: 'flexible multisig/pairing',
   input: $input,
 });

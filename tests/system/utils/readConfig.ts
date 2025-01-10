@@ -1,8 +1,9 @@
 import fs from 'fs';
-import path from 'path';
+import url from 'node:url';
 
 export async function readConfig(): Promise<any> {
-  const chainsFilePath = path.resolve(__dirname, '../../../src/renderer/shared/config/chains/chains.json');
+  const chainsJsonURL = new URL('../../../src/renderer/shared/config/chains/chains.json', import.meta.url);
+  const chainsFilePath = url.fileURLToPath(chainsJsonURL);
   const chainsData = JSON.parse(fs.readFileSync(chainsFilePath, 'utf-8'));
 
   return chainsData;

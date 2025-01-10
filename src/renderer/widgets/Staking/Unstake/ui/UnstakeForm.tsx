@@ -6,6 +6,7 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect, Shimmering } from '@/shared/ui';
+import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
@@ -84,14 +85,15 @@ const AccountsSelector = () => {
   }
 
   const options = accounts.map(({ account, balances }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+    const id = networkDomain.accountsService.uniqId(account);
 
     return {
-      id: account.id.toString(),
+      id: id,
       value: account,
       element: (
-        <div className="flex w-full justify-between" key={account.id}>
+        <div className="flex w-full justify-between" key={id}>
           <AccountAddress
             size={20}
             type="short"
@@ -112,7 +114,7 @@ const AccountsSelector = () => {
         placeholder={t('staking.bond.accountPlaceholder')}
         multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
         invalid={shards.hasError()}
-        selectedIds={shards.value.map((acc) => acc.id.toString())}
+        selectedIds={shards.value.map(networkDomain.accountsService.uniqId)}
         options={options}
         onChange={(values) => shards.onChange(values.map(({ value }) => value))}
       />

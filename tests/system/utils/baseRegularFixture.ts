@@ -1,5 +1,4 @@
-import { test as base } from '@playwright/test';
-import { type Browser, type BrowserContext, type Page, chromium } from 'playwright';
+import { type Browser, type BrowserContext, type Page, test as base, chromium } from '@playwright/test';
 
 import { LoginPageElements } from '../pages/_elements/LoginPageElements';
 import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';

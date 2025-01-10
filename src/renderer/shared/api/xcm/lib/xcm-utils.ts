@@ -3,8 +3,9 @@ import { type Balance } from '@polkadot/types/interfaces';
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import get from 'lodash/get';
 
-import { type AccountId, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { TEST_ACCOUNTS, getTypeVersion, isEthereumAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { INSTRUCTION_OBJECT } from './constants';
 import {
@@ -79,6 +80,8 @@ function getEstimatedFeeFromConfig(
 
   const fee = weightToFee(weight, new BN(xcmTransfer.destination.fee.mode.value));
 
+  if (!assetLocation?.reserveFee) return fee;
+
   const isReserveChain = [originChain, xcmTransfer.destination.chainId].includes(assetLocation.chainId);
 
   if (isReserveChain) return fee;
@@ -98,12 +101,12 @@ function sortJunctions(a: JunctionTypeKey, b: JunctionTypeKey): number {
   return JunctionHierarchyLevel[a] - JunctionHierarchyLevel[b];
 }
 
-function createJunctionFromObject(data: Record<string, unknown>) {
+function createJunctionFromObject(version: string, data: Record<string, unknown>) {
   const entries = Object.entries(data);
 
   if (entries.length === 0) return 'Here';
 
-  if (entries.length === 1) {
+  if (['V2', 'V3'].includes(version) && entries.length === 1) {
     return {
       X1: {
         [JunctionType[entries[0][0] as JunctionTypeKey]]: entries[0][1],
@@ -120,52 +123,53 @@ function createJunctionFromObject(data: Record<string, unknown>) {
   };
 }
 
-function getRelativeAssetLocation(assetLocation?: LocalMultiLocation) {
+function getRelativeAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parachainId: _, ...location } = assetLocation;
 
   return {
     parents: 0,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getAbsoluteAssetLocation(assetLocation?: LocalMultiLocation) {
+function getAbsoluteAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(assetLocation),
+    interior: createJunctionFromObject(version, assetLocation),
   };
 }
 
-function getConcreteAssetLocation(assetLocation?: LocalMultiLocation) {
+function getConcreteAssetLocation(version: string, assetLocation?: LocalMultiLocation) {
   if (!assetLocation) return;
 
   const { parents, ...location } = assetLocation;
 
   return {
     parents,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
 function getDestinationLocation(
+  version: string,
   originChain: Pick<Chain, 'parentId'>,
   destinationParaId?: number,
   accountId?: AccountId,
 ) {
   if (originChain.parentId && destinationParaId) {
-    return getSiblingLocation(destinationParaId, accountId);
+    return getSiblingLocation(version, destinationParaId, accountId);
   }
 
   if (originChain.parentId) {
-    return getParentLocation(accountId);
+    return getParentLocation(version, accountId);
   }
 
   if (destinationParaId) {
-    return getChildLocation(destinationParaId, accountId);
+    return getChildLocation(version, destinationParaId, accountId);
   }
 
   return undefined;
@@ -177,68 +181,74 @@ function getAccountLocation(accountId?: AccountId) {
   return {
     parents: 0,
     interior: {
-      X1: {
-        [isEthereum ? 'accountKey20' : 'accountId32']: {
-          network: 'Any',
-          [isEthereum ? 'key' : 'id']: accountId,
+      X1: [
+        {
+          [isEthereum ? 'accountKey20' : 'accountId32']: {
+            network: null,
+            [isEthereum ? 'key' : 'id']: accountId,
+          },
         },
-      },
+      ],
     },
   };
 }
 
-function getChildLocation(parachainId: number, accountId?: AccountId) {
+function getChildLocation(version: string, parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 
   return {
     parents: 0,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getParentLocation(accountId?: AccountId) {
+function getParentLocation(version: string, accountId?: AccountId) {
   const location: Record<string, any> = {};
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
-function getSiblingLocation(parachainId: number, accountId?: AccountId) {
+function getSiblingLocation(version: string, parachainId: number, accountId?: AccountId) {
   const location: Record<string, any> = { parachainId };
   const isEthereum = isEthereumAccountId(accountId);
 
   if (accountId) {
     location[isEthereum ? 'accountKey' : 'accountId'] = {
-      network: 'Any',
+      network: null,
       [isEthereum ? 'key' : 'id']: accountId,
     };
   }
 
   return {
     parents: 1,
-    interior: createJunctionFromObject(location),
+    interior: createJunctionFromObject(version, location),
   };
 }
 
 function getJunctionCols<T>(interior: Record<string, object>, path: string): T {
+  if (path === 'X1') {
+    return get(interior, path) as T;
+  }
+
   return Object.values(get(interior, path)).reduce((acc, item) => {
     return { ...acc, ...item };
   }, {});

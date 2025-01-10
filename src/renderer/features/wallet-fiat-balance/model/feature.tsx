@@ -1,5 +1,5 @@
 import { createFeature } from '@/shared/effector';
 
-export const walletsFiatBalanceFeatureStatus = createFeature({
+export const walletFiatBalanceFeatureStatus = createFeature({
   name: 'wallet/fiat balance',
 });

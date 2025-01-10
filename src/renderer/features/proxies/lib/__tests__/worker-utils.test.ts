@@ -1,14 +1,15 @@
 import { type NoID, type PartialProxiedAccount, type ProxyAccount } from '@/shared/core';
 import { AccountType, ChainType, CryptoType, ProxyVariant } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proxyWorkerUtils } from '../worker-utils';
 
 describe('features/proxies/lib/worker-utils', () => {
   test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxy = {
       id: 1,
-      accountId: '0x00',
-      proxiedAccountId: '0x01',
+      accountId: '0x00' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -16,8 +17,8 @@ describe('features/proxies/lib/worker-utils', () => {
 
     const newProxy = {
       id: 2,
-      accountId: '0x00',
-      proxiedAccountId: '0x01',
+      accountId: '0x00' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -31,8 +32,8 @@ describe('features/proxies/lib/worker-utils', () => {
   test('should return false when oldProxy and newProxy have different properties', () => {
     const oldProxy = {
       id: 1,
-      accountId: '0x00',
-      proxiedAccountId: '0x01',
+      accountId: '0x00' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -40,8 +41,8 @@ describe('features/proxies/lib/worker-utils', () => {
 
     const newProxy = {
       id: 2,
-      accountId: '0x01',
-      proxiedAccountId: '0x02',
+      accountId: '0x01' as AccountId,
+      proxiedAccountId: '0x02' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -54,12 +55,11 @@ describe('features/proxies/lib/worker-utils', () => {
 
   test('should return true when oldProxy and newProxy have the same properties', () => {
     const oldProxied = {
-      id: 0,
       walletId: 0,
       name: 'Proxied wallet',
-      type: AccountType.PROXIED,
-      accountId: '0x00',
-      proxyAccountId: '0x01',
+      accountType: AccountType.PROXIED,
+      accountId: '0x00' as AccountId,
+      proxyAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -69,12 +69,11 @@ describe('features/proxies/lib/worker-utils', () => {
     } as PartialProxiedAccount;
 
     const newProxied = {
-      id: 2,
       walletId: 1,
       name: 'Proxied wallet 2',
-      type: AccountType.PROXIED,
-      accountId: '0x00',
-      proxyAccountId: '0x01',
+      accountType: AccountType.PROXIED,
+      accountId: '0x00' as AccountId,
+      proxyAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -90,12 +89,11 @@ describe('features/proxies/lib/worker-utils', () => {
 
   test('should return false when oldProxied and newProxied have different properties', () => {
     const oldProxied = {
-      id: 0,
       walletId: 0,
       name: 'Proxied wallet',
-      type: AccountType.PROXIED,
-      accountId: '0x00',
-      proxyAccountId: '0x01',
+      accountType: AccountType.PROXIED,
+      accountId: '0x00' as AccountId,
+      proxyAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,
@@ -105,12 +103,11 @@ describe('features/proxies/lib/worker-utils', () => {
     } as PartialProxiedAccount;
 
     const newProxied = {
-      id: 2,
       walletId: 1,
       name: 'Proxied wallet 2',
-      type: AccountType.PROXIED,
-      accountId: '0x00',
-      proxyAccountId: '0x02',
+      accountType: AccountType.PROXIED,
+      accountId: '0x00' as AccountId,
+      proxyAccountId: '0x02' as AccountId,
       chainId: '0x06',
       proxyType: 'Any',
       delay: 0,
@@ -150,8 +147,8 @@ describe('features/proxies/lib/worker-utils', () => {
 
   test('should check proxy is delayed (true for delay > 0)', () => {
     const proxy = {
-      accountId: '0x00',
-      proxiedAccountId: '0x01',
+      accountId: '0x00' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 1,
@@ -162,8 +159,8 @@ describe('features/proxies/lib/worker-utils', () => {
 
   test('should check proxy is delayed (false for delay === 0)', () => {
     const proxy = {
-      accountId: '0x00',
-      proxiedAccountId: '0x01',
+      accountId: '0x00' as AccountId,
+      proxiedAccountId: '0x01' as AccountId,
       chainId: '0x05',
       proxyType: 'Any',
       delay: 0,

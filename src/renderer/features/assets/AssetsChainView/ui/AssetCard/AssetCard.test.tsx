@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 
 import chains from '@/shared/config/chains/chains.json';
 import { type Asset, type Balance, type Chain, WalletType } from '@/shared/core';
@@ -12,7 +13,7 @@ import { walletModel } from '@/entities/wallet';
 
 import { AssetCard } from './AssetCard';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -63,7 +64,7 @@ describe('pages/Assets/AssetCard', () => {
 
   test('should navigate to receive asset modal', async () => {
     const scope = fork({
-      values: new Map().set(walletModel._test.$allWallets, [
+      values: new Map().set(walletModel.__test.$rawWallets, [
         {
           walletId: 1,
           type: WalletType.POLKADOT_VAULT,
@@ -72,6 +73,7 @@ describe('pages/Assets/AssetCard', () => {
       ]),
     });
 
+    const origin = window.location.origin;
     window.history.pushState({}, '', '/assets');
 
     await act(async () => {
@@ -83,13 +85,15 @@ describe('pages/Assets/AssetCard', () => {
       );
     });
 
-    expect(window.location.href).toEqual('http://localhost/assets');
+    expect(window.location.href).toEqual(new URL('/assets', origin).toString());
 
     const link = screen.getAllByRole('link')[1];
     act(() => link.click());
 
     const chainId = defaultProps.chainId;
     const assetId = defaultProps.asset.assetId;
-    expect(window.location.href).toEqual(`http://localhost/assets/receive?chainId=${chainId}&assetId=${assetId}`);
+    expect(window.location.href).toEqual(
+      new URL(`/assets/receive?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
+    );
   });
 });

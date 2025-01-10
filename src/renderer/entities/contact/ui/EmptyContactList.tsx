@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon } from '@/shared/ui';
+import { Graphics } from '@/shared/ui-kit';
 
 type Props = {
   description?: string;
@@ -22,7 +23,7 @@ export const EmptyContactList = ({ description, onNewContact }: Props) => {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-y-4">
-      <Icon as="img" name="emptyList" alt={t('addressBook.contactList.noContactsLabel')} size={178} />
+      <Graphics name="emptyList" alt={t('addressBook.contactList.noContactsLabel')} size={178} />
       <BodyText className="text-text-tertiary">{description || t('addressBook.contactList.noContactsLabel')}</BodyText>
 
       <Button

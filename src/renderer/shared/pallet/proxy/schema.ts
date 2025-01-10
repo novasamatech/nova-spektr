@@ -29,6 +29,10 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
   'Balances',
   'AuthorMapping',
   'Spokesperson',
+  'ChildKeys',
+  'RootWeights',
+  'SudoUncheckedSetCode',
+  'Owner',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;

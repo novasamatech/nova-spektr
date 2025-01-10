@@ -8,16 +8,9 @@ import { FootnoteText } from '@/shared/ui';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
-import { type InnerSigningProps } from '../lib/types';
+import { type SigningProps } from '../lib/types';
 
-export const Vault = ({
-  apis,
-  signingPayloads,
-  signerWallet,
-  validateBalance,
-  onGoBack,
-  onResult,
-}: InnerSigningProps) => {
+export const Vault = ({ apis, signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
 
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
@@ -120,7 +113,6 @@ export const Vault = ({
               address={getSignerAddress()}
               countdown={countdown}
               account={signingPayloads[0].signatory || signingPayloads[0].account}
-              signerWallet={signerWallet!}
               transaction={signingPayloads[0].transaction}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}

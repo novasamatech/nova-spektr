@@ -1,17 +1,16 @@
 import { act, render, screen } from '@testing-library/react';
 import { BrowserCodeReader, BrowserQRCodeReader } from '@zxing/browser';
+import { vi } from 'vitest';
 
 import { QR_READER_ERRORS } from '../common/errors';
 import { QrError } from '../common/types';
 
 import { QrReader } from './QrReader';
 
-jest.mock('raptorq');
-
 const spyStop = jest.fn();
 const spyTrackStop = jest.fn();
 
-jest.mock('@zxing/browser', () => ({
+vi.mock('@zxing/browser', () => ({
   BrowserCodeReader: {
     listVideoInputDevices: jest.fn().mockResolvedValue([{ deviceId: '123', label: 'my_device' }]),
   },
@@ -22,7 +21,7 @@ jest.mock('@zxing/browser', () => ({
   })),
 }));
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),

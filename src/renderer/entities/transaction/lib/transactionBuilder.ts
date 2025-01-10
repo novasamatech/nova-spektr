@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
+import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
-  type AccountId,
   type Address,
   type Asset,
   type Chain,
@@ -18,6 +18,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
@@ -72,11 +73,15 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
     transactionType = xcmData.transactionType;
   }
 
+  const palletName =
+    asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
+
   return {
     chainId: chain.chainId,
     address: toAddress(accountId, { prefix: chain.addressPrefix }),
     type: transactionType,
     args: {
+      palletName,
       dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
       value: formatAmount(amount, asset.precision) || '1',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),

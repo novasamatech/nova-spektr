@@ -7,9 +7,7 @@ import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import {
-  type Account,
   type Address,
-  type BaseAccount,
   type Chain,
   type MultisigTxWrapper,
   type ProxiedAccount,
@@ -17,6 +15,7 @@ import {
   type ProxyType,
   type Transaction,
   TransactionType,
+  type VaultBaseAccount,
   type Wallet,
 } from '@/shared/core';
 import {
@@ -31,6 +30,7 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
@@ -48,8 +48,8 @@ type ProxyAccounts = {
 
 type FormParams = {
   chain: Chain;
-  account: Account;
-  signatory: Account | null;
+  account: AnyAccount;
+  signatory: AnyAccount | null;
   delegate: Address;
   proxyType: ProxyType;
 };
@@ -61,7 +61,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     multisigDeposit: string;
@@ -116,7 +116,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     account: {
-      init: {} as BaseAccount,
+      init: {} as VaultBaseAccount,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -221,7 +221,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -280,7 +280,7 @@ const $proxyChains = combine(
 
     return proxyChains.filter((chain) => {
       return wallet.accounts.some((account) => {
-        if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+        if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
 
         return accountUtils.isChainAndCryptoMatch(account, chain);
       });
@@ -299,7 +299,7 @@ const $proxiedAccounts = combine(
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = wallet.accounts.filter((account) => {
-      if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+      if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
 
       return accountUtils.isChainAndCryptoMatch(account, chain);
     });
@@ -330,7 +330,7 @@ const $signatories = combine(
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+    return wallets.reduce<{ signer: AnyAccount; balance: string }[]>((acc, wallet) => {
       if (!permissionUtils.canCreateMultisigTx(wallet)) return acc;
 
       const signer = wallet.accounts.find((a) => {
@@ -364,10 +364,10 @@ const $proxyAccounts = combine(
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       if (isBaseAccount && isPvWallet) return false;
 
-      const isShardAccount = accountUtils.isShardAccount(account);
+      const isShardAccount = accountUtils.isVaultShardAccount(account);
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 

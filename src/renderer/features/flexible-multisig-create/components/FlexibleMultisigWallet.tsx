@@ -1,5 +1,6 @@
 import { useForm } from 'effector-forms';
 import { useGate, useUnit } from 'effector-react';
+import { type ComponentProps, type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep } from '@/shared/lib/utils';
@@ -15,13 +16,22 @@ import { NameNetworkSelection } from './NameNetworkSelection';
 import { SelectSignatoriesThreshold } from './SelectThreshold/SelectSignatoriesThreshold';
 import { SignerSelection } from './SignerSelection';
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  onGoBack: () => void;
+const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
+  [Step.NAME_NETWORK]: { size: 'lg', height: 'full' },
+  [Step.SIGNATORIES_THRESHOLD]: { size: 'lg', height: 'full' },
+  [Step.SIGNER_SELECTION]: { size: 'sm', height: 'fit' },
+  [Step.SIGN]: { size: 'md', height: 'fit' },
+  [Step.CONFIRM]: { size: 'md', height: 'fit' },
+  [Step.SUBMIT]: { size: 'md', height: 'fit' },
 };
 
-export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => {
+type Props = PropsWithChildren<{
+  isOpen: boolean;
+  onToggle: (open: boolean) => void;
+  onGoBack: () => void;
+}>;
+
+export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) => {
   const { t } = useI18n();
   useGate(flexibleMultisigFeature.gate);
 
@@ -31,7 +41,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
   } = useForm(formModel.$createMultisigForm);
 
   if (isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isOpen} onClose={onClose} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => onToggle(false)} />;
   }
 
   const modalTitle = (
@@ -53,17 +63,23 @@ export const FlexibleMultisigWallet = ({ isOpen, onClose, onGoBack }: Props) => 
   );
 
   return (
-    <>
+    <Modal
+      isOpen={isOpen}
+      size={MODAL_SIZE[activeStep].size}
+      height={MODAL_SIZE[activeStep].height}
+      onToggle={onToggle}
+    >
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{modalTitle}</Modal.Title>
-      <Modal.Content>
-        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
-        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-        {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-        {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
-        {isStep(activeStep, Step.SIGN) && (
+      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
+      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
+      {isStep(activeStep, Step.SIGN) && (
+        <Modal.Content>
           <OperationSign onGoBack={() => flexibleMultisigModel.events.stepChanged(Step.CONFIRM)} />
-        )}
-      </Modal.Content>
-    </>
+        </Modal.Content>
+      )}
+    </Modal>
   );
 };

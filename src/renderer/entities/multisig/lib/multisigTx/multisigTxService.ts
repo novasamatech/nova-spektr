@@ -4,7 +4,6 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { chainsService } from '@/shared/api/network';
 import { type MultisigTransactionDS, storage } from '@/shared/api/storage';
 import {
-  type AccountId,
   type CallData,
   type MultisigAccount,
   type MultisigTransaction,
@@ -12,7 +11,8 @@ import {
   MultisigTxInitStatus,
 } from '@/shared/core';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
-import { getCurrentBlockNumber, getExpectedBlockTime, toAddress } from '@/shared/lib/utils';
+import { getCurrentBlockNumber, getExpectedBlockTime, toAddress, validateCallData } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useCallDataDecoder } from '@/entities/transaction';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 
@@ -241,6 +241,8 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
       if (!extrinsic.argsDef.call) return;
 
       const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
+
+      if (!validateCallData(callData, tx.callHash)) return;
 
       updateCallData(api, tx, callData);
     } catch (e) {

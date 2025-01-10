@@ -1,7 +1,8 @@
 {
   "accountList": {
     "addressColumn": "Account",
-    "networksColumn": "Network { chains }"
+    "networksColumn_one": "Network {count}",
+    "networksColumn_other": "Networks {count}"
   },
   "addressBook": {
     "contactList": {
@@ -136,8 +137,7 @@
       "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",
-    "duplicateSignatoryErrorTitle": "Duplicate signatory",
-    "duplicateSignatoryErrorText": "The list must consist of unique signatories",
+    "duplicateSignatoryAddress": "Signatory address already exist",
     "errorMessage": "Something went wrong",
     "flexibleMultisig": {
       "flexible": "Flexible multisig",
@@ -150,8 +150,8 @@
     "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
     "multisigExistText": "A multisig wallet with the selected signatories and threshold already exists. You can try to create a multisig on another network.",
-    "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you. Would you like to restore it now?",
     "multisigExistTitle": "Multisig wallet already exists",
+    "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
     "multisigStep": "Step { step }.",
     "nameDescription": "Give a name to your multisig account",
     "nameLabel": "Account",
@@ -164,15 +164,14 @@
     "noOwnSignatoryTitle": "No owned account",
     "noWallets": "Looks like you don't have any non-watch only wallets",
     "noWalletsLabel": "The wallet list is empty",
-    "notEnoughTokensTitle": "Not enough tokens",
-    "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit and network fee on a selected account",
-    "notEnoughSignatories": "You need to select at least 2 signatories",
-    "notEnoughSignatoriesTitle": "Not enough signatories",
-    "notEmptySignatoryTitle": "Empty signatory",
-    "notEmptySignatoryNameTitle": "Empty signatory name",
     "notEmptySignatory": "No empty signatory allowed",
     "notEmptySignatoryName": "No empty signatory name allowed",
-    "ownAccountSelection": "Address",
+    "notEmptySignatoryNameTitle": "Empty signatory name",
+    "notEmptySignatoryTitle": "Empty signatory",
+    "notEnoughMultisigTokens": "Selected wallets do not have sufficient balance to pay for the proxy deposit, multisig deposit, and network fees",
+    "notEnoughSignatories": "You need to select at least 2 signatories",
+    "notEnoughSignatoriesTitle": "Not enough signatories",
+    "notEnoughTokensTitle": "Not enough tokens",
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
@@ -186,11 +185,11 @@
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <strong>only works on the network</strong> it was created on.",
       "regularNote": "Only multisig deposit is required. This wallet <strong>only works on the network</strong> it was created on."
     },
-    "selectSigner": "Select signer",
+    "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
-    "signatoryAddress": "Signatory address",
+    "signatoryAddress": "Address",
     "signatoryNameLabel": "Signatory name",
     "signatorySelection": "Choose or enter address",
     "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your multisig.",
@@ -199,12 +198,12 @@
     "signingWith": "Signing with",
     "successMessage": "Wallet added",
     "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
-    "thresholdErrorTitle": "Invalid threshold",
     "thresholdErrorDescription": "Threshold must be set and superior or equal to { minThreshold }",
+    "thresholdErrorTitle": "Invalid threshold",
     "thresholdHint": "Minimum number of signatories needed to approve a transaction.",
     "thresholdName": "Threshold",
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
-    "thresholdPlaceholder": "Select threshold",
+    "thresholdPlaceholder": "Select number",
     "title": "Create multisig",
     "titleOn": "on",
     "walletFormTitle": "Set up your wallet",
@@ -309,6 +308,9 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
+    "details": {
+      "noDetails": "Details not found"
+    },
     "errors": {
       "disconnect": {
         "action": "Open network settings",
@@ -324,22 +326,7 @@
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members"
     },
-    "voting": {
-      "voted": "Voted:",
-      "errors": {
-        "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
-      },
-      "votingStatus": "Voting status",
-      "summary": "Summary",
-      "title": "Vote on",
-      "threshold": "Threshold",
-      "aye": "Aye",
-      "nay": "Nay",
-      "confirmation": {
-        "vote": "Vote",
-        "fee": "Fee"
-      }
-    },
+    "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "referendums": {
       "tracks": {
@@ -367,14 +354,35 @@
       }
     },
     "title": "Fellowship",
-    "yourProfile": "Your profile",
+    "tooltips": {
+      "noProfile": "You are not a fellowship member",
+      "noAccount": "Please add or create account to the { chain } network"
+    },
+    "voting": {
+      "voted": "Voted:",
+      "errors": {
+        "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
+      },
+      "votingStatus": "Voting status",
+      "summary": "Summary",
+      "title": "Vote on",
+      "threshold": "Threshold",
+      "aye": "Aye",
+      "nay": "Nay",
+      "confirmation": {
+        "vote": "Vote",
+        "fee": "Fee"
+      }
+    },
     "votingHistory": {
       "modalTitle": "Vote history",
       "votes_one": "{count} vote",
       "votes_other": "{count} votes",
       "showHistoryButton": "View vote history",
-      "emptyList": "There is no vote history"
-    }
+      "emptyList": "There is no vote history",
+      "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+    },
+    "yourProfile": "Your profile"
   },
   "general": {
     "actions": {
@@ -743,6 +751,15 @@
       "totalVotesCount": "{value} votes"
     }
   },
+  "importDB": {
+    "continueButton": "Continue",
+    "errors": {
+      "invalidStructure": "Invalid file structure"
+    },
+    "exportButton": "Export database",
+    "fileInputPlaceholder": "Select .json file on your computer",
+    "importTitle": "Import database"
+  },
   "log": {
     "cancelledMessage": "rejected this operation",
     "error": "Error",
@@ -930,6 +947,10 @@
     "cancelTitle": "Reject",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
+    "createFlexibleMultisig": {
+      "title": "Flexible multisig is creating...",
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
+    },
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -991,6 +1012,7 @@
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
+    "signatoriesTitleCount": "Signatories { count }",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",
@@ -1021,7 +1043,8 @@
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
-    "xcmFee": "Cross-chain fee"
+    "xcmFee": "Cross-chain fee",
+    "errorWatchOnly": "Can't sign with watch only account."
   },
   "operations": {
     "callData": {
@@ -1082,6 +1105,7 @@
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
       "approveMultisig": "Approve multisig operation",
+      "batchAll": "Batch All",
       "createPureProxy": "Create pure proxy",
       "crossChainTransfer": "Cross-chain transfer",
       "delegate": "Delegate",
@@ -1677,7 +1701,8 @@
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "shardsTitle": "Shards"
+      "shardsTitle": "Shards",
+      "noAccounts": "No actual accounts data"
     },
     "walletConnect": {
       "abortRejectButton": "Close",
@@ -1715,7 +1740,8 @@
     "shards": "Shards",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only"
+    "watchOnlyLabel": "Watch-only",
+    "emptyList": "Wallets not found"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

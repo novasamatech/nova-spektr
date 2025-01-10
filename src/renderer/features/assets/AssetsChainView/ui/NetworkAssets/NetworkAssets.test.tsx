@@ -1,10 +1,18 @@
 import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
+import { vi } from 'vitest';
 
 import chains from '@/shared/config/chains/chains.json';
-import { type BaseAccount, type Chain, type ChainAccount, type ShardAccount } from '@/shared/core';
-import { AccountType, ChainType, CryptoType } from '@/shared/core';
+import {
+  AccountType,
+  type Chain,
+  CryptoType,
+  SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 
@@ -14,7 +22,7 @@ const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -38,21 +46,22 @@ const testBalances = [
   },
 ];
 
-jest.mock('../AssetCard/AssetCard', () => ({
+vi.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
-const accounts = [
+const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 1,
+    id: '1',
     walletId: 1,
+    type: 'universal',
     name: 'test',
-    type: AccountType.BASE,
+    accountType: AccountType.BASE,
     accountId: TEST_ACCOUNTS[0],
     cryptoType: CryptoType.SR25519,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
   },
-] as (BaseAccount | ChainAccount | ShardAccount)[];
+];
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({

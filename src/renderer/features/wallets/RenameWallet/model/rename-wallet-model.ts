@@ -5,6 +5,7 @@ import { not } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import * as networkDomain from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
 export type Callbacks = {
@@ -44,7 +45,7 @@ const $walletForm = createForm({
 
 const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
-  await storageService.accounts.updateAll(accounts);
+  await Promise.all(accounts.map(networkDomain.accounts.updateAccount));
 
   return { id, accounts, ...rest };
 });

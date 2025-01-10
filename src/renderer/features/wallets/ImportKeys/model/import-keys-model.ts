@@ -3,8 +3,9 @@ import groupBy from 'lodash/groupBy';
 import { reset } from 'patronum';
 import { parse } from 'yaml';
 
-import { type AccountId, type ChainAccount, type ChainId, type DraftAccount, type ShardAccount } from '@/shared/core';
+import { type ChainId, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { PATH_ERRORS } from '../lib/constants';
 import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
@@ -19,7 +20,7 @@ import {
 type SampleFnError = { error: DerivationImportError };
 type ExistingDerivations = {
   root: AccountId;
-  derivations: DraftAccount<ShardAccount | ChainAccount>[];
+  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
 };
 type Report = {
   addedKeys: number;
@@ -31,7 +32,7 @@ type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
 const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
-const $mergedKeys = createStore<DraftAccount<ShardAccount | ChainAccount>[]>([]);
+const $mergedKeys = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -58,7 +59,9 @@ const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImport
   } catch {
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
-  if (importKeysUtils.isFileStructureValid(structure)) return structure;
+  if (importKeysUtils.isFileStructureValid(structure)) {
+    return structure;
+  }
 
   throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
@@ -73,6 +76,8 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 
     const { derivations, root } = parsed;
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
+
+    console.log({ rootAccountId, existingDerivations });
 
     if (rootAccountId !== existingDerivations.root) {
       throw new DerivationImportError(ValidationError.INVALID_ROOT);
@@ -115,7 +120,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: DraftAccount<ShardAccount | ChainAccount>[];
+  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
   report: Report;
 };
 type MergePathsParams = {

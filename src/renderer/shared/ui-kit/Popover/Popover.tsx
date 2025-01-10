@@ -75,7 +75,7 @@ const Content = ({ children }: PropsWithChildren) => {
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <div className="z-50 rounded-md border border-token-container-border bg-block-background-default text-body shadow-shadow-2 duration-100 animate-in fade-in zoom-in-95">
           {children}

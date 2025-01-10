@@ -12,7 +12,7 @@ describe('entities/transaction/lib/extrinsicService', () => {
   let provider: MockProvider;
   let api: ApiPromise;
 
-  beforeEach(async (): Promise<void> => {
+  beforeAll(async () => {
     provider = new MockProvider(registry);
 
     const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
@@ -27,9 +27,7 @@ describe('entities/transaction/lib/extrinsicService', () => {
     });
   });
 
-  afterEach(async () => {
-    await provider.disconnect();
-  });
+  afterAll(() => provider.disconnect());
 
   test.each(extrinsicTests)('$testName', ({ transactionType, args, callData }) => {
     const extrinsic = getExtrinsic[transactionType](args, api);

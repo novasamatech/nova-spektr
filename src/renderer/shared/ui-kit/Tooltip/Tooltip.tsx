@@ -30,7 +30,7 @@ const Root = ({
   onToggle,
   children,
   side = 'top',
-  sideOffset = 2,
+  sideOffset = 1,
   align = 'center',
   alignOffset = 0,
   testId = 'Tooltip',

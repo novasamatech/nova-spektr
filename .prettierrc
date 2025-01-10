@@ -7,9 +7,16 @@
   "trailingComma": "all",
   "arrowParens": "always",
   "endOfLine": "lf",
-  "plugins": ["prettier-plugin-jsdoc", "prettier-plugin-css-order", "prettier-plugin-tailwindcss"],
+  "plugins": [
+    "prettier-plugin-jsdoc",
+    "prettier-plugin-css-order",
+    "prettier-plugin-tailwindcss"
+  ],
   "tailwindConfig": "./tailwind.config.ts",
-  "tailwindFunctions": ["cnTw", "cn"],
+  "tailwindFunctions": [
+    "cnTw",
+    "cn"
+  ],
   "jsdocCommentLineStrategy": "keep",
   "jsdocPreferCodeFences": true,
   "jsdocSeparateTagGroups": true,
@@ -17,7 +24,14 @@
   "proseWrap": "always",
   "overrides": [
     {
-      "files": ["./src/renderer/domains/**/*.ts", "./src/renderer/shared/pallet/**/*.ts", "./src/renderer/features/fellowship-*/**/*.{ts,tsx}"],
+      "files": [
+        "./src/renderer/domains/**/*.ts",
+        "./src/renderer/shared/pallet/**/*.ts",
+        "./src/renderer/features/fellowship-*/**/*.{ts,tsx}",
+        "./src/renderer/features/wallet-*/**/*.{ts,tsx}",
+        "./src/renderer/shared/ui-kit/**/*.{ts,tsx}",
+        "./src/renderer/shared/ui-entities/**/*.{ts,tsx}"
+      ],
       "options": {
         "arrowParens": "avoid"
       }

@@ -29,13 +29,13 @@ export const Default: Story = {
           <Button onClick={() => setItem('3')}>3 Item</Button>
         </Box>
         <Carousel item={item}>
-          <Carousel.Item id="1">
+          <Carousel.Item id="1" index={0}>
             <Skeleton height={32} />
           </Carousel.Item>
-          <Carousel.Item id="2">
+          <Carousel.Item id="2" index={1}>
             <Skeleton height={24} />
           </Carousel.Item>
-          <Carousel.Item id="3">
+          <Carousel.Item id="3" index={2}>
             <Skeleton height={16} />
           </Carousel.Item>
         </Carousel>
@@ -50,7 +50,7 @@ export const InModal: Story = {
     const [item, setItem] = useState('1');
 
     const next = () => {
-      setItem((item) => {
+      setItem(item => {
         switch (item) {
           case '1':
             return '2';
@@ -63,7 +63,7 @@ export const InModal: Story = {
     };
 
     const prev = () => {
-      setItem((item) => {
+      setItem(item => {
         switch (item) {
           case '3':
             return '2';
@@ -81,17 +81,17 @@ export const InModal: Story = {
         <Modal.Content>
           <Box gap={4}>
             <Carousel item={item}>
-              <Carousel.Item id="1">
+              <Carousel.Item id="1" index={0}>
                 <Box padding={2}>
                   <Skeleton height={250} />
                 </Box>
               </Carousel.Item>
-              <Carousel.Item id="2">
+              <Carousel.Item id="2" index={1}>
                 <Box padding={2}>
                   <Skeleton height={56} />
                 </Box>
               </Carousel.Item>
-              <Carousel.Item id="3">
+              <Carousel.Item id="3" index={2}>
                 <Box padding={2}>
                   <Skeleton height={64} />
                 </Box>

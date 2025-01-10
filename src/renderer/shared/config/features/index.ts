@@ -12,10 +12,20 @@ export const $features = createStore({
   governance: true,
   // TODO: Dev only
   fellowship: isDev(),
+  importDB: isDev(),
   operations: true,
+  basket: true,
   contacts: true,
   notifications: true,
   settings: true,
+
+  multisig: true,
+  flexibleMultisig: true,
+  proxy: true,
+  polkadotVault: true,
+  walletConnect: true,
+  watchOnly: true,
+  ledger: true,
 });
 
 persist({

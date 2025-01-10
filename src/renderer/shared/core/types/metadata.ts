@@ -8,6 +8,7 @@ import { type ChainId, type ID, type Metadata } from './general';
 export type ChainMetadata = {
   id: ID;
   chainId: ChainId;
-  version: number;
+  runtimeVersion: number;
+  metadataVersion: number;
   metadata: Metadata;
 };

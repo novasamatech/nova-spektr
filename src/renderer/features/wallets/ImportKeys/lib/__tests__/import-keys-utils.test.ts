@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto';
 
-import { AccountType, type DraftAccount, KeyType, type ShardAccount } from '@/shared/core';
+import { AccountType, type DraftAccount, KeyType, type VaultShardAccount } from '@/shared/core';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
@@ -25,13 +25,13 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should add new derivations', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//gov',
-          type: KeyType.GOVERNANCE,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
         },
         {
-          derivationPath: '//polkadot//staking//some_other_key',
-          type: KeyType.STAKING,
+          derivationPath: '//polkadot//custom//some_other_key',
+          type: KeyType.CUSTOM,
           chainId: importKeysMocks.chainId,
         },
       ];
@@ -55,8 +55,8 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should not duplicate keys', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//gov',
-          type: KeyType.GOVERNANCE,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
         },
         {
@@ -80,8 +80,8 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
     test('should merge sharded keys', () => {
       const importedDerivations = [
         {
-          derivationPath: '//polkadot//staking',
-          type: KeyType.STAKING,
+          derivationPath: '//polkadot//hot',
+          type: KeyType.HOT,
           chainId: importKeysMocks.chainId,
           sharded: '20',
         },
@@ -96,13 +96,15 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         importedDerivations,
       );
 
-      const shardedDerivations = mergedDerivations.filter((d) => d.type === AccountType.SHARD);
-      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//staking//19');
+      const shardedDerivations = mergedDerivations.filter((d) => d.accountType === AccountType.SHARD);
+      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
 
       expect(shardedDerivations.length).toEqual(20);
       expect(added).toEqual(11);
       expect(duplicated).toEqual(10);
-      expect((newStakingShard as DraftAccount<ShardAccount>)?.groupId).toEqual(importKeysMocks.existingShardsGroupId);
+      expect((newStakingShard as DraftAccount<VaultShardAccount>)?.groupId).toEqual(
+        importKeysMocks.existingShardsGroupId,
+      );
     });
   });
 });

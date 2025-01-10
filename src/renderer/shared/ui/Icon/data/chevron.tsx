@@ -1,23 +1,23 @@
 /* eslint-disable import-x/max-dependencies */
 
-import CheckedImg, { ReactComponent as CheckedSvg } from '@/shared/assets/images/chevron/checked.svg';
-import DownImg, { ReactComponent as DownSvg } from '@/shared/assets/images/chevron/down.svg';
-import LeftImg, { ReactComponent as LeftSvg } from '@/shared/assets/images/chevron/left.svg';
-import RightImg, { ReactComponent as RightSvg } from '@/shared/assets/images/chevron/right.svg';
-import SemiCheckedImg, { ReactComponent as SemiCheckedSvg } from '@/shared/assets/images/chevron/semiChecked.svg';
-import ShelfDownImg, { ReactComponent as ShelfDownSvg } from '@/shared/assets/images/chevron/shelfDown.svg';
-import ShelfRightImg, { ReactComponent as ShelfRightSvg } from '@/shared/assets/images/chevron/shelfRight.svg';
-import UpImg, { ReactComponent as UpSvg } from '@/shared/assets/images/chevron/up.svg';
+import CheckedIcon from '@/shared/assets/images/chevron/checked.svg?jsx';
+import DownIcon from '@/shared/assets/images/chevron/down.svg?jsx';
+import LeftIcon from '@/shared/assets/images/chevron/left.svg?jsx';
+import RightIcon from '@/shared/assets/images/chevron/right.svg?jsx';
+import SemiCheckedIcon from '@/shared/assets/images/chevron/semiChecked.svg?jsx';
+import ShelfDownIcon from '@/shared/assets/images/chevron/shelfDown.svg?jsx';
+import ShelfRightIcon from '@/shared/assets/images/chevron/shelfRight.svg?jsx';
+import UpIcon from '@/shared/assets/images/chevron/up.svg?jsx';
 
 const ChevronImages = {
-  up: { svg: UpSvg, img: UpImg },
-  right: { svg: RightSvg, img: RightImg },
-  down: { svg: DownSvg, img: DownImg },
-  left: { svg: LeftSvg, img: LeftImg },
-  shelfDown: { svg: ShelfDownSvg, img: ShelfDownImg },
-  shelfRight: { svg: ShelfRightSvg, img: ShelfRightImg },
-  checked: { svg: CheckedSvg, img: CheckedImg },
-  semiChecked: { svg: SemiCheckedSvg, img: SemiCheckedImg },
+  up: { svg: UpIcon },
+  right: { svg: RightIcon },
+  down: { svg: DownIcon },
+  left: { svg: LeftIcon },
+  shelfDown: { svg: ShelfDownIcon },
+  shelfRight: { svg: ShelfRightIcon },
+  checked: { svg: CheckedIcon },
+  semiChecked: { svg: SemiCheckedIcon },
 } as const;
 
 export type Chevron = keyof typeof ChevronImages;

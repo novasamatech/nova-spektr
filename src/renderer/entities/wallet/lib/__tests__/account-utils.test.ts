@@ -1,105 +1,114 @@
 import {
   type Account,
-  type AccountId,
   AccountType,
-  type ChainAccount,
-  ChainType,
   CryptoType,
   KeyType,
-  type ShardAccount,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
+import { createAccountId } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '../account-utils';
 
-const accounts: (ChainAccount | ShardAccount)[] = [
+const accounts: (VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: 1,
+    id: '1',
+    type: 'chain',
+    accountType: AccountType.CHAIN,
     walletId: 1,
-    baseId: 1,
+    baseAccountId: createAccountId('0'),
     name: 'My chain account',
-    type: AccountType.CHAIN,
-    accountId: TEST_ACCOUNTS[0],
+    accountId: createAccountId('1'),
     chainId: TEST_CHAIN_ID,
-    chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
+    signingType: SigningType.POLKADOT_VAULT,
     keyType: KeyType.HOT,
     derivationPath: '//test/path_1',
   },
   {
-    id: 2,
+    id: '2',
+    type: 'chain',
+    accountType: AccountType.CHAIN,
     walletId: 1,
-    baseId: 1,
+    baseAccountId: createAccountId('1'),
     name: 'My chain account',
-    type: AccountType.CHAIN,
     accountId: TEST_ACCOUNTS[0],
     chainId: TEST_CHAIN_ID,
-    chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
+    signingType: SigningType.POLKADOT_VAULT,
     keyType: KeyType.PUBLIC,
     derivationPath: '//test/path_2',
   },
   {
-    id: 3,
+    id: '3',
+    type: 'chain',
+    accountType: AccountType.SHARD,
     walletId: 1,
     groupId: 'shard_group_1',
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
-    type: AccountType.SHARD,
     accountId: TEST_ACCOUNTS[0],
-    keyType: KeyType.STAKING,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
+    keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//staking//0',
   },
   {
-    id: 4,
+    id: '4',
+    type: 'chain',
+    accountType: AccountType.SHARD,
     walletId: 1,
     groupId: 'shard_group_1',
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
-    type: AccountType.SHARD,
     accountId: TEST_ACCOUNTS[0],
-    keyType: KeyType.STAKING,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
+    keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//staking//1',
   },
   {
-    id: 5,
+    id: '5',
+    type: 'chain',
+    accountType: AccountType.SHARD,
     walletId: 1,
     groupId: 'shard_group_2',
     chainId: TEST_CHAIN_ID,
     name: 'My shard',
-    type: AccountType.SHARD,
     accountId: TEST_ACCOUNTS[0],
+    signingType: SigningType.POLKADOT_VAULT,
     keyType: KeyType.MAIN,
-    chainType: ChainType.SUBSTRATE,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//0',
   },
   {
-    id: 6,
+    id: '6',
+    type: 'chain',
+    accountType: AccountType.SHARD,
     walletId: 1,
     groupId: 'shard_group_2',
     name: 'My shard',
-    type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
     accountId: TEST_ACCOUNTS[0],
-    keyType: KeyType.STAKING,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
+    keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//1',
   },
   {
-    id: 7,
+    id: '7',
+    type: 'chain',
+    accountType: AccountType.SHARD,
     walletId: 1,
     groupId: 'shard_group_2',
     name: 'My shard',
-    type: AccountType.SHARD,
     chainId: TEST_CHAIN_ID,
     accountId: TEST_ACCOUNTS[0],
-    keyType: KeyType.STAKING,
-    chainType: ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
+    keyType: KeyType.HOT,
     cryptoType: CryptoType.SR25519,
     derivationPath: '//westend//2',
   },
@@ -152,9 +161,9 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
   );
 
   test('should return the account ID', () => {
-    const ids = ['0x00', '0x01', '0x02'] as AccountId[];
+    const ids = ['0x00', '0x01', '0x02'] as never as AccountId[];
     const threshold = 2;
-    const result = accountUtils.getMultisigAccountId(ids, threshold);
+    const result = accountUtils.getMultisigAccountId(ids, threshold, CryptoType.SR25519);
 
     expect(result).toEqual('0x7c03b938aa7d9952e4c0f9b573e5e3a3ae9f6a9910c4f965a22803f64d7fbc68');
   });
@@ -168,9 +177,9 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
 
   test('should return undefined if no account matches the walletId', () => {
     const accounts: Account[] = [
-      { id: 1, walletId: 1, type: AccountType.BASE } as unknown as Account,
-      { id: 2, walletId: 2, type: AccountType.BASE } as unknown as Account,
-      { id: 3, walletId: 3, type: AccountType.BASE } as unknown as Account,
+      { id: 1, walletId: 1, accountType: AccountType.BASE } as unknown as Account,
+      { id: 2, walletId: 2, accountType: AccountType.BASE } as unknown as Account,
+      { id: 3, walletId: 3, accountType: AccountType.BASE } as unknown as Account,
     ];
     const walletId = 4;
     const result = accountUtils.getBaseAccount(accounts, walletId);
@@ -182,7 +191,7 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     const accounts: Account[] = [
       { id: 1, walletId: 1 } as unknown as Account,
       { id: 2, walletId: 1 } as unknown as Account,
-      { id: 3, walletId: 1, type: AccountType.BASE } as unknown as Account,
+      { id: 3, walletId: 1, type: 'universal', accountType: AccountType.BASE } as unknown as Account,
     ];
 
     const walletId = 1;
@@ -194,13 +203,13 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
 
 describe('entities/wallet/lib/account-utils#isChainDependant', () => {
   test.each([
-    [{ type: AccountType.BASE }, false], // BaseAccount
-    [{ type: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount
-    [{ type: AccountType.WALLET_CONNECT, chainId: '0x00' }, true], // WalletConnectAccount
-    [{ type: AccountType.MULTISIG, chainId: undefined }, false], // MultisigAccount milti_chain
-    [{ type: AccountType.MULTISIG, chainId: '0x00' }, true], // MultisigAccount single_chain
-    [{ type: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
-  ])('should be chain dependant or not', (account, expected) => {
-    expect(accountUtils.isChainDependant(account as Account)).toEqual(expected);
+    [{ type: 'universal', accountType: AccountType.BASE }, false], // BaseAccount
+    [{ type: 'chain', accountType: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount
+    [{ type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x00' }, true], // WalletConnectAccount
+    [{ type: 'chain', accountType: AccountType.MULTISIG, chainId: undefined }, false], // MultisigAccount milti_chain
+    [{ type: 'chain', accountType: AccountType.MULTISIG, chainId: '0x00' }, true], // MultisigAccount single_chain
+    [{ type: 'chain', accountType: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
+  ])('%s should be chain dependant or not', (account, expected) => {
+    expect(accountUtils.isChainDependant(account as never as AnyAccount)).toEqual(expected);
   });
 });

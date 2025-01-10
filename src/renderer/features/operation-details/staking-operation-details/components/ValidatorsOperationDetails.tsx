@@ -1,4 +1,5 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import {
@@ -10,8 +11,10 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, getAssetById } from '@/shared/lib/utils';
+import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { identityDomain } from '@/domains/identity';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
@@ -38,6 +41,20 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
   const transaction = getTransactionFromMultisigTx(operation);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
+
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [operation.chainId],
+    fn: (value, [chainId]) => value[chainId] ?? {},
+  });
+
+  useEffect(() => {
+    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+
+    if (accounts.length === 0) return;
+
+    identityDomain.identity.request({ chainId: operation.chainId, accounts });
+  }, [validatorsMap]);
 
   const allValidators = Object.values(validatorsMap);
 
@@ -75,6 +92,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
         <ValidatorsModal
           isOpen={isValidatorsOpen}
           asset={validatorsAsset}
+          identities={identities}
           selectedValidators={selectedValidators}
           notSelectedValidators={notSelectedValidators}
           explorers={chain?.explorers}

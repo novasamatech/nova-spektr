@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Icon } from '@/shared/ui';
-import { Box, Surface } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { votingStatusModel } from '../model/votingStatus';
 
 type Props = {
@@ -26,14 +26,14 @@ export const WalletVotingInfo = memo(({ referendumId }: Props) => {
   const nayVotes = voting.nay ? `NAY ${voting.nay} votes` : null;
 
   return (
-    <Surface>
-      <Box padding={6} gap={1}>
+    <div className="rounded-lg border border-filter-border bg-card-background shadow-shadow-1">
+      <Box direction="row" padding={6} gap={1}>
         <Icon name="voted" size={16} className="text-icon-accent" />
         <span className="text-footnote text-tab-text-accent">{t('fellowship.voting.voted')}</span>
         <span className="text-footnote">
           {ayeVotes} {nayVotes}
         </span>
       </Box>
-    </Surface>
+    </div>
   );
 });

@@ -27,13 +27,13 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
 const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
   if (nullable(featureInput)) return null;
 
-  return collectiveDomain.membersService.findMachingMember(featureInput.accounts, members, featureInput.chain);
+  return collectiveDomain.membersService.findMatchingMember(featureInput.accounts, members);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMachingAccount(input.accounts, member);
+  return collectiveDomain.membersService.findMatchingAccount(input.accounts, member);
 });
 
 const $hasRequiredRank = combine(

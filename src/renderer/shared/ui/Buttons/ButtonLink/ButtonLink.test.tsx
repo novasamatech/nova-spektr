@@ -16,12 +16,12 @@ describe('ui/Buttons/ButtonLink', () => {
 
     render(<ButtonLink to="test_page" />, { wrapper: BrowserRouter });
 
-    expect(window.location.href).toEqual('http://localhost/init_page');
+    expect(window.location.href).toEqual('http://localhost:3000/init_page');
 
     const buttonLink = screen.getByRole('link');
     act(() => buttonLink.click());
 
-    expect(window.location.href).toEqual('http://localhost/test_page');
+    expect(window.location.href).toEqual('http://localhost:3000/test_page');
   });
 
   test('should render disabled', () => {

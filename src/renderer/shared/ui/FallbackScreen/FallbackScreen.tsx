@@ -1,6 +1,6 @@
 import { useI18n } from '@/shared/i18n';
+import { Graphics } from '@/shared/ui-kit';
 import { Button } from '../Buttons';
-import { Icon } from '../Icon/Icon';
 import { BodyText } from '../Typography';
 
 export const FallbackScreen = () => {
@@ -8,7 +8,7 @@ export const FallbackScreen = () => {
 
   return (
     <main className="flex h-full flex-col items-center justify-center gap-4 bg-cover">
-      <Icon as="img" name="computer" size={172} />
+      <Graphics name="computer" size={172} />
       <BodyText className="text-text-tertiary">{t('fallbackScreen.message')}</BodyText>
       <Button onClick={() => window.location.reload()}>{t('fallbackScreen.reloadButton')}</Button>
     </main>

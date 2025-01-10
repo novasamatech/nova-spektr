@@ -38,7 +38,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
   );
 
   return (
-    <Surface onClick={() => onSelect(referendum)}>
+    <Surface className="cursor-pointer" onClick={() => onSelect(referendum)}>
       <Box gap={3} padding={[4, 3]}>
         <Box direction="row" verticalAlign="center" gap={2}>
           <WalletVoted referendum={referendum} />

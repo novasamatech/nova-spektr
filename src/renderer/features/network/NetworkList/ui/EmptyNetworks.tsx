@@ -1,7 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, Icon } from '@/shared/ui';
+import { BodyText } from '@/shared/ui';
+import { Graphics } from '@/shared/ui-kit';
 import { activeNetworksModel } from '../model/active-networks-model';
 import { inactiveNetworksModel } from '../model/inactive-networks-model';
 
@@ -19,7 +20,7 @@ export const EmptyNetworks = () => {
 
   return (
     <div className="mx-auto flex flex-col items-center px-2 pb-15 pt-12">
-      <Icon as="img" name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
+      <Graphics name="emptyList" alt={t('settings.networks.emptyStateLabel')} size={178} />
       <BodyText className="w-52 text-center text-text-tertiary">{t('settings.networks.emptyStateLabel')}</BodyText>
     </div>
   );

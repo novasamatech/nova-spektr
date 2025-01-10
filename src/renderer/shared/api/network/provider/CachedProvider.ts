@@ -1,23 +1,81 @@
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
+import { isString } from 'lodash';
+import mitt from 'mitt';
 
-import { type HexString } from '@/shared/core';
-import { GET_METADATA_METHOD } from '../lib/constants';
-import { type ProviderWithMetadata } from '../lib/types';
+import { type ChainMetadata } from '@/shared/core';
+import { scaleEncodedToNumber } from '@/shared/lib/utils';
+import { type ProviderMetadata, type ProviderWithMetadata } from '../lib/types';
 
-export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: HexString) {
+const LEGACY_METADATA_VERSION = 14;
+const STATE_CALL_METHOD = 'state_call';
+
+export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: ChainMetadata) {
   class CachedProvider extends Provider implements ProviderWithMetadata {
-    private metadata: HexString | undefined = metadata;
+    private metadata: ProviderMetadata | null = metadata || null;
+    private events = mitt<{ metadataReceived: ProviderMetadata }>();
 
-    updateMetadata(metadata: HexString) {
+    private updateMetadata(metadata: ProviderMetadata) {
       this.metadata = metadata;
+      this.events.emit('metadataReceived', metadata);
+    }
+
+    onMetadataReceived(callback: (value: ProviderMetadata) => unknown): VoidFunction {
+      this.events.on('metadataReceived', callback);
+
+      return () => this.events.off('metadataReceived', callback);
+    }
+
+    stateCall(method: string, ...args: unknown[]) {
+      return super.send(STATE_CALL_METHOD, [method, ...args]);
+    }
+
+    getRuntimeVersion() {
+      return super.send('state_getRuntimeVersion', []);
     }
 
     async send(method: string, params: unknown[], ...args: any[]): Promise<any> {
-      const hasMetadata = Boolean(this.metadata);
-      const isMetadataMethod = method === GET_METADATA_METHOD;
       const hasParams = params.length > 0;
 
-      return hasMetadata && isMetadataMethod && !hasParams ? this.metadata : super.send(method, params, ...args);
+      if (method === 'state_getMetadata' && !hasParams) {
+        if (this.metadata) {
+          return Promise.resolve(this.metadata.metadata);
+        }
+
+        const metadata = await super.send(method, params, ...args);
+        const runtimeVersion = await this.getRuntimeVersion();
+
+        this.updateMetadata({
+          runtimeVersion: runtimeVersion.specVersion,
+          metadataVersion: LEGACY_METADATA_VERSION,
+          metadata,
+        });
+
+        return metadata;
+      }
+
+      if (method === STATE_CALL_METHOD && hasParams) {
+        const [call, rawVersion] = params;
+
+        if (call === 'Metadata_metadata_at_version') {
+          const metadataVersion = isString(rawVersion) ? scaleEncodedToNumber(rawVersion) : 0;
+          if (metadataVersion === this.metadata?.metadataVersion) {
+            return Promise.resolve(this.metadata.metadata);
+          }
+
+          const metadata = await super.send(method, params, ...args);
+          const runtimeVersion = await this.getRuntimeVersion();
+
+          this.updateMetadata({
+            runtimeVersion: runtimeVersion.specVersion,
+            metadataVersion,
+            metadata,
+          });
+
+          return metadata;
+        }
+      }
+
+      return super.send(method, params, ...args);
     }
   }
 

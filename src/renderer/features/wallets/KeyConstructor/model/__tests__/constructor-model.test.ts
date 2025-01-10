@@ -1,6 +1,14 @@
 import { type Scope, allSettled, fork } from 'effector';
 
-import { AccountType, type ChainAccount, ChainType, CryptoType, KeyType, type ShardAccount } from '@/shared/core';
+import {
+  AccountType,
+  type ChainId,
+  CryptoType,
+  KeyType,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { constructorModel } from '../constructor-model';
@@ -11,26 +19,13 @@ describe('features/wallet/model/constructor-model', () => {
   const { customKey, defaultKeys, chainsMap } = constructorMock;
 
   const submitForm = async (scope: Scope, form?: any): Promise<void> => {
-    await allSettled(constructorModel.$constructorForm.fields.network.onChange, {
-      scope,
-      params: form?.network ?? ({ chainId: TEST_CHAIN_ID, specName: 'polkadot' } as unknown),
-    });
-    await allSettled(constructorModel.$constructorForm.fields.keyType.onChange, {
-      scope,
-      params: form?.keyType ?? KeyType.GOVERNANCE,
-    });
-    await allSettled(constructorModel.$constructorForm.fields.isSharded.onChange, {
-      scope,
-      params: form?.isSharded ?? false,
-    });
-    await allSettled(constructorModel.$constructorForm.fields.shards.onChange, {
-      scope,
-      params: form?.shards,
-    });
-    await allSettled(constructorModel.$constructorForm.fields.keyName.onChange, {
-      scope,
-      params: form?.keyName,
-    });
+    const { chainId, keyType, isSharded, shards, keyName } = constructorModel.$constructorForm.fields;
+
+    await allSettled(chainId.onChange, { scope, params: form?.chainId ?? TEST_CHAIN_ID });
+    await allSettled(keyType.onChange, { scope, params: form?.keyType ?? KeyType.HOT });
+    await allSettled(isSharded.onChange, { scope, params: form?.isSharded ?? false });
+    await allSettled(shards.onChange, { scope, params: form?.shards ?? 0 });
+    await allSettled(keyName.onChange, { scope, params: form?.keyName ?? 'Hot wallet account' });
     await allSettled(constructorModel.$constructorForm.submit, { scope });
   };
 
@@ -41,14 +36,14 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as (ChainAccount | ShardAccount)[],
+      params: defaultKeys as never as (VaultChainAccount | VaultShardAccount)[],
     });
 
     expect(scope.getState(constructorModel.$keys)).toEqual([defaultKeys[0], [defaultKeys[1], defaultKeys[2]]]);
   });
 
   test('should set Polkadot as default network', async () => {
-    const polkadot = Object.values(chainsMap)[0];
+    const polkadot = Object.values(chainsMap)[0].chainId;
 
     const scope = fork({
       values: new Map().set(networkModel.$chains, chainsMap),
@@ -56,7 +51,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, { scope, params: [] });
 
-    expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(polkadot);
+    expect(scope.getState(constructorModel.$constructorForm.fields.chainId.$value)).toEqual(polkadot);
   });
 
   test('should have visible keys', () => {
@@ -74,7 +69,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: defaultKeys as (ChainAccount | ShardAccount)[],
+      params: defaultKeys as never as (VaultChainAccount | VaultShardAccount)[],
     });
     await allSettled(constructorModel.events.keyRemoved, { scope, params: 1 });
 
@@ -88,7 +83,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: [defaultKeys[0]] as ChainAccount[],
+      params: defaultKeys.slice(0, 1) as never as VaultChainAccount[],
     });
 
     await submitForm(scope);
@@ -97,28 +92,15 @@ describe('features/wallet/model/constructor-model', () => {
     expect(scope.getState(constructorModel.$keysToRemove)).toEqual([]);
   });
 
-  test('should set focus after submit', async () => {
-    const scope = fork({
-      values: new Map().set(networkModel.$chains, chainsMap),
-    });
-    const element = document.createElement('button');
-    document.body.appendChild(element);
-
-    await allSettled(constructorModel.events.focusableSet, { scope, params: element });
-    await submitForm(scope);
-
-    expect(element).toHaveFocus();
-  });
-
   test('should not reset network on form submit', async () => {
     const scope = fork({
       values: new Map().set(networkModel.$chains, chainsMap),
     });
-    const network = { chainId: TEST_CHAIN_ID, specName: 'acala' } as unknown;
+    const chainId = '0x123' as ChainId;
 
-    await submitForm(scope, { network });
+    await submitForm(scope, { chainId });
 
-    expect(scope.getState(constructorModel.$constructorForm.fields.network.$value)).toEqual(network);
+    expect(scope.getState(constructorModel.$constructorForm.fields.chainId.$value)).toEqual(chainId);
   });
 
   test('should add new key on form submit', async () => {
@@ -130,13 +112,14 @@ describe('features/wallet/model/constructor-model', () => {
 
     expect(scope.getState(constructorModel.$keysToAdd)).toEqual([
       {
-        name: 'Governance',
-        keyType: KeyType.GOVERNANCE,
+        type: 'chain',
+        name: 'Hot wallet account',
+        keyType: KeyType.HOT,
         chainId: TEST_CHAIN_ID,
-        type: AccountType.CHAIN,
+        accountType: AccountType.CHAIN,
         cryptoType: CryptoType.SR25519,
-        chainType: ChainType.SUBSTRATE,
-        derivationPath: '//polkadot//governance',
+        signingType: SigningType.POLKADOT_VAULT,
+        derivationPath: '//polkadot//hot',
       },
     ]);
   });
@@ -153,16 +136,17 @@ describe('features/wallet/model/constructor-model', () => {
       keyName: 'My custom key',
     });
 
-    const keys = scope.getState(constructorModel.$keys) as ShardAccount[][];
+    const keys = scope.getState(constructorModel.$keys) as VaultShardAccount[][];
     expect(keys[0]).toHaveLength(4);
     expect(keys[0][0]).toEqual({
+      type: 'chain',
       name: 'My custom key',
       groupId: '42',
       keyType: KeyType.CUSTOM,
       chainId: TEST_CHAIN_ID,
-      type: AccountType.SHARD,
+      accountType: AccountType.SHARD,
       cryptoType: CryptoType.SR25519,
-      chainType: ChainType.SUBSTRATE,
+      signingType: SigningType.POLKADOT_VAULT,
       derivationPath: '//polkadot//custom//0',
     });
   });
@@ -174,7 +158,7 @@ describe('features/wallet/model/constructor-model', () => {
 
     await allSettled(constructorModel.events.formInitiated, {
       scope,
-      params: [customKey] as ChainAccount[],
+      params: [customKey] as never as VaultChainAccount[],
     });
 
     const network = { chainId: customKey.chainId, specName: 'polkadot' } as unknown;
@@ -195,8 +179,6 @@ describe('features/wallet/model/constructor-model', () => {
     [KeyType.MAIN, false],
     [KeyType.PUBLIC, false],
     [KeyType.HOT, false],
-    [KeyType.GOVERNANCE, false],
-    [KeyType.STAKING, false],
     [KeyType.CUSTOM, true],
   ])(`should calculate sharded key for %s`, async (keyType: KeyType, expected: boolean) => {
     const scope = fork();

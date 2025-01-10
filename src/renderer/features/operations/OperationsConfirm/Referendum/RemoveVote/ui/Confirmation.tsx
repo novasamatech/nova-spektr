@@ -113,7 +113,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
               <LockValueDiff from={locksForAddress} to={amount} asset={asset} />
             </DetailRow>
             <DetailRow label={t('governance.vote.field.lockingPeriod')} wrapperClassName="items-start">
-              <LockPeriodDiff from={conviction} to="None" lockPeriods={lockPeriods} />
+              <LockPeriodDiff unlock from={conviction} to="None" lockPeriods={lockPeriods} />
             </DetailRow>
           </>
         ) : (

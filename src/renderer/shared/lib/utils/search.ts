@@ -18,7 +18,8 @@ const emptyMeta = <M extends object>(): M => {
  * Performs searching by query and sort using weight of each field
  *
  * @param records - List of objects
- * @param meta - List of additional info, associated with given record by index
+ * @param getMeta - List of additional info, associated with given record by
+ *   index
  * @param query - Requested string
  * @param queryMinLength - From this query length method starts to perform
  *   search

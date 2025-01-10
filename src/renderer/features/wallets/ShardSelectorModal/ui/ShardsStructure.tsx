@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { type AccountId, type ChainId, type ID } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -24,11 +25,11 @@ export const ShardsStructure = () => {
   const isAllChecked = useUnit(shardsModel.$isAllChecked);
   const isAllSemiChecked = useUnit(shardsModel.$isAllSemiChecked);
 
-  const toggleChain = (root: ID, chainId: ChainId, value: boolean) => {
+  const toggleChain = (root: AccountId, chainId: ChainId, value: boolean) => {
     shardsModel.events.chainToggled({ root, chainId, value });
   };
 
-  const toggleAccount = (root: ID, chainId: ChainId, accountId: AccountId, value: boolean) => {
+  const toggleAccount = (root: AccountId, chainId: ChainId, accountId: AccountId, value: boolean) => {
     shardsModel.events.accountToggled({ root, chainId, accountId, value });
   };
 
@@ -53,9 +54,9 @@ export const ShardsStructure = () => {
             account={root}
             addressPrefix={1}
             explorers={RootExplorers}
-            checked={selectorUtils.isChecked(selectedStructure[root.id])}
-            semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id])}
-            onChange={(value) => shardsModel.events.rootToggled({ root: root.id, value })}
+            checked={selectorUtils.isChecked(selectedStructure[root.accountId])}
+            semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.accountId])}
+            onChange={(value) => shardsModel.events.rootToggled({ root: root.accountId, value })}
           />
 
           <ul>
@@ -65,14 +66,15 @@ export const ShardsStructure = () => {
                   <div className="flex hover:bg-action-background-hover">
                     <div className="w-full p-2">
                       <Checkbox
-                        checked={selectorUtils.isChecked(selectedStructure[root.id][chainId])}
-                        semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.id][chainId])}
-                        onChange={(checked) => toggleChain(root.id, chainId, checked)}
+                        checked={selectorUtils.isChecked(selectedStructure[root.accountId][chainId])}
+                        semiChecked={selectorUtils.isSemiChecked(selectedStructure[root.accountId][chainId])}
+                        onChange={(checked) => toggleChain(root.accountId, chainId, checked)}
                       >
                         <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
                         <FootnoteText className="text-text-tertiary">
                           {/* eslint-disable-next-line i18next/no-literal-string */}
-                          {selectedStructure[root.id][chainId].checked} / {selectedStructure[root.id][chainId].total}
+                          {selectedStructure[root.accountId][chainId].checked} /{' '}
+                          {selectedStructure[root.accountId][chainId].total}
                         </FootnoteText>
                       </Checkbox>
                     </div>
@@ -84,7 +86,7 @@ export const ShardsStructure = () => {
                         return (
                           <ShardedGroup
                             key={account[0].groupId}
-                            rootId={root.id}
+                            rootAccountId={root.accountId}
                             accounts={account}
                             chain={chains[chainId]}
                           />
@@ -97,10 +99,10 @@ export const ShardsStructure = () => {
                             truncate
                             className="w-[270px]"
                             account={account}
-                            checked={selectedStructure[root.id][chainId].accounts[account.accountId]}
+                            checked={selectedStructure[root.accountId][chainId].accounts[account.accountId]}
                             addressPrefix={chains[chainId].addressPrefix}
                             explorers={chains[chainId].explorers}
-                            onChange={(value) => toggleAccount(root.id, chainId, account.accountId, value)}
+                            onChange={(value) => toggleAccount(root.accountId, chainId, account.accountId, value)}
                           />
                         </li>
                       );

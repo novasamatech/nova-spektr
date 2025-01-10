@@ -1,12 +1,13 @@
 import { BN } from '@polkadot/util';
 
 import { ZERO_BALANCE, formatAmount } from '@/shared/lib/utils';
-import { type Config, type TransferFeeStore } from '../../types/types';
+import { type Config, type TransferFeeStore, type TransferXcmFeeStore } from '../../types/types';
 
 export const balanceValidation = {
   isNonZeroBalance,
   isLteThanBalance,
   insufficientBalanceForFee,
+  insufficientBalanceForXcmFee,
 };
 
 function isNonZeroBalance(value: string | BN): boolean {
@@ -25,7 +26,6 @@ function insufficientBalanceForFee(
     amount,
     asset,
     balance,
-    xcmFee,
     fee,
 
     isNative,
@@ -35,12 +35,50 @@ function insufficientBalanceForFee(
   }: TransferFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  const amountBN = new BN(
-    isNative ? (config.withFormatAmount ? formatAmount(amount, asset.precision) : amount) : ZERO_BALANCE,
-  );
+  if (isXcm && !isNative) {
+    if (isLteThanBalance(fee, balance)) {
+      return true;
+    }
+  }
+
+  const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, asset.precision) : amount);
   const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : fee);
-  const xcmFeeBN = new BN(isXcm ? xcmFee : ZERO_BALANCE);
-  const value = amountBN.add(feeBN).add(xcmFeeBN);
+  const value = amountBN.add(feeBN);
 
   return isLteThanBalance(value, balance);
+}
+
+function insufficientBalanceForXcmFee(
+  {
+    isXcm,
+    isNative,
+    nativeBalance,
+    transferableAsset,
+    transferableBalance,
+    xcmFee,
+    fee,
+    isProxy,
+    isMultisig,
+    amount,
+  }: TransferXcmFeeStore,
+  config: Config = { withFormatAmount: true },
+) {
+  const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
+  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+  const feeBN = new BN(fee || ZERO_BALANCE);
+
+  let totalTransferableSpend;
+  let totalNativeSpend;
+
+  if (isNative) {
+    totalTransferableSpend = isProxy || isMultisig ? amountBN : amountBN.add(feeBN);
+    totalNativeSpend = xcmFeeBN;
+  } else {
+    totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
+    totalNativeSpend = feeBN;
+  }
+
+  return (
+    isLteThanBalance(totalTransferableSpend, transferableBalance) && isLteThanBalance(totalNativeSpend, nativeBalance)
+  );
 }

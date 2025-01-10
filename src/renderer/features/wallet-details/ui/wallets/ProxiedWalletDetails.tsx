@@ -1,14 +1,16 @@
 import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 
-import { type ProxiedWallet, type ProxyType, type Wallet } from '@/shared/core';
+import { type ProxiedWallet, type ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
+import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
+import { ChainAccountsList } from '@/shared/ui-entities';
+import { Dropdown } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { AccountsList, WalletCardLg, WalletIcon, permissionUtils } from '@/entities/wallet';
+import { WalletCardLg, WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
@@ -38,21 +40,32 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
 
 type Props = {
   wallet: ProxiedWallet;
-  proxyWallet: Wallet;
   onClose: () => void;
 };
 
-export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) => {
+export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const wallets = useUnit(walletModel.$wallets);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
-  const Options = [
+  if (!wallet || !walletUtils.isProxied(wallet)) return null;
+
+  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: w => !walletUtils.isWatchOnly(w),
+    accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
+  });
+
+  if (!proxyWallet) {
+    return null;
+  }
+
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -61,7 +74,7 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) =>
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -69,28 +82,30 @@ export const ProxiedWalletDetails = ({ wallet, proxyWallet, onClose }: Props) =>
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map((option) => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
+
+  const account = wallet.accounts.at(0);
+  const chain = account ? chains[account.chainId] : null;
+  const accounts = account && chain ? [[chain, account.accountId] as const] : [];
 
   const tabItems: TabItem[] = [
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: (
-        <AccountsList
-          accountId={wallet.accounts[0].accountId}
-          chains={[chains[wallet.accounts[0].chainId]]}
-          className="h-[327px]"
-        />
-      ),
+      panel: <ChainAccountsList accounts={accounts} />,
     },
     {
       id: 'proxies',

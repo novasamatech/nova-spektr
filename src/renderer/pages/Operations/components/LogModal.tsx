@@ -5,7 +5,6 @@ import { chainsService } from '@/shared/api/network';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
-  type AccountId,
   type Contact,
   type FlexibleMultisigAccount,
   type MultisigAccount,
@@ -16,6 +15,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { SS58_DEFAULT_PREFIX, getAssetById, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
 import { useMultisigEvent } from '@/entities/multisig';
@@ -115,7 +115,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
 
-        <Status className="shrink-0" status={status} signed={approvals.length} threshold={account?.threshold || 0} />
+        <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
       </div>
 
       <div className="flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll bg-main-app-background p-5">

@@ -1,20 +1,21 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { type BaseAccount, ConnectionStatus, type Transaction } from '@/shared/core';
+import { ConnectionStatus, type Transaction, type VaultBaseAccount } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/AddProxy';
 import { Step } from '../../lib/types';
 import { addProxyModel } from '../add-proxy-model';
 import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
+vi.mock('@/shared/lib/utils', async () => ({
+  ...(await vi.importActual('@/shared/lib/utils')),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
@@ -37,7 +38,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(addProxyModel.events.flowStarted, { scope });
@@ -55,7 +56,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: { accountId: '0x00' } as unknown as BaseAccount,
+          account: { accountId: '0x00' } as unknown as VaultBaseAccount,
           delegate: '0x00',
           proxyType: 'Any',
           proxyDeposit: '1',

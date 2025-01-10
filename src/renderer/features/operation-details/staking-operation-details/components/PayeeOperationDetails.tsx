@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { type AccountId, type MultisigTransaction } from '@/shared/core';
+import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';

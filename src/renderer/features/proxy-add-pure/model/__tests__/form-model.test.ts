@@ -1,4 +1,5 @@
 import { allSettled, fork } from 'effector';
+import { vi } from 'vitest';
 
 import { ConnectionStatus } from '@/shared/core';
 import { networkModel } from '@/entities/network';
@@ -7,8 +8,8 @@ import { formModel } from '../form-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-jest.mock('@/shared/lib/utils', () => ({
-  ...jest.requireActual('@/shared/lib/utils'),
+vi.mock('@/shared/lib/utils', async () => ({
+  ...(await vi.importActual('@/shared/lib/utils')),
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
@@ -23,7 +24,7 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel._test.$allWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
     await allSettled(formModel.events.formInitiated, { scope });

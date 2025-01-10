@@ -1,4 +1,5 @@
-import { type AccountId, type Balance, type ChainId } from '@/shared/core';
+import { type Balance, type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { useAssetBalances } from './useAssetBalances';
 

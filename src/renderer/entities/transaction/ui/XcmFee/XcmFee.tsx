@@ -15,7 +15,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: Transaction | DecodedTransaction;
+  transaction?: Transaction | DecodedTransaction | null;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
@@ -67,7 +67,8 @@ export const XcmFee = memo(
             transaction.args.xcmAsset,
             transaction.args.xcmDest,
           )
-          .then((fee) => handleFee(fee.toString()));
+          .then((fee) => fee.toString())
+          .then(handleFee);
       } else {
         handleFee('0');
       }

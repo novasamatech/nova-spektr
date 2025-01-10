@@ -11,3 +11,4 @@ export { useThrottle } from './useThrottle';
 export { useLooseRef } from './useLooseRef';
 export { useDebouncedCallback } from './useDebouncedCallback';
 export { useDeferredList } from './useDeferredList';
+export { useExternalState } from './useExternalState';

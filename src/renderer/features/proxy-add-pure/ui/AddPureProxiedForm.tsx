@@ -10,7 +10,7 @@ import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { PureProxyPopover } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
@@ -97,7 +97,7 @@ const AccountSelector = () => {
   }
 
   const options = proxiedAccounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isShardAccount(account);
+    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
 
     return {
@@ -170,14 +170,16 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <ProxyDepositWithLabel
-        api={api}
-        proxyNumber={1}
-        deposit="0"
-        asset={chain.value.assets[0]}
-        onDepositChange={formModel.events.proxyDepositChanged}
-        onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
-      />
+      <ProxyDepositLabel>
+        <ProxyDeposit
+          api={api}
+          proxyNumber={1}
+          deposit="0"
+          asset={chain.value.assets[0]}
+          onDepositChange={formModel.events.proxyDepositChanged}
+          onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
+        />
+      </ProxyDepositLabel>
 
       {isMultisig && (
         <MultisigDepositWithLabel

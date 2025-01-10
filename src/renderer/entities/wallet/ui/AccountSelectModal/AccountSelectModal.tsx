@@ -40,7 +40,7 @@ export const AccountSelectModal = ({ isOpen, accounts, chain, onClose, onSelect 
                 addressFont="text-body text-inherit"
                 accountId={account.accountId}
                 addressPrefix={chain.addressPrefix}
-                name={!accountUtils.isShardAccount(account) ? account.name : ''}
+                name={!accountUtils.isVaultShardAccount(account) ? account.name : ''}
               />
               <Icon name="right" className="ml-auto" size={16} />
             </button>

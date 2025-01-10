@@ -5,7 +5,7 @@ import { type Account, type Asset, type Chain } from '@/shared/core';
 import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
-import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
 type AccountOption = { account: Account; balance?: BN; title?: string };

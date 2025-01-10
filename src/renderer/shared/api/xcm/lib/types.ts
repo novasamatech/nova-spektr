@@ -5,6 +5,7 @@ export type AssetName = string;
 export type XcmConfig = {
   assetsLocation: AssetsLocation;
   instructions: Instructions;
+  networkDeliveryFee: NetworkDeliveryFee;
   networkBaseWeight: NetworkBaseWeight;
   chains: ChainXCM[];
 };
@@ -25,7 +26,7 @@ export type Fee = {
 export type AssetLocation = {
   chainId: string;
   multiLocation: MultiLocation;
-  reserveFee: Fee;
+  reserveFee?: Fee;
 };
 export type AssetsLocation = Record<AssetName, AssetLocation>;
 
@@ -41,6 +42,21 @@ export type FeeMode = {
 
 export type NetworkBaseWeight = {
   [chainId: string]: string;
+};
+
+export type DeliveryFeeConfig = {
+  type: 'exponential';
+  factorPallet: 'ParachainSystem' | 'XcmpQueue' | 'Dmp';
+  sizeBase: string;
+  sizeFactor: string;
+  alwaysHoldingPays: boolean;
+};
+
+export type NetworkDeliveryFee = {
+  [chainId: string]: {
+    toParent?: DeliveryFeeConfig;
+    toParachain?: DeliveryFeeConfig;
+  };
 };
 
 export type AssetXCM = {
@@ -71,6 +87,7 @@ export const enum XcmTransferType {
   XTOKENS = 'xtokens',
   XCMPALLET = 'xcmpallet',
   XCMPALLET_TELEPORT = 'xcmpallet-teleport',
+  XCMPALLET_TRANSFER_ASSETS = 'xcmpallet-transferAssets',
 }
 export type PathType = 'absolute' | 'relative' | 'concrete';
 

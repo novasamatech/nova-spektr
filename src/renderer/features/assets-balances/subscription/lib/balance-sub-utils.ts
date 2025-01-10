@@ -20,7 +20,7 @@ function getSiblingAccounts(wallet: Wallet, wallets: Wallet[], chains: Record<Ch
   }
 
   if (walletUtils.isPolkadotVault(wallet)) {
-    return wallet.accounts.filter((account) => !accountUtils.isBaseAccount(account));
+    return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   }
 
   if (walletUtils.isProxied(wallet)) {

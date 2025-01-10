@@ -7,7 +7,7 @@ export { ScanMultiframeQr } from './Scanning/ScanMultiframeQr';
 export { MultisigDeposit } from './MultisigDeposit/MultisigDeposit';
 export { MultisigDepositWithLabel } from './MultisigDepositWithLabel/MultisigDepositWithLabel';
 export { ProxyDeposit } from './ProxyDeposit/ProxyDeposit';
-export { ProxyDepositWithLabel } from './ProxyDepositWithLabel/ProxyDepositWithLabel';
+export { ProxyDepositLabel } from './ProxyDepositLabel/ProxyDepositLabel';
 export { FeeWithLabel } from './FeeWithLabel/FeeWithLabel';
 export { XcmFeeWithLabel } from './XcmFeeWithLabel/XcmFeeWithLabel';
 export { TransactionTitle } from './TransactionTitle/TransactionTitle';

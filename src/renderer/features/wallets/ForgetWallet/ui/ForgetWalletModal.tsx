@@ -32,7 +32,7 @@ export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) 
       <SmallTitleText align="center" className="mb-2">
         {t('walletDetails.common.removeWalletTitle')}
       </SmallTitleText>
-      <FootnoteText className="text-text-tertiary" align="center">
+      <FootnoteText className="break-words text-text-tertiary" align="center">
         {t('walletDetails.common.removeWalletDesc', { walletName: wallet.name })}
       </FootnoteText>
     </ConfirmModal>

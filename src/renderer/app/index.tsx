@@ -2,6 +2,15 @@ import './index.css';
 import './document.css';
 import './styles/theme/default.css';
 
+import '@/shared/assets/fonts/Inter/Inter-400.woff2';
+import '@/shared/assets/fonts/Inter/Inter-500.woff2';
+import '@/shared/assets/fonts/Inter/Inter-600.woff2';
+import '@/shared/assets/fonts/Inter/Inter-800.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-400.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-500.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-600.woff2';
+import '@/shared/assets/fonts/Manrope/Manrope-800.woff2';
+
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -11,7 +20,7 @@ import { resetFeatureStatuses, updateFeatureStatus } from '@/shared/config/featu
 import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
-import { APP_CONFIG } from '../../../app.config';
+import { ThemeProvider } from '@/shared/ui-kit';
 
 import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
@@ -61,16 +70,18 @@ const Root = () => {
   const splashScreen = renderSplashScreen ? isElectron() ? <ElectronSplashScreen /> : <WebSplashScreen /> : null;
 
   return (
-    <HashRouter>
-      <I18Provider>
-        <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-          <Suspense fallback={splashScreen}>
-            <App onReady={() => setAppLoaded(true)} />
-            <LoadingDelay suspense={loadingDelay} />
-          </Suspense>
-        </ErrorBoundary>
-      </I18Provider>
-    </HashRouter>
+    <ThemeProvider theme="light" iconStyle="colored">
+      <HashRouter>
+        <I18Provider>
+          <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+            <Suspense fallback={splashScreen}>
+              <App onReady={() => setAppLoaded(true)} />
+              <LoadingDelay suspense={loadingDelay} />
+            </Suspense>
+          </ErrorBoundary>
+        </I18Provider>
+      </HashRouter>
+    </ThemeProvider>
   );
 };
 
@@ -79,7 +90,7 @@ if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-document.body.style.minWidth = `${APP_CONFIG.MAIN.WINDOW.WIDTH}px`;
+document.body.style.minWidth = `1024px`;
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // which leads to errors in components that use camera

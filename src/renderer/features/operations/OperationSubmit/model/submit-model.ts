@@ -3,7 +3,6 @@ import { createApi, createEffect, createEvent, createStore, restore, sample, sco
 import { once } from 'patronum';
 
 import {
-  type Account,
   type Chain,
   type ChainId,
   type HexString,
@@ -14,6 +13,7 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { buildMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
@@ -21,7 +21,7 @@ import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
   chain: Chain;
-  account: Account;
+  account: AnyAccount;
   coreTxs: Transaction[];
   wrappedTxs: Transaction[];
   multisigTxs: Transaction[];

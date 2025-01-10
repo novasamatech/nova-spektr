@@ -10,7 +10,6 @@ import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
-  theme?: 'light' | 'dark';
   invalid?: boolean;
   disabled?: boolean;
   height?: 'sm' | 'md';
@@ -20,6 +19,7 @@ type ContextProps = {
 const Context = createContext<ContextProps>({});
 
 type ControlledSelectProps<T extends string> = {
+  name?: string;
   placeholder: string;
   value: T | null;
   onChange: (value: T) => void;
@@ -31,7 +31,7 @@ type ControlledSelectProps<T extends string> = {
 type RootProps<T extends string> = PropsWithChildren<ControlledSelectProps<T> & ContextProps>;
 
 const Root = <T extends string>({
-  theme = 'light',
+  name,
   invalid,
   disabled,
   testId = 'Select',
@@ -43,7 +43,7 @@ const Root = <T extends string>({
   onChange,
   children,
 }: RootProps<T>) => {
-  const ctx = useMemo(() => ({ theme, height, invalid, disabled, testId }), [theme, height, invalid, disabled, testId]);
+  const ctx = useMemo(() => ({ height, invalid, disabled, testId }), [height, invalid, disabled, testId]);
 
   return (
     <Context.Provider value={ctx}>
@@ -52,9 +52,9 @@ const Root = <T extends string>({
         disabled={disabled}
         value={value || ''}
         onOpenChange={onToggle}
-        onValueChange={onChange}
+        onValueChange={value => onChange(value as T)}
       >
-        <Button placeholder={placeholder} />
+        <Button name={name} placeholder={placeholder} />
         <Content>{children}</Content>
       </RadixSelect.Root>
     </Context.Provider>
@@ -64,15 +64,15 @@ const Root = <T extends string>({
   // https://github.com/radix-ui/primitives/issues/1569
 };
 
-type TriggerProps = {
-  placeholder: string;
-};
+type TriggerProps = Pick<ControlledSelectProps<string>, 'name' | 'placeholder'>;
 
-const Button = ({ placeholder }: TriggerProps) => {
-  const { theme, height, invalid, disabled } = useContext(Context);
+const Button = ({ name, placeholder }: TriggerProps) => {
+  const { theme } = useTheme();
+  const { height, invalid, disabled } = useContext(Context);
 
   return (
     <RadixSelect.Trigger
+      name={name}
       className={cnTw(
         'relative flex w-full items-center pl-[11px] pr-6',
         'rounded border text-footnote outline-offset-1',
@@ -89,7 +89,13 @@ const Button = ({ placeholder }: TriggerProps) => {
       )}
     >
       <div className="flex-1 overflow-hidden text-start">
-        <RadixSelect.Value placeholder={<span className="text-footnote text-text-secondary">{placeholder}</span>} />
+        <RadixSelect.Value
+          placeholder={
+            <span className={cnTw('text-footnote text-text-secondary', { 'text-text-tertiary': disabled })}>
+              {placeholder}
+            </span>
+          }
+        />
       </div>
       <Icon name="down" size={16} className="absolute right-1.5 top-1/2 shrink-0 -translate-y-1/2" />
     </RadixSelect.Trigger>
@@ -97,8 +103,8 @@ const Button = ({ placeholder }: TriggerProps) => {
 };
 
 const Content = ({ children }: PropsWithChildren) => {
-  const { portalContainer } = useTheme();
-  const { testId, theme } = useContext(Context);
+  const { portalContainer, theme } = useTheme();
+  const { testId } = useContext(Context);
 
   return (
     <RadixSelect.Portal container={portalContainer}>
@@ -154,16 +160,17 @@ type ItemProps = {
 };
 
 const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
-  const { theme } = useContext(Context);
+  const { theme } = useTheme();
 
   return (
     <RadixSelect.Item
       value={value}
       className={cnTw(
-        'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary',
+        'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary contain-inline-size',
         'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',
         {
-          'focus:bg-block-background-hover data-[highlighted]:bg-background-item-hover': theme === 'dark',
+          'text-text-tertiary focus:bg-block-background-hover data-[highlighted]:bg-background-item-hover':
+            theme === 'dark',
         },
       )}
     >

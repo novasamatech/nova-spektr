@@ -12,7 +12,7 @@ const meta: Meta<typeof Dropdown> = {
   parameters: {
     layout: 'centered',
   },
-  render: (params) => {
+  render: params => {
     return (
       <Dropdown {...params}>
         <Dropdown.Trigger>
@@ -58,7 +58,7 @@ export const Controlled: Story = {
 };
 
 export const CheckboxItem: Story = {
-  render: (params) => {
+  render: params => {
     return (
       <Dropdown {...params}>
         <Dropdown.Trigger>
@@ -80,7 +80,7 @@ export const CheckboxItem: Story = {
 };
 
 export const Separator: Story = {
-  render: (params) => {
+  render: params => {
     return (
       <Dropdown {...params}>
         <Dropdown.Trigger>

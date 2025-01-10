@@ -13,6 +13,7 @@ import {
 } from '@/shared/core';
 import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
 import { getCreatedDate, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams, findCoreBatchAll } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
@@ -67,7 +68,7 @@ export const createNewEventsPayload = (
         txBlock: tx.blockCreated,
         txIndex: tx.indexCreated,
         status: 'SIGNED',
-        accountId: a.toHex(),
+        accountId: a.toHex() as AccountId,
         dateCreated: Date.now(),
       });
     }
@@ -98,7 +99,7 @@ export const updateTransactionPayload = (
     blockCreated,
     indexCreated,
     deposit: deposit.toString(),
-    depositor: depositor.toHex(),
+    depositor: depositor.toHex() as AccountId,
   };
 };
 
@@ -120,7 +121,7 @@ export const createEventsPayload = (
     txBlock: tx.blockCreated,
     txIndex: tx.indexCreated,
     status: 'SIGNED',
-    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || a.toHex(),
+    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || (a.toHex() as AccountId),
     dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
   }));
 };
@@ -145,7 +146,7 @@ export const createTransactionPayload = (
     callHash: pendingTransaction.callHash.toHex(),
     signatories: account.signatories,
     deposit: deposit.toString(),
-    depositor: depositor.toHex(),
+    depositor: depositor.toHex() as AccountId,
     accountId: account.accountId || '0x',
   };
 };

@@ -1,14 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { Overview } from './Overview';
-
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('./components', () => ({
+vi.mock('./components', () => ({
   GeneralActions: () => <span>generalActions</span>,
   SocialLinks: () => <span>socialLinks</span>,
   Version: () => <span>version</span>,

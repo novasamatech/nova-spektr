@@ -7,6 +7,7 @@ import { type ChainId, type MultisigAccount, MultisigTxFinalStatus, type Signing
 import { useDebounce, useTaskQueue } from '@/shared/lib/hooks';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
 import { getCreatedDateFromApi, toAddress } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { subscriptionService } from '@/entities/chain';
 import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -46,7 +47,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const account = activeAccount && accountUtils.isMultisigAccount(activeAccount) ? activeAccount : undefined;
 
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
-  const events = getLiveEventsByKeys(txs.filter((tx) => !tx.dateCreated));
+  const events = getLiveEventsByKeys(txs);
 
   useGate(operationsModel.gate.flow, {
     transactions: txs,
@@ -107,7 +108,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
 
     if (!tx) return;
 
-    const accountId = event.data[0].toHex();
+    const accountId = pjsSchema.helpers.toAccountId(event.data[0].toHex());
 
     addEventWithQueue(
       {

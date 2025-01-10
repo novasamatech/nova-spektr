@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import noop from 'lodash/noop';
+import { vi } from 'vitest';
 
 import { OperationResult } from './OperationResult';
 
-jest.mock('@/shared/ui/Animation/Animation', () => ({
+vi.mock('@/shared/ui/Animation/Animation', () => ({
   Animation: () => <span>animation</span>,
 }));
 

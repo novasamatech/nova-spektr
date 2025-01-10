@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -7,8 +7,10 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type Account, type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, toAddress } from '@/shared/lib/utils';
+import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
+import { identityDomain } from '@/domains/identity';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -24,7 +26,7 @@ import {
 } from '@/entities/staking';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
-import { walletDetailsFeature } from '@/features/wallet-details';
+import { WalletDetails } from '@/features/wallet-details';
 import * as Operations from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
@@ -34,10 +36,6 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
-
-const {
-  views: { WalletDetails },
-} = walletDetailsFeature;
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -64,6 +62,12 @@ export const Staking = () => {
   const [selectedStash, setSelectedStash] = useState<Address>('');
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
+  const identities = useStoreMap({
+    store: identityDomain.identity.$list,
+    keys: [chainId],
+    fn: (list, [chainId]) => (chainId ? list[chainId] : {}),
+  });
+
   const { api, connection, connectionStatus } = useNetworkData(chainId || undefined);
 
   const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
@@ -74,7 +78,7 @@ export const Staking = () => {
     activeWallet?.accounts.filter((account, _, collection) => {
       if (!chainId) return false;
 
-      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
 
@@ -156,13 +160,19 @@ export const Staking = () => {
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
+    const accounts = Object.keys(validators).map(toAccountId) as AccountId[];
+
+    if (!chainId || accounts.length === 0) return;
+
+    identityDomain.identity.request({ chainId, accounts });
+  }, [validators]);
+
+  useEffect(() => {
     if (!api || !selectedStash) return;
 
-    validatorsService
-      .getNominators(api, selectedStash, networkUtils.isLightClientConnection(connection))
-      .then((nominators) => {
-        setNominators(Object.values(nominators));
-      });
+    validatorsService.getNominators(api, selectedStash).then((nominators) => {
+      setNominators(Object.values(nominators));
+    });
   }, [api, selectedStash]);
 
   const changeNetwork = (chainId: ChainId) => {
@@ -354,6 +364,7 @@ export const Staking = () => {
         asset={relaychainAsset}
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
+        identities={identities}
         explorers={explorers}
         isOpen={isShowNominators}
         onClose={toggleNominators}

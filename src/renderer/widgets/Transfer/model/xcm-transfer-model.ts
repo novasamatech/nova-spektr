@@ -3,8 +3,9 @@ import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
-import { type AccountId, type Asset, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { xcmModel } from '@/entities/xcm';
 import { xcmTransferUtils } from '../lib/xcm-transfer-utils';
@@ -19,7 +20,7 @@ const destinationChanged = createEvent<AccountId>();
 
 const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
-const $xcmChain = restore(xcmChainSelected, null);
+const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
@@ -32,11 +33,7 @@ const saveConfigFx = attach({ effect: xcmModel.effects.saveConfigFx });
 const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
 
 const getXcmParaIdFx = createEffect((api: ApiPromise): Promise<number | null> => {
-  try {
-    return getParachainId(api);
-  } catch {
-    return Promise.resolve(null);
-  }
+  return getParachainId(api);
 });
 
 const $xcmAsset = combine(
@@ -70,15 +67,13 @@ const $transferDirections = combine(
 
 const $transferDirection = combine(
   {
-    xcmChain: $xcmChain,
+    xcmChainId: $xcmChainId,
     xcmAsset: $xcmAsset,
   },
-  ({ xcmChain, xcmAsset }) => {
-    if (!xcmChain || !xcmAsset) return undefined;
+  ({ xcmChainId, xcmAsset }) => {
+    if (!xcmChainId || !xcmAsset) return undefined;
 
-    const xcmChainId = toLocalChainId(xcmChain);
-
-    return xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === xcmChainId);
+    return xcmAsset?.xcmTransfers.find((t) => t.destination.chainId === toLocalChainId(xcmChainId));
   },
   { skipVoid: false },
 );
@@ -138,7 +133,7 @@ const $txDestination = combine(
   (params) => {
     const { api, destination, network, xcmParaId, transferDirection } = params;
 
-    if (!api || !network || xcmParaId === null || !transferDirection) return undefined;
+    if (!api || !network || !transferDirection) return undefined;
 
     if (transferDirection.type === XcmTransferType.XTOKENS && destination) {
       return xcmService.getVersionedDestinationLocation(
@@ -166,13 +161,12 @@ const $txBeneficiary = combine(
     destination: $destination,
     transferDirection: $transferDirection,
   },
-  (params) => {
-    const { api, destination, transferDirection } = params;
-
+  ({ api, destination, transferDirection }) => {
     if (!api || !destination || !transferDirection) return undefined;
 
     return xcmService.getVersionedAccountLocation(api, transferDirection.type, destination);
   },
+  // TODO: Remove skipVoid
   { skipVoid: false },
 );
 
@@ -210,20 +204,20 @@ const $xcmData = combine(
     api: $api,
     xcmFee: $xcmFee,
     xcmAsset: $txAsset,
-    xcmChain: $xcmChain,
+    xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
     xcmDest: $txDestination,
     xcmBeneficiary: $txBeneficiary,
     transferDirection: $transferDirection,
   },
-  ({ api, xcmChain, transferDirection, ...rest }) => {
-    if (!api || !transferDirection || !xcmChain) return undefined;
+  ({ api, xcmChainId, transferDirection, ...rest }) => {
+    if (!api || !transferDirection || !xcmChainId) return undefined;
 
     const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
 
     return {
       transactionType,
-      args: { destinationChain: xcmChain, ...rest },
+      args: { destinationChain: xcmChainId, ...rest },
     };
   },
   { skipVoid: false },
@@ -260,7 +254,12 @@ sample({
 
 sample({
   clock: getXcmParaIdFx.doneData,
-  filter: (xcmParaId) => xcmParaId !== null,
+  target: $xcmParaId,
+});
+
+sample({
+  clock: getXcmParaIdFx.fail,
+  fn: () => null,
   target: $xcmParaId,
 });
 
@@ -271,6 +270,8 @@ export const xcmTransferModel = {
   $xcmFee,
   $isXcmFeeLoading,
   $transferDirections,
+  $xcmParaId,
+  $xcmChainId,
 
   events: {
     xcmStarted,

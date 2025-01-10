@@ -34,9 +34,13 @@ declare module '*.mp4' {
 }
 
 declare module '*.svg' {
-  import { type FC, type SVGProps } from 'react';
-  export const ReactComponent: FC<SVGProps<SVGSVGElement>>;
   const content: string;
+  export default content;
+}
+
+declare module '*.svg?jsx' {
+  import { type FC, type SVGProps } from 'react';
+  const content: FC<SVGProps<SVGSVGElement>>;
   export default content;
 }
 

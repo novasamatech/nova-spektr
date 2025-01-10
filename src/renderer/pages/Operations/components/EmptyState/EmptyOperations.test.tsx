@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import EmptyOperations from './EmptyOperations';
 
-jest.mock('@/shared/i18n', () => ({
+vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
     t: (key: string) => key,
   }),
@@ -10,7 +11,7 @@ jest.mock('@/shared/i18n', () => ({
 
 describe('pages/Operations/components/EmptyState/EmptyOperations', () => {
   test('should render component', () => {
-    render(<EmptyOperations isEmptyFromFilters={false} />);
+    render(<EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />);
 
     const label = screen.getByText('operations.noOperationsWalletNotMulti');
 

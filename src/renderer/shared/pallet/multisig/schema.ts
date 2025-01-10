@@ -5,7 +5,7 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 export type MultisigTimepoint = z.infer<typeof multisigTimepoint>;
 export const multisigTimepoint = pjsSchema.object({
   height: pjsSchema.blockHeight,
-  index: pjsSchema.u32,
+  index: pjsSchema.blockHeight,
 });
 
 export type Multisig = z.infer<typeof multisig>;

@@ -4,7 +4,6 @@ import { BN } from '@polkadot/util';
 
 import {
   type Account,
-  type AccountId,
   type Address,
   type Chain,
   type ChainId,
@@ -22,6 +21,7 @@ import {
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -49,7 +49,7 @@ export const getSignatoryName = (
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c.accountId === signatoryId);
+    return collection.find((c) => c?.accountId === signatoryId);
   };
 
   // signatory data source priority: transaction -> contacts -> wallets -> address
@@ -91,7 +91,7 @@ export const getSignatoryAccounts = (
       acc.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountUtils.isChainAccount(a) && a.chainId === chainId,
+        (a) => accountUtils.isVaultChainAccount(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
         acc.push(legacySignatoryAccount);
@@ -291,4 +291,18 @@ const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | 
   }
 
   return tx.transaction;
+};
+
+export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId) => {
+  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  if (cancelEvent) {
+    return cancelEvent.status;
+  }
+
+  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+  if (signedEvent) {
+    return signedEvent.status;
+  }
+
+  return null;
 };

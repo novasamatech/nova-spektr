@@ -1,7 +1,5 @@
-const { writeFile } = require('fs/promises');
-const { resolve } = require('path');
-
-const axios = require('axios');
+import { writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const SPEKTR_CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
 const CONFIG_PATH = 'src/renderer/shared/config/chains';
@@ -11,9 +9,9 @@ const CHAINS_ENV = ['chains_dev.json', 'chains.json'];
 
 async function getDataViaHttp(url, filePath) {
   try {
-    const response = await axios.get(url + filePath);
+    const response = await fetch(url + filePath).then((r) => r.json());
 
-    return response.data;
+    return response;
   } catch (error) {
     console.log('Error: ', error?.message || 'getDataViaHttp failed');
   }

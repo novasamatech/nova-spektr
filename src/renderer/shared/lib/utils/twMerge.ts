@@ -14,7 +14,7 @@ const colors = Object.keys(additionalColors as Record<string, unknown>);
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      w: [{ w: ['90', 'modal', 'modal-sm', 'modal-xl'] }],
+      w: [{ w: ['90', '92', 'modal', 'modal-sm', 'modal-xl'] }],
       h: [{ h: ['modal'] }],
       'font-size': [{ text: fonts }],
       'font-weight': [{ text: fonts }],

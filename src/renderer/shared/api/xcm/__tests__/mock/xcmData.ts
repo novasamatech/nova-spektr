@@ -2,6 +2,11 @@ import { Action, type XcmConfig, XcmTransferType } from '../../lib/types';
 
 export const CONFIG: XcmConfig = {
   assetsLocation: {
+    Statemint: {
+      chainId: '68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
+      multiLocation: {},
+    },
+
     DOT: {
       chainId: '91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       multiLocation: {},
@@ -48,6 +53,7 @@ export const CONFIG: XcmConfig = {
       Action.DEPOSIT_ASSET,
     ],
   },
+  networkDeliveryFee: {},
   networkBaseWeight: {
     b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe: '1000000000',
     baf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b: '200000000',
@@ -146,6 +152,29 @@ export const CONFIG: XcmConfig = {
         },
       ],
     },
+    {
+      chainId: '68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
+      assets: [
+        {
+          assetId: 0,
+          assetLocation: 'Statemint',
+          assetLocationPath: { type: 'absolute' },
+          xcmTransfers: [
+            {
+              type: XcmTransferType.XTOKENS,
+              destination: {
+                chainId: '91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+                assetId: 0,
+                fee: {
+                  mode: { type: 'proportional', value: '999999999999' },
+                  instructions: 'xtokensDest',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
   ],
 };
 
@@ -234,6 +263,51 @@ export const XCMPALLET_TRANSFER_HUB_ASTAR = {
         },
         fun: {
           Fungible: '176,500,000',
+        },
+      },
+    ],
+  },
+};
+
+export const XCMPALLET_TRANSFER_PAH_MYTH = {
+  dest: {
+    V2: {
+      parents: '1',
+      interior: {
+        X1: {
+          Parachain: '3,369',
+        },
+      },
+    },
+  },
+  beneficiary: {
+    V2: {
+      parents: '0',
+      interior: {
+        X1: {
+          AccountKey20: {
+            network: 'Any',
+            key: '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
+          },
+        },
+      },
+    },
+  },
+  assets: {
+    V2: [
+      {
+        id: {
+          Concrete: {
+            parents: '1',
+            interior: {
+              X1: {
+                Parachain: '3,369',
+              },
+            },
+          },
+        },
+        fun: {
+          Fungible: '1327680000000000065',
         },
       },
     ],

@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { type Chain, type ID, type ShardAccount } from '@/shared/core';
+import { type Chain, type VaultShardAccount } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, CaptionText, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { selectorUtils } from '../lib/selector-utils';
@@ -9,27 +10,29 @@ import { shardsModel } from '../model/shards-model';
 import { SelectableShard } from './SelectableShard';
 
 type Props = {
-  rootId: ID;
-  accounts: ShardAccount[];
+  rootAccountId: AccountId;
+  accounts: VaultShardAccount[];
   chain: Chain;
 };
-export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
+export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
+  const account = accounts.at(0);
+  if (!account) return null;
 
-  const shardedGroup = selectedStructure[rootId][chain.chainId].sharded[accounts[0].groupId];
+  const shardedGroup = selectedStructure[rootAccountId]?.[chain.chainId]?.sharded[account.groupId];
 
   const toggleSharded = (checked: boolean) => {
     shardsModel.events.shardedToggled({
-      root: rootId,
+      root: rootAccountId,
       chainId: chain.chainId,
-      groupId: accounts[0].groupId,
+      groupId: account.groupId,
       value: checked,
     });
   };
 
-  const toggleShard = (shard: ShardAccount, value: boolean) => {
+  const toggleShard = (shard: VaultShardAccount, value: boolean) => {
     shardsModel.events.shardToggled({
-      root: rootId,
+      root: rootAccountId,
       chainId: chain.chainId,
       groupId: shard.groupId,
       accountId: shard.accountId,
@@ -49,7 +52,7 @@ export const ShardedGroup = ({ rootId, accounts, chain }: Props) => {
             <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
               <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
             </div>
-            <FootnoteText className="text-text-tertiary">{accounts[0].name}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">{account.name}</FootnoteText>
           </Checkbox>
         </div>
 

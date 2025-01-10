@@ -29,6 +29,7 @@ export const enum AssetType {
 
 export type StatemineExtras = {
   assetId: string;
+  palletName?: string;
 };
 
 export type OrmlExtras = {

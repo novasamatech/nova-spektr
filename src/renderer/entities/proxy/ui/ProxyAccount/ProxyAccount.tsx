@@ -1,8 +1,9 @@
 import { type ReactNode } from 'react';
 
-import { type AccountId, type ProxyType } from '@/shared/core';
+import { type ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText, Identicon, Truncate } from '@/shared/ui';
 import { proxyUtils } from '../../lib/proxy-utils';
 

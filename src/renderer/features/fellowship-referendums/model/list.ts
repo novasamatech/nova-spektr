@@ -1,5 +1,5 @@
-import { combine, sample } from 'effector';
-import { and, either, or } from 'patronum';
+import { combine, restore, sample } from 'effector';
+import { and, debounce, either, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/effector';
 import { dictionary, nonNullable, performSearch } from '@/shared/lib/utils';
@@ -13,6 +13,8 @@ import { votingModel } from './voting';
 
 // TODO do smth about it, this connection looks terrible
 const metadataProviderUpdated = attachToFeatureInput(referendumsFeatureStatus, governanceModel.$governanceApi);
+
+const $deboucedQuery = restore(debounce(filterModel.$query, 300), '');
 
 sample({
   clock: metadataProviderUpdated,
@@ -39,7 +41,7 @@ const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? [
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
 const $referendumsFilteredByQuery = combine(
-  { referendums: $referendums, meta: $meta, query: filterModel.$query },
+  { referendums: $referendums, meta: $meta, query: $deboucedQuery },
   ({ referendums, meta, query }) => {
     return performSearch({
       records: referendums,

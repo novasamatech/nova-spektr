@@ -1,21 +1,21 @@
 import { useUnit } from 'effector-react';
+import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import {
-  type BaseAccount,
   type Chain,
-  type ChainAccount,
   type DraftAccount,
   type PolkadotVaultWallet,
-  type ShardAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { BaseModal, ContextMenu, DropdownIconButton, HelpText, IconButton, Tabs } from '@/shared/ui';
+import { copyToClipboard, nullable, toAddress } from '@/shared/lib/utils';
+import { ContextMenu, HelpText, Icon, IconButton, StatusModal } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { type TabItem } from '@/shared/ui/types';
+import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -23,7 +23,6 @@ import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { type VaultMap } from '../../lib/types';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -43,17 +42,18 @@ const {
 
 type Props = {
   wallet: PolkadotVaultWallet;
-  root: BaseAccount;
-  accountsMap: VaultMap;
   onClose: () => void;
 };
-export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props) => {
+export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
+
+  const root = accountUtils.getBaseAccount(wallet.accounts);
+  const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
@@ -63,21 +63,26 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
+  const [tab, setTab] = useState('accounts');
   const [chains, setChains] = useState<Chain[]>([]);
 
   useEffect(() => {
-    const filteredChains = Object.values(allChains).filter((c) => {
+    const filteredChains = Object.values(allChains).filter(c => {
       const accounts = Object.values(accountsMap).flat(2);
 
-      return accounts.some((a) => accountUtils.isChainAndCryptoMatch(a, c));
+      return accounts.some(a => accountUtils.isChainAndCryptoMatch(a, c));
     });
 
     setChains(filteredChains);
   }, []);
 
+  if (nullable(root) || isEmpty(accountsMap)) {
+    return <StatusModal isOpen={isModalOpen} title={t('walletDetails.vault.noAccounts')} onClose={closeModal} />;
+  }
+
   const handleConstructorKeys = (
-    keysToAdd: (ChainAccount | ShardAccount[])[],
-    keysToRemove: (ChainAccount | ShardAccount[])[],
+    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
+    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
   ) => {
     toggleConstructorModal();
 
@@ -94,17 +99,17 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     }
   };
 
-  const handleImportedKeys = (keys: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     toggleImportModal();
-    const newKeys = keys.filter((key) => {
-      return key.keyType === KeyType.MAIN || !(key as ChainAccount | ShardAccount).accountId;
+    const newKeys = keys.filter(key => {
+      return key.keyType === KeyType.MAIN || !(key as VaultChainAccount | VaultShardAccount).accountId;
     });
 
     vaultDetailsModel.events.keysAdded(newKeys);
     toggleScanModal();
   };
 
-  const handleVaultKeys = (accounts: DraftAccount<ChainAccount | ShardAccount>[]) => {
+  const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     vaultDetailsModel.events.accountsCreated({
       walletId: wallet.id,
       rootAccountId: root.accountId,
@@ -113,7 +118,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
     toggleScanModal();
   };
 
-  const Options = [
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -142,7 +147,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -150,7 +155,7 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
@@ -158,80 +163,82 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map((option) => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
-  const tabItems: TabItem[] = [
-    {
-      id: 'accounts',
-      title: t('walletDetails.common.accountTabTitle'),
-      panel: (
-        <div className="pt-4">
-          <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
-            <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
-              <div className="flex items-center gap-x-2">
-                <HelpText className="break-all text-text-secondary">
-                  {toAddress(root.accountId, { prefix: 1 })}
-                </HelpText>
-                <IconButton
-                  className="shrink-0"
-                  name="copy"
-                  size={20}
-                  onClick={() => copyToClipboard(root.accountId)}
-                />
-              </div>
-            </ContextMenu.Group>
-          </ContextMenu>
-
-          <VaultAccountsList
-            className="mt-4 h-[321px] px-5 pb-4"
-            chains={Object.values(chains)}
-            accountsMap={accountsMap}
-            onShardClick={vaultDetailsModel.events.shardsSelected}
-          />
-        </div>
-      ),
-    },
-    {
-      id: 'proxies',
-      title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList className="mt-4 h-[371px]" wallet={wallet} canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction
-          className="mt-4 h-[371px]"
-          canCreateProxy={canCreateProxy}
-          onAddProxy={addProxy.events.flowStarted}
-        />
-      ),
-    },
-  ];
-
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="h-modal"
-      title={t('walletDetails.common.title')}
-      actionButton={ActionButton}
-      isOpen={isModalOpen}
-      onClose={closeModal}
-    >
-      <div className="flex w-full flex-col gap-y-4">
-        <div className="border-b border-divider px-5 py-6">
-          <WalletCardLg wallet={wallet} />
-        </div>
+    <>
+      <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+        <Modal.Title close action={ActionButton}>
+          {t('walletDetails.common.title')}
+        </Modal.Title>
+        <Modal.HeaderContent>
+          <div className="mb-5 border-b border-divider px-5 py-6">
+            <WalletCardLg wallet={wallet} />
+          </div>
+        </Modal.HeaderContent>
+        <Modal.Content disableScroll>
+          <Tabs value={tab} onChange={setTab}>
+            <Box padding={[0, 5]} shrink={0}>
+              <Tabs.List>
+                <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
+                <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </Box>
+            <Tabs.Content value="accounts">
+              <ScrollArea>
+                <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
+                  <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
+                    <div className="flex items-center gap-x-2">
+                      <HelpText className="break-all text-text-secondary">
+                        {toAddress(root.accountId, { prefix: 1 })}
+                      </HelpText>
+                      <IconButton
+                        className="shrink-0"
+                        name="copy"
+                        size={20}
+                        onClick={() => copyToClipboard(root.accountId)}
+                      />
+                    </div>
+                  </ContextMenu.Group>
+                </ContextMenu>
 
-        <Tabs items={tabItems} panelClassName="" tabsClassName="mx-5" unmount={false} />
-      </div>
+                <VaultAccountsList
+                  className="mt-4 h-[321px] px-5 pb-4"
+                  chains={Object.values(chains)}
+                  accountsMap={accountsMap}
+                  onShardClick={vaultDetailsModel.events.shardsSelected}
+                />
+              </ScrollArea>
+            </Tabs.Content>
+            <Tabs.Content value="proxies">
+              <ScrollArea>
+                {hasProxies ? (
+                  <ProxiesList className="mt-4 h-[371px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+                ) : (
+                  <NoProxiesAction
+                    className="mt-4 h-[371px]"
+                    canCreateProxy={canCreateProxy}
+                    onAddProxy={addProxy.events.flowStarted}
+                  />
+                )}
+              </ScrollArea>
+            </Tabs.Content>
+          </Tabs>
+        </Modal.Content>
+      </Modal>
 
       <ShardsList />
 
@@ -267,6 +274,6 @@ export const VaultWalletDetails = ({ wallet, root, accountsMap, onClose }: Props
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
-    </BaseModal>
+    </>
   );
 };

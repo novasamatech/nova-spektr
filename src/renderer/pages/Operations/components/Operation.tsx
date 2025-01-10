@@ -8,7 +8,7 @@ import { OperationFullInfo } from './OperationFullInfo';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 const Operation = ({ tx, account }: Props) => {

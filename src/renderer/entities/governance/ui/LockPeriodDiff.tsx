@@ -3,16 +3,18 @@ import { memo } from 'react';
 
 import { type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { FootnoteText } from '@/shared/ui';
 
 import { DiffValue } from './DiffValue';
 
 type Props = {
   from: Conviction;
   to: Conviction;
+  unlock?: boolean;
   lockPeriods: Record<Conviction, number> | null;
 };
 
-export const LockPeriodDiff = memo(({ from, to, lockPeriods }: Props) => {
+export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: Props) => {
   const { t, dateLocale } = useI18n();
 
   if (!lockPeriods) return null;
@@ -20,6 +22,10 @@ export const LockPeriodDiff = memo(({ from, to, lockPeriods }: Props) => {
 
   const fromLockPeriod = formatDistanceStrict(lockPeriods[from], date, { unit: 'day', locale: dateLocale });
   const toLockPeriod = formatDistanceStrict(lockPeriods[to], date, { unit: 'day', locale: dateLocale });
+
+  if (unlock) {
+    return <FootnoteText className="text-text-primary">{fromLockPeriod}</FootnoteText>;
+  }
 
   return (
     <DiffValue

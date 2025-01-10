@@ -2,36 +2,26 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type AccountId,
-  type Contact,
-  type FlexibleMultisigWallet,
-  type MultisigWallet,
-  type Wallet,
-} from '@/shared/core';
+import { type Contact, type FlexibleMultisigWallet, type MultisigWallet, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
-import { BaseModal, DropdownIconButton, FootnoteText, Icon, Tabs } from '@/shared/ui';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { BaseModal, FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type TabItem } from '@/shared/ui/types';
-import { AccountExplorers, Address, RootExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
+import { Dropdown } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
-import {
-  AccountsList,
-  ContactItem,
-  WalletCardLg,
-  WalletCardMd,
-  accountUtils,
-  permissionUtils,
-} from '@/entities/wallet';
+import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction, ProxiesList } from '../components';
+import { NoProxiesAction } from '../components/NoProxiesAction';
+import { ProxiesList } from '../components/ProxiesList';
 
 const {
   models: { addProxy },
@@ -70,7 +60,7 @@ export const MultisigWalletDetails = ({
   const singleChain = multisigAccount.chainId ? chains[multisigAccount.chainId] : undefined;
 
   const multisigChains = useMemo(() => {
-    return Object.values(chains).filter((chain) => {
+    return Object.values(chains).filter(chain => {
       const isAccountChain = multisigAccount.chainId === chain.chainId;
       const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
       const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(multisigAccount, chain);
@@ -100,7 +90,7 @@ export const MultisigWalletDetails = ({
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
 
-  const Options = [
+  const options = [
     {
       icon: 'rename' as IconNames,
       title: t('walletDetails.common.renameButton'),
@@ -114,7 +104,7 @@ export const MultisigWalletDetails = ({
   ];
 
   if (canCreateProxy) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
@@ -122,7 +112,7 @@ export const MultisigWalletDetails = ({
   }
 
   if (canCreatePureProxy) {
-    Options.push({
+    options.push({
       icon: 'addCircle' as IconNames,
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
@@ -130,15 +120,19 @@ export const MultisigWalletDetails = ({
   }
 
   const ActionButton = (
-    <DropdownIconButton name="more">
-      <DropdownIconButton.Items>
-        {Options.map((option) => (
-          <DropdownIconButton.Item key={option.title}>
-            <DropdownIconButton.Option option={option} />
-          </DropdownIconButton.Item>
+    <Dropdown align="end">
+      <Dropdown.Trigger>
+        <IconButton name="more" />
+      </Dropdown.Trigger>
+      <Dropdown.Content>
+        {options.map(option => (
+          <Dropdown.Item key={option.title} onSelect={option.onClick}>
+            <Icon name={option.icon} size={20} className="text-icon-accent" />
+            <span className="text-text-secondary">{option.title}</span>
+          </Dropdown.Item>
         ))}
-      </DropdownIconButton.Items>
-    </DropdownIconButton>
+      </Dropdown.Content>
+    </Dropdown>
   );
 
   const TabItems: TabItem[] = [];
@@ -179,7 +173,7 @@ export const MultisigWalletDetails = ({
                   </WalletCardMd>
                 </li>
               ))}
-              {signatoryContacts.map((signatory) => (
+              {signatoryContacts.map(signatory => (
                 <li key={signatory.accountId} className="-mx-2">
                   <ContactItem
                     name={signatory.name}
@@ -190,7 +184,7 @@ export const MultisigWalletDetails = ({
                   </ContactItem>
                 </li>
               ))}
-              {signatoryPeople.map((accountId) => (
+              {signatoryPeople.map(accountId => (
                 <li key={accountId} className="-mx-2">
                   <ContactItem address={accountId} addressPrefix={singleChain.addressPrefix}>
                     <AccountExplorers accountId={accountId} chain={singleChain} />
@@ -206,10 +200,12 @@ export const MultisigWalletDetails = ({
   }
 
   if (!singleChain) {
+    const accounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
+
     const TabAccountList = {
       id: 1,
       title: t('walletDetails.multisig.networksTab'),
-      panel: <AccountsList accountId={multisigAccount.accountId} chains={multisigChains} className="h-[345px]" />,
+      panel: <ChainAccountsList accounts={accounts} />,
     };
 
     const TabSignatories = {
@@ -257,7 +253,7 @@ export const MultisigWalletDetails = ({
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2">
-                  {signatoryContacts.map((signatory) => (
+                  {signatoryContacts.map(signatory => (
                     <li key={signatory.accountId} className="-mx-2">
                       <ContactItem name={signatory.name} address={signatory.accountId}>
                         <RootExplorers accountId={signatory.accountId} />

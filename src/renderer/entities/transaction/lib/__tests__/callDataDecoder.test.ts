@@ -1,12 +1,17 @@
 import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
-import { TypeRegistry } from '@polkadot/types/create';
+import { TypeRegistry } from '@polkadot/types';
 
 import { TEST_ADDRESS } from '@/shared/lib/utils';
 import { useCallDataDecoder } from '../callDataDecoder';
 
 import { metadata } from './metadata';
 
+/**
+ * ATTENTION! This tests may fail on node version >= 22 because of
+ * `@polkadot/rpc-provider/mock`. It uses `assert { type 'json' }` in compiled
+ * code, which breaks backward compatability.
+ */
 describe('entities/transaction/lib/callDataDecoder', () => {
   const { decodeCallData } = useCallDataDecoder();
 
@@ -14,7 +19,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   let provider: MockProvider;
   let api: ApiPromise;
 
-  beforeEach(async (): Promise<void> => {
+  beforeAll(async () => {
     provider = new MockProvider(registry);
     const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
 
@@ -28,9 +33,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     });
   });
 
-  afterEach(async () => {
-    await provider.disconnect();
-  });
+  afterAll(() => provider.disconnect());
 
   test('should decode add proxy transaction', async () => {
     const transaction = decodeCallData(

@@ -1,18 +1,17 @@
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, Icon, InfoLink, Popover } from '@/shared/ui';
+import { FootnoteText, IconButton, InfoLink } from '@/shared/ui';
+import { Box, Popover } from '@/shared/ui-kit';
 
 export const ShardInfoPopover = () => {
   const { t } = useI18n();
 
   return (
-    <Popover
-      offsetPx={4}
-      tabIndex={-1}
-      contentClass="p-4"
-      panelClass="w-[360px]"
-      wrapperClass="w-max"
-      content={
-        <div className="flex flex-col gap-y-4">
+    <Popover>
+      <Popover.Trigger>
+        <IconButton name="info" size={16} />
+      </Popover.Trigger>
+      <Popover.Content>
+        <Box direction="column" gap={4} padding={4} width="360px">
           <section className="flex flex-col gap-y-2">
             <FootnoteText className="text-text-secondary">
               {t('dynamicDerivations.constructor.shardInfoOne')}
@@ -26,17 +25,15 @@ export const ShardInfoPopover = () => {
 
           <section className="flex flex-col gap-y-2">
             <InfoLink
-              url="https://docs.novaspektr.io/staking/multishard-relay-chain-nominating"
+              url="https://docs.novaspektr.io/wallet-management/polkadot-vault-wallet/pair-with-polkadot-vault#in-case-you-would-like-to-add-custom-derivation-path-keys"
               iconName="link"
               iconPosition="right"
             >
               {t('dynamicDerivations.constructor.shardInfoLink')}
             </InfoLink>
           </section>
-        </div>
-      }
-    >
-      <Icon name="info" size={16} />
+        </Box>
+      </Popover.Content>
     </Popover>
   );
 };

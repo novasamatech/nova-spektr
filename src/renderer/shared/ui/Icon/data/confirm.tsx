@@ -1,51 +1,35 @@
-import AddDelegationImg, {
-  ReactComponent as AddDelegationSvg,
-} from '@/shared/assets/images/confirm/add-delegation.svg';
-import DestinationImg, {
-  ReactComponent as DestinationSvg,
-} from '@/shared/assets/images/confirm/change-rewards-dest.svg';
-import ChangeValidatorsImg, {
-  ReactComponent as ChangeValidatorsSvg,
-} from '@/shared/assets/images/confirm/change-validators.svg';
-import CrossChainImg, { ReactComponent as CrossChainSvg } from '@/shared/assets/images/confirm/crosschain.svg';
-import DelegatedAuthoritiesImg, {
-  ReactComponent as DelegatedAuthoritiesSvg,
-} from '@/shared/assets/images/confirm/delegated-authorities.svg';
-import EditDelegationImg, {
-  ReactComponent as EditDelegationSvg,
-} from '@/shared/assets/images/confirm/edit-delegation.svg';
-import MultisigCreationImg, {
-  ReactComponent as MultisigCreationSvg,
-} from '@/shared/assets/images/confirm/multisig-creation.svg';
-import ReturnToStakeImg, {
-  ReactComponent as ReturnToStakeSvg,
-} from '@/shared/assets/images/confirm/return-to-stake.svg';
-import RevokeDelegationImg, {
-  ReactComponent as RevokeDelegationSvg,
-} from '@/shared/assets/images/confirm/revoke-delegation.svg';
-import StakeMoreImg, { ReactComponent as StakeMoreSvg } from '@/shared/assets/images/confirm/stake-more.svg';
-import StartStakingImg, { ReactComponent as StartStakingSvg } from '@/shared/assets/images/confirm/start-staking.svg';
-import TransferImg, { ReactComponent as TransferSvg } from '@/shared/assets/images/confirm/transfer.svg';
-import UnknownImg, { ReactComponent as UnknownSvg } from '@/shared/assets/images/confirm/unknown-operation.svg';
-import UnstakeImg, { ReactComponent as UnstakeSvg } from '@/shared/assets/images/confirm/unstake.svg';
-import RedeemImg, { ReactComponent as RedeemSvg } from '@/shared/assets/images/confirm/withdraw-unstake.svg';
+import AddDelegationIcon from '@/shared/assets/images/confirm/add-delegation.svg?jsx';
+import DestinationIcon from '@/shared/assets/images/confirm/change-rewards-dest.svg?jsx';
+import ChangeValidatorsIcon from '@/shared/assets/images/confirm/change-validators.svg?jsx';
+import CrossChainIcon from '@/shared/assets/images/confirm/crosschain.svg?jsx';
+import DelegatedAuthoritiesIcon from '@/shared/assets/images/confirm/delegated-authorities.svg?jsx';
+import EditDelegationIcon from '@/shared/assets/images/confirm/edit-delegation.svg?jsx';
+import MultisigCreationIcon from '@/shared/assets/images/confirm/multisig-creation.svg?jsx';
+import ReturnToStakeIcon from '@/shared/assets/images/confirm/return-to-stake.svg?jsx';
+import RevokeDelegationIcon from '@/shared/assets/images/confirm/revoke-delegation.svg?jsx';
+import StakeMoreIcon from '@/shared/assets/images/confirm/stake-more.svg?jsx';
+import StartStakingIcon from '@/shared/assets/images/confirm/start-staking.svg?jsx';
+import TransferIcon from '@/shared/assets/images/confirm/transfer.svg?jsx';
+import UnknownIcon from '@/shared/assets/images/confirm/unknown-operation.svg?jsx';
+import UnstakeIcon from '@/shared/assets/images/confirm/unstake.svg?jsx';
+import RedeemIcon from '@/shared/assets/images/confirm/withdraw-unstake.svg?jsx';
 
 const ConfirmImages = {
-  transferConfirm: { svg: TransferSvg, img: TransferImg },
-  crossChainConfirm: { svg: CrossChainSvg, img: CrossChainImg },
-  unknownConfirm: { svg: UnknownSvg, img: UnknownImg },
-  startStakingConfirm: { svg: StartStakingSvg, img: StartStakingImg },
-  redeemConfirm: { svg: RedeemSvg, img: RedeemImg },
-  unstakeConfirm: { svg: UnstakeSvg, img: UnstakeImg },
-  destinationConfirm: { svg: DestinationSvg, img: DestinationImg },
-  stakeMoreConfirm: { svg: StakeMoreSvg, img: StakeMoreImg },
-  changeValidatorsConfirm: { svg: ChangeValidatorsSvg, img: ChangeValidatorsImg },
-  returnToStakeConfirm: { svg: ReturnToStakeSvg, img: ReturnToStakeImg },
-  proxyConfirm: { svg: DelegatedAuthoritiesSvg, img: DelegatedAuthoritiesImg },
-  addDelegationConfirm: { svg: AddDelegationSvg, img: AddDelegationImg },
-  editDelegationConfirm: { svg: EditDelegationSvg, img: EditDelegationImg },
-  revokeDelegationConfirm: { svg: RevokeDelegationSvg, img: RevokeDelegationImg },
-  multisigCreationConfirm: { svg: MultisigCreationSvg, img: MultisigCreationImg },
+  transferConfirm: { svg: TransferIcon },
+  crossChainConfirm: { svg: CrossChainIcon },
+  unknownConfirm: { svg: UnknownIcon },
+  startStakingConfirm: { svg: StartStakingIcon },
+  redeemConfirm: { svg: RedeemIcon },
+  unstakeConfirm: { svg: UnstakeIcon },
+  destinationConfirm: { svg: DestinationIcon },
+  stakeMoreConfirm: { svg: StakeMoreIcon },
+  changeValidatorsConfirm: { svg: ChangeValidatorsIcon },
+  returnToStakeConfirm: { svg: ReturnToStakeIcon },
+  proxyConfirm: { svg: DelegatedAuthoritiesIcon },
+  addDelegationConfirm: { svg: AddDelegationIcon },
+  editDelegationConfirm: { svg: EditDelegationIcon },
+  revokeDelegationConfirm: { svg: RevokeDelegationIcon },
+  multisigCreationConfirm: { svg: MultisigCreationIcon },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

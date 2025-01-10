@@ -58,8 +58,8 @@ const mockTokens: AssetByChains[] = [
   },
 ];
 
-// TODO input data is a bit complex and after refactoring of internal model, chains wallet and etc should be presented.
-//  For now it's simplier to turn off some of the test and think about simplifying external dependencies.
+// TODO: input data is a bit complex and after refactoring of internal model, chains wallet and etc should be presented.
+// For now it's simpler to turn off some of the test and think about simplifying external dependencies.
 
 describe('Portfolio model', () => {
   test('should handle activeViewChanged event', async () => {
@@ -71,7 +71,7 @@ describe('Portfolio model', () => {
     expect(scope.getState(portfolioModel.$activeView)).toEqual(AssetsListView.TOKEN_CENTRIC);
   });
 
-  xtest('should update $filteredTokens and $query stores on queryChanged event', async () => {
+  test.skip('should update $filteredTokens and $query stores on queryChanged event', async () => {
     const scope = fork({
       values: new Map()
         .set(portfolioModel.$activeView, AssetsListView.TOKEN_CENTRIC)
@@ -85,7 +85,7 @@ describe('Portfolio model', () => {
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual([mockTokens[0]]);
   });
 
-  xtest('should update $sortedTokens store on changes in $activeTokens', async () => {
+  test.skip('should update $sortedTokens store on changes in $activeTokens', async () => {
     const scope = fork({
       values: new Map().set(portfolioModel._test.$defaultTokens, []),
     });
@@ -95,7 +95,7 @@ describe('Portfolio model', () => {
     expect(scope.getState(portfolioModel.$sortedTokens)).toEqual(mockTokens);
   });
 
-  xtest('should sort tokens', async () => {
+  test.skip('should sort tokens', async () => {
     const scope = fork({
       values: [[portfolioModel._test.$defaultTokens, Array.from(mockTokens).reverse()]],
     });

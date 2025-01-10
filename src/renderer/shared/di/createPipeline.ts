@@ -23,6 +23,7 @@ export const createPipeline = <Value, Meta = void>(config?: {
     type: 'pipeline',
     name: config?.name ?? 'unknownPipeline',
     processHandler: (handler) => ({
+      key: handler.key,
       available: handler.available,
       body: ({ acc, input }) => handler.body(acc, input),
     }),

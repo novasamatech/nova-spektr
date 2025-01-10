@@ -2,20 +2,29 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Chain, type ChainAccount, type ShardAccount } from '@/shared/core';
-import { AccountType, ChainType, CryptoType, KeyType } from '@/shared/core';
-import { derivationHasPassword, validateDerivation } from '@/shared/lib/utils';
+import {
+  AccountType,
+  type Chain,
+  type ChainId,
+  CryptoType,
+  KeyType,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { derivationHasPassword, nonNullable, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { KEY_NAMES, SHARDED_KEY_NAMES, accountUtils } from '@/entities/wallet';
 
-const formInitiated = createEvent<(ChainAccount | ShardAccount)[]>();
+export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
+
+const formInitiated = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
 const formStarted = createEvent();
-const focusableSet = createEvent<HTMLButtonElement>();
 const keyRemoved = createEvent<number>();
 
-const $existingKeys = createStore<(ChainAccount | ShardAccount[])[]>([]);
-const $keysToAdd = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
-const $keysToRemove = createStore<(ChainAccount | ShardAccount[])[]>([]).reset(formStarted);
+const $existingKeys = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]);
+const $keysToAdd = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]).reset(formStarted);
+const $keysToRemove = createStore<(VaultChainAccount | VaultShardAccount[])[]>([]).reset(formStarted);
 
 const $keys = combine(
   {
@@ -29,8 +38,8 @@ const $keys = combine(
 );
 
 type FormValues = {
-  network: Chain;
-  keyType: KeyType;
+  chainId: ChainId;
+  keyType: KeyType | null;
   isSharded: boolean;
   shards: string;
   keyName: string;
@@ -38,12 +47,12 @@ type FormValues = {
 };
 const $constructorForm = createForm<FormValues>({
   fields: {
-    network: {
-      init: {} as Chain,
+    chainId: {
+      init: DEFAULT_CHAIN,
     },
     keyType: {
-      init: '' as KeyType,
-      rules: [{ name: 'required', errorText: 'Please select key type', validator: Boolean }],
+      init: null,
+      rules: [{ name: 'required', errorText: 'Please select key type', validator: nonNullable }],
     },
     isSharded: {
       init: false,
@@ -54,22 +63,22 @@ const $constructorForm = createForm<FormValues>({
         {
           name: 'required',
           errorText: 'dynamicDerivations.constructor.numberRequiredError',
-          validator: (value, { isSharded }): boolean => !isSharded || Boolean(value),
+          validator: (value, { isSharded }) => !isSharded || Boolean(value),
         },
         {
           name: 'NaN',
           errorText: 'dynamicDerivations.constructor.notNumberError',
-          validator: (value, { isSharded }): boolean => !isSharded || !Number.isNaN(Number(value)),
+          validator: (value, { isSharded }) => !isSharded || !Number.isNaN(Number(value)),
         },
         {
           name: 'maxAmount',
           errorText: 'dynamicDerivations.constructor.maxShardsError',
-          validator: (value, { isSharded }): boolean => !isSharded || Number(value) <= 50,
+          validator: (value, { isSharded }) => !isSharded || Number(value) <= 50,
         },
         {
           name: 'minAmount',
           errorText: 'dynamicDerivations.constructor.minShardsError',
-          validator: (value, { isSharded }): boolean => !isSharded || Number(value) >= 2,
+          validator: (value, { isSharded }) => !isSharded || Number(value) >= 2,
         },
       ],
     },
@@ -83,12 +92,12 @@ const $constructorForm = createForm<FormValues>({
         {
           name: 'required',
           errorText: 'dynamicDerivations.constructor.requiredDerivationError',
-          validator: (value, { keyType }): boolean => keyType !== KeyType.CUSTOM || Boolean(value),
+          validator: (value, { keyType }) => keyType !== KeyType.CUSTOM || Boolean(value),
         },
         {
           name: 'hasPassword',
           errorText: 'dynamicDerivations.constructor.passwordDerivationError',
-          validator: (value): boolean => !derivationHasPassword(value),
+          validator: (value) => !derivationHasPassword(value),
         },
         {
           name: 'badFormat',
@@ -99,11 +108,11 @@ const $constructorForm = createForm<FormValues>({
           name: 'duplicated',
           source: $keys,
           errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
-          validator: (value, { network }, keys: (ChainAccount | ShardAccount[])[]): boolean => {
+          validator: (value, { chainId }, keys: (VaultChainAccount | VaultShardAccount[])[]) => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
 
-              return keyToCheck.chainId !== network.chainId || !keyToCheck.derivationPath.includes(value);
+              return keyToCheck.chainId !== chainId || !keyToCheck.derivationPath.includes(value);
             });
           },
         },
@@ -114,7 +123,6 @@ const $constructorForm = createForm<FormValues>({
 });
 
 const $hasChanged = createStore<boolean>(false).reset(formStarted);
-const $elementToFocus = createStore<HTMLButtonElement | null>(null);
 
 const $isKeyTypeSharded = combine($constructorForm.fields.keyType.$value, (keyType): boolean => {
   return keyType === KeyType.CUSTOM;
@@ -126,24 +134,35 @@ const $derivationEnabled = combine($constructorForm.fields.keyType.$value, (keyT
 
 const $hasKeys = combine($keys, (keys) => Boolean(keys.length));
 
-const focusElementFx = createEffect((element: HTMLButtonElement) => {
-  element.focus();
-});
+const $chain = combine(
+  {
+    chains: networkModel.$chains,
+    chainId: $constructorForm.fields.chainId.$value,
+  },
+  ({ chains, chainId }): Chain | null => {
+    return chains[chainId] ?? null;
+  },
+);
 
-const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardAccount[] => {
-  const isEthereumBased = networkUtils.isEthereumBased(formValues.network.options);
+type AddKeyParams = {
+  chain: Chain;
+  formValues: FormValues;
+};
+const addNewKeyFx = createEffect(({ chain, formValues }: AddKeyParams): VaultChainAccount | VaultShardAccount[] => {
+  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
   const base = {
+    type: 'chain',
     name: formValues.keyName,
-    keyType: formValues.keyType,
-    chainId: formValues.network.chainId,
-    type: AccountType.CHAIN,
+    keyType: formValues.keyType as KeyType,
+    chainId: formValues.chainId,
+    accountType: AccountType.CHAIN,
     cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-    chainType: isEthereumBased ? ChainType.ETHEREUM : ChainType.SUBSTRATE,
+    signingType: SigningType.POLKADOT_VAULT,
     derivationPath: formValues.derivationPath,
-  };
+  } as VaultChainAccount;
 
-  if (!formValues.isSharded) return base as ChainAccount;
+  if (!formValues.isSharded) return base;
 
   const groupId = crypto.randomUUID();
 
@@ -153,16 +172,16 @@ const addNewKeyFx = createEffect((formValues: FormValues): ChainAccount | ShardA
       ({
         ...base,
         groupId,
-        type: AccountType.SHARD,
+        accountType: AccountType.SHARD,
         derivationPath: `${formValues.derivationPath}//${index}`,
-      }) as ShardAccount,
+      }) satisfies VaultShardAccount,
   );
 });
 
 sample({
   clock: formInitiated,
   fn: (keys) => {
-    return accountUtils.getAccountsAndShardGroups(keys as (ChainAccount | ShardAccount)[]);
+    return accountUtils.getAccountsAndShardGroups(keys as (VaultChainAccount | VaultShardAccount)[]);
   },
   target: $existingKeys,
 });
@@ -173,33 +192,22 @@ sample({
 });
 
 sample({
-  clock: formStarted,
-  source: networkModel.$chains,
-  fn: (chains) => Object.values(chains)[0],
-  target: $constructorForm.fields.network.onChange,
-});
-
-sample({
-  clock: focusableSet,
-  target: $elementToFocus,
+  clock: $constructorForm.formValidated,
+  source: $chain,
+  filter: (chain: Chain | null): chain is Chain => nonNullable(chain),
+  fn: (chain, formValues) => ({ chain, formValues }),
+  target: addNewKeyFx,
 });
 
 sample({
   clock: $constructorForm.formValidated,
-  target: [addNewKeyFx, $constructorForm.reset],
+  target: $constructorForm.reset,
 });
 
 sample({
   clock: $constructorForm.formValidated,
-  fn: ({ network }) => network,
-  target: $constructorForm.fields.network.onChange,
-});
-
-sample({
-  clock: $constructorForm.formValidated,
-  source: $elementToFocus,
-  filter: (element): element is HTMLButtonElement => Boolean(element),
-  target: focusElementFx,
+  fn: ({ chainId }) => chainId,
+  target: $constructorForm.fields.chainId.onChange,
 });
 
 sample({
@@ -229,13 +237,13 @@ sample({
 });
 
 sample({
-  clock: $constructorForm.fields.network.onChange,
+  clock: $chain,
   source: $constructorForm.fields.keyType.$value,
-  filter: (keyType) => Boolean(keyType),
+  filter: (_, chain) => nonNullable(chain),
   fn: (keyType, chain) => {
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
-    return `//${chain.specName}${type}`;
+    return `//${chain!.specName}${type}`;
   },
   target: $constructorForm.fields.derivationPath.onChange,
 });
@@ -243,15 +251,18 @@ sample({
 sample({
   clock: $constructorForm.fields.keyType.onChange,
   source: {
-    chain: $constructorForm.fields.network.$value,
+    chain: $chain,
     isSharded: $constructorForm.fields.isSharded.$value,
+  },
+  filter: ({ chain }, keyType) => {
+    return nonNullable(chain) && nonNullable(keyType);
   },
   fn: ({ chain, isSharded }, keyType) => {
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
     return {
-      keyName: isSharded ? SHARDED_KEY_NAMES[keyType] : KEY_NAMES[keyType],
-      derivationPath: `//${chain.specName}${type}`,
+      keyName: isSharded ? SHARDED_KEY_NAMES[keyType!] : KEY_NAMES[keyType!],
+      derivationPath: `//${chain!.specName}${type}`,
     };
   },
   target: spread({
@@ -270,6 +281,7 @@ sample({
 sample({
   clock: $constructorForm.fields.isSharded.onChange,
   source: $constructorForm.fields.keyType.$value,
+  filter: (keyType: KeyType | null): keyType is KeyType => nonNullable(keyType),
   fn: (keyType, isSharded) => {
     return isSharded ? SHARDED_KEY_NAMES[keyType] : KEY_NAMES[keyType];
   },
@@ -322,6 +334,5 @@ export const constructorModel = {
   events: {
     formInitiated,
     keyRemoved,
-    focusableSet,
   },
 };

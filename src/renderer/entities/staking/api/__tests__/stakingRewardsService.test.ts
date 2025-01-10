@@ -1,9 +1,10 @@
 import { renderHook } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import { useStakingRewards } from '../stakingRewardsService';
 
-jest.mock('@apollo/client', () => ({
-  ...jest.requireActual('@apollo/client'),
+vi.mock('@apollo/client', async () => ({
+  ...(await vi.importActual('@apollo/client')),
   useQuery: jest.fn().mockReturnValue({
     data: { accumulatedRewards: { nodes: [] } },
     loading: false,

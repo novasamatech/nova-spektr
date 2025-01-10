@@ -1,4 +1,10 @@
-import { type BaseAccount, type ChainAccount, type Explorer, type ShardAccount, type Wallet } from '@/shared/core';
+import {
+  type Explorer,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type Wallet,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BodyText, HelpText, IconButton, Identicon, Truncate } from '@/shared/ui';
@@ -7,7 +13,7 @@ import { ExplorersPopover, accountUtils, walletUtils } from '@/entities/wallet';
 
 type Props = {
   wallet?: Wallet;
-  account: BaseAccount | ChainAccount | ShardAccount;
+  account: VaultBaseAccount | VaultChainAccount | VaultShardAccount;
   addressPrefix?: number;
   explorers?: Explorer[];
   checked: boolean;
@@ -30,9 +36,9 @@ export const SelectableShard = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const isChain = accountUtils.isChainAccount(account);
-  const isShard = accountUtils.isShardAccount(account);
-  const isBase = accountUtils.isBaseAccount(account);
+  const isChain = accountUtils.isVaultChainAccount(account);
+  const isShard = accountUtils.isVaultShardAccount(account);
+  const isBase = accountUtils.isVaultBaseAccount(account);
   const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 

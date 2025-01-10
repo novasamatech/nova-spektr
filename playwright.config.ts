@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+import { renderer } from './config/index.js';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -18,7 +20,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'https://127.0.0.1:3000',
+    baseURL: renderer.server.origin,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -33,5 +35,5 @@ export default defineConfig({
   ],
 
   timeout: 60000,
-  globalSetup: require.resolve('./scripts/updateTestData.js'),
+  globalSetup: './scripts/updateTestData.js',
 });

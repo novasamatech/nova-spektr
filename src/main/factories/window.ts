@@ -1,27 +1,25 @@
 import { join } from 'path';
 
+import { main, renderer, title } from '~config';
 import { BrowserWindow, Menu, session, shell } from 'electron';
 import windowStateKeeper from 'electron-window-state';
 
-import { APP_CONFIG } from '../../../app.config';
 import { ENVIRONMENT } from '../shared/constants/environment';
 
 import { buildMenuTemplate } from './menu';
 
 export function createWindow(): BrowserWindow {
-  const { MAIN, TITLE, RENDERER } = APP_CONFIG;
-
   const mainWindowState = windowStateKeeper({
-    defaultWidth: MAIN.WINDOW.WIDTH,
-    defaultHeight: MAIN.WINDOW.HEIGHT,
+    defaultWidth: main.window.width,
+    defaultHeight: main.window.height,
   });
 
   const window = new BrowserWindow({
-    title: TITLE,
+    title,
     x: mainWindowState.x,
     y: mainWindowState.y,
-    minWidth: MAIN.WINDOW.WIDTH,
-    minHeight: MAIN.WINDOW.HEIGHT,
+    minWidth: main.window.width,
+    minHeight: main.window.height,
     width: mainWindowState.width,
     height: mainWindowState.height,
     show: false,
@@ -29,16 +27,19 @@ export function createWindow(): BrowserWindow {
     autoHideMenuBar: true,
 
     webPreferences: {
-      preload: join(__dirname, 'bridge.js'),
+      nodeIntegration: false,
+      preload: join(__dirname, 'preload.cjs'),
     },
   });
 
-  if (ENVIRONMENT.IS_DEV) {
-    window.loadURL(`${RENDERER.DEV_SERVER.URL}:${RENDERER.DEV_SERVER.PORT}`);
-
-    window.webContents.openDevTools({ mode: 'bottom' });
+  if (ENVIRONMENT.RENDERER_SOURCE === 'localhost') {
+    window.loadURL(`${renderer.server.protocol}${renderer.server.host}:${renderer.server.port}`);
   } else {
     window.loadURL('file://' + __dirname + '/index.html');
+  }
+
+  if (ENVIRONMENT.IS_DEV) {
+    window.webContents.openDevTools({ mode: 'bottom' });
   }
 
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {

@@ -6,15 +6,9 @@ import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
 import tokensProd from '@/shared/config/tokens/tokens.json';
 import tokensDev from '@/shared/config/tokens/tokens_dev.json';
-import {
-  type Account,
-  type AccountId,
-  type AssetBalance,
-  type AssetByChains,
-  type Balance,
-  type ChainId,
-} from '@/shared/core';
+import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
 import { ZERO_BALANCE, getBalanceBn, nonNullable, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
 

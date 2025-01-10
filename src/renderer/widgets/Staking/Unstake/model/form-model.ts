@@ -24,7 +24,6 @@ import {
   nonNullable,
   toAddress,
   transferableAmount,
-  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -233,7 +232,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isBaseAccount(a);
+        const isBase = accountUtils.isVaultBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
@@ -323,7 +322,7 @@ const $signatories = combine(
       const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
-        return { signer: signatory, balance: withdrawableAmount(balance) };
+        return { signer: signatory, balance: transferableAmount(balance) };
       });
 
       acc.push(balancedSignatories);

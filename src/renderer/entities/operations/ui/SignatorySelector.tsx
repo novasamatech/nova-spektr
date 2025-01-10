@@ -1,22 +1,23 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Asset, type ID } from '@/shared/core';
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
 
 type Props = {
-  signatory?: Account | null;
-  signatories: { signer: Account; balance: BN | string }[];
+  signatory?: AnyAccount | null;
+  signatories: { signer: AnyAccount; balance: BN | string }[];
   asset?: Asset;
   addressPrefix: number;
   hasError: boolean;
   errorText: string;
-  onChange: (signatory: Account) => void;
+  onChange: (signatory: AnyAccount) => void;
 };
 
 export const SignatorySelector = ({
@@ -30,7 +31,7 @@ export const SignatorySelector = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const selectSigner = (signerId: ID) => {
+  const selectSigner = (signerId: string) => {
     const selectedSigner = signatories.find(({ signer }) => signer.id === signerId);
     if (!selectedSigner) return;
 
@@ -43,10 +44,10 @@ export const SignatorySelector = ({
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         value={signatory?.id.toString() ?? null}
         invalid={hasError}
-        onChange={(value) => selectSigner(Number(value))}
+        onChange={(value) => selectSigner(value)}
       >
         {signatories.map(({ signer, balance }) => {
-          const isShard = accountUtils.isShardAccount(signer);
+          const isShard = accountUtils.isVaultShardAccount(signer);
           const address = toAddress(signer.accountId, { prefix: addressPrefix });
 
           return (

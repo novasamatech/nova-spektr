@@ -1,125 +1,99 @@
 /* eslint-disable import-x/max-dependencies */
 
-import AddCircleImg, { ReactComponent as AddCircleSvg } from '@/shared/assets/images/functionals/add-circle.svg';
-import AddImg, { ReactComponent as AddSvg } from '@/shared/assets/images/functionals/add.svg';
-import ApproveFellowshipVotingImg, {
-  ReactComponent as ApproveFellowshipVotingSvg,
-} from '@/shared/assets/images/functionals/approve-fellowship-voting.svg';
-import CheckCutoutImg, {
-  ReactComponent as CheckCutoutSvg,
-} from '@/shared/assets/images/functionals/checkmark-cutout.svg';
-import CheckmarkOutlineImg, {
-  ReactComponent as CheckmarkOutlineSvg,
-} from '@/shared/assets/images/functionals/checkmark-outline.svg';
-import CheckImg, { ReactComponent as CheckSvg } from '@/shared/assets/images/functionals/checkmark.svg';
-import CloseOutlineImg, {
-  ReactComponent as CloseOutlineSvg,
-} from '@/shared/assets/images/functionals/close-outline.svg';
-import CloseImg, { ReactComponent as CloseSvg } from '@/shared/assets/images/functionals/close.svg';
-import CopyImg, { ReactComponent as CopySvg } from '@/shared/assets/images/functionals/copy.svg';
-import CurrencyImg, { ReactComponent as CurrencySvg } from '@/shared/assets/images/functionals/currency.svg';
-import DeleteImg, { ReactComponent as DeleteSvg } from '@/shared/assets/images/functionals/delete.svg';
-import DetailsImg, { ReactComponent as DetailsSvg } from '@/shared/assets/images/functionals/details.svg';
-import EditKeysImg, { ReactComponent as EditKeysSvg } from '@/shared/assets/images/functionals/edit-keys.svg';
-import EditImg, { ReactComponent as EditSvg } from '@/shared/assets/images/functionals/edit.svg';
-import EmptyIdenticonImg, {
-  ReactComponent as EmptyIdenticonSvg,
-} from '@/shared/assets/images/functionals/empty-identicon.svg';
-import ExportImg, { ReactComponent as ExportSvg } from '@/shared/assets/images/functionals/export.svg';
-import EyeSlashedImg, { ReactComponent as EyeSlashedSvg } from '@/shared/assets/images/functionals/eye-slashed.svg';
-import EyeImg, { ReactComponent as EyeSvg } from '@/shared/assets/images/functionals/eye.svg';
-import ForgetImg, { ReactComponent as ForgetSvg } from '@/shared/assets/images/functionals/forget.svg';
-import ImportImg, { ReactComponent as ImportSvg } from '@/shared/assets/images/functionals/import.svg';
-import LinkImg, { ReactComponent as LinkSvg } from '@/shared/assets/images/functionals/link.svg';
-import LockImg, { ReactComponent as LockSvg } from '@/shared/assets/images/functionals/lock.svg';
-import MagicImg, { ReactComponent as MagicSvg } from '@/shared/assets/images/functionals/magic.svg';
-import MinusCircleImg, { ReactComponent as MinusCircleSvg } from '@/shared/assets/images/functionals/minus-circle.svg';
-import MoreImg, { ReactComponent as MoreSvg } from '@/shared/assets/images/functionals/more.svg';
-import MultisigOutlineImg, {
-  ReactComponent as MultisigOutlineSvg,
-} from '@/shared/assets/images/functionals/multisig-outline.svg';
-import OpenGovDelegationsImg, {
-  ReactComponent as OpenGovDelegationsSvg,
-} from '@/shared/assets/images/functionals/opengov-delegations.svg';
-import OpenGovLockImg, { ReactComponent as OpenGovLockSvg } from '@/shared/assets/images/functionals/opengov-lock.svg';
-import OpenGovVotingLockImg, {
-  ReactComponent as OpenGovVotingLockSvg,
-} from '@/shared/assets/images/functionals/opengov-voting-lock.svg';
-import PromoteVotingImg, {
-  ReactComponent as PromoteVotingSvg,
-} from '@/shared/assets/images/functionals/promote-voting.svg';
-import QuestionImg, { ReactComponent as QuestionSvg } from '@/shared/assets/images/functionals/question.svg';
-import ReferendumImg, { ReactComponent as ReferendumSvg } from '@/shared/assets/images/functionals/referendum.svg';
-import RefreshImg, { ReactComponent as RefreshSvg } from '@/shared/assets/images/functionals/refresh.svg';
-import RenameImg, { ReactComponent as RenameSvg } from '@/shared/assets/images/functionals/rename.svg';
-import RetainVotingImg, {
-  ReactComponent as RetainVotingSvg,
-} from '@/shared/assets/images/functionals/retain-voting.svg';
-import RFCVotingImg, { ReactComponent as RFCVotingSvg } from '@/shared/assets/images/functionals/rfc-voting.svg';
-import SearchImg, { ReactComponent as SearchSvg } from '@/shared/assets/images/functionals/search.svg';
-import SettingsLiteImg, {
-  ReactComponent as SettingsLiteSvg,
-} from '@/shared/assets/images/functionals/settings-lite.svg';
-import ThumbDownImg, { ReactComponent as ThumbDownSvg } from '@/shared/assets/images/functionals/thumb-down.svg';
-import ThumbUpImg, { ReactComponent as ThumbUpSvg } from '@/shared/assets/images/functionals/thumb-up.svg';
-import UpdateImg, { ReactComponent as UpdateSvg } from '@/shared/assets/images/functionals/update.svg';
-import UploadFileImg, { ReactComponent as UploadFileSvg } from '@/shared/assets/images/functionals/upload-file.svg';
-import ViewValidatorsImg, {
-  ReactComponent as ViewValidatorsSvg,
-} from '@/shared/assets/images/functionals/view-validators.svg';
-import VotedImg, { ReactComponent as VotedSvg } from '@/shared/assets/images/functionals/voted.svg';
-import WarnCutoutImg, { ReactComponent as WarnCutoutSvg } from '@/shared/assets/images/functionals/warning-cutout.svg';
-import WhitelistVotingImg, {
-  ReactComponent as WhitelistVotingSvg,
-} from '@/shared/assets/images/functionals/whitelist-voting.svg';
+import AddCircleIcon from '@/shared/assets/images/functionals/add-circle.svg?jsx';
+import AddIcon from '@/shared/assets/images/functionals/add.svg?jsx';
+import ApproveFellowshipVotingIcon from '@/shared/assets/images/functionals/approve-fellowship-voting.svg?jsx';
+import CheckCutoutIcon from '@/shared/assets/images/functionals/checkmark-cutout.svg?jsx';
+import CheckmarkOutlineIcon from '@/shared/assets/images/functionals/checkmark-outline.svg?jsx';
+import CheckIcon from '@/shared/assets/images/functionals/checkmark.svg?jsx';
+import CloseOutlineIcon from '@/shared/assets/images/functionals/close-outline.svg?jsx';
+import CloseIcon from '@/shared/assets/images/functionals/close.svg?jsx';
+import CopyIcon from '@/shared/assets/images/functionals/copy.svg?jsx';
+import CurrencyIcon from '@/shared/assets/images/functionals/currency.svg?jsx';
+import DeleteIcon from '@/shared/assets/images/functionals/delete.svg?jsx';
+import DetailsIcon from '@/shared/assets/images/functionals/details.svg?jsx';
+import EditKeysIcon from '@/shared/assets/images/functionals/edit-keys.svg?jsx';
+import EditIcon from '@/shared/assets/images/functionals/edit.svg?jsx';
+import EmptyIdenticonIcon from '@/shared/assets/images/functionals/empty-identicon.svg?jsx';
+import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
+import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
+import EyeIcon from '@/shared/assets/images/functionals/eye.svg?jsx';
+import ForgetIcon from '@/shared/assets/images/functionals/forget.svg?jsx';
+import ImportIcon from '@/shared/assets/images/functionals/import.svg?jsx';
+import LinkIcon from '@/shared/assets/images/functionals/link.svg?jsx';
+import LockIcon from '@/shared/assets/images/functionals/lock.svg?jsx';
+import MagicIcon from '@/shared/assets/images/functionals/magic.svg?jsx';
+import MinusCircleIcon from '@/shared/assets/images/functionals/minus-circle.svg?jsx';
+import MoreIcon from '@/shared/assets/images/functionals/more.svg?jsx';
+import MultisigOutlineIcon from '@/shared/assets/images/functionals/multisig-outline.svg?jsx';
+import OpenGovDelegationsIcon from '@/shared/assets/images/functionals/opengov-delegations.svg?jsx';
+import OpenGovLockIcon from '@/shared/assets/images/functionals/opengov-lock.svg?jsx';
+import OpenGovVotingLockIcon from '@/shared/assets/images/functionals/opengov-voting-lock.svg?jsx';
+import PromoteVotingIcon from '@/shared/assets/images/functionals/promote-voting.svg?jsx';
+import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
+import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?jsx';
+import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
+import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
+import RetainVotingIcon from '@/shared/assets/images/functionals/retain-voting.svg?jsx';
+import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
+import SearchIcon from '@/shared/assets/images/functionals/search.svg?jsx';
+import SettingsLiteIcon from '@/shared/assets/images/functionals/settings-lite.svg?jsx';
+import ThumbDownIcon from '@/shared/assets/images/functionals/thumb-down.svg?jsx';
+import ThumbUpIcon from '@/shared/assets/images/functionals/thumb-up.svg?jsx';
+import UpdateIcon from '@/shared/assets/images/functionals/update.svg?jsx';
+import UploadFileIcon from '@/shared/assets/images/functionals/upload-file.svg?jsx';
+import ViewValidatorsIcon from '@/shared/assets/images/functionals/view-validators.svg?jsx';
+import VotedIcon from '@/shared/assets/images/functionals/voted.svg?jsx';
+import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
+import WhitelistVotingIcon from '@/shared/assets/images/functionals/whitelist-voting.svg?jsx';
 
 const FunctionalImages = {
-  copy: { svg: CopySvg, img: CopyImg },
-  close: { svg: CloseSvg, img: CloseImg },
-  checkmarkCutout: { svg: CheckCutoutSvg, img: CheckCutoutImg },
-  checkmark: { svg: CheckSvg, img: CheckImg },
-  currency: { svg: CurrencySvg, img: CurrencyImg },
-  referendum: { svg: ReferendumSvg, img: ReferendumImg },
-  warnCutout: { svg: WarnCutoutSvg, img: WarnCutoutImg },
-  emptyIdenticon: { svg: EmptyIdenticonSvg, img: EmptyIdenticonImg },
-  search: { svg: SearchSvg, img: SearchImg },
-  add: { svg: AddSvg, img: AddImg },
-  addCircle: { svg: AddCircleSvg, img: AddCircleImg },
-  edit: { svg: EditSvg, img: EditImg },
-  delete: { svg: DeleteSvg, img: DeleteImg },
-  multisigOutline: { svg: MultisigOutlineSvg, img: MultisigOutlineImg },
-  eyeSlashed: { svg: EyeSlashedSvg, img: EyeSlashedImg },
-  eye: { svg: EyeSvg, img: EyeImg },
-  checkmarkOutline: { svg: CheckmarkOutlineSvg, img: CheckmarkOutlineImg },
-  closeOutline: { svg: CloseOutlineSvg, img: CloseOutlineImg },
-  refresh: { svg: RefreshSvg, img: RefreshImg },
-  settingsLite: { svg: SettingsLiteSvg, img: SettingsLiteImg },
-  viewValidators: { svg: ViewValidatorsSvg, img: ViewValidatorsImg },
-  link: { svg: LinkSvg, img: LinkImg },
-  lock: { svg: LockSvg, img: LockImg },
-  magic: { img: MagicImg, svg: MagicSvg },
-  questionOutline: { img: QuestionImg, svg: QuestionSvg },
-  uploadFile: { img: UploadFileImg, svg: UploadFileSvg },
-  import: { img: ImportImg, svg: ImportSvg },
-  export: { img: ExportImg, svg: ExportSvg },
-  editKeys: { img: EditKeysImg, svg: EditKeysSvg },
-  more: { img: MoreImg, svg: MoreSvg },
-  rename: { img: RenameImg, svg: RenameSvg },
-  forget: { img: ForgetImg, svg: ForgetSvg },
-  update: { svg: UpdateSvg, img: UpdateImg },
-  opengovLock: { svg: OpenGovLockSvg, img: OpenGovLockImg },
-  opengovVotingLock: { svg: OpenGovVotingLockSvg, img: OpenGovVotingLockImg },
-  opengovDelegations: { svg: OpenGovDelegationsSvg, img: OpenGovDelegationsImg },
-  voted: { svg: VotedSvg, img: VotedImg },
-  thumbUp: { svg: ThumbUpSvg, img: ThumbUpImg },
-  thumbDown: { svg: ThumbDownSvg, img: ThumbDownImg },
-  minusCircle: { svg: MinusCircleSvg, img: MinusCircleImg },
-  details: { svg: DetailsSvg, img: DetailsImg },
-  whitelistVoting: { svg: WhitelistVotingSvg, img: WhitelistVotingImg },
-  rfcVoting: { svg: RFCVotingSvg, img: RFCVotingImg },
-  promoteVoting: { svg: PromoteVotingSvg, img: PromoteVotingImg },
-  retainVoting: { svg: RetainVotingSvg, img: RetainVotingImg },
-  approveFellowshipVoting: { svg: ApproveFellowshipVotingSvg, img: ApproveFellowshipVotingImg },
+  copy: { svg: CopyIcon },
+  close: { svg: CloseIcon },
+  checkmarkCutout: { svg: CheckCutoutIcon },
+  checkmark: { svg: CheckIcon },
+  currency: { svg: CurrencyIcon },
+  referendum: { svg: ReferendumIcon },
+  warnCutout: { svg: WarnCutoutIcon },
+  emptyIdenticon: { svg: EmptyIdenticonIcon },
+  search: { svg: SearchIcon },
+  add: { svg: AddIcon },
+  addCircle: { svg: AddCircleIcon },
+  edit: { svg: EditIcon },
+  delete: { svg: DeleteIcon },
+  multisigOutline: { svg: MultisigOutlineIcon },
+  eyeSlashed: { svg: EyeSlashedIcon },
+  eye: { svg: EyeIcon },
+  checkmarkOutline: { svg: CheckmarkOutlineIcon },
+  closeOutline: { svg: CloseOutlineIcon },
+  refresh: { svg: RefreshIcon },
+  settingsLite: { svg: SettingsLiteIcon },
+  viewValidators: { svg: ViewValidatorsIcon },
+  link: { svg: LinkIcon },
+  lock: { svg: LockIcon },
+  magic: { svg: MagicIcon },
+  questionOutline: { svg: QuestionIcon },
+  uploadFile: { svg: UploadFileIcon },
+  import: { svg: ImportIcon },
+  export: { svg: ExportIcon },
+  editKeys: { svg: EditKeysIcon },
+  more: { svg: MoreIcon },
+  rename: { svg: RenameIcon },
+  forget: { svg: ForgetIcon },
+  update: { svg: UpdateIcon },
+  opengovLock: { svg: OpenGovLockIcon },
+  opengovVotingLock: { svg: OpenGovVotingLockIcon },
+  opengovDelegations: { svg: OpenGovDelegationsIcon },
+  voted: { svg: VotedIcon },
+  thumbUp: { svg: ThumbUpIcon },
+  thumbDown: { svg: ThumbDownIcon },
+  minusCircle: { svg: MinusCircleIcon },
+  details: { svg: DetailsIcon },
+  whitelistVoting: { svg: WhitelistVotingIcon },
+  rfcVoting: { svg: RFCVotingIcon },
+  promoteVoting: { svg: PromoteVotingIcon },
+  retainVoting: { svg: RetainVotingIcon },
+  approveFellowshipVoting: { svg: ApproveFellowshipVotingIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

@@ -6,7 +6,7 @@ import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { Select } from '@/shared/ui-kit';
+import { Select, ThemeProvider } from '@/shared/ui-kit';
 import {
   type DdAddressInfoDecoded,
   type DdSeedInfo,
@@ -196,7 +196,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   return (
-    <>
+    <ThemeProvider theme="dark">
       {cameraState === CameraState.LOADING && (
         <div className="flex h-[288px] w-full flex-col items-center">
           <div className="relative flex h-full w-full items-center justify-center">
@@ -239,7 +239,6 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             <div className="mx-auto w-[208px]">
               {availableCameras.length > 1 && (
                 <Select
-                  theme="dark"
                   placeholder={t('onboarding.paritySigner.selectCameraLabel')}
                   value={activeCamera ?? null}
                   onChange={setActiveCamera}
@@ -288,6 +287,6 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           </footer>
         </div>
       </div>
-    </>
+    </ThemeProvider>
   );
 };

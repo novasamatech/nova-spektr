@@ -6,9 +6,10 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, toAccountId } from '@/shared/lib/utils';
 import { BaseModal, BodyText, FootnoteText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 import { votingService } from '@/entities/governance';
 import { SignatoryCard } from '@/entities/signatory';
-import { AddressWithName, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 
@@ -75,12 +76,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                 accountId={toAccountId(address)}
                 addressPrefix={chain.addressPrefix}
               >
-                <AddressWithName
-                  addressFont="text-text-secondary"
-                  address={address}
-                  type="adaptive"
-                  name={account?.name || ''}
-                />
+                <Address title={account?.name || ''} address={address} variant="truncate" canCopy={false} showIcon />
               </SignatoryCard>
             </div>
             <BodyText key={`decision-${address}`} className="col-span-2 px-2">

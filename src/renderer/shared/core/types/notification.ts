@@ -1,4 +1,6 @@
-import { type AccountId, type CallHash, type ChainId, type ID, type Timepoint } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type CallHash, type ChainId, type ID, type Timepoint } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type WalletType } from './wallet';
 

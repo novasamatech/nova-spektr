@@ -1,25 +1,25 @@
 /* eslint-disable import-x/max-dependencies */
 
-import BtcImg, { ReactComponent as BtcSvg } from '@/shared/assets/images/currency/btc.svg';
-import EthImg, { ReactComponent as EthSvg } from '@/shared/assets/images/currency/eth.svg';
-import EurImg, { ReactComponent as EurSvg } from '@/shared/assets/images/currency/eur.svg';
-import GbpImg, { ReactComponent as GbpSvg } from '@/shared/assets/images/currency/gbp.svg';
-import JpyImg, { ReactComponent as JpySvg } from '@/shared/assets/images/currency/jpy.svg';
-import KhrImg, { ReactComponent as KhrSvg } from '@/shared/assets/images/currency/khr.svg';
-import KztImg, { ReactComponent as KztSvg } from '@/shared/assets/images/currency/kzt.svg';
-import RubImg, { ReactComponent as RubSvg } from '@/shared/assets/images/currency/rub.svg';
-import UsdImg, { ReactComponent as UsdSvg } from '@/shared/assets/images/currency/usd.svg';
+import BtcIcon from '@/shared/assets/images/currency/btc.svg?jsx';
+import EthIcon from '@/shared/assets/images/currency/eth.svg?jsx';
+import EurIcon from '@/shared/assets/images/currency/eur.svg?jsx';
+import GbpIcon from '@/shared/assets/images/currency/gbp.svg?jsx';
+import JpyIcon from '@/shared/assets/images/currency/jpy.svg?jsx';
+import KhrIcon from '@/shared/assets/images/currency/khr.svg?jsx';
+import KztIcon from '@/shared/assets/images/currency/kzt.svg?jsx';
+import RubIcon from '@/shared/assets/images/currency/rub.svg?jsx';
+import UsdIcon from '@/shared/assets/images/currency/usd.svg?jsx';
 
 const CurrencyImages = {
-  btc: { svg: BtcSvg, img: BtcImg },
-  eth: { svg: EthSvg, img: EthImg },
-  eur: { svg: EurSvg, img: EurImg },
-  gbp: { svg: GbpSvg, img: GbpImg },
-  jpy: { svg: JpySvg, img: JpyImg },
-  khr: { svg: KhrSvg, img: KhrImg },
-  kzt: { svg: KztSvg, img: KztImg },
-  rub: { svg: RubSvg, img: RubImg },
-  usd: { svg: UsdSvg, img: UsdImg },
+  btc: { svg: BtcIcon },
+  eth: { svg: EthIcon },
+  eur: { svg: EurIcon },
+  gbp: { svg: GbpIcon },
+  jpy: { svg: JpyIcon },
+  khr: { svg: KhrIcon },
+  kzt: { svg: KztIcon },
+  rub: { svg: RubIcon },
+  usd: { svg: UsdIcon },
 } as const;
 
 export type Currency = keyof typeof CurrencyImages;

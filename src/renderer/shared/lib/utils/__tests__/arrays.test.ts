@@ -1,4 +1,4 @@
-import { addUnique, dictionary, merge, splice } from '../arrays';
+import { addUnique, dictionary, groupBy, merge, splice } from '../arrays';
 
 describe('Arrays utils', () => {
   test('should insert element in the beginning', () => {
@@ -60,7 +60,7 @@ describe('merge', () => {
     expect(res).toEqual(['1', '2', '3', '4', '5']);
   });
 
-  test('should return firrt array if second is empty', () => {
+  test('should return first array if second is empty', () => {
     const list1 = ['1', '2', '3', '4'];
 
     const res = merge({
@@ -95,7 +95,7 @@ describe('merge', () => {
     expect(res).toEqual([1, 2, 3, 4, 5]);
   });
 
-  test('should merge objects', () => {
+  test('should replace objects', () => {
     const list1 = [{ id: 1 }, { id: 4 }, { id: 5 }];
     const list2 = [{ id: 3 }, { id: 2 }, { id: 3, test: true }, { id: 6 }, { id: 7 }];
 
@@ -107,7 +107,20 @@ describe('merge', () => {
     expect(res).toEqual([{ id: 1 }, { id: 2 }, { id: 3, test: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }]);
   });
 
-  test('should merge and sort objects', () => {
+  test('should merge objects', () => {
+    const list1 = [{ id: 1, v: 1 }, { id: 5 }];
+    const list2 = [{ id: 3 }, { id: 1, v: 2 }];
+
+    const res = merge({
+      a: list1,
+      b: list2,
+      mergeBy: (s) => s.id,
+      merge: (a, b) => ({ ...a, v: (a.v ?? 0) + (b.v ?? 0) }),
+    });
+    expect(res).toEqual([{ id: 1, v: 3 }, { id: 3 }, { id: 5 }]);
+  });
+
+  test('should replace and sort objects', () => {
     const list1 = [{ id: 1 }, { id: 5 }, { id: 4 }];
     const list2 = [{ id: 3 }, { id: 2 }];
 
@@ -221,6 +234,26 @@ describe('dictionary', () => {
       1: 'Alice: Developer',
       2: 'Bob: Designer',
       3: 'Charlie: Manager',
+    });
+  });
+
+  describe('groupBy', () => {
+    test('should group', () => {
+      const list = [
+        { type: 'a', v: 1 },
+        { type: 'b', v: 1 },
+        { type: 'a', v: 2 },
+      ] as const;
+
+      const groups = groupBy(list, (v) => v.type);
+
+      expect(groups).toEqual({
+        a: [
+          { type: 'a', v: 1 },
+          { type: 'a', v: 2 },
+        ],
+        b: [{ type: 'b', v: 1 }],
+      });
     });
   });
 });

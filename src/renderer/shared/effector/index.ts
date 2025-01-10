@@ -5,3 +5,4 @@ export { attachToFeatureInput } from './attachToFeatureInput';
 export { registerFeatures } from './registerFeatures';
 
 export { series } from './helpers/series';
+export { createBuffer } from './helpers/createBuffer';

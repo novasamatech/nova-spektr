@@ -1,10 +1,10 @@
 import { BN_ZERO } from '@polkadot/util';
 import { type FormEvent } from 'react';
 
-import { type Account, type Chain, type WalletType } from '@/shared/core';
-import { nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { truncate } from '@/shared/lib/utils/strings';
+import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { useBalance } from '@/entities/balance';
 import { WalletIcon } from '@/entities/wallet';
@@ -12,12 +12,11 @@ import { WalletIcon } from '@/entities/wallet';
 interface Props {
   onSubmit: (event: FormEvent, account: Account) => void;
   account: Account;
-  walletType: WalletType;
-  walletName?: string;
+  wallet: Wallet;
   chain: Chain;
 }
 
-export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Props) => {
+export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
   const balance = useBalance({
     accountId: account.accountId,
     chainId: chain.chainId,
@@ -26,24 +25,22 @@ export const Signer = ({ account, walletName, walletType, onSubmit, chain }: Pro
 
   return (
     <li
-      className="grid cursor-pointer grid-flow-col grid-cols-[30px,1fr,100px,30px] items-center truncate py-4 pl-2 pr-2 hover:bg-hover"
+      className="flex cursor-pointer items-center justify-between gap-x-6 py-4 pl-2 pr-2 text-text-secondary hover:bg-hover"
       onClick={(e) => onSubmit(e, account)}
     >
-      <WalletIcon type={walletType} />
-      <div className="flex flex-col text-text-secondary">
-        {walletName && <BodyText className="text-inherit">{walletName}</BodyText>}
-        <BodyText className="text-inherit">
-          {truncate(toAddress(account.accountId, { prefix: chain.addressPrefix }), 6)}
-        </BodyText>
+      <div className="flex items-center gap-x-2 truncate">
+        <WalletIcon type={wallet.type} className="shrink-0" />
+        {wallet.name && <BodyText className="truncate text-inherit">{wallet.name}</BodyText>}
+        <AccountExplorers accountId={account.accountId} chain={chain} />
       </div>
-      {nonNullable(chain.assets[0]) && (
+      {nonNullable(chain.assets.at(0)) && (
         <AssetBalance
           value={transferableAmount(balance) || BN_ZERO}
           asset={chain.assets[0]}
-          className="ml-auto mr-6 text-body text-inherit"
+          className="ml-auto text-right text-body text-inherit"
         />
       )}
-      <Icon name="right" size={20} />
+      <Icon name="right" size={20} className="shrink-0" />
     </li>
   );
 };

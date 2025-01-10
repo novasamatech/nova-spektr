@@ -6,12 +6,6 @@ describe('ui/Icon', () => {
   test('should render svg component', async () => {
     render(<Icon name="copy" />);
 
-    await waitFor(() => expect(screen.getByTestId('copy-svg')).toBeInTheDocument());
-  });
-
-  test('should render img component', async () => {
-    render(<Icon as="img" name="copy" />);
-
-    await waitFor(() => expect(screen.getByTestId('copy-img')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('Icon:copy')).toBeInTheDocument());
   });
 });

@@ -1,22 +1,25 @@
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
-import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { CaptionText, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
 import { Box } from '@/shared/ui-kit';
+// TODO what should we do with domain imports in ui-entities? Is it an exception from rules?
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
 import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { Account as AccountComponent } from '../Account/Account';
-import { AccountExplorers } from '../AccountExplorer/AccountExplorers';
+import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];
   chain: Chain;
-  initiator: Account[];
-  signatory: Account | null;
-  proxied?: Account;
+  initiator: AnyAccount[];
+  signatory: AnyAccount | null;
+  proxied?: AnyAccount;
 }>;
 
 export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {
@@ -26,14 +29,14 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
 
   const initiatorWallet = useMemo(() => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: (a) => a.accountId === initiator[0]?.accountId,
+      accountFn: a => a.accountId === initiator[0]?.accountId,
     });
   }, [wallets, initiator]);
 
   const signatoryWallet = useMemo(() => {
     return signatory
       ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: (a) => a.accountId === signatory.accountId,
+          accountFn: a => a.accountId === signatory.accountId,
         })
       : null;
   }, [wallets, signatory]);
@@ -41,7 +44,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
   const proxiedWallet = useMemo(() => {
     return proxied
       ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: (a) => a.accountId === proxied.accountId,
+          accountFn: a => a.accountId === proxied.accountId,
         })
       : null;
   }, [wallets, proxied]);

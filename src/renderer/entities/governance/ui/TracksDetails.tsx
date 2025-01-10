@@ -1,6 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
-import { CaptionText, Icon, Tooltip } from '@/shared/ui';
+import { CaptionText, Icon } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { allTracks } from '../constants/tracks';
 
 type Props = {
@@ -16,14 +17,18 @@ export const TracksDetails = ({ tracks }: Props) => {
         <CaptionText className="text-white">{tracks.length}</CaptionText>
       </div>
 
-      <Tooltip
-        content={tracks
-          .map((trackId) => t(allTracks.find((track) => Number(track.id) === trackId)?.value || ''))
-          .filter(nonNullable)
-          .join(', ')}
-        pointer="up"
-      >
-        <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+      <Tooltip side="bottom">
+        <Tooltip.Trigger>
+          <div tabIndex={0}>
+            <Icon className="group-hover:text-icon-hover" name="info" size={16} />
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          {tracks
+            .map((trackId) => t(allTracks.find((track) => Number(track.id) === trackId)?.value || ''))
+            .filter(nonNullable)
+            .join(', ')}
+        </Tooltip.Content>
       </Tooltip>
     </div>
   );

@@ -1,7 +1,8 @@
 import { hexToU8a, isHex, isU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base58Decode, checkAddressChecksum, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 
-import { type AccountId, type Address } from '@/shared/core';
+import { type Address, type Chain, ChainOptions, type HexString } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
   ADDRESS_ALLOWED_ENCODED_LENGTHS,
@@ -21,13 +22,13 @@ import { truncate } from './strings';
  *
  * @returns {String}
  */
-export const toAddress = (value: Address | AccountId, params?: { chunk?: number; prefix?: number }): Address => {
+export const toAddress = (value: string, params?: { chunk?: number; prefix?: number }): Address => {
   const chunkValue = params?.chunk;
   const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
   let address = '';
   try {
-    address = encodeAddress(decodeAddress(value), prefixValue);
+    address = encodeAddress(value, prefixValue);
   } catch {
     address = value;
   }
@@ -49,17 +50,6 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
 };
 
 /**
- * Check is account's address valid
- *
- * @param address Account's address
- *
- * @returns {Boolean}
- */
-export const validateAddress = (address?: Address | AccountId): boolean => {
-  return validateEthereumAddress(address) || validateSubstrateAddress(address);
-};
-
-/**
  * Try to get account id of the address
  *
  * @param address Account's address
@@ -68,9 +58,10 @@ export const validateAddress = (address?: Address | AccountId): boolean => {
  */
 export const toAccountId = (address: Address): AccountId => {
   try {
-    return u8aToHex(decodeAddress(address));
+    return u8aToHex(decodeAddress(address)) as AccountId;
   } catch {
-    return '0x00';
+    // TODO WTF
+    return '0x00' as AccountId;
   }
 };
 
@@ -81,7 +72,7 @@ export const toAccountId = (address: Address): AccountId => {
  *
  * @returns {Boolean}
  */
-export const isCorrectAccountId = (accountId?: AccountId): boolean => {
+export const isCorrectAccountId = (accountId?: HexString): boolean => {
   if (!accountId) return false;
 
   const trimmedValue = accountId.replace(/^0x/, '');
@@ -89,7 +80,17 @@ export const isCorrectAccountId = (accountId?: AccountId): boolean => {
   return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
-export const isEthereumAccountId = (accountId?: AccountId): boolean => {
+export const isSubstrateAccountId = (accountId?: HexString): boolean => {
+  if (!accountId) return false;
+
+  try {
+    return hexToU8a(accountId).length === 32;
+  } catch {
+    return false;
+  }
+};
+
+export const isEthereumAccountId = (accountId?: HexString): boolean => {
   if (!accountId) return false;
 
   try {
@@ -99,28 +100,37 @@ export const isEthereumAccountId = (accountId?: AccountId): boolean => {
   }
 };
 
-export const validateEthereumAddress = (address?: Address | AccountId): boolean => {
-  if (!address) return false;
-
-  if (isU8a(address) || isHex(address)) {
-    return ETHEREUM_PUBLIC_KEY_LENGTH_BYTES === u8aToU8a(address).length;
-  }
-
-  return false;
-};
+/**
+ * Check whether chain is evm or not
+ *
+ * @param chain Value to check
+ *
+ * @returns {Boolean}
+ */
+export function isEvmChain(chain: Chain): boolean {
+  return chain.options?.includes(ChainOptions.ETHEREUM_BASED) ?? false;
+}
 
 /**
  * Check is account's address valid
  *
  * @param address Account's address
+ * @param chain Chain to operate
  *
  * @returns {Boolean}
  */
-export const validateSubstrateAddress = (address?: Address | AccountId): boolean => {
-  if (!address) return false;
+export const validateAddress = (address: Address | AccountId, chain?: Chain): boolean => {
+  // TODO: Only to support previous version. Make `chain` mandatory after refactoring all places of use
+  if (!chain) {
+    return validateEvmAddress(address) || validateSubstrateAddress(address);
+  }
 
+  return isEvmChain(chain) ? validateEvmAddress(address) : validateSubstrateAddress(address);
+};
+
+const validateSubstrateAddress = (address: Address | AccountId): boolean => {
   if (isU8a(address) || isHex(address)) {
-    return PUBLIC_KEY_LENGTH_BYTES === u8aToU8a(address).length;
+    return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
   }
 
   try {
@@ -133,4 +143,10 @@ export const validateSubstrateAddress = (address?: Address | AccountId): boolean
   } catch {
     return false;
   }
+};
+
+const validateEvmAddress = (address: Address | AccountId): boolean => {
+  if (!isU8a(address) && !isHex(address)) return false;
+
+  return u8aToU8a(address).length === ETHEREUM_PUBLIC_KEY_LENGTH_BYTES;
 };
