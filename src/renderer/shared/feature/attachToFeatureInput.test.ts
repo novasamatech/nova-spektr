@@ -1,4 +1,5 @@
 import { allSettled, createEvent, createStore, fork, sample } from 'effector';
+import { describe, expect, it } from 'vitest';
 
 import { attachToFeatureInput } from './attachToFeatureInput';
 import { createFeature } from './createFeature';
@@ -108,13 +109,13 @@ describe('attachToFeatureInput', () => {
     sample({
       clock: combinedEvent,
       source: $updates,
-      fn: (c) => c + 1,
+      fn: c => c + 1,
       target: $updates,
     });
 
     // firing source event
     await allSettled(event, { scope, params: 'world' });
-    // starting all usual, should call combined event
+    // starting as usual, should call combined event
     await allSettled(featureStatus.start, { scope });
     // cleaning
     await allSettled(featureStatus.stop, { scope });

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { combineIdentifiers } from '@/shared/di';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { IconButton } from '@/shared/ui';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/wallet-multisig';
 import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/wallet-polkadot-vault';

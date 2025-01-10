@@ -1,7 +1,7 @@
 import { createStore } from 'effector';
 
 import { $features } from '@/shared/config/features';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 

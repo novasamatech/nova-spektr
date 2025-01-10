@@ -1,7 +1,7 @@
 import { combine, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';

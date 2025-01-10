@@ -50,7 +50,7 @@ export const attachToFeatureInput = <Input, Data>(
     sample({
       clock: feature.running,
       source: $storedSource,
-      filter: (data) => data !== empty,
+      filter: data => data !== empty,
       fn: (data, input) => ({ data: data as Data, input }),
       target: combinedEvent,
     });
@@ -65,7 +65,7 @@ export const attachToFeatureInput = <Input, Data>(
     sample({
       clock: source,
       source: feature.state,
-      filter: (featureState) => featureState.status === 'running',
+      filter: featureState => featureState.status === 'running',
       fn: (featureState, data) => {
         if (featureState.status !== 'running') {
           throw new Error('Incorrect feature status');

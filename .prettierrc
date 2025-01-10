@@ -27,6 +27,8 @@
       "files": [
         "./src/renderer/domains/**/*.ts",
         "./src/renderer/shared/pallet/**/*.ts",
+        "./src/renderer/shared/effector/**/*.{ts,tsx}",
+        "./src/renderer/shared/feature/**/*.{ts,tsx}",
         "./src/renderer/features/fellowship-*/**/*.{ts,tsx}",
         "./src/renderer/features/wallet-*/**/*.{ts,tsx}",
         "./src/renderer/shared/ui-kit/**/*.{ts,tsx}",

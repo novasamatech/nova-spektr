@@ -1,6 +1,6 @@
 import { combine } from 'effector';
 
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 

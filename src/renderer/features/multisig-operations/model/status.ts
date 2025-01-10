@@ -3,7 +3,7 @@ import { combine, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel, networkUtils } from '@/entities/network';
