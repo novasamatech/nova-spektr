@@ -19,10 +19,9 @@ import { Accordion, Box, Progress } from '@/shared/ui-kit';
 import { contactModel } from '@/entities/contact';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain, useNetworkData } from '@/entities/network';
-import { Status } from '@/entities/operations';
+import { Status, operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, permissionUtils, walletModel } from '@/entities/wallet';
-import { getSignatoryName, getSignatoryStatus } from '../common/utils';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import ApproveTxModal from './modals/ApproveTx';
@@ -109,7 +108,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
   const walletSignatories = signatories
     .reduce<WalletSignatory[]>((acc, signatory) => {
       const signatoryWallet = signatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
-      const status = getSignatoryStatus(events, signatory.accountId);
+      const status = operationDetailsUtils.getSignatoryStatus(events, signatory.accountId);
 
       if (signatoryWallet) {
         acc.push({ ...signatory, wallet: signatoryWallet, status });
@@ -154,11 +153,11 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
                   key={signatory.accountId}
                   accountId={signatory.accountId}
                   addressPrefix={connection.addressPrefix}
-                  status={getSignatoryStatus(events, signatory.accountId)}
+                  status={operationDetailsUtils.getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
                   <Address
-                    title={getSignatoryName(
+                    title={operationDetailsUtils.getSignatoryName(
                       signatory.accountId,
                       signatories,
                       contacts,

@@ -10,10 +10,9 @@ import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';
 import { useNetworkData } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
+import { operationDetailsUtils, operationsModel } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
-import { getMultisigExtrinsicLink } from '../common/utils';
 
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
@@ -54,7 +53,12 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
-  const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, chain?.explorers);
+  const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
+    tx.callHash,
+    tx.indexCreated,
+    tx.blockCreated,
+    chain?.explorers,
+  );
 
   const setupCallData = async (callData: CallData) => {
     if (!api || !tx) return;
