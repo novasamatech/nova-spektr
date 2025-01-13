@@ -130,6 +130,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
       return null;
     }
 
+    // TODO: Move this to domain layer
     const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
     const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
     const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
