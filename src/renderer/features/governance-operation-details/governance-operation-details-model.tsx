@@ -29,51 +29,19 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
     const transaction = getTransactionFromMultisigTx(operation);
 
     const chains = useUnit(networkModel.$chains);
-    const apis = useUnit(networkModel.$apis);
-
     const chain = chains[operation.chainId];
-    const api = apis[operation.chainId];
-
     const defaultAsset = chain?.assets[0];
-
-    const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
-    const [undelegationVotes, setUndelegationVotes] = useState<string>();
-    const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
     const result = [];
 
-    useEffect(() => {
-      if (isUndelegateTransaction(transaction)) {
-        setIsUndelegationLoading(true);
-      }
-
-      if (!api) return;
-
-      operationDetailsUtils.getUndelegationData(api, operation).then(({ votes, target }) => {
-        setUndelegationVotes(votes);
-        setUndelegationTarget(target);
-        setIsUndelegationLoading(false);
-      });
-    }, [api, operation]);
-
     if (
       transaction?.type &&
-      ![
-        TransactionType.UNLOCK,
-        TransactionType.VOTE,
-        TransactionType.REVOTE,
-        TransactionType.REMOVE_VOTE,
-        TransactionType.DELEGATE,
-        TransactionType.UNDELEGATE,
-        TransactionType.EDIT_DELEGATION,
-      ].includes(transaction.type)
+      ![TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
+        transaction.type,
+      )
     ) {
       return null;
     }
-
-    const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
-    const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
-    const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
 
     const referendumId = operationDetailsUtils.getReferendumId(operation);
     const vote = operationDetailsUtils.getVote(operation);
@@ -114,6 +82,57 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
         </DetailRow>,
       );
     }
+
+    return <>{result.map((e) => e)}</>;
+  },
+  order: 1,
+});
+
+governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+  render: ({ operation }) => {
+    const { t } = useI18n();
+    const transaction = getTransactionFromMultisigTx(operation);
+
+    const chains = useUnit(networkModel.$chains);
+    const apis = useUnit(networkModel.$apis);
+
+    const chain = chains[operation.chainId];
+    const api = apis[operation.chainId];
+
+    const defaultAsset = chain?.assets[0];
+
+    const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
+    const [undelegationVotes, setUndelegationVotes] = useState<string>();
+    const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+
+    const result = [];
+
+    useEffect(() => {
+      if (isUndelegateTransaction(transaction)) {
+        setIsUndelegationLoading(true);
+      }
+
+      if (!api) return;
+
+      operationDetailsUtils.getUndelegationData(api, operation).then(({ votes, target }) => {
+        setUndelegationVotes(votes);
+        setUndelegationTarget(target);
+        setIsUndelegationLoading(false);
+      });
+    }, [api, operation]);
+
+    if (
+      transaction?.type &&
+      ![TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(
+        transaction.type,
+      )
+    ) {
+      return null;
+    }
+
+    const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
+    const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
+    const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
 
     if (isUndelegationLoading) {
       result.push(
