@@ -21,8 +21,6 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
 
   const multiShardAccounts = useUnit(walletDetailsModel.$multiShardAccounts);
-  // TODO move inside MultisigWalletDetails
-  const signatories = useUnit(walletDetailsModel.$signatories);
 
   if (!isOpen || nullable(wallet)) {
     return null;
@@ -38,15 +36,7 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
 
   // TODO: Separate wallet details for regular and flexible multisig
   if (walletUtils.isMultisig(wallet)) {
-    return (
-      <MultisigWalletDetails
-        wallet={wallet}
-        signatoryWallets={signatories.wallets}
-        signatoryContacts={signatories.contacts}
-        signatoryPeople={signatories.people}
-        onClose={onClose}
-      />
-    );
+    return <MultisigWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
