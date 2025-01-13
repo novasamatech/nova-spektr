@@ -24,6 +24,8 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   const result = [];
 
   const destination = operationDetailsUtils.getDestinationAccountId(operation);
+  const sender = operationDetailsUtils.getSender(operation);
+  const destinationChain = operationDetailsUtils.getDestinationChain(operation);
 
   if (destination) {
     result.push(
@@ -32,9 +34,6 @@ export const TransferOperationDetails = ({ operation }: Props) => {
       </DetailRow>,
     );
   }
-
-  const sender = operationDetailsUtils.getSender(operation);
-  const destinationChain = operationDetailsUtils.getDestinationChain(operation);
 
   if (isXcmTransaction(transaction) && sender) {
     result.push(

@@ -18,7 +18,7 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { dictionary, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TransactionVote, votingService } from '@/entities/governance';
@@ -72,33 +72,35 @@ export const getSignatoryAccounts = (
   signatories: Signatory[],
   chainId: ChainId,
 ): Account[] => {
-  const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
+  const walletsMap = dictionary(wallets, 'id');
 
-  return signatories.reduce((acc: Account[], signatory) => {
+  const result = [];
+
+  for (const signatory of signatories) {
     const filteredAccounts = accounts.filter(
       (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
     );
 
     const signatoryAccount = filteredAccounts.find((a) => {
       const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
-      const wallet = walletsMap.get(a.walletId);
+      const wallet = walletsMap[a.walletId];
 
       return isChainMatch && walletUtils.isValidSignatory(wallet);
     });
 
     if (signatoryAccount) {
-      acc.push(signatoryAccount);
+      result.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
         (a) => accountUtils.isChainDependant(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
-        acc.push(legacySignatoryAccount);
+        result.push(legacySignatoryAccount);
       }
     }
+  }
 
-    return acc;
-  }, []);
+  return result;
 };
 
 export const getDestination = (

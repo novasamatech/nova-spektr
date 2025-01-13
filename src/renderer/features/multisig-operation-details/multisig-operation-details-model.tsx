@@ -26,11 +26,12 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
     const activeWallet = useUnit(walletModel.$activeWallet);
+    const activeAccounts = useUnit(walletModel.$activeAccounts);
 
-    if (!activeWallet) return null;
-
-    const accountId = activeWallet.accounts[0].accountId;
+    const accountId = activeAccounts.at(0)?.accountId;
     const chain = chains[operation.chainId];
+
+    if (!activeWallet || !accountId || !chain) return null;
 
     return (
       <DetailRow label={t('operation.details.multisigWallet')}>
@@ -47,6 +48,7 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
+    console.log('xcm', 1);
     const { formatDate } = useI18n();
 
     const events = useStoreMap({
@@ -63,7 +65,7 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
         );
       },
     });
-    const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
+    const approvals = events.filter((e) => e.status === 'SIGNED');
     const initEvent = approvals.find((e) => e.accountId === operation.depositor);
     const date = new Date(operation.dateCreated || initEvent?.dateCreated || Date.now());
 
@@ -80,25 +82,27 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
+    console.log('xcm', 2);
+
     const transaction = getTransactionFromMultisigTx(operation);
 
-    if (!transaction) {
-      return (
-        <>
-          <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
+    if (transaction) return null;
 
-          <ChainTitle chainId={operation.chainId} className="w-[114px]" />
-        </>
-      );
-    }
+    return (
+      <>
+        <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
 
-    return null;
+        <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      </>
+    );
   },
   order: 1,
 });
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
+    console.log('xcm', 3);
+
     const events = useStoreMap({
       store: operationsModel.$multisigEvents,
       keys: [operation],
@@ -114,7 +118,7 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
       },
     });
 
-    const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
+    const approvals = events.filter((e) => e.status === 'SIGNED');
     const activeWallet = useUnit(walletModel.$activeWallet);
     const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
 

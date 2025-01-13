@@ -169,7 +169,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
               value={undelegationVotes}
               asset={defaultAsset}
               showSymbol={false}
-            ></AssetBalance>
+            />
           </FootnoteText>
         </DetailRow>,
       );

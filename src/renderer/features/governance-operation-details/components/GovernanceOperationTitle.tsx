@@ -1,6 +1,7 @@
 import { chainsService } from '@/shared/api/network';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { getAssetById } from '@/shared/lib/utils';
+import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
@@ -19,9 +20,9 @@ export const GovernanceOperationTitle = ({ tx }: Props) => {
       <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} />
 
       {asset && amount && (
-        <div className="w-[160px]">
+        <Box width="160px">
           <AssetBalance value={amount} asset={asset} showIcon />
-        </div>
+        </Box>
       )}
 
       <ChainTitle chainId={tx.chainId} className="w-[114px]" />
