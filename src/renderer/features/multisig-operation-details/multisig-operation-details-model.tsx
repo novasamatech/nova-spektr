@@ -83,7 +83,7 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
-    if (transaction) return null;
+    if (transaction && transaction.type) return null;
 
     return (
       <>
@@ -220,16 +220,6 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
                       </FootnoteText>
                       <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
                     </div>
-
-                    // <AddressWithExplorers
-                    //   explorers={explorers}
-                    //   accountId={depositorSignatory.accountId}
-                    //   name={depositorSignatory.name}
-                    //   addressFont={AddressStyle}
-                    //   addressPrefix={addressPrefix}
-                    //   wrapperClassName="min-w-min"
-                    //   type="short"
-                    // />
                   )}
                 </div>
               </DetailRow>
