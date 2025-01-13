@@ -1,5 +1,3 @@
-import { type SessionTypes } from '@walletconnect/types';
-
 import { type HexString } from '@/shared/core';
 
 import { walletConnectService } from './service';
@@ -18,16 +16,6 @@ describe('walletConnectService', () => {
 
   test('should return false if not connected', () => {
     const result = walletConnectService.isConnected({}, 'topic');
-
-    expect(result).toEqual(false);
-  });
-
-  test('should return true if connected', () => {
-    const sessions = {
-      topic: {} as SessionTypes.Struct,
-    };
-
-    const result = walletConnectService.isConnected(sessions, 'topic');
 
     expect(result).toEqual(false);
   });

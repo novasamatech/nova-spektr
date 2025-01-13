@@ -75,7 +75,6 @@ sample({
   source: $accounts,
   filter: (_, { result: successful }) => successful,
   fn: (accounts, { params: draft }) => {
-    console.log({ accounts, draft });
     const draftId = accountsService.uniqId(draft);
 
     return accounts.map(a => (accountsService.uniqId(a) === draftId ? { ...a, ...draft } : a));
