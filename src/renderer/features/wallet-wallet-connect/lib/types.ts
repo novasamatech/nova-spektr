@@ -1,9 +1,10 @@
-import type Provider from '@walletconnect/universal-provider';
+import type Client from '@walletconnect/sign-client';
+import { type PairingTypes } from '@walletconnect/types';
 
 export type InitConnectParams = {
-  provider: Provider;
+  provider: Client;
   chains: string[];
-  pairing?: any;
+  pairing?: Pick<PairingTypes.Struct, 'topic'>;
 };
 
 export type InitReconnectParams = {

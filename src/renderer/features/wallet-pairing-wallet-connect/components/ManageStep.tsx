@@ -1,25 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useUnit } from 'effector-react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useStatusContext } from '@/app/providers';
-import { chainsService } from '@/shared/api/network';
-import {
-  AccountType,
-  type Chain,
-  CryptoType,
-  ErrorType,
-  type NoID,
-  SigningType,
-  WalletType,
-  type WcAccount,
-} from '@/shared/core';
+import { ErrorType, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { nullable } from '@/shared/lib/utils';
+import { Button, Icon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { Field, Input, Modal } from '@/shared/ui-kit';
-import { MultiAccountsList, walletModel } from '@/entities/wallet';
+import { Box, Field, Input, Modal } from '@/shared/ui-kit';
+import { MultiAccountsList } from '@/entities/wallet';
+import { pairingForm } from '../model/pairingForm';
 
 const WalletLogo: Record<WalletTypeName, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
@@ -33,20 +23,25 @@ type WalletForm = {
 type WalletTypeName = WalletType.NOVA_WALLET | WalletType.WALLET_CONNECT;
 
 type Props = {
-  accounts: string[];
-  pairingTopic: string;
-  sessionTopic: string;
   type: WalletTypeName;
   onBack: () => void;
   onComplete: () => void;
 };
 
-export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack, onComplete }: Props) => {
+export const ManageStep = ({ type, onBack, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
 
-  const [chains, setChains] = useState<Chain[]>([]);
-  const [accountsList, setAccountsList] = useState<{ chain: Chain; accountId: AccountId }[]>([]);
+  const session = useUnit(pairingForm.$session);
+  const accounts = useUnit(pairingForm.$accounts);
+
+  if (nullable(session)) {
+    return (
+      <Box fillContainer verticalAlign="center" horizontalAlign="center">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
 
   const {
     handleSubmit,
@@ -58,67 +53,11 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
     defaultValues: { walletName: '' },
   });
 
-  useEffect(() => {
-    setChains(chainsService.getChainsData({ sort: true }));
-  }, []);
-
-  useEffect(() => {
-    const list = chains.reduce<{ chain: Chain; accountId: AccountId }[]>((acc, chain) => {
-      const account = accounts.find(account => {
-        const [_, chainId] = account.split(':');
-
-        return chain.chainId.includes(chainId);
-      });
-
-      const [_, _chainId, address] = account?.split(':') || [];
-
-      if (address) {
-        const accountId = toAccountId(address);
-
-        acc.push({
-          chain,
-          accountId,
-        });
-      }
-
-      return acc;
-    }, []);
-
-    setAccountsList(list.filter(Boolean));
-  }, [chains.length]);
-
   // TODO: Rewrite with effector forms
   const submitHandler: SubmitHandler<WalletForm> = async ({ walletName }) => {
-    const wcAccounts = accounts.map(account => {
-      const [_, chainId, address] = account.split(':');
-      const chain = chains.find(chain => chain.chainId.includes(chainId));
-
-      return {
-        type: 'chain',
-        name: walletName.trim(),
-        accountId: toAccountId(address),
-        accountType: AccountType.WALLET_CONNECT,
-        signingType: SigningType.WALLET_CONNECT,
-        // TODO check
-        cryptoType: CryptoType.SR25519,
-        // TODO and if it's ommited?
-        chainId: chain!.chainId,
-        signingExtras: { pairingTopic, sessionTopic },
-      } satisfies Omit<NoID<WcAccount>, 'walletId'>;
-    });
-
-    walletModel.events.walletConnectCreated({
-      external: false,
-      wallet: {
-        name: walletName.trim(),
-        type,
-        signingType: SigningType.WALLET_CONNECT,
-      },
-      accounts: wcAccounts,
-    });
+    pairingForm.createWallet({ name: walletName });
 
     reset();
-
     showStatus({
       title: walletName.trim(),
       description: t('onboarding.walletConnect.pairedDescription'),
@@ -191,7 +130,7 @@ export const ManageStep = ({ accounts, type, pairingTopic, sessionTopic, onBack,
 
       <div className="flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
         <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <MultiAccountsList accounts={accountsList} className="h-[416px]" />
+        <MultiAccountsList accounts={accounts} className="h-[416px]" />
       </div>
     </div>
   );

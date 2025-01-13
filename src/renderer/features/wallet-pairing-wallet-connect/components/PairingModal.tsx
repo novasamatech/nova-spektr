@@ -1,13 +1,11 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useEffect } from 'react';
 
-import { useStatusContext } from '@/app/providers';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeaderTitleText, SmallTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
-import { walletConnectModel } from '@/features/wallet-wallet-connect';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';
 import { pairingForm } from '../model/pairingForm';
 
@@ -23,12 +21,10 @@ type Props = PropsWithChildren<{
 export const PairingModal = memo(({ variant, children }: Props) => {
   const { t } = useI18n();
 
-  const session = useUnit(walletConnectModel.$session);
-  const uri = useUnit(walletConnectModel.$uri);
+  const session = useUnit(pairingForm.$session);
+  const uri = useUnit(pairingForm.$uri);
   const step = useUnit(pairingForm.$step);
   const open = useUnit(pairingForm.flow.state) === variant;
-
-  const { showStatus } = useStatusContext();
 
   useEffect(() => {
     if (!open) return;
@@ -37,16 +33,6 @@ export const PairingModal = memo(({ variant, children }: Props) => {
 
     return () => clearTimeout(timeout);
   }, [open]);
-
-  useEffect(() => {
-    if (step === Step.REJECT) {
-      showStatus({
-        title: t('onboarding.walletConnect.rejected'),
-        content: <Animation variant="error" />,
-      });
-      toggleModal(false);
-    }
-  }, [step]);
 
   const goToScan = () => {
     pairingForm.reset();
@@ -57,7 +43,6 @@ export const PairingModal = memo(({ variant, children }: Props) => {
     if (open) {
       pairingForm.flow.open(variant);
     } else {
-      pairingForm.reset();
       pairingForm.flow.close(null);
     }
   };
@@ -65,6 +50,17 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   const header = variant === 'novawallet' ? t('onboarding.novaWallet.title') : t('onboarding.walletConnect.title');
   const scanTitle =
     variant === 'novawallet' ? t('onboarding.novaWallet.scanTitle') : t('onboarding.walletConnect.scanTitle');
+
+  if (step === Step.REJECT) {
+    return (
+      <StatusModal
+        isOpen={open}
+        content={<Animation variant="error" />}
+        title={t('onboarding.walletConnect.rejected')}
+        onClose={() => toggleModal(false)}
+      />
+    );
+  }
 
   return (
     <Modal size="xl" height="lg" isOpen={open} onToggle={toggleModal}>
@@ -98,9 +94,6 @@ export const PairingModal = memo(({ variant, children }: Props) => {
             {session ? (
               <ManageStep
                 type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
-                accounts={session.namespaces.polkadot.accounts}
-                pairingTopic={session.pairingTopic}
-                sessionTopic={session.topic}
                 onBack={goToScan}
                 onComplete={() => toggleModal(false)}
               />

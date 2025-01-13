@@ -3,12 +3,12 @@ import { type MouseEvent, type PropsWithChildren, type ReactNode } from 'react';
 import { type Wallet } from '@/shared/core';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   wallet: Wallet;
   description?: string | ReactNode;
+  meta?: ReactNode;
   prefix?: ReactNode;
   hideIcon?: boolean;
   onClick?: () => void;
@@ -17,13 +17,12 @@ type Props = {
 export const WalletCardMd = ({
   wallet,
   description,
+  meta,
   prefix,
   hideIcon,
   children,
   onClick,
 }: PropsWithChildren<Props>) => {
-  const isWalletConnect = walletUtils.isWalletConnectGroup(wallet);
-
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
@@ -60,14 +59,7 @@ export const WalletCardMd = ({
             >
               {wallet.name}
             </BodyText>
-            {isWalletConnect && (
-              <span
-                className={cnTw(
-                  'h-1.5 w-1.5 rounded-full',
-                  wallet.isConnected ? 'bg-icon-positive' : 'bg-icon-default',
-                )}
-              />
-            )}
+            {meta}
           </div>
           {typeof description === 'string' ? (
             <FootnoteText className="text-text-tertiary">{description}</FootnoteText>

@@ -1,10 +1,26 @@
 /// <reference types="vitest/config" />
 
+import { cpus } from 'node:os';
 import { resolve } from 'node:path';
 
-import { type UserConfigFn } from 'vite';
+import { type Plugin, type UserConfigFn } from 'vite';
 
 import { folders, renderer, title, version } from './config/index.js';
+
+function skipSourcemaps(paths: string[]): Plugin {
+  return {
+    name: 'skip-sourcemaps',
+    transform(code, id) {
+      if (paths.some((pkg) => id.includes(pkg))) {
+        return {
+          code: code,
+          // https://github.com/rollup/rollup/blob/master/docs/plugin-development/index.md#source-code-transformations
+          map: { mappings: '' },
+        };
+      }
+    },
+  };
+}
 
 const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
@@ -21,6 +37,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const isStage = mode === 'staging';
 
   const commonPlugins = [
+    skipSourcemaps(['node_modules']),
     tsconfigPaths(),
     nodePolyfills({
       include: ['buffer', 'events', 'crypto', 'stream'],
@@ -51,6 +68,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       target: 'es2021',
       rollupOptions: {
         treeshake: 'smallest',
+        maxParallelFileOps: Math.max(1, cpus().length - 1),
       },
     },
     assetsInclude: ['**/*.wasm'],

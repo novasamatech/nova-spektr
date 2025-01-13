@@ -173,7 +173,6 @@ export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnect
   accounts,
   type: WalletType.WALLET_CONNECT,
   isActive: true,
-  isConnected: true,
   name: `WalletConnect ${id}`,
   signingType: SigningType.WALLET_CONNECT,
 });

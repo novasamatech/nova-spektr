@@ -1,20 +1,14 @@
+import type Client from '@walletconnect/sign-client';
 import { type EngineTypes } from '@walletconnect/types';
-import type Provider from '@walletconnect/universal-provider';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { combineEvents } from 'patronum';
 
-import { AccountType, type HexString, type WcAccount } from '@/shared/core';
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
-import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { type InitReconnectParams, walletConnectModel } from '@/features/wallet-wallet-connect';
+import { type HexString } from '@/shared/core';
+import { type InitReconnectParams, walletConnect } from '@/features/wallet-wallet-connect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { ReconnectStep } from '../lib/types';
 
-import { operationSignModel } from './operation-sign-model';
-
 type SignParams = {
-  provider: Provider;
+  provider: Client;
   payload: EngineTypes.RequestParams;
 };
 
@@ -54,7 +48,7 @@ const signFx = createEffect(async (signParams: SignParams[]): Promise<SignRespon
 
   for (const { provider, payload } of signParams) {
     // should be signed step by step
-    const response = await provider.client.request<SignResponse>(payload);
+    const response = await provider.request<SignResponse>(payload);
 
     results.push(response);
   }
@@ -93,91 +87,91 @@ sample({
 
 sample({
   clock: reconnectStarted,
-  target: walletConnectModel.events.connect,
+  target: walletConnect.restoreSession,
 });
 
-sample({
-  clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
-  source: $reconnectStep,
-  filter: (step) => step === ReconnectStep.RECONNECTING,
-  fn: () => ReconnectStep.FAILED,
-  target: $reconnectStep,
-});
+// sample({
+//   clock: [walletConnectModel.events.initConnectFailed, walletConnectModel.events.sessionTopicUpdateFailed],
+//   source: $reconnectStep,
+//   filter: (step) => step === ReconnectStep.RECONNECTING,
+//   fn: () => ReconnectStep.FAILED,
+//   target: $reconnectStep,
+// });
 
-sample({
-  clock: walletConnectModel.events.connected,
-  source: {
-    signer: operationSignModel.$signer,
-    wallets: walletModel.$wallets,
-    step: $reconnectStep,
-    session: walletConnectModel.$session,
-  },
-  filter: ({ step, session, signer }) => {
-    const isCorrectStep =
-      operationSignUtils.isReconnectingStep(step) ||
-      operationSignUtils.isFailedStep(step) ||
-      operationSignUtils.isConnectedStep(step);
+// sample({
+//   clock: walletConnectModel.events.connected,
+//   source: {
+//     signer: operationSignModel.$signer,
+//     wallets: walletModel.$wallets,
+//     step: $reconnectStep,
+//     session: walletConnectModel.$session,
+//   },
+//   filter: ({ step, session, signer }) => {
+//     const isCorrectStep =
+//       operationSignUtils.isReconnectingStep(step) ||
+//       operationSignUtils.isFailedStep(step) ||
+//       operationSignUtils.isConnectedStep(step);
+//
+//     return isCorrectStep && operationSignUtils.isTopicExist(session) && nonNullable(signer);
+//   },
+//   fn: ({ wallets, signer, session }) => ({
+//     walletId: signer!.walletId,
+//     accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
+//     topic: session!.topic,
+//   }),
+//   target: walletConnectModel.events.sessionTopicUpdated,
+// });
 
-    return isCorrectStep && operationSignUtils.isTopicExist(session) && nonNullable(signer);
-  },
-  fn: ({ wallets, signer, session }) => ({
-    walletId: signer!.walletId,
-    accounts: walletUtils.getAccountsBy(wallets, (a) => a.walletId === signer?.walletId),
-    topic: session!.topic,
-  }),
-  target: walletConnectModel.events.sessionTopicUpdated,
-});
+// sample({
+//   clock: combineEvents({
+//     events: [walletConnectModel.events.sessionTopicUpdateDone],
+//     reset: reconnectStarted,
+//   }),
+//   source: {
+//     signer: operationSignModel.$signer,
+//     wallets: walletModel.$wallets,
+//     newAccounts: walletConnectModel.$accounts,
+//     chains: networkModel.$chains,
+//   },
+//   filter: ({ signer }) => Boolean(signer?.walletId),
+//   fn: ({ signer, wallets, newAccounts, chains }) => {
+//     const oldAccount = walletUtils.getAccountBy(wallets, (a) => a.walletId === signer?.walletId);
+//     const updatedAccounts: WcAccount[] = [];
+//
+//     for (const account of newAccounts) {
+//       const [_, chainId, address] = account.split(':');
+//       const accountId = toAccountId(address);
+//       const chain = Object.values(chains).find((chain) => chain.chainId.includes(chainId));
+//
+//       if (!chain || !oldAccount || !accountUtils.isWcAccount(oldAccount)) continue;
+//
+//       updatedAccounts.push({
+//         ...oldAccount,
+//         chainId: chain.chainId,
+//         accountType: AccountType.WALLET_CONNECT,
+//         accountId,
+//         signingExtras: oldAccount.signingExtras,
+//       });
+//     }
+//
+//     return { walletId: signer!.walletId, accounts: updatedAccounts };
+//   },
+//   target: walletConnectModel.events.accountsUpdated,
+// });
 
-sample({
-  clock: combineEvents({
-    events: [walletConnectModel.events.sessionTopicUpdateDone],
-    reset: reconnectStarted,
-  }),
-  source: {
-    signer: operationSignModel.$signer,
-    wallets: walletModel.$wallets,
-    newAccounts: walletConnectModel.$accounts,
-    chains: networkModel.$chains,
-  },
-  filter: ({ signer }) => Boolean(signer?.walletId),
-  fn: ({ signer, wallets, newAccounts, chains }) => {
-    const oldAccount = walletUtils.getAccountBy(wallets, (a) => a.walletId === signer?.walletId);
-    const updatedAccounts: WcAccount[] = [];
-
-    for (const account of newAccounts) {
-      const [_, chainId, address] = account.split(':');
-      const accountId = toAccountId(address);
-      const chain = Object.values(chains).find((chain) => chain.chainId.includes(chainId));
-
-      if (!chain || !oldAccount || !accountUtils.isWcAccount(oldAccount)) continue;
-
-      updatedAccounts.push({
-        ...oldAccount,
-        chainId: chain.chainId,
-        accountType: AccountType.WALLET_CONNECT,
-        accountId,
-        signingExtras: oldAccount.signingExtras,
-      });
-    }
-
-    return { walletId: signer!.walletId, accounts: updatedAccounts };
-  },
-  target: walletConnectModel.events.accountsUpdated,
-});
-
-sample({
-  clock: walletConnectModel.events.connectionRejected,
-  source: $reconnectStep,
-  filter: operationSignUtils.isReconnectingStep,
-  fn: () => ReconnectStep.REJECTED,
-  target: $reconnectStep,
-});
-
-sample({
-  clock: walletConnectModel.events.accountsUpdateDone,
-  fn: () => ReconnectStep.SUCCESS,
-  target: $reconnectStep,
-});
+// sample({
+//   clock: walletConnectModel.events.connectionRejected,
+//   source: $reconnectStep,
+//   filter: operationSignUtils.isReconnectingStep,
+//   fn: () => ReconnectStep.REJECTED,
+//   target: $reconnectStep,
+// });
+//
+// sample({
+//   clock: walletConnectModel.events.accountsUpdateDone,
+//   fn: () => ReconnectStep.SUCCESS,
+//   target: $reconnectStep,
+// });
 
 sample({
   clock: [reconnectAborted, reconnectDone],

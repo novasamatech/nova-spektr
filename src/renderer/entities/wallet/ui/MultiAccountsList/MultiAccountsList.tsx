@@ -1,5 +1,6 @@
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
@@ -19,6 +20,8 @@ type Props = {
 export const MultiAccountsList = ({ accounts, className, headerClassName }: Props) => {
   const { t } = useI18n();
 
+  const { list } = useDeferredList({ list: accounts });
+
   return (
     <div className="flex flex-col">
       <div className={cnTw('flex px-5 py-4', headerClassName)}>
@@ -29,8 +32,8 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
       </div>
 
       <ScrollArea>
-        <ul className={cnTw('z-0 flex flex-col divide-y divide-divider', className)}>
-          {accounts.map(({ chain, accountId }) => {
+        <ul className={cnTw('z-0 flex flex-col divide-y divide-divider pb-4', className)}>
+          {list.map(({ chain, accountId }) => {
             const { chainId, addressPrefix } = chain;
 
             return (

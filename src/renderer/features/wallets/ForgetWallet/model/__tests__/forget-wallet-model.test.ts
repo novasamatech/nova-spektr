@@ -27,8 +27,8 @@ vi.mock('@/entities/balance', async () => ({
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 
-vi.mock('@walletconnect/universal-provider', () => ({
-  Provider: {},
+vi.mock('@walletconnect/sign-client', () => ({
+  Client: {},
 }));
 
 vi.mock('@walletconnect/utils', () => ({

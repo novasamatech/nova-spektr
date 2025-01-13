@@ -14,7 +14,7 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
-import { DEFAULT_POLKADOT_METHODS, walletConnectModel, walletConnectService } from '@/features/wallet-wallet-connect';
+import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-wallet-connect';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
@@ -27,13 +27,13 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   const api = apis[payload.chain.chainId];
 
   const wallets = useUnit(walletModel.$wallets);
-  const session = useUnit(walletConnectModel.$session);
-  const provider = useUnit(walletConnectModel.$provider);
+  const session = useUnit(walletConnect.$session);
+  const provider = useUnit(walletConnect.$provider);
   const reconnectStep = useUnit(signWcModel.$reconnectStep);
   const isSigningRejected = useUnit(signWcModel.$isSigningRejected);
   const signatures = useUnit(signWcModel.$signatures);
   const isStatusShown = useUnit(signWcModel.$isStatusShown);
-  const uri = useUnit(walletConnectModel.$uri);
+  const uri = useUnit(walletConnect.$pairingUri);
 
   const chains = useUnit(networkModel.$chains);
 
@@ -53,14 +53,14 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
   useEffect(() => {
     if (txPayloads || !provider) return;
 
-    const sessions = provider.client.session.getAll();
+    const sessions = provider.session.getAll();
     const storedAccount = walletUtils.getAccountsBy(wallets, (a) => a.walletId === account.walletId)[0];
     const storedSession = accountUtils.isWcAccount(storedAccount)
       ? sessions.find((s) => s.topic === storedAccount.signingExtras.sessionTopic)
       : null;
 
     if (storedSession) {
-      walletConnectModel.events.sessionUpdated(storedSession);
+      walletConnect.sessionUpdated(storedSession);
 
       setupTransaction().catch(() => console.warn('WalletConnect | setupTransaction() failed'));
     } else {

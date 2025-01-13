@@ -2,11 +2,11 @@ import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { createSlot, useSlot } from '@/shared/di';
+import { Slot, createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
-import { WalletCardLg, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletSelectModel } from '../model/wallet-select-model';
 
@@ -20,6 +20,7 @@ export const walletGroupSlot = createSlot<{
   onDetailsRequest: (wallet: Wallet) => void;
 }>();
 export const walletSelectActionsSlot = createSlot();
+export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = () => {
   const { t } = useI18n();
@@ -52,10 +53,15 @@ export const WalletSelect = () => {
           className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         >
           <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
-            <WalletCardLg
-              wallet={activeWallet}
-              description={<WalletFiatBalance walletId={activeWallet.id} className="truncate" />}
-            />
+            <div className="flex h-8 w-full min-w-0 items-center gap-x-2">
+              <div className="relative">
+                <Slot id={walletIconSlot} props={{ wallet: activeWallet, size: 32 }} />
+              </div>
+              <div className="flex min-w-0 flex-col">
+                <BodyText className="truncate text-text-primary">{activeWallet.name}</BodyText>
+                <WalletFiatBalance walletId={activeWallet.id} className="truncate" />
+              </div>
+            </div>
             <Icon name="down" size={16} className="ml-auto shrink-0" />
           </Box>
         </button>

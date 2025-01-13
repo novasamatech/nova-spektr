@@ -1,59 +1,51 @@
-import { type Unit, createEvent, createStore, sample } from 'effector';
+import { type Event, type Store, type Unit, createEvent, is, sample } from 'effector';
+import { combineEvents } from 'patronum';
+
+import { nonNullable } from '@/shared/lib/utils';
 
 type Params<T, R, F extends R> = {
-  source: Unit<T>;
-  clock: Unit<R>;
+  source: Store<T> | Event<T>;
+  clock: Store<R> | Event<R>;
   reset?: Unit<unknown>;
-  predicate: (value: NoInfer<R>) => value is F;
+  filter: (value: NoInfer<R>) => value is F;
 };
 
-export const waitFor = <const E, const R, const F extends R>({ source, clock, reset, predicate }: Params<E, R, F>) => {
-  const empty = Symbol();
-  const $eventParams = createStore<E | symbol>(empty);
-  const resultEvent = createEvent<{ event: E; trigger: F }>();
+export const waitFor = <const E, const R, const F extends R>({ source, clock, reset, filter }: Params<E, R, F>) => {
+  const sourceEvent = is.store(source) ? source.updates : source;
+  const clockEvent = is.store(clock) ? clock.updates : clock;
+  const wait = createEvent<{ event: E; trigger: F }>();
 
-  // direct trigger
-  sample({
-    clock: source,
-    source: clock,
-    filter: predicate,
-    fn: (trigger, event) => ({ event, trigger }),
-    target: resultEvent,
+  const resetEvent = createEvent();
+
+  const combined = combineEvents({
+    events: [sourceEvent, clockEvent],
+    reset: resetEvent,
+    // reset: sourceEvent,
+  }).filterMap(([event, trigger]) => {
+    if (filter(trigger)) {
+      return { event, trigger };
+    }
   });
 
-  // reset params on successful call
   sample({
-    clock: resultEvent,
-    fn: () => empty,
-    target: $eventParams,
+    clock: combined,
+    target: wait,
   });
 
-  // reset params with external event
-  if (reset) {
+  if (is.store(clock)) {
     sample({
-      clock: reset,
-      fn: () => empty,
-      target: $eventParams,
+      clock: sourceEvent,
+      source: clock,
+      filter: filter,
+      fn: (trigger, event) => ({ event, trigger }),
+      target: wait,
     });
   }
 
-  // saving params for later call
   sample({
-    clock: source,
-    source: clock,
-    filter: source => !predicate(source),
-    fn: (_, data) => data,
-    target: $eventParams,
+    clock: [reset, sourceEvent].filter(nonNullable),
+    resetEvent,
   });
 
-  //
-  sample({
-    clock: clock,
-    source: $eventParams,
-    filter: (event, source) => event !== empty && predicate(source),
-    fn: (event, trigger) => ({ event: event as E, trigger: trigger as F }),
-    target: resultEvent,
-  });
-
-  return resultEvent;
+  return wait;
 };

@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { WalletType } from '@/shared/core';
+import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { accountsService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
-import { walletGroupSlot } from '@/features/wallet-select';
+import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
@@ -21,6 +21,17 @@ export const walletMultisigFeature = createFeature({
 // All multisig accounts can perform actions
 walletMultisigFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
   return accountUtils.isMultisigAccount(account);
+});
+
+walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
+  if (!walletUtils.isMultisig(wallet)) return null;
+
+  const type =
+    walletUtils.isFlexibleMultisig(wallet) && !wallet.activated
+      ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
+      : wallet.type;
+
+  return <WalletIcon type={type} size={size} />;
 });
 
 walletMultisigFeature.inject(walletGroupSlot, {

@@ -1,10 +1,10 @@
-import type Provider from '@walletconnect/universal-provider';
+import { type SessionTypes } from '@walletconnect/types';
 
 import { type HexString } from '@/shared/core';
 
 import { walletConnectService } from './service';
 
-describe('entities/walletConnect/lib/onChainUtils', () => {
+describe('walletConnectService', () => {
   test('should return chain ids in wallet connect type', () => {
     const chains = [
       { chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as HexString },
@@ -17,29 +17,17 @@ describe('entities/walletConnect/lib/onChainUtils', () => {
   });
 
   test('should return false if not connected', () => {
-    const provider = {
-      client: {
-        session: {
-          getAll: () => [],
-        },
-      },
-    } as unknown as Provider;
-
-    const result = walletConnectService.isConnected(provider, 'topic');
+    const result = walletConnectService.isConnected({}, 'topic');
 
     expect(result).toEqual(false);
   });
 
   test('should return true if connected', () => {
-    const provider = {
-      client: {
-        session: {
-          getAll: () => ['topic'],
-        },
-      },
-    } as unknown as Provider;
+    const sessions = {
+      topic: {} as SessionTypes.Struct,
+    };
 
-    const result = walletConnectService.isConnected(provider, 'topic');
+    const result = walletConnectService.isConnected(sessions, 'topic');
 
     expect(result).toEqual(false);
   });

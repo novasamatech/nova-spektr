@@ -13,8 +13,8 @@ vi.mock('@walletconnect/utils', () => ({
   getSdkError: jest.fn(),
 }));
 
-vi.mock('@walletconnect/universal-provider', () => ({
-  Provider: {},
+vi.mock('@walletconnect/sign-client', () => ({
+  Client: {},
 }));
 
 describe('entities/wallet/model/wallet-model', () => {
