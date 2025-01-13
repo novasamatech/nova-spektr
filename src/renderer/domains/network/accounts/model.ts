@@ -75,9 +75,10 @@ sample({
   source: $accounts,
   filter: (_, { result: successful }) => successful,
   fn: (accounts, { params: draft }) => {
+    console.log({ accounts, draft });
     const draftId = accountsService.uniqId(draft);
 
-    return accounts.map(a => (a.id === draftId ? ({ ...a, ...draft } as AnyAccount) : a)) as AnyAccount[];
+    return accounts.map(a => (accountsService.uniqId(a) === draftId ? { ...a, ...draft } : a));
   },
   target: $accounts,
 });
@@ -93,7 +94,9 @@ sample({
       return acc;
     }, {});
 
-    return accounts.map(a => (a.id in draftsMap ? ({ ...a, ...draftsMap[a.id] } as AnyAccount) : a)) as AnyAccount[];
+    return accounts.map(a =>
+      accountsService.uniqId(a) in draftsMap ? { ...a, ...draftsMap[accountsService.uniqId(a)] } : a,
+    );
   },
   target: $accounts,
 });

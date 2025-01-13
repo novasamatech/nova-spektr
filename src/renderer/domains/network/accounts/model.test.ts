@@ -55,7 +55,7 @@ describe('accounts model', () => {
   it('should successfully update account', async () => {
     const scope = fork({
       values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.updateAccounts, () => true]],
+      handlers: [[accountsDomainModel.updateAccount, () => true]],
     });
 
     const draft: AnyAccountDraft = {
