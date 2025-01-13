@@ -2,8 +2,10 @@ import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { accountsService } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 import { walletGroupSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
@@ -14,6 +16,14 @@ export { walletActionsSlot };
 export const walletPolkadotVaultFeature = createFeature({
   name: 'wallet/polkadot vault',
   enable: $features.map(f => f.polkadotVault),
+});
+
+walletPolkadotVaultFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+  return (
+    accountUtils.isVaultBaseAccount(account) ||
+    accountUtils.isVaultChainAccount(account) ||
+    accountUtils.isVaultShardAccount(account)
+  );
 });
 
 walletPolkadotVaultFeature.inject(walletGroupSlot, {

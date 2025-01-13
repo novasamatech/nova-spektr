@@ -1,7 +1,7 @@
 import { combine, restore, sample } from 'effector';
 import { and, debounce, either, or } from 'patronum';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { dictionary, nonNullable, performSearch } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';

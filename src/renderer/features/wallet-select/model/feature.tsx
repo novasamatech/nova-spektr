@@ -1,4 +1,4 @@
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { navigationHeaderSlot } from '@/features/app-shell';
 import { WalletSelect } from '../components/WalletSelect';
 

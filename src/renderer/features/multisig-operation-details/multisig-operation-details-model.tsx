@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, copyToClipboard, toAddress, truncate } from '@/shared/lib/utils';

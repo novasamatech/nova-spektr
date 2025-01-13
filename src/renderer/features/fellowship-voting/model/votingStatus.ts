@@ -1,11 +1,11 @@
 import { combine, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { collectiveDomain } from '@/domains/collectives';
+import { accountsService } from '@/domains/network';
 
 import { fellowshipModel } from './fellowship';
 import { votingFeatureStatus } from './status';
@@ -24,16 +24,16 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
-  if (nullable(featureInput)) return null;
+const $currentMember = combine(votingFeatureStatus.input, $members, (input, members) => {
+  if (nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMatchingMember(featureInput.activeAccounts, members);
+  return collectiveDomain.membersService.findMatchingMember(input.accounts, members);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMatchingAccount(input.activeAccounts, member);
+  return collectiveDomain.membersService.findMatchingAccount(input.accounts, member);
 });
 
 const $hasRequiredRank = combine(
@@ -51,7 +51,7 @@ const $hasRequiredRank = combine(
   },
 );
 
-const $canVote = $currentMember.map(nonNullable);
+const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
 
 const $walletVoting = restore(
   attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { wallet }, data: voting }) => {
@@ -75,7 +75,7 @@ sample({
       api,
       chainId,
       referendums: referendums.map(r => r.id),
-      accounts: activeAccounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
+      accounts: activeAccounts.map(a => a.accountId),
     };
   },
 

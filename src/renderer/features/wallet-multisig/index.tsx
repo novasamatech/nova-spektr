@@ -2,8 +2,10 @@ import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { accountsService } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 import { walletGroupSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
@@ -14,6 +16,11 @@ export { walletActionsSlot };
 export const walletMultisigFeature = createFeature({
   name: 'wallet/multisig',
   enable: $features.map(f => f.multisig || f.flexibleMultisig),
+});
+
+// All multisig accounts can perform actions
+walletMultisigFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+  return accountUtils.isMultisigAccount(account);
 });
 
 walletMultisigFeature.inject(walletGroupSlot, {

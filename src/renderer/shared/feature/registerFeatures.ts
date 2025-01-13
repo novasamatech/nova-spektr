@@ -1,6 +1,10 @@
 import { type Feature } from './createFeature';
 
 export const registerFeatures = (features: Feature<unknown>[]) => {
+  for (const feature of features) {
+    feature.startIfNecessary();
+  }
+
   // Basically groupBy
   const domains = features.reduce<Record<string, Feature<unknown>[]>>((acc, feature) => {
     const name = feature.name.split('/').at(0) ?? 'unknown';
@@ -24,7 +28,10 @@ export const registerFeatures = (features: Feature<unknown>[]) => {
   for (const [domain, features] of sorted) {
     console.groupCollapsed(domain);
     for (const feature of features) {
-      console.log(feature.name.split('/').at(1) ?? 'unknown');
+      // eslint-disable-next-line effector/no-getState
+      const message = `${feature.name.split('/').at(1) ?? 'unknown'}${feature.status.getState() !== 'idle' ? ' | started' : ''}`;
+
+      console.log(message);
     }
     console.groupEnd();
   }

@@ -1,5 +1,5 @@
 import { TransactionType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 

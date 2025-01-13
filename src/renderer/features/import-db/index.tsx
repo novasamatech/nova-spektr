@@ -1,5 +1,5 @@
 import { $features } from '@/shared/config/features';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, Icon } from '@/shared/ui';
 import { onboardingActionsSlot } from '@/pages/Onboarding';

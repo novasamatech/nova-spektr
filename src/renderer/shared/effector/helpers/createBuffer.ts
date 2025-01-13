@@ -38,7 +38,7 @@ export const createBuffer = <T>({ source, timeframe }: Params<T>) => {
   sample({
     clock: flush,
     source: $buffer,
-    filter: (buffer) => buffer.length > 0,
+    filter: buffer => buffer.length > 0,
     target: call,
   });
 

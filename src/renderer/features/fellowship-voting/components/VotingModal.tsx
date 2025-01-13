@@ -41,6 +41,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   }
 
   const wallet = walletUtils.getWalletFilteredAccounts(input.wallets, {
+    walletFn: w => w.id === account.walletId,
     accountFn: a => a.accountId === account.accountId,
   });
 
@@ -77,42 +78,50 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
     );
   }
 
+  if (nullable(account)) {
+    return (
+      <OperationResult
+        isOpen={isOpen}
+        variant="error"
+        autoCloseTimeout={2000}
+        title={t('fellowship.voting.errors.noAccount')}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <Modal isOpen={isOpen} size="md" onToggle={handleToggle}>
       <Modal.Title close>
         <OperationTitle title={t('fellowship.voting.title')} chainId={input.chainId} />
       </Modal.Title>
       <Modal.Content>
-        {nonNullable(account) ? (
-          <Carousel item={step}>
-            <Carousel.Item id="confirm" index={0}>
-              <Box>
-                <Box padding={[4, 5]}>
-                  <VotingConfirmation
-                    asset={input.asset}
-                    chain={input.chain}
-                    wallets={input.wallets}
-                    account={account}
-                    vote={vote}
-                    rank={member.rank}
-                    fee={fee}
-                  />
-                </Box>
-                <Modal.Footer>
-                  {wallet && basketUtils.isBasketAvailable(wallet) && (
-                    <Button pallet="secondary" onClick={handleBasketSave}>
-                      {t('operation.addToBasket')}
-                    </Button>
-                  )}
-                  {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
-                </Modal.Footer>
-              </Box>
-            </Carousel.Item>
-            <Carousel.Item id="sign" index={1}>
-              <OperationSign onGoBack={() => setStep('confirm')} />
-            </Carousel.Item>
-          </Carousel>
-        ) : null}
+        <Carousel item={step}>
+          <Carousel.Item id="confirm" index={0}>
+            <Box padding={[4, 5]}>
+              <VotingConfirmation
+                asset={input.asset}
+                chain={input.chain}
+                wallets={input.wallets}
+                account={account}
+                vote={vote}
+                rank={member.rank}
+                fee={fee}
+              />
+            </Box>
+            <Modal.Footer>
+              {wallet && basketUtils.isBasketAvailable(wallet) && (
+                <Button pallet="secondary" onClick={handleBasketSave}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )}
+              {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
+            </Modal.Footer>
+          </Carousel.Item>
+          <Carousel.Item id="sign" index={1}>
+            <OperationSign onGoBack={() => setStep('confirm')} />
+          </Carousel.Item>
+        </Carousel>
       </Modal.Content>
     </Modal>
   );
