@@ -48,7 +48,6 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
-    console.log('xcm', 1);
     const { formatDate } = useI18n();
 
     const events = useStoreMap({
@@ -82,8 +81,6 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
-    console.log('xcm', 2);
-
     const transaction = getTransactionFromMultisigTx(operation);
 
     if (transaction) return null;
@@ -101,8 +98,6 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
 multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, {
   render: ({ operation }) => {
-    console.log('xcm', 3);
-
     const events = useStoreMap({
       store: operationsModel.$multisigEvents,
       keys: [operation],
