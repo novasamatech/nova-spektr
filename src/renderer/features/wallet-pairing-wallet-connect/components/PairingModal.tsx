@@ -73,7 +73,9 @@ export const PairingModal = memo(({ variant, children }: Props) => {
                 <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
                 <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
 
-                <WalletConnectQrCode uri={uri} type={variant} />
+                <div className="py-7">
+                  <WalletConnectQrCode uri={uri} type={variant} />
+                </div>
 
                 <div className="flex items-end justify-between">
                   <Button variant="text" onClick={() => toggleModal(false)}>

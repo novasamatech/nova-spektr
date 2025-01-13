@@ -6,11 +6,16 @@ import { nonNullable } from '@/shared/lib/utils';
 type Params<T, R, F extends R> = {
   source: Store<T> | Event<T>;
   clock: Store<R> | Event<R>;
-  reset?: Unit<unknown>;
-  filter: (value: NoInfer<R>) => value is F;
+  reset?: Unit<unknown> | Unit<unknown>[];
+  filter?: (value: NoInfer<R>) => value is F;
 };
 
-export const waitFor = <const E, const R, const F extends R>({ source, clock, reset, filter }: Params<E, R, F>) => {
+export const waitFor = <const E, const R, const F extends R = R>({
+  source,
+  clock,
+  reset,
+  filter = (v: R): v is F => true,
+}: Params<E, R, F>) => {
   const sourceEvent = is.store(source) ? source.updates : source;
   const clockEvent = is.store(clock) ? clock.updates : clock;
   const wait = createEvent<{ event: E; trigger: F }>();
@@ -22,11 +27,12 @@ export const waitFor = <const E, const R, const F extends R>({ source, clock, re
     reset: resetEvent,
     // reset: sourceEvent,
   }).filterMap(([event, trigger]) => {
-    if (filter(trigger)) {
+    if (!filter || filter(trigger)) {
       return { event, trigger };
     }
   });
 
+  // @ts-expect-error R to F conversion
   sample({
     clock: combined,
     target: wait,
@@ -42,8 +48,10 @@ export const waitFor = <const E, const R, const F extends R>({ source, clock, re
     });
   }
 
+  const resetEvents = Array.isArray(reset) ? reset : [reset];
+
   sample({
-    clock: [reset, sourceEvent].filter(nonNullable),
+    clock: resetEvents.concat(sourceEvent).filter(nonNullable),
     resetEvent,
   });
 

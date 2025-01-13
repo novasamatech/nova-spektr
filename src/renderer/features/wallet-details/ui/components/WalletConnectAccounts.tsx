@@ -69,7 +69,9 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
       )}
 
       {wcDetailsUtils.isReconnecting(reconnectStep) && !!reconnectUri && (
-        <WalletConnectQrCode uri={reconnectUri} type="walletconnect" />
+        <div className="py-7">
+          <WalletConnectQrCode uri={reconnectUri} type="walletconnect" />
+        </div>
       )}
     </>
   );

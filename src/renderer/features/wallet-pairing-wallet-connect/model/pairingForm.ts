@@ -16,7 +16,7 @@ const flow = createGate<'novawallet' | 'walletconnect' | null>({ defaultState: n
 
 const readyToPair = waitFor({
   source: flow.open,
-  clock: walletConnect.$provider,
+  clock: walletConnect.$client,
   filter: nonNullable,
   reset: flow.close,
 });

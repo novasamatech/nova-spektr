@@ -4,6 +4,7 @@ import { SDK_ERRORS, getSdkError } from '@walletconnect/utils';
 import { attach, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { produce } from 'immer';
 import { isObject } from 'lodash';
+import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -17,18 +18,23 @@ const $sessions = createStore<Record<string, SessionTypes.Struct>>({});
  * QR code content for pairing
  */
 const updateUri = createEvent<string>();
-const $pairingUri = restore(updateUri, '').reset();
+const $pairingUri = restore(updateUri, '');
 
 const populateSessionsFx = createEffect(async (client: Client) => {
   return client.session.getAll();
 });
 
 const subscribeSessionsFx = createEffect((client: Client) => {
+  client.on('proposal_expire', () => {
+    updateUri('');
+  });
+
   client.on('session_delete', () => {
     populateSessionsFx(client);
   });
 
   client.on('session_expire', () => {
+    updateUri('');
     populateSessionsFx(client);
   });
 });
@@ -149,9 +155,9 @@ sample({
 });
 
 export const walletConnect = {
-  $provider: signClient.$client,
-  $sessions,
-  $pairingUri,
+  $client: readonly(signClient.$client),
+  $sessions: readonly($sessions),
+  $pairingUri: readonly($pairingUri),
 
   request: requestFx,
 

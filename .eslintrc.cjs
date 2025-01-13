@@ -251,6 +251,8 @@ module.exports = {
         'effector/enforce-effect-naming-convention': 'off',
         // Took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
+        // Makes no sense since we're replacing effect handlers while testing
+        'effector/strict-effect-handlers': 'off',
 
         // Boundaries setup
         'boundaries/entry-point': [

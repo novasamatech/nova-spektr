@@ -123,15 +123,17 @@ const config: UserConfigFn = async ({ mode, command }) => {
         },
       ),
 
-      compression({
-        algorithm: 'gzip',
-        include: /.+/,
-        skipIfLargerOrEqual: true,
-        threshold: 0,
-        compressionOptions: {
-          level: 9,
-        },
-      }),
+      isProd &&
+        command === 'build' &&
+        compression({
+          algorithm: 'gzip',
+          include: /.+/,
+          skipIfLargerOrEqual: true,
+          threshold: 0,
+          compressionOptions: {
+            level: 9,
+          },
+        }),
     ],
 
     optimizeDeps: {
