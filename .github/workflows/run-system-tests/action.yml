@@ -26,9 +26,6 @@ runs:
         PASSED=$(grep -o '[0-9]\+ passed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
         FLAKY=$(grep -o '[0-9]\+ flaky' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
         FAILED=$(grep -o '[0-9]\+ failed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
-        echo "PASSED: $PASSED"
-        echo "FLAKY: $FLAKY"
-        echo "FAILED: $FAILED"
         
         # Extract report link with a more specific pattern - take only the first match
         REPORT_URL=$(grep -o 'Report link: .*' test_output.txt | head -n1 | cut -d' ' -f3- | tr -d '\r')
