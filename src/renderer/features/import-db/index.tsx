@@ -1,9 +1,9 @@
 import { sample } from 'effector';
-import { and } from 'patronum';
 
 import { $features } from '@/shared/config/features';
-import { createFeature } from '@/shared/feature';
+import { attachToFeatureInput, createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon } from '@/shared/ui';
 import { walletModel } from '@/entities/wallet';
@@ -38,7 +38,8 @@ importDBFeature.inject(onboardingActionsSlot, {
 });
 
 sample({
-  clock: and(importDBFeature.isRunning, walletModel.$activeWallet),
+  clock: attachToFeatureInput(importDBFeature, walletModel.$activeWallet),
+  filter: ({ data }) => nonNullable(data),
   fn: () => Paths.ASSETS,
   target: navigationModel.events.navigateTo,
 });
