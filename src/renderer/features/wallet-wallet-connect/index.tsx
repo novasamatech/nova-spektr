@@ -22,7 +22,7 @@ walletWalletConnectFeature.inject(walletIconSlot, ({ wallet, size }) => {
 });
 
 walletWalletConnectFeature.inject(walletGroupSlot, {
-  order: 2,
+  order: 1,
   render({ query, onSelect }) {
     const { t } = useI18n();
     const nova = useUnit(wcWallets.$novaWallets);

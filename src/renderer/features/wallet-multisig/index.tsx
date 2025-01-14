@@ -35,7 +35,7 @@ walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
 });
 
 walletMultisigFeature.inject(walletGroupSlot, {
-  order: 1,
+  order: 3,
   render({ query, onSelect }) {
     const { t } = useI18n();
     const regular = useUnit(walletsModel.$regularMultisig);

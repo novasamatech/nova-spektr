@@ -29,7 +29,7 @@ walletProxiedFeature.inject(walletIconSlot, ({ wallet, size }) => {
 });
 
 walletProxiedFeature.inject(walletGroupSlot, {
-  order: 3,
+  order: 2,
   render({ query, onSelect }) {
     const { t } = useI18n();
     const wallets = useUnit(walletsModel.$wallets);
