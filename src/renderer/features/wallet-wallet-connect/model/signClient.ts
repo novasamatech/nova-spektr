@@ -32,10 +32,14 @@ const createClientFx = createEffect(async () => {
     changeConnectionStatus(false);
   });
 
+  console.log('client init');
+
   const client = await Client.init({
     core,
     metadata: DEFAULT_APP_METADATA,
   });
+
+  console.log('client inited');
 
   return client;
 });

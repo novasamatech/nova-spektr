@@ -67,7 +67,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
       emptyOutDir: false,
       target: 'es2021',
       rollupOptions: {
-        treeshake: 'smallest',
+        treeshake: 'recommended',
         maxParallelFileOps: Math.max(1, cpus().length - 1),
       },
     },
