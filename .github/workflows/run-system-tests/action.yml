@@ -22,17 +22,14 @@ runs:
       run: |
         # Run tests and save output to a file
         allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }} 2>&1 | tee test_output.txt
-        
-        # Extract test results using more flexible patterns
-        PASSED=$(grep -o '[0-9]\+ passed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
-        FLAKY=$(grep -o '[0-9]\+ flaky' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
-        FAILED=$(grep -o '[0-9]\+ failed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
-        
-        # Extract report link with a more specific pattern - take only the first match
-        REPORT_URL=$(grep -o 'Report link: .*' test_output.txt | head -n1 | cut -d' ' -f3- | tr -d '\r')
-        REPORT_URL="${REPORT_URL//'%'/'%25'}"
-        REPORT_URL="${REPORT_URL//$'\n'/'%0A'}"
-        REPORT_URL="${REPORT_URL//$'\r'/'%0D'}"
+
+        # Extract test results using grep and sed for more reliable parsing
+        PASSED=$(grep -o '[0-9]\+ passed' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
+        FLAKY=$(grep -o '[0-9]\+ flaky' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
+        FAILED=$(grep -o '[0-9]\+ failed' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
+
+        # Extract report link using sed to get the last occurrence
+        REPORT_URL=$(grep -o 'Report link: .*' test_output.txt | tail -n1 | sed 's/Report link: //')
         
         # Set outputs with properly escaped values
         echo "REPORT_URL=${REPORT_URL}" >> $GITHUB_ENV
