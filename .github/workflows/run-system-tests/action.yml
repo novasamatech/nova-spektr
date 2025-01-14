@@ -19,7 +19,7 @@ runs:
       shell: bash
       run: |
         allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
-        export $(allurectl job-run env)
+        allurectl job-run env >> $GITHUB_ENV
 
     - shell: bash
       if: always()
@@ -28,7 +28,7 @@ runs:
         echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_INFO" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
-        if ${{ steps.playwright_tests.outcome }} == 'failure'
+        if [ "${{ steps.playwright_tests.outcome }}" == "failure" ]; then
           echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
         else
           echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
