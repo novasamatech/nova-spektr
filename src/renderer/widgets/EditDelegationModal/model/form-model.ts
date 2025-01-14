@@ -7,7 +7,9 @@ import { spread } from 'patronum';
 import { type Asset, type Chain, type Conviction } from '@/shared/core';
 import {
   ZERO_BALANCE,
+  allEqual,
   formatAmount,
+  getBalanceBn,
   getRelaychainAsset,
   nonNullable,
   toAddress,
@@ -31,7 +33,18 @@ type FormParams = {
   locks: Record<string, BN>;
 };
 
-const formInitiated = createEvent<WalletData & { shards: AnyAccount[] }>();
+const formInitiated = createEvent<
+  WalletData & {
+    shards: AnyAccount[];
+    activeDelegations: Record<
+      string,
+      {
+        conviction: Conviction;
+        balance: BN;
+      }
+    >;
+  }
+>();
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
@@ -313,6 +326,34 @@ sample({
   filter: (shards) => shards.length > 0,
   fn: (shards) => shards,
   target: $delegateForm.fields.shards.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ activeDelegations }) => {
+    const convictions = Object.values(activeDelegations).map((d) => d.conviction);
+
+    return allEqual(convictions);
+  },
+  fn: ({ activeDelegations }) => Object.values(activeDelegations)[0].conviction,
+  target: $delegateForm.fields.conviction.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  source: $networkStore,
+  filter: (network, { activeDelegations }) => {
+    const balances = Object.values(activeDelegations).map((d) => d.balance);
+
+    return !!network && allEqual(balances, (a, b) => a.eq(b));
+  },
+  fn: (network, { activeDelegations }) => {
+    const balance = Object.values(activeDelegations)[0].balance.toString();
+    const precision = network!.asset.precision;
+
+    return getBalanceBn(balance, precision).toString();
+  },
+  target: $delegateForm.fields.amount.onChange,
 });
 
 sample({
