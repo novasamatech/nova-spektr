@@ -15,35 +15,36 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Run Playwright tests
-      id: playwright_tests
-      continue-on-error: true
+    - id: playwright_tests
       shell: bash
       run: |
         allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
-
-    - name: Get allure report url
-      shell: bash
-      run: |
         export $(allurectl job-run env)
-        printenv | grep ALLURE_ 
 
-    - name: Prepare commit info
-      shell: bash
+    - shell: bash
+      if: always()
       run: |
         COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
         echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_INFO" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
+        if ${{ steps.playwright_tests.outcome }} == 'failure'
+          echo "TEST_STATUS=❌ Failed" >> $GITHUB_ENV
+        else
+          echo "TEST_STATUS=✅ Passed" >> $GITHUB_ENV
+        fi
 
-    # - name: Notify Telegram channel
-    #   uses: appleboy/telegram-action@master
-    #   with:
-    #     to: ${{ inputs.telegram_to }}
-    #     token: ${{ inputs.telegram_token }}
-    #     format: markdown
-    #     message: |
-    #       📋 Playwright Test Report Published
-    #       URL: ${{ env.REPORT_URL }}
-    #       ${{ env.TEST_SUMMARY }}
-    #       ${{ env.COMMIT_INFO }}
+    - name: Notify Telegram channel
+      if: always()
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ inputs.telegram_to }}
+        token: ${{ inputs.telegram_token }}
+        format: markdown
+        message: |
+          📋 Playwright Test Report Published
+          ${{ env.COMMIT_INFO }}
+          ${{ env.TEST_STATUS }}
+
+          URL: ${{ env.ALLURE_JOB_RUN_URL }}
+          Test group: ${{ inputs.test_grep }}
