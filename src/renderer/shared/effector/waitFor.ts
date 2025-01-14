@@ -25,7 +25,6 @@ export const waitFor = <const E, const R, const F extends R = R>({
   const combined = combineEvents({
     events: [sourceEvent, clockEvent],
     reset: resetEvent,
-    // reset: sourceEvent,
   }).filterMap(([event, trigger]) => {
     if (!filter || filter(trigger)) {
       return { event, trigger };

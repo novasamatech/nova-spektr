@@ -155,24 +155,6 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
         </Button>
       </div>
 
-      {/*<ConfirmModal*/}
-      {/*  panelClass="w-[300px]"*/}
-      {/*  isOpen={operationSignUtils.isReadyToReconnectStep(reconnectStep)}*/}
-      {/*  confirmText={t('operation.walletConnect.reconnect.confirmButton')}*/}
-      {/*  cancelText={t('operation.walletConnect.reconnect.cancelButton')}*/}
-      {/*  onClose={onGoBack}*/}
-      {/*  onConfirm={reconnect}*/}
-      {/*>*/}
-      {/*  <SmallTitleText align="center">*/}
-      {/*    {t('operation.walletConnect.reconnect.title', {*/}
-      {/*      walletName,*/}
-      {/*    })}*/}
-      {/*  </SmallTitleText>*/}
-      {/*  <FootnoteText className="mt-2 text-text-tertiary" align="center">*/}
-      {/*    {t('operation.walletConnect.reconnect.description')}*/}
-      {/*  </FootnoteText>*/}
-      {/*</ConfirmModal>*/}
-
       <StatusModal {...getStatusProps()} />
     </div>
   );
