@@ -1,7 +1,13 @@
+import { sample } from 'effector';
+import { and } from 'patronum';
+
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon } from '@/shared/ui';
+import { walletModel } from '@/entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 import { ImportDBModal } from './components/importDBModal';
@@ -29,4 +35,10 @@ importDBFeature.inject(onboardingActionsSlot, {
       </ImportDBModal>
     );
   },
+});
+
+sample({
+  clock: and(importDBFeature.isRunning, walletModel.$activeWallet),
+  fn: () => Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
 });
