@@ -20,20 +20,12 @@ runs:
       continue-on-error: true
       shell: bash
       run: |
-        # Run tests and save output to a file
-        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }} 2>&1 | tee test_output.txt
+        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
 
-        # Extract test results using grep and sed for more reliable parsing
-        PASSED=$(grep -o '[0-9]\+ passed' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
-        FLAKY=$(grep -o '[0-9]\+ flaky' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
-        FAILED=$(grep -o '[0-9]\+ failed' test_output.txt | tail -n1 | awk '{print $1}' || echo "0")
-
-        # Extract report link using sed to get the last occurrence
-        REPORT_URL=$(grep -o 'Report link: .*' test_output.txt | tail -n1 | sed 's/Report link: //')
-        
-        # Set outputs with properly escaped values
-        echo "REPORT_URL=${REPORT_URL}" >> $GITHUB_ENV
-        echo "TEST_SUMMARY=✅ Passed: ${PASSED:-0} | ⚠️ Flaky: ${FLAKY:-0} | ❌ Failed: ${FAILED:-0}" >> $GITHUB_ENV
+    - name: Get allure report url
+      shell: bash
+      run: |
+        printenv | grep ALLURE_ 
 
     - name: Prepare commit info
       shell: bash
@@ -43,14 +35,14 @@ runs:
         echo "$COMMIT_INFO" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
 
-    - name: Notify Telegram channel
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ inputs.telegram_to }}
-        token: ${{ inputs.telegram_token }}
-        format: markdown
-        message: |
-          📋 Playwright Test Report Published
-          URL: ${{ env.REPORT_URL }}
-          ${{ env.TEST_SUMMARY }}
-          ${{ env.COMMIT_INFO }}
+    # - name: Notify Telegram channel
+    #   uses: appleboy/telegram-action@master
+    #   with:
+    #     to: ${{ inputs.telegram_to }}
+    #     token: ${{ inputs.telegram_token }}
+    #     format: markdown
+    #     message: |
+    #       📋 Playwright Test Report Published
+    #       URL: ${{ env.REPORT_URL }}
+    #       ${{ env.TEST_SUMMARY }}
+    #       ${{ env.COMMIT_INFO }}
