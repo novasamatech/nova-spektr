@@ -1,11 +1,9 @@
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, once, or } from 'patronum';
+import { delay, or } from 'patronum';
 
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import { walletModel } from '@/entities/wallet';
-import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';
 
 const fileUploaded = createEvent<File>();
@@ -56,13 +54,6 @@ sample({
 sample({
   clock: delay(updateDBFx.doneData, 1000),
   target: walletModel.events.walletStarted,
-});
-
-sample({
-  clock: once(walletModel.$activeWallet),
-  filter: nonNullable,
-  fn: () => Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
 });
 
 export const importDbModel = {
