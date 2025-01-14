@@ -1,0 +1,67 @@
+name: Install test dependencies
+
+inputs:
+  html_report_url_path:
+    type: string
+    description: The path to the HTML report
+  checkout_token:
+    type: string
+    description: The token to use for checking out the repository
+
+env:
+  REPORTS_REPO_PATH: spektr-reports
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout GitHub Pages Branch
+      uses: actions/checkout@v4
+      with:
+        repository: novasamatech/spektr-reports
+        ref: main
+        token: ${{ inputs.checkout_token }}
+        path: ${{ env.REPORTS_REPO_PATH }}
+
+    - name: Set Git User
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    - name: Download zipped HTML report
+      uses: actions/download-artifact@v4
+      with:
+        name: playwright-report
+        path: ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
+
+    - name: Create reports directory
+      shell: bash
+      run: mkdir -p ${{ env.REPORTS_REPO_PATH }}/${{ inputs.html_report_url_path }}
+
+    - name: Push HTML Report
+      shell: bash
+      # commit report, then try push-rebase-loop until it's able to merge the HTML report to the gh-pages branch
+      # this is necessary when this job is running at least twice at the same time (e.g. through two pushes at the same time)
+      run: |
+        cd ${{ env.REPORTS_REPO_PATH }}
+        git add .
+        git commit -m "workflow: add HTML report for run-id ${{ github.run_id }} (attempt:  ${{ github.run_attempt }})"
+        while true; do
+          git pull --rebase
+          if [ $? -ne 0 ]; then
+            echo "Failed to rebase. Please review manually."
+            exit 1
+          fi
+          git push
+          if [ $? -eq 0 ]; then
+            echo "Successfully pushed HTML report to repo."
+            exit 0
+          fi
+        done
+    - name: Output Report URL as Worfklow Annotation
+      shell: bash
+      run: |
+        FULL_HTML_REPORT_URL=https://novasamatech.github.io/spektr-reports/$HTML_REPORT_URL_PATH
+        echo "::notice title=📋 Published Playwright Test Report::$FULL_HTML_REPORT_URL"
+        echo "FULL_HTML_REPORT_URL<<EOF" >> $GITHUB_ENV
+        echo "$FULL_HTML_REPORT_URL" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
