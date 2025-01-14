@@ -21,6 +21,19 @@ export function nullable(value: unknown): value is null | undefined {
 }
 
 /**
+ * Type guard that checks is value nullable
+ *
+ * @param value Value to be checked
+ *
+ * @returns {Boolean}
+ */
+export function assert<T>(value: unknown, message?: string): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new Error(message ?? 'Value is nullish');
+  }
+}
+
+/**
  * Type guard that checks is Promise settled fulfilled
  *
  * @param promise Value of promise to be checked

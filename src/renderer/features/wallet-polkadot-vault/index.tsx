@@ -5,8 +5,8 @@ import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { accountsService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
-import { walletGroupSlot } from '@/features/wallet-select';
+import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
@@ -24,6 +24,12 @@ walletPolkadotVaultFeature.inject(accountsService.accountActionPermissionAnyOf, 
     accountUtils.isVaultChainAccount(account) ||
     accountUtils.isVaultShardAccount(account)
   );
+});
+
+walletPolkadotVaultFeature.inject(walletIconSlot, ({ wallet, size }) => {
+  if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
+
+  return <WalletIcon type={wallet.type} size={size} />;
 });
 
 walletPolkadotVaultFeature.inject(walletGroupSlot, {

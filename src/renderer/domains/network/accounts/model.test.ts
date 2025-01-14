@@ -55,7 +55,7 @@ describe('accounts model', () => {
   it('should successfully update account', async () => {
     const scope = fork({
       values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.__test.updateAccountFx, () => true]],
+      handlers: [[accountsDomainModel.updateAccount, () => true]],
     });
 
     const draft: AnyAccountDraft = {
@@ -77,7 +77,7 @@ describe('accounts model', () => {
   it('should skip update if account is not defined', async () => {
     const scope = fork({
       values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.__test.updateAccountFx, () => false]],
+      handlers: [[accountsDomainModel.updateAccounts, () => false]],
     });
 
     const draft: AnyAccountDraft = {

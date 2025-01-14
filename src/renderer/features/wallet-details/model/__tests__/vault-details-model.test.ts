@@ -46,7 +46,7 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
 
     const scope = fork({
       values: [[accounts.__test.$list, testAccounts]],
-      handlers: [[accounts.updateAccount, () => {}]],
+      handlers: [[accounts.createAccounts, () => {}]],
     });
 
     await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [testAccounts[0]] });
