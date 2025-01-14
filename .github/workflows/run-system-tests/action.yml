@@ -32,7 +32,6 @@ runs:
         REPORT_URL="${REPORT_URL//'%'/'%25'}"
         REPORT_URL="${REPORT_URL//$'\n'/'%0A'}"
         REPORT_URL="${REPORT_URL//$'\r'/'%0D'}"
-        echo "REPORT_URL: $REPORT_URL"
         
         # Set outputs with properly escaped values
         echo "REPORT_URL=${REPORT_URL}" >> $GITHUB_ENV
