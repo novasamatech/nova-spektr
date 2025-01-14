@@ -120,7 +120,7 @@ export const createFeature = <T = object>({
   sample({
     clock: startIfNecessary,
     source: $identifiers,
-    filter: identifiers => !identifiers.every(isSlotIdentifier),
+    filter: identifiers => identifiers.length > 0 && !identifiers.every(isSlotIdentifier),
     target: start,
   });
 

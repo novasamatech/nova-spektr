@@ -44,7 +44,10 @@ export type FlexibleMultisigAccount = ChainAccount<{
 
 export type WcAccount = ChainAccount<{
   accountType: AccountType.WALLET_CONNECT;
-  signingExtras: Record<string, any>;
+  signingExtras: {
+    pairingTopic?: string;
+    sessionTopic?: string;
+  };
 }>;
 
 export type ProxiedAccount = ChainAccount<{

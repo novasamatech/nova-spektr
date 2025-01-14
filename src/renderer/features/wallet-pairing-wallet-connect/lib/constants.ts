@@ -3,7 +3,7 @@ import { type Options } from 'qr-code-styling';
 import NovaWalletOnboardingIcon from '@/shared/assets/images/walletTypes/novaWalletOnboarding.svg';
 import WalletConnectOnboardingIcon from '@/shared/assets/images/walletTypes/walletConnectOnboarding.svg';
 
-const QrConfig = {
+const QrConfig: Partial<Options> = {
   width: 300,
   height: 300,
   imageOptions: {
@@ -35,7 +35,7 @@ const QrConfig = {
     color: '#000000',
   },
   cornersDotOptions: { type: undefined, color: '#000000', gradient: undefined },
-} as Partial<Options>;
+};
 
 export const WCQRConfig = {
   ...QrConfig,

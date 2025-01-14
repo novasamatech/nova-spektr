@@ -311,7 +311,7 @@ sample({
   clock: $flexibleWithProxy,
   filter: nonNullable,
   fn: (flexibleWithProxy) => flexibleWithProxy!.accounts,
-  target: series(accounts.updateAccount),
+  target: accounts.updateAccounts,
 });
 
 sample({

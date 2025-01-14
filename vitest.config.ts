@@ -36,7 +36,19 @@ const config: UserConfigFnPromise = async (options) => {
       root: folders.root,
       dir: folders.source,
       globals: true,
-      environment: 'happy-dom',
+      environmentMatchGlobs: [
+        // This list should dissapear over time, simple logic tests shouldn't depend on environment.
+        ['src/renderer/shared/lib/hooks/**/*.ts', 'happy-dom'],
+        ['src/renderer/shared/i18n/**/*.ts', 'happy-dom'],
+        ['src/renderer/shared/api/**/*.ts', 'happy-dom'],
+        ['src/renderer/domains/**/*.ts', 'happy-dom'],
+        ['src/renderer/entities/**/*.ts', 'happy-dom'],
+        ['src/renderer/features/**/*.ts', 'happy-dom'],
+        ['src/renderer/widgets/**/*.ts', 'happy-dom'],
+        ['src/renderer/pages/**/*.ts', 'happy-dom'],
+        ['**/*.tsx', 'happy-dom'],
+        ['**/*.ts', 'node'],
+      ],
       setupFiles: resolve(folders.root, './vitest.setup.js'),
       reporters: ['basic', 'junit'],
       outputFile: {
