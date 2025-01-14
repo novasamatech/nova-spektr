@@ -175,7 +175,7 @@ const $proxyForm = createForm<FormParams>({
         {
           name: 'required',
           errorText: 'proxy.addProxy.proxyAddressRequiredError',
-          validator: validateAddress,
+          validator: (address) => validateAddress(address),
         },
         {
           name: 'sameAsProxied',

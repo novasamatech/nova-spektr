@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
-import { BaseModal } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { EditContactForm } from '@/features/contacts';
 
 type Props = {
@@ -23,25 +22,23 @@ export const EditContactModal = ({ contact, isOpen = true, onClose }: Props) => 
     }
 
     if (!isOpen && isModalOpen) {
-      closeContactModal();
+      toggleContactModal(false);
     }
   }, [isOpen]);
 
-  const closeContactModal = () => {
+  const toggleContactModal = (open: boolean) => {
     toggleIsModalOpen();
-    setTimeout(onClose, DEFAULT_TRANSITION);
+    if (!open) {
+      onClose();
+    }
   };
 
   return (
-    <BaseModal
-      closeButton
-      isOpen={isModalOpen}
-      title={t('addressBook.editContact.title')}
-      headerClass="py-[15px] px-5"
-      contentClass="px-5 pb-4 w-[440px]"
-      onClose={closeContactModal}
-    >
-      <EditContactForm contactToEdit={contact} onSubmit={closeContactModal} />
-    </BaseModal>
+    <Modal size="md" isOpen={isModalOpen} onToggle={toggleContactModal}>
+      <Modal.Title close>{t('addressBook.editContact.title')}</Modal.Title>
+      <Modal.Content>
+        <EditContactForm contactToEdit={contact} onSubmit={() => toggleContactModal(false)} />
+      </Modal.Content>
+    </Modal>
   );
 };
