@@ -69,6 +69,15 @@ const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
+const $activeDelegations = combine(
+  { delegations: delegationAggregate.$activeDelegations, delegate: $target },
+  ({ delegations, delegate }) => {
+    if (!delegate) return {};
+
+    return delegations[delegate.accountId] || {};
+  },
+);
+
 type FeeParams = {
   api: ApiPromise;
   transaction: Transaction;
@@ -287,10 +296,13 @@ sample({
 
 sample({
   clock: selectTracksModel.output.formSubmitted,
-  source: $walletData,
-  filter: (walletData) => Boolean(walletData.chain) && Boolean(walletData.wallet),
-  fn: (walletData, { tracks, accounts }) => ({
-    event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts },
+  source: {
+    walletData: $walletData,
+    activeDelegations: $activeDelegations,
+  },
+  filter: ({ walletData }) => Boolean(walletData.chain) && Boolean(walletData.wallet),
+  fn: ({ walletData, activeDelegations }, { tracks, accounts }) => ({
+    event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts, activeDelegations },
     tracks,
     accounts,
     step: Step.INIT,
