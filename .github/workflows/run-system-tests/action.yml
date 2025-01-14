@@ -1,0 +1,59 @@
+name: 'Run System Tests'
+description: 'Executes Playwright system tests and sends notification to Telegram'
+
+inputs:
+  telegram_token:
+    description: 'Telegram Bot Token'
+    required: true
+  telegram_to:
+    description: 'Telegram Channel ID'
+    required: true
+  test_grep:
+    description: 'Test grep pattern'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Playwright tests
+      id: playwright_tests
+      continue-on-error: true
+      shell: bash
+      run: |
+        # Run tests and save output to a file
+        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }} 2>&1 | tee test_output.txt
+        
+        # Extract test results using more flexible patterns
+        PASSED=$(grep -o '[0-9]\+ passed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
+        FLAKY=$(grep -o '[0-9]\+ flaky' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
+        FAILED=$(grep -o '[0-9]\+ failed' test_output.txt | head -n1 | awk '{print $1}' || echo "0")
+        
+        # Extract report link with a more specific pattern - take only the first match
+        REPORT_URL=$(grep -o 'Report link: .*' test_output.txt | head -n1 | cut -d' ' -f3- | tr -d '\r')
+        REPORT_URL="${REPORT_URL//'%'/'%25'}"
+        REPORT_URL="${REPORT_URL//$'\n'/'%0A'}"
+        REPORT_URL="${REPORT_URL//$'\r'/'%0D'}"
+        
+        # Set outputs with properly escaped values
+        echo "REPORT_URL=${REPORT_URL}" >> $GITHUB_ENV
+        echo "TEST_SUMMARY=✅ Passed: ${PASSED:-0} | ⚠️ Flaky: ${FLAKY:-0} | ❌ Failed: ${FAILED:-0}" >> $GITHUB_ENV
+
+    - name: Prepare commit info
+      shell: bash
+      run: |
+        COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+        echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
+        echo "$COMMIT_INFO" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Notify Telegram channel
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ inputs.telegram_to }}
+        token: ${{ inputs.telegram_token }}
+        format: markdown
+        message: |
+          📋 Playwright Test Report Published
+          URL: ${{ env.REPORT_URL }}
+          ${{ env.TEST_SUMMARY }}
+          ${{ env.COMMIT_INFO }}

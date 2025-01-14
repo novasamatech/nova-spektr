@@ -44,7 +44,7 @@ const form = createForm<FormValues>({
         {
           name: 'correctAddress',
           errorText: 'onboarding.watchOnly.accountAddressError',
-          validator: validateAddress,
+          validator: address => validateAddress(address),
         },
       ],
     },
