@@ -25,6 +25,7 @@ runs:
     - name: Get allure report url
       shell: bash
       run: |
+        export $(allurectl job-run env)
         printenv | grep ALLURE_ 
 
     - name: Prepare commit info
