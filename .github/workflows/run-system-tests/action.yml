@@ -19,11 +19,11 @@ runs:
       shell: bash
       run: |
         allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
-        allurectl job-run env >> $GITHUB_ENV
 
     - shell: bash
       if: always()
       run: |
+        allurectl job-run env >> $GITHUB_ENV
         COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
         echo "COMMIT_INFO<<EOF" >> $GITHUB_ENV
         echo "$COMMIT_INFO" >> $GITHUB_ENV
