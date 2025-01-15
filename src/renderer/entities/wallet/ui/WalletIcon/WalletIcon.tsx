@@ -6,7 +6,7 @@ type WalletIconTypes = WalletType | WalletIconType;
 
 const WalletIconNames: Record<WalletIconTypes, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vaultBackground',
-  [WalletType.POLKADOT_EXTENSION]: 'keyCustom',
+  [WalletType.POLKADOT_EXTENSION]: 'polkadotExtensionBackground',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vaultBackground',
   [WalletType.WATCH_ONLY]: 'watchOnlyBackground',
   [WalletType.MULTISIG]: 'multisigBackground',

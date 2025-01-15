@@ -31,7 +31,7 @@ polkadotExtensionWalletFeature.inject(accountsService.accountActionPermissionAny
 polkadotExtensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isPolkadotExtensionWallet(wallet)) return null;
 
-  return <Icon name="keyCustom" size={size} />;
+  return <Icon name="polkadotExtensionBackground" size={size} />;
 });
 
 polkadotExtensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {
@@ -40,7 +40,7 @@ polkadotExtensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {
     return (
       <PairingModal>
         <Dropdown.Item>
-          <Icon name="keyCustom" size={20} />
+          <Icon name="polkadotExtensionBackground" size={20} />
           {t('wallets.addPolkadotExtension')}
         </Dropdown.Item>
       </PairingModal>
@@ -58,7 +58,7 @@ polkadotExtensionWalletFeature.inject(onboardingActionsSlot, {
         <WalletOnboardingCard
           title={t('onboarding.welcome.polkadotExtensionTitle')}
           description={t('onboarding.welcome.polkadotExtensionDescription')}
-          iconName="keyCustom"
+          iconName="polkadotExtensionOnboarding"
           testId={TEST_IDS.ONBOARDING.POLKADOT_EXTENSION_BUTTON}
         />
       </PairingModal>

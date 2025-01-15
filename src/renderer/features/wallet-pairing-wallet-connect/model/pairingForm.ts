@@ -42,8 +42,8 @@ const createWalletConnectWalletFx = attach({ effect: walletModel.createWallet })
 
 sample({
   clock: createWallet,
-  source: { accounts: $accounts, session: $session },
-  fn({ accounts, session }, { name }) {
+  source: { accounts: $accounts, session: $session, walletType: flow.state },
+  fn({ accounts, session, walletType }, { name }) {
     const wcAccounts = accounts.map<Omit<WcAccount, 'id' | 'walletId'>>(({ accountId, chain }) => {
       return {
         type: 'chain',
@@ -63,7 +63,7 @@ sample({
       accounts: wcAccounts,
       wallet: {
         name: name.trim(),
-        type: WalletType.WALLET_CONNECT,
+        type: walletType === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT,
         signingType: SigningType.WALLET_CONNECT,
       },
     };
