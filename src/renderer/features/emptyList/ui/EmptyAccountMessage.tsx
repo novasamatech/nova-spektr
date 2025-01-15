@@ -11,6 +11,7 @@ const Messages: Record<WalletType, string> = {
   [WalletType.SINGLE_PARITY_SIGNER]: 'emptyState.createAccount',
   [WalletType.WALLET_CONNECT]: 'emptyState.createAccount',
   [WalletType.WATCH_ONLY]: 'emptyState.createAccount',
+  [WalletType.POLKADOT_EXTENSION]: 'emptyState.createAccount',
 };
 
 type Props = {

@@ -13,7 +13,7 @@ type Props = {
   alt?: string;
 };
 
-export const Graphics = ({ name, size, alt, testId = 'Graphics' }: Props) => {
+export const Graphics = ({ name, size, alt = `${name} graphics`, testId = 'Graphics' }: Props) => {
   return (
     <img
       className="pointer-events-none select-none"

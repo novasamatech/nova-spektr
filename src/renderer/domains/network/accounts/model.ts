@@ -93,7 +93,7 @@ sample({
       return acc;
     }, {});
 
-    return accounts.map(a =>
+    return accounts.map<AnyAccount>(a =>
       accountsService.uniqId(a) in draftsMap ? { ...a, ...draftsMap[accountsService.uniqId(a)] } : a,
     );
   },

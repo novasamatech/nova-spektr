@@ -3,6 +3,7 @@ import { useGate, useUnit } from 'effector-react';
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
+import { polkadotExtensionService } from '@/features/polkadot-extension-wallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
@@ -49,6 +50,10 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
 
   if (walletUtils.isProxied(wallet)) {
     return <ProxiedWalletDetails wallet={wallet} onClose={onClose} />;
+  }
+
+  if (polkadotExtensionService.isPolkadotExtensionWallet(wallet)) {
+    return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   return null;

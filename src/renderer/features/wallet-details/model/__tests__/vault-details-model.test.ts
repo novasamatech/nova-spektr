@@ -40,13 +40,16 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
 
   test('should update accounts on keysRemoved', async () => {
     const testAccounts = [
-      { accountId: '0x00', walletId: 1, name: 'My first shard' },
-      { accountId: '0x01', walletId: 1, name: 'My second shard' },
+      { type: 'chain', accountId: '0x00', walletId: 1, name: 'My first shard' },
+      { type: 'chain', accountId: '0x01', walletId: 1, name: 'My second shard' },
     ];
 
     const scope = fork({
       values: [[accounts.__test.$list, testAccounts]],
-      handlers: [[accounts.createAccounts, () => {}]],
+      handlers: [
+        [accounts.createAccounts, (accounts: AnyAccount) => accounts],
+        [accounts.deleteAccounts, (accounts: AnyAccount) => accounts],
+      ],
     });
 
     await allSettled(vaultDetailsModel.events.keysRemoved, { scope, params: [testAccounts[0]] });
@@ -56,15 +59,18 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
   // TODO check
   test('should update accounts on accountsCreated', async () => {
     const walletId = 1;
-    const testAccounts = [{ accountId: '0x00', walletId, name: 'My first shard' }];
+    const testAccounts = [{ type: 'chain', accountId: '0x00', walletId, name: 'My first shard' }];
 
-    const key = { name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
+    const key = { type: 'chain', name: 'My second shard' } as unknown as DraftAccount<VaultChainAccount>;
     const params = { walletId, rootAccountId: TEST_ACCOUNTS[0], accounts: [key] };
     const newAccount = { walletId, ...key };
 
     const scope = fork({
       values: [[accounts.__test.$list, testAccounts]],
-      handlers: [[accounts.createAccounts, (accounts: AnyAccount) => accounts]],
+      handlers: [
+        [accounts.createAccounts, (accounts: AnyAccount) => accounts],
+        [accounts.deleteAccounts, (accounts: AnyAccount) => accounts],
+      ],
     });
 
     await allSettled(vaultDetailsModel.events.accountsCreated, { scope, params });

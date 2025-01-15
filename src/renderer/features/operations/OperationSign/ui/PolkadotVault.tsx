@@ -10,7 +10,14 @@ import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
-export const Vault = ({ apis, signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
+export const PolkadotVault = ({
+  apis,
+  signingPayloads,
+  signerWallet,
+  validateBalance,
+  onGoBack,
+  onResult,
+}: SigningProps) => {
   const { t } = useI18n();
 
   const [countdown, resetCountdown] = useCountdown(Object.values(apis));
