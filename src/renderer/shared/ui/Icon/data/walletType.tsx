@@ -7,6 +7,8 @@ import MultisigBackgroundIcon from '@/shared/assets/images/walletTypes/multisigB
 import NovaWalletIcon from '@/shared/assets/images/walletTypes/novaWallet.svg?jsx';
 import NovaWalletBackgroundIcon from '@/shared/assets/images/walletTypes/novaWalletBackground.svg?jsx';
 import NovaWalletOnboardingIcon from '@/shared/assets/images/walletTypes/novaWalletOnboarding.svg?jsx';
+import PolkadotExtensionBackgroundIcon from '@/shared/assets/images/walletTypes/polkadotExtensionBackground.svg?jsx';
+import PolkadotExtensionOnboardingIcon from '@/shared/assets/images/walletTypes/polkadotExtensionOnboarding.svg?jsx';
 import ProxiedIcon from '@/shared/assets/images/walletTypes/proxied.svg?jsx';
 import ProxiedBackgroundIcon from '@/shared/assets/images/walletTypes/proxiedBackground.svg?jsx';
 import VaultIcon from '@/shared/assets/images/walletTypes/vault.svg?jsx';
@@ -36,6 +38,8 @@ const WalletTypeImages = {
   walletConnectOnboarding: { svg: WalletConnectOnboardingIcon },
   proxied: { svg: ProxiedIcon },
   proxiedBackground: { svg: ProxiedBackgroundIcon },
+  polkadotExtensionOnboarding: { svg: PolkadotExtensionOnboardingIcon },
+  polkadotExtensionBackground: { svg: PolkadotExtensionBackgroundIcon },
 } as const;
 
 export type WalletImages = keyof typeof WalletTypeImages;

@@ -182,7 +182,8 @@ const multishardCreatedFx = createEffect(
 );
 
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
-  await Promise.all([accounts.deleteAccounts(wallet.accounts), storageService.wallets.delete(wallet.id)]);
+  await storageService.wallets.delete(wallet.id);
+  await accounts.deleteAccounts(wallet.accounts);
 
   return wallet.id;
 });
@@ -424,5 +425,6 @@ export const walletModel = {
   __test: {
     $rawWallets,
     walletCreatedFx,
+    removeWalletFx,
   },
 };

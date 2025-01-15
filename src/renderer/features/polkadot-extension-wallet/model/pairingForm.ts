@@ -16,7 +16,6 @@ type AccountDraft = AnyAccountDraft<PolkadotExtensionAccount>;
 
 const flow = createGate();
 
-const requestPermission = createEvent();
 const create = createEvent<{ name: string; account: AccountDraft }>();
 
 const $step = createStore<Step>('idle');
@@ -44,22 +43,25 @@ const $accounts = $rawAccounts.map((accounts) => {
   });
 });
 
-const getInjectedExtensionsFx = createEffect(() => web3Enable('Nova Spektr'));
+const requestInjectedExtensionsFx = createEffect(() => web3Enable('Nova Spektr'));
 const requestAccessToAccountsFx = createEffect(() => web3Accounts());
 const createWalletFx = attach({ effect: walletModel.createWallet });
 
+const receivedEmptyAccountList = requestAccessToAccountsFx.doneData.filter({ fn: (a) => a.length === 0 });
+const receivedAccountList = requestAccessToAccountsFx.doneData.filter({ fn: (a) => a.length > 0 });
+
 sample({
-  clock: requestPermission,
-  target: getInjectedExtensionsFx,
+  clock: flow.open,
+  target: requestInjectedExtensionsFx,
 });
 
 sample({
-  clock: getInjectedExtensionsFx.doneData,
+  clock: requestInjectedExtensionsFx.doneData,
   target: $extensions,
 });
 
 sample({
-  clock: getInjectedExtensionsFx.doneData,
+  clock: requestInjectedExtensionsFx.doneData,
   target: requestAccessToAccountsFx,
 });
 
@@ -98,19 +100,19 @@ sample({
 });
 
 sample({
-  clock: requestPermission,
+  clock: requestInjectedExtensionsFx,
   fn: () => 'pairing' as const,
   target: $step,
 });
 
 sample({
-  clock: [getInjectedExtensionsFx.fail, requestAccessToAccountsFx.fail],
+  clock: [receivedEmptyAccountList, requestInjectedExtensionsFx.fail, requestAccessToAccountsFx.fail],
   fn: () => 'rejected' as const,
   target: $step,
 });
 
 sample({
-  clock: requestAccessToAccountsFx.done,
+  clock: receivedAccountList,
   fn: () => 'select' as const,
   target: $step,
 });
@@ -123,6 +125,6 @@ export const pairingForm = {
   $extensions,
 
   create,
-  requestPermission,
+  requestPermission: requestInjectedExtensionsFx,
   requestAccessToAccounts: requestAccessToAccountsFx,
 };

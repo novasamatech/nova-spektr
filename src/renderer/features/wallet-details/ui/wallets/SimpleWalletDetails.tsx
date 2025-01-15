@@ -47,7 +47,8 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const [chains, setChains] = useState<Chain[]>([]);
   const [tab, setTab] = useState('accounts');
 
-  const isEthereumBased = accountUtils.isEthereumBased(wallet.accounts[0]);
+  const firstAccount = wallet.accounts.at(0);
+  const isEthereumBased = firstAccount ? accountUtils.isEthereumBased(firstAccount) : false;
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {
@@ -102,12 +103,9 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     </Dropdown>
   );
 
-  const account = wallet.accounts.at(0);
-  if (!account) return null;
-
   const accounts = useMemo(
-    () => Object.values(chains).map(chain => [chain, account.accountId] as const),
-    [chains, account],
+    () => (firstAccount ? Object.values(chains).map(chain => [chain, firstAccount.accountId] as const) : []),
+    [chains, firstAccount],
   );
 
   return (
