@@ -391,6 +391,7 @@
     },
     "button": {
       "cancelButton": "Cancel",
+      "backButton": "Back",
       "closeButton": "Close",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
@@ -892,6 +893,20 @@
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
     },
+    "polkadotExtension": {
+      "emptyState": "All your accounts in different networks will be shown here",
+      "accountsTitle": "Manage accounts",
+      "permissionStep": "Request permission",
+      "pairingStep": "Pairing...",
+      "selectAccountLabel": "Account",
+      "requestRejected": "Request was rejected",
+      "askPermissionAgain": "Request permission again",
+      "selectAccountPlacehilder": "Select one of accounts",
+      "requestPairing": "Request pairing",
+      "manageTitle": "Set up your wallet",
+      "title": "Add Polkadot extension account",
+      "create": "Create"
+    },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
       "addressColumn": "Address",
@@ -925,6 +940,8 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
+      "polkadotExtensionTitle": "Polkadot extension",
+      "polkadotExtensionDescription": "Polkadot extension pairing",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
@@ -1727,6 +1744,7 @@
     "addMultisig": "Multisig",
     "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
+    "addPolkadotExtension": "Polkadot Extension",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "connectedLabel": "Connected",
@@ -1737,6 +1755,7 @@
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "proxiedLabel": "Delegated to you (Proxied)",
+    "polkadotExtensionLabel": "Polkadot Extension",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",

@@ -21,11 +21,11 @@ export const getOperatingSystem = (): string => {
 export const IS_MAC = getOperatingSystem() === 'macOS';
 
 export const isElectron = () => {
-  if (typeof window !== 'undefined' && typeof window.App === 'object') {
-    return true;
-  }
+  return typeof window !== 'undefined' && typeof window.App === 'object';
+};
 
-  return false;
+export const isWeb = () => {
+  return typeof window !== 'undefined' && typeof window.App === 'undefined';
 };
 
 export const isDev = () => {

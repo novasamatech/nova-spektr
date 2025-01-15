@@ -7,50 +7,50 @@ import { type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
-export type WatchOnlyAccount = UniversalAccount<{
+export interface WatchOnlyAccount extends UniversalAccount {
   accountType: AccountType.WATCH_ONLY;
-}>;
+}
 
-export type VaultBaseAccount = UniversalAccount<{
+export interface VaultBaseAccount extends UniversalAccount {
   accountType: AccountType.BASE;
-}>;
+}
 
-export type VaultChainAccount = ChainAccount<{
+export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
   baseAccountId?: AccountId;
   keyType: KeyType;
   derivationPath: string;
-}>;
+}
 
-export type VaultShardAccount = ChainAccount<{
+export interface VaultShardAccount extends ChainAccount {
   accountType: AccountType.SHARD;
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
-}>;
+}
 
-export type MultisigAccount = ChainAccount<{
+export interface MultisigAccount extends ChainAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
-}>;
+}
 
-export type FlexibleMultisigAccount = ChainAccount<{
+export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEXIBLE_MULTISIG;
   signatories: Signatory[];
   threshold: number;
   proxyAccountId?: AccountId; // we have accountId only after proxy is created
-}>;
+}
 
-export type WcAccount = ChainAccount<{
+export interface WcAccount extends ChainAccount {
   accountType: AccountType.WALLET_CONNECT;
   signingExtras: {
     pairingTopic?: string;
     sessionTopic?: string;
   };
-}>;
+}
 
-export type ProxiedAccount = ChainAccount<{
+export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   proxyAccountId: AccountId;
   delay: number;
@@ -58,7 +58,7 @@ export type ProxiedAccount = ChainAccount<{
   proxyVariant: ProxyVariant;
   blockNumber?: number;
   extrinsicIndex?: number;
-}>;
+}
 
 /**
  * @deprecated Use `import { type AnyAccount } from '@/domains/network'`

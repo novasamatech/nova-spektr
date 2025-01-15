@@ -18,13 +18,13 @@ export const importDBFeature = createFeature({
 });
 
 importDBFeature.inject(onboardingActionsSlot, {
-  order: 6,
+  order: 7,
   render() {
     const { t } = useI18n();
 
     return (
       <ImportDBModal>
-        <div className="border border-alert bg-alert-background-warning p-2">
+        <div className="rounded-lg border border-alert bg-alert-background-warning p-2">
           <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
             <Icon name="warn" size={12} className="text-inherit" />
             {/* eslint-disable i18next/no-literal-string */}

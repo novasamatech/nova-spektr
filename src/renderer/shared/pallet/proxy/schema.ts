@@ -9,6 +9,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
   'NonCritical',
   'NonFungibile',
   'Governance',
+  'Fellowship',
   'Staking',
   'Identity',
   'IdentityJudgement',

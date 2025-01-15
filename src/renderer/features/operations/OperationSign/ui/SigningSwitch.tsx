@@ -7,6 +7,8 @@ import { WalletConnect } from './WalletConnect';
 const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <Vault {...props} />,
   [SigningType.POLKADOT_VAULT]: (props) => <Vault {...props} />,
+  // TODO implement
+  [SigningType.POLKADOT_EXTENSION]: () => null,
   [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
   [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
   [SigningType.WATCH_ONLY]: () => null,
