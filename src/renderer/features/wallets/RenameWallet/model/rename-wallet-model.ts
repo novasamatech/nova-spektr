@@ -45,7 +45,7 @@ const $walletForm = createForm({
 
 const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
-  await Promise.all(accounts.map(networkDomain.accounts.updateAccount));
+  await networkDomain.accounts.updateAccounts(accounts);
 
   return { id, accounts, ...rest };
 });

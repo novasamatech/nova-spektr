@@ -396,6 +396,8 @@ export const walletModel = {
   $activeAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
+  createWallet: walletCreatedFx,
+
   events: {
     walletStarted,
     watchOnlyCreated,

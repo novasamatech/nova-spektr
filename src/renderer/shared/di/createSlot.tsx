@@ -7,9 +7,9 @@ import { shallowEqual } from './lib/shallowEqual';
 import { type Identifier } from './types';
 
 // Public interface
-type SlotHandler<Props> = FunctionComponent<Props> | SlotHandlerExtended<Props>;
+export type SlotHandler<Props> = FunctionComponent<Props> | SlotHandlerExtended<Props>;
 
-type SlotHandlerExtended<Props> = {
+export type SlotHandlerExtended<Props> = {
   order?: number;
   render: FunctionComponent<Props>;
 };

@@ -8,9 +8,10 @@ import { DEFAULT_TRANSITION, cnTw, copyToClipboard, toAddress } from '@/shared/l
 import { BaseModal, Button, FootnoteText, HelpText, Icon, Select } from '@/shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@/shared/ui/ExplorerLink/constants';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
+import { Address } from '@/shared/ui-entities';
 import { OperationTitle } from '@/entities/chain';
 import { QrTextGenerator } from '@/entities/transaction';
-import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 type Props = {
   chain: Chain;
@@ -41,17 +42,17 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
 
       if (isChainMatch) {
         const accountName = accountUtils.isVaultShardAccount(account) ? undefined : account.name;
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
         const element = (
-          <AccountAddress
-            type="adaptive"
-            className="max-w-[365px]"
-            accountId={account.accountId}
-            addressPrefix={chain.addressPrefix}
-            name={accountName}
-            size={20}
-            canCopy={false}
+          <Address
             showIcon
+            hideAddress
+            variant="truncate"
+            iconSize={20}
+            address={address}
+            title={accountName}
+            canCopy={false}
           />
         );
 

@@ -31,7 +31,7 @@ export const registerFeatures = (features: Feature<unknown>[]) => {
       // eslint-disable-next-line effector/no-getState
       const message = `${feature.name.split('/').at(1) ?? 'unknown'}${feature.status.getState() !== 'idle' ? ' | started' : ''}`;
 
-      console.log(message);
+      console.info(message);
     }
     console.groupEnd();
   }

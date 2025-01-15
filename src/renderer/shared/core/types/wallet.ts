@@ -74,13 +74,11 @@ export interface ProxiedWallet extends Wallet {
 export interface WalletConnectWallet extends Wallet {
   type: WalletType.WALLET_CONNECT;
   accounts: WcAccount[];
-  isConnected: boolean;
 }
 
 export interface NovaWalletWallet extends Wallet {
   type: WalletType.NOVA_WALLET;
   accounts: WcAccount[];
-  isConnected: boolean;
 }
 
 export type WalletsMap = Record<ID, Wallet>;

@@ -1,7 +1,7 @@
 import { createFeature } from '@/shared/feature';
 import { accountsService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
-import { walletGroupSlot } from '@/features/wallet-select';
+import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WatchOnlyGroup, walletActionsSlot } from './components/WatchOnlyGroup';
 
@@ -21,6 +21,12 @@ walletWatchOnlyFeature.inject(accountsService.accountActionPermissionAnyOf, ({ a
 // watch-only account can be applied on all supported chains
 walletWatchOnlyFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, ({ account }) => {
   return accountUtils.isWatchOnlyAccount(account);
+});
+
+walletWatchOnlyFeature.inject(walletIconSlot, ({ wallet, size }) => {
+  if (!walletUtils.isWatchOnly(wallet)) return null;
+
+  return <WalletIcon type={wallet.type} size={size} />;
 });
 
 walletWatchOnlyFeature.inject(walletGroupSlot, {

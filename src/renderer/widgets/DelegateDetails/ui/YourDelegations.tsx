@@ -134,13 +134,19 @@ export const YourDelegations = () => {
                       }}
                     />
                   </BodyText>
-                  <FootnoteText>
+                  <FootnoteText className="text-text-tertiary">
                     <Trans
                       t={t}
                       i18nKey="governance.addDelegation.balanceValue"
                       values={{ conviction: votingService.getConvictionMultiplier(activeDelegation.conviction) }}
                       components={{
-                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
+                        balance: (
+                          <AssetBalance
+                            className="text-text-tertiary"
+                            value={activeDelegation.balance}
+                            asset={chain.assets[0]}
+                          />
+                        ),
                       }}
                     />
                   </FootnoteText>

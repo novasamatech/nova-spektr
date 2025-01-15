@@ -32,7 +32,11 @@ const $contactForm = createForm({
       init: '',
       rules: [
         { name: 'required', errorText: 'addressBook.createContact.accountIdRequiredError', validator: Boolean },
-        { name: 'invalid', errorText: 'addressBook.createContact.accountIdIncorrectError', validator: validateAddress },
+        {
+          name: 'invalid',
+          errorText: 'addressBook.createContact.accountIdIncorrectError',
+          validator: (address) => validateAddress(address),
+        },
         {
           name: 'exist',
           errorText: 'addressBook.createContact.accountIdExistsError',
