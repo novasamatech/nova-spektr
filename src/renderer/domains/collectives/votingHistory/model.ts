@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type UnitValue, combine, createStore } from 'effector';
 import { readonly } from 'patronum';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, ExternalType } from '@/shared/core';
 import { createDataSource, createDataSubscription } from '@/shared/effector';
 import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
@@ -49,10 +49,10 @@ const { fulfilled, pending, request } = createDataSource<
 
     if (!chain) return [];
 
-    // TODO get from chain
-    // const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
-    // const sourceUrl = externalApi?.url;
-    const sourceUrl = 'https://subquery-collectives-polkadot-stg.novasama-tech.org';
+    const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
+    const sourceUrl = externalApi?.url;
+
+    if (!sourceUrl) return [];
 
     return requestFromSubQuery(sourceUrl, palletType, referendumId);
   },
