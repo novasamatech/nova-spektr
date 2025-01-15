@@ -425,5 +425,6 @@ export const walletModel = {
   __test: {
     $rawWallets,
     walletCreatedFx,
+    removeWalletFx,
   },
 };
