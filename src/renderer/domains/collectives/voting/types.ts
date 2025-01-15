@@ -4,6 +4,6 @@ import { type CollectivePalletsType } from '../_lib/types';
 export type VotingTransaction = Transaction<{
   pallet: CollectivePalletsType;
   rank: number;
-  poll: string;
+  poll: number;
   aye: boolean;
 }>;
