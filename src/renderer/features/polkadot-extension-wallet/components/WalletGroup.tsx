@@ -37,7 +37,7 @@ export const WalletGroup = memo(({ wallets, query, title, onSelect }: Props) => 
     <Box padding={[1, 0, 0]}>
       <Accordion initialOpen>
         <Accordion.Trigger>
-          <Icon name="keyCustom" />
+          <Icon name="polkadotExtensionBackground" size={20} />
           <span>{title}</span>
           <span className="text-text-tertiary">{wallets.length}</span>
         </Accordion.Trigger>

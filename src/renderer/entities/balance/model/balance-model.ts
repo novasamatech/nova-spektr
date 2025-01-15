@@ -65,4 +65,7 @@ export const balanceModel = {
     balancesUpdated,
     balancesRemoved,
   },
+  __test: {
+    removeBalancesFx,
+  },
 };

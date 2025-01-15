@@ -5,7 +5,7 @@ import { type IconNames } from '@/shared/ui/Icon/data';
 
 const WalletIcon: Record<SignableWalletFamily, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vault',
-  [WalletType.POLKADOT_EXTENSION]: 'keyCustom',
+  [WalletType.POLKADOT_EXTENSION]: 'polkadotExtensionBackground',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
   [WalletType.NOVA_WALLET]: 'novaWallet',
   // legacy
