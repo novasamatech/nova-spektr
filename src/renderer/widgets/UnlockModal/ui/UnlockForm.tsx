@@ -7,7 +7,6 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import * as networkDomain from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
@@ -89,13 +88,12 @@ const AccountsSelector = () => {
 
   const options = accounts.map(({ account, balance }) => {
     const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-    const id = networkDomain.accountsService.uniqId(account);
 
     return {
-      id,
+      id: account.id,
       value: account,
       element: (
-        <div className="flex w-full justify-between" key={id}>
+        <div className="flex w-full justify-between" key={account.id}>
           <Address address={address} variant="truncate" iconSize={20} canCopy={false} title={account.name} showIcon />
           <AssetBalance value={balance} asset={network.asset} className="w-min" />
         </div>
@@ -110,7 +108,7 @@ const AccountsSelector = () => {
         placeholder={t('operation.selectAccount')}
         multiPlaceholder={t('governance.operations.selectPlaceholder')}
         invalid={shards.hasError()}
-        selectedIds={shards.value.map(networkDomain.accountsService.uniqId)}
+        selectedIds={shards.value.map((a) => a.id)}
         options={options}
         onChange={(values) => shards.onChange(values.map(({ value }) => value))}
       />

@@ -42,6 +42,8 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
+import { polkadotExtensionWalletFeature } from 'src/renderer/features/polkadot-extension-wallet';
+
 export const initModel = () => {
   accounts.populate();
 
@@ -83,6 +85,7 @@ export const initModel = () => {
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
+    polkadotExtensionWalletFeature,
 
     governanceOperationDetailFeature,
     multisigOperationDetailsFeature,

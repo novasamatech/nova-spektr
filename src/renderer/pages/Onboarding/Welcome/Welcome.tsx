@@ -5,6 +5,7 @@ import { createSlot, useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, TitleText } from '@/shared/ui';
+import { ScrollArea } from '@/shared/ui-kit';
 
 import PrivacyPolicy from './PrivacyPolicy';
 
@@ -37,13 +38,15 @@ export const Welcome = () => {
 
   return (
     <div className="flex h-full w-full animate-in fade-in">
-      <div className="flex h-full w-[512px] flex-col p-10">
-        <TitleText className="mb-8">{t('onboarding.welcome.title')}</TitleText>
+      <div className="flex h-full w-[512px] flex-col">
+        <TitleText className="px-10 pb-4 pt-10">{t('onboarding.welcome.title')}</TitleText>
 
-        {/* TODO: move Cards to WalletPairing feature */}
-        <div className="flex flex-col gap-4">{wizards}</div>
+        <ScrollArea>
+          {/* TODO: move Cards to WalletPairing feature */}
+          <div className="flex flex-col gap-4 px-10 py-4">{wizards}</div>
+        </ScrollArea>
 
-        <div className="flex flex-1 items-end">
+        <div className="flex flex-1 items-end px-10 pb-10 pt-4">
           <PrivacyPolicy />
         </div>
       </div>

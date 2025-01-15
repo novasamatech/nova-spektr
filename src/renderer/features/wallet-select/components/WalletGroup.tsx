@@ -12,6 +12,7 @@ const {
 
 export const GROUP_LABELS: Record<WalletFamily, string> = {
   [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
+  [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtension',
   [WalletType.MULTISIG]: 'wallets.multisigLabel',
   [WalletType.FLEXIBLE_MULTISIG]: 'wallets.flexibleMultisigLabel',
   [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',

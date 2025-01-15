@@ -117,8 +117,17 @@ const Trigger = ({ children }: PropsWithChildren) => {
   return <Dialog.Trigger asChild>{children}</Dialog.Trigger>;
 };
 
-const Footer = ({ children }: PropsWithChildren) => {
-  return <footer className="flex h-fit items-end justify-end gap-2 px-5 pb-4 pt-3">{children}</footer>;
+const Footer = ({ children, align = 'end' }: PropsWithChildren<{ align?: 'start' | 'end' }>) => {
+  return (
+    <footer
+      className={cnTw('flex h-fit gap-2 px-5 pb-4 pt-3', {
+        'justify-end': align === 'end',
+        'justify-start': align === 'start',
+      })}
+    >
+      {children}
+    </footer>
+  );
 };
 
 export const Modal = Object.assign(Root, {

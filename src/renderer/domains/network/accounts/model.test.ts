@@ -64,6 +64,8 @@ describe('accounts model', () => {
       walletId: 0,
       type: 'chain',
       name: 'test',
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
     };
 
     await allSettled(accountsDomainModel.updateAccount, {
@@ -86,6 +88,8 @@ describe('accounts model', () => {
       walletId: 0,
       type: 'chain',
       name: 'test',
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
     };
 
     await allSettled(accountsDomainModel.updateAccount, {

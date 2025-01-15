@@ -1,7 +1,7 @@
 import { createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/session';
 
-import { isDev } from '@/shared/lib/utils';
+import { isDev, isWeb } from '@/shared/lib/utils';
 
 export const updateFeatureStatus = createEvent<[feature: string, status: boolean]>();
 export const resetFeatureStatuses = createEvent();
@@ -26,6 +26,7 @@ export const $features = createStore({
   walletConnect: true,
   watchOnly: true,
   ledger: true,
+  polkadotExtension: isDev() && isWeb(),
 });
 
 persist({

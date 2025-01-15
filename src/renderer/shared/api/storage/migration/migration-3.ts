@@ -19,6 +19,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
     .map<Account | null>((old) => {
       const wallet = wallets.find((x) => x.id === old.walletId);
       if (!wallet) return null;
+      // @ts-expect-error old types
       const { chainType, baseId, type, ...mappable } = old;
       const baseAccountId = nonNullable(baseId) ? oldAccounts.find((x) => x.id === baseId) : null;
 
@@ -29,6 +30,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
         res = {
           ...mappable,
           type: 'chain',
+          // @ts-expect-error old types
           accountType: finalType,
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           chainId: old.chainId,
@@ -40,6 +42,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
         res = {
           ...mappable,
           type: 'universal',
+          // @ts-expect-error old types
           accountType: finalType,
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
@@ -57,6 +60,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
       res.id = id;
 
       if (baseAccountId) {
+        // @ts-expect-error old types
         res.baseAccountId = baseAccountId;
       }
 
