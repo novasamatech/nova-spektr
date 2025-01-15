@@ -3,6 +3,7 @@ import { type SigningProps } from '../lib/types';
 
 import { Vault } from './Vault';
 import { WalletConnect } from './WalletConnect';
+import { WatchOnly } from './WatchOnly';
 
 const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <Vault {...props} />,
@@ -11,7 +12,7 @@ const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | nu
   [SigningType.POLKADOT_EXTENSION]: () => null,
   [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
   [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
-  [SigningType.WATCH_ONLY]: () => null,
+  [SigningType.WATCH_ONLY]: (props) => <WatchOnly {...props} />,
 };
 
 export const SigningSwitch = (props: SigningProps) => {
