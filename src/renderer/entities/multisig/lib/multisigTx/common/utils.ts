@@ -58,7 +58,7 @@ export const createNewEventsPayload = (
   approvals: Vec<AccountId32>,
 ): MultisigEvent[] => {
   return approvals.reduce<MultisigEvent[]>((acc, a) => {
-    const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
+    const hasApprovalEvent = events.some((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
     if (!hasApprovalEvent) {
       acc.push({

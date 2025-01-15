@@ -140,7 +140,7 @@ export const createFeature = <T = object>({
       };
 
       identifier.registerHandler({
-        key: `feature: ${name}`,
+        // key: `feature: ${name}`,
         // TODO create correct feature toggle using effector tools
         // eslint-disable-next-line effector/no-getState
         available: () => (scope ? scope.getState(enable) : enable.getState()),
@@ -148,7 +148,7 @@ export const createFeature = <T = object>({
       });
     } else {
       identifier.registerHandler({
-        key: `feature: ${name}`,
+        // key: `feature: ${name}`,
         available: () => {
           // TODO create correct feature toggle using effector tools
           // eslint-disable-next-line effector/no-getState

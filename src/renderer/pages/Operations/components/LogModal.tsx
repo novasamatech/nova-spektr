@@ -20,11 +20,9 @@ import { BaseModal, BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButto
 import { AssetBalance } from '@/entities/asset';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
+import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
-import { getSignatoryName } from '../common/utils';
-
-import { Status } from './Status';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
@@ -88,7 +86,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
     const isCreatedEvent =
       event.accountId === tx.depositor && (event.status === 'SIGNED' || event.status === 'PENDING_SIGNED');
 
-    const signatoryName = getSignatoryName(
+    const signatoryName = operationDetailsUtils.getSignatoryName(
       event.accountId,
       tx.signatories,
       contacts,

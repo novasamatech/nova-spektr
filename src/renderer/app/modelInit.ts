@@ -17,12 +17,17 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
 import { importDBFeature } from '@/features/import-db';
+import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
+import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
+import { stakingOperationDetailFeature } from '@/features/staking-operation-details';
+import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
 import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletMultisigFeature } from '@/features/wallet-multisig';
 import { walletPairingFeature } from '@/features/wallet-pairing';
@@ -78,6 +83,12 @@ export const initModel = () => {
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
+
+    governanceOperationDetailFeature,
+    multisigOperationDetailsFeature,
+    proxyOperationDetailFeature,
+    stakingOperationDetailFeature,
+    transferOperationDetailFeature,
 
     importDBFeature,
   ]);
