@@ -11,12 +11,14 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 import { PairingModal } from './components/PairingModal';
-import { WalletGroup } from './components/WalletGroup';
+import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { polkadotExtensionWalletFeature } from './model/feature';
 import { wallets } from './model/wallets';
 import { polkadotExtensionService } from './service';
+import { type PolkadotExtensionWallet } from './types';
 
-export { polkadotExtensionWalletFeature };
+export { polkadotExtensionWalletFeature, walletActionsSlot, polkadotExtensionService };
+export type { PolkadotExtensionWallet };
 
 polkadotExtensionWalletFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, ({ account }) => {
   return polkadotExtensionService.isPolkadotExtensionAccount(account);

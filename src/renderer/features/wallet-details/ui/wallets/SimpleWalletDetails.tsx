@@ -10,6 +10,7 @@ import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { type PolkadotExtensionWallet } from '@/features/polkadot-extension-wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -29,7 +30,7 @@ const {
 } = proxyAddPureFeature;
 
 type Props = {
-  wallet: SingleShardWallet | WatchOnlyWallet;
+  wallet: SingleShardWallet | WatchOnlyWallet | PolkadotExtensionWallet;
   onClose: () => void;
 };
 export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {

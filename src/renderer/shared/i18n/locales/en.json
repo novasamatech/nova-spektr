@@ -1026,6 +1026,7 @@
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "polkadotExtension": "Sign with Polkadot Extension",
       "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
@@ -1620,7 +1621,10 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
+    "expired": "Transaction expired",
+    "invalidAddress": "Invalid address",
     "noSignatoryError": "Please select operation signatory",
+    "noAmount": "Please provide amount",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",

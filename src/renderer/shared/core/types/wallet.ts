@@ -100,6 +100,7 @@ export const enum WalletType {
 
 export type SignableWalletFamily =
   | WalletType.POLKADOT_VAULT
+  | WalletType.POLKADOT_EXTENSION
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET
   | WalletType.MULTISHARD_PARITY_SIGNER
@@ -107,6 +108,7 @@ export type SignableWalletFamily =
 
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
+  | WalletType.POLKADOT_EXTENSION
   | WalletType.MULTISIG
   | WalletType.FLEXIBLE_MULTISIG
   | WalletType.WATCH_ONLY

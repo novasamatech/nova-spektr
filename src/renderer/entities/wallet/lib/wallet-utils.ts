@@ -15,6 +15,7 @@ import {
   WalletType,
   type WatchOnlyWallet,
 } from '@/shared/core';
+import { type PolkadotExtensionWallet } from '@/features/polkadot-extension-wallet';
 
 export const walletUtils = {
   isPolkadotVault,
@@ -29,6 +30,7 @@ export const walletUtils = {
   isProxied,
   isWalletConnectGroup,
   isPolkadotVaultGroup,
+  isPolkadotExtension,
 
   isValidSignatory,
   isValidSignSignatory,
@@ -81,6 +83,10 @@ function isWalletConnect(wallet?: Wallet): wallet is WalletConnectWallet {
 
 function isProxied(wallet?: Wallet): wallet is ProxiedWallet {
   return wallet?.type === WalletType.PROXIED;
+}
+
+function isPolkadotExtension(wallet?: Wallet): wallet is PolkadotExtensionWallet {
+  return wallet?.type === WalletType.POLKADOT_EXTENSION;
 }
 
 // Groups
