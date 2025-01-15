@@ -1,5 +1,5 @@
 import { chainsService } from '@/shared/api/network';
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransaction } from '@/shared/core';
 import { getAssetById } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
@@ -7,17 +7,18 @@ import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransaction;
 };
 
-export const GovernanceOperationTitle = ({ tx }: Props) => {
+export const GovernanceOperationTitle = ({ operation }: Props) => {
   const asset =
-    tx.transaction && getAssetById(tx.transaction.args.asset, chainsService.getChainById(tx.chainId)?.assets);
-  const amount = tx.transaction && getTransactionAmount(tx.transaction);
+    operation.transaction &&
+    getAssetById(operation.transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  const amount = operation.transaction && getTransactionAmount(operation.transaction);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={tx.transaction} />
+      <TransactionTitle className="flex-1 overflow-hidden" tx={operation.transaction} />
 
       {asset && amount && (
         <Box width="160px">
@@ -25,7 +26,7 @@ export const GovernanceOperationTitle = ({ tx }: Props) => {
         </Box>
       )}
 
-      <ChainTitle chainId={tx.chainId} className="w-[114px]" />
+      <ChainTitle chainId={operation.chainId} className="w-[114px]" />
     </>
   );
 };

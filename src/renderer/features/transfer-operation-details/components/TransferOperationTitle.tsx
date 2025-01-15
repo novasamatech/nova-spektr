@@ -1,12 +1,12 @@
 import { chainsService } from '@/shared/api/network';
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransaction } from '@/shared/core';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransaction;
 };
 
 export const TransferOperationTitle = ({ operation }: Props) => {

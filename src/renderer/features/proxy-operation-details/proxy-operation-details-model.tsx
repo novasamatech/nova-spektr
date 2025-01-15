@@ -74,23 +74,20 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
   order: 1,
 });
 
-proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
-  render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+  const transaction = getTransactionFromMultisigTx(operation);
 
-    if (
-      transaction?.type &&
-      [
-        TransactionType.ADD_PROXY,
-        TransactionType.REMOVE_PROXY,
-        TransactionType.CREATE_PURE_PROXY,
-        TransactionType.REMOVE_PURE_PROXY,
-      ].includes(transaction.type)
-    ) {
-      return <ProxyOperationTitle tx={operation} />;
-    }
+  if (
+    transaction?.type &&
+    [
+      TransactionType.ADD_PROXY,
+      TransactionType.REMOVE_PROXY,
+      TransactionType.CREATE_PURE_PROXY,
+      TransactionType.REMOVE_PURE_PROXY,
+    ].includes(transaction.type)
+  ) {
+    return <ProxyOperationTitle operation={operation} />;
+  }
 
-    return null;
-  },
-  order: 1,
+  return null;
 });

@@ -46,26 +46,23 @@ stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDe
   order: 2,
 });
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
-  render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+  const transaction = getTransactionFromMultisigTx(operation);
 
-    if (
-      transaction?.type &&
-      [
-        TransactionType.BOND,
-        TransactionType.STAKE_MORE,
-        TransactionType.UNSTAKE,
-        TransactionType.RESTAKE,
-        TransactionType.REDEEM,
-        TransactionType.NOMINATE,
-        TransactionType.DESTINATION,
-      ].includes(transaction.type)
-    ) {
-      return <StakingOperationTitle tx={operation} />;
-    }
+  if (
+    transaction?.type &&
+    [
+      TransactionType.BOND,
+      TransactionType.STAKE_MORE,
+      TransactionType.UNSTAKE,
+      TransactionType.RESTAKE,
+      TransactionType.REDEEM,
+      TransactionType.NOMINATE,
+      TransactionType.DESTINATION,
+    ].includes(transaction.type)
+  ) {
+    return <StakingOperationTitle operation={operation} />;
+  }
 
-    return null;
-  },
-  order: 1,
+  return null;
 });

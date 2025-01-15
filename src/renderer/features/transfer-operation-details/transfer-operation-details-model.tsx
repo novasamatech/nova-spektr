@@ -24,19 +24,16 @@ transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationD
   order: 1,
 });
 
-transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, {
-  render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+  const transaction = getTransactionFromMultisigTx(operation);
 
-    if (isTransferTransaction(transaction)) {
-      return <TransferOperationTitle operation={operation} />;
-    }
+  if (isTransferTransaction(transaction)) {
+    return <TransferOperationTitle operation={operation} />;
+  }
 
-    if (isXcmTransaction(transaction)) {
-      return <XcmTransferOperationTitle operation={operation} />;
-    }
+  if (isXcmTransaction(transaction)) {
+    return <XcmTransferOperationTitle operation={operation} />;
+  }
 
-    return null;
-  },
-  order: 1,
+  return null;
 });
