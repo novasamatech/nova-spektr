@@ -25,6 +25,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { useMultisigEvent } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
@@ -37,7 +38,6 @@ import {
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { getSignatoryAccounts } from '../../common/utils';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
@@ -95,7 +95,13 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
     return acc;
   }, []);
 
-  const unsignedAccounts = getSignatoryAccounts(availableAccounts, wallets, events, account.signatories, tx.chainId);
+  const unsignedAccounts = operationDetailsUtils.getSignatoryAccounts(
+    availableAccounts,
+    wallets,
+    events,
+    account.signatories,
+    tx.chainId,
+  );
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });

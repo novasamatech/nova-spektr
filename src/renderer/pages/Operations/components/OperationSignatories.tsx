@@ -18,9 +18,9 @@ import { Address } from '@/shared/ui-entities';
 import { contactModel } from '@/entities/contact';
 import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, walletModel } from '@/entities/wallet';
-import { getSignatoryName, getSignatoryStatus } from '../common/utils';
 
 import LogModal from './LogModal';
 
@@ -112,7 +112,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   key={signatory.accountId}
                   accountId={signatory.accountId}
                   addressPrefix={connection.addressPrefix}
-                  status={getSignatoryStatus(events, signatory.accountId)}
+                  status={operationDetailsUtils.getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
@@ -134,11 +134,11 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
                   key={signatory.accountId}
                   accountId={signatory.accountId}
                   addressPrefix={connection.addressPrefix}
-                  status={getSignatoryStatus(events, signatory.accountId)}
+                  status={operationDetailsUtils.getSignatoryStatus(events, signatory.accountId)}
                   explorers={connection.explorers}
                 >
                   <Address
-                    title={getSignatoryName(
+                    title={operationDetailsUtils.getSignatoryName(
                       signatory.accountId,
                       signatories,
                       contacts,

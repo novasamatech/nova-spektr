@@ -18,7 +18,7 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { dictionary, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TransactionVote, votingService } from '@/entities/governance';
@@ -48,7 +48,7 @@ export const getSignatoryName = (
   addressPrefix?: number,
 ): string => {
   const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
-    return collection.find((c) => c?.accountId === signatoryId);
+    return collection.find((c) => c.accountId === signatoryId);
   };
 
   // signatory data source priority: transaction -> contacts -> wallets -> address
@@ -72,33 +72,35 @@ export const getSignatoryAccounts = (
   signatories: Signatory[],
   chainId: ChainId,
 ): Account[] => {
-  const walletsMap = new Map(wallets.map((wallet) => [wallet.id, wallet]));
+  const walletsMap = dictionary(wallets, 'id');
 
-  return signatories.reduce((acc: Account[], signatory) => {
+  const result = [];
+
+  for (const signatory of signatories) {
     const filteredAccounts = accounts.filter(
       (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
     );
 
     const signatoryAccount = filteredAccounts.find((a) => {
       const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
-      const wallet = walletsMap.get(a.walletId);
+      const wallet = walletsMap[a.walletId];
 
       return isChainMatch && walletUtils.isValidSignatory(wallet);
     });
 
     if (signatoryAccount) {
-      acc.push(signatoryAccount);
+      result.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountUtils.isVaultChainAccount(a) && a.chainId === chainId,
+        (a) => accountUtils.isChainDependant(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
-        acc.push(legacySignatoryAccount);
+        result.push(legacySignatoryAccount);
       }
     }
+  }
 
-    return acc;
-  }, []);
+  return result;
 };
 
 export const getDestination = (
@@ -115,6 +117,16 @@ export const getDestination = (
   }
 
   return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
+};
+
+export const getDestinationAccountId = (tx: MultisigTransaction): AccountId | undefined => {
+  if (!tx.transaction) return undefined;
+
+  if (isProxyTransaction(tx.transaction)) {
+    return tx.transaction.args.transaction.args.dest;
+  }
+
+  return tx.transaction.args.dest;
 };
 
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
