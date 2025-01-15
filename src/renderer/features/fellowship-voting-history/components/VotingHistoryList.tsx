@@ -30,7 +30,7 @@ export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
       records: items,
       getMeta: item => ({
         address: toAddress(item.accountId, { prefix: chain?.addressPrefix }),
-        name: identity[item.accountId].name ?? null,
+        name: identity[item.accountId]?.name ?? null,
       }),
       query,
       weights: { address: 0.5, name: 1 },

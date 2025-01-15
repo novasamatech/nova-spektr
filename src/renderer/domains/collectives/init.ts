@@ -23,6 +23,9 @@ const $store = combine(
   combineStores,
 );
 
+/**
+ * @deprecated Use direct imports instead
+ */
 export const collectiveDomain = {
   $store,
   members: membersDomainModel,
@@ -31,6 +34,19 @@ export const collectiveDomain = {
   referendumMeta: referendumMetaModel,
   voting: votingDomainModel,
 
+  tracksService,
+  membersService,
+  referendumService,
+  votingService,
+};
+
+export {
+  $store as $collectiveStore,
+  membersDomainModel as members,
+  tracksDomainModel as tracks,
+  referendumDomainModel as referendums,
+  referendumMetaModel as referendumMeta,
+  votingDomainModel as voting,
   tracksService,
   membersService,
   referendumService,
