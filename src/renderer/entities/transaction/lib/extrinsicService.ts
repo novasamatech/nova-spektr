@@ -610,8 +610,8 @@ export const getExtrinsic: Record<
   [TransactionType.UNDELEGATE]: ({ track }, api) => {
     return api.tx.convictionVoting.undelegate(track);
   },
-  [TransactionType.COLLECTIVE_VOTE]: ({ pallet, pool, aye }, api) => {
-    return api.tx[`${pallet}Collective`].vote(pool, aye);
+  [TransactionType.COLLECTIVE_VOTE]: ({ pallet, poll, aye }, api) => {
+    return api.tx[`${pallet}Collective`].vote(poll, aye);
   },
 };
 

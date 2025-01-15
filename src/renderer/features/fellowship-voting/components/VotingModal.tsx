@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -35,6 +35,10 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const account = useUnit(votingStatusModel.$votingAccount);
   const member = useUnit(votingStatusModel.$currentMember);
   const fee = useUnit(votingModel.$fee);
+
+  useEffect(() => {
+    setStep('confirm');
+  }, [isOpen]);
 
   if (nullable(input) || nullable(member) || nullable(account) || nullable(vote)) {
     return null;
@@ -119,7 +123,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
             </Modal.Footer>
           </Carousel.Item>
           <Carousel.Item id="sign" index={1}>
-            <OperationSign onGoBack={() => setStep('confirm')} />
+            <OperationSign onSuccess={() => setStep('submit')} onGoBack={() => setStep('confirm')} />
           </Carousel.Item>
         </Carousel>
       </Modal.Content>
