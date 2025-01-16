@@ -1,7 +1,7 @@
 import './CardStack.css';
 
 import * as RadixAccordion from '@radix-ui/react-accordion';
-import { type PropsWithChildren, createContext, useContext, useId, useMemo, useState } from 'react';
+import { type PropsWithChildren, createContext, useContext, useDeferredValue, useId, useMemo, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
@@ -15,6 +15,7 @@ type RootProps = PropsWithChildren<{
 const Root = ({ initialOpen = false, children }: RootProps) => {
   const id = useId();
   const [open, setOpen] = useState(initialOpen);
+  const deferred = useDeferredValue(open);
 
   const ctx = useMemo(() => ({ open }), [open]);
 
@@ -23,7 +24,7 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
       <RadixAccordion.Root
         collapsible
         type="single"
-        value={open ? id : ''}
+        value={deferred ? id : ''}
         onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id} className="group/stack card-stack">

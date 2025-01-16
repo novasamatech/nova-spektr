@@ -16,7 +16,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { dictionary, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
+import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
 import {
@@ -79,6 +79,12 @@ const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts
   if (nullable(wallet)) return [];
 
   return accountsService.filterAccountsByWallet(accounts, wallet.id);
+});
+
+const $availableAccounts = combine($wallets, accounts.$list, (wallets, accounts) => {
+  const ids = toKeysRecord(wallets.map((w) => w.id));
+
+  return accounts.filter((a) => a.walletId in ids);
 });
 
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
@@ -389,6 +395,7 @@ export const walletModel = {
   $hiddenWallets,
   $activeWallet,
   $activeAccounts,
+  $availableAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
   createWallet: walletCreatedFx,

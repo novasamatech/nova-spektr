@@ -19,7 +19,7 @@ export const TransferRules = {
       name: 'noProxyFee',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (_a: Account, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
+      validator: (_a: Account | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;
 
         return balanceValidation.isLteThanBalance(fee, proxyBalance.native);
