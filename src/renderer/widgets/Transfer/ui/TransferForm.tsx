@@ -116,7 +116,7 @@ const AccountSelector = () => {
       <Select
         label={t('operation.selectAccountLabel')}
         placeholder={t('operation.selectAccount')}
-        selectedId={account.value.id?.toString()}
+        selectedId={account.value?.id?.toString()}
         options={options}
         onChange={({ value }) => account.onChange(value)}
       />

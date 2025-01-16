@@ -1,7 +1,7 @@
 import './Accordion.css';
 
 import * as RadixAccordion from '@radix-ui/react-accordion';
-import { type PropsWithChildren, createContext, useContext, useId, useMemo } from 'react';
+import { type PropsWithChildren, createContext, useContext, useDeferredValue, useId, useMemo } from 'react';
 
 import { useExternalState } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -18,6 +18,7 @@ type RootProps = PropsWithChildren<{
 const Root = ({ initialOpen = false, open: externalOpen, onToggle, children }: RootProps) => {
   const id = useId();
   const [open, setOpen] = useExternalState(initialOpen || externalOpen, onToggle);
+  const deferred = useDeferredValue(open);
   const ctx = useMemo(() => ({ open: open ?? false }), [open]);
 
   return (
@@ -26,7 +27,7 @@ const Root = ({ initialOpen = false, open: externalOpen, onToggle, children }: R
         className="w-full"
         collapsible
         type="single"
-        value={open ? id : ''}
+        value={deferred ? id : ''}
         onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id}>{children}</RadixAccordion.Item>

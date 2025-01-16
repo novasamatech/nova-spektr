@@ -1,5 +1,15 @@
 import { animated, useTransition } from '@react-spring/web';
-import { type PropsWithChildren, createContext, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type PropsWithChildren,
+  createContext,
+  memo,
+  useContext,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { usePrevious } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -26,23 +36,24 @@ type RootProps = PropsWithChildren<{
 }>;
 
 const Root = memo(({ children, fixedHeight = false, item }: PropsWithChildren<RootProps>) => {
-  const prevItem = usePrevious(item);
+  const deferred = useDeferredValue(item);
+  const prevItem = usePrevious(deferred);
   const indecies = useRef<Record<string, number>>({});
 
-  const itemIndex = indecies.current[item] ?? 0;
+  const itemIndex = indecies.current[deferred] ?? 0;
   const prevItemIndex = indecies.current[prevItem] ?? 0;
   const direction = itemIndex - prevItemIndex;
 
   const value = useMemo(() => {
     return {
-      item,
+      item: deferred,
       direction,
       fixedHeight,
       registerItem: (id: string, index: number) => {
         indecies.current[id] = index;
       },
     };
-  }, [direction, item, fixedHeight]);
+  }, [direction, deferred, fixedHeight]);
 
   return (
     <Context.Provider value={value}>
@@ -64,25 +75,29 @@ const Item = memo(({ id, index, children }: ItemProps) => {
   }, [id, index]);
 
   const offset = 25;
-  const transitions = useTransition(id === item, {
-    initial: { opacity: 1, transform: 'translateX(0%)' },
-    from: {
-      opacity: 0,
-      transform: `translateX(${direction > 0 ? offset : offset * -1}%)`,
-    },
-    enter: { opacity: 1, transform: 'translateX(0%)' },
-    leave: {
-      top: 0,
-      left: 0,
-      opacity: 0,
-      transform: `translateX(${direction > 0 ? offset * -1 : offset}%)`,
-      position: 'absolute',
-    },
-    config: {
-      duration: 200,
-      easing: defaultEasing,
-    },
-  });
+  const config = useMemo(() => {
+    return {
+      initial: { opacity: 1, transform: 'translateX(0%)' },
+      from: {
+        opacity: 0,
+        transform: `translateX(${direction > 0 ? offset : offset * -1}%)`,
+      },
+      enter: { opacity: 1, transform: 'translateX(0%)' },
+      leave: {
+        top: 0,
+        left: 0,
+        opacity: 0,
+        transform: `translateX(${direction > 0 ? offset * -1 : offset}%)`,
+        position: 'absolute',
+      },
+      config: {
+        duration: 200,
+        easing: defaultEasing,
+      },
+    };
+  }, [offset, direction]);
+
+  const transitions = useTransition(id === item, config);
 
   return transitions((styles, item) =>
     item ? (

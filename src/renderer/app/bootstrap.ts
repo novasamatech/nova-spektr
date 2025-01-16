@@ -2,6 +2,7 @@
 
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
+import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, tracksService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
@@ -122,4 +123,17 @@ export const bootstrap = () => {
   ]);
 
   populate();
+  persist();
+};
+
+const persist = () => {
+  if (isWeb() && navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then((persistent) => {
+      if (persistent) {
+        console.info('Storage will not be cleared except by explicit user action');
+      } else {
+        console.info('Storage may be cleared by the UA under storage pressure.');
+      }
+    });
+  }
 };
