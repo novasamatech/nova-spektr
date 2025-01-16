@@ -74,7 +74,10 @@ sample({
     wrappedTx: transactions.wrappedTx,
     multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
-    store: formData,
+    store: {
+      ...formData,
+      account: formData.account!,
+    },
   }),
   target: spread({
     wrappedTx: $wrappedTx,
@@ -92,6 +95,7 @@ sample({
     event: [
       {
         ...formData,
+        account: formData.account!,
         xcmAsset: networkStore!.asset,
         chain: networkStore!.chain,
         asset: networkStore!.asset!,

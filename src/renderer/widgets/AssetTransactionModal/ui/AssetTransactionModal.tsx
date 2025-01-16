@@ -6,7 +6,7 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { Box, Modal, SearchInput } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -55,15 +55,17 @@ export const AssetTransactionModal = () => {
   return (
     <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t(title, { asset: assetWithChains.symbol })}</Modal.Title>
-      <Modal.Content>
-        <Box padding={[3, 5]}>
+      <Modal.Content disableScroll>
+        <Box shrink={0} padding={[3, 5, 0]}>
           <SearchInput
             value={query}
             placeholder={t('balances.searchPlaceholder')}
             onChange={assetTransactionModel.events.queryChanged}
           />
-          <FootnoteText className="pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
-          <ul>
+        </Box>
+        <FootnoteText className="px-5 pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
+        <ScrollArea>
+          <ul className="px-5 pb-5">
             {assetWithChains.chains.map((chain) => (
               <li
                 key={`${chain.assetSymbol}_${chain.chainId}`}
@@ -89,9 +91,9 @@ export const AssetTransactionModal = () => {
                 </Link>
               </li>
             ))}
-            <EmptyAssetsState />
+            <EmptyAssetsState size={64} />
           </ul>
-        </Box>
+        </ScrollArea>
       </Modal.Content>
     </Modal>
   );
