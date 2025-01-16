@@ -7,6 +7,7 @@ import { type TabItem } from './common/types';
 
 type Props = {
   items: TabItem[];
+  initialIndex?: number;
   unmount?: boolean;
   panelClassName?: string;
   tabClassName?: string;
@@ -19,13 +20,14 @@ type Props = {
  */
 export const Tabs = ({
   items,
+  initialIndex,
   unmount = true,
   tabClassName,
   tabsClassName,
   panelClassName = 'mt-4',
   onChange,
 }: Props) => (
-  <Tab.Group onChange={onChange}>
+  <Tab.Group defaultIndex={initialIndex} onChange={onChange}>
     <Tab.List className={cnTw('flex gap-x-1 rounded-md bg-tab-background p-0.5', tabsClassName)}>
       {items.map(({ id, title }) => (
         <Tab

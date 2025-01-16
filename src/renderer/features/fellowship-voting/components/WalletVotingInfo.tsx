@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const WalletVotingInfo = memo(({ referendumId }: Props) => {
-  useGate(votingStatusModel.gate, { referendumId });
+  useGate(votingStatusModel.flow, { referendumId });
 
   const { t } = useI18n();
   const voting = useUnit(votingStatusModel.$referendumVoting);

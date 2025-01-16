@@ -69,10 +69,26 @@ const {
 
     fn();
 
-    // TODO check if section name is correct
-    return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Core` }, fn).then(fn => () => {
+    const unsubscribe = Promise.all([
+      polkadotjsHelpers.subscribeSystemEvents(
+        {
+          api,
+          section: `${palletType}Collective`,
+          methods: ['MemberAdded', 'MemberExchanged', 'MemberRemoved', 'RankChanged'],
+        },
+        fn,
+      ),
+      polkadotjsHelpers.subscribeSystemEvents(
+        { api, section: `${palletType}Core`, methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'] },
+        fn,
+      ),
+    ]);
+
+    return unsubscribe.then(fns => () => {
       abortController.abort();
-      fn();
+      for (const fn of fns) {
+        fn();
+      }
     });
   },
   map: (store, { params, result }) => {

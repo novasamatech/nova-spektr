@@ -24,7 +24,7 @@ export type Identifier<
   ProcessedHandlerBody = DefaultHandlerBody<Input, Output>,
 > = {
   type: string;
-  name: string;
+  identifierName: string;
   $handlers: Store<Handler<ProcessedHandlerBody>[]>;
   registerHandler: EventCallable<Handler<HandlerBody>>;
   updateHandlers: EventCallable<void>;

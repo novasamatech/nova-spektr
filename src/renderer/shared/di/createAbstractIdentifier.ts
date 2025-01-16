@@ -53,7 +53,7 @@ export const createAbstractIdentifier = <
 
   const identifier: ResultIdentifier = {
     type,
-    name,
+    identifierName: name,
     $handlers: readonly($handlers),
     resetHandlers,
     registerHandler: registerHandler.prepend(processHandler),

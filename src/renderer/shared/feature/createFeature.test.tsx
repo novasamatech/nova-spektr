@@ -17,7 +17,7 @@ describe('createFeature', () => {
 
     featureStatus.inject(pipeline, (list, meta) => list.concat('1', meta));
 
-    expect(pipeline.apply(['0'], 'meta')).toEqual(['0', '1', 'meta']);
+    expect(pipeline(['0'], 'meta')).toEqual(['0', '1', 'meta']);
   });
 
   it('should integrate with slot', async () => {
