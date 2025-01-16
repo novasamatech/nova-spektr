@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { referendumService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -32,6 +33,8 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const [step, setStep] = useState<Step>('confirm');
 
   const input = useUnit(votingFeatureStatus.input);
+  const referendum = useUnit(votingStatusModel.$referendum);
+  const maxRank = useUnit(votingStatusModel.$maxRank);
   const account = useUnit(votingStatusModel.$votingAccount);
   const member = useUnit(votingStatusModel.$currentMember);
   const fee = useUnit(votingModel.$fee);
@@ -40,7 +43,14 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
     setStep('confirm');
   }, [isOpen]);
 
-  if (nullable(input) || nullable(member) || nullable(account) || nullable(vote)) {
+  if (
+    nullable(input) ||
+    nullable(member) ||
+    nullable(account) ||
+    nullable(vote) ||
+    nullable(referendum) ||
+    referendumService.isCompleted(referendum)
+  ) {
     return null;
   }
 
@@ -110,6 +120,8 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
                 account={account}
                 vote={vote}
                 rank={member.rank}
+                referendum={referendum}
+                maxRank={maxRank}
                 fee={fee}
               />
             </Box>

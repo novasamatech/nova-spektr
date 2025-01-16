@@ -134,15 +134,16 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     return t('staking.actions.manageStakePlaceholder');
   };
 
+  const disabled = isStakingLoading || noStakes || wrongOverlaps;
+
   return (
     <>
       <div className="flex items-center justify-between">
         <SmallTitleText>{t('staking.overview.actionsTitle')}</SmallTitleText>
         <div className="min-w-[228px]">
           <Dropdown width="trigger" open={isActionsOpen} onToggle={toggleIsActionsOpen}>
-            <Dropdown.Trigger>
+            <Dropdown.Trigger disabled={disabled}>
               <Button
-                disabled={isStakingLoading || noStakes || wrongOverlaps}
                 className="h-8.5 w-full justify-center py-2"
                 suffixElement={<Icon name={isActionsOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
               >

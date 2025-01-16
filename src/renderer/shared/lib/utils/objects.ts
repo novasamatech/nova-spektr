@@ -1,4 +1,5 @@
 import { BN } from '@polkadot/util';
+import { isEqualWith } from 'lodash';
 
 import { type Serializable } from '@/shared/core';
 
@@ -67,4 +68,14 @@ export const toSerializable = <T>(value: T): Serializable<T> => {
   }
 
   return res as never;
+};
+
+export const isEqual = (a: unknown, b: unknown) => {
+  return isEqualWith(a, b, (a, b) => {
+    if (BN.isBN(a) && BN.isBN(b)) {
+      return a.eq(b);
+    }
+
+    if (BN.isBN(a) || BN.isBN(b)) return false;
+  });
 };

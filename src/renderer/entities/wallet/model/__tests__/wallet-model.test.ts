@@ -16,15 +16,15 @@ describe('entities/wallet/model/wallet-model', () => {
   test('should set $allWallets, $activeWallets with data on appStarted', async () => {
     const wallets = walletMock.getWallets(1);
 
-    jest.spyOn(storageService.contacts, 'readAll').mockResolvedValue([]);
-    jest.spyOn(storageService.wallets, 'readAll').mockResolvedValue(wallets);
-    jest.spyOn(storageService.wallets, 'update').mockResolvedValue(1);
-
     const scope = fork({
-      handlers: [[accounts.populate, () => walletMock.accounts]],
+      handlers: [
+        [accounts.populate, () => walletMock.accounts],
+        [walletModel.populate, () => wallets],
+      ],
     });
 
-    await allSettled(walletModel.events.walletStarted, { scope });
+    await allSettled(accounts.populate, { scope });
+    await allSettled(walletModel.populate, { scope });
     expect(scope.getState(walletModel.$allWallets)).toEqual(wallets);
     expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
   });

@@ -10,7 +10,7 @@ describe('ui/Identicon', () => {
   test('should render component', () => {
     render(<Identicon address={address} />);
 
-    const text = screen.getByTestId(`identicon-${address}`);
+    const text = screen.getByTestId(`Identicon`);
     expect(text).toBeInTheDocument();
   });
 });
