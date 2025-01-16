@@ -45,9 +45,9 @@ import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
 const configureDomains = () => {
-  const app = createFeature({ name: 'spektr/config' });
+  const config = createFeature({ name: 'spektr/config' });
 
-  app.inject(collectivesConfig.calculateVoteWeightPipeline, (defaultValue, { pallet, excessRank }) => {
+  config.inject(collectivesConfig.calculateVoteWeightPipeline, (defaultValue, { pallet, excessRank }) => {
     if (pallet === 'fellowship') {
       return tracksService.getGeometricVoteWeight(excessRank);
     }
@@ -59,7 +59,7 @@ const configureDomains = () => {
     return defaultValue;
   });
 
-  app.start();
+  return config;
 };
 
 const populate = () => {
@@ -79,10 +79,11 @@ const populate = () => {
 };
 
 export const bootstrap = () => {
-  configureDomains();
-  populate();
+  const config = configureDomains();
 
   registerFeatures([
+    config,
+
     assetsNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
@@ -119,4 +120,6 @@ export const bootstrap = () => {
 
     importDBFeature,
   ]);
+
+  populate();
 };
