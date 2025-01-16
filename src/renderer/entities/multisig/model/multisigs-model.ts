@@ -286,7 +286,6 @@ sample({
 
     if (!proxiedWallet) return null;
 
-    // Proxy accountId or entire account?
     return {
       ...proxiedWallet,
       accounts: proxiedWallet.accounts.map((acc) => ({ ...acc, proxyAccount: account })),

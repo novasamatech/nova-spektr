@@ -1,20 +1,28 @@
 import { createEvent, sample } from 'effector';
 
+import { type ChainId, type FlexibleMultisigAccount } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 
-const rejectMultisig = createEvent<AccountId>();
-const failedMultisig = createEvent<AccountId>();
+const rejectMultisig = createEvent<{ accountId: AccountId; chainId: ChainId }>();
 
 sample({
-  clock: [rejectMultisig, failedMultisig],
-  source: walletModel.$wallets,
-  fn: (wallets, accountId) => {
-    const account = walletUtils.getAccountBy(wallets, (account) => account.accountId === accountId);
-    if (!account || !accountUtils.isFlexibleMultisigAccount(account)) return null;
+  clock: rejectMultisig,
+  source: accounts.$list,
+  fn: (accounts, { accountId, chainId }) => {
+    const account = accounts.find(
+      (acc) =>
+        acc.accountId === accountId &&
+        accountUtils.isFlexibleMultisigAccount(acc) &&
+        accountUtils.isChainIdMatch(acc, chainId),
+    );
 
-    return account;
+    if (nullable(account)) return null;
+
+    return account as FlexibleMultisigAccount;
   },
   target: multisigsModel.events.convertFlexibleToRegular,
 });
@@ -22,6 +30,5 @@ sample({
 export const flexibleShellModel = {
   events: {
     rejectMultisig,
-    failedMultisig,
   },
 };
