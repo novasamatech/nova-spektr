@@ -70,7 +70,13 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       <Modal.Title close>{t('fellowship.votingHistory.modalTitle')}</Modal.Title>
       <Modal.HeaderContent>
         <Box padding={[4, 5, 2]}>
-          <Tabs panelClassName="m-0" tabsClassName="mb-6" items={tabs} onChange={setSelectedTab} />
+          <Tabs
+            initialIndex={selectedTab}
+            panelClassName="m-0"
+            tabsClassName="mb-6"
+            items={tabs}
+            onChange={setSelectedTab}
+          />
           <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
         </Box>
       </Modal.HeaderContent>

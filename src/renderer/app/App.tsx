@@ -9,11 +9,11 @@ import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
 
-import { initModel } from './modelInit';
+import { bootstrap } from './bootstrap';
 import { GraphqlProvider, MultisigChainProvider, StatusModalProvider } from './providers';
 
 logger.init();
-initModel();
+bootstrap();
 
 export const App = () => {
   const navigate = useNavigate();

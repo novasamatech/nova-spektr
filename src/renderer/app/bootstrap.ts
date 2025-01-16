@@ -1,7 +1,8 @@
 /* eslint-disable import-x/max-dependencies */
 
 import { kernelModel } from '@/shared/core';
-import { registerFeatures } from '@/shared/feature';
+import { createFeature, registerFeatures } from '@/shared/feature';
+import { config as collectivesConfig, tracksService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
@@ -22,6 +23,7 @@ import { importDBFeature } from '@/features/import-db';
 import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
+import { polkadotExtensionWalletFeature } from '@/features/polkadot-extension-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
@@ -42,21 +44,43 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
-import { polkadotExtensionWalletFeature } from 'src/renderer/features/polkadot-extension-wallet';
+const configureDomains = () => {
+  const app = createFeature({ name: 'spektr/config' });
 
-export const initModel = () => {
+  app.inject(collectivesConfig.calculateVoteWeightPipeline, (defaultValue, { pallet, excessRank }) => {
+    if (pallet === 'fellowship') {
+      return tracksService.getGeometricVoteWeight(excessRank);
+    }
+
+    if (pallet === 'ambassador') {
+      return tracksService.getLinearVoteWeight(excessRank);
+    }
+
+    return defaultValue;
+  });
+
+  app.start();
+};
+
+const populate = () => {
   accounts.populate();
+  walletModel.populate();
 
+  // TODO rework as populate effects
   kernelModel.events.appStarted();
   governanceModel.events.governanceStarted();
   proxiesModel.events.workerStarted();
-  walletModel.events.walletStarted();
   networkModel.events.networkStarted();
   proxyModel.events.proxyStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
   multisigsModel.events.subscribe();
+};
+
+export const bootstrap = () => {
+  configureDomains();
+  populate();
 
   registerFeatures([
     assetsNavigationFeature,

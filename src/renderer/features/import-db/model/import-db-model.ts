@@ -53,7 +53,7 @@ sample({
 
 sample({
   clock: delay(updateDBFx.doneData, 1000),
-  target: walletModel.events.walletStarted,
+  target: walletModel.populate,
 });
 
 export const importDbModel = {

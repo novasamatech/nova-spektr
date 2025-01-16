@@ -38,7 +38,6 @@ export type CreateParams<T extends AnyAccount = AnyAccount> = {
   external: boolean;
 };
 
-const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
 const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
@@ -233,11 +232,6 @@ const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined
 });
 
 sample({
-  clock: walletStarted,
-  target: [accounts.populate, fetchAllWalletsFx],
-});
-
-sample({
   clock: fetchAllWalletsFx.doneData,
   target: $rawWallets,
 });
@@ -398,9 +392,9 @@ export const walletModel = {
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
   createWallet: walletCreatedFx,
+  populate: fetchAllWalletsFx,
 
   events: {
-    walletStarted,
     watchOnlyCreated,
     multishardCreated,
     singleshardCreated,

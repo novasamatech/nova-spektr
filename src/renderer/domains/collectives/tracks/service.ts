@@ -1,6 +1,8 @@
 import { BN, BN_BILLION, BN_ONE, bnMax, bnMin } from '@polkadot/util';
 
 import { type TrackId } from '@/shared/pallet/referenda';
+import { type CollectivePalletsType } from '../_lib/types';
+import { calculateVoteWeightPipeline } from '../configuration/inject';
 import { type Member } from '../members/types';
 import { type Tally } from '../referendum/types';
 
@@ -9,40 +11,62 @@ import { type Track, type VotingCurve, type VotingThreshold } from './types';
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/master/cumulus/parachains/runtimes/collectives/collectives-westend/src/fellowship/tracks.rs#L63
  */
-const getMinimumRank = (trackId: TrackId, maxRank: number) => {
-  if (trackId >= 0 && trackId <= 9) {
-    return trackId;
+const getMinimumRank = (track: TrackId, maxRank: number) => {
+  if (track >= 0 && track <= 9) {
+    return track;
   }
 
-  if (trackId >= 11 && trackId <= 16) {
-    return trackId - 8;
+  if (track >= 11 && track <= 16) {
+    return track - 8;
   }
 
-  if (trackId >= 21 && trackId <= 26) {
-    return trackId - 18;
+  if (track >= 21 && track <= 26) {
+    return track - 18;
   }
 
-  if (trackId >= 31 && trackId <= 36) {
-    return trackId - 28;
+  if (track >= 31 && track <= 36) {
+    return track - 28;
   }
 
   return maxRank;
 };
 
+const getExcessRank = (rank: number, maxRank: number, track: TrackId) => {
+  return rank - getMinimumRank(track, maxRank);
+};
+
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/34352e82cf557f20375c1757a2d934e3a9d2a6b0/substrate/frame/ranked-collective/src/lib.rs#L238
+ * Not meant to be used directly, use getVoteWeight method instead.
  */
-const getGeometricVoteWeight = (rank: number) => {
-  const v = rank + 1;
+const getGeometricVoteWeight = (excessRank: number) => {
+  const v = excessRank + 1;
 
   return (v * (v + 1)) / 2;
 };
 
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/34352e82cf557f20375c1757a2d934e3a9d2a6b0/substrate/frame/ranked-collective/src/lib.rs#L223
+ * Not meant to be used directly, use getVoteWeight method instead.
  */
-const getLinearVoteWeight = (rank: number) => {
-  return rank + 1;
+const getLinearVoteWeight = (excessRank: number) => {
+  return excessRank + 1;
+};
+
+const getVoteWeight = ({
+  pallet,
+  rank,
+  maxRank,
+  track,
+}: {
+  pallet: CollectivePalletsType;
+  rank: number;
+  maxRank: number;
+  track: TrackId;
+}) => {
+  const excessRank = getExcessRank(rank, maxRank, track);
+
+  return calculateVoteWeightPipeline(0, { pallet, excessRank });
 };
 
 const getThreshold = (curve: VotingCurve, minRank: number, maxRank: number): BN => {
@@ -128,14 +152,15 @@ const approvalThreshold = ({ track, maxRank, tally }: ApprovalParams): VotingThr
   };
 };
 
-const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, trackId: TrackId) => {
-  return getMinimumRank(trackId, maxRank) <= rank;
+const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, track: TrackId) => {
+  return getExcessRank(rank, maxRank, track) >= 0;
 };
 
 export const tracksService = {
   getMinimumRank,
   getLinearVoteWeight,
   getGeometricVoteWeight,
+  getVoteWeight,
   getThreshold,
   supportThreshold,
   approvalThreshold,
