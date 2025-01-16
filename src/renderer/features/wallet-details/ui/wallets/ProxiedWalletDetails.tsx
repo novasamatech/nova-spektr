@@ -58,7 +58,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: w => !walletUtils.isWatchOnly(w),
-    accountFn: a => a.accountId === wallet.accounts[0].proxyAccountId,
+    accountFn: a => a.accountId === wallet.accounts[0]?.proxyAccountId,
   });
 
   if (!proxyWallet) {

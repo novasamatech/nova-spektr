@@ -45,11 +45,11 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
 
   return (
-    <div className="relative flex h-full flex-col items-center">
+    <div className="relative flex h-full flex-col items-center overflow-y-auto">
       <Header title={t('operations.title')} />
 
       <Plate className="mt-6 flex w-92 flex-col gap-6 rounded-2xl border-filter-border p-6">

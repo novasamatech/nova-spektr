@@ -18,7 +18,7 @@ const $incompleteFlexibleMultisigTx = combine($account, $availableTransaction, (
   if (
     nonNullable(account) &&
     accountUtils.isFlexibleMultisigAccount(account) &&
-    nullable(account.proxyAccountId) &&
+    nullable(account.proxyAccount) &&
     signingTransactions.length === 1
   ) {
     return signingTransactions.find((tx) => isCreatePureProxyTransaction(tx.transaction)) ?? null;

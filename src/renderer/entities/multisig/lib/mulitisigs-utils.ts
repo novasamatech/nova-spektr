@@ -6,6 +6,7 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
+  type ProxiedAccount,
   SigningType,
 } from '@/shared/core';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
@@ -62,20 +63,20 @@ type BuildFlexibleMultisigParams = {
   accountId: AccountId;
   signatories: AccountId[];
   chain: Chain;
-  proxyAccountId: AccountId;
+  proxyAccount: ProxiedAccount;
 };
 
 function buildFlexibleMultisigAccount({
   threshold,
   accountId,
-  proxyAccountId,
+  proxyAccount,
   signatories,
   chain,
 }: BuildFlexibleMultisigParams) {
   const account: NoID<Omit<FlexibleMultisigAccount, 'walletId'>> = {
     threshold,
     accountId,
-    proxyAccountId,
+    proxyAccount,
     signatories: signatories.map((signatory) => ({
       accountId: signatory,
       address: toAddress(signatory),

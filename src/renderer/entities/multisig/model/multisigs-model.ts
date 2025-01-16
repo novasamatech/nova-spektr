@@ -4,8 +4,8 @@ import { uniq } from 'lodash';
 import { interval } from 'patronum';
 
 import {
+  AccountType,
   type Chain,
-  type ChainId,
   ExternalType,
   type FlexibleMultisigAccount,
   type FlexibleMultisigCreated,
@@ -16,7 +16,6 @@ import {
   type NoID,
   NotificationType,
   type ProxiedAccount,
-  type ProxyAccount,
   SigningType,
   WalletType,
 } from '@/shared/core';
@@ -69,7 +68,6 @@ type GetMultisigsParams = {
   chains: Chain[];
   accounts: AnyAccount[];
   multisigAccounts: AnyAccount[];
-  proxies: Record<ChainId, ProxyAccount[]>;
 };
 
 type MultisigResponse = {
@@ -87,7 +85,7 @@ type FlexibleMultisigResponse = {
 type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 const getMultisigsFx = createEffect(
-  ({ chains, accounts, proxies, multisigAccounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
+  ({ chains, accounts, multisigAccounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
     const requests = chains.flatMap(async (chain) => {
       const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
@@ -108,26 +106,21 @@ const getMultisigsFx = createEffect(
           .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
           .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
             // TODO: run a proxy worker for new multisiig since we don't have these proxies at the moment
-            const proxiesList = proxies[accountId];
-
-            const proxy = nonNullable(proxiesList)
-              ? (proxiesList.find((p) => p.chainId === chain.chainId && p.proxyType === 'Any') ?? null)
-              : null;
 
             // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
-            if (proxy) {
-              return {
-                type: 'flexibleMultisig',
-                account: multisigUtils.buildFlexibleMultisigAccount({
-                  threshold,
-                  proxyAccountId: proxy.accountId,
-                  accountId,
-                  signatories,
-                  chain,
-                }),
-                chain,
-              };
-            }
+            // if (proxy) {
+            //   return {
+            //     type: 'flexibleMultisig',
+            //     account: multisigUtils.buildFlexibleMultisigAccount({
+            //       threshold,
+            //       proxyAccount: proxy,
+            //       accountId,
+            //       signatories,
+            //       chain,
+            //     }),
+            //     chain,
+            //   };
+            // }
 
             return {
               type: 'multisig',
@@ -178,12 +171,9 @@ sample({
   source: {
     multisigAccounts: $multisigAccounts,
     chains: $multisigChains,
-    // TODO uncomment when we're ready to work with flexible multisig.
-    // proxies: proxyModel.$proxies,
-    proxies: createStore({}),
     connections: networkModel.$connections,
   },
-  fn: ({ multisigAccounts, chains, proxies, connections }, accounts) => {
+  fn: ({ multisigAccounts, chains, connections }, accounts) => {
     const filteredChains = chains.filter((chain) => {
       if (nullable(connections[chain.chainId])) return false;
 
@@ -194,7 +184,6 @@ sample({
       chains: filteredChains,
       multisigAccounts,
       accounts,
-      proxies,
     };
   },
   target: getMultisigsFx,
@@ -300,7 +289,7 @@ sample({
     // Proxy accountId or entire account?
     return {
       ...proxiedWallet,
-      accounts: proxiedWallet.accounts.map((acc) => ({ ...acc, proxyAccountId: account.accountId })),
+      accounts: proxiedWallet.accounts.map((acc) => ({ ...acc, proxyAccount: account })),
       activated: true,
     };
   },
@@ -320,8 +309,33 @@ sample({
   target: walletModel.events.updateWalletWithDB,
 });
 
+// Convert back to regular multisig
+const convertFlexibleToRegular = createEvent<FlexibleMultisigAccount | null>();
+
+sample({
+  clock: convertFlexibleToRegular,
+  source: walletModel.$activeWallet,
+  filter: (wallet, account) => nonNullable(wallet) && nonNullable(account),
+  fn: (wallet, account) => {
+    return { ...wallet!, activated: undefined, type: WalletType.MULTISIG, accounts: [account!] };
+  },
+  target: walletModel.events.updateWalletWithDB,
+});
+
+sample({
+  clock: convertFlexibleToRegular,
+  filter: nonNullable,
+  fn: (account) => ({
+    ...account!,
+    accountType: AccountType.MULTISIG,
+    proxyAccount: undefined,
+  }),
+  target: accounts.updateAccount,
+});
+
 export const multisigsModel = {
   events: {
+    convertFlexibleToRegular,
     subscribe,
     request,
   },

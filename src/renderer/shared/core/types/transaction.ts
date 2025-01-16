@@ -119,7 +119,7 @@ export type MultisigTransaction = {
 };
 
 export type FlexibleMultisigTransaction = MultisigTransaction & {
-  proxiedAccountId: AccountId;
+  proxiedAccoun: ProxiedAccount;
 };
 
 export type MultisigTransactionKey = Pick<

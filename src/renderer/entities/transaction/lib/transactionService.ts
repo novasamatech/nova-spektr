@@ -180,7 +180,7 @@ type TxWrappersParams = {
  * @returns {Array}
  */
 function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
-  if (walletUtils.isRegularMultisig(wallet)) {
+  if (walletUtils.isMultisig(wallet)) {
     return getMultisigWrapper(params);
   }
 
@@ -194,7 +194,7 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
 }
 
 function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
-  const signersMap = dictionary((account as MultisigAccount).signatories, 'accountId', () => true);
+  const signersMap = dictionary((account as MultisigAccount)?.signatories || [], 'accountId', () => true);
   const signatory = signatories.at(0);
 
   const signers = wallets.reduce<AnyAccount[]>((acc, wallet) => {

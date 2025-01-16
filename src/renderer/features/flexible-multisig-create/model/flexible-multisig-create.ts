@@ -511,6 +511,11 @@ sample({
 });
 
 sample({
+  clock: flexibleMultisigFeature.stopped,
+  target: signatoryModel.$signatories.reinit,
+});
+
+sample({
   clock: flow.close,
   target: walletPairingModel.events.walletTypeCleared,
 });
@@ -519,11 +524,6 @@ sample({
   clock: delay(flow.close, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
-});
-
-sample({
-  clock: flexibleMultisigFeature.stopped,
-  target: signatoryModel.$signatories.reinit,
 });
 
 export const flexibleMultisigModel = {
