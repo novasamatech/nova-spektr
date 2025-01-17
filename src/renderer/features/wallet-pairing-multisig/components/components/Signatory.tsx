@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, performSearch, toAccountId, toAddress } from '@/shared/lib/utils';
+import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { CaptionText, Combobox, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { type ComboboxOption } from '@/shared/ui/types';
 import { Address } from '@/shared/ui-entities';
@@ -141,21 +141,24 @@ export const Signatory = ({
 
   // Contacts
   useEffect(() => {
-    if (isOwnAccount || contacts.length === 0) return;
+    if (isOwnAccount || contacts.length === 0 || !chain) return;
 
     const contactsOptions: ComboboxOption[] = [];
     for (const contact of filteredContacts) {
-      const displayAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
+      const displayAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
+      const isValidAddress = validateAddress(displayAddress, chain);
+
+      if (!isValidAddress) continue;
 
       contactsOptions.push({
-        id: signatoryIndex.toString(),
+        id: contact.id.toString(),
         element: <Address showIcon title={contact.name} address={displayAddress} />,
         value: { address: displayAddress },
       });
     }
 
     setOptions(contactsOptions);
-  }, [query, isOwnAccount, contacts, filteredContacts]);
+  }, [query, chain, isOwnAccount, contacts, filteredContacts]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
