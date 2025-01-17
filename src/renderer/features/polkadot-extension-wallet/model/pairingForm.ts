@@ -5,8 +5,10 @@ import { createGate } from 'effector-react';
 import { CryptoType, SigningType, WalletType } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { type AnyAccountDraft } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { type ExtensionType, type PolkadotExtensionAccount } from '../types';
 
 import { wallets } from './wallets';
@@ -109,10 +111,23 @@ sample({
   target: createWalletFx,
 });
 
+const walletCreated = createWalletFx.doneData.filterMap((r) => r?.wallet?.id);
+
 sample({
-  clock: createWalletFx.done,
+  clock: walletCreated,
   fn: () => ({ extension: null }),
   target: flow.close,
+});
+
+sample({
+  clock: walletCreated,
+  fn: () => Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
+});
+
+sample({
+  clock: walletCreated,
+  target: walletModel.events.selectWallet,
 });
 
 // Steps
