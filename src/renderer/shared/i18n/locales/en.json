@@ -463,6 +463,7 @@
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "unchangeLabel": "Unchange voting power",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",

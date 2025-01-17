@@ -29,6 +29,7 @@ type Input = {
   tracks: number[];
   target: Address;
   conviction: Conviction;
+  previousConviction: Conviction;
   balance: string;
 
   proxiedAccount?: ProxiedAccount;

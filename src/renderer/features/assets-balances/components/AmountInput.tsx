@@ -266,6 +266,7 @@ export const Input = ({
           placeholder={placeholder}
           style={{ paddingLeft }}
           type="text"
+          disabled={disabled}
           onChange={(event) => onChange?.(event.target.value)}
         />
         <div className={cnTw(!suffixElement && 'hidden', 'absolute bottom-3 right-3')}>{suffixElement}</div>
