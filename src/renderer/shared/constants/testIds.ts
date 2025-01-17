@@ -6,6 +6,7 @@ export const TEST_IDS = {
     WALLET_CONNECT_BUTTON: 'onboarding-wallet-connect-button',
     LEDGER_BUTTON: 'onboarding-ledger-button',
     POLKADOT_EXTENSION_BUTTON: 'onboarding-polkadot-extension-button',
+    TALISMAN_BUTTON: 'onboarding-talisman-extension-button',
     WALLET_NAME_INPUT: 'onboarding-wallet-name-input',
     WALLET_ADDRESS_INPUT: 'onboarding-wallet-address-input',
   },

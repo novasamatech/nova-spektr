@@ -1,4 +1,3 @@
-import { isWeb3Injected } from '@polkadot/extension-dapp';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
@@ -16,7 +15,7 @@ export { walletActionsSlot };
 
 export const walletPolkadotVaultFeature = createFeature({
   name: 'wallet/polkadot vault',
-  enable: $features.map(f => f.polkadotVault && isWeb3Injected),
+  enable: $features.map(f => f.polkadotVault),
 });
 
 walletPolkadotVaultFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {

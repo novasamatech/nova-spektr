@@ -12,6 +12,7 @@ import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 import { PairingModal } from './components/PairingModal';
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+import { walletIcon } from './constants';
 import { polkadotExtensionWalletFeature } from './model/feature';
 import { wallets } from './model/wallets';
 import { polkadotExtensionService } from './service';
@@ -31,16 +32,16 @@ polkadotExtensionWalletFeature.inject(accountsService.accountActionPermissionAny
 polkadotExtensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isPolkadotExtensionWallet(wallet)) return null;
 
-  return <Icon name="polkadotExtensionBackground" size={size} />;
+  return <Icon name={walletIcon[wallet.extension].icon} size={size} />;
 });
 
 polkadotExtensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 3,
   render({ t }) {
     return (
-      <PairingModal>
+      <PairingModal extension="polkadot-js">
         <Dropdown.Item>
-          <Icon name="polkadotExtensionBackground" size={20} />
+          <Icon name={walletIcon['polkadot-js'].icon} size={20} />
           {t('wallets.addPolkadotExtension')}
         </Dropdown.Item>
       </PairingModal>
@@ -54,11 +55,11 @@ polkadotExtensionWalletFeature.inject(onboardingActionsSlot, {
     const { t } = useI18n();
 
     return (
-      <PairingModal>
+      <PairingModal extension="polkadot-js">
         <WalletOnboardingCard
           title={t('onboarding.welcome.polkadotExtensionTitle')}
           description={t('onboarding.welcome.polkadotExtensionDescription')}
-          iconName="polkadotExtensionOnboarding"
+          iconName={walletIcon['polkadot-js'].onboarding}
           testId={TEST_IDS.ONBOARDING.POLKADOT_EXTENSION_BUTTON}
         />
       </PairingModal>
@@ -70,12 +71,13 @@ polkadotExtensionWalletFeature.inject(walletGroupSlot, {
   order: 0,
   render({ query, onSelect }) {
     const { t } = useI18n();
-    const walletsList = useUnit(wallets.$list);
+    const polkadot = useUnit(wallets.$polkadot);
 
     return (
       <WalletGroup
         title={t('wallets.polkadotExtensionLabel')}
-        wallets={walletsList}
+        icon={walletIcon['polkadot-js'].icon}
+        wallets={polkadot}
         query={query}
         onSelect={onSelect}
       />
