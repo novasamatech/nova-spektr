@@ -11,7 +11,6 @@ import {
   networkService,
 } from '@/shared/api/network';
 import { storageService } from '@/shared/api/storage';
-import { createAsyncTaskPool } from '@/shared/api/substrate-helpers';
 import {
   type Chain,
   type ChainId,
@@ -25,18 +24,6 @@ import {
 import { createBuffer, series } from '@/shared/effector';
 import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
-
-const providerCreationPool = createAsyncTaskPool({
-  poolSize: 20,
-  retryCount: 0,
-  retryDelay: 0,
-});
-
-const apiCreationPool = createAsyncTaskPool({
-  poolSize: 10,
-  retryCount: 0,
-  retryDelay: 0,
-});
 
 const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
@@ -121,48 +108,46 @@ const createProviderFx = createEffect(
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
 
-    return providerCreationPool.call(async () => {
-      const provider = networkService.createProvider(
-        chainId,
-        providerType,
-        { nodes, metadata },
-        {
-          onConnected: () => {
-            if (DEBUG_NETWORKS) {
-              console.info('🟢 Provider connected ==> ', chainId);
-            }
-            boundConnected(chainId);
-          },
-          onDisconnected: () => {
-            if (DEBUG_NETWORKS) {
-              console.info('🟠 Provider disconnected ==> ', chainId);
-            }
-            boundDisconnected(chainId);
-          },
-          onError: () => {
-            if (DEBUG_NETWORKS) {
-              console.info('🔴 Provider error ==> ', chainId);
-            }
-            boundFailed(chainId);
-          },
+    const provider = networkService.createProvider(
+      chainId,
+      providerType,
+      { nodes, metadata },
+      {
+        onConnected: () => {
+          if (DEBUG_NETWORKS) {
+            console.info('🟢 Provider connected ==> ', chainId);
+          }
+          boundConnected(chainId);
         },
-      );
+        onDisconnected: () => {
+          if (DEBUG_NETWORKS) {
+            console.info('🟠 Provider disconnected ==> ', chainId);
+          }
+          boundDisconnected(chainId);
+        },
+        onError: () => {
+          if (DEBUG_NETWORKS) {
+            console.info('🔴 Provider error ==> ', chainId);
+          }
+          boundFailed(chainId);
+        },
+      },
+    );
 
-      provider.onMetadataReceived(({ metadata, metadataVersion, runtimeVersion }) => {
-        metadataReceived({ chainId, metadata, metadataVersion, runtimeVersion });
-      });
-
-      if (providerType === ProviderType.LIGHT_CLIENT) {
-        /**
-         * HINT: Light Client provider must be connected manually GitHub Light
-         * Client section -
-         * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
-         */
-        await provider.connect();
-      }
-
-      return provider;
+    provider.onMetadataReceived(({ metadata, metadataVersion, runtimeVersion }) => {
+      metadataReceived({ chainId, metadata, metadataVersion, runtimeVersion });
     });
+
+    if (providerType === ProviderType.LIGHT_CLIENT) {
+      /**
+       * HINT: Light Client provider must be connected manually GitHub Light
+       * Client section -
+       * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
+       */
+      await provider.connect();
+    }
+
+    return provider;
   },
 );
 
@@ -174,7 +159,7 @@ type CreateApiParams = {
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
   if (nonNullable(existingApi)) return existingApi;
 
-  return apiCreationPool.call(() => networkService.createApi(chainId, provider));
+  return networkService.createApi(chainId, provider);
 });
 
 type DisconnectParams = {
