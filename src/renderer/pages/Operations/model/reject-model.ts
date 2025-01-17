@@ -20,7 +20,9 @@ type GetMultisigType = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>();
+const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>({
+  defaultState: { chain: null, signer: null },
+});
 
 const getMultisigTx = createEvent<GetMultisigType>();
 
