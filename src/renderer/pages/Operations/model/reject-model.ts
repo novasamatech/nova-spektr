@@ -4,11 +4,10 @@ import { sortBy } from 'lodash';
 
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Address, type Chain, type Transaction } from '@/shared/core';
-import { nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -21,7 +20,7 @@ type GetMultisigType = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-const flow = createGate<{ chain: Chain; signer: AnyAccount }>();
+const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>();
 
 const getMultisigTx = createEvent<GetMultisigType>();
 
@@ -44,36 +43,21 @@ const $api = combine(
 const $transferTx = combine(
   {
     account: operationsContextModel.$account,
-    balances: balanceModel.$balances,
-    api: $api,
     chain: $chain,
     signer: $signer,
   },
-  ({ account, balances, api, signer, chain }) => {
-    if (
-      nullable(account) ||
-      !accountUtils.isFlexibleMultisigAccount(account) ||
-      nullable(api) ||
-      nullable(chain?.assets?.at(0)?.assetId)
-    ) {
+  ({ account, signer, chain }) => {
+    if (nullable(account) || !accountUtils.isFlexibleMultisigAccount(account) || nullable(chain) || nullable(signer)) {
       return null;
     }
-
-    const balance = balanceUtils.getBalance(
-      balances,
-      account!.accountId,
-      chain.chainId,
-      chain.assets.at(0)!.assetId.toString(),
-    );
-
-    if (!balance) return null;
 
     return transactionBuilder.buildTransfer({
       chain,
       asset: chain.assets.at(0)!,
       accountId: account!.accountId,
       destination: signer.accountId,
-      amount: transferableAmountBN(balance!),
+      transferAll: true,
+      amount: '0',
     });
   },
 );

@@ -8,6 +8,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ASSET_TRANSFER]: 'transferMst',
   [TransactionType.ORML_TRANSFER]: 'transferMst',
   [TransactionType.TRANSFER]: 'transferMst',
+  [TransactionType.TRANSFER_ALL]: 'transferMst',
   [TransactionType.MULTISIG_AS_MULTI]: 'transferMst',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferMst',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferMst',

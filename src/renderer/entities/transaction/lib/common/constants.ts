@@ -27,7 +27,12 @@ export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
 export const GOVERNANCE_SECTION = 'convictionVoting';
 
-export const TransferTypes = [TransactionType.TRANSFER, TransactionType.ASSET_TRANSFER, TransactionType.ORML_TRANSFER];
+export const TransferTypes = [
+  TransactionType.TRANSFER,
+  TransactionType.TRANSFER_ALL,
+  TransactionType.ASSET_TRANSFER,
+  TransactionType.ORML_TRANSFER,
+];
 
 export const ManageProxyTypes = [
   TransactionType.ADD_PROXY,
@@ -46,6 +51,7 @@ export const XcmTypes = [
 
 export type TransferTransactionTypes =
   | TransactionType.TRANSFER
+  | TransactionType.TRANSFER_ALL
   | TransactionType.ASSET_TRANSFER
   | TransactionType.ORML_TRANSFER;
 
