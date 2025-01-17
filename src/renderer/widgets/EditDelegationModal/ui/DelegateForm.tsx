@@ -6,7 +6,7 @@ import { type FormEvent } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { Modal, Tooltip } from '@/shared/ui-kit';
+import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
@@ -50,6 +50,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
             <ProxyFeeAlert />
             <Signatories />
             <Amount />
+            <UnchangeCheckbox />
             <Conviction />
           </form>
 
@@ -123,7 +124,7 @@ const Signatories = () => {
 
 const Conviction = () => {
   const {
-    fields: { conviction, amount },
+    fields: { conviction, amount, isUnchanged },
   } = useForm(formModel.$delegateForm);
   const network = useUnit(formModel.$networkStore);
 
@@ -136,6 +137,7 @@ const Conviction = () => {
       value={conviction.value}
       asset={network.asset}
       amount={new BN(formatAmount(amount.value, network.asset.precision))}
+      disabled={isUnchanged.value}
       onChange={conviction.onChange}
     />
   );
@@ -145,7 +147,7 @@ const Amount = () => {
   const { t } = useI18n();
 
   const {
-    fields: { amount },
+    fields: { amount, isUnchanged },
   } = useForm(formModel.$delegateForm);
 
   const network = useUnit(formModel.$networkStore);
@@ -160,6 +162,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
+        disabled={isUnchanged.value}
         balance={delegateBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
@@ -169,6 +172,22 @@ const Amount = () => {
       <InputHint active={amount.hasError()} variant="error">
         {t(amount.errorText())}
       </InputHint>
+    </div>
+  );
+};
+
+const UnchangeCheckbox = () => {
+  const { t } = useI18n();
+
+  const {
+    fields: { isUnchanged },
+  } = useForm(formModel.$delegateForm);
+
+  return (
+    <div className="flex flex-col gap-y-2">
+      <Checkbox checked={isUnchanged.value} onChange={isUnchanged.onChange}>
+        <FootnoteText>{t('governance.addDelegation.unchangeLabel')}</FootnoteText>
+      </Checkbox>
     </div>
   );
 };
