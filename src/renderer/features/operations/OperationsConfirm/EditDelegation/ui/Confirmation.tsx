@@ -156,7 +156,11 @@ export const Confirmation = ({
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-          <LockPeriodDiff from="None" to={confirmStore.conviction} lockPeriods={lockPeriods} />
+          <LockPeriodDiff
+            from={confirmStore.previousConviction}
+            to={confirmStore.conviction}
+            lockPeriods={lockPeriods}
+          />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

@@ -20,8 +20,16 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
   if (!lockPeriods) return null;
   const date = new Date(0);
 
-  const fromLockPeriod = formatDistanceStrict(lockPeriods[from], date, { unit: 'day', locale: dateLocale });
-  const toLockPeriod = formatDistanceStrict(lockPeriods[to], date, { unit: 'day', locale: dateLocale });
+  const fromLockPeriod = formatDistanceStrict(lockPeriods[from] * 1000, date, {
+    unit: 'day',
+    locale: dateLocale,
+  });
+  const toLockPeriod = formatDistanceStrict(lockPeriods[to] * 1000, date, {
+    unit: 'day',
+    locale: dateLocale,
+  });
+
+  console.log('xcm', lockPeriods, lockPeriods[from], lockPeriods[to], fromLockPeriod, toLockPeriod);
 
   if (unlock) {
     return <FootnoteText className="text-text-primary">{fromLockPeriod}</FootnoteText>;

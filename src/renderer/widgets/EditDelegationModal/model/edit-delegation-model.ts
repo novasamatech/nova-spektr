@@ -382,6 +382,7 @@ sample({
             balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
             conviction: activeDelegations[address].conviction,
           }),
+          previousConviction: activeDelegations[address].conviction,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
