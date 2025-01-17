@@ -3,7 +3,7 @@ import { createStore } from 'effector';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource, createDataSubscription, createPagesHandler } from '@/shared/effector';
-import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { isEqual, merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
@@ -63,6 +63,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
         b: result,
         mergeBy: x => x.id,
         sort: (a, b) => b.id - a.id,
+        filter: (a, b) => !isEqual(a, b),
       }),
     );
   },

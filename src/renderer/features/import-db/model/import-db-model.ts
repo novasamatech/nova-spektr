@@ -3,6 +3,7 @@ import { delay, or } from 'patronum';
 
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { isFileValid } from '../utils/utils';
 
@@ -53,7 +54,7 @@ sample({
 
 sample({
   clock: delay(updateDBFx.doneData, 1000),
-  target: walletModel.events.walletStarted,
+  target: [walletModel.populate, accounts.populate],
 });
 
 export const importDbModel = {

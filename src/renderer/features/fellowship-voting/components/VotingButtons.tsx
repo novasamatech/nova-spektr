@@ -18,7 +18,7 @@ type Props = {
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
   useGate(votingFeatureStatus.gate);
-  useGate(votingStatusModel.gate, { referendumId });
+  useGate(votingStatusModel.flow, { referendumId });
 
   const { t } = useI18n();
 

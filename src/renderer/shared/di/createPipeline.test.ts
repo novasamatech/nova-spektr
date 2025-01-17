@@ -12,7 +12,7 @@ describe('createPipeline', () => {
     pipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
     pipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
 
-    const res = pipeline.apply(['0']);
+    const res = pipeline(['0']);
 
     expect(res).toEqual(['0', '1', '2']);
   });
@@ -23,7 +23,7 @@ describe('createPipeline', () => {
     pipeline.registerHandler({ body: (v, { meta }) => [...v, `${meta}1`], available: () => true });
     pipeline.registerHandler({ body: (v, { meta }) => [...v, `${meta}2`], available: () => true });
 
-    const res = pipeline.apply(['0'], { meta: '0' });
+    const res = pipeline(['0'], { meta: '0' });
 
     expect(res).toEqual(['0', '01', '02']);
   });
@@ -36,7 +36,7 @@ describe('createPipeline', () => {
     pipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
     pipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
 
-    const res = pipeline.apply(['0']);
+    const res = pipeline(['0']);
 
     expect(res).toEqual(['2', '1', '0']);
   });

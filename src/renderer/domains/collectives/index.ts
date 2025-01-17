@@ -12,6 +12,8 @@ export {
   voting,
 } from './init';
 
+export * as config from './configuration/inject';
+
 export type { CollectivePalletsType } from './_lib/types';
 
 export type {

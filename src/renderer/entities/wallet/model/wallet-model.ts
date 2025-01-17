@@ -16,7 +16,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { dictionary, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
+import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
 import {
@@ -38,7 +38,6 @@ export type CreateParams<T extends AnyAccount = AnyAccount> = {
   external: boolean;
 };
 
-const walletStarted = createEvent();
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
 const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
@@ -80,6 +79,12 @@ const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts
   if (nullable(wallet)) return [];
 
   return accountsService.filterAccountsByWallet(accounts, wallet.id);
+});
+
+const $availableAccounts = combine($wallets, accounts.$list, (wallets, accounts) => {
+  const ids = toKeysRecord(wallets.map((w) => w.id));
+
+  return accounts.filter((a) => a.walletId in ids);
 });
 
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
@@ -230,11 +235,6 @@ const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined
   ]);
 
   return nextWallet;
-});
-
-sample({
-  clock: walletStarted,
-  target: [accounts.populate, fetchAllWalletsFx],
 });
 
 sample({
@@ -395,12 +395,13 @@ export const walletModel = {
   $hiddenWallets,
   $activeWallet,
   $activeAccounts,
+  $availableAccounts,
   $isLoadingWallets: fetchAllWalletsFx.pending,
 
   createWallet: walletCreatedFx,
+  populate: fetchAllWalletsFx,
 
   events: {
-    walletStarted,
     watchOnlyCreated,
     multishardCreated,
     singleshardCreated,

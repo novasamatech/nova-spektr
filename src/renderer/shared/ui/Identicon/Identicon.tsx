@@ -1,9 +1,10 @@
 import { type IconTheme } from '@polkadot/react-identicon/types';
-import { Suspense, type SyntheticEvent, lazy, useLayoutEffect, useRef } from 'react';
+import { Suspense, type SyntheticEvent, lazy, memo, useEffect, useState } from 'react';
 
 import { type Address } from '@/shared/core';
 import { cnTw, copyToClipboard, isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
 import { Icon } from '../Icon/Icon';
 
 type Props = {
@@ -19,71 +20,71 @@ type Props = {
 
 const PolkadotIdenticon = lazy(() => import('@polkadot/react-identicon').then((m) => ({ default: m.Identicon })));
 
-export const Identicon = ({
-  theme,
-  address,
-  size = 24,
-  background = true,
-  canCopy = true,
-  className,
-  buttonClassName,
-}: Props) => {
-  const defaultTheme = address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot';
+export const Identicon = memo(
+  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, className, testId = 'Identicon' }: Props) => {
+    const { preferStaticContent } = useTheme();
+    const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
+    const defaultTheme = address && isEthereumAccountId(address as AccountId) ? 'ethereum' : 'polkadot';
 
-  useLayoutEffect(() => {
-    if (!wrapperRef.current) return;
+    const [wrapper, setWrapper] = useState<HTMLElement | null>(null);
 
-    wrapperRef.current.querySelector('circle')?.setAttribute('fill', 'none');
-  }, []);
+    useEffect(() => {
+      if (!wrapper) return;
 
-  const onCopyToClipboard = async (e: SyntheticEvent) => {
-    e.stopPropagation();
-    await copyToClipboard(address);
-  };
+      wrapper.querySelector('circle')?.setAttribute('fill', 'none');
+    }, [wrapper]);
 
-  const icon = address ? (
-    <Suspense fallback={<Icon name="emptyIdenticon" size={size} />}>
-      <PolkadotIdenticon
-        theme={theme || defaultTheme}
-        value={address}
-        size={background ? size * 0.75 : size}
-        className="pointer-events-none overflow-hidden rounded-full"
-      />
-    </Suspense>
-  ) : (
-    <Icon name="emptyIdenticon" size={size} />
-  );
+    const onCopyToClipboard = async (e: SyntheticEvent) => {
+      e.stopPropagation();
+      await copyToClipboard(address);
+    };
 
-  if (!canCopy || !address) {
-    return (
-      <div
-        ref={wrapperRef}
-        className={cnTw('relative flex items-center justify-center', background && 'rounded-full bg-white', className)}
-        style={{ width: size, height: size }}
-        data-testid={`identicon-${address}`}
-      >
-        {icon}
-      </div>
+    const icon = address ? (
+      <Suspense fallback={<Icon name="emptyIdenticon" size={size} />}>
+        <PolkadotIdenticon
+          theme={theme || defaultTheme}
+          value={address}
+          size={background ? size * 0.75 : size}
+          className="pointer-events-none overflow-hidden rounded-full"
+        />
+      </Suspense>
+    ) : (
+      <Icon name="emptyIdenticon" size={size} />
     );
-  }
 
-  return (
-    <div ref={wrapperRef} className={className}>
-      <button
-        type="button"
-        className={cnTw(
-          'relative flex cursor-copy items-center justify-center rounded-sm',
-          background && 'rounded-full bg-white',
-          buttonClassName,
-        )}
-        style={{ width: size, height: size }}
-        data-testid={`identicon-${address}`}
-        onClick={onCopyToClipboard}
-      >
-        {icon}
-      </button>
-    </div>
-  );
-};
+    if (!canCopy || !address) {
+      return (
+        <span
+          ref={setWrapper}
+          className={cnTw(
+            'relative flex items-center justify-center',
+            background && 'rounded-full bg-white',
+            className,
+          )}
+          style={{ width: size, height: size }}
+          data-testid={testId}
+        >
+          {icon}
+        </span>
+      );
+    }
+
+    return (
+      <span ref={setWrapper} className={className}>
+        <button
+          type="button"
+          className={cnTw(
+            'relative flex cursor-copy items-center justify-center rounded-full',
+            background && 'rounded-full bg-white',
+          )}
+          style={{ width: size, height: size }}
+          data-testid={testId}
+          onClick={onCopyToClipboard}
+        >
+          {icon}
+        </button>
+      </span>
+    );
+  },
+);

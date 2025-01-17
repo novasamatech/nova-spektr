@@ -2,7 +2,9 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { type AssetByChains } from '@/shared/core';
 import { includes } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { portfolioModel } from '@/features/assets';
+import { navigationModel } from '@/features/navigation';
 import { ModalType, Step } from '../lib/types';
 
 const flowClosed = createEvent();
@@ -62,6 +64,12 @@ sample({
   clock: flowClosed,
   fn: () => Step.NONE,
   target: stepChanged,
+});
+
+sample({
+  clock: flowClosed,
+  fn: () => Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
 });
 
 export const assetTransactionModel = {

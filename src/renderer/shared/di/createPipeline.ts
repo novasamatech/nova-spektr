@@ -6,9 +6,8 @@ import { type Identifier } from './types';
 // Public interface
 type PipelineHandler<Value, Meta> = (value: Value, meta: Meta) => Value;
 
-export type PipelineIdentifier<Value, Meta> = Identifier<Meta, Value, PipelineHandler<Value, Meta>> & {
-  apply(value: Value, meta: Meta): Value;
-};
+export type PipelineIdentifier<Value, Meta> = Identifier<Meta, Value, PipelineHandler<Value, Meta>> &
+  ((value: Value, meta: Meta) => Value);
 
 const id = <T>(v: T): T => v;
 export const isPipelineIdentifier = (v: unknown): v is PipelineIdentifier<any, any> => {
@@ -31,15 +30,14 @@ export const createPipeline = <Value, Meta = void>(config?: {
 
   const postprocess = config?.postprocess ?? id;
 
-  return {
-    ...identifier,
-    apply(value, meta) {
-      return syncApplyImpl({
-        identifier,
-        input: meta,
-        acc: value,
-        postprocess: ({ output }) => postprocess(output, meta),
-      });
-    },
+  const applyFunction = (value: Value, meta: Meta) => {
+    return syncApplyImpl({
+      identifier,
+      input: meta,
+      acc: value,
+      postprocess: ({ output }) => postprocess(output, meta),
+    });
   };
+
+  return Object.assign(applyFunction, identifier);
 };
