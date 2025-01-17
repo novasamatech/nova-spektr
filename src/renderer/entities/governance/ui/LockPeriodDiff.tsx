@@ -29,8 +29,6 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
     locale: dateLocale,
   });
 
-  console.log('xcm', lockPeriods, lockPeriods[from], lockPeriods[to], fromLockPeriod, toLockPeriod);
-
   if (unlock) {
     return <FootnoteText className="text-text-primary">{fromLockPeriod}</FootnoteText>;
   }
