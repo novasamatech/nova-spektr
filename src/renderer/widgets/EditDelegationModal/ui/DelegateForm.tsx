@@ -182,6 +182,9 @@ const UnchangeCheckbox = () => {
   const {
     fields: { isUnchanged },
   } = useForm(formModel.$delegateForm);
+  const accounts = useUnit(formModel.$accounts);
+
+  if (accounts.length < 2) return null;
 
   return (
     <div className="flex flex-col gap-y-2">
