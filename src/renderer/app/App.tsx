@@ -1,6 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect } from 'react';
-import { useNavigate, useRoutes } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate, useRoutes } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
@@ -17,6 +17,7 @@ bootstrap();
 
 export const App = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const appRoutes = useRoutes(ROUTES_CONFIG);
 
   useGate(navigationModel.gates.flow, { navigate });
@@ -25,9 +26,15 @@ export const App = () => {
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
   useEffect(() => {
-    if (isLoadingWallets || wallets.length > 0) return;
+    if (isLoadingWallets) return;
 
-    navigate(Paths.ONBOARDING, { replace: true });
+    if (wallets.length > 0 && matchPath(Paths.ONBOARDING, pathname)) {
+      navigate(Paths.ASSETS, { replace: true });
+    }
+
+    if (wallets.length === 0) {
+      navigate(Paths.ONBOARDING, { replace: true });
+    }
   }, [isLoadingWallets, wallets.length]);
 
   return (
