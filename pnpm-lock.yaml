@@ -20,9 +20,6 @@ importers:
       '@polkadot/api':
         specifier: 15.3.1
         version: 15.3.1
-      '@polkadot/extension-dapp':
-        specifier: 0.58.1
-        version: 0.58.1(@polkadot/api@15.3.1)(@polkadot/util-crypto@13.3.1(@polkadot/util@13.3.1))(@polkadot/util@13.3.1)
       '@polkadot/keyring':
         specifier: 13.3.1
         version: 13.3.1(@polkadot/util-crypto@13.3.1(@polkadot/util@13.3.1))(@polkadot/util@13.3.1)
@@ -89,6 +86,9 @@ importers:
       '@substrate/txwrapper-polkadot':
         specifier: 7.5.3
         version: 7.5.3(@polkadot/util-crypto@13.3.1(@polkadot/util@13.3.1))(@polkadot/util@13.3.1)
+      '@talismn/connect-wallets':
+        specifier: 1.2.8
+        version: 1.2.8(@polkadot/api@15.3.1)(@polkadot/extension-inject@0.58.1(@polkadot/api@15.3.1)(@polkadot/util@13.3.1))
       '@walletconnect/core':
         specifier: 2.17.3
         version: 2.17.3
@@ -1667,14 +1667,6 @@ packages:
     resolution: {integrity: sha512-RPJeAZLDEj9qY+vBL88gNrx5CSxzNw4Ns1v/GEcGIA8ZZ96TQTMTHFTs0jbS8o2oKGuiXlh/q2URviEGyRus8Q==}
     engines: {node: '>=18'}
 
-  '@polkadot/extension-dapp@0.58.1':
-    resolution: {integrity: sha512-fSRE6Ba6SoayrLMGvYUbRmN5PjOgiJHynjLizLo0DXzZ8wuFp9fGMnxxEX/s/L/hZIsn+QIvMrl9Wk4DbXx0sQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@polkadot/api': '*'
-      '@polkadot/util': '*'
-      '@polkadot/util-crypto': '*'
-
   '@polkadot/extension-inject@0.58.1':
     resolution: {integrity: sha512-Mz/qy5aHPvtQEEO44FIc36p+H18pBgyXSDAbPKzKKTurVQbD9cTpfhIALuZKptaGo7CpIxQf2jVhaZYgYAKxXw==}
     engines: {node: '>=18'}
@@ -2929,6 +2921,12 @@ packages:
   '@szmarczak/http-timer@4.0.6':
     resolution: {integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==}
     engines: {node: '>=10'}
+
+  '@talismn/connect-wallets@1.2.8':
+    resolution: {integrity: sha512-/aniEZxOUNOaOEctHDUb/1jNFgKNsmeQ3L+pm4KvfYqb+C3HjZeBxykHEIc+5xmdR0GgCm30N8QzYWv6voM/lQ==}
+    peerDependencies:
+      '@polkadot/api': '>=9.3.3'
+      '@polkadot/extension-inject': '>=0.44.6'
 
   '@tanstack/react-virtual@3.11.2':
     resolution: {integrity: sha512-OuFzMXPF4+xZgx8UzJha0AieuMihhhaWG0tCqpp6tDzlFwOmNBPYMuLOtMJ1Tr4pXLHmgjcWhG6RlknY2oNTdQ==}
@@ -10075,18 +10073,6 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@polkadot/extension-dapp@0.58.1(@polkadot/api@15.3.1)(@polkadot/util-crypto@13.3.1(@polkadot/util@13.3.1))(@polkadot/util@13.3.1)':
-    dependencies:
-      '@polkadot/api': 15.3.1
-      '@polkadot/extension-inject': 0.58.1(@polkadot/api@15.3.1)(@polkadot/util@13.3.1)
-      '@polkadot/util': 13.3.1
-      '@polkadot/util-crypto': 13.3.1(@polkadot/util@13.3.1)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@polkadot/extension-inject@0.58.1(@polkadot/api@15.3.1)(@polkadot/util@13.3.1)':
     dependencies:
       '@polkadot/api': 15.3.1
@@ -11583,6 +11569,11 @@ snapshots:
   '@szmarczak/http-timer@4.0.6':
     dependencies:
       defer-to-connect: 2.0.1
+
+  '@talismn/connect-wallets@1.2.8(@polkadot/api@15.3.1)(@polkadot/extension-inject@0.58.1(@polkadot/api@15.3.1)(@polkadot/util@13.3.1))':
+    dependencies:
+      '@polkadot/api': 15.3.1
+      '@polkadot/extension-inject': 0.58.1(@polkadot/api@15.3.1)(@polkadot/util@13.3.1)
 
   '@tanstack/react-virtual@3.11.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

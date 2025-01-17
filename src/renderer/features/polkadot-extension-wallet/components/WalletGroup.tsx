@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { performSearch } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
+import { Icon, type IconNames } from '@/shared/ui';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { WalletCardMd } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -17,12 +17,13 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
 type Props = {
   title: string;
+  icon: IconNames;
   wallets: Wallet[];
   query: string;
   onSelect: (wallet: Wallet) => unknown;
 };
 
-export const WalletGroup = memo(({ wallets, query, title, onSelect }: Props) => {
+export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -37,7 +38,7 @@ export const WalletGroup = memo(({ wallets, query, title, onSelect }: Props) => 
     <Box padding={[1, 0, 0]}>
       <Accordion initialOpen>
         <Accordion.Trigger>
-          <Icon name="polkadotExtensionBackground" size={20} />
+          <Icon name={icon} size={20} />
           <span>{title}</span>
           <span className="text-text-tertiary">{wallets.length}</span>
         </Accordion.Trigger>

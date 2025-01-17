@@ -2,7 +2,7 @@ import { type UnitValue, combine, createEvent, createStore, sample } from 'effec
 import { persist } from 'effector-storage/local';
 import { produce } from 'immer';
 
-import { isDev, isWeb } from '@/shared/lib/utils';
+import { isDev } from '@/shared/lib/utils';
 
 type Features = UnitValue<typeof $defaultFeatures>;
 
@@ -29,7 +29,7 @@ export const $defaultFeatures = createStore({
   walletConnect: true,
   watchOnly: true,
   ledger: true,
-  polkadotExtension: isDev() && isWeb(),
+  polkadotExtension: isDev(),
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));

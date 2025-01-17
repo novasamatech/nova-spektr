@@ -10,12 +10,15 @@ import { Box, Carousel, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { accountsService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { pairingForm } from '../model/pairingForm';
+import { type ExtensionType } from '../types';
 
 import { EmptyState } from './EmptyState';
 
-type Props = PropsWithChildren;
+type Props = PropsWithChildren<{
+  extension: ExtensionType;
+}>;
 
-export const PairingModal = ({ children }: Props) => {
+export const PairingModal = ({ extension, children }: Props) => {
   const { t } = useI18n();
 
   const open = useUnit(pairingForm.flow.status);
@@ -46,11 +49,11 @@ export const PairingModal = ({ children }: Props) => {
 
   const toggleModal = (open: boolean) => {
     if (open) {
-      pairingForm.flow.open();
+      pairingForm.flow.open({ extension });
     } else {
       setName('');
       setSelectedAccount(null);
-      pairingForm.flow.close();
+      pairingForm.flow.close({ extension: null });
     }
   };
 
@@ -66,7 +69,7 @@ export const PairingModal = ({ children }: Props) => {
                 <Carousel.Item id="idle" index={0}>
                   <Box gap={4}>
                     <SmallTitleText>{t('onboarding.polkadotExtension.permissionStep')}</SmallTitleText>
-                    <Button onClick={() => pairingForm.requestPermission()}>
+                    <Button onClick={() => pairingForm.reconnect()}>
                       {t('onboarding.polkadotExtension.requestPairing')}
                     </Button>
                   </Box>
@@ -104,7 +107,7 @@ export const PairingModal = ({ children }: Props) => {
                 <Carousel.Item id="rejected" index={3}>
                   <Box gap={4}>
                     <SmallTitleText>{t('onboarding.polkadotExtension.requestRejected')}</SmallTitleText>
-                    <Button onClick={() => pairingForm.requestPermission()}>
+                    <Button onClick={() => pairingForm.reconnect()}>
                       {t('onboarding.polkadotExtension.askPermissionAgain')}
                     </Button>
                   </Box>
