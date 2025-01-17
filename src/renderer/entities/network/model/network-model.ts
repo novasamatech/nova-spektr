@@ -27,13 +27,13 @@ import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const providerCreationPool = createAsyncTaskPool({
-  poolSize: 5,
+  poolSize: 20,
   retryCount: 0,
   retryDelay: 0,
 });
 
 const apiCreationPool = createAsyncTaskPool({
-  poolSize: 5,
+  poolSize: 10,
   retryCount: 0,
   retryDelay: 0,
 });
