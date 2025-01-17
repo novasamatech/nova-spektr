@@ -57,6 +57,7 @@ type TransferParams = {
   accountId: AccountId;
   destination: string;
   amount: string | BN;
+  transferAll?: boolean;
   xcmData?: {
     args: {
       xcmFee: string;
@@ -69,10 +70,21 @@ type TransferParams = {
     transactionType: TransactionType;
   };
 };
-function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }: TransferParams): Transaction {
+function buildTransfer({
+  chain,
+  accountId,
+  destination,
+  asset,
+  amount,
+  xcmData,
+  transferAll,
+}: TransferParams): Transaction {
   let transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
   if (xcmData) {
     transactionType = xcmData.transactionType;
+  }
+  if (transferAll) {
+    transactionType = TransactionType.TRANSFER_ALL;
   }
 
   const palletName =

@@ -9,6 +9,7 @@ import { type PartialBy } from './utility';
 
 export const enum TransactionType {
   TRANSFER = 'transfer',
+  TRANSFER_ALL = 'transfer_all',
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
 
