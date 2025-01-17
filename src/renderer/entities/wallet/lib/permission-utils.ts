@@ -1,4 +1,5 @@
 import { type Wallet } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 
 import { accountUtils } from './account-utils';
 import { walletUtils } from './wallet-utils';
@@ -119,7 +120,7 @@ function canRemoveProxy(wallet: Wallet): boolean {
 }
 
 function canUseGovernance(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isWatchOnly(wallet) || nullable(wallet.accounts.at(0))) return false;
   if (walletUtils.isProxied(wallet)) {
     const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
     const isGovernanceProxy = accountUtils.isGovernanceProxyType(wallet.accounts[0]);

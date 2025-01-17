@@ -966,8 +966,10 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {
-      "title": "Flexible multisig is creating...",
-      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
+      "rejectConfirmTitle": "Reject finalizing the creation of your flexible multisig?",
+      "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
+      "title": "Flexible multisig is creating..."
     },
     "details": {
       "accessType": "Access type",

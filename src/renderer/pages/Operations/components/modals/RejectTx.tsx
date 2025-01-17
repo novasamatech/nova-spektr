@@ -112,6 +112,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
       rejectModel.flow.open({ chain, signer: signAccount });
       rejectModel.events.getMultisigTx({ signerAccountId: signAccount.accountId, chain, tx });
     } else {
+      rejectModel.flow.close({ chain: null, signer: null });
       setActiveStep(Step.CONFIRMATION);
     }
   };

@@ -1,4 +1,4 @@
-import { createEvent, sample } from 'effector';
+import { createEvent, restore, sample } from 'effector';
 
 import { type ChainId, type FlexibleMultisigAccount } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
@@ -7,7 +7,12 @@ import { accounts } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
 import { accountUtils } from '@/entities/wallet';
 
+import { rejectModel } from './reject-model';
+
 const rejectMultisig = createEvent<{ accountId: AccountId; chainId: ChainId }>();
+const toggleRejectModalConfirm = createEvent<boolean>();
+
+const $isRejectConfirmOpen = restore(toggleRejectModalConfirm, false);
 
 sample({
   clock: rejectMultisig,
@@ -27,8 +32,17 @@ sample({
   target: multisigsModel.events.convertFlexibleToRegular,
 });
 
+sample({
+  clock: rejectModel.flow.close,
+  fn: () => false,
+  target: toggleRejectModalConfirm,
+});
+
 export const flexibleShellModel = {
+  $isRejectConfirmOpen,
+
   events: {
     rejectMultisig,
+    toggleRejectModalConfirm,
   },
 };
