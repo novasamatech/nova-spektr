@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
+import { getWalletBySource } from '@talismn/connect-wallets';
 import { createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
@@ -8,6 +8,7 @@ import { series } from '@/shared/effector';
 import { assert, createTxMetadata, toAddress } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { polkadotExtensionService } from '@/features/polkadot-extension-wallet';
 import { type SigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
@@ -30,24 +31,29 @@ type SetupParams = {
 const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<SignResponse> => {
   const api = apis[payload.transaction.chainId];
   const account = payload.signatory || payload.account;
+
   assert(api, `Api from chain ${payload.transaction.chainId} not found.`);
   assert(account, 'Signing account not found');
 
-  const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
-  const metadata = await createTxMetadata(address, api);
+  if (!polkadotExtensionService.isPolkadotExtensionAccount(account)) throw new Error('Incorrect account for signing');
 
+  const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
+  const wallet = getWalletBySource(account.extension);
+
+  assert(wallet, 'Wallet not found');
+
+  const metadata = await createTxMetadata(address, api);
   const txPayload = transactionService.createPayloadWithMetadata(payload.transaction, api, metadata);
 
   transactionService.logPayload([txPayload]);
 
   // Init connection
-  await web3Enable('Nova Spektr');
-  // Fetching actual account injector
-  const injector = await web3FromAddress(address);
+  await wallet.enable('Nova Spektr');
   // Method for signing
-  const signPayload = injector?.signer?.signPayload;
+  const signPayload = wallet?.signer?.signPayload;
   assert(signPayload, 'Signer not found');
 
+  // @ts-expect-error No types for signPayload method
   const { signature } = await signPayload(txPayload.unsigned);
 
   return {
@@ -61,7 +67,7 @@ const signAllFx = series(signFx);
 sample({
   clock: flow.open,
   source: networkModel.$apis,
-  fn: (apis, { payloads }) => {
+  fn(apis, { payloads }) {
     return payloads.map((payload) => ({
       payload,
       apis,

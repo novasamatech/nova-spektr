@@ -9,9 +9,7 @@ function isPolkadotExtensionWallet(wallet: Wallet): wallet is PolkadotExtensionW
 
 function isPolkadotExtensionAccount(account: AnyAccount): account is PolkadotExtensionAccount {
   return (
-    accountsService.isUniversalAccount(account) &&
-    'accountType' in account &&
-    account['accountType'] === 'polkadot_extension'
+    accountsService.isUniversalAccount(account) && 'accountType' in account && account['accountType'] === 'extension'
   );
 }
 

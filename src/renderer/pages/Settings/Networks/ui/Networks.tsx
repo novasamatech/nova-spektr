@@ -8,7 +8,8 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { useConfirmContext } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
-import { BaseModal, InfoLink } from '@/shared/ui';
+import { InfoLink } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { type ExtendedChain, networkModel, networkUtils } from '@/entities/network';
 import {
   ActiveNetwork,
@@ -178,62 +179,59 @@ export const Networks = () => {
   };
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="pt-4"
-      panelClass="w-[784px]"
-      isOpen={isNetworksModalOpen}
-      title={t('settings.networks.title')}
-      onClose={closeModal}
-    >
-      <div className="mx-5">
-        <NetworksFilter />
-      </div>
+    <Modal size="lg" isOpen={isNetworksModalOpen} onToggle={closeModal}>
+      <Modal.Title close>{t('settings.networks.title')}</Modal.Title>
+      <Modal.HeaderContent>
+        <div className="px-5 pb-5 pt-1">
+          <NetworksFilter />
+        </div>
+      </Modal.HeaderContent>
+      <Modal.Content>
+        <div className="flex h-[454px] flex-col gap-y-4 px-3 pb-5 pt-1">
+          <NetworkList
+            query={filterQuery}
+            title={t('settings.networks.disabledNetworksLabel')}
+            networkList={inactiveNetworks}
+          >
+            {(network) => (
+              <InactiveNetwork networkItem={network}>
+                <NetworkSelector
+                  connectionList={inactiveConnectionsMap[network.chainId].connections}
+                  activeConnection={inactiveConnectionsMap[network.chainId].activeConnection}
+                  onChange={changeConnection(network)}
+                  onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                  onAddCustomNode={() => addCustomNode(network)}
+                  onEditCustomNode={(node) => editCustomNode(network, node)}
+                />
+              </InactiveNetwork>
+            )}
+          </NetworkList>
 
-      <div className="mt-5 flex h-[454px] flex-col gap-y-4 overflow-y-auto px-3 pb-4 pt-1">
-        <NetworkList
-          query={filterQuery}
-          title={t('settings.networks.disabledNetworksLabel')}
-          networkList={inactiveNetworks}
-        >
-          {(network) => (
-            <InactiveNetwork networkItem={network}>
-              <NetworkSelector
-                connectionList={inactiveConnectionsMap[network.chainId].connections}
-                activeConnection={inactiveConnectionsMap[network.chainId].activeConnection}
-                onChange={changeConnection(network)}
-                onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
-                onAddCustomNode={() => addCustomNode(network)}
-                onEditCustomNode={(node) => editCustomNode(network, node)}
-              />
-            </InactiveNetwork>
-          )}
-        </NetworkList>
+          <NetworkList
+            query={filterQuery}
+            title={t('settings.networks.activeNetworksLabel')}
+            networkList={activeNetworks}
+          >
+            {(network) => (
+              <ActiveNetwork networkItem={network}>
+                <NetworkSelector
+                  connectionList={activeConnectionsMap[network.chainId].connections}
+                  activeConnection={activeConnectionsMap[network.chainId].activeConnection}
+                  onChange={changeConnection(network)}
+                  onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
+                  onAddCustomNode={() => addCustomNode(network)}
+                  onEditCustomNode={(node) => editCustomNode(network, node)}
+                />
+              </ActiveNetwork>
+            )}
+          </NetworkList>
 
-        <NetworkList
-          query={filterQuery}
-          title={t('settings.networks.activeNetworksLabel')}
-          networkList={activeNetworks}
-        >
-          {(network) => (
-            <ActiveNetwork networkItem={network}>
-              <NetworkSelector
-                connectionList={activeConnectionsMap[network.chainId].connections}
-                activeConnection={activeConnectionsMap[network.chainId].activeConnection}
-                onChange={changeConnection(network)}
-                onRemoveCustomNode={(node) => removeCustomNode(network.chainId, node)}
-                onAddCustomNode={() => addCustomNode(network)}
-                onEditCustomNode={(node) => editCustomNode(network, node)}
-              />
-            </ActiveNetwork>
-          )}
-        </NetworkList>
-
-        <EmptyNetworks />
-      </div>
+          <EmptyNetworks />
+        </div>
+      </Modal.Content>
 
       <AddCustomRpcModal />
       <EditCustomRpcModal />
-    </BaseModal>
+    </Modal>
   );
 };
