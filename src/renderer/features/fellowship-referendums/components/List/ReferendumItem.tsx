@@ -9,7 +9,7 @@ import { type Referendum, collectiveDomain } from '@/domains/collectives';
 import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
 import { referendumListModel } from '../../model/list';
 
-import { WalletVoted } from './WalletVoted';
+import { AccountVoting } from './AccountVoting';
 
 type Props = {
   isTitlesLoading: boolean;
@@ -41,7 +41,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     <Surface className="cursor-pointer" onClick={() => onSelect(referendum)}>
       <Box gap={3} padding={[4, 3]}>
         <Box direction="row" verticalAlign="center" gap={2}>
-          <WalletVoted referendum={referendum} />
+          <AccountVoting referendum={referendum} />
           {/*<VotedBy address={referendum.votedByDelegate} />*/}
           <ReferendumVotingStatusBadge referendum={referendum} pending={false} />
 

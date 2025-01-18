@@ -9,11 +9,11 @@ type Props = {
   referendum: Referendum;
 };
 
-export const WalletVoted = ({ referendum }: Props) => {
+export const AccountVoting = ({ referendum }: Props) => {
   const { t } = useI18n();
 
   const voting = useStoreMap({
-    store: votingModel.$accountsVoting,
+    store: votingModel.$accountVotes,
     keys: [referendum.id],
     fn: (votings, [id]) => votings.find(voting => voting.referendumId === id),
   });

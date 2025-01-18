@@ -18,7 +18,7 @@ import { type Vote } from './types';
 type RequestVotesParams = {
   palletType: CollectivePalletsType;
   chainId: ChainId;
-  referendumId: ReferendumId;
+  referendums: ReferendumId[];
 };
 
 const $votes = createStore<CollectivesStruct<Vote[]>>({});
@@ -36,15 +36,17 @@ const { fulfilled, pending, request } = createDataSource<
 >({
   source: $source,
   target: $votes,
-  fn: async ({ chainId, palletType, referendumId }, { apis, chains }) => {
+  filter: ({ referendums }) => referendums.length > 0,
+  fn: async ({ chainId, palletType, referendums }, { apis, chains }) => {
     const api = apis[chainId];
     const chain = chains[chainId];
 
     if (api) {
       try {
-        return await requestFromChain(api, palletType, referendumId);
-      } catch {
+        return await requestFromChain(api, palletType, referendums);
+      } catch (e) {
         /* skip */
+        console.error(e);
       }
     }
 
@@ -55,7 +57,7 @@ const { fulfilled, pending, request } = createDataSource<
 
     if (!sourceUrl) return [];
 
-    return requestFromSubQuery(sourceUrl, palletType, referendumId);
+    return requestFromSubQuery(sourceUrl, palletType, referendums);
   },
   map({ votes }, { params, result }) {
     const existingVotes = pickNestedValue(votes, params.palletType, params.chainId) ?? [];
@@ -94,7 +96,6 @@ const { subscribe: subscribeAccountsVoting, unsubscribe: unsubscribeAccountsVoti
     const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
       { api, section: `${palletType}Collective`, methods: ['Voted'] },
       event => {
-        console.log(event);
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
         if (!accounts.some(a => a === accountId)) {
