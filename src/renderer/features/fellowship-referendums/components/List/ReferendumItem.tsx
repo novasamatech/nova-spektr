@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
-import { type Referendum, collectiveDomain } from '@/domains/collectives';
+import { type Referendum, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
 import { referendumListModel } from '../../model/list';
 
@@ -29,7 +29,7 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
     fn: (store, [id]) => store[id] ?? null,
   });
 
-  const track = collectiveDomain.referendumService.isOngoing(referendum) ? referendum.track : (meta?.track ?? null);
+  const track = referendumService.isOngoing(referendum) ? referendum.track : (meta?.track ?? null);
 
   const titleNode = (
     <Skeleton active={isTitlesLoading && !meta?.title}>

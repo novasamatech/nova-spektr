@@ -35,7 +35,7 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
   for (const item of collection) {
     const element = item[key];
 
-    if (!element) continue;
+    if (typeof element === 'undefined') continue;
 
     if (!transformer) {
       result[element] = item as unknown as R;
