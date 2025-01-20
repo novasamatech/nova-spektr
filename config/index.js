@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const packageJson = readFileSync('package.json', { encoding: 'utf-8' });
-const { author: AUTHOR, description: DESCRIPTION, name: NAME, version: VERSION } = JSON.parse(packageJson);
+import packageJson from '../package.json' with { type: 'json' };
+
+const { author: AUTHOR, description: DESCRIPTION, name: NAME, version: VERSION } = packageJson;
 
 const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
 
