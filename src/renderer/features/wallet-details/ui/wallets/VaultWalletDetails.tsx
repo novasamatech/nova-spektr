@@ -185,7 +185,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-5 border-b border-divider px-5 py-6">
+          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
           </div>
         </Modal.HeaderContent>

@@ -1,16 +1,15 @@
 import { useGate, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton, Tabs } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/Icon/data';
-import { type TabItem } from '@/shared/ui/types';
+import { assert, nonNullable, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { type IconNames } from '@/shared/ui/types';
 import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
-import { Dropdown, Modal } from '@/shared/ui-kit';
+import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -47,8 +46,12 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [tab, setTab] = useState('1');
 
-  const multisigAccount = wallet.accounts[0];
+  const multisigAccount = wallet.accounts.find(accountUtils.isMultisigAccount);
+  assert(multisigAccount, 'Multisig account not found.');
+
+  // Check for deprecated multichain multisig accounts
   const singleChain = multisigAccount.chainId ? chains[multisigAccount.chainId] : undefined;
 
   const multisigChains = useMemo(() => {
@@ -127,14 +130,14 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     </Dropdown>
   );
 
-  const TabItems: TabItem[] = [];
+  const TabItems: { id: string; title: string; panel: ReactNode }[] = [];
 
   if (singleChain) {
     const TabAccount = {
-      id: 1,
+      id: '1',
       title: t('walletDetails.multisig.accountTab'),
       panel: (
-        <div className="h-[347px] overflow-y-auto">
+        <div>
           <div className="flex flex-col gap-y-3 px-5">
             <FootnoteText className="text-text-tertiary">{t('walletDetails.multisig.accountGroup')}</FootnoteText>
 
@@ -195,13 +198,13 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     const accounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
 
     const TabAccountList = {
-      id: 1,
+      id: '1',
       title: t('walletDetails.multisig.networksTab'),
       panel: <ChainAccountsList accounts={accounts} />,
     };
 
     const TabSignatories = {
-      id: 2,
+      id: '2',
       title: t('walletDetails.multisig.signatoriesTab'),
       panel: (
         <div className="flex flex-col">
@@ -212,7 +215,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             })}
           </FootnoteText>
 
-          <div className="mt-4 h-[337px] overflow-y-auto">
+          <div>
             {signatories.wallets.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <FootnoteText className="px-5 text-text-tertiary">
@@ -239,7 +242,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             )}
 
             {signatories.contacts.length > 0 && (
-              <div className="mt-4 flex flex-col gap-y-2 px-5">
+              <div>
                 <FootnoteText className="text-text-tertiary">
                   {t('walletDetails.multisig.contactsGroup')} {signatories.contacts.length}
                 </FootnoteText>
@@ -266,16 +269,12 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     const TabProxy = {
-      id: 3,
+      id: '3',
       title: t('walletDetails.common.proxiesTabTitle'),
       panel: hasProxies ? (
-        <ProxiesList className="h-[347px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+        <ProxiesList wallet={wallet} canCreateProxy={canCreateProxy} />
       ) : (
-        <NoProxiesAction
-          className="h-[347px]"
-          canCreateProxy={canCreateProxy}
-          onAddProxy={addProxy.events.flowStarted}
-        />
+        <NoProxiesAction canCreateProxy={canCreateProxy} onAddProxy={addProxy.events.flowStarted} />
       ),
     };
 
@@ -289,7 +288,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 py-6">
+          <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
             {nonNullable(singleChain) && (
               <div className="flex items-center">
@@ -317,8 +316,25 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             )}
           </div>
         </Modal.HeaderContent>
-        <Modal.Content>
-          <Tabs unmount={false} tabClassName="whitespace-nowrap" tabsClassName="mx-4" items={TabItems} />
+        <Modal.Content disableScroll>
+          <Tabs value={tab} onChange={setTab}>
+            <Box padding={[0, 5]}>
+              <Tabs.List>
+                {TabItems.map(({ id, title }) => (
+                  <Tabs.Trigger key={id} value={id}>
+                    {title}
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
+            </Box>
+            {TabItems.map(({ id, panel }) => (
+              <Tabs.Content key={id} value={id}>
+                <ScrollArea>
+                  <Box padding={[4, 0]}>{panel}</Box>
+                </ScrollArea>
+              </Tabs.Content>
+            ))}
+          </Tabs>
         </Modal.Content>
       </Modal>
 
