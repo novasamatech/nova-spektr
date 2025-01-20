@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type z } from 'zod';
+import { zipWith } from 'lodash';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
@@ -24,19 +24,6 @@ const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
 
   return query;
 };
-
-const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
-const votingWithKeyResponseSchema = pjsSchema.vec(
-  pjsSchema.tupleMap(
-    [
-      'key',
-      pjsSchema
-        .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
-        .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
-    ],
-    ['vote', pjsSchema.optional(collectiveVoteRecord)],
-  ),
-);
 
 export const storage = {
   /**
@@ -123,46 +110,34 @@ export const storage = {
     api: ApiPromise,
     keys: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
   ) {
+    const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
+
     if (!Array.isArray(keys)) {
+      const votingWithKeyResponseSchema = pjsSchema.vec(
+        pjsSchema.tupleMap(
+          [
+            'key',
+            pjsSchema
+              .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
+              .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
+          ],
+          ['vote', pjsSchema.optional(collectiveVoteRecord)],
+        ),
+      );
+
       return substrateRpcPool
         .call(() => getQuery(type, api, 'voting').entries(keys))
         .then(votingWithKeyResponseSchema.parse);
     }
 
-    const schema = votingResponseSchema.transform(votes =>
-      votes.map((vote, index) => ({
-        key: {
-          referendumId: keys[index]![0],
-          accountId: keys[index]![1],
-        },
-        vote,
-      })),
-    );
-
-    return substrateRpcPool.call(() => getQuery(type, api, 'voting').multi(keys)).then(schema.parse);
-  },
-
-  /**
-   * Votes on a given proposal, if it is ongoing.
-   */
-  subscribeVoting(
-    type: PalletType,
-    api: ApiPromise,
-    keys: (readonly [referendum: ReferendumId, account: AccountId])[],
-    callback: (value: z.infer<typeof votingWithKeyResponseSchema>) => unknown,
-  ) {
-    const schema = votingResponseSchema.transform(votes =>
-      votes.map((vote, index) => ({
-        key: {
-          referendumId: keys[index]![0],
-          accountId: keys[index]![1],
-        },
-        vote,
-      })),
-    );
-
-    return getQuery(type, api, 'voting').multi(keys, response => {
-      callback(schema.parse(response));
-    });
+    return substrateRpcPool
+      .call(() => getQuery(type, api, 'voting').multi(keys))
+      .then(votingResponseSchema.parse)
+      .then(votes =>
+        zipWith(votes, keys, (vote, key) => ({
+          key: { referendumId: key[0], accountId: key[1]! },
+          vote,
+        })),
+      );
   },
 };
