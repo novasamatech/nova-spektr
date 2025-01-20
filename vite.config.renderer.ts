@@ -47,6 +47,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
   return defineConfig({
     mode: isStage ? 'production' : mode,
     cacheDir: resolve(folders.cache, 'vite-renderer'),
+    base: '',
     root: resolve(folders.rendererRoot, 'app'),
     define: {
       'process.env.PRODUCT_NAME': JSON.stringify(title),
