@@ -81,8 +81,13 @@ const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts
   return accountsService.filterAccountsByWallet(accounts, wallet.id);
 });
 
-// Workaround - select event recreated wallet array every time, so serialized ids are more stable than wallets list.
-const $walletIdsSerialized = $wallets.map((l) => l.map((w) => w.id).join(','));
+// Workaround - select event recreates wallet array every time, serialized ids are more stable.
+const $walletIdsSerialized = $wallets.map((l) =>
+  l
+    .map((w) => w.id)
+    .sort()
+    .join(','),
+);
 
 const $availableAccounts = combine($walletIdsSerialized, accounts.$list, (wallets, accounts) => {
   const ids = toKeysRecord(wallets.split(','));
