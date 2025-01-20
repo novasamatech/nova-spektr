@@ -1,13 +1,13 @@
-const { appId, author, title, folders, electronProtocol } = require('./config');
+import { appId, author, electronProtocol, folders, title } from './config/index.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * @type {import('electron-builder').Configuration}
  *
- * @see https://www.electron.build/configuration/configuration
+ * @see https://www.electron.build/configuration
  */
-module.exports = {
+export default {
   appId: appId,
   productName: title,
   copyright: `Copyright © ${CURRENT_YEAR} — ${author.name}`,
