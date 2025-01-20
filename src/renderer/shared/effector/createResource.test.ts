@@ -11,7 +11,7 @@ describe('createResource', () => {
       const $store = createStore<number[]>([]);
 
       const { open } = createResource<void, number[]>({
-        create({ stream }) {
+        create(_, stream) {
           stream.push([1, 2]);
           stream.push([3, 4]);
           stream.close();

@@ -11,7 +11,7 @@ export type DataStream<T> = AsyncIterable<T> & {
   on(reason: 'abort', callback: () => void): void;
 };
 
-export const createStream = <T>(): DataStream<T> => {
+export function createStream<T>(): DataStream<T> {
   const resolved: T[] = [];
   let closed = false;
   const abortController = new AbortController();
@@ -104,29 +104,29 @@ export const createStream = <T>(): DataStream<T> => {
       };
     },
   };
-};
+}
 
-export const zipStreamWithParams = async function* <Result, Params>({
+export async function* zipStreamWithParams<Params, Result>({
   params,
-  result: iterator,
+  result,
 }: {
-  result: AsyncIterable<Result>;
   params: Params;
-}) {
-  for await (const result of iterator) {
-    yield { result, params };
+  result: AsyncIterable<Result>;
+}): AsyncIterable<{ params: Params; result: Result }> {
+  for await (const r of result) {
+    yield { params, result: r };
   }
-};
+}
 
 type Config<Params, Value> = {
-  create(config: { params: Params; stream: DataStream<Value> }): unknown;
+  create(params: Params, stream: DataStream<Value>): unknown;
 };
 
-export const createResource = <Params, Value>({ create }: Config<Params, Value>) => {
+export function createResource<Params, Value>({ create }: Config<Params, Value>) {
   return {
     open: createEffect((params: Params) => {
       const stream = createStream<Value>();
-      create({ params, stream });
+      create(params, stream);
 
       return stream;
     }),
@@ -134,4 +134,4 @@ export const createResource = <Params, Value>({ create }: Config<Params, Value>)
       stream.abort();
     }),
   };
-};
+}
