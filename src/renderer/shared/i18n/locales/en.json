@@ -142,6 +142,7 @@
     "flexibleMultisig": {
       "flexible": "Flexible multisig",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
+      "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "proxyDeposit": "Proxy deposit:",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "title": "Create flexible multisig"

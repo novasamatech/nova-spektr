@@ -23,7 +23,7 @@ export const WalletPairingSelect = () => {
     <Dropdown open={isOpen} keepOpen onToggle={toggleIsOpen}>
       <Dropdown.Trigger>
         <Button
-          className="h-8.5 w-full justify-center py-2"
+          className="h-8.5 w-[143px] justify-center py-2"
           suffixElement={<Icon name={isOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
         >
           {t('wallets.addButtonTitle')}

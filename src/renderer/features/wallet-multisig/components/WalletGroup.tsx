@@ -1,10 +1,11 @@
 import { memo } from 'react';
 
-import { type Wallet, type WalletType } from '@/shared/core';
+import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
 import { WalletCardMd, WalletIcon } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
+  const { t } = useI18n();
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -41,6 +43,16 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <WalletIcon type={walletType} />
           <span>{title}</span>
           <span className="text-text-tertiary">{wallets.length}</span>
+          {walletType === WalletType.FLEXIBLE_MULTISIG ? (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <div>
+                  <Icon name="questionOutline" size={16} />
+                </div>
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('createMultisigAccount.flexibleMultisig.description')}</Tooltip.Content>
+            </Tooltip>
+          ) : null}
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
