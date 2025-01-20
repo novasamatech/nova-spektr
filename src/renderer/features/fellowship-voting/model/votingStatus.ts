@@ -53,16 +53,16 @@ const $hasRequiredRank = combine(
 
 const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
 
-const $walletVoting = restore(
-  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { wallet }, data: voting }) => {
-    const accounts = toKeysRecord(wallet.accounts.map(a => a.accountId));
+const $accountsVotes = restore(
+  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { accounts }, data: voting }) => {
+    const accountsMap = toKeysRecord(accounts.map(a => a.accountId));
 
-    return voting.filter(voting => voting.accountId in accounts);
+    return voting.filter(voting => voting.accountId in accountsMap);
   }),
   [],
 );
 
-const $referendumVoting = combine($walletVoting, $referendumId, (voting, referendumId) => {
+const $referendumVoting = combine($accountsVotes, $referendumId, (voting, referendumId) => {
   return voting.find(vote => vote.referendumId === referendumId) ?? null;
 });
 
@@ -81,12 +81,12 @@ sample({
 
 sample({
   clock: votingFeatureStatus.running,
-  fn: ({ palletType, api, chainId, activeAccounts }) => {
+  fn: ({ palletType, api, chain, accounts }) => {
     return {
       palletType,
       api,
-      chainId,
-      accounts: activeAccounts.map(a => a.accountId),
+      chainId: chain.chainId,
+      accounts: accounts.map(a => a.accountId),
     };
   },
 

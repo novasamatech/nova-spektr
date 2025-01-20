@@ -11,6 +11,7 @@ type Props = {
   value: Conviction;
   amount: BN;
   asset: Asset;
+  disabled?: boolean;
   onChange: (value: Conviction) => void;
 };
 
@@ -33,7 +34,7 @@ const renderLabel = (value: number) => (
   </FootnoteText>
 );
 
-export const ConvictionSelect = ({ value, asset, amount, onChange }: Props) => {
+export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: Props) => {
   const { t } = useI18n();
 
   const numericValue = Math.max(convictionList.indexOf(value), 0);
@@ -51,6 +52,7 @@ export const ConvictionSelect = ({ value, asset, amount, onChange }: Props) => {
         min={0}
         max={convictionList.length - 1}
         renderLabel={renderLabel}
+        disabled={disabled}
         onChange={handleChange}
       />
       <div className="flex justify-center">

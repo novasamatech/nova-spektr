@@ -32,6 +32,6 @@
     "noEmit": true,
     "types": ["@testing-library/jest-dom", "vitest/globals"]
   },
-  "include": ["src", ".storybook", "tests", "globals.d.ts", "vite-env.d.ts", "./*.config*.ts"],
+  "include": ["src", ".storybook", "tests", "config", "*.ts", "*.js", "*.cjs"],
   "exclude": ["node_modules"]
 }

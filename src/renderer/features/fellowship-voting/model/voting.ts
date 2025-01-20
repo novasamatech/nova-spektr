@@ -17,11 +17,10 @@ const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: 
 
 const $vote = gate.state.map(({ vote }) => vote);
 
-const { $api, $activeWallet, $chain, $wallets } = reshape({
+const { $api, $chain, $wallets } = reshape({
   source: votingFeatureStatus.input,
   shape: {
     $api: x => x?.api ?? null,
-    $activeWallet: x => x?.wallet ?? null,
     $wallets: x => x?.wallets ?? [],
     $chain: x => x?.chain ?? null,
   },
@@ -51,9 +50,15 @@ const $coreTx = combine(
   },
 );
 
+const $votingWallet = combine($wallets, votingStatusModel.$votingAccount, (wallets, account) => {
+  if (nullable(account)) return null;
+
+  return wallets.find(w => w.id === account.walletId) ?? null;
+});
+
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
   $api,
-  $activeWallet,
+  $activeWallet: $votingWallet,
   $wallets,
   $chain,
   $coreTx,

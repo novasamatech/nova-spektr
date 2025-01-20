@@ -16,6 +16,7 @@ import {
 import {
   Step,
   formatAmount,
+  getBalanceBn,
   getRelaychainAsset,
   isStep,
   nonNullable,
@@ -64,6 +65,7 @@ const $tracks = createStore<number[]>([]).reset(flowFinished);
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
 const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $isUnchanged = createStore(false);
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
@@ -163,6 +165,12 @@ sample({
 });
 
 sample({
+  clock: formModel.output.formChanged,
+  fn: ({ isUnchanged }) => isUnchanged,
+  target: $isUnchanged,
+});
+
+sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
     const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
@@ -191,17 +199,24 @@ sample({
     tracks: $tracks,
     accounts: $accounts,
     activeTracks: delegationAggregate.$activeTracks,
+    activeDelegations: $activeDelegations,
   },
   filter: ({ walletData, target, tracks }) => {
     return Boolean(walletData.chain) && Boolean(target) && Boolean(tracks.length);
   },
-  fn: ({ walletData, accounts, target, tracks, activeTracks }, delegateData) => {
+  fn: ({ walletData, accounts, target, tracks, activeTracks, activeDelegations }, delegateData) => {
     return accounts.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+      const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
+      const amount = delegateData!.isUnchanged
+        ? activeDelegations[address].balance.toString()
+        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
+
       return transactionBuilder.buildEditDelegation({
         chain: walletData.chain!,
         accountId: shard.accountId,
-        balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
-        conviction: delegateData!.conviction || 'None',
+        balance: amount || '0',
+        conviction: conviction || 'None',
         target: target?.accountId || '',
         tracks,
         undelegateTracks:
@@ -327,17 +342,33 @@ sample({
     accounts: $accounts,
     txWrappers: $txWrappers,
     delegateData: $delegateData,
+    activeDelegations: $activeDelegations,
+    isUnchanged: $isUnchanged,
     coreTxs: $coreTxs,
     step: $step,
   },
   filter: ({ walletData, delegateData, step }) =>
     Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
-  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
+  fn: ({
+    feeData,
+    balances,
+    walletData,
+    txWrappers,
+    tracks,
+    target,
+    shards,
+    delegateData,
+    coreTxs,
+    activeDelegations,
+    isUnchanged,
+  }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
 
     return {
       event: shards.map((shard, index) => {
+        const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+
         return {
           chain: walletData.chain!,
           asset: asset!,
@@ -347,6 +378,11 @@ sample({
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
           ...delegateData!,
+          ...(isUnchanged && {
+            balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
+            conviction: activeDelegations[address].conviction,
+          }),
+          previousConviction: activeDelegations[address].conviction,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),

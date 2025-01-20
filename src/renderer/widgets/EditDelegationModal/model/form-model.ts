@@ -31,6 +31,7 @@ type FormParams = {
   amount: string;
   conviction: Conviction;
   locks: Record<string, BN>;
+  isUnchanged: boolean;
 };
 
 const formInitiated = createEvent<
@@ -181,12 +182,12 @@ const $delegateForm = createForm<FormParams>({
         {
           name: 'required',
           errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
+          validator: (value, { isUnchanged }) => isUnchanged || !!value,
         },
         {
           name: 'notZero',
           errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
+          validator: (value, { isUnchanged }) => isUnchanged || value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
@@ -232,6 +233,10 @@ const $delegateForm = createForm<FormParams>({
     },
     locks: {
       init: {},
+      rules: [],
+    },
+    isUnchanged: {
+      init: false,
       rules: [],
     },
   },

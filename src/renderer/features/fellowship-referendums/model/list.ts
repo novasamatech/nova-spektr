@@ -3,7 +3,7 @@ import { and, debounce, either, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { dictionary, nonNullable, performSearch } from '@/shared/lib/utils';
-import { collectiveDomain } from '@/domains/collectives';
+import { referendumMeta, referendumService, referendums } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';
 
 import { fellowshipModel } from './fellowship';
@@ -24,17 +24,17 @@ sample({
     chainId,
     palletType,
   }),
-  target: collectiveDomain.referendumMeta.request,
+  target: referendumMeta.request,
 });
 
 sample({
   clock: referendumsFeatureStatus.running,
-  target: [collectiveDomain.referendum.subscribe, collectiveDomain.referendumMeta.request],
+  target: [referendums.subscribe, referendumMeta.request],
 });
 
 sample({
   clock: referendumsFeatureStatus.stopped,
-  target: collectiveDomain.referendum.unsubscribe,
+  target: referendums.unsubscribe,
 });
 
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
@@ -62,13 +62,13 @@ const $referendumsFilteredByStatus = combine(
     referendums: $referendums,
     selectedTracks: filterModel.$selectedTracks,
     selectedVotingStatus: filterModel.$selectedVotingStatus,
-    voting: votingModel.$accountsVoting,
+    voting: votingModel.$accountVotes,
   },
   ({ referendums, voting, selectedTracks, selectedVotingStatus }) => {
     const votingMap = dictionary(voting, 'referendumId');
 
     return referendums.filter(referendum => {
-      const isInTrack = collectiveDomain.referendumService.isReferendumInTrack(selectedTracks, referendum);
+      const isInTrack = referendumService.isReferendumInTrack(selectedTracks, referendum);
 
       if (selectedVotingStatus === 'voted') {
         return isInTrack && referendum.id in votingMap;
@@ -89,8 +89,8 @@ const $filteredReferendum = either(
   $referendumsFilteredByStatus,
 );
 
-const $ongoing = $filteredReferendum.map(collectiveDomain.referendumService.getOngoingReferendums);
-const $completed = $filteredReferendum.map(collectiveDomain.referendumService.getCompletedReferendums);
+const $ongoing = $filteredReferendum.map(referendumService.getOngoingReferendums);
+const $completed = $filteredReferendum.map(referendumService.getCompletedReferendums);
 
 export const referendumListModel = {
   $referendums,
@@ -98,6 +98,6 @@ export const referendumListModel = {
   $ongoing,
   $completed,
   $meta,
-  $pending: or(collectiveDomain.referendum.pending, referendumsFeatureStatus.isStarting),
-  $fulfilled: and(collectiveDomain.referendum.fulfilled, referendumsFeatureStatus.isRunning),
+  $pending: or(referendums.pending, referendumsFeatureStatus.isStarting),
+  $fulfilled: and(referendums.fulfilled, referendumsFeatureStatus.isRunning),
 };

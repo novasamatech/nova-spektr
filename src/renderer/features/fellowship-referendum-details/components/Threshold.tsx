@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DetailRow } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum } from '@/domains/collectives';
+import { type Referendum, referendumService } from '@/domains/collectives';
 import { thresholdsModel } from '../model/thresholds';
 
 type Props = {
@@ -22,6 +22,10 @@ export const Threshold = memo(({ referendum, pending }: Props) => {
     keys: [referendum?.id],
     fn: (thresholds, [id]) => (id ? thresholds[id] : null) ?? null,
   });
+
+  if (referendum && referendumService.isCompleted(referendum)) {
+    return null;
+  }
 
   const threshold = nonNullable(thresholds) ? thresholds.support.value.div(BN_MILLION).toNumber() / 10 : 0;
 

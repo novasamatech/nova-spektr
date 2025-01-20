@@ -86,6 +86,11 @@ module.exports = {
     },
     {
       files: ['*.js', '*.mjs', '*.cjs'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+        projectService: true,
+      },
       env: {
         node: true,
       },

@@ -55,8 +55,11 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
         >
           <div className="flex min-w-0 grow items-center gap-2 truncate text-start">{children}</div>
           <Icon
-            className="shrink-0 text-icon-default transition-colors duration-100 group-hover:text-icon-hover"
-            name={open ? 'up' : 'down'}
+            className={cnTw(
+              'shrink-0 scale-y-100 text-icon-default transition-all duration-150 group-hover:text-icon-hover',
+              open && '-scale-y-100',
+            )}
+            name="down"
             size={16}
           />
         </RadixAccordion.Trigger>
