@@ -27,7 +27,6 @@ export const WalletSelect = () => {
   const activeWallet = useUnit(walletModel.$activeWallet);
   const filterQuery = useUnit(walletSelectModel.$filterQuery);
 
-  const actions = useSlot(walletSelectActionsSlot);
   const walletGroups = useSlot(walletGroupSlot, {
     props: {
       query: filterQuery,
@@ -71,7 +70,9 @@ export const WalletSelect = () => {
         <section className="flex h-full max-h-[800px] min-h-0 w-[300px] flex-col overflow-hidden">
           <header className="flex items-center justify-between border-b border-divider px-5 py-3">
             <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-            <div className="min-w-[140px]">{actions}</div>
+            <div>
+              <Slot id={walletSelectActionsSlot} />
+            </div>
           </header>
 
           <div className="border-b border-divider p-2">
