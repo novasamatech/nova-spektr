@@ -3,9 +3,8 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { collectiveDomain } from '@/domains/collectives';
-import { identityDomain } from '@/domains/identity';
-import { accountsService } from '@/domains/network';
+import { members, membersService } from '@/domains/collectives';
+import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipModel } from './fellowship';
 import { profileFeatureStatus } from './status';
@@ -18,12 +17,10 @@ const $identities = combine(profileFeatureStatus.input, identityDomain.identity.
   return list[featureInput.chainId] ?? {};
 });
 
-const $chainAccounts = profileFeatureStatus.input.map(store => {
-  return store ? accountsService.filterAccountOnChain(store.accounts, store.chain) : [];
-});
+const $accounts = profileFeatureStatus.input.map(store => (store ? store.accounts : []));
 
-const $currentMember = combine($chainAccounts, $members, (accounts, members) => {
-  return collectiveDomain.membersService.findMatchingMember(accounts, members);
+const $currentMember = combine($accounts, $members, (accounts, members) => {
+  return membersService.findMatchingMember(accounts, members);
 });
 
 const $identity = combine($currentMember, $identities, (member, identities) => {
@@ -35,22 +32,22 @@ const $identity = combine($currentMember, $identities, (member, identities) => {
 const $isAccountExist = profileFeatureStatus.input.map(store => {
   if (!store) return false;
 
-  return accountsService.filterAccountOnChain(store.accounts, store.chain).length > 0;
+  return store.accounts.length > 0;
 });
 
-const $pendingMember = and(collectiveDomain.members.pending, $currentMember.map(nullable));
-const $pendingIdentity = and(identityDomain.identity.pending, $identity.map(nullable));
+const $pendingMember = and(members.pending, $currentMember.map(nullable));
+const $pendingIdentity = and(identity.pending, $identity.map(nullable));
 
 const memberUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
 
 sample({
   clock: profileFeatureStatus.running,
-  target: collectiveDomain.members.subscribe,
+  target: members.subscribe,
 });
 
 sample({
   clock: profileFeatureStatus.stopped,
-  target: collectiveDomain.members.unsubscribe,
+  target: members.unsubscribe,
 });
 
 sample({

@@ -11,28 +11,30 @@ import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Vote } from './types';
 
-const mapChainVote = (
-  vote: ArrayElement<Awaited<ReturnType<typeof collectivePallet.storage.voting>>>,
-): Vote | undefined => {
-  if (!vote.vote) return;
+const mapChainVote = ({
+  vote,
+  key,
+}: ArrayElement<Awaited<ReturnType<typeof collectivePallet.storage.voting>>>): Vote | undefined => {
+  if (!vote) return;
 
   return {
-    accountId: vote.key.accountId,
-    referendumId: vote.key.referendumId,
-    votes: vote.vote.data,
-    decision: vote.vote.type,
+    accountId: key.accountId,
+    referendumId: key.referendumId,
+    votes: vote.data,
+    decision: vote.type,
   };
 };
 
-export const requestFromChain = async (api: ApiPromise, pallet: CollectivePalletsType, referendumId: ReferendumId) => {
-  const votes = await collectivePallet.storage.voting(pallet, api, referendumId);
+export const requestFromChain = async (api: ApiPromise, pallet: CollectivePalletsType, referendums: ReferendumId[]) => {
+  const requests = referendums.map(referendum => collectivePallet.storage.voting(pallet, api, referendum));
+  const votes = await Promise.all(requests).then(l => l.flat());
 
   return votes.map(mapChainVote).filter(nonNullable);
 };
 
 const GET_VOTES_QUERY = gql`
-  query VotingHistory($referendumId: String!) {
-    votes(filter: { referendumId: { equalTo: $referendumId } }) {
+  query VotingHistory($referendums: [String!]) {
+    votes(filter: { referendumId: { in: $referendums } }) {
       nodes {
         accountId
         decision
@@ -67,11 +69,10 @@ const mapSubqueryVote = (vote: ArrayElement<SubqueryResponse['votes']['nodes']>)
   };
 };
 
-export const requestFromSubQuery = async (url: string, pallet: CollectivePalletsType, referendumId: ReferendumId) => {
+export const requestFromSubQuery = async (url: string, pallet: CollectivePalletsType, referendums: ReferendumId[]) => {
   const client = new GraphQLClient(url);
-
-  const result = await client.request<SubqueryResponse, { referendumId: string }>(GET_VOTES_QUERY, {
-    referendumId: `${pallet}:${referendumId}`,
+  const result = await client.request<SubqueryResponse, { referendums: string[] }>(GET_VOTES_QUERY, {
+    referendums: referendums.map(r => `${pallet}:${r}`),
   });
 
   return result.votes.nodes.map(mapSubqueryVote);
