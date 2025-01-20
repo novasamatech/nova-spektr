@@ -37,7 +37,6 @@ import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '../lib/proxies-utils';
 
-const workerStarted = createEvent();
 const connected = createEvent<ChainId>();
 const proxiedWalletsCreated = createEvent<Omit<ProxiedWalletsParams, 'wallets'>>();
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
@@ -46,12 +45,19 @@ const depositsReceived = createEvent<ProxyDeposits>();
 const $endpoint = createStore<Endpoint<any> | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
-const startWorkerFx = createEffect(() => {
-  const worker = new Worker(new URL('../workers/proxy-worker', import.meta.url), { type: 'module' });
+const workerStarted = attach({
+  source: $endpoint,
+  effect(endpoint) {
+    if (endpoint) {
+      return endpoint;
+    }
 
-  return createEndpoint(worker, {
-    callable: ['initConnection', 'getProxies', 'disconnect'],
-  });
+    const worker = new Worker(new URL('../workers/proxy-worker', import.meta.url), { type: 'module' });
+
+    return createEndpoint(worker, {
+      callable: ['initConnection', 'getProxies', 'disconnect'],
+    });
+  },
 });
 
 type StartChainsParams = {
@@ -188,17 +194,12 @@ const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains, wa
 });
 
 sample({
-  clock: workerStarted,
-  target: startWorkerFx,
-});
-
-sample({
-  clock: startWorkerFx.doneData,
+  clock: workerStarted.doneData,
   target: $endpoint,
 });
 
 sample({
-  clock: [startWorkerFx.done, once(networkModel.$connections)],
+  clock: [workerStarted.done, once(networkModel.$connections)],
   source: {
     connections: networkModel.$connections,
     chains: networkModel.$chains,

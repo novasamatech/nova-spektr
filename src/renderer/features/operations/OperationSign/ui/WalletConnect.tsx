@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm.mp4';
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
-import { type HexString } from '@/shared/core';
+import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors } from '@/shared/lib/utils';
@@ -16,7 +16,14 @@ import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
 
-export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack, onResult }: SigningProps) => {
+export const WalletConnect = ({
+  apis,
+  signerWallet,
+  signingPayloads,
+  validateBalance,
+  onGoBack,
+  onResult,
+}: SigningProps) => {
   useGate(walletConnectSign.flow, { payloads: signingPayloads });
 
   const { t } = useI18n();
@@ -134,7 +141,13 @@ export const WalletConnect = ({ apis, signingPayloads, validateBalance, onGoBack
           </video>
         )}
 
-        {pairingUri && <WalletConnectQrCode uri={pairingUri} type="walletconnect" size={280} />}
+        {pairingUri && (
+          <WalletConnectQrCode
+            uri={pairingUri}
+            type={signerWallet?.type === WalletType.NOVA_WALLET ? 'novawallet' : 'walletconnect'}
+            size={280}
+          />
+        )}
 
         {validationError === ValidationErrors.EXPIRED && (
           <>
