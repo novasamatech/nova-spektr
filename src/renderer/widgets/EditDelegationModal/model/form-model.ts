@@ -335,30 +335,51 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ activeDelegations }) => {
-    const convictions = Object.values(activeDelegations).map((d) => d.conviction);
+  source: $networkStore,
+  filter: (network, { activeDelegations, shards }) => {
+    const convictions = shards.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+
+      return activeDelegations[address].conviction;
+    });
 
     return allEqual(convictions);
   },
-  fn: ({ activeDelegations }) => Object.values(activeDelegations)[0].conviction,
+  fn: (network, { activeDelegations, shards }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+
+    return activeDelegations[address].conviction;
+  },
   target: $delegateForm.fields.conviction.onChange,
 });
 
 sample({
   clock: formInitiated,
   source: $networkStore,
-  filter: (network, { activeDelegations }) => {
-    const balances = Object.values(activeDelegations).map((d) => d.balance);
+  filter: (network, { shards, activeDelegations }) => {
+    const balances = shards.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+
+      return activeDelegations[address].balance;
+    });
 
     return !!network && allEqual(balances, (a, b) => a.eq(b));
   },
-  fn: (network, { activeDelegations }) => {
-    const balance = Object.values(activeDelegations)[0].balance.toString();
+  fn: (network, { shards, activeDelegations }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+    const balance = activeDelegations[address].balance.toString();
     const precision = network!.asset.precision;
 
     return getBalanceBn(balance, precision).toString();
   },
   target: $delegateForm.fields.amount.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ shards }) => Object.keys(shards).length > 1,
+  fn: () => true,
+  target: $delegateForm.fields.isUnchanged.onChange,
 });
 
 sample({
