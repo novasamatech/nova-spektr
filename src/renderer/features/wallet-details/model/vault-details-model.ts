@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { chainsService } from '@/shared/api/network';
 import {
@@ -31,6 +31,8 @@ const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
 const $keysToAdd = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>([]).reset(
   accountsCreated,
 );
+
+const createAccountsFx = attach({ effect: accounts.createAccounts });
 
 const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
   return chainsService.getChainById(chainId);
@@ -78,11 +80,11 @@ sample({
 
     return accountsToCreate;
   },
-  target: accounts.createAccounts,
+  target: createAccountsFx,
 });
 
 sample({
-  clock: accounts.createAccounts.done,
+  clock: createAccountsFx.done,
   target: proxiesModel.events.workerStarted,
 });
 
