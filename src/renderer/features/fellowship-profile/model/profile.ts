@@ -35,8 +35,10 @@ const $isAccountExist = profileFeatureStatus.input.map(store => {
   return store.accounts.length > 0;
 });
 
-const $pendingMember = and(members.pending, $currentMember.map(nullable));
-const $pendingIdentity = and(identity.pending, $identity.map(nullable));
+const $pendingMember = and(
+  or(members.pending, identity.pending),
+  $members.map(m => m.length === 0),
+);
 
 const memberUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
 
@@ -63,5 +65,5 @@ export const profileModel = {
   $currentMember,
   $identity,
   $isAccountExist,
-  $pending: or($pendingMember, $pendingIdentity, profileFeatureStatus.isStarting),
+  $pending: or($pendingMember, profileFeatureStatus.isStarting),
 };
