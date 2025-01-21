@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
@@ -27,15 +27,16 @@ import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
-import { votingService } from '@/entities/governance';
+import { votingModel, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
   networkSelectorModel,
   tracksAggregate,
+  votingAggregate,
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -489,6 +490,30 @@ sample({
   filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
   fn: ({ network }) => ({ api: network!.api, chain: network!.chain }),
   target: tracksAggregate.events.requestTracks,
+});
+
+// TODO: On edit delegations we receive wrong data on this subscription. Need to resubscribe.
+sample({
+  clock: signModel.output.formSubmitted,
+  target: votingModel.events.unsubscribeVoting,
+});
+
+sample({
+  clock: combineEvents({
+    events: [submitModel.output.formSubmitted, votingModel.events.unsubscribeVoting],
+    reset: flowStarted,
+  }),
+  source: {
+    network: networkSelectorModel.$network,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
+  fn: ({ network, wallet }) => ({
+    api: network!.api,
+    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    chain: network!.chain,
+  }),
+  target: votingAggregate.events.requestVoting,
 });
 
 sample({
