@@ -1,29 +1,26 @@
-import { type MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
-import { BodyText, CaptionText, FootnoteText, HelpText, Icon, IconButton, Identicon } from '@/shared/ui';
+import { BodyText, CaptionText, FootnoteText, HelpText, Icon, Identicon } from '@/shared/ui';
 import { accountUtils } from '../../lib/account-utils';
 import { KeyIcon } from '../../lib/constants';
 
-type Props = {
+type Props = PropsWithChildren<{
   account: VaultChainAccount | VaultShardAccount[];
   addressPrefix?: number;
-  showInfoButton?: boolean;
   showSuffix?: boolean;
   className?: string;
   onClick?: () => void;
-  onInfoClick?: () => void;
-};
+}>;
 
 export const DerivedAccount = ({
   account,
   addressPrefix = SS58_PUBLIC_KEY_PREFIX,
-  showInfoButton = true,
   showSuffix,
   className,
+  children,
   onClick,
-  onInfoClick,
 }: Props) => {
   const isShardedAccount = accountUtils.isAccountWithShards(account);
   const chainWithAccountId = !isShardedAccount && account.accountId;
@@ -93,16 +90,16 @@ export const DerivedAccount = ({
       </button>
 
       <div className="absolute right-2 flex items-center">
-        {showInfoButton && (
-          <IconButton
+        {children && (
+          <div
             className={cnTw(
-              'absolute right-0 opacity-0 transition-opacity',
+              'absolute right-0 z-10 opacity-0 transition-opacity',
               'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
               showSuffix && 'hidden',
             )}
-            name="details"
-            onClick={onInfoClick}
-          />
+          >
+            {children}
+          </div>
         )}
 
         <div

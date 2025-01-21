@@ -1,17 +1,16 @@
-import { type MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, IconButton, Identicon } from '@/shared/ui';
+import { BodyText, Identicon } from '@/shared/ui';
 
-type Props = {
+type Props = PropsWithChildren<{
   name: string;
   accountId: AccountId;
   className?: string;
-  onInfoClick?: () => void;
-};
+}>;
 
-export const RootAccountLg = ({ name, accountId, className, onInfoClick }: Props) => {
+export const RootAccountLg = ({ name, accountId, className, children }: Props) => {
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
@@ -29,7 +28,7 @@ export const RootAccountLg = ({ name, accountId, className, onInfoClick }: Props
         <BodyText className="truncate text-text-secondary">{name}</BodyText>
       </div>
 
-      <IconButton name="details" className="mx-1.5" onClick={onInfoClick} />
+      {children ? <div className="mx-1.5 flex gap-2">{children}</div> : null}
     </div>
   );
 };
