@@ -24,6 +24,9 @@ export const VotingSummary = () => {
     'desc',
   );
 
+  const totalAyes = ayes.reduce((acc, v) => acc + v.votes, 0);
+  const totalNays = nays.reduce((acc, v) => acc + v.votes, 0);
+
   return (
     <div className="flex flex-col items-start gap-3">
       <Skeleton active={pending} fullWidth>
@@ -31,7 +34,7 @@ export const VotingSummary = () => {
           <div className="h-3 w-1 rounded-[0.25em] bg-icon-positive" />
           <FootnoteText>{t('governance.referendum.aye')}</FootnoteText>
           <FootnoteText className="grow text-end">
-            {t('fellowship.votingHistory.votes', { count: ayes.length })}
+            {t('fellowship.votingHistory.votes', { count: totalAyes })}
           </FootnoteText>
         </div>
       </Skeleton>
@@ -40,7 +43,7 @@ export const VotingSummary = () => {
           <div className="h-3 w-1 rounded-[4px] bg-icon-negative" />
           <FootnoteText>{t('governance.referendum.nay')}</FootnoteText>
           <FootnoteText className="grow text-end">
-            {t('fellowship.votingHistory.votes', { count: nays.length })}
+            {t('fellowship.votingHistory.votes', { count: totalNays })}
           </FootnoteText>
         </div>
       </Skeleton>
