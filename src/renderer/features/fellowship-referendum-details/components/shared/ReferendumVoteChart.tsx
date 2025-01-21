@@ -1,4 +1,4 @@
-import { BN_BILLION, BN_MILLION } from '@polkadot/util';
+import { BN_MILLION } from '@polkadot/util';
 import { useGate, useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
@@ -7,7 +7,7 @@ import { nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { VoteChart } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
-import { type Referendum, collectiveDomain } from '@/domains/collectives';
+import { type Referendum, referendumService } from '@/domains/collectives';
 import { referendumsDetailsFeatureStatus } from '../../model/status';
 import { thresholdsModel } from '../../model/thresholds';
 
@@ -40,16 +40,14 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
     }
   }
 
-  if (nullable(thresholds) || collectiveDomain.referendumService.isCompleted(referendum)) {
+  if (nullable(thresholds) || referendumService.isCompleted(referendum)) {
     return null;
   }
 
-  const perbillMultiplier = BN_MILLION.muln(10);
-
-  const aye = thresholds.approval.value.div(perbillMultiplier).toNumber();
-  const nay =
-    referendum.tally.nays > 0 ? BN_BILLION.sub(thresholds.approval.value).div(perbillMultiplier).toNumber() : 0;
-  const threshold = thresholds.approval.threshold.div(perbillMultiplier).toNumber();
+  const total = referendum.tally.ayes + referendum.tally.nays;
+  const aye = (referendum.tally.ayes * 100_000) / total / 1000;
+  const nay = (referendum.tally.nays * 100_000) / total / 1000;
+  const threshold = thresholds.approval.threshold.div(BN_MILLION).toNumber() / 10;
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
   const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} />;
