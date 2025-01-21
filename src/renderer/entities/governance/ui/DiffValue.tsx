@@ -10,9 +10,10 @@ type Props = {
   suffix?: ReactNode;
   diff: ReactNode;
   positive?: boolean;
+  equal?: boolean;
 };
 
-export const DiffValue = ({ className, from, to, diff, suffix = null, positive }: Props) => {
+export const DiffValue = ({ className, from, to, diff, suffix = null, equal, positive }: Props) => {
   return (
     <div className={cnTw('flex flex-col items-end', className)}>
       <FootnoteText className="flex items-center gap-0.5 text-text-primary">
@@ -22,11 +23,12 @@ export const DiffValue = ({ className, from, to, diff, suffix = null, positive }
         {suffix}
       </FootnoteText>
       <FootnoteText className="flex items-center text-tab-text-accent">
-        {positive ? (
-          <Icon name="arrowDoubleUp" size={16} className="text-inherit" />
-        ) : (
-          <Icon name="arrowDoubleDown" size={16} className="text-inherit" />
-        )}
+        {!equal &&
+          (positive ? (
+            <Icon name="arrowDoubleUp" size={16} className="text-inherit" />
+          ) : (
+            <Icon name="arrowDoubleDown" size={16} className="text-inherit" />
+          ))}
         <span>{diff}</span>
       </FootnoteText>
     </div>

@@ -30,6 +30,7 @@ export const LockValueDiff = ({ from, to, asset }: Props) => {
       to={<AssetBalance value={reusableTo} asset={asset} showSymbol={false} className="text-inherit" />}
       diff={<AssetBalance value={diff} asset={asset} className="text-inherit" />}
       suffix={asset.symbol}
+      equal={diff.isZero()}
       positive={diff.gten(0)}
     />
   );

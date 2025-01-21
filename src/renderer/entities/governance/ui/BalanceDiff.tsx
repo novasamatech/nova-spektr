@@ -34,6 +34,7 @@ export const BalanceDiff = memo(({ from, to, asset, lock = BN_ZERO }: Props) => 
       to={<AssetBalance value={realTo} asset={asset} showSymbol={false} className="text-inherit" />}
       diff={<AssetBalance value={diff.abs()} asset={asset} className="text-inherit" />}
       suffix={asset.symbol}
+      equal={diff.isZero()}
       positive={diff.gten(0)}
     />
   );

@@ -66,6 +66,7 @@ const $shards = createStore<AnyAccount[]>([]);
 const $delegateBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
+const $previousConviction = createStore<Conviction>('None');
 
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
@@ -383,6 +384,17 @@ sample({
 });
 
 sample({
+  clock: formInitiated,
+  source: $networkStore,
+  fn: (network, { activeDelegations, shards }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+
+    return activeDelegations[address].conviction;
+  },
+  target: $previousConviction,
+});
+
+sample({
   clock: txWrapperChanged,
   target: spread({
     isProxy: $isProxy,
@@ -488,6 +500,7 @@ export const formModel = {
   $accountsBalances,
   $delegateBalanceRange,
   $proxyBalance,
+  $previousConviction,
 
   $feeData,
   $isFeeLoading,
