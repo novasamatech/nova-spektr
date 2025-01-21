@@ -268,12 +268,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                             <Popover key={derivationPath} align="end">
                               <Popover.Trigger>
                                 <div className="w-full pt-2">
-                                  <DerivedAccount
-                                    key={derivationPath}
-                                    account={account}
-                                    showInfoButton={false}
-                                    showSuffix={isAltPressed}
-                                  />
+                                  <DerivedAccount key={derivationPath} account={account} showSuffix={isAltPressed} />
                                 </div>
                               </Popover.Trigger>
                               <Popover.Content>
