@@ -20,11 +20,11 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
   if (!lockPeriods) return null;
   const date = new Date(0);
 
-  const fromLockPeriod = formatDistanceStrict(lockPeriods[from] * 1000, date, {
+  const fromLockPeriod = formatDistanceStrict(lockPeriods[from], date, {
     unit: 'day',
     locale: dateLocale,
   });
-  const toLockPeriod = formatDistanceStrict(lockPeriods[to] * 1000, date, {
+  const toLockPeriod = formatDistanceStrict(lockPeriods[to], date, {
     unit: 'day',
     locale: dateLocale,
   });
