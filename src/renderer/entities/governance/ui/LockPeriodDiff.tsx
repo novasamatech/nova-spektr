@@ -40,6 +40,7 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
       diff={t('time.days', {
         count: parseInt(formatDistanceStrict(lockPeriods[to], lockPeriods[from], { unit: 'day', locale: dateLocale })),
       })}
+      equal={from === to}
       positive={lockPeriods[to] - lockPeriods[from] >= 0}
     />
   );
