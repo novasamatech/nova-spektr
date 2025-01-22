@@ -26,14 +26,16 @@ export const DerivedAccount = ({
   const chainWithAccountId = !isShardedAccount && account.accountId;
   const chainWithoutAccountId = !isShardedAccount && !account.accountId;
 
-  const handleClick = (fn?: (e: MouseEvent<HTMLButtonElement>) => void) => {
-    return (event: MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (fn?: () => void) => {
+    return (event: MouseEvent<HTMLElement>) => {
       if (!fn) return;
 
       event.stopPropagation();
-      fn(event);
+      fn();
     };
   };
+
+  const Tag = onClick ? 'button' : 'div';
 
   return (
     <div
@@ -43,7 +45,7 @@ export const DerivedAccount = ({
         className,
       )}
     >
-      <button className="flex w-full items-center gap-x-2 rounded px-2 py-1.5" onClick={handleClick(onClick)}>
+      <Tag className="flex w-full items-center gap-x-2 rounded px-2 py-1.5" onClick={handleClick(onClick)}>
         {isShardedAccount && (
           <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
             <CaptionText className="text-text-secondary">{account.length}</CaptionText>
@@ -87,7 +89,7 @@ export const DerivedAccount = ({
             </HelpText>
           )}
         </div>
-      </button>
+      </Tag>
 
       <div className="absolute right-2 flex items-center">
         {children && (

@@ -1,8 +1,9 @@
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, IconButton } from '@/shared/ui';
-import { Accordion, Box, Popover } from '@/shared/ui-kit';
+import { FootnoteText, HelpText } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
+import { Accordion, Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { accountUtils } from '../../lib/account-utils';
 import { DerivedAccount } from '../Cards/DerivedAccount';
@@ -37,6 +38,9 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                 <ul>
                   {accountsMap[chain.chainId].map((account) => {
                     const isSharded = accountUtils.isAccountWithShards(account);
+                    const accountId = isSharded ? account.at(0)?.accountId : account.accountId;
+
+                    if (!accountId) return null;
 
                     return (
                       <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
@@ -45,21 +49,16 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                           addressPrefix={chain.addressPrefix}
                           onClick={isSharded ? () => onShardClick?.(account) : undefined}
                         >
-                          <Popover side="bottom" align="end">
-                            <Popover.Trigger>
-                              <IconButton name="details" />
-                            </Popover.Trigger>
-                            <Popover.Content>
-                              <Box gap={0.5} padding={4} width="230px">
-                                <FootnoteText className="text-text-tertiary">
-                                  {t('general.explorers.derivationTitle')}
-                                </FootnoteText>
-                                <HelpText className="break-all text-text-secondary">
-                                  {accountUtils.getDerivationPath(account)}
-                                </HelpText>
-                              </Box>
-                            </Popover.Content>
-                          </Popover>
+                          <AccountExplorers accountId={accountId} chain={chain}>
+                            <Box gap={0.5}>
+                              <FootnoteText className="text-text-tertiary">
+                                {t('general.explorers.derivationTitle')}
+                              </FootnoteText>
+                              <HelpText className="break-all text-text-secondary">
+                                {accountUtils.getDerivationPath(account)}
+                              </HelpText>
+                            </Box>
+                          </AccountExplorers>
                         </DerivedAccount>
                       </li>
                     );
