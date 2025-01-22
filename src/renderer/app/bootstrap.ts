@@ -63,15 +63,15 @@ const configureDomains = () => {
   return config;
 };
 
-const populate = () => {
-  accounts.populate();
-  walletModel.populate();
+const populate = async () => {
+  await networkModel.startNetworks();
+  await accounts.populate();
+  await walletModel.populate();
+  proxiesModel.findAllProxies();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
   governanceModel.events.governanceStarted();
-  proxiesModel.events.workerStarted();
-  networkModel.events.networkStarted();
   proxyModel.events.proxyStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();

@@ -485,7 +485,7 @@ sample({
 
 sample({
   clock: flowFinished,
-  target: proxiesModel.events.workerStarted,
+  target: proxiesModel.findAllProxies,
 });
 
 sample({

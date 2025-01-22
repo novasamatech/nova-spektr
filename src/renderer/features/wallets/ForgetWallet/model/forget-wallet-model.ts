@@ -8,6 +8,7 @@ import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { proxiesModel } from '@/features/proxies';
 
 const { deleteMultisigTxs } = useForgetMultisig();
 
@@ -143,6 +144,12 @@ sample({
     source: $callbacks,
     effect: (state) => state?.onDeleteFinished(),
   }),
+});
+
+// TODO this connection is dirty, we should decouple wallet delete logic and proxy manipulation.
+sample({
+  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
+  target: proxiesModel.findAllProxies,
 });
 
 export const forgetWalletModel = {

@@ -2,7 +2,8 @@ import { type NoID, type PartialProxiedAccount, type ProxyAccount } from '@/shar
 import { AccountType, ChainType, CryptoType, ProxyVariant } from '@/shared/core';
 import { TEST_ACCOUNTS, TEST_ADDRESS } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { proxyWorkerUtils } from '../worker-utils';
+
+import { proxyWorkerUtils } from './worker-utils';
 
 describe('features/proxies/lib/worker-utils', () => {
   test('should return true when oldProxy and newProxy have the same properties', () => {

@@ -66,7 +66,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
             !typedParams.multisigError &&
             isProxyTypeTransaction(multisigTx.transaction)
           ) {
-            proxiesModel.events.workerStarted();
+            proxiesModel.findAllProxies();
           }
 
           if (isReject) {

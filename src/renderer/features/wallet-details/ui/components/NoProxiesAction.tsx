@@ -6,7 +6,7 @@ import { ProxyPopover } from '@/entities/proxy';
 type Props = {
   canCreateProxy?: boolean;
   className?: string;
-  onAddProxy: () => void;
+  onAddProxy?: () => void;
 };
 
 export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }: Props) => {

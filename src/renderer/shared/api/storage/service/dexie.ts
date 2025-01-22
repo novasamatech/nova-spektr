@@ -151,6 +151,10 @@ export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
 };
 
+export const deleteDb = async () => {
+  await dexie.delete();
+};
+
 export const storage = new StorageFactory(dexie);
 
 export const dexieStorage = {

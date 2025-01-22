@@ -7,6 +7,7 @@ import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { proxiesModel } from '@/features/proxies';
 import { walletConnect, walletConnectService } from '@/features/wallet-wallet-connect';
 import { Step } from '../lib/constants';
 
@@ -69,6 +70,11 @@ sample({
     };
   },
   target: createWalletConnectWalletFx,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.done,
+  target: proxiesModel.findAllProxies,
 });
 
 sample({
