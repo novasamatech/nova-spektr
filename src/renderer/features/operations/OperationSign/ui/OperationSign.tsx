@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { type HexString } from '@/shared/core';
 import { Loader } from '@/shared/ui';
@@ -14,6 +14,8 @@ type Props = {
 };
 
 export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
+  useGate(signModel.gates.flow);
+
   const apis = useUnit(signModel.$apis);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
