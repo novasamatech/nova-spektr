@@ -3,7 +3,7 @@ import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { exportDb } from '@/shared/api/storage';
+import { deleteDb, exportDb } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
@@ -59,6 +59,10 @@ export const GeneralActions = () => {
     exportDb().then((data) => {
       downloadFiles([data]);
     });
+  };
+  const deleteDatabase = () => {
+    deleteDb();
+    window.location.reload();
   };
 
   return (
@@ -120,8 +124,8 @@ export const GeneralActions = () => {
       </Plate>
 
       {isDev() && (
-        <Plate>
-          <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
+        <Plate className="flex flex-col gap-2">
+          <BodyText className="flex items-center justify-center gap-1 text-alert">
             <Icon name="warn" size={12} className="text-inherit" />
             {/* eslint-disable i18next/no-literal-string */}
             <span>DEV MODE</span>
@@ -132,6 +136,13 @@ export const GeneralActions = () => {
             onClick={exportDatabase}
           >
             {t('importDB.exportButton')}
+          </Button>
+          <Button
+            pallet="secondary"
+            className="w-full border border-negative-action-background bg-alert-background-negative"
+            onClick={deleteDatabase}
+          >
+            {t('importDB.deleteButton')}
           </Button>
         </Plate>
       )}

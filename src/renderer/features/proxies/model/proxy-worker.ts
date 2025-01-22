@@ -6,7 +6,6 @@ import * as Sc from '@substrate/connect';
 
 import {
   type Chain,
-  type ChainId,
   type Connection,
   ConnectionType,
   type NoID,
@@ -16,101 +15,53 @@ import {
   type ProxyDeposits,
   type ProxyType,
   ProxyVariant,
-  type VaultBaseAccount,
 } from '@/shared/core';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
-export const proxyWorker = {
-  initConnection,
-  getProxies,
-  disconnect,
-};
+async function connect(chain: Chain, connection: Connection) {
+  let provider: ProviderInterface | undefined;
 
-export const state: { apis: Record<ChainId, ApiPromise> } = {
-  apis: {},
-};
+  if (!connection || connection.connectionType === ConnectionType.AUTO_BALANCE) {
+    provider = new WsProvider(chain.nodes.concat(connection?.customNodes || []).map((node) => node.url));
+  } else if (connection.connectionType === ConnectionType.RPC_NODE) {
+    provider = new WsProvider([connection.activeNode?.url || '']);
+  } else if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
+    const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
 
-const InitConnectionsResult = {
-  SUCCESS: 'success',
-  FAILED: 'failed',
-};
-
-function initConnection(chain?: Chain, connection?: Connection) {
-  return new Promise((resolve, reject) => {
-    if (!chain) {
-      console.error('proxy-worker: chain not provided');
-      reject();
-
-      return;
+    if (knownChainId) {
+      provider = new ScProvider(Sc, knownChainId);
+      provider.connect();
     }
+  }
 
-    try {
-      let provider: ProviderInterface | undefined;
-
-      if (!connection || connection.connectionType === ConnectionType.AUTO_BALANCE) {
-        provider = new WsProvider(chain.nodes.concat(connection?.customNodes || []).map((node) => node.url));
-      } else if (connection.connectionType === ConnectionType.RPC_NODE) {
-        provider = new WsProvider([connection.activeNode?.url || '']);
-      } else if (connection.connectionType === ConnectionType.LIGHT_CLIENT) {
-        try {
-          const knownChainId = proxyWorkerUtils.getKnownChain(chain.chainId);
-
-          if (knownChainId) {
-            provider = new ScProvider(Sc, knownChainId);
-            provider.connect();
-          }
-        } catch (e) {
-          console.error('proxy-worker: light client not connected', e);
-          reject();
-
-          return;
-        }
-      }
-
-      if (!provider) {
-        console.error('proxy-worker: provider not connected');
-        reject();
-
-        return;
-      }
-
-      provider.on('connected', async () => {
-        state.apis[chain.chainId] = await ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
-
-        resolve(InitConnectionsResult.SUCCESS);
-      });
-    } catch (e) {
-      console.error('proxy-worker: error in initConnection', e);
-
-      reject();
-    }
-  });
+  return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 }
 
-async function disconnect(chainId: ChainId) {
-  if (!proxyWorkerUtils.isApiConnected(state.apis, chainId)) return;
-
-  await state.apis[chainId].disconnect();
+function disconnect(api: ApiPromise) {
+  return api.disconnect();
 }
 
-type GetProxiesParams = {
-  chainId: ChainId;
-  accountsForProxy: Record<AccountId, VaultBaseAccount>;
-  accountsForProxied: Record<AccountId, VaultBaseAccount>;
+export type GetProxiesParams = {
+  chain: Chain;
+  connection: Connection;
+  accountsForProxy: Record<AccountId, AnyAccount>;
+  accountsForProxied: Record<AccountId, AnyAccount>;
   proxiedAccounts: ProxiedAccount[];
   proxies: ProxyAccount[];
 };
 // TODO: Refactor this code
 async function getProxies({
-  chainId,
+  chain,
+  connection,
   accountsForProxy,
   accountsForProxied,
   proxiedAccounts,
   proxies,
 }: GetProxiesParams) {
-  const api = state.apis[chainId];
+  const api = await connect(chain, connection);
 
   const existingProxies: NoID<ProxyAccount>[] = [];
   const proxiesToAdd: NoID<ProxyAccount>[] = [];
@@ -119,7 +70,7 @@ async function getProxies({
   const proxiedAccountsToAdd: PartialProxiedAccount[] = [];
 
   const deposits: ProxyDeposits = {
-    chainId: chainId,
+    chainId: chain.chainId,
     deposits: {},
   };
 
@@ -138,7 +89,7 @@ async function getProxies({
 
         for (const delegatedAccount of value.accounts) {
           const newProxy: NoID<ProxyAccount> = {
-            chainId,
+            chainId: chain.chainId,
             proxiedAccountId: account,
             accountId: delegatedAccount.delegate,
             // TODO support all proxy types
@@ -175,7 +126,7 @@ async function getProxies({
 
         for (const delegatedAccount of value.accounts) {
           const newProxy: NoID<ProxyAccount> = {
-            chainId,
+            chainId: chain.chainId,
             proxiedAccountId: account,
             accountId: delegatedAccount.delegate,
             // TODO support all proxy types
@@ -220,6 +171,8 @@ async function getProxies({
     );
   });
 
+  disconnect(api);
+
   return {
     proxiesToAdd,
     proxiesToRemove,
@@ -229,7 +182,11 @@ async function getProxies({
   };
 }
 
+export const proxyWorker = {
+  getProxies,
+};
+
 // @ts-expect-error TODO fix
 const endpoint = createEndpoint(self);
 
-endpoint.expose({ initConnection, getProxies, disconnect });
+endpoint.expose({ getProxies });

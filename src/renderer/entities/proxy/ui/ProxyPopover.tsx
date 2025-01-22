@@ -14,7 +14,7 @@ export const ProxyPopover = ({ children }: PropsWithChildren) => {
   // const infoLink = <InfoLink url={WIKI_LINK} className="text-footnote text-tab-text-accent" />;
 
   return (
-    <Popover>
+    <Popover dialog>
       <Popover.Trigger>
         <div className="h-4">
           {children ? (

@@ -85,7 +85,7 @@ sample({
 
 sample({
   clock: createAccountsFx.done,
-  target: proxiesModel.events.workerStarted,
+  target: proxiesModel.findAllProxies,
 });
 
 export const vaultDetailsModel = {

@@ -1,5 +1,5 @@
-import { type UnitValue, combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { readonly } from 'patronum';
+import { type UnitValue, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -94,6 +94,11 @@ const $availableAccounts = combine($walletIdsSerialized, accounts.$list, (wallet
 
   return accounts.filter((a) => a.walletId in ids);
 });
+
+const $populated = restore(
+  $rawWallets.updates.map(() => true),
+  false,
+);
 
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
   const wallets = await storageService.wallets.readAll();
@@ -404,7 +409,7 @@ export const walletModel = {
   $activeWallet,
   $activeAccounts,
   $availableAccounts,
-  $isLoadingWallets: fetchAllWalletsFx.pending,
+  $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
   createWallet: walletCreatedFx,
   populate: fetchAllWalletsFx,

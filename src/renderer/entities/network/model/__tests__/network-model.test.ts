@@ -56,7 +56,7 @@ describe('entities/network/model/network-model', () => {
     mockStorage({ chains: mockChainMap });
     const scope = fork();
 
-    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.startNetworks, { scope });
     expect(scope.getState(networkModel.$chains)).toEqual(mockChainMap);
   });
 
@@ -64,7 +64,7 @@ describe('entities/network/model/network-model', () => {
     mockStorage({ chains: mockChainMap });
     const scope = fork();
 
-    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.startNetworks, { scope });
     expect(scope.getState(networkModel.$connectionStatuses)).toEqual({ '0x01': ConnectionStatus.DISCONNECTED });
   });
 
@@ -73,7 +73,7 @@ describe('entities/network/model/network-model', () => {
 
     const scope = fork();
 
-    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.startNetworks, { scope });
     expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': mockConnection });
   });
 
@@ -88,7 +88,7 @@ describe('entities/network/model/network-model', () => {
 
     const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
 
-    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.startNetworks, { scope });
 
     expect(spyCreateProvider).toHaveBeenCalledWith(
       mockChainMap['0x01'].chainId,
@@ -122,7 +122,7 @@ describe('entities/network/model/network-model', () => {
     const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
     const scope = fork();
 
-    await allSettled(networkModel.events.networkStarted, { scope });
+    await allSettled(networkModel.startNetworks, { scope });
 
     expect(connectMock).toHaveBeenCalled();
     expect(spyCreateProvider).toHaveBeenCalledWith(

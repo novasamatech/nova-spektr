@@ -296,12 +296,9 @@ sample({
       extrinsicIndex,
     };
 
-    return {
-      proxiedAccounts: [proxiedAccount],
-      chains: { [chain.chainId]: chain },
-    };
+    return [proxiedAccount];
   },
-  target: proxiesModel.events.proxiedWalletsCreated,
+  target: proxiesModel.createProxiesWallets,
 });
 
 sample({
