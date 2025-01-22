@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
@@ -36,6 +36,7 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { proxiesModel } from '@/features/proxies';
 import { walletPairingModel } from '@/features/wallet-pairing';
 import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
@@ -43,6 +44,8 @@ import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
 import { walletProviderModel } from './wallet-provider-model';
+
+const createWalletFx = attach({ effect: walletModel.createWallet });
 
 const flow = createGate();
 
@@ -53,10 +56,6 @@ const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const signerSelected = createEvent<AnyAccount>();
 
-const walletCreated = createEvent<{
-  name: string;
-  threshold: number;
-}>();
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -258,21 +257,24 @@ sample({
       external: false,
     };
   },
-  target: walletModel.events.multisigCreated,
+  target: createWalletFx,
 });
 
 sample({
-  clock: walletModel.events.walletCreationFail,
-  filter: ({ params }) => params.wallet.type === WalletType.MULTISIG,
+  clock: createWalletFx.fail,
   fn: ({ error }) => error.message,
   target: $error,
 });
 
 sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet, external }) => wallet.type === WalletType.MULTISIG && !external,
+  clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
   target: walletProviderModel.events.completed,
+});
+
+sample({
+  clock: createWalletFx.doneData,
+  target: proxiesModel.findAllProxies,
 });
 
 // Submit
@@ -492,7 +494,6 @@ export const flowModel = {
   $isEnoughBalance,
   events: {
     signerSelected,
-    walletCreated,
     stepChanged,
     feeChanged,
     multisigDepositChanged,
