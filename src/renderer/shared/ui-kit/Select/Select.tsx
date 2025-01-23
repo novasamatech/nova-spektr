@@ -116,6 +116,7 @@ const Content = ({ children }: PropsWithChildren) => {
           avoidCollisions={false}
           collisionPadding={gridSpaceConverter(2)}
           sideOffset={gridSpaceConverter(2)}
+          align="center"
           style={{ width: 'var(--radix-select-trigger-width)' }}
           data-testid={testId}
         >
@@ -124,7 +125,7 @@ const Content = ({ children }: PropsWithChildren) => {
             className={cnTw(
               'z-50 flex flex-col',
               'h-max max-h-[--radix-popper-available-height] min-w-20',
-              'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
               {
                 'border-border-dark bg-background-dark': theme === 'dark',
               },
