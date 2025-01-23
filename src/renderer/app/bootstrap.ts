@@ -16,6 +16,7 @@ import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
+import { extensionWalletFeature } from '@/features/extension-wallet';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -43,8 +44,6 @@ import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
-
-import { extensionWalletFeature } from 'src/renderer/features/extension-wallet';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });

@@ -8,9 +8,8 @@ import { series } from '@/shared/effector';
 import { assert, createTxMetadata, toAddress } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { polkadotExtensionService } from '@/features/extension-wallet';
 import { type SigningPayload } from '../lib/types';
-
-import { polkadotExtensionService } from 'src/renderer/features/extension-wallet';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 

@@ -15,12 +15,11 @@ import {
   WalletType,
   type WatchOnlyWallet,
 } from '@/shared/core';
-
 import {
   type PolkadotExtensionWallet,
   type SubWalletExtensionWallet,
   type TalismanExtensionWallet,
-} from 'src/renderer/features/extension-wallet';
+} from '@/features/extension-wallet';
 
 export const walletUtils = {
   isPolkadotVault,
