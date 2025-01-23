@@ -384,6 +384,13 @@ sample({
 });
 
 sample({
+  clock: $delegateForm.fields.isUnchanged.onChange,
+  filter: Boolean,
+  fn: (): Conviction => 'None',
+  target: $delegateForm.fields.conviction.onChange,
+});
+
+sample({
   clock: formInitiated,
   source: $networkStore,
   fn: (network, { activeDelegations, shards }) => {
