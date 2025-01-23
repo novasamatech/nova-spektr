@@ -6,6 +6,7 @@ import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/util
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { lockPeriodsModel } from '@/features/governance';
 import { type BalanceMap, type NetworkStore } from '@/widgets/Transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
@@ -130,6 +131,11 @@ sample({
 sample({
   clock: validateFx.doneData,
   target: txValidated,
+});
+
+sample({
+  clock: validateFx,
+  target: lockPeriodsModel.events.requestLockPeriods,
 });
 
 export const delegateValidateModel = {
