@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { delay, spread } from 'patronum';
+import { combineEvents, delay, spread } from 'patronum';
 
 import {
   type Account,
@@ -16,10 +16,11 @@ import {
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
+import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { delegationAggregate, networkSelectorModel } from '@/features/governance';
+import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { revokeDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
@@ -349,6 +350,29 @@ sample({
     event: signModel.events.formInitiated,
     step: stepChanged,
   }),
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  target: votingModel.events.unsubscribeVoting,
+});
+
+sample({
+  clock: combineEvents({
+    events: [submitModel.output.formSubmitted, votingModel.events.unsubscribeVoting],
+    reset: flowStarted,
+  }),
+  source: {
+    network: networkSelectorModel.$network,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
+  fn: ({ network, wallet }) => ({
+    api: network!.api,
+    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    chain: network!.chain,
+  }),
+  target: votingAggregate.events.requestVoting,
 });
 
 sample({
