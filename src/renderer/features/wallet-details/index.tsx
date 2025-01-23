@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { IconButton } from '@/shared/ui';
-import { walletActionsSlot as pjsExtensionActionsSlot } from '@/features/polkadot-extension-wallet';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/wallet-multisig';
 import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/wallet-polkadot-vault';
 import { walletActionsSlot as proxiedActionsSlot } from '@/features/wallet-proxied';
@@ -11,6 +10,8 @@ import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet
 import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/wallet-watch-only';
 
 import { WalletDetails } from './ui/components/WalletDetails';
+
+import { walletActionsSlot as pjsExtensionActionsSlot } from 'src/renderer/features/extension-wallet';
 
 export { WalletDetails };
 

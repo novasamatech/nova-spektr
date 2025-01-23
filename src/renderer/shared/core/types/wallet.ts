@@ -91,7 +91,9 @@ export const enum WalletType {
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
   PROXIED = 'wallet_pxd',
-  POLKADOT_EXTENSION = 'wallet_pe',
+  POLKADOT_EXTENSION = 'wallet_polkadot_ext',
+  TALISMAN_EXTENSION = 'wallet_talisman_ext',
+  SUBWALLET_EXTENSION = 'wallet_subwallet_ext',
 
   // Legacy
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
@@ -101,6 +103,8 @@ export const enum WalletType {
 export type SignableWalletFamily =
   | WalletType.POLKADOT_VAULT
   | WalletType.POLKADOT_EXTENSION
+  | WalletType.TALISMAN_EXTENSION
+  | WalletType.SUBWALLET_EXTENSION
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET
   | WalletType.MULTISHARD_PARITY_SIGNER
@@ -109,6 +113,8 @@ export type SignableWalletFamily =
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
   | WalletType.POLKADOT_EXTENSION
+  | WalletType.TALISMAN_EXTENSION
+  | WalletType.SUBWALLET_EXTENSION
   | WalletType.MULTISIG
   | WalletType.FLEXIBLE_MULTISIG
   | WalletType.WATCH_ONLY
@@ -125,7 +131,7 @@ export const enum SigningType {
   PARITY_SIGNER = 'signing_ps',
   MULTISIG = 'signing_ms',
   POLKADOT_VAULT = 'signing_pv',
-  POLKADOT_EXTENSION = 'signing_pe',
+  EXTENSION = 'signing_ext',
   WALLET_CONNECT = 'signing_wc',
 }
 

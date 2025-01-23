@@ -2,9 +2,10 @@ import { memo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
-import { Accordion, Box } from '@/shared/ui-kit';
+import { Accordion, Box, Label } from '@/shared/ui-kit';
 import { WalletCardMd } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {
+  const { t } = useI18n();
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -41,6 +43,7 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
           <Icon name={icon} size={20} />
           <span>{title}</span>
           <span className="text-text-tertiary">{wallets.length}</span>
+          <Label variant="blue">{t('onboarding.extension.beta')}</Label>
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>

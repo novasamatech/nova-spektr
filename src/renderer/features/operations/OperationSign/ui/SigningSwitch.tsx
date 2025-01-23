@@ -1,7 +1,7 @@
 import { SigningType } from '@/shared/core';
 import { type SigningProps } from '../lib/types';
 
-import { PolkadotExtension } from './PolkadotExtension';
+import { Extension } from './Extension';
 import { PolkadotVault } from './PolkadotVault';
 import { WalletConnect } from './WalletConnect';
 import { WatchOnly } from './WatchOnly';
@@ -9,7 +9,7 @@ import { WatchOnly } from './WatchOnly';
 const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
   [SigningType.MULTISIG]: (props) => <PolkadotVault {...props} />,
   [SigningType.POLKADOT_VAULT]: (props) => <PolkadotVault {...props} />,
-  [SigningType.POLKADOT_EXTENSION]: (props) => <PolkadotExtension {...props} />,
+  [SigningType.EXTENSION]: (props) => <Extension {...props} />,
   [SigningType.PARITY_SIGNER]: (props) => <PolkadotVault {...props} />,
   [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
   [SigningType.WATCH_ONLY]: (props) => <WatchOnly {...props} />,

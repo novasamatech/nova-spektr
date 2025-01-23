@@ -24,7 +24,6 @@ import { importDBFeature } from '@/features/import-db';
 import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
-import { polkadotExtensionWalletFeature } from '@/features/polkadot-extension-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
@@ -44,6 +43,8 @@ import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
+
+import { extensionWalletFeature } from 'src/renderer/features/extension-wallet';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -111,7 +112,7 @@ export const bootstrap = () => {
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
-    polkadotExtensionWalletFeature,
+    extensionWalletFeature,
 
     governanceOperationDetailFeature,
     multisigOperationDetailsFeature,

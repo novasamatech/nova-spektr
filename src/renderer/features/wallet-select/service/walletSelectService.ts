@@ -9,9 +9,11 @@ const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, 
     [WalletType.FLEXIBLE_MULTISIG]: [],
     [WalletType.NOVA_WALLET]: [],
     [WalletType.WALLET_CONNECT]: [],
+    [WalletType.POLKADOT_EXTENSION]: [],
+    [WalletType.TALISMAN_EXTENSION]: [],
+    [WalletType.SUBWALLET_EXTENSION]: [],
     [WalletType.WATCH_ONLY]: [],
     [WalletType.PROXIED]: [],
-    [WalletType.POLKADOT_EXTENSION]: [],
   };
 
   return wallets.reduce<Record<WalletFamily, Wallet[]>>((acc, wallet) => {
@@ -25,6 +27,8 @@ const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, 
     if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
     if (walletUtils.isProxied(wallet)) groupIndex = WalletType.PROXIED;
     if (walletUtils.isPolkadotExtension(wallet)) groupIndex = WalletType.POLKADOT_EXTENSION;
+    if (walletUtils.isTalismanExtension(wallet)) groupIndex = WalletType.TALISMAN_EXTENSION;
+    if (walletUtils.isSubWalletExtension(wallet)) groupIndex = WalletType.SUBWALLET_EXTENSION;
 
     if (groupIndex && includes(wallet.name, query)) {
       acc[groupIndex].push(wallet);

@@ -9,7 +9,7 @@ import { Paths } from '@/shared/routes';
 import { type AnyAccountDraft } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
-import { type ExtensionType, type PolkadotExtensionAccount } from '../types';
+import { type ExtensionAccount, type ExtensionType } from '../types';
 
 import { wallets } from './wallets';
 
@@ -19,7 +19,7 @@ type ConnectedAccount = WalletAccount & {
   type: 'sr25519' | 'ed25519' | 'ecdsa' | 'ethereum';
 };
 
-type AccountDraft = AnyAccountDraft<PolkadotExtensionAccount>;
+type AccountDraft = AnyAccountDraft<ExtensionAccount>;
 
 const reconnect = createEvent();
 const create = createEvent<{ name: string; account: AccountDraft }>();
@@ -29,7 +29,7 @@ const flow = createGate<{ extension: ExtensionType | null }>({ defaultState: { e
 const $extensionType = flow.state.map(({ extension }) => extension);
 const $wallet = combine(
   $extensionType,
-  wallets.$connectedWallets,
+  wallets.$extensionWallets,
   (type, wallets) => wallets.find((w) => w.extensionName === type) ?? null,
 );
 const $step = createStore<Step>('idle');
@@ -40,6 +40,17 @@ const cryptoTypeMap: Record<ConnectedAccount['type'], CryptoType> = {
   ed25519: CryptoType.ED25519,
   ethereum: CryptoType.ETHEREUM,
   sr25519: CryptoType.SR25519,
+};
+
+const WalletTypeFromExtension = (extension: ExtensionType) => {
+  switch (extension) {
+    case 'polkadot-js':
+      return WalletType.POLKADOT_EXTENSION;
+    case 'subwallet-js':
+      return WalletType.SUBWALLET_EXTENSION;
+    case 'talisman':
+      return WalletType.TALISMAN_EXTENSION;
+  }
 };
 
 const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType) => {
@@ -54,7 +65,7 @@ const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType
       cryptoType: type ? (cryptoTypeMap[type] ?? CryptoType.SR25519) : CryptoType.SR25519,
       name: name ?? toShortAddress(address),
       type: 'universal',
-      signingType: SigningType.POLKADOT_EXTENSION,
+      signingType: SigningType.EXTENSION,
     };
   });
 });
@@ -101,9 +112,8 @@ sample({
       external: false,
       wallet: {
         name: name.trim(),
-        extension: account.extension,
-        type: WalletType.POLKADOT_EXTENSION,
-        signingType: SigningType.POLKADOT_EXTENSION,
+        type: WalletTypeFromExtension(account.extension),
+        signingType: SigningType.EXTENSION,
       },
       accounts: [account],
     };

@@ -15,7 +15,12 @@ import {
   WalletType,
   type WatchOnlyWallet,
 } from '@/shared/core';
-import { type PolkadotExtensionWallet } from '@/features/polkadot-extension-wallet';
+
+import {
+  type PolkadotExtensionWallet,
+  type SubWalletExtensionWallet,
+  type TalismanExtensionWallet,
+} from 'src/renderer/features/extension-wallet';
 
 export const walletUtils = {
   isPolkadotVault,
@@ -31,6 +36,8 @@ export const walletUtils = {
   isWalletConnectGroup,
   isPolkadotVaultGroup,
   isPolkadotExtension,
+  isTalismanExtension,
+  isSubWalletExtension,
 
   isValidSignatory,
   isValidSignSignatory,
@@ -89,6 +96,14 @@ function isPolkadotExtension(wallet?: Wallet): wallet is PolkadotExtensionWallet
   return wallet?.type === WalletType.POLKADOT_EXTENSION;
 }
 
+function isTalismanExtension(wallet?: Wallet): wallet is TalismanExtensionWallet {
+  return wallet?.type === WalletType.TALISMAN_EXTENSION;
+}
+
+function isSubWalletExtension(wallet?: Wallet): wallet is SubWalletExtensionWallet {
+  return wallet?.type === WalletType.SUBWALLET_EXTENSION;
+}
+
 // Groups
 
 function isPolkadotVaultGroup(wallet?: Wallet): wallet is PolkadotVaultGroup {
@@ -101,6 +116,9 @@ function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
 
 const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.POLKADOT_VAULT,
+  WalletType.POLKADOT_EXTENSION,
+  WalletType.TALISMAN_EXTENSION,
+  WalletType.SUBWALLET_EXTENSION,
   WalletType.SINGLE_PARITY_SIGNER,
   WalletType.MULTISHARD_PARITY_SIGNER,
   WalletType.WALLET_CONNECT,
