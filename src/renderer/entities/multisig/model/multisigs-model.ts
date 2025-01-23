@@ -179,6 +179,7 @@ const populateWallets = createEvent<GetMultisigResponse[]>();
 
 sample({
   clock: getMultisigsFx.doneData,
+  filter: (response) => response.length > 0,
   target: populateWallets,
 });
 

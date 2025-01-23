@@ -6,6 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { walletModel } from '@/entities/wallet';
 import { multisigService } from '../../api';
 import { multisigsModel } from '../multisigs-model';
@@ -27,11 +28,11 @@ const mockConnections = {
 
 describe('multisigs model', () => {
   beforeAll(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
   beforeEach(() => {
-    jest.restoreAllMocks();
-    jest.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
+    vi.restoreAllMocks();
+    vi.spyOn(multisigService, 'filterMultisigsAccounts').mockResolvedValue([
       {
         accountId: '0x00' as AccountId,
         threshold: 2,
@@ -41,7 +42,7 @@ describe('multisigs model', () => {
   });
 
   test('should add multisig for Nova Wallet', async () => {
-    const spySaveMultisig = jest.fn();
+    const spySaveMultisig = vi.fn(() => []);
 
     const scope = fork({
       values: new Map()
@@ -57,17 +58,19 @@ describe('multisigs model', () => {
         ])
         .set(networkModel.$chains, mockChains)
         .set(networkModel.$connections, mockConnections),
-      handlers: new Map().set(walletModel.__test.walletCreatedFx, spySaveMultisig),
+      handlers: new Map()
+        .set(walletModel.createWallets, spySaveMultisig)
+        .set(notificationModel.events.notificationsAdded, () => {}),
     });
 
-    allSettled(multisigsModel.events.subscribe, { scope });
-    await jest.runOnlyPendingTimersAsync();
+    allSettled(multisigsModel.subscribe, { scope });
+    await vi.runOnlyPendingTimersAsync();
 
     expect(spySaveMultisig).toHaveBeenCalled();
   });
 
   test('should not add multisig we already have', async () => {
-    const spySaveMultisig = jest.fn();
+    const spySaveMultisig = vi.fn(() => []);
 
     const scope = fork({
       values: new Map()
@@ -89,11 +92,13 @@ describe('multisigs model', () => {
         ])
         .set(networkModel.$chains, mockChains)
         .set(networkModel.$connections, mockConnections),
-      handlers: new Map().set(walletModel.__test.walletCreatedFx, spySaveMultisig),
+      handlers: new Map()
+        .set(walletModel.createWallets, spySaveMultisig)
+        .set(notificationModel.events.notificationsAdded, () => {}),
     });
 
-    allSettled(multisigsModel.events.subscribe, { scope });
-    await jest.runOnlyPendingTimersAsync();
+    allSettled(multisigsModel.subscribe, { scope });
+    await vi.runOnlyPendingTimersAsync();
 
     expect(spySaveMultisig).not.toHaveBeenCalled();
   });
