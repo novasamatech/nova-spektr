@@ -577,8 +577,9 @@ async function prepareEditDelegationTransaction({ transaction, wallets, chains, 
 
     shards: [account!],
     balance: coreTxs[0].args.balance,
-    conviction: votingService.getConviction(coreTxs[0].args.conviction),
-    previousConviction: 'None',
+    conviction: coreTxs[0].args.conviction,
+    // TODO: Previous conviction should be received from chain
+    previousConviction: coreTxs[0].args.previousConviction || 'None',
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
     description: '',

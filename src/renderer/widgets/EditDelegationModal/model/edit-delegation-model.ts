@@ -218,6 +218,7 @@ sample({
         accountId: shard.accountId,
         balance: amount || '0',
         conviction: conviction || 'None',
+        previousConviction: activeDelegations[address].conviction || 'None',
         target: target?.accountId || '',
         tracks,
         undelegateTracks:
