@@ -68,6 +68,7 @@ const populate = async () => {
   await accounts.populate();
   await walletModel.populate();
   proxiesModel.findAllProxies();
+  multisigsModel.subscribe();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
@@ -76,7 +77,6 @@ const populate = async () => {
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
-  multisigsModel.events.subscribe();
 };
 
 export const bootstrap = () => {

@@ -1,10 +1,7 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type NoID, type Notification } from '@/shared/core';
-
-const notificationsStarted = createEvent();
-const notificationsAdded = createEvent<NoID<Notification>[]>();
 
 const $notifications = createStore<Notification[]>([]);
 
@@ -17,18 +14,8 @@ const addNotificationsFx = createEffect((notifications: NoID<Notification>[]): P
 });
 
 sample({
-  clock: notificationsStarted,
-  target: populateNotificationsFx,
-});
-
-sample({
   clock: populateNotificationsFx.doneData,
   target: $notifications,
-});
-
-sample({
-  clock: notificationsAdded,
-  target: addNotificationsFx,
 });
 
 sample({
@@ -42,7 +29,7 @@ sample({
 export const notificationModel = {
   $notifications,
   events: {
-    notificationsStarted,
-    notificationsAdded,
+    notificationsStarted: populateNotificationsFx,
+    notificationsAdded: addNotificationsFx,
   },
 };
