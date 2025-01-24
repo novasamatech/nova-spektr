@@ -21,6 +21,7 @@ import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shar
 // eslint-disable-next-line boundaries/element-types
 import {
   type AnyAccount,
+  type AnyAccountDraft,
   type ChainAccount,
   type UniversalAccount,
   accounts,
@@ -140,6 +141,31 @@ const walletCreatedFx = createEffect(
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
     return { wallet: dbWallet, accounts: dbAccounts, external };
+  },
+);
+
+const createWalletsFx = createEffect(
+  async (
+    drafts: {
+      wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
+      accounts: Omit<AnyAccountDraft, 'walletId'>[];
+    }[],
+  ): Promise<CreateResult[]> => {
+    const requests = drafts.map(async ({ wallet, accounts: accountDrafts }) => {
+      const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+      if (!dbWallet) return undefined;
+
+      const accountsPayload = accountDrafts.map(
+        (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
+      );
+
+      const dbAccounts = await accounts.createAccounts(accountsPayload);
+
+      return { wallet: dbWallet, accounts: dbAccounts, external: true };
+    });
+
+    return Promise.all(requests).then((r) => r.filter(nonNullable));
   },
 );
 
@@ -283,8 +309,17 @@ sample({
 sample({
   clock: walletCreatedDone,
   source: $rawWallets,
-  fn: (wallets, data) => {
+  fn(wallets, data) {
     return wallets.concat(data.wallet);
+  },
+  target: $rawWallets,
+});
+
+sample({
+  clock: createWalletsFx.doneData,
+  source: $rawWallets,
+  fn(wallets, results) {
+    return wallets.concat(results.map((r) => r.wallet));
   },
   target: $rawWallets,
 });
@@ -412,6 +447,7 @@ export const walletModel = {
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
   createWallet: walletCreatedFx,
+  createWallets: createWalletsFx,
   populate: fetchAllWalletsFx,
 
   events: {

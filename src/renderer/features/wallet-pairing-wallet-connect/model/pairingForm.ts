@@ -5,6 +5,7 @@ import { createGate } from 'effector-react';
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { proxiesModel } from '@/features/proxies';
@@ -75,6 +76,12 @@ sample({
 sample({
   clock: createWalletConnectWalletFx.done,
   target: proxiesModel.findAllProxies,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.doneData.filter({ fn: nonNullable }),
+  fn: ({ accounts }) => accounts,
+  target: multisigsModel.request,
 });
 
 sample({
