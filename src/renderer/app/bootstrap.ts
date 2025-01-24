@@ -17,11 +17,13 @@ import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
+import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-feed';
 import { fellowshipEvidenceFeature } from '@/features/fellowship-evidence';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
+import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
@@ -92,7 +94,6 @@ export const bootstrap = () => {
     assetsNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
-    fellowshipNavigationFeature,
     operationsNavigationFeature,
     contactsNavigationFeature,
     notificationsNavigationFeature,
@@ -100,10 +101,13 @@ export const bootstrap = () => {
     settingsNavigationFeature,
     flexibleMultisigNavigationFeature,
 
+    fellowshipNavigationFeature,
+    fellowshipTasksFeature,
     fellowshipSalaryFeature,
     fellowshipEvidenceFeature,
     fellowshipProfileFeature,
     fellowshipMembersFeature,
+    fellowshipActivityFeedFeature,
 
     walletSelectFeature.feature,
     walletDetailsFeature,

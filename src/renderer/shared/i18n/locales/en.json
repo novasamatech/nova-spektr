@@ -310,7 +310,9 @@
   },
   "fellowship": {
     "evidence": {
-      "cardTitle": "Evidence"
+      "cardTitle": "Evidence",
+      "retentionEvidenceModalTitle": "Submit your retention evidence",
+      "retentionEvidenceModalDescription": "Please fill out the following form. Other attributes necessary for the evidence (your credentials, voting record, etc.) will be automatically gathered from the blockchain."
     },
     "salary": {
       "cardTitle": "Salary"
@@ -327,6 +329,12 @@
     },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
+    "tasks": {
+      "cardTitle": "Tasks"
+    },
+    "activityFeed": {
+      "lastActivityCardTitle": "Last activity"
+    },
     "members": {
       "active": "Active",
       "emptyList": "There is no members",
@@ -401,6 +409,7 @@
       "cancelButton": "Cancel",
       "backButton": "Back",
       "closeButton": "Close",
+      "submitButton": "Submit",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
