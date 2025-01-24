@@ -8,9 +8,7 @@ export const EmptyState = () => {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-y-4">
       <Graphics name="emptyList" size={178} />
-      <BodyText className="w-[300px] text-center text-text-tertiary">
-        {t('onboarding.polkadotExtension.emptyState')}
-      </BodyText>
+      <BodyText className="w-[300px] text-center text-text-tertiary">{t('onboarding.extension.emptyState')}</BodyText>
     </div>
   );
 };

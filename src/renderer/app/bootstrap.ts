@@ -16,6 +16,7 @@ import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
+import { extensionWalletFeature } from '@/features/extension-wallet';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -24,7 +25,6 @@ import { importDBFeature } from '@/features/import-db';
 import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
-import { polkadotExtensionWalletFeature } from '@/features/polkadot-extension-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
@@ -68,6 +68,7 @@ const populate = async () => {
   await accounts.populate();
   await walletModel.populate();
   proxiesModel.findAllProxies();
+  multisigsModel.subscribe();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
@@ -76,7 +77,6 @@ const populate = async () => {
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
-  multisigsModel.events.subscribe();
 };
 
 export const bootstrap = () => {
@@ -111,7 +111,7 @@ export const bootstrap = () => {
     walletPolkadotVaultFeature,
     walletWalletConnectFeature,
     walletWatchOnlyFeature,
-    polkadotExtensionWalletFeature,
+    extensionWalletFeature,
 
     governanceOperationDetailFeature,
     multisigOperationDetailsFeature,

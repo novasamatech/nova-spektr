@@ -896,7 +896,7 @@
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
     },
-    "polkadotExtension": {
+    "extension": {
       "emptyState": "All your accounts in different networks will be shown here",
       "accountsTitle": "Manage accounts",
       "permissionStep": "Request permission",
@@ -907,8 +907,11 @@
       "selectAccountPlacehilder": "Select one of accounts",
       "requestPairing": "Request pairing",
       "manageTitle": "Set up your wallet",
-      "title": "Add Polkadot extension account",
-      "create": "Create"
+      "create": "Create",
+      "beta": "beta",
+      "polkadotJsTitle": "Add Polkadot js extension account",
+      "talismanTitle": "Add Talisman extension account",
+      "subWalletTitle": "Add SubWallet extension account"
     },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
@@ -943,8 +946,12 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
-      "polkadotExtensionTitle": "Polkadot extension",
-      "polkadotExtensionDescription": "Polkadot extension pairing",
+      "polkadotExtensionTitle": "Polkadot js extension",
+      "polkadotExtensionDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
+      "talismanTitle": "Talisman",
+      "talismanDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
+      "subWalletTitle": "SubWallet extension",
+      "subWalletDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
@@ -1029,7 +1036,9 @@
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
-      "polkadotExtension": "Sign with Polkadot Extension",
+      "polkadotExtension": "Sign with Polkadot js extension",
+      "talismanExtension": "Sign with Talisman extension",
+      "subWalletExtension": "Sign with SubWallet extension",
       "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
@@ -1751,7 +1760,9 @@
     "addMultisig": "Multisig",
     "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
-    "addPolkadotExtension": "Polkadot Extension",
+    "addPolkadotExtension": "Polkadot js",
+    "addTalismanExtension": "Talisman",
+    "addSubWalletExtension": "SubWallet",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "connectedLabel": "Connected",
@@ -1762,7 +1773,9 @@
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "proxiedLabel": "Delegated to you (Proxied)",
-    "polkadotExtensionLabel": "Polkadot Extension",
+    "polkadotExtensionLabel": "Polkadot js extension",
+    "talismanExtensionLabel": "Talisman extension",
+    "subWalletExtensionLabel": "SubWallet extension",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",

@@ -29,7 +29,7 @@ export const $defaultFeatures = createStore({
   walletConnect: true,
   watchOnly: true,
   ledger: true,
-  polkadotExtension: isDev(),
+  extensionWallets: true,
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));

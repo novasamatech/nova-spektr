@@ -8,7 +8,7 @@ import { series } from '@/shared/effector';
 import { assert, createTxMetadata, toAddress } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { polkadotExtensionService } from '@/features/polkadot-extension-wallet';
+import { polkadotExtensionService } from '@/features/extension-wallet';
 import { type SigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
@@ -35,7 +35,7 @@ const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<Sign
   assert(api, `Api from chain ${payload.transaction.chainId} not found.`);
   assert(account, 'Signing account not found');
 
-  if (!polkadotExtensionService.isPolkadotExtensionAccount(account)) throw new Error('Incorrect account for signing');
+  if (!polkadotExtensionService.isExtensionAccount(account)) throw new Error('Incorrect account for signing');
 
   const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
   const wallet = getWalletBySource(account.extension);

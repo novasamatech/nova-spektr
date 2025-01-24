@@ -15,16 +15,19 @@ import { type ExtensionType } from '../types';
 import { EmptyState } from './EmptyState';
 
 type Props = PropsWithChildren<{
+  title?: string;
   extension: ExtensionType;
 }>;
 
-export const PairingModal = ({ extension, children }: Props) => {
+export const PairingModal = ({ title, extension, children }: Props) => {
   const { t } = useI18n();
 
-  const open = useUnit(pairingForm.flow.status);
+  const { extension: flowExtension } = useUnit(pairingForm.flow.state);
   const step = useUnit(pairingForm.$step);
   const accounts = useUnit(pairingForm.$accounts);
   const chains = useUnit(networkModel.$chains);
+
+  const open = extension === flowExtension;
 
   const [name, setName] = useState<string>('');
   const [selectedAccount, setSelectedAccount] = useState<AccountId | null>(null);
@@ -63,30 +66,28 @@ export const PairingModal = ({ extension, children }: Props) => {
       <Modal.Content disableScroll>
         <Box direction="row" height="576px">
           <div className="flex w-[50%] flex-col">
-            <Modal.Title>{t('onboarding.polkadotExtension.title')}</Modal.Title>
+            <Modal.Title>{title}</Modal.Title>
             <Box grow={1} padding={5}>
               <Carousel item={step}>
                 <Carousel.Item id="idle" index={0}>
                   <Box gap={4}>
-                    <SmallTitleText>{t('onboarding.polkadotExtension.permissionStep')}</SmallTitleText>
-                    <Button onClick={() => pairingForm.reconnect()}>
-                      {t('onboarding.polkadotExtension.requestPairing')}
-                    </Button>
+                    <SmallTitleText>{t('onboarding.extension.permissionStep')}</SmallTitleText>
+                    <Button onClick={() => pairingForm.reconnect()}>{t('onboarding.extension.requestPairing')}</Button>
                   </Box>
                 </Carousel.Item>
                 <Carousel.Item id="pairing" index={1}>
                   <Box direction="row" verticalAlign="center" gap={4}>
-                    <SmallTitleText>{t('onboarding.polkadotExtension.pairingStep')}</SmallTitleText>
+                    <SmallTitleText>{t('onboarding.extension.pairingStep')}</SmallTitleText>
                     <Loader color="primary" />
                   </Box>
                 </Carousel.Item>
                 <Carousel.Item id="select" index={2}>
                   <Box gap={4}>
-                    <SmallTitleText>{t('onboarding.polkadotExtension.manageTitle')}</SmallTitleText>
-                    <Field text={t('onboarding.polkadotExtension.selectAccountLabel')}>
+                    <SmallTitleText>{t('onboarding.extension.manageTitle')}</SmallTitleText>
+                    <Field text={t('onboarding.extension.selectAccountLabel')}>
                       <Select<AccountId>
                         value={selectedAccount}
-                        placeholder={t('onboarding.polkadotExtension.selectAccountPlacehilder')}
+                        placeholder={t('onboarding.extension.selectAccountPlacehilder')}
                         onChange={setSelectedAccount}
                       >
                         {accounts.map((account) => (
@@ -106,9 +107,9 @@ export const PairingModal = ({ extension, children }: Props) => {
                 </Carousel.Item>
                 <Carousel.Item id="rejected" index={3}>
                   <Box gap={4}>
-                    <SmallTitleText>{t('onboarding.polkadotExtension.requestRejected')}</SmallTitleText>
+                    <SmallTitleText>{t('onboarding.extension.requestRejected')}</SmallTitleText>
                     <Button onClick={() => pairingForm.reconnect()}>
-                      {t('onboarding.polkadotExtension.askPermissionAgain')}
+                      {t('onboarding.extension.askPermissionAgain')}
                     </Button>
                   </Box>
                 </Carousel.Item>
@@ -124,7 +125,7 @@ export const PairingModal = ({ extension, children }: Props) => {
                     disabled={!account || !name.trim()}
                     onClick={() => pairingForm.create({ name, account: account! })}
                   >
-                    {t('onboarding.polkadotExtension.create')}
+                    {t('onboarding.extension.create')}
                   </Button>
                 </div>
               ) : null}
@@ -138,9 +139,7 @@ export const PairingModal = ({ extension, children }: Props) => {
 
             {list.length > 0 ? (
               <>
-                <SmallTitleText className="mt-[52px] px-5">
-                  {t('onboarding.polkadotExtension.accountsTitle')}
-                </SmallTitleText>
+                <SmallTitleText className="mt-[52px] px-5">{t('onboarding.extension.accountsTitle')}</SmallTitleText>
                 <ChainAccountsList accounts={list} />
               </>
             ) : (
