@@ -15,8 +15,8 @@ type HTMLTextAreaProps =
 type Props = Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> & {
   testId?: string;
   invalid?: boolean;
-  value: string;
-  onChange: (value: string) => void;
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
 export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
@@ -26,7 +26,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
         className={cnTw(
           'w-full rounded px-[11px] py-[7px]',
           'resize-none text-footnote text-text-primary outline-offset-1',
-          'border border-filter-border bg-input-background',
+          'border border-filter-border bg-input-background placeholder:text-text-secondary',
           {
             'border-filter-border-negative': invalid,
             'focus-within:border-active-container-border hover:shadow-card-shadow': !disabled,
@@ -37,7 +37,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
         value={value}
         data-testid={testId}
         disabled={disabled}
-        onChange={event => onChange(event.target.value)}
+        onChange={event => onChange?.(event.target.value)}
         {...props}
       />
     );

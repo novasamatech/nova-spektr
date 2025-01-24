@@ -19,6 +19,7 @@ import {
 } from '../model/fellowshipPage';
 
 export const fellowshipHeaderCardsSlot = createSlot();
+export const fellowshipContentSlot = createSlot();
 
 export const Fellowship = () => {
   const { t } = useI18n();
@@ -66,8 +67,12 @@ export const Fellowship = () => {
       <ScrollArea>
         <Box horizontalAlign="center" fillContainer padding={[6, 0]}>
           <Box width="736px" gap={5}>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-4">
               <Slot id={fellowshipHeaderCardsSlot} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <Slot id={fellowshipContentSlot} />
             </div>
 
             <Outlet />
