@@ -6,8 +6,8 @@ import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable } from '@/shared/lib/utils';
 import { membersService, voting } from '@/domains/collectives';
 
+import { referendumsFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { referendumsFeatureStatus } from './status';
 
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
 const $members = fellowshipModel.$store.map(x => x?.members ?? []);

@@ -6,18 +6,18 @@ import { nullable } from '@/shared/lib/utils';
 import { members, membersService } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
+import { fellowshipProfileFeature } from './feature';
 import { fellowshipModel } from './fellowship';
-import { profileFeatureStatus } from './status';
 
 const $members = fellowshipModel.$store.map(store => store?.members ?? []);
 
-const $identities = combine(profileFeatureStatus.input, identityDomain.identity.$list, (featureInput, list) => {
+const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
 });
 
-const $accounts = profileFeatureStatus.input.map(store => (store ? store.accounts : []));
+const $accounts = fellowshipProfileFeature.input.map(store => (store ? store.accounts : []));
 
 const $currentMember = combine($accounts, $members, (accounts, members) => {
   return membersService.findMatchingMember(accounts, members);
@@ -29,7 +29,7 @@ const $identity = combine($currentMember, $identities, (member, identities) => {
   return identities[member.accountId] ?? null;
 });
 
-const $isAccountExist = profileFeatureStatus.input.map(store => {
+const $isAccountExist = fellowshipProfileFeature.input.map(store => {
   if (!store) return false;
 
   return store.accounts.length > 0;
@@ -40,15 +40,15 @@ const $pendingMember = and(
   $members.map(m => m.length === 0),
 );
 
-const memberUpdate = attachToFeatureInput(profileFeatureStatus, $currentMember);
+const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $currentMember);
 
 sample({
-  clock: profileFeatureStatus.running,
+  clock: fellowshipProfileFeature.running,
   target: members.subscribe,
 });
 
 sample({
-  clock: profileFeatureStatus.stopped,
+  clock: fellowshipProfileFeature.stopped,
   target: members.unsubscribe,
 });
 
@@ -65,5 +65,5 @@ export const profileModel = {
   $currentMember,
   $identity,
   $isAccountExist,
-  $pending: or($pendingMember, profileFeatureStatus.isStarting),
+  $pending: or($pendingMember, fellowshipProfileFeature.isStarting),
 };

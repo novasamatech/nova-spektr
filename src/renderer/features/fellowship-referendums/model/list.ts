@@ -6,9 +6,9 @@ import { dictionary, nonNullable, performSearch } from '@/shared/lib/utils';
 import { referendumMeta, referendumService, referendums } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';
 
+import { referendumsFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
 import { filterModel } from './filter';
-import { referendumsFeatureStatus } from './status';
 import { votingModel } from './voting';
 
 // TODO do smth about it, this connection looks terrible

@@ -5,7 +5,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { ERROR } from '../constants';
-import { votingHistoryFeatureStatus } from '../model/status';
+import { votingHistoryFeatureStatus } from '../model/feature';
 import { votesModel } from '../model/votes';
 
 import { VotesModal } from './VotesModal';

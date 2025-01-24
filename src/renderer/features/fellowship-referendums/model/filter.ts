@@ -5,8 +5,8 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { collectiveDomain } from '@/domains/collectives';
 
+import { referendumsFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { referendumsFeatureStatus } from './status';
 
 const $tracks = fellowshipModel.$store.map(x => x?.tracks ?? []);
 

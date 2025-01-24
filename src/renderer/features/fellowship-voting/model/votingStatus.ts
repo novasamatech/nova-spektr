@@ -7,8 +7,8 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { membersService, referendumService, referendums, tracksService, voting } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 
+import { votingFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { votingFeatureStatus } from './status';
 
 const flow = createGate<{ referendumId: ReferendumId | null }>({
   defaultState: { referendumId: null },
