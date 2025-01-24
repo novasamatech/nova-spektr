@@ -19,17 +19,17 @@ const $subWallet = walletModel.$wallets.map((wallets) =>
 );
 
 const $polkadotJsExtensionWallet = $extensionWallets.map(
-  (l) => l.find((e) => e.extensionName === 'polkadot-js') ?? null,
+  (l) => l.find((w) => w.extensionName === 'polkadot-js') ?? null,
 );
-const $talismanExtensionWallet = $extensionWallets.map((l) => l.find((e) => e.extensionName === 'talisman') ?? null);
+const $talismanExtensionWallet = $extensionWallets.map((l) => l.find((w) => w.extensionName === 'talisman') ?? null);
 const $subWalletExtensionWallet = $extensionWallets.map(
-  (l) => l.find((e) => e.extensionName === 'subwallet-js') ?? null,
+  (l) => l.find((w) => w.extensionName === 'subwallet-js') ?? null,
 );
 
 const requestWalletsFx = createEffect(() =>
   getWallets()
-    .filter((e) => e.installed)
-    .filter((e) => e.title !== 'Nova Wallet'),
+    .filter((w) => w.installed)
+    .filter((w) => w.title !== 'Nova Wallet'),
 );
 
 sample({
