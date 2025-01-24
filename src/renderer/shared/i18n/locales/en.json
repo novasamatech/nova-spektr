@@ -954,11 +954,11 @@
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
       "polkadotExtensionTitle": "Polkadot js extension",
-      "polkadotExtensionDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
+      "polkadotExtensionDescription": "Multi-chain browser extension",
       "talismanTitle": "Talisman",
-      "talismanDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
+      "talismanDescription": "Multi-chain browser extension",
       "subWalletTitle": "SubWallet extension",
-      "subWalletDescription": "Simple, secure access to Polkadot and Substrate chains via a browser extension",
+      "subWalletDescription": "Multi-chain browser extension",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
@@ -971,6 +971,7 @@
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
+    "extensionNotInstalled": "Not Installed",
     "yourAccountsLabel": "Here are your accounts"
   },
   "operation": {
