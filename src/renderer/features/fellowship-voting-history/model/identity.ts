@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { identityDomain } from '@/domains/identity';
 
-import { votingHistoryFeatureStatus } from './status';
+import { votingHistoryFeatureStatus } from './feature';
 import { votesModel } from './votes';
 
 const votesUpdate = attachToFeatureInput(votingHistoryFeatureStatus, votesModel.$votesList);

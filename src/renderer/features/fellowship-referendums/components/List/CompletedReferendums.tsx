@@ -39,7 +39,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
     <Accordion initialOpen>
       <Accordion.Trigger>
         <Box direction="row" gap={2} verticalAlign="center">
-          <span>{t('governance.referendums.completed')}</span>
+          <span>{t('fellowship.referendums.completed')}</span>
           <span className="text-text-tertiary">
             <Skeleton active={shouldRenderLoadingState}>{referendums.length.toString()}</Skeleton>
           </span>

@@ -39,7 +39,7 @@ export const OngoingReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWith
     <Accordion initialOpen>
       <Accordion.Trigger>
         <Box direction="row" gap={2} verticalAlign="center">
-          <span>{t('governance.referendums.ongoing')}</span>
+          <span>{t('fellowship.referendums.ongoing')}</span>
           <span className="text-text-tertiary">
             <Skeleton active={pending}>{referendums.length.toString()}</Skeleton>
           </span>

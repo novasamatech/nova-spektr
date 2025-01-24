@@ -6,7 +6,7 @@ import { Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { referendumDetailsModel } from '../model/details';
-import { referendumsDetailsFeatureStatus } from '../model/status';
+import { referendumsDetailsFeatureStatus } from '../model/feature';
 
 export const ProposerName = () => {
   const { t } = useI18n();

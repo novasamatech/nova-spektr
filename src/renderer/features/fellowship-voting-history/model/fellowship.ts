@@ -3,7 +3,7 @@ import { combine } from 'effector';
 import { nullable } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
-import { votingHistoryFeatureStatus } from './status';
+import { votingHistoryFeatureStatus } from './feature';
 
 const $fellowshipStore = collectiveDomain.$store.map(store => store['fellowship'] || null);
 

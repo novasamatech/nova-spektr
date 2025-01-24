@@ -12,7 +12,7 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { votingFeatureStatus } from '../model/status';
+import { votingFeatureStatus } from '../model/feature';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';
 

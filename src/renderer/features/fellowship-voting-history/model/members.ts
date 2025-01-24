@@ -4,8 +4,8 @@ import { or } from 'patronum';
 import { dictionary } from '@/shared/lib/utils';
 import { collectiveDomain } from '@/domains/collectives';
 
+import { votingHistoryFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { votingHistoryFeatureStatus } from './status';
 
 const $members = fellowshipModel.$store.map(store => dictionary(store?.members ?? [], 'accountId'));
 
