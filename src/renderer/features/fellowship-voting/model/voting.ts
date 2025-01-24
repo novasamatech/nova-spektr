@@ -10,7 +10,7 @@ import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { votingFeatureStatus } from './status';
+import { votingFeatureStatus } from './feature';
 import { votingStatusModel } from './votingStatus';
 
 const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });

@@ -5,8 +5,8 @@ import { Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { InactiveNetwork } from '@/entities/network';
 import { ERROR } from '../../constants';
+import { referendumsFeatureStatus } from '../../model/feature';
 import { referendumListModel } from '../../model/list';
-import { referendumsFeatureStatus } from '../../model/status';
 
 import { CompletedReferendums } from './CompletedReferendums';
 import { DisconnectAlert } from './DisconnectAlert';

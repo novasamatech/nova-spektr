@@ -1,7 +1,8 @@
 import { combine, sample } from 'effector';
 
+import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
+import { isDev, nullable } from '@/shared/lib/utils';
 import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetworkFeature } from '@/features/fellowship-network';
@@ -26,8 +27,9 @@ const $input = combine(
   },
 );
 
-export const profileFeatureStatus = createFeature({
-  name: 'fellowship/profile',
+export const fellowshipEvidenceFeature = createFeature({
+  name: 'fellowship/evidence',
+  enable: $features.map(({ fellowship }) => fellowship && isDev()),
   input: $input,
   filter: input => {
     return input.api.isConnected
@@ -43,5 +45,5 @@ export const profileFeatureStatus = createFeature({
 sample({
   clock: fellowshipNetworkFeature.model.network.$isActive,
   filter: fellowshipNetworkFeature.model.network.$isActive,
-  target: profileFeatureStatus.restore,
+  target: fellowshipEvidenceFeature.restore,
 });

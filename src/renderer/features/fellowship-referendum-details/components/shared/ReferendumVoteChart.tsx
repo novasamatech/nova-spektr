@@ -8,7 +8,7 @@ import { FootnoteText } from '@/shared/ui';
 import { VoteChart } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
-import { referendumsDetailsFeatureStatus } from '../../model/status';
+import { referendumsDetailsFeatureStatus } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
 
 type Props = {

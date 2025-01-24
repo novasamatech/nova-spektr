@@ -7,7 +7,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { ButtonCard, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { collectiveDomain } from '@/domains/collectives';
-import { votingFeatureStatus } from '../model/status';
+import { votingFeatureStatus } from '../model/feature';
 import { votingStatusModel } from '../model/votingStatus';
 
 import { VotingModal } from './VotingModal';

@@ -3,8 +3,8 @@ import { and, or } from 'patronum';
 
 import { members, membersService } from '@/domains/collectives';
 
+import { fellowshipMembersFeature } from './feature';
 import { fellowshipModel } from './fellowship';
-import { membersFeatureStatus } from './status';
 
 const $list = fellowshipModel.$store.map(store => store?.members?.filter(membersService.isCoreMember) ?? []);
 
@@ -14,17 +14,17 @@ const $pendingMembers = and(
 );
 
 sample({
-  clock: membersFeatureStatus.running,
+  clock: fellowshipMembersFeature.running,
   target: members.subscribe,
 });
 
 sample({
-  clock: membersFeatureStatus.stopped,
+  clock: fellowshipMembersFeature.stopped,
   target: members.unsubscribe,
 });
 
 export const membersModel = {
   $list,
-  $pending: or($pendingMembers, membersFeatureStatus.isStarting),
+  $pending: or($pendingMembers, fellowshipMembersFeature.isStarting),
   $fulfilled: members.fulfilled,
 };

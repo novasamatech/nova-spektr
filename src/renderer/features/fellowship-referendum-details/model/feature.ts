@@ -1,5 +1,6 @@
 import { combine } from 'effector';
 
+import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { accountsService } from '@/domains/network';
@@ -25,5 +26,6 @@ const $input = combine(
 
 export const referendumsDetailsFeatureStatus = createFeature({
   name: 'fellowship/referendum details',
+  enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
 });
