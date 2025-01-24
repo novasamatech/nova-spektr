@@ -9,13 +9,15 @@ type Props = {
   title: string;
   description: string;
   iconName: IconNames;
+  beta?: boolean;
+  soon?: boolean;
   disabled?: boolean;
   testId?: string;
   onClick?: VoidFunction;
 };
 
 export const WalletOnboardingCard = forwardRef<HTMLButtonElement, Props>(
-  ({ title, description, iconName, disabled, onClick, testId = 'WelcomeCard' }, ref) => {
+  ({ title, beta, soon, description, iconName, disabled, onClick, testId = 'WelcomeCard' }, ref) => {
     const { t } = useI18n();
 
     return (
@@ -39,9 +41,12 @@ export const WalletOnboardingCard = forwardRef<HTMLButtonElement, Props>(
 
         <div className="flex flex-1 flex-col gap-y-1">
           <div className="flex w-full items-center justify-between">
-            <BodyText className="pb-1 text-inherit">{title}</BodyText>
+            <div className="flex items-center gap-1.5 pb-1">
+              <BodyText className="text-inherit">{title}</BodyText>
+              {beta ? <Label variant={disabled ? 'darkGray' : 'blue'}>{t('onboarding.extension.beta')}</Label> : null}
+            </div>
 
-            {disabled ? (
+            {soon ? (
               <Label variant="darkGray">{t('onboarding.welcome.soonBadge')}</Label>
             ) : (
               <Icon name="arrowRight" size={24} />

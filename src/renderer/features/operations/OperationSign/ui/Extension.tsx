@@ -22,13 +22,7 @@ const ValidationErrorLabels: Record<ValidationErrors, string> = {
   [ValidationErrors.AMOUNT_REQUIRED]: 'transfer.noAmount',
 };
 
-export const PolkadotExtension = ({
-  signingPayloads,
-  signerWallet,
-  validateBalance,
-  onGoBack,
-  onResult,
-}: SigningProps) => {
+export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   useGate(polkadotExtensionSign.flow, { payloads: signingPayloads });
 
   const { t } = useI18n();

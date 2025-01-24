@@ -12,6 +12,8 @@ const Messages: Record<WalletType, string> = {
   [WalletType.WALLET_CONNECT]: 'emptyState.createAccount',
   [WalletType.WATCH_ONLY]: 'emptyState.createAccount',
   [WalletType.POLKADOT_EXTENSION]: 'emptyState.createAccount',
+  [WalletType.TALISMAN_EXTENSION]: 'emptyState.createAccount',
+  [WalletType.SUBWALLET_EXTENSION]: 'emptyState.createAccount',
 };
 
 type Props = {
