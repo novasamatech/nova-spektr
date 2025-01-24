@@ -152,6 +152,7 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
         'cursor-default bg-block-background-default',
         {
           'cursor-pointer hover:bg-block-background-hover': !disabled,
+          'text-text-tertiary': disabled,
         },
       )}
       disabled={disabled}
