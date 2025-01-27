@@ -21,6 +21,7 @@ export * from './RevokeDelegation';
 export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';
 export * from './FellowshipVoting';
+export * from './FellowshipSetActive';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 

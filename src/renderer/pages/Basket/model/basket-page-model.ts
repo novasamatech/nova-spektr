@@ -1,5 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type EventCallable, combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
+import {
+  type Effect,
+  type EventCallable,
+  combine,
+  createEffect,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  split,
+} from 'effector';
 import { delay, throttle } from 'patronum';
 
 import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@/shared/core';
@@ -27,6 +37,7 @@ import {
   addPureProxiedValidateModel,
   bondExtraValidateModel,
   bondNominateValidateModel,
+  collectiveSetActiveValidateModel,
   collectiveVoteValidateModel,
   delegateValidateModel,
   nominateValidateModel,
@@ -140,7 +151,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
         | UtilityTransactionTypes
         | TransactionType.REMARK
       >,
-      EventCallable<ValidationStartedParams>
+      EventCallable<ValidationStartedParams> | Effect<ValidationStartedParams, any>
     > = {
       [TransactionType.ADD_PROXY]: addProxyValidateModel.events.validationStarted,
       [TransactionType.CREATE_PURE_PROXY]: addPureProxiedValidateModel.events.validationStarted,
@@ -160,7 +171,8 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.VOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REVOTE]: voteValidateModel.events.validationStarted,
       [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
-      [TransactionType.COLLECTIVE_VOTE]: collectiveVoteValidateModel.events.validationStarted,
+      [TransactionType.COLLECTIVE_VOTE]: collectiveVoteValidateModel.validate,
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: collectiveSetActiveValidateModel.validate,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {
@@ -200,6 +212,8 @@ const txValidated = [
   revokeDelegationValidateModel.output.txValidated,
   voteValidateModel.output.txValidated,
   removeVoteValidateModel.output.txValidated,
+  collectiveVoteValidateModel.validate.doneData,
+  collectiveSetActiveValidateModel.validate.doneData,
 ];
 
 sample({

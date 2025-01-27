@@ -48,6 +48,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
   // Collectives
   [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: 'unlockMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

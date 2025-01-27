@@ -127,6 +127,7 @@ export const SignOperations = () => {
 
       // TODO discuss where we should implement generic collective voting confirmation
       [TransactionType.COLLECTIVE_VOTE]: () => <FellowshipVotingConfirmation id={transaction.id} hideSignButton />,
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => null,
     };
 
     // @ts-expect-error not all types are used

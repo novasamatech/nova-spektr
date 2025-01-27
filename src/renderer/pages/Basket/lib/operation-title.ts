@@ -67,6 +67,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     [TransactionType.REMARK]: 'operations.modalTitles.remarkOn',
     // Collectives
     [TransactionType.COLLECTIVE_VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
   };
 
   // @ts-expect-error TODO fix not all types used

@@ -61,7 +61,7 @@ sample({
   target: identityDomain.identity.request,
 });
 
-export const profileModel = {
+export const profile = {
   $currentMember,
   $identity,
   $isAccountExist,

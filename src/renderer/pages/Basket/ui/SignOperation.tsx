@@ -179,6 +179,7 @@ export const SignOperation = () => {
       [TransactionType.COLLECTIVE_VOTE]: () => (
         <FellowshipVotingConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => null,
     };
 
     // @ts-expect-error not all types are used

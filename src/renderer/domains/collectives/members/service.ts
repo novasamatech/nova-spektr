@@ -1,15 +1,17 @@
-import { dictionary } from '@/shared/lib/utils';
+import { type Chain, TransactionType } from '@/shared/core';
+import { dictionary, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountsService } from '@/domains/network';
+import { type CollectivePalletsType } from '../_lib/types';
 
-import { type CoreMember, type Member } from './types';
+import { type CoreMember, type Member, type SetActiveTransaction } from './types';
 
-const findMatchingMember = (accounts: AnyAccount[], members: Member[]) => {
+function findMatchingMember(accounts: AnyAccount[], members: Member[]) {
   const accountsDictionary = dictionary(accounts, 'accountId');
 
   return members.find(member => member.accountId in accountsDictionary) ?? null;
-};
+}
 
-const findMatchingAccount = (accounts: AnyAccount[], member: Member) => {
+function findMatchingAccount(accounts: AnyAccount[], member: Member) {
   const found = accounts.filter(a => a.accountId === member.accountId);
 
   if (found.length > 1) {
@@ -20,18 +22,41 @@ const findMatchingAccount = (accounts: AnyAccount[], member: Member) => {
   }
 
   return found.at(0) ?? null;
-};
+}
 
-const isCoreMember = (member: Member | CoreMember): member is CoreMember => {
+function isCoreMember(member: Member | CoreMember): member is CoreMember {
   const hasActive = 'isActive' in member;
   const hasPromotion = 'lastPromotion' in member;
   const hasProof = 'lastProof' in member;
 
   return hasActive && hasPromotion && hasProof;
+}
+
+type SetActiveTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+  isActive: boolean;
 };
+
+function createSetActiveTransaction({
+  pallet,
+  account,
+  chain,
+  isActive,
+}: SetActiveTransactionParams): SetActiveTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SET_ACTIVE,
+    args: { pallet, isActive },
+  };
+}
 
 export const membersService = {
   findMatchingMember,
   findMatchingAccount,
   isCoreMember,
+
+  createSetActiveTransaction,
 };

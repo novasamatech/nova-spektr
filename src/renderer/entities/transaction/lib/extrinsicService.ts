@@ -488,6 +488,22 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: (transaction, info, options) => {
+    const { pallet, isActive } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: { isActive },
+          name: 'setActive',
+          pallet: `${pallet}Core`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -627,6 +643,9 @@ export const getExtrinsic: Record<
   },
   [TransactionType.COLLECTIVE_VOTE]: ({ pallet, poll, aye }, api) => {
     return api.tx[`${pallet}Collective`].vote(poll, aye);
+  },
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
+    return api.tx[`${pallet}Core`].setActive(isActive);
   },
 };
 

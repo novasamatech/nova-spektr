@@ -127,6 +127,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.REVOTE]: prepareTransaction.prepareVoteTransaction,
       [TransactionType.REMOVE_VOTE]: prepareTransaction.prepareRemoveVoteTransaction,
       [TransactionType.COLLECTIVE_VOTE]: prepareTransaction.prepareCollectiveVoteTransaction,
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: prepareTransaction.prepareCollectiveSetActiveTransaction,
     };
 
     if (coreTx.type in TransactionData) {

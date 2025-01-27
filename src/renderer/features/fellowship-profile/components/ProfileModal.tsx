@@ -8,13 +8,15 @@ import { Account, CollectivesRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { membersService } from '@/domains/collectives';
 import { fellowshipProfileFeature } from '../model/feature';
-import { profileModel } from '../model/profile';
+import { profile } from '../model/profile';
+
+import { SetActiveModal } from './SetActiveModal';
 
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profileModel.$currentMember);
-  const identity = useUnit(profileModel.$identity);
+  const member = useUnit(profile.$currentMember);
+  const identity = useUnit(profile.$identity);
 
   const disabled = nullable(member) || nullable(featureInput);
 
@@ -25,6 +27,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
 
   const address = toAddress(member.accountId, { prefix: featureInput.chain.addressPrefix });
   const active = membersService.isCoreMember(member) && member.isActive;
+  const setActiveDisabled = !membersService.isCoreMember(member);
 
   return (
     <Modal size="md" height="fit">
@@ -53,7 +56,17 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
             {active ? (
               <FootnoteText className="text-text-positive">{t('fellowship.profile.active')}</FootnoteText>
             ) : null}
-            <Switch switchClassName={cnTw(active && 'bg-qr-valid-background')} checked={active} />
+            <SetActiveModal isActive={!active} disabled={setActiveDisabled}>
+              <div>
+                <div className="pointer-events-none">
+                  <Switch
+                    switchClassName={cnTw(active && 'bg-qr-valid-background')}
+                    checked={active}
+                    disabled={setActiveDisabled}
+                  />
+                </div>
+              </div>
+            </SetActiveModal>
           </Box>
         </Box>
         <Separator />
