@@ -1,12 +1,12 @@
-import { type ComponentProps, type PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Identicon } from '@/shared/ui';
-import { Label } from '@/shared/ui-kit';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
+import { CollectivesRank } from '../CollectivesRank/CollectivesRank';
 
 type Props = {
   name?: string;
@@ -23,7 +23,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
     <div className="flex items-center justify-between">
       <div className="flex grow items-center gap-2 px-2 py-3 contain-inline-size">
         <div className="shrink-0">
-          <Rank rank={rank} />
+          <CollectivesRank rank={rank} />
         </div>
         <div className="relative min-w-0 shrink grow">
           <div className="flex grow items-center gap-4.5">
@@ -39,23 +39,6 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
       {children}
     </div>
   );
-};
-
-const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] => {
-  const rankVariants: Record<number, ComponentProps<typeof Label>['variant']> = {
-    2: 'orange',
-    3: 'red',
-    4: 'purple',
-    5: 'lightBlue',
-    6: 'green',
-    7: 'blue',
-  };
-
-  return rankVariants[rank] ?? (rank > 7 ? 'blue' : 'gray');
-};
-
-const Rank = ({ rank }: { rank: number }) => {
-  return <Label variant={pickRankColor(rank)}>{rank.toString()}</Label>;
 };
 
 type IndicatorProps = {
