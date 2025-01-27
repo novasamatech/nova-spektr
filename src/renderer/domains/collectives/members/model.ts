@@ -38,7 +38,7 @@ const {
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
       if (abortController.signal.aborted) return;
 
-      const result: Member[] = [];
+      const result: (Member | CoreMember)[] = [];
 
       for (const collectiveMember of collectiveMembers) {
         if (nullable(collectiveMember.member)) continue;
@@ -52,7 +52,7 @@ const {
             isActive: coreMember.status.isActive,
             lastPromotion: coreMember.status.lastPromotion,
             lastProof: coreMember.status.lastProof,
-          } as CoreMember);
+          });
         } else {
           result.push({
             accountId: collectiveMember.account,
