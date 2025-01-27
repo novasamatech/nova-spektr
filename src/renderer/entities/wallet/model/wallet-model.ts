@@ -34,9 +34,6 @@ type DbWallet = Omit<Wallet, 'accounts'>;
 export type CreateParams<T extends AnyAccount = AnyAccount> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: (T extends any ? Omit<NoID<T>, 'walletId'> : never)[];
-  // external means wallet was created by someone else and discovered later
-  // TODO this flag is related to multisig creation and should disappear after wallet feature decomposition
-  external: boolean;
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
@@ -125,10 +122,9 @@ const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
 type CreateResult = {
   wallet: DbWallet;
   accounts: AnyAccount[];
-  external: boolean;
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts: accountDrafts, external }: CreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -139,7 +135,7 @@ const walletCreatedFx = createEffect(
 
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
-    return { wallet: dbWallet, accounts: dbAccounts, external };
+    return { wallet: dbWallet, accounts: dbAccounts };
   },
 );
 
@@ -161,7 +157,7 @@ const createWalletsFx = createEffect(
 
       const dbAccounts = await accounts.createAccounts(accountsPayload);
 
-      return { wallet: dbWallet, accounts: dbAccounts, external: true };
+      return { wallet: dbWallet, accounts: dbAccounts };
     });
 
     return Promise.all(requests).then((r) => r.filter(nonNullable));
@@ -172,8 +168,7 @@ const multishardCreatedFx = createEffect(
   async ({
     wallet,
     accounts: accountDrafts,
-    external,
-  }: UnitValue<typeof multishardCreated>): Promise<(CreateResult & { external: boolean }) | undefined> => {
+  }: UnitValue<typeof multishardCreated>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -220,7 +215,7 @@ const multishardCreatedFx = createEffect(
       multishardAccounts.push(...dbChainAccounts);
     }
 
-    return { wallet: dbWallet, accounts: multishardAccounts, external };
+    return { wallet: dbWallet, accounts: multishardAccounts };
   },
 );
 

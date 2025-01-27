@@ -110,7 +110,6 @@ sample({
   clock: create,
   fn: ({ account, name }) => {
     return {
-      external: false,
       wallet: {
         name: name.trim(),
         type: WalletTypeFromExtension(account.extension),

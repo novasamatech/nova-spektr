@@ -61,7 +61,6 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     if (!accountId || accountId.length === 0) return;
 
     walletModel.events.singleshardCreated({
-      external: false,
       wallet: {
         name: walletName,
         type: WalletType.SINGLE_PARITY_SIGNER,
