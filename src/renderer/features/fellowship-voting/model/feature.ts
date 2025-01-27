@@ -5,11 +5,11 @@ import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
 const $input = combine(
   {
-    network: fellowshipNetworkFeature.model.network.$network,
+    network: fellowshipNetwork.$network,
     wallets: walletModel.$wallets,
     accounts: walletModel.$availableAccounts,
   },

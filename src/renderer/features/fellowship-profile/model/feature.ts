@@ -5,12 +5,12 @@ import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
 
 const $input = combine(
   {
-    network: fellowshipNetworkFeature.model.network.$network,
+    network: fellowshipNetwork.$network,
     accounts: walletModel.$availableAccounts,
   },
   ({ network, accounts }) => {
@@ -43,7 +43,7 @@ export const fellowshipProfileFeature = createFeature({
 });
 
 sample({
-  clock: fellowshipNetworkFeature.model.network.$isActive,
-  filter: fellowshipNetworkFeature.model.network.$isActive,
+  clock: fellowshipNetwork.$isActive,
+  filter: fellowshipNetwork.$isActive,
   target: fellowshipProfileFeature.restore,
 });

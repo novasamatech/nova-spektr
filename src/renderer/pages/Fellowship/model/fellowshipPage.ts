@@ -2,7 +2,7 @@ import { sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
 export const COLLECTIVES_CHAIN_ID: ChainId = '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2';
 export const COLLECTIVES_WESTEND_CHAIN_ID: ChainId =
@@ -15,7 +15,7 @@ const flow = createGate<{ chainId: ChainId }>();
 sample({
   clock: flow.open,
   fn: () => ({ chainId: COLLECTIVES_CHAIN_ID }),
-  target: fellowshipNetworkFeature.model.network.selectCollective,
+  target: fellowshipNetwork.selectCollective,
 });
 
 export const fellowshipPageModel = {
