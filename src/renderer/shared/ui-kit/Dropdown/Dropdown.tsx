@@ -97,7 +97,7 @@ const Content = ({ children }: PropsWithChildren) => {
             className={cnTw(
               'z-50 flex flex-col',
               'h-max max-h-[--radix-popper-available-height] min-w-20',
-              'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
               {
                 'max-w-60': width === 'auto',
               },
@@ -146,15 +146,20 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
 
   return (
     <DropdownMenu.Item
+      asChild
       className={cnTw(
         'flex items-center gap-2 rounded px-3 py-2 text-footnote text-text-secondary',
-        'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
+        'cursor-default bg-block-background-default',
+        {
+          'cursor-pointer hover:bg-block-background-hover': !disabled,
+          'text-text-tertiary': disabled,
+        },
       )}
       disabled={disabled}
       onSelect={callback}
       onClick={onClick}
     >
-      {children}
+      <button disabled={disabled}>{children}</button>
     </DropdownMenu.Item>
   );
 };

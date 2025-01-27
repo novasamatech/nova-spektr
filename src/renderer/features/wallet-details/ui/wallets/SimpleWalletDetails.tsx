@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type Chain, type SingleShardWallet, type WatchOnlyWallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { Icon, IconButton } from '@/shared/ui';
@@ -10,7 +10,6 @@ import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
-import { type PolkadotExtensionWallet } from '@/features/polkadot-extension-wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -30,7 +29,7 @@ const {
 } = proxyAddPureFeature;
 
 type Props = {
-  wallet: SingleShardWallet | WatchOnlyWallet | PolkadotExtensionWallet;
+  wallet: Wallet;
   onClose: () => void;
 };
 export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
@@ -114,7 +113,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
         {t('walletDetails.common.title')}
       </Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-5 border-b border-divider px-5 pb-6 pt-4">
+        <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
           <WalletCardLg wallet={wallet} />
         </div>
       </Modal.HeaderContent>

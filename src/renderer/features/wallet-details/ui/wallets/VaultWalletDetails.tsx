@@ -13,9 +13,10 @@ import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, nullable, toAddress } from '@/shared/lib/utils';
-import { ContextMenu, HelpText, Icon, IconButton, StatusModal } from '@/shared/ui';
+import { FootnoteText, HelpText, Icon, IconButton, StatusModal } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Hash } from '@/shared/ui-entities';
+import { Box, Dropdown, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -185,7 +186,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-5 border-b border-divider px-5 py-6">
+          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
           </div>
         </Modal.HeaderContent>
@@ -199,24 +200,33 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             </Box>
             <Tabs.Content value="accounts">
               <ScrollArea>
-                <ContextMenu button={<RootAccountLg name={wallet.name} accountId={root.accountId} className="px-5" />}>
-                  <ContextMenu.Group title={t('general.explorers.publicKeyTitle')}>
-                    <div className="flex items-center gap-x-2">
-                      <HelpText className="break-all text-text-secondary">
-                        {toAddress(root.accountId, { prefix: 1 })}
-                      </HelpText>
-                      <IconButton
-                        className="shrink-0"
-                        name="copy"
-                        size={20}
-                        onClick={() => copyToClipboard(root.accountId)}
-                      />
-                    </div>
-                  </ContextMenu.Group>
-                </ContextMenu>
+                <RootAccountLg name={wallet.name} accountId={root.accountId} className="mt-3 px-5">
+                  <Popover side="bottom" align="end">
+                    <Popover.Trigger>
+                      <IconButton name="details" />
+                    </Popover.Trigger>
+                    <Popover.Content>
+                      <Box gap={0.5} padding={4} width="230px">
+                        <FootnoteText className="text-text-tertiary">
+                          {t('general.explorers.publicKeyTitle')}
+                        </FootnoteText>
+                        <Box direction="row" verticalAlign="center" gap={3}>
+                          <HelpText className="text-text-secondary">
+                            <Hash value={toAddress(root.accountId, { prefix: 1 })} variant="full" />
+                          </HelpText>
+                          <IconButton
+                            className="shrink-0 text-icon-default"
+                            name="copy"
+                            onClick={() => copyToClipboard(root.accountId)}
+                          />
+                        </Box>
+                      </Box>
+                    </Popover.Content>
+                  </Popover>
+                </RootAccountLg>
 
                 <VaultAccountsList
-                  className="mt-4 h-[321px] px-5 pb-4"
+                  className="mt-4 px-5 pb-4"
                   chains={Object.values(chains)}
                   accountsMap={accountsMap}
                   onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -226,7 +236,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <Tabs.Content value="proxies">
               <ScrollArea>
                 {hasProxies ? (
-                  <ProxiesList className="mt-4 h-[371px]" wallet={wallet} canCreateProxy={canCreateProxy} />
+                  <ProxiesList className="mt-4" wallet={wallet} canCreateProxy={canCreateProxy} />
                 ) : (
                   <NoProxiesAction
                     className="mt-4 h-[371px]"

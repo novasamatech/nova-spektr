@@ -5,8 +5,11 @@ import { createGate } from 'effector-react';
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { proxiesModel } from '@/features/proxies';
 import { walletConnect, walletConnectService } from '@/features/wallet-wallet-connect';
 import { Step } from '../lib/constants';
 
@@ -59,7 +62,6 @@ sample({
     });
 
     return {
-      external: false,
       accounts: wcAccounts,
       wallet: {
         name: name.trim(),
@@ -69,6 +71,23 @@ sample({
     };
   },
   target: createWalletConnectWalletFx,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.done,
+  target: proxiesModel.findAllProxies,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.doneData.filter({ fn: nonNullable }),
+  fn: ({ accounts }) => accounts,
+  target: multisigsModel.request,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.doneData.filter({ fn: nonNullable }),
+  fn: ({ wallet }) => wallet.id,
+  target: walletSelect.select,
 });
 
 sample({

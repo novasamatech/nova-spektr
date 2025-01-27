@@ -7,8 +7,8 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { voting } from '@/domains/collectives';
 
+import { votingHistoryFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { votingHistoryFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId }>();
 

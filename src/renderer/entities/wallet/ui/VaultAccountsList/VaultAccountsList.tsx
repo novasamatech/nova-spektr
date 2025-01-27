@@ -1,11 +1,12 @@
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
+import { FootnoteText, HelpText } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
+import { Accordion, Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { accountUtils } from '../../lib/account-utils';
 import { DerivedAccount } from '../Cards/DerivedAccount';
-import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];
@@ -19,51 +20,55 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+      <FootnoteText className="mb-1 pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
 
       {chains.map((chain) => {
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <Accordion key={chain.chainId} isDefaultOpen className="pl-8 pr-1">
-            <Accordion.Button buttonClass="p-2">
-              <div className="flex gap-x-2">
-                <ChainTitle fontClass="text-text-primary" chain={chain} />
+          <div key={chain.chainId} className="pe-1 ps-8">
+            <Accordion initialOpen>
+              <Accordion.Trigger>
+                <span className="normal-case">
+                  <ChainTitle fontClass="text-text-primary" chain={chain} />
+                </span>
                 <FootnoteText className="text-text-tertiary">{accountsMap[chain.chainId].length}</FootnoteText>
-              </div>
-            </Accordion.Button>
-            <Accordion.Content as="ul">
-              {accountsMap[chain.chainId].map((account) => {
-                const isSharded = accountUtils.isAccountWithShards(account);
+              </Accordion.Trigger>
+              <Accordion.Content>
+                <ul>
+                  {accountsMap[chain.chainId].map((account) => {
+                    const isSharded = accountUtils.isAccountWithShards(account);
+                    const accountId = isSharded ? account.at(0)?.accountId : account.accountId;
 
-                return (
-                  <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
-                    <ExplorersPopover
-                      address={isSharded ? account[0].accountId : account.accountId}
-                      explorers={chain.explorers || []}
-                      addressPrefix={chain.addressPrefix}
-                      button={
+                    if (!accountId) return null;
+
+                    return (
+                      <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
                         <DerivedAccount
                           account={account}
                           addressPrefix={chain.addressPrefix}
-                          showInfoButton={false}
                           onClick={isSharded ? () => onShardClick?.(account) : undefined}
-                        />
-                      }
-                    >
-                      <ExplorersPopover.Group title={t('general.explorers.derivationTitle')}>
-                        <HelpText className="break-all text-text-secondary">
-                          {accountUtils.getDerivationPath(account)}
-                        </HelpText>
-                      </ExplorersPopover.Group>
-                    </ExplorersPopover>
-                  </li>
-                );
-              })}
+                        >
+                          <AccountExplorers accountId={accountId} chain={chain}>
+                            <Box gap={0.5}>
+                              <FootnoteText className="text-text-tertiary">
+                                {t('general.explorers.derivationTitle')}
+                              </FootnoteText>
+                              <HelpText className="break-all text-text-secondary">
+                                {accountUtils.getDerivationPath(account)}
+                              </HelpText>
+                            </Box>
+                          </AccountExplorers>
+                        </DerivedAccount>
+                      </li>
+                    );
+                  })}
+                </ul>
 
-              <hr className="my-1 w-full border-divider" />
-            </Accordion.Content>
-          </Accordion>
+                <hr className="my-1 w-full border-divider" />
+              </Accordion.Content>
+            </Accordion>
+          </div>
         );
       })}
     </div>

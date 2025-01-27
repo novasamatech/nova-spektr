@@ -7,7 +7,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
-import { votingHistoryFeatureStatus } from '../model/status';
+import { votingHistoryFeatureStatus } from '../model/feature';
 import { votesModel } from '../model/votes';
 
 import { VotingHistoryList } from './VotingHistoryList';

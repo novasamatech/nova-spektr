@@ -3827,6 +3827,10 @@
     "options": [],
     "nodes": [
       {
+        "url": "wss://parallel.gatotech.network",
+        "name": "Gatotech node"
+      },
+      {
         "url": "wss://polkadot-parallel-rpc.parallel.fi",
         "name": "Parallel node"
       }

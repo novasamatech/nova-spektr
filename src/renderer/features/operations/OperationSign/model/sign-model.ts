@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { createGate } from 'effector-react';
 import { once } from 'patronum';
 
 import { type ChainId, type HexString, TransactionType } from '@/shared/core';
@@ -18,11 +19,13 @@ export type SignatureData = {
   txPayloads: Uint8Array[];
 };
 
+const flow = createGate();
+
 const formInitiated = createEvent<Input>();
 const dataReceived = createEvent<SignatureData>();
 const formSubmitted = createEvent<SignatureData>();
 
-const $signStore = createStore<Input | null>(null).reset(formSubmitted);
+const $signStore = createStore<Input | null>(null).reset([formSubmitted, flow.close]);
 
 type SplitParams = {
   input: Input;
@@ -132,5 +135,8 @@ export const signModel = {
   },
   output: {
     formSubmitted,
+  },
+  gates: {
+    flow,
   },
 };

@@ -207,6 +207,7 @@ const FeeSection = () => {
   const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
   const accounts = useUnit(formModel.$accounts);
+  const previousConviction = useUnit(formModel.$previousConviction);
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
@@ -242,7 +243,7 @@ const FeeSection = () => {
           </DetailRow>
 
           <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-            <LockPeriodDiff from="None" to={conviction.value} lockPeriods={lockPeriods} />
+            <LockPeriodDiff from={previousConviction} to={conviction.value} lockPeriods={lockPeriods} />
           </DetailRow>
         </>
       )}

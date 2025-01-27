@@ -343,6 +343,7 @@ type EditDelegationParams = {
   undelegateTracks: number[];
   target: Address;
   conviction: Conviction;
+  previousConviction: Conviction;
   balance: string;
 };
 
@@ -353,6 +354,7 @@ function buildEditDelegation({
   undelegateTracks,
   target,
   conviction,
+  previousConviction,
   balance,
 }: EditDelegationParams): Transaction {
   const undelegateTxs = undelegateTracks.map((track) => ({
@@ -372,6 +374,7 @@ function buildEditDelegation({
       track,
       target,
       conviction,
+      previousConviction,
       balance,
     },
   }));

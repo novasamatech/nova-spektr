@@ -8,7 +8,7 @@ import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { referendumDetailsModel } from '../model/details';
-import { referendumsDetailsFeatureStatus } from '../model/status';
+import { referendumsDetailsFeatureStatus } from '../model/feature';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';

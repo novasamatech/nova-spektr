@@ -1,7 +1,7 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
-import { interval } from 'patronum';
+import { combineEvents, interval } from 'patronum';
 
 import {
   AccountType,
@@ -19,7 +19,6 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
-import { series } from '@/shared/effector';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -31,27 +30,34 @@ import { multisigUtils } from '../lib/mulitisigs-utils';
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
 const subscribe = createEvent();
+const stop = createEvent();
 const request = createEvent<AnyAccount[]>();
+
+const createWallets = attach({ effect: walletModel.createWallets });
 
 const $multisigAccounts = walletModel.$allWallets
   .map(walletUtils.getAllAccounts)
   .map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
 
-const { tick: pollingRequest } = interval({
+const { tick: pollingRequest, isRunning: $isPollingRunning } = interval({
   start: subscribe,
+  stop: stop,
   timeout: MULTISIG_DISCOVERY_TIMEOUT,
 });
 
-const updateRequested = sample({
-  clock: [pollingRequest, networkModel.events.connectionsPopulated],
-  source: walletModel.$allWallets,
-  fn: (wallets) => {
-    const filteredWallets =
-      walletUtils.getWalletsFilteredAccounts(wallets, {
-        walletFn: (w) => !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w),
-      }) ?? [];
+const readyToRequest = combineEvents({
+  events: [walletModel.populate.done, accounts.populate.done, networkModel.events.connectionsPopulated],
+});
 
-    return walletUtils.getAllAccounts(filteredWallets);
+const updateRequested = sample({
+  clock: [pollingRequest, readyToRequest],
+  source: walletModel.$availableAccounts,
+  fn(accounts) {
+    return accounts.filter((a) => {
+      return (
+        !accountUtils.isWatchOnlyAccount(a) && !accountUtils.isProxiedAccount(a) && !accountUtils.isMultisigAccount(a)
+      );
+    });
   },
 });
 
@@ -135,37 +141,6 @@ const getMultisigsFx = createEffect(
   },
 );
 
-const populateMultisigWalletFx = createEffect(({ account, chain }: MultisigResponse) => {
-  const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
-  const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
-    name: walletName,
-    type: WalletType.MULTISIG,
-    signingType: SigningType.MULTISIG,
-  };
-
-  return {
-    wallet,
-    accounts: [account],
-    external: true,
-  };
-});
-
-const populateFlexibleMultisigWalletFx = createEffect(({ account, chain }: FlexibleMultisigResponse) => {
-  const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
-  const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
-    name: walletName,
-    type: WalletType.FLEXIBLE_MULTISIG,
-    signingType: SigningType.MULTISIG,
-    activated: false,
-  };
-
-  return {
-    wallet,
-    accounts: [account],
-    external: true,
-  };
-});
-
 sample({
   clock: [updateRequested, request],
   source: {
@@ -189,78 +164,105 @@ sample({
   target: getMultisigsFx,
 });
 
-const populateWallet = createEvent<GetMultisigResponse>();
+const populateWallets = createEvent<GetMultisigResponse[]>();
 
 sample({
   clock: getMultisigsFx.doneData,
-  target: series(populateWallet),
-});
-
-const populateMultisigWallet = populateWallet.filter({
-  fn: (x) => x.type === 'multisig',
-});
-
-const populateFlexibleMultisigWallet = populateWallet.filter({
-  fn: (x) => x.type === 'flexibleMultisig',
+  filter: (response) => response.length > 0,
+  target: populateWallets,
 });
 
 sample({
-  clock: populateMultisigWallet,
-  target: populateMultisigWalletFx,
+  clock: getMultisigsFx.done,
+  source: $isPollingRunning,
+  filter: (isRunning) => isRunning,
+  target: [stop, subscribe],
 });
 
-sample({
-  clock: populateFlexibleMultisigWallet,
-  target: populateFlexibleMultisigWalletFx,
-});
+const populateMultisigWallets = populateWallets.map((drafts) => drafts.filter((x) => x.type === 'multisig'));
+
+const populateFlexibleMultisigWallets = populateWallets.map((drafts) =>
+  drafts.filter((x) => x.type === 'flexibleMultisig'),
+);
 
 sample({
-  clock: populateMultisigWalletFx.doneData,
-  target: walletModel.events.multisigCreated,
-});
+  clock: populateMultisigWallets,
+  fn(responses) {
+    return responses.map(({ chain, account }) => {
+      const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+      const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
+        name: walletName,
+        type: WalletType.MULTISIG,
+        signingType: SigningType.MULTISIG,
+      };
 
-sample({
-  clock: populateFlexibleMultisigWalletFx.doneData,
-  target: walletModel.events.flexibleMultisigCreated,
-});
-
-sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet }) => wallet.type === WalletType.MULTISIG,
-  fn: ({ accounts }) => {
-    return accounts.filter(accountUtils.isRegularMultisigAccount).map<NoID<MultisigCreated>>((account) => {
       return {
-        read: false,
-        type: NotificationType.MULTISIG_CREATED,
-        dateCreated: Date.now(),
-        multisigAccountId: account.accountId,
-        multisigAccountName: account.name,
-        chainId: account.chainId,
-        signatories: account.signatories.map((signatory) => signatory.accountId),
-        threshold: account.threshold,
+        wallet,
+        accounts: [account],
       };
     });
   },
-  target: notificationModel.events.notificationsAdded,
+  target: createWallets,
 });
 
 sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet }) => wallet.type === WalletType.FLEXIBLE_MULTISIG,
-  fn: ({ accounts, wallet }) => {
-    return accounts.filter(accountUtils.isFlexibleMultisigAccount).map<NoID<FlexibleMultisigCreated>>((account) => {
+  clock: populateFlexibleMultisigWallets,
+  fn(responses) {
+    return responses.map(({ chain, account }) => {
+      const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+      const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
+        name: walletName,
+        type: WalletType.FLEXIBLE_MULTISIG,
+        signingType: SigningType.MULTISIG,
+        activated: false,
+      };
+
       return {
-        read: false,
-        walletId: wallet.id,
-        type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
-        dateCreated: Date.now(),
-        multisigAccountId: account.accountId,
-        multisigAccountName: account.name,
-        chainId: account.chainId,
-        signatories: account.signatories.map((signatory) => signatory.accountId),
-        threshold: account.threshold,
+        wallet,
+        accounts: [account],
       };
     });
+  },
+  target: createWallets,
+});
+
+sample({
+  clock: createWallets.doneData,
+  fn: (drafts) => {
+    const notifications = drafts.flatMap(({ wallet, accounts }) => {
+      return accounts.map((account) => {
+        if (accountUtils.isRegularMultisigAccount(account)) {
+          return {
+            read: false,
+            type: NotificationType.MULTISIG_CREATED,
+            dateCreated: Date.now(),
+            multisigAccountId: account.accountId,
+            multisigAccountName: account.name,
+            chainId: account.chainId,
+            signatories: account.signatories.map((signatory) => signatory.accountId),
+            threshold: account.threshold,
+          } satisfies NoID<MultisigCreated>;
+        }
+
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
+          return {
+            read: false,
+            walletId: wallet.id,
+            type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
+            dateCreated: Date.now(),
+            multisigAccountId: account.accountId,
+            multisigAccountName: account.name,
+            chainId: account.chainId,
+            signatories: account.signatories.map((signatory) => signatory.accountId),
+            threshold: account.threshold,
+          } satisfies NoID<FlexibleMultisigCreated>;
+        }
+
+        return null;
+      });
+    });
+
+    return notifications.filter(nonNullable);
   },
   target: notificationModel.events.notificationsAdded,
 });
@@ -333,9 +335,7 @@ sample({
 });
 
 export const multisigsModel = {
-  events: {
-    convertFlexibleToRegular,
-    subscribe,
-    request,
-  },
+  subscribe,
+  request,
+  convertFlexibleToRegular,
 };

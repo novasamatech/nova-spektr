@@ -1,5 +1,5 @@
-import { type UnitValue, combine, createEffect, createEvent, createStore, sample } from 'effector';
-import { readonly } from 'patronum';
+import { type UnitValue, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
@@ -21,6 +21,7 @@ import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shar
 // eslint-disable-next-line boundaries/element-types
 import {
   type AnyAccount,
+  type AnyAccountDraft,
   type ChainAccount,
   type UniversalAccount,
   accounts,
@@ -33,9 +34,6 @@ type DbWallet = Omit<Wallet, 'accounts'>;
 export type CreateParams<T extends AnyAccount = AnyAccount> = {
   wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
   accounts: (T extends any ? Omit<NoID<T>, 'walletId'> : never)[];
-  // external means wallet was created by someone else and discovered later
-  // TODO this flag is related to multisig creation and should disappear after wallet feature decomposition
-  external: boolean;
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
@@ -50,7 +48,6 @@ const walletRestored = createEvent<Wallet>();
 const walletHidden = createEvent<Wallet>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
-const selectWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
 const updateWalletWithDB = createEvent<Wallet>();
@@ -95,6 +92,11 @@ const $availableAccounts = combine($walletIdsSerialized, accounts.$list, (wallet
   return accounts.filter((a) => a.walletId in ids);
 });
 
+const $populated = restore(
+  $rawWallets.updates.map(() => true),
+  false,
+);
+
 const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
   const wallets = await storageService.wallets.readAll();
 
@@ -120,10 +122,9 @@ const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
 type CreateResult = {
   wallet: DbWallet;
   accounts: AnyAccount[];
-  external: boolean;
 };
 const walletCreatedFx = createEffect(
-  async ({ wallet, accounts: accountDrafts, external }: CreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -134,7 +135,32 @@ const walletCreatedFx = createEffect(
 
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
-    return { wallet: dbWallet, accounts: dbAccounts, external };
+    return { wallet: dbWallet, accounts: dbAccounts };
+  },
+);
+
+const createWalletsFx = createEffect(
+  async (
+    drafts: {
+      wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
+      accounts: Omit<AnyAccountDraft, 'walletId'>[];
+    }[],
+  ): Promise<CreateResult[]> => {
+    const requests = drafts.map(async ({ wallet, accounts: accountDrafts }) => {
+      const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+
+      if (!dbWallet) return undefined;
+
+      const accountsPayload = accountDrafts.map(
+        (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
+      );
+
+      const dbAccounts = await accounts.createAccounts(accountsPayload);
+
+      return { wallet: dbWallet, accounts: dbAccounts };
+    });
+
+    return Promise.all(requests).then((r) => r.filter(nonNullable));
   },
 );
 
@@ -142,8 +168,7 @@ const multishardCreatedFx = createEffect(
   async ({
     wallet,
     accounts: accountDrafts,
-    external,
-  }: UnitValue<typeof multishardCreated>): Promise<(CreateResult & { external: boolean }) | undefined> => {
+  }: UnitValue<typeof multishardCreated>): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
     if (!dbWallet) return undefined;
@@ -190,7 +215,7 @@ const multishardCreatedFx = createEffect(
       multishardAccounts.push(...dbChainAccounts);
     }
 
-    return { wallet: dbWallet, accounts: multishardAccounts, external };
+    return { wallet: dbWallet, accounts: multishardAccounts };
   },
 );
 
@@ -233,18 +258,6 @@ const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => 
   return wallet;
 });
 
-const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined> => {
-  const wallets = await storageService.wallets.readAll();
-  const inactiveWallets = wallets.filter((wallet) => wallet.isActive).map((wallet) => ({ ...wallet, isActive: false }));
-
-  const [, nextWallet] = await Promise.all([
-    storageService.wallets.updateAll(inactiveWallets),
-    storageService.wallets.update(nextId, { isActive: true }),
-  ]);
-
-  return nextWallet;
-});
-
 sample({
   clock: fetchAllWalletsFx.doneData,
   target: $rawWallets,
@@ -278,8 +291,17 @@ sample({
 sample({
   clock: walletCreatedDone,
   source: $rawWallets,
-  fn: (wallets, data) => {
+  fn(wallets, data) {
     return wallets.concat(data.wallet);
+  },
+  target: $rawWallets,
+});
+
+sample({
+  clock: createWalletsFx.doneData,
+  source: $rawWallets,
+  fn(wallets, results) {
+    return wallets.concat(results.map((r) => r.wallet));
   },
   target: $rawWallets,
 });
@@ -363,18 +385,6 @@ sample({
   target: $rawWallets,
 });
 
-sample({ clock: selectWallet, target: walletSelectedFx });
-
-sample({
-  clock: walletSelectedFx.doneData,
-  source: $rawWallets,
-  filter: (_, nextId) => Boolean(nextId),
-  fn: (wallets, nextId) => {
-    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
-  },
-  target: $rawWallets,
-});
-
 sample({
   clock: updateWallet,
   source: $rawWallets,
@@ -401,12 +411,20 @@ export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
   $hiddenWallets,
+  /**
+   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
+   */
   $activeWallet,
+  /**
+   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
+   */
   $activeAccounts,
   $availableAccounts,
-  $isLoadingWallets: fetchAllWalletsFx.pending,
+  $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
   createWallet: walletCreatedFx,
+  createWallets: createWalletsFx,
+  updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
 
   events: {
@@ -419,7 +437,6 @@ export const walletModel = {
     proxiedCreated,
     walletCreatedDone,
     walletCreationFail,
-    selectWallet,
     updateWallet,
     updateWalletWithDB,
     walletRemoved,
