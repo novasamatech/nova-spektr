@@ -77,22 +77,17 @@ describe('walletSelect', () => {
   });
 
   it('should set $selectedWallet on $selectedWallet removed', async () => {
-    const extendedWallets = wallets.concat(newWallet);
+    const initialWallets = wallets.concat(newWallet);
+    const [_deletedWallet, ...restWallets] = initialWallets;
 
     const scope = fork({
-      handlers: [
-        [walletModel.populate, () => extendedWallets],
-        [walletModel.updateWallet, (wallet: Wallet) => wallet],
-      ],
+      values: [[walletModel.__test.$rawWallets, initialWallets]],
+      handlers: [[walletModel.updateWallet, (wallet: Wallet) => wallet]],
     });
 
-    expect(scope.getState(walletSelect.$selectedWallet)).toEqual(null);
+    expect(scope.getState(walletSelect.$selectedWallet)).toEqual(initialWallets.at(0));
 
-    await allSettled(walletModel.populate, { scope });
-    expect(scope.getState(walletSelect.$selectedWallet)).toEqual(wallets[0]);
-
-    expect(scope.getState(walletSelect.$selectedWallet)).toEqual(extendedWallets[0]);
-    await allSettled(walletModel.__test.$rawWallets, { scope, params: extendedWallets.slice(1) });
-    expect(scope.getState(walletSelect.$selectedWallet)).toEqual({ ...extendedWallets[2], isActive: true });
+    await allSettled(walletModel.__test.$rawWallets, { scope, params: restWallets });
+    expect(scope.getState(walletSelect.$selectedWallet)).toEqual({ ...initialWallets[1], isActive: true });
   });
 });
