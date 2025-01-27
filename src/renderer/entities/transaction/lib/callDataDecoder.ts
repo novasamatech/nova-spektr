@@ -151,8 +151,17 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     const additionalArgs: Record<string, unknown> = {};
 
     if (section.endsWith('Collective')) {
-      transactionType = TransactionType.COLLECTIVE_VOTE;
-      additionalArgs['pallet'] = section.replace('Collective', '');
+      const pallet = section.replace('Collective', '');
+
+      transactionType = ('collective_' + method) as TransactionType;
+      additionalArgs['pallet'] = pallet;
+    }
+
+    if (section.endsWith('Core')) {
+      const pallet = section.replace('Core', '');
+
+      transactionType = ('collective_core_' + method) as TransactionType;
+      additionalArgs['pallet'] = pallet;
     }
 
     const parser = getCallDataParser[transactionType];
@@ -438,6 +447,11 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         aye: decoded.args[1].toPrimitive(),
       };
     },
+    [TransactionType.COLLECTIVE_SET_ACTIVE]: (decoded): Record<string, any> => {
+      return {
+        isActive: decoded.args[0].toPrimitive(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {
@@ -552,6 +566,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
 
     return {
       vote: TransactionType.COLLECTIVE_VOTE,
+      set_active: TransactionType.COLLECTIVE_SET_ACTIVE,
     }[method];
   };
 

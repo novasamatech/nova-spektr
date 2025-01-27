@@ -9,7 +9,7 @@ import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { membersService } from '@/domains/collectives';
 import { ERROR } from '../constants';
 import { fellowshipProfileFeature } from '../model/feature';
-import { profileModel } from '../model/profile';
+import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
@@ -17,10 +17,10 @@ export const ProfileCard = memo(() => {
   const { t } = useI18n();
   const featureState = useUnit(fellowshipProfileFeature.state);
   const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profileModel.$currentMember);
-  const identity = useUnit(profileModel.$identity);
-  const pending = useUnit(profileModel.$pending);
-  const isAccountExist = useUnit(profileModel.$isAccountExist);
+  const member = useUnit(profile.$currentMember);
+  const identity = useUnit(profile.$identity);
+  const pending = useUnit(profile.$pending);
+  const isAccountExist = useUnit(profile.$isAccountExist);
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
   const disabled = !isAccountExist || nullable(member);

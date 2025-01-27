@@ -270,6 +270,7 @@ const TransactionTitles: Record<TransactionType, string> = {
 
   // Collectives
   [TransactionType.COLLECTIVE_VOTE]: 'operations.titles.vote',
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
 };
 
 const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => string> = {
@@ -325,6 +326,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',
   [TransactionType.EDIT_DELEGATION]: () => 'operations.modalTitles.editDelegationOn',
   [TransactionType.COLLECTIVE_VOTE]: () => 'operations.modalTitles.vote',
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: () => 'fellowship.profile.setActive.title',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {

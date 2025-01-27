@@ -320,7 +320,13 @@
     "profile": {
       "modalTitle": "Profile",
       "fellow": "Fellow",
-      "active": "Active"
+      "active": "Active",
+      "setActive": {
+        "title": "Set active status on",
+        "isActive": "Active",
+        "activeTrue": "Yes",
+        "activeFalse": "No"
+      }
     },
     "details": {
       "noDetails": "Details not found"
