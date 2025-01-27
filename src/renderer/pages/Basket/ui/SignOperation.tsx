@@ -24,6 +24,7 @@ import {
   BondNominateConfirmation,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipSetActiveConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
@@ -179,7 +180,12 @@ export const SignOperation = () => {
       [TransactionType.COLLECTIVE_VOTE]: () => (
         <FellowshipVotingConfirmation id={transaction.id} onGoBack={() => signOperationsModel.output.flowFinished()} />
       ),
-      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => null,
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => (
+        <FellowshipSetActiveConfirmation
+          id={transaction.id}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
     };
 
     // @ts-expect-error not all types are used
