@@ -26,6 +26,7 @@ import {
   ConfirmSlider,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipSetActiveConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
@@ -127,7 +128,9 @@ export const SignOperations = () => {
 
       // TODO discuss where we should implement generic collective voting confirmation
       [TransactionType.COLLECTIVE_VOTE]: () => <FellowshipVotingConfirmation id={transaction.id} hideSignButton />,
-      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => null,
+      [TransactionType.COLLECTIVE_SET_ACTIVE]: () => (
+        <FellowshipSetActiveConfirmation id={transaction.id} hideSignButton />
+      ),
     };
 
     // @ts-expect-error not all types are used
