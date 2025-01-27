@@ -9,7 +9,7 @@ import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
 import { Box, ScrollArea, Select } from '@/shared/ui-kit';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import {
   COLLECTIVES_CHAIN_ID,
@@ -27,11 +27,11 @@ export const Fellowship = () => {
   useGate(fellowshipPageModel.gates.flow);
 
   const { chainId } = useParams<'chainId'>();
-  const selectedChain = useUnit(fellowshipNetworkFeature.model.network.$selectedChainId);
+  const selectedChain = useUnit(fellowshipNetwork.$selectedChainId);
 
   useLayoutEffect(() => {
     if (chainId?.startsWith('0x')) {
-      fellowshipNetworkFeature.model.network.selectCollective({ chainId: chainId as ChainId });
+      fellowshipNetwork.selectCollective({ chainId: chainId as ChainId });
     } else {
       // navigate to default chain
       navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId: COLLECTIVES_CHAIN_ID }));

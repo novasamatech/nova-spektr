@@ -49,7 +49,7 @@ const $network = combine($fellowshipChain, $fellowshipChainApi, (chain, api) => 
   };
 });
 
-export const fellowshipNetworkModel = {
+export const fellowshipNetwork = {
   $network,
   $selectedChainId,
 
