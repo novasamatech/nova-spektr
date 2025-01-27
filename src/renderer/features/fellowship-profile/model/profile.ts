@@ -3,13 +3,14 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { members, membersService } from '@/domains/collectives';
+import { members, membersService, tracks } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipProfileFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const $members = fellowshipModel.$store.map(store => store?.members ?? []);
+const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
 
 const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
@@ -19,14 +20,20 @@ const $identities = combine(fellowshipProfileFeature.input, identityDomain.ident
 
 const $accounts = fellowshipProfileFeature.input.map(store => (store ? store.accounts : []));
 
-const $currentMember = combine($accounts, $members, (accounts, members) => {
+const $member = combine($accounts, $members, (accounts, members) => {
   return membersService.findMatchingMember(accounts, members);
 });
 
-const $identity = combine($currentMember, $identities, (member, identities) => {
+const $identity = combine($member, $identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;
+});
+
+const $track = combine($member, $tracks, (member, tracks) => {
+  if (nullable(member)) return null;
+
+  return tracks.find(t => t.id === member.rank) ?? null;
 });
 
 const $isAccountExist = fellowshipProfileFeature.input.map(store => {
@@ -40,11 +47,11 @@ const $pendingMember = and(
   $members.map(m => m.length === 0),
 );
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $currentMember);
+const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 
 sample({
   clock: fellowshipProfileFeature.running,
-  target: members.subscribe,
+  target: [members.subscribe, tracks.request],
 });
 
 sample({
@@ -62,7 +69,8 @@ sample({
 });
 
 export const profile = {
-  $currentMember,
+  $member,
+  $track,
   $identity,
   $isAccountExist,
   $pending: or($pendingMember, fellowshipProfileFeature.isStarting),

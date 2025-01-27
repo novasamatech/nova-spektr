@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
+import { capitalize } from 'lodash';
 import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeaderTitleText, Identicon, Separator, Switch } from '@/shared/ui';
 import { Account, CollectivesRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -15,7 +16,8 @@ import { SetActiveModal } from './SetActiveModal';
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profile.$currentMember);
+  const member = useUnit(profile.$member);
+  const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
 
   const disabled = nullable(member) || nullable(featureInput);
@@ -49,7 +51,9 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
             </HeaderTitleText>
             <Box direction="row" gap={2}>
               <CollectivesRank rank={member.rank} />
-              <FootnoteText className="text-text-secondary">{t('fellowship.profile.fellow')}</FootnoteText>
+              {nonNullable(track) && (
+                <FootnoteText className="text-text-secondary">{capitalize(track.name)}</FootnoteText>
+              )}
             </Box>
           </Box>
           <Box direction="row" verticalAlign="center" gap={2}>
