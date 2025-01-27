@@ -18,6 +18,7 @@ sample({
   clock: rejectMultisig,
   source: accounts.$list,
   fn: (accounts, { accountId, chainId }) => {
+    // TODO: this should be triggered only for the flexible shell state 
     const account = accounts.find(
       (acc) =>
         acc.accountId === accountId &&

@@ -41,8 +41,6 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
 
   const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
-  // there're always 2 approvals for 1 signatory  since there're 2 transaction under the hood
-  const approvalLength = approvals.length / 2;
 
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
@@ -57,12 +55,12 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
       <Plate className="mt-6 flex w-92 flex-col gap-6 rounded-2xl border-filter-border p-6">
         <Box gap={4}>
           <Box horizontalAlign="center">
-            <Status status={tx.status} signed={approvalLength} threshold={account.threshold ?? approvalLength} />
+            <Status status={tx.status} signed={approvals.length} threshold={account.threshold ?? approvals.length} />
           </Box>
 
           <SmallTitleText align="center">{t('operation.createFlexibleMultisig.title')}</SmallTitleText>
 
-          <Progress value={approvalLength} max={account.threshold ?? approvalLength} />
+          <Progress value={approvals.length} max={account.threshold ?? approvals.length} />
 
           <BodyText className="text-text-tertiary" align="center">
             {t('operation.createFlexibleMultisig.description')}
