@@ -204,7 +204,7 @@ const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wall
     },
   ];
 
-  return { wallet, accounts, external: true };
+  return { wallet, accounts };
 });
 
 const createProxiesWalletsFx = attach({
