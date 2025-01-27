@@ -26,6 +26,7 @@
     {
       "files": [
         "./src/renderer/domains/**/*.ts",
+        "./src/renderer/aggregates/**/*.ts",
         "./src/renderer/shared/pallet/**/*.ts",
         "./src/renderer/shared/effector/**/*.{ts,tsx}",
         "./src/renderer/shared/feature/**/*.{ts,tsx}",

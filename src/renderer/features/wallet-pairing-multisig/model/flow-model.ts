@@ -34,6 +34,7 @@ import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { proxiesModel } from '@/features/proxies';
@@ -254,7 +255,6 @@ sample({
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
-      external: false,
     };
   },
   target: createWalletFx,
@@ -269,7 +269,7 @@ sample({
 sample({
   clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
-  target: walletProviderModel.events.completed,
+  target: [walletProviderModel.events.completed, walletSelect.select],
 });
 
 sample({

@@ -6,7 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
   notification: FlexibleMultisigCreated;
@@ -18,7 +19,7 @@ export const FlexibleMultisigCreatedNotification = ({
   const { t } = useI18n();
 
   const switchWallet = () => {
-    walletModel.events.selectWallet(walletId);
+    walletSelect.select(walletId);
   };
 
   return (

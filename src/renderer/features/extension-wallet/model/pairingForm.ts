@@ -8,6 +8,7 @@ import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib
 import { Paths } from '@/shared/routes';
 import { type AnyAccountDraft } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
 import { type ExtensionAccount, type ExtensionType } from '../types';
 
@@ -109,7 +110,6 @@ sample({
   clock: create,
   fn: ({ account, name }) => {
     return {
-      external: false,
       wallet: {
         name: name.trim(),
         type: WalletTypeFromExtension(account.extension),
@@ -137,7 +137,7 @@ sample({
 
 sample({
   clock: walletCreated,
-  target: walletModel.events.selectWallet,
+  target: walletSelect.select,
 });
 
 // Steps
