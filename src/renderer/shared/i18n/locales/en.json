@@ -317,6 +317,11 @@
     "salary": {
       "cardTitle": "Salary"
     },
+    "profile": {
+      "modalTitle": "Profile",
+      "fellow": "Fellow",
+      "active": "Active"
+    },
     "details": {
       "noDetails": "Details not found"
     },
