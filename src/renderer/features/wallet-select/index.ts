@@ -1,8 +1,8 @@
-import { GROUP_LABELS, WalletGroup } from './components/WalletGroup';
+import { walletSelectService } from '@/aggregates/wallet-select';
+
 import { walletGroupSlot, walletIconSlot, walletSelectActionsSlot } from './components/WalletSelect';
+import { GROUP_LABELS } from './constants';
 import { walletSelectFeatureStatus } from './model/feature';
-import { walletSelectModel } from './model/wallet-select-model';
-import { walletSelectService } from './service/walletSelectService';
 
 export { walletSelectActionsSlot, walletGroupSlot, walletIconSlot };
 
@@ -12,11 +12,7 @@ export const walletSelectFeature = {
   services: {
     walletSelect: walletSelectService,
   },
-  selectModel: walletSelectModel,
   constants: {
     GROUP_LABELS,
-  },
-  views: {
-    WalletGroup,
   },
 };

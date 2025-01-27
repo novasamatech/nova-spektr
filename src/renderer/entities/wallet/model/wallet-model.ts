@@ -51,7 +51,6 @@ const walletRestored = createEvent<Wallet>();
 const walletHidden = createEvent<Wallet>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
-const selectWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
 const updateWalletWithDB = createEvent<Wallet>();
@@ -264,18 +263,6 @@ const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => 
   return wallet;
 });
 
-const walletSelectedFx = createEffect(async (nextId: ID): Promise<ID | undefined> => {
-  const wallets = await storageService.wallets.readAll();
-  const inactiveWallets = wallets.filter((wallet) => wallet.isActive).map((wallet) => ({ ...wallet, isActive: false }));
-
-  const [, nextWallet] = await Promise.all([
-    storageService.wallets.updateAll(inactiveWallets),
-    storageService.wallets.update(nextId, { isActive: true }),
-  ]);
-
-  return nextWallet;
-});
-
 sample({
   clock: fetchAllWalletsFx.doneData,
   target: $rawWallets,
@@ -403,18 +390,6 @@ sample({
   target: $rawWallets,
 });
 
-sample({ clock: selectWallet, target: walletSelectedFx });
-
-sample({
-  clock: walletSelectedFx.doneData,
-  source: $rawWallets,
-  filter: (_, nextId) => Boolean(nextId),
-  fn: (wallets, nextId) => {
-    return wallets.map((wallet) => ({ ...wallet, isActive: wallet.id === nextId }));
-  },
-  target: $rawWallets,
-});
-
 sample({
   clock: updateWallet,
   source: $rawWallets,
@@ -441,13 +416,20 @@ export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
   $hiddenWallets,
+  /**
+   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
+   */
   $activeWallet,
+  /**
+   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
+   */
   $activeAccounts,
   $availableAccounts,
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
   createWallet: walletCreatedFx,
   createWallets: createWalletsFx,
+  updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
 
   events: {
@@ -460,7 +442,6 @@ export const walletModel = {
     proxiedCreated,
     walletCreatedDone,
     walletCreationFail,
-    selectWallet,
     updateWallet,
     updateWalletWithDB,
     walletRemoved,

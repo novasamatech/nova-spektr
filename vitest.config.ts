@@ -42,6 +42,7 @@ const config: UserConfigFnPromise = async (options) => {
         ['src/renderer/shared/i18n/**/*.ts', 'happy-dom'],
         ['src/renderer/shared/api/**/*.ts', 'happy-dom'],
         ['src/renderer/domains/**/*.ts', 'happy-dom'],
+        ['src/renderer/aggregates/**/*.ts', 'happy-dom'],
         ['src/renderer/entities/**/*.ts', 'happy-dom'],
         ['src/renderer/features/**/*.ts', 'happy-dom'],
         ['src/renderer/widgets/**/*.ts', 'happy-dom'],

@@ -1,5 +1,6 @@
 import { type Wallet, WalletType } from '@/shared/core';
-import { walletSelectService } from '../walletSelectService';
+
+import { walletSelectService } from './service';
 
 describe('walletSelectService', () => {
   const wallets = [

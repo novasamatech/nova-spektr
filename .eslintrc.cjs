@@ -3,7 +3,17 @@ const path = require('path');
 const localesPath = './src/renderer/shared/api/translation/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
-const boundaryTypes = ['app', 'shared', 'domains', 'entities', 'processes', 'features', 'widgets', 'pages'];
+const boundaryTypes = [
+  'app',
+  'shared',
+  'domains',
+  'entities',
+  'processes',
+  'aggregates',
+  'features',
+  'widgets',
+  'pages',
+];
 
 const boundaries = boundaryTypes.map((type) => ({
   type,
@@ -334,6 +344,10 @@ module.exports = {
                 allow: ['shared', 'domains', /* TODO fix */ 'entities'],
               },
               {
+                from: 'aggregates',
+                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+              },
+              {
                 from: 'processes',
                 allow: ['app', 'shared', 'entities'],
               },
@@ -346,12 +360,13 @@ module.exports = {
                   /* TODO fix */ 'pages',
                   /* TODO fix */ 'widgets',
                   /* TODO fix */ 'features',
+                  'aggregates',
                   'domains',
                 ],
               },
               {
                 from: 'pages',
-                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'domains'],
+                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'aggregates', 'domains'],
               },
               {
                 from: 'widgets',
