@@ -17,7 +17,7 @@ export const ProfileCard = memo(() => {
   const { t } = useI18n();
   const featureState = useUnit(fellowshipProfileFeature.state);
   const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profile.$currentMember);
+  const member = useUnit(profile.$member);
   const identity = useUnit(profile.$identity);
   const pending = useUnit(profile.$pending);
   const isAccountExist = useUnit(profile.$isAccountExist);

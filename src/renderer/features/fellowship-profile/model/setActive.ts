@@ -26,7 +26,7 @@ const { $api, $chain, $wallets } = reshape({
   },
 });
 
-const $account = combine(fellowshipProfileFeature.input, profile.$currentMember, (input, member) => {
+const $account = combine(fellowshipProfileFeature.input, profile.$member, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
   return membersService.findMatchingAccount(input.accounts, member);

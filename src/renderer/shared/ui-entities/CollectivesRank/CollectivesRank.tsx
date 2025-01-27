@@ -1,6 +1,31 @@
-import { type ComponentProps } from 'react';
+import { type ComponentProps, memo } from 'react';
 
 import { Label } from '@/shared/ui-kit';
+
+const romanNumbersLookup = [
+  ['M', 1000],
+  ['CM', 900],
+  ['D', 500],
+  ['CD', 400],
+  ['C', 100],
+  ['XC', 90],
+  ['L', 50],
+  ['XL', 40],
+  ['X', 10],
+  ['IX', 9],
+  ['V', 5],
+  ['IV', 4],
+  ['I', 1],
+] as const;
+
+const toRomanNumeral = (num: number) => {
+  return romanNumbersLookup.reduce((acc, [k, v]) => {
+    acc += k.repeat(Math.floor(num / v));
+    num = num % v;
+
+    return acc;
+  }, '');
+};
 
 const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] => {
   const rankVariants: Record<number, ComponentProps<typeof Label>['variant']> = {
@@ -17,8 +42,14 @@ const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] =>
 
 type Props = {
   rank: number;
+  title?: string;
 };
 
-export const CollectivesRank = ({ rank }: Props) => {
-  return <Label variant={pickRankColor(rank)}>{rank.toString()}</Label>;
-};
+export const CollectivesRank = memo(({ rank, title }: Props) => {
+  return (
+    <Label variant={pickRankColor(rank)}>
+      {rank ? toRomanNumeral(rank) : '0'}
+      {title ? ` ${title}` : ''}
+    </Label>
+  );
+});
