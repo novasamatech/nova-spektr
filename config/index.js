@@ -39,7 +39,7 @@ export const renderer = {
 export const folders = {
   entrypoint: {
     main: resolve('src/main/index.ts'),
-    bridge: resolve('src/main/shared/bridge.ts'),
+    preload: resolve('src/main/preload.ts'),
     renderer: resolve('src/renderer/app/index.html'),
   },
 
@@ -48,10 +48,12 @@ export const folders = {
   mainRoot: resolve('src/main'),
   rendererRoot: resolve('src/renderer'),
   resources: resolve('src/main/resources'),
+  docs: resolve('docs'),
 
   devBuild: resolve('release/build'),
   prodBuild: resolve('release/dist'),
   storybookBuild: resolve('release/storybook'),
+  docsBuild: resolve('release/docs'),
 
   coverage: resolve('./.coverage'),
   cache: resolve('./node_modules/.cache'),
