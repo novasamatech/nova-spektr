@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { type FormEventHandler, type PropsWithChildren, memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
