@@ -18,7 +18,6 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
 import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-feed';
-import { fellowshipEvidenceFeature } from '@/features/fellowship-evidence';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';

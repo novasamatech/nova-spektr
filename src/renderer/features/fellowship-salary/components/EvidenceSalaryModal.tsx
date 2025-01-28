@@ -10,7 +10,7 @@ import { Box, Modal } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-export const SalaryModal = ({ children }: PropsWithChildren) => {
+export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipSalaryFeature.input);
   const member = useUnit(profile.$member);
