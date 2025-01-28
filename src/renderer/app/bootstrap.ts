@@ -103,7 +103,6 @@ export const bootstrap = () => {
     fellowshipNavigationFeature,
     fellowshipTasksFeature,
     fellowshipSalaryFeature,
-    fellowshipEvidenceFeature,
     fellowshipProfileFeature,
     fellowshipMembersFeature,
     fellowshipActivityFeedFeature,

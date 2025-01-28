@@ -1,16 +1,13 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { profile } from '../model/profile';
 
 import { EvidenceSalaryModal } from './EvidenceSalaryModal';
 
 export const EntrypointCard = memo(() => {
   const { t } = useI18n();
-  const member = useUnit(profile.$member);
 
   return (
     <EvidenceSalaryModal>

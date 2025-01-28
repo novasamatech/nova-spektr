@@ -38,6 +38,6 @@ export const storage = {
   status: (type: PalletType, api: ApiPromise) => {
     const schema = pjsSchema.optional(salaryStatusType);
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'statis')()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'status')()).then(schema.parse);
   },
 };

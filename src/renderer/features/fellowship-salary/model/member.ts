@@ -68,7 +68,7 @@ sample({
   target: identityDomain.identity.request,
 });
 
-export const profile = {
+export const member = {
   $member,
   $track,
   $identity,

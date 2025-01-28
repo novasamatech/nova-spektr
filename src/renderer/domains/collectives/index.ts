@@ -5,11 +5,13 @@ export {
   referendumService,
   tracksService,
   votingService,
+  salaryService,
   members,
   referendums,
   referendumMeta,
   tracks,
   voting,
+  salary,
   feed,
 } from './init';
 
