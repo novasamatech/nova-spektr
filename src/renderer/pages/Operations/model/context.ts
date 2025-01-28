@@ -13,12 +13,12 @@ const $availableTransaction = combine(operationsModel.$multisigTransactions, net
 const $account = walletModel.$activeWallet.map((x) => x?.accounts.find(accountUtils.isMultisigAccount) ?? null);
 
 const $incompleteFlexibleMultisigTx = combine($account, $availableTransaction, (account, txs) => {
-  const signingTransactions = txs.filter((tx) => tx.status === 'SIGNING');
+  const signingTransactions = txs.filter((tx) => tx.status === 'SIGNING' && tx.chainId === account?.chainId);
 
   if (
     nonNullable(account) &&
     accountUtils.isFlexibleMultisigAccount(account) &&
-    nullable(account.proxyAccountId) &&
+    nullable(account.proxyAccount) &&
     signingTransactions.length === 1
   ) {
     return signingTransactions.find((tx) => isCreatePureProxyTransaction(tx.transaction)) ?? null;

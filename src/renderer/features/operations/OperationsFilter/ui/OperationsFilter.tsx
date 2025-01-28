@@ -8,7 +8,6 @@ import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { operationsModel } from '@/entities/operations';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { UNKNOWN_TYPE } from '../lib/constants';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';
@@ -60,9 +59,9 @@ export const OperationsFilter = ({ txs }: Props) => {
     operationsModel.events.changeFilteredTxs(txs);
   }, [txs, availableChains]);
 
-  const getFilterableTxType = (tx: MultisigTransaction): TransactionType | typeof UNKNOWN_TYPE => {
+  const getFilterableTxType = (tx: MultisigTransaction): TransactionType | 'UNKNOWN_TYPE' => {
     if (!tx.transaction?.type) {
-      return UNKNOWN_TYPE;
+      return 'UNKNOWN_TYPE';
     }
 
     if (TransferTypes.includes(tx.transaction.type)) {
@@ -75,7 +74,7 @@ export const OperationsFilter = ({ txs }: Props) => {
     if (tx.transaction.type === TransactionType.BATCH_ALL) {
       const txMatch = findCoreBatchAll(tx.transaction);
 
-      return txMatch?.type || UNKNOWN_TYPE;
+      return txMatch?.type || 'UNKNOWN_TYPE';
     }
 
     return tx.transaction.type;

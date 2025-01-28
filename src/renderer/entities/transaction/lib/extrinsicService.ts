@@ -61,6 +61,16 @@ export const getUnsignedTransaction: Record<
           options,
         );
   },
+  [TransactionType.TRANSFER_ALL]: (transaction, info, options) => {
+    return methods.balances.transferAll(
+      {
+        dest: transaction.args.dest,
+        keepAlive: false,
+      },
+      info,
+      options,
+    );
+  },
   [TransactionType.ASSET_TRANSFER]: (transaction, info, options, api) => {
     const palletName = transaction.args.palletName ?? 'assets';
     const methodArgs = api.tx[palletName].transfer.meta.args;
@@ -483,10 +493,14 @@ export const getExtrinsic: Record<
   TransactionType,
   (args: Record<string, any>, api: ApiPromise) => SubmittableExtrinsic<'promise'>
 > = {
-  [TransactionType.TRANSFER]: ({ dest, value }, api) =>
-    api.tx.balances.transferKeepAlive
+  [TransactionType.TRANSFER]: ({ dest, value }, api) => {
+    return api.tx.balances.transferKeepAlive
       ? api.tx.balances.transferKeepAlive(dest, value)
-      : api.tx.balances.transfer(dest, value),
+      : api.tx.balances.transfer(dest, value);
+  },
+  [TransactionType.TRANSFER_ALL]: ({ dest }, api) => {
+    return api.tx.balances.transferAll(dest, false);
+  },
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
     const type = api.tx[palletName].transfer.meta.args[0].type;
     // @ts-expect-error Incorrect polkadot-js/api types

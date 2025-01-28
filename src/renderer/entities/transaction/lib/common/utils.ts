@@ -156,6 +156,10 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
   const txType = tx?.type;
   if (!txType) return null;
 
+  if (txType === TransactionType.TRANSFER_ALL) {
+    return null;
+  }
+
   if (
     [
       ...TransferTypes,
@@ -225,6 +229,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   [TransactionType.ASSET_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.ORML_TRANSFER]: 'operations.titles.transfer',
   [TransactionType.TRANSFER]: 'operations.titles.transfer',
+  [TransactionType.TRANSFER_ALL]: 'operations.titles.transferAll',
   [TransactionType.MULTISIG_AS_MULTI]: 'operations.titles.approveMultisig',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'operations.titles.approveMultisig',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'operations.titles.cancelMultisig',
@@ -274,6 +279,8 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.ORML_TRANSFER]: (crossChain) =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.TRANSFER]: (crossChain) => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.TRANSFER_ALL]: (crossChain) =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',
