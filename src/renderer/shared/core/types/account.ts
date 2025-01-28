@@ -39,7 +39,7 @@ export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEXIBLE_MULTISIG;
   signatories: Signatory[];
   threshold: number;
-  proxyAccountId?: AccountId; // we have accountId only after proxy is created
+  proxyAccount?: ProxiedAccount; // we have account only after proxy is created
 }
 
 export interface WcAccount extends ChainAccount {

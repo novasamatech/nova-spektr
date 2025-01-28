@@ -180,6 +180,9 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     [TransactionType.TRANSFER]: (decoded): Record<string, any> => {
       return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
     },
+    [TransactionType.TRANSFER_ALL]: (decoded): Record<string, any> => {
+      return { dest: decoded.args[0].toString() };
+    },
     [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
       return {
         assetId: decoded.args[0].toString(),
@@ -463,6 +466,7 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
     const TRANSFER_METHODS = ['transfer', 'transferKeepAlive', 'transferAllowDeath'];
 
     if (TRANSFER_METHODS.includes(method) && section === 'balances') return TransactionType.TRANSFER;
+    if (method === 'transferAll' && section === 'balances') return TransactionType.TRANSFER_ALL;
     if (TRANSFER_METHODS.includes(method) && section === 'assets') return TransactionType.ASSET_TRANSFER;
     if (method === 'transfer') return TransactionType.ORML_TRANSFER;
 

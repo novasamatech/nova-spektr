@@ -71,7 +71,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
 
   const operationDetails = useSlot(multisigOperationsFeature.slots.operationDetails, {

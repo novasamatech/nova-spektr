@@ -2,8 +2,6 @@ import { type TFunction } from 'i18next';
 
 import { MultisigTxFinalStatus, MultisigTxInitStatus, TransactionType } from '@/shared/core';
 
-import { UNKNOWN_TYPE } from './constants';
-
 export const getStatusOptions = (t: TFunction) => {
   return [
     {
@@ -132,8 +130,8 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.undelegate'),
     },
     {
-      id: UNKNOWN_TYPE,
-      value: UNKNOWN_TYPE,
+      id: 'UNKNOWN_TYPE',
+      value: 'UNKNOWN_TYPE',
       element: t('operations.titles.unknown'),
     },
   ];
