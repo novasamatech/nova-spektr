@@ -32,15 +32,4 @@ export default defineConfig({
       sidebar: [{ label: 'Onboarding', autogenerate: { directory: 'onboarding' } }],
     }),
   ],
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          assetFileNames: '[name]-[hash][extname]',
-          chunkFileNames: '[name]-[hash].js',
-          entryFileNames: '[name]-[hash].js',
-        },
-      },
-    },
-  },
 });
