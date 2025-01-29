@@ -1,0 +1,98 @@
+---
+title: Getting Started
+sidebar:
+  order: 1
+---
+import { Icon } from '@astrojs/starlight/components'
+import packageJson from '../../../../package.json'
+
+## Prerequirements
+
+<p>
+  <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <Icon name='github'/><span>source: **<a href={packageJson.repository}>repository</a>**</span>
+  </span>
+
+  <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <Icon name='node'/><span>node: **{packageJson.engines.node}**</span>
+  </span>
+
+  <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <Icon name='pnpm'/><span>pnpm: **{packageJson.engines.pnpm}**</span>
+  </span>
+</p>
+
+## Bootstrap project
+
+```sh
+# Setup dev environment
+pnpm install
+```
+
+## Development
+
+```sh
+# Start Electron app in dev mode. You can also access app with browser
+pnpm start
+```
+
+```sh
+# Start renderer without Electron (not recommended)
+pnpm start:renderer
+```
+
+### Testing
+
+```sh
+# Run unit tests for renderer
+pnpm test
+```
+
+```sh
+# Watch unit tests with vite ui plugin
+pnpm test:ui
+```
+
+```sh
+# Collect coverage from unit tests
+pnpm test:coverage
+```
+
+```sh
+# Collect coverage from unit tests
+pnpm test:system
+```
+
+### Linting
+
+```sh
+# Run linter
+pnpm lint
+```
+
+```sh
+# Run linter with autofix
+pnpm lint:fix
+```
+
+```sh
+# Run typescript typechecker
+pnpm types
+```
+
+## Building
+
+```sh
+# Start Electron and prebuild app in staging mode. You can also access app with browser
+pnpm preview
+```
+
+```sh
+# Build app in staging mode
+pnpm staging:sequence
+```
+
+```sh
+# Build app in production mode
+pnpm prod:sequence
+```
