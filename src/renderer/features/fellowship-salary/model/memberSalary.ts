@@ -1,6 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
 import { combine, sample } from 'effector';
-import { debug } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
@@ -50,7 +49,7 @@ const $memberSalary = combine(member.$member, $chainSalaries, (member, salaries)
   };
 });
 
-const $memberClaim = combine(member.$member, $chainClaimantStatuses, (member, statuses) => {
+const $memberClaimStatus = combine(member.$member, $chainClaimantStatuses, (member, statuses) => {
   if (nullable(member)) return null;
   return statuses?.[member.accountId] ?? null;
 });
@@ -81,11 +80,9 @@ sample({
   target: salaryModel.requestClaimantStatus,
 });
 
-debug($memberClaim, salaryModel.requestClaimantStatus);
-
 export const memberSalary = {
   $status,
   $currentPeriod,
   $memberSalary,
-  $memberClaim,
+  $memberClaimStatus,
 };

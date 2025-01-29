@@ -8,6 +8,7 @@ function getCurrentPeriod(status: SalaryCycleStatus, currentBlock: BlockHeight) 
   if (currentBlock < status.cycleStart || currentBlock > cycleEnd) {
     return {
       type: 'unknown',
+      cycleIndex: status.cycleIndex,
     } as const;
   }
 
@@ -16,15 +17,17 @@ function getCurrentPeriod(status: SalaryCycleStatus, currentBlock: BlockHeight) 
   if (currentBlock >= payoutStart) {
     return {
       type: 'payout',
-      left: pjsSchema.helpers.toBlockHeight(currentBlock - payoutStart),
-      until: pjsSchema.helpers.toBlockHeight(payoutStart + status.payoutPeriod),
+      left: pjsSchema.helpers.toBlockHeight(cycleEnd - currentBlock),
+      until: pjsSchema.helpers.toBlockHeight(cycleEnd),
+      cycleIndex: status.cycleIndex,
     } as const;
   }
 
   return {
     type: 'registration',
-    left: pjsSchema.helpers.toBlockHeight(currentBlock - status.cycleStart),
-    until: pjsSchema.helpers.toBlockHeight(status.cycleStart + status.registrationPeriod),
+    left: pjsSchema.helpers.toBlockHeight(payoutStart - currentBlock),
+    until: pjsSchema.helpers.toBlockHeight(payoutStart),
+    cycleIndex: status.cycleIndex,
   } as const;
 }
 

@@ -44,6 +44,7 @@ export const attachToFeatureInput = <Input, Data>(
 
     sample({
       clock: source,
+      fn: value => value ?? (null as Data),
       target: $storedSource,
     });
 

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { formatBalance, getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
-import { Button, DetailRow, Duration, HelpText, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, Duration, FootnoteText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
@@ -16,6 +16,7 @@ export const SalaryTab = memo(() => {
   const currentMember = useUnit(member.$member);
   const identity = useUnit(member.$identity);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
+  const claimStatus = useUnit(memberSalary.$memberClaimStatus);
   const salary = useUnit(memberSalary.$memberSalary);
 
   useEffect(() => {
@@ -23,6 +24,12 @@ export const SalaryTab = memo(() => {
       getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
     }
   }, [input?.api, currentPeriod]);
+
+  const isSalaryRequested =
+    claimStatus && claimStatus?.lastActive === currentPeriod?.cycleIndex && claimStatus.type === 'registered';
+
+  const isPayoutRequested =
+    claimStatus && claimStatus?.lastActive === currentPeriod?.cycleIndex && claimStatus.type === 'payout';
 
   return (
     <Box padding={[4, 5]} gap={6}>
@@ -47,17 +54,31 @@ export const SalaryTab = memo(() => {
                 </SmallTitleText>
               </DetailRow>
             )}
-            <Button variant="fill">Request</Button>
+            {isSalaryRequested ? (
+              <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                <Icon name="voted" size={16} className="text-inherit" />
+                <span>Salary request was completed successfully.</span>
+              </FootnoteText>
+            ) : (
+              <Button variant="fill">Request</Button>
+            )}
           </div>
         )}
         {currentPeriod?.type === 'payout' && (
           <div className="flex flex-col items-start gap-4 rounded-lg border p-4">
-            <DetailRow label="Payout a salary within:">
+            <DetailRow label={`Payout a ${formatBalance(salary.active, 6, { K: true }).formatted} USDT salary within:`}>
               <SmallTitleText>
                 <Duration seconds={timeLeft / 1000} />
               </SmallTitleText>
             </DetailRow>
-            <Button variant="fill">Payout</Button>
+            {isSalaryRequested ? (
+              <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                <Icon name="voted" size={16} className="text-inherit" />
+                <span>Salary payout was completed successfully.</span>
+              </FootnoteText>
+            ) : (
+              <Button variant="fill">Withdraw</Button>
+            )}
           </div>
         )}
       </Box>
