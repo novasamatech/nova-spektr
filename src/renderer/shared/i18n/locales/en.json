@@ -951,6 +951,7 @@
       "title": "Flexible multisig is creating...",
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
     },
+    "deliveryFee": "Delivery fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -984,6 +985,7 @@
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",
+    "errorWatchOnly": "Can't sign with watch only account.",
     "explorerLink": "View in explorer",
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
@@ -1043,8 +1045,7 @@
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
-    "xcmFee": "Cross-chain fee",
-    "errorWatchOnly": "Can't sign with watch only account."
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {

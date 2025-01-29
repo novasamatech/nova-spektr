@@ -1,6 +1,7 @@
+/* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { camelCase } from 'lodash';
@@ -64,6 +65,7 @@ type FormSubmitEvent = {
     proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
+    deliveryFee: string;
     multisigDeposit: string;
   };
 };
@@ -95,16 +97,7 @@ const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
 const $deliveryFee = createStore(BN_ZERO);
-
 const $selectedSignatories = createStore<Account[]>([]);
-
-const $totalFee = combine(
-  {
-    fee: $fee,
-    deliveryFee: $deliveryFee,
-  },
-  ({ fee, deliveryFee }) => new BN(fee).add(deliveryFee).toString(),
-);
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -113,7 +106,8 @@ const $transferForm = createForm<FormParams>({
       rules: [
         TransferRules.account.noProxyFee(
           combine({
-            fee: $totalFee,
+            fee: $fee,
+            // delivery fee?
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
@@ -126,7 +120,8 @@ const $transferForm = createForm<FormParams>({
         TransferRules.signatory.noSignatorySelected($isMultisig),
         TransferRules.signatory.notEnoughTokens(
           combine({
-            fee: $totalFee,
+            fee: $fee,
+            // delivery fee?
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             balance: $signatoryBalance,
@@ -154,7 +149,8 @@ const $transferForm = createForm<FormParams>({
         ),
         TransferRules.amount.insufficientBalanceForXcmFee(
           combine({
-            fee: $totalFee,
+            fee: $fee,
+            // delivery fee?
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             balance: $accountBalance,
@@ -169,6 +165,37 @@ const $transferForm = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
+
+// Effects
+
+const getDeliveryFeeFx = createEffect(
+  async ({
+    config,
+    parachainId,
+    api,
+    extrinsic,
+    destinationChain,
+  }: {
+    config: XcmConfig | null;
+    parachainId: number | null;
+    api: ApiPromise | null;
+    extrinsic?: SubmittableExtrinsic<'promise'> | null;
+    destinationChain: Chain | null;
+  }) => {
+    if (!config || !api || !parachainId || !extrinsic || !destinationChain) {
+      return BN_ZERO;
+    }
+
+    return xcmService.getDeliveryFeeFromConfig({
+      config,
+      originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+      originApi: api,
+      destinationChainId: parachainId,
+      extrinsic,
+      destinationChain,
+    });
+  },
+);
 
 // Computed
 
@@ -415,9 +442,10 @@ const $canSubmit = combine(
     isFormValid: $transferForm.$isValid,
     isFeeLoading: $isFeeLoading,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
+    isDeliveryFeeLoading: getDeliveryFeeFx.pending,
   },
-  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading }) => {
-    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading);
+  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
+    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
   },
 );
 
@@ -442,35 +470,6 @@ const $xcmChain = combine(
     if (!xcmChainId) return null;
 
     return chains[xcmChainId] ?? null;
-  },
-);
-
-const getDeliveryFeeFx = createEffect(
-  async ({
-    config,
-    parachainId,
-    api,
-    extrinsic,
-    destinationChain,
-  }: {
-    config: XcmConfig | null;
-    parachainId: number | null;
-    api: ApiPromise | null;
-    extrinsic?: SubmittableExtrinsic<'promise'> | null;
-    destinationChain: Chain | null;
-  }) => {
-    if (config && api && parachainId && extrinsic && destinationChain) {
-      return xcmService.getDeliveryFeeFromConfig({
-        config,
-        originChain: toLocalChainId(api.genesisHash.toHex()) || '',
-        originApi: api,
-        destinationChainId: parachainId,
-        extrinsic,
-        destinationChain,
-      });
-    } else {
-      return BN_ZERO;
-    }
   },
 );
 
@@ -604,7 +603,7 @@ sample({
     destinationAccounts: $destinationAccounts,
   },
   filter: ({ xcmChain, destinationAccounts }) => {
-    return Boolean(xcmChain.chainId) && destinationAccounts.length === 1;
+    return nonNullable(xcmChain.chainId) && destinationAccounts.length === 1;
   },
   fn: ({ xcmChain, destinationAccounts }) => {
     return toAddress(destinationAccounts[0].accountId, { prefix: xcmChain.addressPrefix });
@@ -623,7 +622,7 @@ sample({
 sample({
   clock: xcmDestinationSelected,
   source: $transferForm.fields.xcmChain.$value,
-  filter: (xcmChain) => Boolean(xcmChain.chainId),
+  filter: (xcmChain) => nonNullable(xcmChain.chainId),
   fn: ({ addressPrefix }, accountId) => ({
     canSelect: false,
     destination: toAddress(accountId, { prefix: addressPrefix }),
@@ -667,12 +666,13 @@ sample({
     isProxy: $isProxy,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
+    deliveryFee: $deliveryFee,
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ network, transaction }) => {
     return Boolean(network) && Boolean(transaction);
   },
-  fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
+  fn: ({ realAccount, network, transaction, isProxy, deliveryFee, ...fee }, formData) => {
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
@@ -684,6 +684,7 @@ sample({
       formData: {
         ...fee,
         ...formData,
+        deliveryFee: deliveryFee.toString(),
         amount,
         account: realAccount,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),

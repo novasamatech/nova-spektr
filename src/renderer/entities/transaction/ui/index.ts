@@ -11,6 +11,8 @@ export { ProxyDepositLabel } from './ProxyDepositLabel/ProxyDepositLabel';
 export { FeeWithLabel } from './FeeWithLabel/FeeWithLabel';
 export { XcmFeeWithLabel } from './XcmFeeWithLabel/XcmFeeWithLabel';
 export { TransactionTitle } from './TransactionTitle/TransactionTitle';
+export { DeliveryFee } from './DeliveryFee/DeliveryFee';
+export { DeliveryFeeWithLabel } from './DeliveryFeeWithLabel/DeliveryFeeWithLabel';
 
 // TODO: requires refactoring clickup task - https://app.clickup.com/t/86933e82e
 export { cryptoTypeToMultisignerIndex } from './QrCode/QrGenerator/common/utils';

@@ -39,6 +39,7 @@ type Input = {
 
   fee: string;
   xcmFee: string;
+  deliveryFee: string;
   multisigDeposit: string;
   coreTx?: Transaction | null;
 };

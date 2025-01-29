@@ -389,21 +389,15 @@ async function getDeliveryFeeFromConfig({
 
   if (!deliveryFeeConfig) return new BN(0);
 
-  let deliveryFactor: string;
+  const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
+  const directionFactor = {
+    toParent: () => query.upwardDeliveryFeeFactor(),
+    toParachain: () => query.deliveryFeeFactor(destinationChainId),
+  };
 
-  if (direction === 'toParent') {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
-    ).toString();
-  } else {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
-    ).toString();
-  }
-
+  const deliveryFactor = (await directionFactor[direction]()).toString();
   const weight = new BN(extrinsic.encodedLength).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
-  const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 
-  return deliveryFee;
+  return feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 }
