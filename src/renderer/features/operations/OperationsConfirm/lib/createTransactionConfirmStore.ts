@@ -13,7 +13,7 @@ import {
 import { toAddress } from '@/shared/lib/utils';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export type ConfirmInfo = {
   id?: number;
@@ -27,12 +27,12 @@ export type ConfirmItem<Input extends ConfirmInfo = ConfirmInfo> = {
   meta: Input;
   wallets: {
     initiator: Wallet;
-    proxy: Wallet | null;
+    proxied: Wallet | null;
     signer: Wallet | null;
   };
   accounts: {
     initiator: Account;
-    proxy?: ProxiedAccount | null;
+    proxied?: ProxiedAccount | null;
     signer: Account | null;
   };
 };
@@ -61,60 +61,42 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
     if (!wallets.length) return {};
 
     return store.reduce<ConfirmMap>((acc, meta, index) => {
-      const { wrappedTransactions, chain } = meta;
+      const { wrappedTransactions, chain, account } = meta;
       const { wrappedTx, coreTx } = wrappedTransactions;
       const { addressPrefix } = chain;
 
-      const initiatorAccount = walletUtils.getAccountBy(wallets, (account, wallet) => {
-        const isSameAccount = coreTx.address === toAddress(account.accountId, { prefix: addressPrefix });
-
-        if (isProxyTransaction(wrappedTx)) {
-          return walletUtils.isProxied(wallet) && isSameAccount;
+      const isProxyTx = isProxyTransaction(wrappedTx) || isProxyTransaction(coreTx);
+      const initiatorAccount = walletUtils.getAccountBy(wallets, (acc) => {
+        if (accountUtils.isProxiedAccount(account)) {
+          return acc.accountId == account.proxyAccountId;
         }
+
+        const isSameAccount = coreTx.address === toAddress(acc.accountId, { prefix: addressPrefix });
 
         return isSameAccount;
       });
+
       if (!initiatorAccount) return acc;
 
-      const initiatorWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        walletFn: (wallet) => !isProxyTransaction(wrappedTx) || walletUtils.isProxied(wallet),
-        accountFn: (account) => initiatorAccount.accountId === account.accountId,
-      });
+      const initiatorWallet = walletUtils.getWalletById(wallets, initiatorAccount.walletId);
       if (!initiatorWallet) return acc;
 
-      const signerAccount = walletUtils.getAccountBy(
-        wallets,
-        (account, wallet) =>
-          walletUtils.isValidSignSignatory(wallet) &&
-          wrappedTx.address === toAddress(account.accountId, { prefix: addressPrefix }),
-      );
-      const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        walletFn: walletUtils.isValidSignSignatory,
-        accountFn: (account) => signerAccount?.accountId === account.accountId,
-      });
+      const signerWallet = meta.signatory && walletUtils.getWalletById(wallets, meta.signatory?.walletId);
 
-      const proxyAccount = walletUtils.getAccountBy(
-        wallets,
-        (account, wallet) =>
-          !walletUtils.isProxied(wallet) &&
-          isProxyTransaction(wrappedTx) &&
-          wrappedTx.address === toAddress(account.accountId, { prefix: addressPrefix }),
-      ) as ProxiedAccount | null;
-      const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-        accountFn: (account) => proxyAccount?.accountId === account.accountId,
-      });
+      const proxiedAccount = isProxyTx && accountUtils.isProxiedAccount(account) ? account : null;
+      const proxiedWallet = proxiedAccount && walletUtils.getWalletById(wallets, proxiedAccount.walletId);
 
       acc[meta.id ?? index] = {
         meta,
         wallets: {
           signer: signerWallet || null,
           initiator: initiatorWallet,
-          proxy: proxyWallet || null,
+          proxied: proxiedWallet || null,
         },
         accounts: {
-          signer: signerAccount,
+          signer: meta.signatory,
           initiator: initiatorAccount,
-          proxy: proxyAccount,
+          proxied: proxiedAccount,
         },
       };
 

@@ -64,7 +64,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const { vote } = wrappedTransactions.coreTx.args;
+  const vote = wrappedTransactions.coreTx.args.vote || wrappedTransactions.coreTx.args?.transaction?.args.vote;
 
   const decision = voteTransactionService.isStandardVote(vote) ? (vote.Standard.vote.aye ? 'aye' : 'nay') : 'abstain';
   const conviction = voteTransactionService.isStandardVote(vote) ? vote.Standard.vote.conviction : 'None';
@@ -110,7 +110,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiator={[confirm.accounts.initiator]}
         signatory={confirm.accounts.signer}
-        proxied={confirm.accounts.proxy || undefined}
+        proxied={confirm.accounts.proxied || undefined}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">

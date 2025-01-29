@@ -3,12 +3,9 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { type Conviction, type Transaction, TransactionType } from '@/shared/core';
 import { toSerializable } from '@/shared/lib/utils';
 import {
-  type RemoveVoteTransaction,
-  type RevoteTransaction,
   type TransactionSplitAbstainVote,
   type TransactionStandardVote,
   type TransactionVote,
-  type VoteTransaction,
 } from '../types/voteTransaction';
 
 import { votingService } from './votingService';
@@ -21,20 +18,20 @@ const isSplitAbstainVote = (vote: TransactionVote): vote is TransactionSplitAbst
   return 'Standard' in vote;
 };
 
-const isVoteTransaction = (t: Transaction): t is VoteTransaction => {
-  return t.type === TransactionType.VOTE;
+const isVoteTransaction = (t: Transaction): boolean => {
+  return t.type === TransactionType.VOTE || (t.args?.transaction && isVoteTransaction(t.args?.transaction));
 };
 
-const isRevoteTransaction = (t: Transaction): t is RevoteTransaction => {
-  return t.type === TransactionType.REVOTE;
+const isRevoteTransaction = (t: Transaction): boolean => {
+  return t.type === TransactionType.REVOTE || (t.args?.transaction && isRevoteTransaction(t.args.transaction));
 };
 
-const isRemoveVoteTransaction = (t: Transaction): t is RemoveVoteTransaction => {
+const isRemoveVoteTransaction = (t: Transaction): boolean => {
   if (t.type === TransactionType.BATCH_ALL) {
     return t.args.transactions?.some(isRemoveVoteTransaction);
   }
 
-  return t.type === TransactionType.REMOVE_VOTE;
+  return t.type === TransactionType.REMOVE_VOTE || (t.args?.transaction && isRemoveVoteTransaction(t.args.transaction));
 };
 
 const createTransactionVote = (
@@ -65,9 +62,6 @@ const createTransactionVote = (
   });
 };
 
-const getVoteAmount = (vote: TransactionVote) =>
-  new BN(isStandardVote(vote) ? vote.Standard.balance : vote.SplitAbstain.abstain);
-
 const getDecision = (vote: TransactionVote): 'aye' | 'nay' | 'abstain' => {
   if (isStandardVote(vote)) {
     return vote.Standard.vote.vote === 'Aye' || vote.Standard.vote.aye ? 'aye' : 'nay';
@@ -87,7 +81,6 @@ const getVotes = (vote: TransactionVote): BN => {
 };
 
 export const voteTransactionService = {
-  getVoteAmount,
   getDecision,
   getVotes,
 

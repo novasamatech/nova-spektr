@@ -106,6 +106,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         wallets={wallets}
         initiator={[confirm.accounts.initiator]}
         signatory={confirm.accounts.signer}
+        proxied={confirm.accounts.proxied || undefined}
       >
         {votingPower && amount && conviction ? (
           <>
