@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { formatBalance, getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
-import { Button, DetailRow, Duration, HelpText, LargeTitleText, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, Duration, HelpText, SmallTitleText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
@@ -24,8 +24,6 @@ export const SalaryTab = memo(() => {
     }
   }, [input?.api, currentPeriod]);
 
-  console.log(currentPeriod);
-
   return (
     <Box padding={[4, 5]} gap={6}>
       <Box gap={2}>
@@ -37,20 +35,18 @@ export const SalaryTab = memo(() => {
           )}
         </Box>
       </Box>
-      <Box gap={2}>
-        <HelpText className="text-text-secondary">My salary (active)</HelpText>
-        {nonNullable(salary) && (
-          <LargeTitleText>{formatBalance(salary.active, 6, { K: true }).formatted} USDT</LargeTitleText>
-        )}
-      </Box>
       <Box>
         {currentPeriod?.type === 'registration' && (
           <div className="flex flex-col items-start gap-4 rounded-lg border p-4">
-            <DetailRow label="Request a salary within:">
-              <SmallTitleText>
-                <Duration seconds={timeLeft / 1000} />
-              </SmallTitleText>
-            </DetailRow>
+            {nonNullable(salary) && (
+              <DetailRow
+                label={`Request a ${formatBalance(salary.active, 6, { K: true }).formatted} USDT salary within:`}
+              >
+                <SmallTitleText>
+                  <Duration seconds={timeLeft / 1000} />
+                </SmallTitleText>
+              </DetailRow>
+            )}
             <Button variant="fill">Request</Button>
           </div>
         )}

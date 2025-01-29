@@ -29,7 +29,7 @@ export const storage = {
   claimant: (type: PalletType, api: ApiPromise, accounts: AccountId[]) => {
     const schema = pjsSchema.vec(pjsSchema.optional(salaryClaimantStatus));
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'claimant').entries(accounts)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'claimant').multi(accounts)).then(schema.parse);
   },
 
   /**

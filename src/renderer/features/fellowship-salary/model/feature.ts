@@ -2,7 +2,7 @@ import { combine, sample } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { isDev, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
@@ -29,7 +29,7 @@ const $input = combine(
 
 export const fellowshipSalaryFeature = createFeature({
   name: 'fellowship/salary',
-  enable: $features.map(({ fellowship }) => fellowship && isDev()),
+  enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
   filter: input => {
     return input.api.isConnected

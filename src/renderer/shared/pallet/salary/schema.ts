@@ -14,7 +14,10 @@ export const salaryClaimState = pjsSchema.enumValue({
 
 export type SalaryClaimantStatus = z.infer<typeof salaryClaimantStatus>;
 export const salaryClaimantStatus = pjsSchema.object({
-  lastActive: pjsSchema.blockHeight,
+  /**
+   * Last active cycle
+   */
+  lastActive: pjsSchema.u32,
   status: salaryClaimState,
 });
 

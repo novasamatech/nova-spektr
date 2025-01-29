@@ -36,9 +36,10 @@ const List = ({ children }: PropsWithChildren) => {
 
 type TriggerProps = PropsWithChildren<{
   value: string;
+  disabled?: boolean;
 }>;
 
-const Trigger = ({ value, children }: TriggerProps) => {
+const Trigger = ({ value, disabled, children }: TriggerProps) => {
   return (
     <RadixTabs.Trigger
       value={value}
@@ -47,6 +48,7 @@ const Trigger = ({ value, children }: TriggerProps) => {
         'transition-all duration-100',
         'data-[state=active]:bg-white data-[state=active]:text-text-primary data-[state=active]:shadow-card-shadow',
       )}
+      disabled={disabled}
     >
       {' '}
       {children}
