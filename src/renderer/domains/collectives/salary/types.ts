@@ -1,13 +1,13 @@
-/* eslint-disable prettier/prettier */
 import { type BN } from '@polkadot/util';
 
-import { type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type Transaction } from '@/shared/core';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type CollectivePalletsType } from '../_lib/types';
 
 /**
- *    registrationPeriod     payoutPeriod
- * |----------------------|----------------|
+ * |-- registration period --|-- payout period --|
  *
- * ^ cycleStart
+ * ^ cycle start
  */
 export type SalaryCycleStatus = {
   cycleIndex: number;
@@ -22,18 +22,30 @@ export type SalaryCycleStatus = {
 export type Salaries = {
   active: BN[];
   passive: BN[];
-}
+};
 
-export type ClaimStatus = {
-  type: 'none';
-  lastActive: number;
-} | {
-  type: 'registered',
-  amount: BN;
-  lastActive: number;
-} | {
-  type: 'payout'
-  registered: BN;
-  amount: BN;
-  lastActive: number;
-}
+export type ClaimStatus =
+  | {
+      type: 'none';
+      lastActive: number;
+    }
+  | {
+      type: 'registered';
+      amount: BN;
+      lastActive: number;
+    }
+  | {
+      type: 'payout';
+      registered: BN;
+      amount: BN;
+      lastActive: number;
+    };
+
+export type SalaryRequestTransaction = Transaction<{
+  pallet: CollectivePalletsType;
+}>;
+
+export type SalaryPayoutTransaction = Transaction<{
+  pallet: CollectivePalletsType;
+  beneficiary: AccountId | null;
+}>;

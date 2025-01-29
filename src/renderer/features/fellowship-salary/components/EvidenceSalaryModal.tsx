@@ -3,11 +3,12 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
+import { Separator } from '@/shared/ui';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
 
-import { SalaryTab } from './SalaryTab';
+import { SalaryInfo } from './SalaryInfo';
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
@@ -31,14 +32,16 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
           <Box padding={[0, 5]}>
             <Tabs.List>
               <Tabs.Trigger value="evidence" disabled>
-                Evidence
+                {t('fellowship.salary.evidence')}
               </Tabs.Trigger>
-              <Tabs.Trigger value="salary">Salary</Tabs.Trigger>
+              <Tabs.Trigger value="salary">{t('fellowship.salary.salary')}</Tabs.Trigger>
             </Tabs.List>
           </Box>
-          <Tabs.Content value="evidence">Evidence</Tabs.Content>
           <Tabs.Content value="salary">
-            <SalaryTab />
+            <Box>
+              <SalaryInfo />
+              <Separator />
+            </Box>
           </Tabs.Content>
         </Tabs>
       </Modal.Content>

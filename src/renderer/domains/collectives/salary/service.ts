@@ -1,6 +1,10 @@
-import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type Chain, TransactionType } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
+import { type CollectivePalletsType } from '../_lib/types';
 
-import { type SalaryCycleStatus } from './types';
+import { type SalaryCycleStatus, type SalaryPayoutTransaction, type SalaryRequestTransaction } from './types';
 
 function getCurrentPeriod(status: SalaryCycleStatus, currentBlock: BlockHeight) {
   const cycleEnd = getCycleEnd(status);
@@ -35,7 +39,50 @@ function getCycleEnd(status: SalaryCycleStatus) {
   return pjsSchema.helpers.toBlockHeight(status.cycleStart + status.registrationPeriod + status.payoutPeriod);
 }
 
+type SalaryRequestTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+};
+
+function createSalaryRequestTransaction({
+  pallet,
+  account,
+  chain,
+}: SalaryRequestTransactionParams): SalaryRequestTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SALARY_REQUEST,
+    args: { pallet },
+  };
+}
+
+type SalaryPayoutTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+  beneficiary: AccountId | null;
+};
+
+function createSalaryPayoutTransaction({
+  pallet,
+  account,
+  chain,
+  beneficiary,
+}: SalaryPayoutTransactionParams): SalaryPayoutTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SALARY_REQUEST,
+    args: { pallet, beneficiary },
+  };
+}
+
 export const salaryService = {
   getCycleEnd,
   getCurrentPeriod,
+
+  createSalaryRequestTransaction,
+  createSalaryPayoutTransaction,
 };

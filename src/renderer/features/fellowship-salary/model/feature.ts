@@ -12,8 +12,9 @@ const $input = combine(
   {
     network: fellowshipNetwork.$network,
     accounts: walletModel.$availableAccounts,
+    wallets: walletModel.$wallets,
   },
-  ({ network, accounts }) => {
+  ({ network, wallets, accounts }) => {
     if (nullable(network)) return null;
 
     return {
@@ -22,6 +23,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
+      wallets,
       accounts: accountsService.filterAccountOnChain(accounts, network.chain),
     };
   },

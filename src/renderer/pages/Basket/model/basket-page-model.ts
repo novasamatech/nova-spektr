@@ -40,6 +40,7 @@ import {
   collectiveSetActiveValidateModel,
   collectiveVoteValidateModel,
   delegateValidateModel,
+  genericValidateModel,
   nominateValidateModel,
   payeeValidateModel,
   removeProxyValidateModel,
@@ -173,6 +174,8 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.REMOVE_VOTE]: removeVoteValidateModel.events.validationStarted,
       [TransactionType.COLLECTIVE_VOTE]: collectiveVoteValidateModel.validate,
       [TransactionType.COLLECTIVE_SET_ACTIVE]: collectiveSetActiveValidateModel.validate,
+      [TransactionType.COLLECTIVE_SALARY_REQUEST]: genericValidateModel.validate,
+      [TransactionType.COLLECTIVE_SALARY_PAYOUT]: genericValidateModel.validate,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {
@@ -214,6 +217,7 @@ const txValidated = [
   removeVoteValidateModel.output.txValidated,
   collectiveVoteValidateModel.validate.doneData,
   collectiveSetActiveValidateModel.validate.doneData,
+  genericValidateModel.validate.doneData,
 ];
 
 sample({

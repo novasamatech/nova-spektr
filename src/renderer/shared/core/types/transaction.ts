@@ -52,6 +52,8 @@ export const enum TransactionType {
 
   COLLECTIVE_VOTE = 'collective_vote',
   COLLECTIVE_SET_ACTIVE = 'collective_core_set_active',
+  COLLECTIVE_SALARY_REQUEST = 'collective_salary_request',
+  COLLECTIVE_SALARY_PAYOUT = 'collective_salary_payout',
 }
 
 export type SigningStatus =

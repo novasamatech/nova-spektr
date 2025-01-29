@@ -1,3 +1,5 @@
+export { genericValidateModel } from './model/generic-validate-model';
+
 export { transferValidateModel } from './model/transfer-validate-model';
 
 export { addProxyValidateModel } from './model/add-proxy-validate-model';
