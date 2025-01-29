@@ -79,15 +79,22 @@ const selectSignatory = createEvent<Account>();
 const $signatory = createStore<Account | null>(null);
 
 const $signatories = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
-  if (!accounts[0] || !accountUtils.isMultisigAccount(accounts[0])) {
+  const account = accounts.at(0);
+  if (nullable(account)) return [];
+
+  const multisigAcc = accountUtils.isProxiedAccount(account)
+    ? walletUtils.getAccountBy(wallets, (a) => a.accountId === account.proxyAccountId)
+    : account;
+
+  if (nullable(multisigAcc) || !accountUtils.isMultisigAccount(multisigAcc)) {
     return [];
   }
 
-  const a = accounts[0].signatories.map((signatory) =>
+  const acc = multisigAcc.signatories.map((signatory) =>
     walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
   );
 
-  return a.filter((option) => option !== null);
+  return acc.filter((option) => option !== null);
 });
 
 const $votesList = combine($accounts, flow.state, (accounts, { votes, chain }) => {
@@ -241,7 +248,7 @@ sample({
 
     return {
       signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
-        account: accounts.proxy || accounts.initiator,
+        account: accounts.initiator,
         chain: meta.chain,
         transaction: meta.wrappedTransactions.wrappedTx,
         signatory: accounts.signer,
