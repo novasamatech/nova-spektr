@@ -1,7 +1,8 @@
-import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, merge, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { combineEvents, interval } from 'patronum';
+import { debounce } from 'patronum';
 
 import {
   AccountType,
@@ -141,8 +142,15 @@ const getMultisigsFx = createEffect(
   },
 );
 
+const mergedRequest = merge([updateRequested, request]);
+
+const debouncedRequest = debounce({
+  source: mergedRequest,
+  timeout: 15000,
+});
+
 sample({
-  clock: [updateRequested, request],
+  clock: debouncedRequest,
   source: {
     multisigAccounts: $multisigAccounts,
     chains: $multisigChains,
