@@ -25,6 +25,7 @@ junit.xml
 .vscode
 .idea
 /.nova
+/.astro
 
 npm-debug.log*
 yarn-debug.log*
