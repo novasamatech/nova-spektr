@@ -10,6 +10,7 @@ import {
   type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
+  type ProxyTransaction,
   type Transaction,
 } from '@/shared/core';
 import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
@@ -188,7 +189,9 @@ export const buildMultisigTx = (
   return { event, transaction };
 };
 
-export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+export const getTransactionFromMultisigTx = (
+  tx: MultisigTransaction | ProxyTransaction,
+): Transaction | DecodedTransaction | undefined => {
   const NestedTransactionTypes = [TransactionType.BATCH_ALL, TransactionType.PROXY];
 
   // @ts-expect-error TODO fix
@@ -198,5 +201,9 @@ export const getTransactionFromMultisigTx = (tx: MultisigTransaction): Transacti
 
   const transactionMatch = findCoreBatchAll(tx.transaction);
 
-  return transactionMatch || tx.transaction.args.transactions?.[0] || tx.transaction.args.transaction;
+  return (
+    transactionMatch ||
+    tx.transaction.args.transactions?.[0] ||
+    getTransactionFromMultisigTx(tx.transaction.args as ProxyTransaction)
+  );
 };

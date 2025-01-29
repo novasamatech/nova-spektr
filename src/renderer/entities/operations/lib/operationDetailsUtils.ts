@@ -121,45 +121,35 @@ export const getDestination = (
 };
 
 export const getDestinationAccountId = (tx: MultisigTransaction): AccountId | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.dest;
-  }
-
-  return tx.transaction.args.dest;
+  return coreTx.args.dest;
 };
 
 export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  const args = isProxyTransaction(tx.transaction) ? tx.transaction.args.transaction.args : tx.transaction.args;
-
-  if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    return args.transactions.at(0).args.payee;
+  if (coreTx.type === TransactionType.BATCH_ALL) {
+    return coreTx.args.transactions.at(0).args.payee;
   }
 
-  return args.payee;
+  return coreTx.args.payee;
 };
 
 export const getDelegate = (tx: MultisigTransaction): Address | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.delegate;
-  }
-
-  return tx.transaction.args.delegate;
+  return coreTx.args.delegate;
 };
 
 export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.destinationChain;
-  }
-
-  return tx.transaction.args.destinationChain;
+  return coreTx.args.destinationChain;
 };
 
 export const getSender = (tx: MultisigTransaction): Address | undefined => {
@@ -173,36 +163,29 @@ export const getSender = (tx: MultisigTransaction): Address | undefined => {
 };
 
 export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.spawner;
-  }
-
-  return tx.transaction.args.spawner;
+  return coreTx.args.spawner;
 };
 
 export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.args.proxyType;
-  }
-
-  return tx.transaction.args.proxyType;
+  return coreTx.args.proxyType;
 };
 
 export const getDelegationVotes = (tx: MultisigTransaction): string | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTxDelegate = getCoreTx(tx);
+  if (!coreTxDelegate) return undefined;
 
   let coreTx;
 
-  if (isProxyTransaction(tx.transaction)) {
-    coreTx = tx.transaction.args.transaction;
-  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-  } else if (isDelegateTransaction(tx.transaction)) {
-    coreTx = tx.transaction;
+  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
+    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(coreTxDelegate)) {
+    coreTx = coreTxDelegate;
   }
 
   if (!coreTx) return;
@@ -214,39 +197,37 @@ export const getDelegationVotes = (tx: MultisigTransaction): string | undefined 
 };
 
 export const getDelegationTarget = (tx: MultisigTransaction): string | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTxDelegate = getCoreTx(tx);
+  if (!coreTxDelegate) return undefined;
 
   let coreTx;
 
-  if (isProxyTransaction(tx.transaction)) {
-    coreTx = tx.transaction.args.transaction;
-  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-  } else if (isDelegateTransaction(tx.transaction)) {
-    coreTx = tx.transaction;
+  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
+    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
+  } else if (isDelegateTransaction(coreTxDelegate)) {
+    coreTx = coreTxDelegate;
   }
 
   return coreTx?.args.target;
 };
 
 export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTxDelegate = getCoreTx(tx);
+  if (!coreTxDelegate) return undefined;
 
   let coreTxs;
 
-  if (isProxyTransaction(tx.transaction)) {
-    coreTxs = [tx.transaction.args.transaction];
-  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    const delegateTxs = tx.transaction.args.transactions?.filter(
+  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
+    const delegateTxs = coreTxDelegate.args.transactions?.filter(
       (tx: Transaction) => TransactionType.DELEGATE === tx.type,
     );
-    const undelegateTxs = tx.transaction.args.transactions?.filter(
+    const undelegateTxs = coreTxDelegate.args.transactions?.filter(
       (tx: Transaction) => TransactionType.UNDELEGATE === tx.type,
     );
 
     coreTxs = delegateTxs?.length > 0 ? delegateTxs : undelegateTxs;
-  } else if (isDelegateTransaction(tx.transaction) || isUndelegateTransaction(tx.transaction)) {
-    coreTxs = [tx.transaction];
+  } else if (isDelegateTransaction(coreTxDelegate) || isUndelegateTransaction(coreTxDelegate)) {
+    coreTxs = [coreTxDelegate];
   }
 
   if (!coreTxs || coreTxs.length === 0) return;
@@ -258,16 +239,16 @@ export const getUndelegationData = async (
   api: ApiPromise,
   tx: MultisigTransaction,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
-  if (!tx.transaction || !api) return { votes: undefined, target: undefined };
+  const coreTxDelegate = getCoreTx(tx);
+
+  if (!coreTxDelegate || !api) return { votes: undefined, target: undefined };
 
   let coreTx;
 
-  if (isProxyTransaction(tx.transaction)) {
-    coreTx = tx.transaction.args.transaction;
-  } else if (tx.transaction.type === TransactionType.BATCH_ALL) {
-    coreTx = tx.transaction.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
-  } else if (isUndelegateTransaction(tx.transaction)) {
-    coreTx = tx.transaction;
+  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
+    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
+  } else if (isUndelegateTransaction(coreTxDelegate)) {
+    coreTx = coreTxDelegate;
   }
 
   if (!coreTx) return { votes: undefined, target: undefined };
@@ -295,7 +276,7 @@ export const getVote = (tx: MultisigTransaction): TransactionVote | undefined =>
   return coreTx?.args.vote;
 };
 
-const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+export const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
   if (!tx.transaction) return undefined;
 
   if (isProxyTransaction(tx.transaction)) {
