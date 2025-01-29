@@ -6,6 +6,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -54,8 +55,12 @@ const Root = ({
   );
 };
 
-const Trigger = ({ children }: PropsWithChildren) => {
-  return <DropdownMenu.Trigger asChild>{children}</DropdownMenu.Trigger>;
+const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean }>) => {
+  return (
+    <DropdownMenu.Trigger disabled={disabled} asChild>
+      {children}
+    </DropdownMenu.Trigger>
+  );
 };
 
 const Separator = () => {
@@ -73,36 +78,38 @@ const Content = ({ children }: PropsWithChildren) => {
   const calculatedWidth = width === 'trigger' ? 'var(--radix-dropdown-menu-trigger-width)' : undefined;
 
   return (
-    <DropdownMenu.Portal container={portalContainer}>
-      <DropdownMenu.Content
-        loop
-        asChild
-        avoidCollisions={false}
-        side={side}
-        align={align}
-        style={{ width: calculatedWidth }}
-        collisionPadding={gridSpaceConverter(2)}
-        alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
-        sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
-        data-testid={testId}
-      >
-        <Surface
-          elevation={1}
-          className={cnTw(
-            'z-50 flex flex-col',
-            'h-max max-h-[--radix-popper-available-height] min-w-20',
-            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
-            {
-              'max-w-60': width === 'auto',
-            },
-          )}
+    <ThemeProvider preferStaticContent>
+      <DropdownMenu.Portal container={portalContainer}>
+        <DropdownMenu.Content
+          loop
+          asChild
+          avoidCollisions={false}
+          side={side}
+          align={align}
+          style={{ width: calculatedWidth }}
+          collisionPadding={gridSpaceConverter(2)}
+          alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
+          sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
+          data-testid={testId}
         >
-          <ScrollArea>
-            <div className="flex flex-col gap-y-1 p-1">{children}</div>
-          </ScrollArea>
-        </Surface>
-      </DropdownMenu.Content>
-    </DropdownMenu.Portal>
+          <Surface
+            elevation={1}
+            className={cnTw(
+              'z-50 flex flex-col',
+              'h-max max-h-[--radix-popper-available-height] min-w-20',
+              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              {
+                'max-w-60': width === 'auto',
+              },
+            )}
+          >
+            <ScrollArea>
+              <div className="flex flex-col gap-y-1 p-1">{children}</div>
+            </ScrollArea>
+          </Surface>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </ThemeProvider>
   );
 };
 
@@ -139,15 +146,20 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
 
   return (
     <DropdownMenu.Item
+      asChild
       className={cnTw(
         'flex items-center gap-2 rounded px-3 py-2 text-footnote text-text-secondary',
-        'cursor-pointer bg-block-background-default hover:bg-block-background-hover',
+        'cursor-default bg-block-background-default',
+        {
+          'cursor-pointer hover:bg-block-background-hover': !disabled,
+          'text-text-tertiary': disabled,
+        },
       )}
       disabled={disabled}
       onSelect={callback}
       onClick={onClick}
     >
-      {children}
+      <button disabled={disabled}>{children}</button>
     </DropdownMenu.Item>
   );
 };

@@ -5,10 +5,10 @@ import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
+import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { ExplorersPopover, WalletCardSm } from '@/entities/wallet';
 import { InteractionStyle } from '../common/constants';
-import { getMultisigExtrinsicLink } from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -21,7 +21,12 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
   const { signatories, indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
   const valueClass = 'text-text-secondary';
 
-  const extrinsicLink = getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, chain.explorers);
+  const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(
+    callHash,
+    indexCreated,
+    blockCreated,
+    chain.explorers,
+  );
   const depositorSignatory = signatories.find((s) => s.accountId === depositor);
   const depositorWallet =
     depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);

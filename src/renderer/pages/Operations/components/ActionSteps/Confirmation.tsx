@@ -37,7 +37,7 @@ type Props = {
   signAccount?: Account;
   chain: Chain;
   api: ApiPromise;
-  feeTx?: Transaction;
+  feeTx?: Transaction | null;
   onSign: () => void;
 };
 export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSign }: Props) => {

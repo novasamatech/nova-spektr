@@ -2,8 +2,8 @@ import { sample } from 'effector';
 
 import { collectiveDomain } from '@/domains/collectives';
 
+import { referendumsDetailsFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { referendumsDetailsFeatureStatus } from './status';
 
 const $list = fellowshipModel.$store.map(x => x?.tracks ?? []);
 

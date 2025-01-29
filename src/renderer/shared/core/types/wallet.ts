@@ -23,7 +23,7 @@ export interface Wallet {
    *   `networkDomain.accountsService.filterAccountsByWallet(accounts,
    *   walletId)`.
    */
-  accounts: AnyAccount[];
+  accounts: (AnyAccount & Record<string, any>)[];
   isActive: boolean;
   /**
    * @deprecated You should use `account.signingType` field instead. Wallet
@@ -74,13 +74,11 @@ export interface ProxiedWallet extends Wallet {
 export interface WalletConnectWallet extends Wallet {
   type: WalletType.WALLET_CONNECT;
   accounts: WcAccount[];
-  isConnected: boolean;
 }
 
 export interface NovaWalletWallet extends Wallet {
   type: WalletType.NOVA_WALLET;
   accounts: WcAccount[];
-  isConnected: boolean;
 }
 
 export type WalletsMap = Record<ID, Wallet>;
@@ -93,6 +91,9 @@ export const enum WalletType {
   WALLET_CONNECT = 'wallet_wc',
   NOVA_WALLET = 'wallet_nw',
   PROXIED = 'wallet_pxd',
+  POLKADOT_EXTENSION = 'wallet_polkadot_ext',
+  TALISMAN_EXTENSION = 'wallet_talisman_ext',
+  SUBWALLET_EXTENSION = 'wallet_subwallet_ext',
 
   // Legacy
   MULTISHARD_PARITY_SIGNER = 'wallet_mps',
@@ -101,6 +102,9 @@ export const enum WalletType {
 
 export type SignableWalletFamily =
   | WalletType.POLKADOT_VAULT
+  | WalletType.POLKADOT_EXTENSION
+  | WalletType.TALISMAN_EXTENSION
+  | WalletType.SUBWALLET_EXTENSION
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET
   | WalletType.MULTISHARD_PARITY_SIGNER
@@ -108,6 +112,9 @@ export type SignableWalletFamily =
 
 export type WalletFamily =
   | WalletType.POLKADOT_VAULT
+  | WalletType.POLKADOT_EXTENSION
+  | WalletType.TALISMAN_EXTENSION
+  | WalletType.SUBWALLET_EXTENSION
   | WalletType.MULTISIG
   | WalletType.FLEXIBLE_MULTISIG
   | WalletType.WATCH_ONLY
@@ -124,6 +131,7 @@ export const enum SigningType {
   PARITY_SIGNER = 'signing_ps',
   MULTISIG = 'signing_ms',
   POLKADOT_VAULT = 'signing_pv',
+  EXTENSION = 'signing_ext',
   WALLET_CONNECT = 'signing_wc',
 }
 

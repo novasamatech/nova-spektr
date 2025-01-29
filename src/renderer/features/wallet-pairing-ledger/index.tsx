@@ -1,6 +1,6 @@
 import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { WalletOnboardingCard } from '@/shared/ui-entities';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
@@ -16,7 +16,7 @@ export const walletPairingLedgerFeature = createFeature({
 });
 
 walletPairingLedgerFeature.inject(onboardingActionsSlot, {
-  order: 5,
+  order: 6,
   render() {
     const { t } = useI18n();
 

@@ -35,7 +35,7 @@ export function dictionary<T extends Record<K, PropertyKey>, K extends KeysOfTyp
   for (const item of collection) {
     const element = item[key];
 
-    if (!element) continue;
+    if (typeof element === 'undefined') continue;
 
     if (!transformer) {
       result[element] = item as unknown as R;
@@ -189,3 +189,7 @@ export const keys = <K extends PropertyKey>(values: Record<K, unknown>): K[] => 
 export const entries = <K extends string | number, T>(values: Record<K, T>): [key: K, value: T][] => {
   return Object.entries(values) as [key: K, value: T][];
 };
+
+export function allEqual<T>(array: T[], compareFn?: (a: T, b: T) => boolean): boolean {
+  return array.every((item: T) => (compareFn ? compareFn(item, array[0]) : item === array[0]));
+}

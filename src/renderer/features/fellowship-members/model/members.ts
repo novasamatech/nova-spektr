@@ -1,32 +1,30 @@
 import { sample } from 'effector';
 import { and, or } from 'patronum';
 
-import { collectiveDomain } from '@/domains/collectives';
+import { members, membersService } from '@/domains/collectives';
 
+import { fellowshipMembersFeature } from './feature';
 import { fellowshipModel } from './fellowship';
-import { membersFeatureStatus } from './status';
 
-const $list = fellowshipModel.$store.map(
-  store => store?.members?.filter(collectiveDomain.membersService.isCoreMember) ?? [],
-);
+const $list = fellowshipModel.$store.map(store => store?.members?.filter(membersService.isCoreMember) ?? []);
 
 const $pendingMembers = and(
-  collectiveDomain.members.pending,
+  members.pending,
   $list.map(member => member.length === 0),
 );
 
 sample({
-  clock: membersFeatureStatus.running,
-  target: collectiveDomain.members.subscribe,
+  clock: fellowshipMembersFeature.running,
+  target: members.subscribe,
 });
 
 sample({
-  clock: membersFeatureStatus.stopped,
-  target: collectiveDomain.members.unsubscribe,
+  clock: fellowshipMembersFeature.stopped,
+  target: members.unsubscribe,
 });
 
 export const membersModel = {
   $list,
-  $pending: or($pendingMembers, membersFeatureStatus.isStarting),
-  $fulfilled: collectiveDomain.members.fulfilled,
+  $pending: or($pendingMembers, fellowshipMembersFeature.isStarting),
+  $fulfilled: members.fulfilled,
 };

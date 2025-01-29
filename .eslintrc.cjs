@@ -3,7 +3,17 @@ const path = require('path');
 const localesPath = './src/renderer/shared/api/translation/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
-const boundaryTypes = ['app', 'shared', 'domains', 'entities', 'processes', 'features', 'widgets', 'pages'];
+const boundaryTypes = [
+  'app',
+  'shared',
+  'domains',
+  'entities',
+  'processes',
+  'aggregates',
+  'features',
+  'widgets',
+  'pages',
+];
 
 const boundaries = boundaryTypes.map((type) => ({
   type,
@@ -86,8 +96,16 @@ module.exports = {
     },
     {
       files: ['*.js', '*.mjs', '*.cjs'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+        projectService: true,
+      },
       env: {
         node: true,
+      },
+      globals: {
+        vi: true,
       },
     },
     {
@@ -248,6 +266,8 @@ module.exports = {
         'effector/enforce-effect-naming-convention': 'off',
         // Took around 4 seconds to check this single rule
         'effector/enforce-store-naming-convention': 'off',
+        // Makes no sense since we're replacing effect handlers while testing
+        'effector/strict-effect-handlers': 'off',
 
         // Boundaries setup
         'boundaries/entry-point': [
@@ -324,6 +344,10 @@ module.exports = {
                 allow: ['shared', 'domains', /* TODO fix */ 'entities'],
               },
               {
+                from: 'aggregates',
+                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+              },
+              {
                 from: 'processes',
                 allow: ['app', 'shared', 'entities'],
               },
@@ -336,12 +360,13 @@ module.exports = {
                   /* TODO fix */ 'pages',
                   /* TODO fix */ 'widgets',
                   /* TODO fix */ 'features',
+                  'aggregates',
                   'domains',
                 ],
               },
               {
                 from: 'pages',
-                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'domains'],
+                allow: ['app', 'shared', 'entities', 'features', 'widgets', 'aggregates', 'domains'],
               },
               {
                 from: 'widgets',

@@ -51,7 +51,7 @@ export const YourDelegations = () => {
       setSelectedAccounts([]);
     } else {
       const selectableAccounts = activeAccounts.map((address) => {
-        return wallet?.accounts.find((a) => toAddress(a.accountId) === address);
+        return wallet?.accounts.find((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address);
       });
 
       setSelectedAccounts(selectableAccounts.filter(nonNullable));
@@ -92,7 +92,12 @@ export const YourDelegations = () => {
           </div>
 
           {activeAccounts.map((address, index) => {
-            const account = wallet?.accounts.find((a) => toAddress(a.accountId) === address);
+            const account = wallet?.accounts.find(
+              (a) =>
+                toAddress(a.accountId, {
+                  prefix: chain.addressPrefix,
+                }) === address,
+            );
             const activeDelegation = activeDelegations[address];
 
             if (!account || !activeDelegation || !activeTracks[address]) return null;
@@ -134,13 +139,19 @@ export const YourDelegations = () => {
                       }}
                     />
                   </BodyText>
-                  <FootnoteText>
+                  <FootnoteText className="text-text-tertiary">
                     <Trans
                       t={t}
                       i18nKey="governance.addDelegation.balanceValue"
                       values={{ conviction: votingService.getConvictionMultiplier(activeDelegation.conviction) }}
                       components={{
-                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
+                        balance: (
+                          <AssetBalance
+                            className="text-text-tertiary"
+                            value={activeDelegation.balance}
+                            asset={chain.assets[0]}
+                          />
+                        ),
                       }}
                     />
                   </FootnoteText>

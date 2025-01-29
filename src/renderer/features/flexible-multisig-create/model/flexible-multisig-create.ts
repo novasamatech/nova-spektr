@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, or, spread } from 'patronum';
@@ -427,6 +427,8 @@ sample({
 
 // Create wallet
 
+const createWalletFx = attach({ effect: walletModel.createWallet });
+
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
@@ -469,21 +471,19 @@ sample({
         signingType: SigningType.MULTISIG,
       },
       accounts: [account],
-      external: false,
     };
   },
-  target: walletModel.events.flexibleMultisigCreated,
+  target: createWalletFx,
 });
 
 sample({
-  clock: walletModel.events.walletCreationFail,
+  clock: createWalletFx.fail,
   fn: ({ error }) => error.message,
   target: $error,
 });
 
 sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet, external }) => wallet.type === WalletType.FLEXIBLE_MULTISIG && !external,
+  clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
   target: walletProviderModel.events.completed,
 });
@@ -511,6 +511,11 @@ sample({
 });
 
 sample({
+  clock: flexibleMultisigFeature.stopped,
+  target: signatoryModel.$signatories.reinit,
+});
+
+sample({
   clock: flow.close,
   target: walletPairingModel.events.walletTypeCleared,
 });
@@ -519,11 +524,6 @@ sample({
   clock: delay(flow.close, 2000),
   fn: () => Step.NAME_NETWORK,
   target: stepChanged,
-});
-
-sample({
-  clock: flexibleMultisigFeature.stopped,
-  target: signatoryModel.$signatories.reinit,
 });
 
 export const flexibleMultisigModel = {

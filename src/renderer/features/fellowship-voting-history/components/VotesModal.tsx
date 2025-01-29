@@ -7,7 +7,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
-import { votingHistoryFeatureStatus } from '../model/status';
+import { votingHistoryFeatureStatus } from '../model/feature';
 import { votesModel } from '../model/votes';
 
 import { VotingHistoryList } from './VotingHistoryList';
@@ -70,7 +70,13 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       <Modal.Title close>{t('fellowship.votingHistory.modalTitle')}</Modal.Title>
       <Modal.HeaderContent>
         <Box padding={[4, 5, 2]}>
-          <Tabs panelClassName="m-0" tabsClassName="mb-6" items={tabs} onChange={setSelectedTab} />
+          <Tabs
+            initialIndex={selectedTab}
+            panelClassName="m-0"
+            tabsClassName="mb-6"
+            items={tabs}
+            onChange={setSelectedTab}
+          />
           <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
         </Box>
       </Modal.HeaderContent>

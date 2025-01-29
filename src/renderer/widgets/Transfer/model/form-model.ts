@@ -4,8 +4,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { camelCase } from 'lodash';
-import isEmpty from 'lodash/isEmpty';
+import { camelCase, isEmpty } from 'lodash';
 import { spread } from 'patronum';
 
 import { type XcmConfig, xcmService } from '@/shared/api/xcm';
@@ -20,6 +19,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
+import { waitFor } from '@/shared/effector';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -47,7 +47,7 @@ import { xcmTransferModel } from './xcm-transfer-model';
 type BalanceMap = Record<'balance' | 'native', string>;
 
 type FormParams = {
-  account: Account;
+  account: Account | null;
   xcmChain: Chain;
   signatory: Account | null;
   destination: Address;
@@ -102,7 +102,7 @@ const $selectedSignatories = createStore<Account[]>([]);
 const $transferForm = createForm<FormParams>({
   fields: {
     account: {
-      init: {} as Account,
+      init: null,
       rules: [
         TransferRules.account.noProxyFee(
           combine({
@@ -232,7 +232,8 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ network, isXcm, form, xcmData, isConnected }): Transaction | null => {
-    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) return null;
+    if (!network || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination) || !form.account)
+      return null;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
@@ -307,7 +308,7 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy) return undefined;
+    if (!isProxy || !proxyAccount) return undefined;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
@@ -526,12 +527,16 @@ sample({
   target: $transferForm.fields.destination.reset,
 });
 
-sample({
-  clock: $transferForm.fields.account.onChange,
+const accountsUpdated = waitFor({
   source: $accounts,
-  fn: (accounts, account) => {
-    const id = networkDomain.accountsService.uniqId(account);
-    const match = accounts.find((a) => networkDomain.accountsService.uniqId(a.account) === id);
+  clock: $transferForm.fields.account.$value,
+  filter: nonNullable,
+});
+
+sample({
+  clock: accountsUpdated,
+  fn: ({ event: accounts, trigger: account }) => {
+    const match = accounts.find((a) => a.account.id === account.id);
 
     return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },
@@ -546,11 +551,11 @@ sample({
     network: $networkStore,
     proxyAccount: $realAccount,
   },
-  filter: ({ isProxy, network }) => isProxy && Boolean(network),
+  filter: ({ isProxy, proxyAccount, network }) => isProxy && nonNullable(proxyAccount) && nonNullable(network),
   fn: ({ isNative, balances, network, proxyAccount }) => {
     const balance = balanceUtils.getBalance(
       balances,
-      proxyAccount.accountId,
+      proxyAccount!.accountId,
       network!.chain.chainId,
       network!.asset.assetId.toString(),
     );
@@ -559,7 +564,7 @@ sample({
     if (!isNative) {
       nativeBalance = balanceUtils.getBalance(
         balances,
-        proxyAccount.accountId,
+        proxyAccount!.accountId,
         network!.chain.chainId,
         network!.chain.assets[0].assetId.toString(),
       );

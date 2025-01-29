@@ -5,22 +5,22 @@ import { reshape } from 'patronum';
 import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { collectiveDomain } from '@/domains/collectives';
+import { votingService } from '@/domains/collectives';
 import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { votingFeatureStatus } from './status';
+import { votingFeatureStatus } from './feature';
 import { votingStatusModel } from './votingStatus';
 
 const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
 
 const $vote = gate.state.map(({ vote }) => vote);
 
-const { $api, $activeWallet, $chain, $wallets } = reshape({
+const { $api, $chain, $wallets } = reshape({
   source: votingFeatureStatus.input,
   shape: {
     $api: x => x?.api ?? null,
-    $activeWallet: x => x?.wallet ?? null,
     $wallets: x => x?.wallets ?? [],
     $chain: x => x?.chain ?? null,
   },
@@ -39,7 +39,7 @@ const $coreTx = combine(
       return null;
     }
 
-    return collectiveDomain.votingService.createVoteTransaction({
+    return votingService.createVoteTransaction({
       pallet: 'fellowship',
       rank: member.rank,
       account,
@@ -50,9 +50,15 @@ const $coreTx = combine(
   },
 );
 
+const $votingWallet = combine($wallets, votingStatusModel.$votingAccount, (wallets, account) => {
+  if (nullable(account)) return null;
+
+  return wallets.find(w => w.id === account.walletId) ?? null;
+});
+
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
   $api,
-  $activeWallet,
+  $activeWallet: $votingWallet,
   $wallets,
   $chain,
   $coreTx,
@@ -90,6 +96,29 @@ sample({
   clock: signPayloadCreated.filter({ fn: nonNullable }),
   fn: payload => ({ signingPayloads: [payload] }),
   target: signModel.events.formInitiated,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    transactions: $wrappedTx,
+    account: votingStatusModel.$votingAccount,
+    chain: $chain,
+  },
+  filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
+  fn({ transactions, account, chain }, signParams) {
+    return {
+      signatures: signParams.signatures,
+      txPayloads: signParams.txPayloads,
+
+      chain: chain!,
+      account: account!,
+      wrappedTxs: [transactions!.wrappedTx],
+      coreTxs: [transactions!.coreTx],
+      multisigTxs: transactions!.multisigTx ? [transactions!.multisigTx] : [],
+    };
+  },
+  target: submitModel.events.formInitiated,
 });
 
 // Basket

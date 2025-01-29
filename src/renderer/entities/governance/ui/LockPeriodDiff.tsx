@@ -20,8 +20,14 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
   if (!lockPeriods) return null;
   const date = new Date(0);
 
-  const fromLockPeriod = formatDistanceStrict(lockPeriods[from], date, { unit: 'day', locale: dateLocale });
-  const toLockPeriod = formatDistanceStrict(lockPeriods[to], date, { unit: 'day', locale: dateLocale });
+  const fromLockPeriod = formatDistanceStrict(lockPeriods[from], date, {
+    unit: 'day',
+    locale: dateLocale,
+  });
+  const toLockPeriod = formatDistanceStrict(lockPeriods[to], date, {
+    unit: 'day',
+    locale: dateLocale,
+  });
 
   if (unlock) {
     return <FootnoteText className="text-text-primary">{fromLockPeriod}</FootnoteText>;
@@ -34,6 +40,7 @@ export const LockPeriodDiff = memo(({ from, to, unlock = false, lockPeriods }: P
       diff={t('time.days', {
         count: parseInt(formatDistanceStrict(lockPeriods[to], lockPeriods[from], { unit: 'day', locale: dateLocale })),
       })}
+      equal={from === to}
       positive={lockPeriods[to] - lockPeriods[from] >= 0}
     />
   );

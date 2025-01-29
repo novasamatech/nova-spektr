@@ -1,13 +1,11 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type Contact, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
-import { dictionary, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { contactModel } from '@/entities/contact';
+import { type ChainId, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { permissionUtils, walletUtils } from '@/entities/wallet';
 import { walletDetailsUtils } from '../lib/utils';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -28,53 +26,6 @@ const $canCreateProxy = $wallet.map(wallet => {
 
   return canCreateAnyProxy || canCreateNonAnyProxy;
 });
-
-const $multisigAccount = $wallet.map(wallet => {
-  if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
-
-  return wallet.accounts.at(0) ?? null;
-});
-
-const $signatories = combine(
-  {
-    account: $multisigAccount,
-    wallets: walletModel.$wallets,
-    contacts: contactModel.$contacts,
-  },
-  ({ account, wallets, contacts }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
-    if (!account) {
-      return { wallets: [], contacts: [], people: [] };
-    }
-
-    const signatoriesMap = dictionary(account.signatories, 'accountId', true);
-
-    const walletSignatories: [Wallet, AccountId][] = [];
-    for (const wallet of wallets) {
-      if (walletUtils.isWatchOnly(wallet)) continue;
-
-      for (const account of wallet.accounts) {
-        if (!signatoriesMap[account.accountId]) continue;
-
-        delete signatoriesMap[account.accountId];
-        walletSignatories.push([wallet, account.accountId]);
-      }
-    }
-
-    const contactSignatories: Contact[] = [];
-    for (const contact of contacts) {
-      if (!signatoriesMap[contact.accountId]) continue;
-
-      contactSignatories.push(contact);
-      delete signatoriesMap[contact.accountId];
-    }
-
-    return {
-      wallets: walletSignatories,
-      contacts: contactSignatories,
-      people: Object.keys(signatoriesMap) as AccountId[],
-    };
-  },
-);
 
 const $chainsProxies = combine(
   {
@@ -125,7 +76,6 @@ export const walletDetailsModel = {
   flow,
 
   $multiShardAccounts,
-  $signatories,
 
   $chainsProxies,
   $walletProxyGroups,

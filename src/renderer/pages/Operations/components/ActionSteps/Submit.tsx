@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect, useState } from 'react';
 
 import { useMultisigChainContext } from '@/app/providers';
@@ -15,9 +16,12 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
+import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@/entities/multisig';
 import { type ExtrinsicResultParams, isProxyTypeTransaction, transactionService } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
+import { operationsContextModel } from '../../model/context';
+import { flexibleShellModel } from '../../model/flexible-shell-model';
+import { rejectModel } from '../../model/reject-model';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -36,12 +40,15 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
   const { t } = useI18n();
 
   const { addTask } = useMultisigChainContext();
-  const { updateMultisigTx } = useMultisigTx({ addTask });
+  const { updateMultisigTx, addMultisigTx } = useMultisigTx({ addTask });
   const { addEventWithQueue } = useMultisigEvent({ addTask });
 
   const [inProgress, toggleInProgress] = useToggle(true);
   const [successMessage, toggleSuccessMessage] = useToggle();
   const [errorMessage, setErrorMessage] = useState('');
+
+  const multisigAccount = useUnit(operationsContextModel.$account);
+  const wrappedTx = useUnit(rejectModel.$wrappedTx);
 
   useEffect(() => {
     submitExtrinsic(signature).catch(() => console.warn('Error getting signed extrinsics'));
@@ -53,7 +60,10 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
         const typedParams = params as ExtrinsicResultParams;
 
         if (multisigTx && tx && account?.accountId) {
-          const isReject = tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
+          const isReject =
+            tx.type === TransactionType.BATCH_ALL
+              ? tx.args.transactions.some((tx: Transaction) => tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI)
+              : tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
 
           const updatedTx: MultisigTransaction = { ...multisigTx };
 
@@ -61,15 +71,28 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
             updatedTx.status = typedParams.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
           }
 
+          if (typedParams.isFinalApprove && typedParams.multisigError) {
+            flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+          }
+
           if (
             typedParams.isFinalApprove &&
             !typedParams.multisigError &&
             isProxyTypeTransaction(multisigTx.transaction)
           ) {
-            proxiesModel.events.workerStarted();
+            proxiesModel.findAllProxies();
           }
 
           if (isReject) {
+            flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+
+            if (tx.type === TransactionType.BATCH_ALL && wrappedTx && wrappedTx.multisigTx && multisigAccount) {
+              const multisigData = buildMultisigTx(wrappedTx.coreTx, wrappedTx.multisigTx, params, multisigAccount);
+
+              await addEventWithQueue(multisigData.event);
+              await addMultisigTx(multisigData.transaction);
+            }
+
             updatedTx.status = MultisigTxFinalStatus.CANCELLED;
           }
 

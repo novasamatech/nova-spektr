@@ -1,5 +1,4 @@
 import {
-  type Account,
   AccountType,
   ChainType,
   CryptoType,
@@ -14,7 +13,7 @@ import {
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 
-const accounts: Account[] = [
+const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
   {
     id: '1',
     walletId: 1,
@@ -113,7 +112,7 @@ const newWallet = {
   isActive: false,
 };
 
-const newAccounts: Account[] = [
+const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
   {
     id: '4',
     walletId: 3,

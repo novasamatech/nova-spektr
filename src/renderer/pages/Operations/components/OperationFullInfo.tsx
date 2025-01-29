@@ -3,17 +3,17 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMultisigChainContext } from '@/app/providers';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { useSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { useMultisigTx } from '@/entities/multisig';
 import { useNetworkData } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
+import { operationDetailsUtils, operationsModel } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { getMultisigExtrinsicLink } from '../common/utils';
+import { multisigOperationsFeature } from '@/features/multisig-operations';
 
-import { OperationCardDetails } from './OperationCardDetails';
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
 import CallDataModal from './modals/CallDataModal';
@@ -53,7 +53,12 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
-  const explorerLink = getMultisigExtrinsicLink(tx.callHash, tx.indexCreated, tx.blockCreated, chain?.explorers);
+  const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
+    tx.callHash,
+    tx.indexCreated,
+    tx.blockCreated,
+    chain?.explorers,
+  );
 
   const setupCallData = async (callData: CallData) => {
     if (!api || !tx) return;
@@ -66,9 +71,14 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet);
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
 
+  const operationDetails = useSlot(multisigOperationsFeature.slots.operationDetails, {
+    props: {
+      operation: tx,
+    },
+  });
   const isFinalSigning = events.length === activeWallet.accounts[0].threshold - 1;
   const isApproveAvailable = !isFinalSigning || (tx.callData && validateCallData(tx.callData, tx.callHash));
 
@@ -95,7 +105,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <OperationCardDetails tx={tx} account={account} extendedChain={extendedChain} />
+        <div className="flex w-full flex-col gap-y-1">{operationDetails}</div>
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (

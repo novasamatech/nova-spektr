@@ -6,6 +6,7 @@ import {
   type Address,
   type ChainId,
   type DecodedTransaction,
+  type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
@@ -58,7 +59,7 @@ export const createNewEventsPayload = (
   approvals: Vec<AccountId32>,
 ): MultisigEvent[] => {
   return approvals.reduce<MultisigEvent[]>((acc, a) => {
-    const hasApprovalEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
+    const hasApprovalEvent = events.some((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
     if (!hasApprovalEvent) {
       acc.push({
@@ -155,7 +156,7 @@ export const buildMultisigTx = (
   tx: Transaction,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
-  account: MultisigAccount,
+  account: MultisigAccount | FlexibleMultisigAccount,
 ): MultisigTxResult => {
   const transaction: MultisigTransaction = {
     transaction: tx,

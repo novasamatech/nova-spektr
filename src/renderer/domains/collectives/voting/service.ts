@@ -30,7 +30,7 @@ const createVoteTransaction = ({
     args: {
       rank,
       pallet,
-      poll: referendumId.toString(),
+      poll: referendumId,
       aye,
     },
   };

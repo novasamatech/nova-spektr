@@ -25,7 +25,6 @@ import { createBuffer, series } from '@/shared/effector';
 import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
-const networkStarted = createEvent();
 const chainConnected = createEvent<ChainId>();
 const chainDisconnected = createEvent<ChainId>();
 const connectionStatusChanged = createEvent<{ chainId: ChainId; status: ConnectionStatus }>();
@@ -175,9 +174,8 @@ const disconnectConnectionFx = createEffect(async ({ api, provider }: Disconnect
   return chainId;
 });
 
-sample({
-  clock: networkStarted,
-  target: [populateChainsFx, populateMetadataFx, populateConnectionsFx],
+const startNetworksFx = createEffect(() => {
+  return Promise.all([populateChainsFx(), populateMetadataFx(), populateConnectionsFx()]);
 });
 
 sample({
@@ -220,7 +218,7 @@ sample({
 
 const readyToConnect = combineEvents({
   events: [populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done],
-  reset: networkStarted,
+  reset: startNetworksFx,
 });
 
 sample({
@@ -467,8 +465,9 @@ export const networkModel = {
   $connectionStatuses,
   $connections,
 
+  startNetworks: startNetworksFx,
+
   events: {
-    networkStarted,
     chainConnected,
     chainDisconnected,
     connectionsPopulated: populateConnectionsFx.doneData,

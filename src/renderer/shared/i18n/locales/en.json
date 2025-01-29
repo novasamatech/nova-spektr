@@ -142,6 +142,7 @@
     "flexibleMultisig": {
       "flexible": "Flexible multisig",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
+      "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "proxyDeposit": "Proxy deposit:",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "title": "Create flexible multisig"
@@ -308,6 +309,12 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
+    "evidence": {
+      "cardTitle": "Evidence"
+    },
+    "salary": {
+      "cardTitle": "Salary"
+    },
     "details": {
       "noDetails": "Details not found"
     },
@@ -321,7 +328,7 @@
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": {
-      "cardTitle": "Members",
+      "active": "Active",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members"
@@ -351,7 +358,9 @@
         "retainAtIvDan": "Retain At IV Dan",
         "retainAtVDan": "Retain At V Dan",
         "retainAtViDan": "Retain At VI Dan"
-      }
+      },
+      "ongoing": "Ongoing referendums",
+      "completed": "Completed referendums"
     },
     "title": "Fellowship",
     "tooltips": {
@@ -361,6 +370,7 @@
     "voting": {
       "voted": "Voted:",
       "errors": {
+        "noAccount": "Account for voting not found",
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
       "votingStatus": "Voting status",
@@ -381,8 +391,7 @@
       "showHistoryButton": "View vote history",
       "emptyList": "There is no vote history",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
-    },
-    "yourProfile": "Your profile"
+    }
   },
   "general": {
     "actions": {
@@ -390,6 +399,7 @@
     },
     "button": {
       "cancelButton": "Cancel",
+      "backButton": "Back",
       "closeButton": "Close",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
@@ -461,6 +471,7 @@
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "unchangeLabel": "Unchange voting power",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",
@@ -757,6 +768,7 @@
       "invalidStructure": "Invalid file structure"
     },
     "exportButton": "Export database",
+    "deleteButton": "Erase all data",
     "fileInputPlaceholder": "Select .json file on your computer",
     "importTitle": "Import database"
   },
@@ -891,6 +903,23 @@
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
     },
+    "extension": {
+      "emptyState": "All your accounts in different networks will be shown here",
+      "accountsTitle": "Manage accounts",
+      "permissionStep": "Request permission",
+      "pairingStep": "Pairing...",
+      "selectAccountLabel": "Account",
+      "requestRejected": "Request was rejected",
+      "askPermissionAgain": "Request permission again",
+      "selectAccountPlacehilder": "Select one of accounts",
+      "requestPairing": "Request pairing",
+      "manageTitle": "Set up your wallet",
+      "create": "Create",
+      "beta": "beta",
+      "polkadotJsTitle": "Add Polkadot js extension account",
+      "talismanTitle": "Add Talisman extension account",
+      "subWalletTitle": "Add SubWallet extension account"
+    },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
       "addressColumn": "Address",
@@ -924,6 +953,12 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
+      "polkadotExtensionTitle": "Polkadot js extension",
+      "polkadotExtensionDescription": "Multi-chain browser extension",
+      "talismanTitle": "Talisman",
+      "talismanDescription": "Multi-chain browser extension",
+      "subWalletTitle": "SubWallet extension",
+      "subWalletDescription": "Multi-chain browser extension",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
@@ -936,6 +971,7 @@
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
+    "extensionNotInstalled": "Not Installed",
     "yourAccountsLabel": "Here are your accounts"
   },
   "operation": {
@@ -948,8 +984,10 @@
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {
-      "title": "Flexible multisig is creating...",
-      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below."
+      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
+      "rejectConfirmTitle": "Reject finalizing the creation of your flexible multisig?",
+      "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
+      "title": "Flexible multisig is creating..."
     },
     "deliveryFee": "Delivery fee",
     "details": {
@@ -1010,6 +1048,9 @@
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
       "polkadotVault": "Sign with Polkadot Vault",
+      "polkadotExtension": "Sign with Polkadot js extension",
+      "talismanExtension": "Sign with Talisman extension",
+      "subWalletExtension": "Sign with SubWallet extension",
       "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
@@ -1124,6 +1165,7 @@
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
       "transfer": "Transfer",
+      "transferAll": "Transfer All",
       "undelegate": "Revoke delegation",
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
@@ -1603,7 +1645,10 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
+    "expired": "Transaction expired",
+    "invalidAddress": "Invalid address",
     "noSignatoryError": "Please select operation signatory",
+    "noAmount": "Please provide amount",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
     "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
@@ -1727,6 +1772,9 @@
     "addMultisig": "Multisig",
     "addNovaWallet": "Nova Wallet",
     "addPolkadotVault": "Polkadot Vault",
+    "addPolkadotExtension": "Polkadot js",
+    "addTalismanExtension": "Talisman",
+    "addSubWalletExtension": "SubWallet",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "connectedLabel": "Connected",
@@ -1737,6 +1785,9 @@
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "proxiedLabel": "Delegated to you (Proxied)",
+    "polkadotExtensionLabel": "Polkadot js extension",
+    "talismanExtensionLabel": "Talisman extension",
+    "subWalletExtensionLabel": "SubWallet extension",
     "searchPlaceholder": "Search",
     "shards": "Shards",
     "title": "Wallets",

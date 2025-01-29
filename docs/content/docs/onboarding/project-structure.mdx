@@ -1,0 +1,153 @@
+---
+title: Project structure
+sidebar:
+  order: 4
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+import { Code } from '@astrojs/starlight/components';
+
+Nova Spektr is both a web and Electron app. This is reflected in the file structure, which follows Electron guidelines.
+Source code is separated into 3 build targets:
+- `main` - electron's main process that executes in node.js sandbox.
+- `renderer` - web application.
+- `preload` - bridge between electron and browser environment. Source code is contained in `main` directory.
+
+## Top-level directories
+
+<FileTree>
+  - scripts/ build scripts and other helpers
+  - config/ project config
+  - tests/ end-to-end tests
+  - docs/ dev documentation
+  - src/
+    - main/
+    - renderer/
+      - ...
+</FileTree>
+
+## Renderer structure
+
+<FileTree>
+  - app/ app entry point, bootstrap code
+    - index.html
+  - domains/ core business logic
+  - aggregates/ shared state and logic
+  - features/ user flows implemented as separated modules
+  - pages/ combination of features
+  - shared/ helpers, utils, integrations
+  - entities/ **deprecated** logic and ui for given entity (e.g. wallet, chain, etc.)
+  - widgets/ **deprecated** modal windows for creating transactions
+</FileTree>
+
+## Domain
+
+Domains encapsulate core business logic while providing a clean, intuitive contract for interaction.
+
+### Folder structure
+<FileTree>
+  - domain-name
+    - _lib/ code not related to actual business logic
+      - helpers.ts
+      - types.ts
+    - entity
+      - model.spec.ts
+      - model.ts effector storage with related logic
+      - resource.ts (optional) transport + mappings
+      - service.spec.ts
+      - service.ts stateless service
+      - types.ts public interfaces
+    - entity-2
+      - ...
+    - index.ts
+</FileTree>
+
+### `index.ts`
+
+Each domain's entry point **must**:
+- Expose only necessary abstractions.
+- Present a self-documenting API surface.
+
+The goal is to create interfaces so transparent that they almost narrate the domain's purpose through their structure.
+
+Real life example:
+
+import domainEntrypointExample from '@/domains/network/index.ts?raw';
+
+<Code title="domains/network/index.ts" code={domainEntrypointExample} lang="ts" />
+
+### model
+
+Domain's model **must**:
+- Export single object without `Model` suffix (`accounts`, not `accountsModel`).
+- Provide storage logic.
+- Create integrations with data sources.
+- Be isolated, no other models in dependecies.
+- Be testable.
+
+Model file should export single object with same name as entity.
+Public API should be as simplest as possible and consist mostly from storages and effects. All storages should be readonly.
+Exported effects should be named as meaningful actions (with CRUD prefixes or verbs).
+
+```ts title="model.ts" frame="code"
+export const accounts = {
+  $list: readonly($list),
+  $populated: readonly($populated),
+
+  populate: populateFx,
+  createAccounts: createAccountsFx,
+  deleteAccounts: deleteAccountsFx,
+  /* ... */
+
+  __test: {
+    /**
+     *  In case of complex internal flows
+     *  some storages/effects can be exposed for mocking in unit tests
+     **/
+  },
+}
+```
+
+### service
+
+Domain's service **must**:
+- Export a single object named as `singular entity name + 'Service'` (e.g. `accountService`).
+- Provide meaningful business actions (no internal logic or external data mapping)
+- Be stateless
+
+```ts title="service.ts" frame="code"
+function isChainAccount(account: AnyAccount) {
+  /* implementation */
+}
+
+export const accountService = {
+  isChainAccount,
+  /* ... */
+};
+```
+
+## Feature
+
+### Folder structure
+
+<FileTree>
+  - feature-name
+    - components/
+    - model/
+      - feature.tsx
+      - ...
+    - index.tsx
+</FileTree>
+
+## Aggregate
+
+### Folder structure
+
+<FileTree>
+  - aggregate-name
+    - model-file-1.ts
+    - model-file-2.ts
+    - model-file-3.ts
+    - index.tsx
+</FileTree>
+

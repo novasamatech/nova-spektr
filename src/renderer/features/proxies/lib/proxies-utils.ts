@@ -10,12 +10,14 @@ import {
   type WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { proxyUtils } from '@/entities/proxy';
-import { walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export const proxiesUtils = {
   isRegularProxy,
   isPureProxy,
+  chainSupportProxy,
   getNotification,
   isProxiedAvailable,
 };
@@ -26,6 +28,10 @@ function isRegularProxy(chain: Chain): boolean {
 
 function isPureProxy(chain: Chain): boolean {
   return Boolean(chain.options?.includes(ChainOptions.PURE_PROXY));
+}
+
+function chainSupportProxy(chain: Chain): boolean {
+  return isRegularProxy(chain) || isPureProxy(chain);
 }
 
 type GetNotificationParams = {
@@ -68,6 +74,6 @@ function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotifica
   });
 }
 
-function isProxiedAvailable(wallet?: Wallet): boolean {
-  return !walletUtils.isWatchOnly(wallet) && !walletUtils.isProxied(wallet);
+function isProxiedAvailable(account: AnyAccount): boolean {
+  return !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isProxiedAccount(account);
 }

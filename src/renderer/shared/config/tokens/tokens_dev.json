@@ -295,16 +295,6 @@
         }
       },
       {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 1,
-        "assetSymbol": "KSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "0"
-        }
-      },
-      {
         "chainId": "0x631ccc82a078481584041656af292834e1ae6daab61d2875b4dd0c14bb9b17bc",
         "name": "Robonomics",
         "assetId": 1,
@@ -428,7 +418,7 @@
         "type": "native"
       },
       {
-        "chainId": "0xa35b4d0bf5767fcc3a4795aca93ef3b152c7c280d558d49eea535cae56a3a93e",
+        "chainId": "0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442",
         "name": "Novasama Testnet - Fellowship",
         "assetId": 0,
         "assetSymbol": "WND",
@@ -956,16 +946,6 @@
         }
       },
       {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 2,
-        "assetSymbol": "KAR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "1"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 3,
@@ -1074,16 +1054,6 @@
         }
       },
       {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 5,
-        "assetSymbol": "aSEEDk",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "4"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 2,
@@ -1148,16 +1118,6 @@
         "assetId": 0,
         "assetSymbol": "BNC",
         "type": "native"
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 3,
-        "assetSymbol": "BNC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "2"
-        }
       },
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -1378,13 +1338,6 @@
         "typeExtras": {
           "assetId": "115"
         }
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 0,
-        "assetSymbol": "PHA",
-        "type": "native"
       },
       {
         "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
@@ -1838,16 +1791,6 @@
         "typeExtras": {
           "assetId": "113"
         }
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 7,
-        "assetSymbol": "MOVR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "6"
-        }
       }
     ]
   },
@@ -1890,16 +1833,6 @@
         "assetId": 0,
         "assetSymbol": "HKO",
         "type": "native"
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 8,
-        "assetSymbol": "HKO",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "7"
-        }
       },
       {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
@@ -1995,16 +1928,6 @@
         "typeExtras": {
           "assetId": "213357169630950964874127107356898319277"
         }
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 9,
-        "assetSymbol": "KMA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "8"
-        }
       }
     ]
   },
@@ -2099,16 +2022,6 @@
           "existentialDeposit": "100000000000000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 13,
-        "assetSymbol": "NEER",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "13"
-        }
       }
     ]
   },
@@ -2142,16 +2055,6 @@
         "assetId": 0,
         "assetSymbol": "BSX",
         "type": "native"
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 6,
-        "assetSymbol": "BSX",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "9"
-        }
       }
     ]
   },
@@ -2356,16 +2259,6 @@
         "assetId": 0,
         "assetSymbol": "SDN",
         "type": "native"
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 12,
-        "assetSymbol": "SDN",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "12"
-        }
       }
     ]
   },
@@ -2599,16 +2492,6 @@
         }
       },
       {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 10,
-        "assetSymbol": "TUR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "10"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 0,
@@ -2700,16 +2583,6 @@
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 4,
-        "assetSymbol": "ZLK",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "3"
         }
       },
       {
@@ -2846,81 +2719,6 @@
           "currencyIdType": "u32",
           "existentialDeposit": "1000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
-        "name": "Tinkernet",
-        "assetId": 0,
-        "assetSymbol": "TNKR",
-        "type": "native"
-      }
-    ]
-  },
-  {
-    "name": "Darwinia Crab",
-    "precision": 18,
-    "priceId": "darwinia-network-native-token",
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CRAB.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CRAB.svg"
-    },
-    "symbol": "CRAB",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 11,
-        "assetSymbol": "CRAB",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "11"
-        }
-      }
-    ]
-  },
-  {
-    "name": "Bit.Country Pioneer",
-    "precision": 18,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BIT.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BIT.svg"
-    },
-    "symbol": "BIT",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 14,
-        "assetSymbol": "BIT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "14"
-        }
-      }
-    ]
-  },
-  {
-    "name": "Picasso",
-    "precision": 12,
-    "priceId": "picasso",
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PICA.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PICA.svg"
-    },
-    "symbol": "PICA",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-        "name": "Khala",
-        "assetId": 15,
-        "assetSymbol": "PICA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "15"
         }
       }
     ]
@@ -4356,6 +4154,7 @@
   {
     "name": "WUD",
     "precision": 10,
+    "priceId": "gavun-wud",
     "icon": {
       "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WUD.svg",
       "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WUD.svg"

@@ -22,7 +22,7 @@ const config: UserConfigFn = async ({ mode }) => {
       outDir: folders.devBuild,
       emptyOutDir: false,
       lib: {
-        entry: folders.entrypoint.bridge,
+        entry: folders.entrypoint.preload,
         fileName: () => 'preload.cjs',
         formats: ['cjs'],
       },

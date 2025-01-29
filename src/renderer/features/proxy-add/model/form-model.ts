@@ -175,7 +175,7 @@ const $proxyForm = createForm<FormParams>({
         {
           name: 'required',
           errorText: 'proxy.addProxy.proxyAddressRequiredError',
-          validator: validateAddress,
+          validator: (address) => validateAddress(address),
         },
         {
           name: 'sameAsProxied',
@@ -567,7 +567,7 @@ sample({
   filter: (_, account) => Boolean(account),
   fn: ({ wallet, wallets }, account): Record<string, boolean> => {
     if (!wallet) return { isMultisig: false, isProxy: false };
-    if (walletUtils.isRegularMultisig(wallet)) return { isMultisig: true, isProxy: false };
+    if (walletUtils.isMultisig(wallet)) return { isMultisig: true, isProxy: false };
     if (!walletUtils.isProxied(wallet)) return { isMultisig: false, isProxy: false };
 
     const accountWallet = walletUtils.getWalletById(wallets, account!.walletId);

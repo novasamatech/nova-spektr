@@ -19,9 +19,7 @@ export const wcDetailsUtils = {
   isReconnecting,
   isRejected,
   isReadyToReconnect,
-  isConfirmation,
   isFailed,
-  isRefreshAccounts,
 };
 
 export const walletDetailsUtils = {
@@ -34,11 +32,7 @@ export const walletDetailsUtils = {
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
-  return [ReconnectStep.NOT_STARTED, ReconnectStep.CONFIRMATION].includes(step) && connected;
-}
-
-function isConfirmation(step: ReconnectStep): boolean {
-  return step === ReconnectStep.CONFIRMATION;
+  return step === ReconnectStep.NOT_STARTED && connected;
 }
 
 function isReconnecting(step: ReconnectStep): boolean {
@@ -51,10 +45,6 @@ function isRejected(step: ReconnectStep): boolean {
 
 function isFailed(step: ReconnectStep): boolean {
   return step === ReconnectStep.FAILED;
-}
-
-function isRefreshAccounts(step: ReconnectStep): boolean {
-  return step === ReconnectStep.REFRESH_ACCOUNTS;
 }
 
 function isReadyToReconnect(step: ReconnectStep, connected: boolean): boolean {

@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN, isBn } from '@polkadot/util';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -42,6 +43,7 @@ export const transactionBuilder = {
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
+  buildRejectFlexibleMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
 
@@ -54,7 +56,8 @@ type TransferParams = {
   asset: Asset;
   accountId: AccountId;
   destination: string;
-  amount: string;
+  amount: string | BN;
+  transferAll?: boolean;
   xcmData?: {
     args: {
       xcmFee: string;
@@ -67,10 +70,21 @@ type TransferParams = {
     transactionType: TransactionType;
   };
 };
-function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }: TransferParams): Transaction {
+function buildTransfer({
+  chain,
+  accountId,
+  destination,
+  asset,
+  amount,
+  xcmData,
+  transferAll,
+}: TransferParams): Transaction {
   let transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
   if (xcmData) {
     transactionType = xcmData.transactionType;
+  }
+  if (transferAll) {
+    transactionType = TransactionType.TRANSFER_ALL;
   }
 
   const palletName =
@@ -83,7 +97,7 @@ function buildTransfer({ chain, accountId, destination, asset, amount, xcmData }
     args: {
       palletName,
       dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-      value: formatAmount(amount, asset.precision) || '1',
+      value: isBn(amount) ? amount.toString() : formatAmount(amount, asset.precision) || '1',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
@@ -329,6 +343,7 @@ type EditDelegationParams = {
   undelegateTracks: number[];
   target: Address;
   conviction: Conviction;
+  previousConviction: Conviction;
   balance: string;
 };
 
@@ -339,6 +354,7 @@ function buildEditDelegation({
   undelegateTracks,
   target,
   conviction,
+  previousConviction,
   balance,
 }: EditDelegationParams): Transaction {
   const undelegateTxs = undelegateTracks.map((track) => ({
@@ -358,6 +374,7 @@ function buildEditDelegation({
       track,
       target,
       conviction,
+      previousConviction,
       balance,
     },
   }));
@@ -492,12 +509,21 @@ function buildRemoveVotes({ chain, accountId, votes }: RemoveVotesParams): Trans
 }
 type RejectTxParams = {
   chain: Chain;
-  signerAddress: Address;
+  signerAccountId: AccountId;
   threshold: number;
   otherSignatories: Address[];
   tx: MultisigTransactionDS;
 };
-function buildRejectMultisigTx({ chain, signerAddress, threshold, otherSignatories, tx }: RejectTxParams): Transaction {
+
+function buildRejectMultisigTx({
+  chain,
+  signerAccountId,
+  threshold,
+  otherSignatories,
+  tx,
+}: RejectTxParams): Transaction {
+  const signerAddress = toAddress(signerAccountId, { prefix: chain.addressPrefix });
+
   return {
     chainId: chain.chainId,
     address: signerAddress,
@@ -512,6 +538,37 @@ function buildRejectMultisigTx({ chain, signerAddress, threshold, otherSignatori
       },
     },
   };
+}
+
+type RejectFlexibleTxParams = RejectTxParams & {
+  accountId: AccountId;
+  transaction: Transaction;
+};
+
+function buildRejectFlexibleMultisigTx({
+  chain,
+  signerAccountId,
+  otherSignatories,
+  transaction,
+  threshold,
+  tx,
+}: RejectFlexibleTxParams): Transaction {
+  const asset = chain.assets.at(0);
+  if (!asset) throw new Error('Asset not found');
+
+  const rejectTx = buildRejectMultisigTx({
+    chain,
+    signerAccountId,
+    threshold,
+    otherSignatories,
+    tx,
+  });
+
+  return buildBatchAll({
+    chain,
+    accountId: signerAccountId,
+    transactions: [rejectTx, transaction],
+  });
 }
 
 type CreateProxyPureParams = {

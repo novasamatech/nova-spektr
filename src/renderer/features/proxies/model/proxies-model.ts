@@ -1,11 +1,9 @@
 import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
-import keyBy from 'lodash/keyBy';
-import { once, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import {
-  type Account,
   type Chain,
   type ChainId,
   type Connection,
@@ -16,69 +14,61 @@ import {
   type ProxyAccount,
   type ProxyDeposits,
   type Wallet,
-  type WalletsMap,
 } from '@/shared/core';
-import {
-  AccountType,
-  CryptoType,
-  ExternalType,
-  NotificationType,
-  ProxyVariant,
-  SigningType,
-  WalletType,
-} from '@/shared/core';
+import { AccountType, CryptoType, ExternalType, ProxyVariant, SigningType, WalletType } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount, accountsService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { notificationModel } from '@/entities/notification';
 import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '../lib/proxies-utils';
 
-const workerStarted = createEvent();
-const connected = createEvent<ChainId>();
-const proxiedWalletsCreated = createEvent<Omit<ProxiedWalletsParams, 'wallets'>>();
+import { type proxyWorker } from './proxy-worker';
+
+type WorkerType = Endpoint<typeof proxyWorker>;
+
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
-const $endpoint = createStore<Endpoint<any> | null>(null);
+const $worker = createStore<WorkerType | null>(null);
 const $deposits = createStore<ProxyDeposits[]>([]);
 
-const startWorkerFx = createEffect(() => {
-  const worker = new Worker(new URL('../workers/proxy-worker', import.meta.url), { type: 'module' });
+// Worker management
 
-  return createEndpoint(worker, {
-    callable: ['initConnection', 'getProxies', 'disconnect'],
-  });
-});
+const getWorkerFx = attach({
+  source: $worker,
+  async effect(worker) {
+    if (worker) {
+      return worker;
+    }
 
-type StartChainsParams = {
-  chains: Chain[];
-  connections: Record<ChainId, Connection>;
-  endpoint: Endpoint<any>;
-};
-const startChainsFx = createEffect(({ chains, connections, endpoint }: StartChainsParams) => {
-  const boundConnected = scopeBind(connected, { safe: true });
+    const nativeWorker = new Worker(new URL('./proxy-worker', import.meta.url), { type: 'module' });
 
-  for (const chain of chains) {
-    if (networkUtils.isDisabledConnection(connections[chain.chainId])) continue;
-
-    endpoint.call.initConnection(chain, connections[chain.chainId]).then(() => {
-      boundConnected(chain.chainId);
+    return createEndpoint<typeof proxyWorker>(nativeWorker, {
+      callable: ['getProxies'],
     });
-  }
+  },
 });
+
+sample({
+  clock: getWorkerFx.doneData,
+  target: $worker,
+});
+
+// Fetching proxies
 
 type GetProxiesParams = {
-  chainId: ChainId;
   chain: Chain;
-  accounts: Account[];
-  wallets: WalletsMap;
+  connection: Connection;
+  accounts: AnyAccount[];
+  wallets: Wallet[];
   proxies: ProxyAccount[];
-  endpoint: Endpoint<any>;
+  worker: WorkerType;
 };
+
 type GetProxiesResult = {
   proxiesToAdd: NoID<ProxyAccount>[];
   proxiesToRemove: ProxyAccount[];
@@ -89,27 +79,26 @@ type GetProxiesResult = {
     deposits: Record<AccountId, string>;
   };
 };
-const getProxiesFx = createEffect(
-  async ({ chainId, chain, accounts, wallets, proxies, endpoint }: GetProxiesParams): Promise<GetProxiesResult> => {
-    const proxiedAccounts = accounts.filter((a) => accountUtils.isProxiedAccount(a) && a.chainId === chainId);
-    const chainProxies = proxies.filter((p) => p.chainId === chainId);
 
-    const walletsMap = keyBy(wallets, 'id');
+const fetchProxiesFx = createEffect(
+  async ({ chain, connection, accounts, wallets, proxies, worker }: GetProxiesParams): Promise<GetProxiesResult> => {
+    const proxiedAccounts = accounts.filter(accountUtils.isProxiedAccount).filter((a) => a.chainId === chain.chainId);
+    const chainProxies = proxies.filter((p) => p.chainId === chain.chainId);
+
+    const walletsMap = dictionary(wallets, 'id');
     const filteredAccounts = accounts.filter((a) => !walletsMap[a.walletId].isHidden);
 
-    const accountsForProxy = keyBy(filteredAccounts, 'accountId');
-    const accountsForProxied = keyBy(
-      filteredAccounts.filter((a) => proxiesUtils.isProxiedAvailable(walletsMap[a.walletId])),
-      'accountId',
-    );
+    const accountsForProxy = dictionary(filteredAccounts, 'accountId');
+    const accountsForProxied = dictionary(filteredAccounts.filter(proxiesUtils.isProxiedAvailable), 'accountId');
 
-    const proxiesResult = (await endpoint.call.getProxies({
-      chainId,
+    const proxiesResult = await worker.call.getProxies({
+      chain,
+      connection,
       accountsForProxy,
       accountsForProxied,
       proxiedAccounts,
       proxies: chainProxies,
-    })) as GetProxiesResult;
+    });
 
     const { proxiedAccountsToAdd } = proxiesResult;
 
@@ -142,114 +131,97 @@ const getProxiesFx = createEffect(
   },
 );
 
-const disconnectFx = createEffect(async ({ chainId, endpoint }: { chainId: ChainId; endpoint: Endpoint<any> }) => {
-  await endpoint.call.disconnect(chainId);
+const findProxiesFx = attach({
+  source: {
+    wallets: walletModel.$wallets,
+    connections: networkModel.$connections,
+    proxies: proxyModel.$proxies,
+  },
+  async effect({ wallets, proxies, connections }, { chain, accounts }: { chain: Chain; accounts: AnyAccount[] }) {
+    const worker = await getWorkerFx();
+    const connection = connections[chain.chainId];
+
+    return fetchProxiesFx({
+      accounts,
+      wallets,
+      chain,
+      connection,
+      worker,
+      proxies: Object.values(proxies).flat(),
+    });
+  },
 });
 
+const findAllProxiesFx = attach({
+  source: { accounts: walletModel.$availableAccounts, chains: networkModel.$chains },
+  mapParams(_: void, { chains, accounts }) {
+    return Object.values(chains)
+      .filter(proxiesUtils.chainSupportProxy)
+      .map((chain) => ({
+        chain,
+        accounts: accountsService.filterAccountOnChain(accounts, chain),
+      }));
+  },
+  effect: series(findProxiesFx, { parallel: true, skipErrors: true }),
+});
+
+// Wallet management
+
 type ProxiedWalletsParams = {
-  proxiedAccounts: PartialProxiedAccount[];
+  proxiedAccount: PartialProxiedAccount;
   chains: Record<ChainId, Chain>;
   wallets: Wallet[];
 };
 
-const createProxiedWalletsFx = createEffect(async ({ proxiedAccounts, chains, wallets }: ProxiedWalletsParams) => {
-  return proxiedAccounts.map((proxied) => {
-    const walletName = proxyUtils.getProxiedName(proxied, chains[proxied.chainId].addressPrefix);
+const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wallets }: ProxiedWalletsParams) => {
+  const walletName = proxyUtils.getProxiedName(proxiedAccount, chains[proxiedAccount.chainId].addressPrefix);
 
-    const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
-      accountFn: (a) => accountUtils.isChainIdMatch(a, proxied.chainId) && a.accountId === proxied.proxyAccountId,
-    });
-
-    const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
-
-    const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
-      name: walletName,
-      type: WalletType.PROXIED,
-      signingType: SigningType.WATCH_ONLY,
-      isHidden,
-    };
-
-    const isEthereumChain = networkUtils.isEthereumBased(chains[proxied.chainId].options);
-
-    const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
-      {
-        ...proxied,
-        type: 'chain',
-        name: walletName,
-        accountType: AccountType.PROXIED,
-        signingType: SigningType.WATCH_ONLY,
-        cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      },
-    ];
-
-    return { wallet, accounts, external: true };
+  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+    accountFn: (a) =>
+      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
   });
+
+  const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
+
+  const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
+    name: walletName,
+    type: WalletType.PROXIED,
+    signingType: SigningType.WATCH_ONLY,
+    isHidden,
+  };
+
+  const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
+
+  const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
+    {
+      ...proxiedAccount,
+      type: 'chain',
+      name: walletName,
+      accountType: AccountType.PROXIED,
+      signingType: SigningType.WATCH_ONLY,
+      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+    },
+  ];
+
+  return { wallet, accounts };
 });
 
-sample({
-  clock: workerStarted,
-  target: startWorkerFx,
-});
-
-sample({
-  clock: startWorkerFx.doneData,
-  target: $endpoint,
-});
-
-sample({
-  clock: [startWorkerFx.done, once(networkModel.$connections)],
-  source: {
-    connections: networkModel.$connections,
-    chains: networkModel.$chains,
-    endpoint: $endpoint,
+const createProxiesWalletsFx = attach({
+  source: { chains: networkModel.$chains, wallets: walletModel.$wallets },
+  mapParams(proxiedAccounts: PartialProxiedAccount[], { chains, wallets }) {
+    return proxiedAccounts.map((proxiedAccount) => ({ proxiedAccount, chains, wallets }));
   },
-  filter: ({ endpoint }) => Boolean(endpoint),
-  fn: ({ connections, chains, endpoint }) => ({
-    chains: Object.values(chains).filter(
-      (chain) => proxiesUtils.isRegularProxy(chain) || proxiesUtils.isPureProxy(chain),
-    ),
-    connections,
-    endpoint: endpoint!,
-  }),
-  target: startChainsFx,
-});
-
-sample({
-  clock: connected,
-  source: {
-    chains: networkModel.$chains,
-    proxies: proxyModel.$proxies,
-    wallets: walletModel.$allWallets,
-    endpoint: $endpoint,
-  },
-  filter: ({ endpoint }) => Boolean(endpoint),
-  fn: ({ chains, wallets, proxies, endpoint }, chainId) => {
-    const accounts = walletUtils.getAccountsBy(wallets, (a) => accountUtils.isChainIdMatch(a, chainId));
-
-    return {
-      chainId,
-      chain: chains[chainId],
-      accounts,
-      wallets,
-      proxies: Object.values(proxies).flat(),
-      endpoint: endpoint!,
-    };
-  },
-  target: getProxiesFx,
+  effect: series(createProxiedWalletFx),
 });
 
 spread({
-  source: getProxiesFx.doneData,
+  source: fetchProxiesFx.doneData,
   targets: {
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
-    proxiedAccountsToAdd: attach({
-      source: { chains: networkModel.$chains, wallets: walletModel.$wallets },
-      mapParams: (proxiedAccounts: ProxiedAccount[], { chains, wallets }) => ({ proxiedAccounts, chains, wallets }),
-      effect: createProxiedWalletsFx,
-    }),
+    proxiedAccountsToAdd: createProxiesWalletsFx,
     deposits: depositsReceived,
   },
 });
@@ -275,15 +247,7 @@ sample({
 });
 
 sample({
-  clock: getProxiesFx.done,
-  source: $endpoint,
-  filter: (endpoint) => Boolean(endpoint),
-  fn: (endpoint, { params: { chainId } }) => ({ chainId, endpoint: endpoint! }),
-  target: disconnectFx,
-});
-
-sample({
-  clock: createProxiedWalletsFx.doneData,
+  clock: createProxiesWalletsFx.doneData,
   target: series(walletModel.events.proxiedCreated),
 });
 
@@ -302,54 +266,9 @@ sample({
   }),
 });
 
-sample({
-  clock: getProxiesFx.doneData,
-  source: {
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-  },
-  filter: (_, data) => data.proxiedAccountsToAdd.length > 0,
-  fn: ({ wallets, chains }, data) =>
-    proxiesUtils.getNotification({
-      wallets,
-      chains,
-      proxiedAccounts: data.proxiedAccountsToAdd,
-      type: NotificationType.PROXY_CREATED,
-    }),
-  target: notificationModel.events.notificationsAdded,
-});
-
-sample({
-  clock: getProxiesFx.doneData,
-  source: {
-    wallets: walletModel.$wallets,
-    chains: networkModel.$chains,
-  },
-  filter: (_, data) => data.proxiedAccountsToRemove.length > 0,
-  fn: ({ wallets, chains }, data) =>
-    proxiesUtils.getNotification({
-      wallets,
-      chains,
-      proxiedAccounts: data.proxiedAccountsToRemove,
-      type: NotificationType.PROXY_REMOVED,
-    }),
-  target: notificationModel.events.notificationsAdded,
-});
-
-sample({
-  clock: proxiedWalletsCreated,
-  source: walletModel.$wallets,
-  fn: (wallets, params) => ({ ...params, wallets }),
-  target: createProxiedWalletsFx,
-});
-
 export const proxiesModel = {
-  events: {
-    workerStarted,
-    proxiedWalletsCreated,
-  },
-
-  output: {
-    walletsCreated: createProxiedWalletsFx.doneData,
-  },
+  findProxies: findProxiesFx,
+  findAllProxies: findAllProxiesFx,
+  createProxiedWallet: createProxiedWalletFx,
+  createProxiesWallets: createProxiesWalletsFx,
 };

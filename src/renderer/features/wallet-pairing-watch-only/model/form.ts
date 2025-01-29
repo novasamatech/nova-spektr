@@ -1,4 +1,4 @@
-import { combine, sample } from 'effector';
+import { attach, combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
 
@@ -10,10 +10,11 @@ import {
   type WatchOnlyAccount,
   type WatchOnlyWallet,
 } from '@/shared/core';
-import { isEthereumAccountId, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
 
 type FormValues = {
@@ -44,7 +45,7 @@ const form = createForm<FormValues>({
         {
           name: 'correctAddress',
           errorText: 'onboarding.watchOnly.accountAddressError',
-          validator: validateAddress,
+          validator: address => validateAddress(address),
         },
       ],
     },
@@ -53,6 +54,8 @@ const form = createForm<FormValues>({
 });
 
 const flow = createGate();
+
+const createWalletFx = attach({ effect: walletModel.createWallet });
 
 const $walletDraft = form.fields.walletName.$value.map(
   (walletName): Pick<WatchOnlyWallet, 'name' | 'type' | 'signingType'> => {
@@ -96,19 +99,22 @@ sample({
   clock: form.formValidated,
   source: { accountDraft: $accountDraft, walletDraft: $walletDraft },
   fn: ({ accountDraft, walletDraft }) => ({
-    external: false,
     wallet: walletDraft,
     accounts: [accountDraft],
   }),
-  target: walletModel.events.watchOnlyCreated,
+  target: createWalletFx,
 });
 
 sample({
-  clock: walletModel.events.walletCreatedDone,
-  source: $walletDraft,
-  filter: (draft, { wallet }) => draft.type === wallet.type,
+  clock: createWalletFx.done,
   fn: () => Paths.ASSETS,
   target: [flow.close, navigationModel.events.navigateTo],
+});
+
+sample({
+  clock: createWalletFx.doneData.filter({ fn: nonNullable }),
+  fn: ({ wallet }) => wallet.id,
+  target: walletSelect.select,
 });
 
 sample({

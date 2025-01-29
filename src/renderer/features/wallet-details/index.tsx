@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
 import { combineIdentifiers } from '@/shared/di';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { IconButton } from '@/shared/ui';
+import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/wallet-multisig';
 import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/wallet-polkadot-vault';
 import { walletActionsSlot as proxiedActionsSlot } from '@/features/wallet-proxied';
@@ -29,6 +30,7 @@ const walletActionSlot = combineIdentifiers(
   polkadotVaultActionsSlot,
   proxiedActionsSlot,
   multisigActionsSlot,
+  extensionActionsSlot,
 );
 
 walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {

@@ -28,6 +28,7 @@ import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
@@ -42,21 +43,6 @@ import {
 } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 import { InteractionStyle } from '../common/constants';
-import {
-  getDelegate,
-  getDelegationTarget,
-  getDelegationTracks,
-  getDelegationVotes,
-  getDestination,
-  getDestinationChain,
-  getPayee,
-  getProxyType,
-  getReferendumId,
-  getSpawner,
-  getUndelegationData,
-  getVote,
-  // eslint-disable-next-line import-x/max-dependencies
-} from '../common/utils';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -78,23 +64,23 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
-  const payee = getPayee(tx);
-  const spawner = getSpawner(tx);
-  const delegate = getDelegate(tx);
-  const proxyType = getProxyType(tx);
-  const destinationChain = getDestinationChain(tx);
-  const destination = getDestination(tx, chains, destinationChain);
+  const payee = operationDetailsUtils.getPayee(tx);
+  const spawner = operationDetailsUtils.getSpawner(tx);
+  const delegate = operationDetailsUtils.getDelegate(tx);
+  const proxyType = operationDetailsUtils.getProxyType(tx);
+  const destinationChain = operationDetailsUtils.getDestinationChain(tx);
+  const destination = operationDetailsUtils.getDestination(tx, chains, destinationChain);
 
-  const delegationTarget = getDelegationTarget(tx);
-  const delegationTracks = getDelegationTracks(tx);
-  const delegationVotes = getDelegationVotes(tx);
+  const delegationTarget = operationDetailsUtils.getDelegationTarget(tx);
+  const delegationTracks = operationDetailsUtils.getDelegationTracks(tx);
+  const delegationVotes = operationDetailsUtils.getDelegationVotes(tx);
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
-  const referendumId = getReferendumId(tx);
-  const vote = getVote(tx);
+  const referendumId = operationDetailsUtils.getReferendumId(tx);
+  const vote = operationDetailsUtils.getVote(tx);
 
   const identities = useStoreMap({
     store: identityDomain.identity.$list,
@@ -111,7 +97,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
     if (!api) return;
 
-    getUndelegationData(api, tx).then(({ votes, target }) => {
+    operationDetailsUtils.getUndelegationData(api, tx).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
       setIsUndelegationLoading(false);

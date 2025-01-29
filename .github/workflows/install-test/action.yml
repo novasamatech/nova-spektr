@@ -1,0 +1,33 @@
+name: Install test dependencies
+
+runs:
+  using: 'composite'
+  steps:
+    - name: install docker compose
+      shell: bash
+      run: sudo apt-get install -y docker-compose
+
+    - name: Build compose
+      shell: bash
+      run: docker-compose up -d
+
+    - name: Get installed Playwright version
+      id: playwright-version
+      shell: bash
+      run: |
+        PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).importers['.'].devDependencies['@playwright/test'].version)")
+        echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+    - name: Cache playwright binaries
+      uses: actions/cache@v3
+      id: playwright-cache
+      with:
+        path: |
+          ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+
+    - run: npx playwright install --with-deps
+      shell: bash
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+    - name: Install allurectl
+      uses: allure-framework/setup-allurectl@v1

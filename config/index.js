@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const packageJson = readFileSync('package.json', { encoding: 'utf-8' });
-const { author: AUTHOR, description: DESCRIPTION, name: NAME, version: VERSION } = JSON.parse(packageJson);
+import packageJson from '../package.json' with { type: 'json' };
+
+const { author: AUTHOR, description: DESCRIPTION, name: NAME, version: VERSION } = packageJson;
 
 const AUTHOR_IN_KEBAB_CASE = AUTHOR.name.replace(/\s+/g, '-');
 
@@ -39,7 +39,7 @@ export const renderer = {
 export const folders = {
   entrypoint: {
     main: resolve('src/main/index.ts'),
-    bridge: resolve('src/main/shared/bridge.ts'),
+    preload: resolve('src/main/preload.ts'),
     renderer: resolve('src/renderer/app/index.html'),
   },
 
@@ -48,10 +48,12 @@ export const folders = {
   mainRoot: resolve('src/main'),
   rendererRoot: resolve('src/renderer'),
   resources: resolve('src/main/resources'),
+  docs: resolve('docs'),
 
   devBuild: resolve('release/build'),
   prodBuild: resolve('release/dist'),
   storybookBuild: resolve('release/storybook'),
+  docsBuild: resolve('release/docs'),
 
   coverage: resolve('./.coverage'),
   cache: resolve('./node_modules/.cache'),

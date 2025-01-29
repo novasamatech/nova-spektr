@@ -1,14 +1,14 @@
 import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { or } from 'patronum';
+import { and, or } from 'patronum';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { collectiveDomain } from '@/domains/collectives';
+import { voting } from '@/domains/collectives';
 
+import { votingHistoryFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { votingHistoryFeatureStatus } from './status';
 
 const gate = createGate<{ referendumId: ReferendumId }>();
 
@@ -19,19 +19,21 @@ const $votesList = combine($voting, gate.state, (votes, { referendumId }) => {
   return votes.filter(vote => vote.referendumId === referendumId) ?? [];
 });
 
-const referendumUpdate = attachToFeatureInput(votingHistoryFeatureStatus, gate.open);
-
 sample({
-  clock: referendumUpdate,
+  clock: attachToFeatureInput(votingHistoryFeatureStatus, gate.open),
   filter: ({ data: { referendumId } }) => nonNullable(referendumId),
-  fn: ({ data: { referendumId }, input }) => ({ ...input, referendumId }),
-  target: collectiveDomain.voting.request,
+  fn: ({ data: { referendumId }, input }) => ({ ...input, referendums: [referendumId] }),
+  target: voting.request,
 });
+
+const $hasPendingRequest = and(
+  $votesList.map(v => v.length === 0),
+  voting.pending,
+);
 
 export const votesModel = {
   $votesList,
-  $pending: or(collectiveDomain.voting.pending, votingHistoryFeatureStatus.isStarting),
-  $fulfilled: collectiveDomain.voting.fulfilled,
+  $pending: or($hasPendingRequest, votingHistoryFeatureStatus.isStarting),
 
   gate,
 };

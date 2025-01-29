@@ -21,7 +21,6 @@ export const SelectSignatoriesThreshold = () => {
     fields: { threshold },
     submit,
   } = useForm(formModel.$createMultisigForm);
-
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);

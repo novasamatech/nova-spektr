@@ -14,6 +14,7 @@ import {
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { type AnyAccount, accounts } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
@@ -27,8 +28,8 @@ vi.mock('@/entities/balance', async () => ({
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
 }));
 
-vi.mock('@walletconnect/universal-provider', () => ({
-  Provider: {},
+vi.mock('@walletconnect/sign-client', () => ({
+  Client: {},
 }));
 
 vi.mock('@walletconnect/utils', () => ({
@@ -108,21 +109,22 @@ describe('features/wallets/ForgetModel', () => {
     const spyDeleteWallet = jest.fn();
     const spyDeleteAccounts = jest.fn().mockImplementation((accounts: AnyAccount[]) => accounts);
 
-    storageService.wallets.delete = spyDeleteWallet;
-
     const scope = fork({
       values: [
         [walletModel.__test.$rawWallets, [wallet]],
         [accounts.__test.$list, wallet.accounts],
       ],
-      handlers: [[accounts.deleteAccounts, spyDeleteAccounts]],
+      handlers: [
+        [accounts.deleteAccounts, spyDeleteAccounts],
+        [walletModel.__test.removeWalletFx, spyDeleteWallet],
+        [balanceModel.__test.removeBalancesFx, () => {}],
+      ],
     });
 
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
-    expect(spyDeleteWallet).toHaveBeenCalledWith(1);
-    expect(spyDeleteAccounts).toHaveBeenCalledWith(wallet.accounts);
+    expect(spyDeleteWallet).toHaveBeenCalledWith(wallet);
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {

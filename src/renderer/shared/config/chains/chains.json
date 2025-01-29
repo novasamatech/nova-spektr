@@ -13,6 +13,14 @@
     ],
     "nodes": [
       {
+        "url": "wss://rpc-polkadot-1.novasama-tech.org",
+        "name": "Novasama node"
+      },
+      {
+        "url": "wss://rpc-polkadot-2.novasama-tech.org",
+        "name": "Novasama node"
+      },
+      {
         "url": "wss://rpc-polkadot.novasama-tech.org",
         "name": "Novasama node"
       },
@@ -119,6 +127,14 @@
       "pure_proxy"
     ],
     "nodes": [
+      {
+        "url": "wss://rpc-kusama-1.novasama-tech.org",
+        "name": "Novasama node"
+      },
+      {
+        "url": "wss://rpc-kusama-2.novasama-tech.org",
+        "name": "Novasama node"
+      },
       {
         "url": "wss://rpc-kusama.novasama-tech.org",
         "name": "Novasama node"
@@ -2077,7 +2093,7 @@
   {
     "name": "Bifrost Kusama",
     "specName": "kusama",
-    "addressPrefix": 6,
+    "addressPrefix": 0,
     "chainId": "0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bifrost_Kusama.svg",
@@ -2757,294 +2773,6 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-parallel-heiko"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Khala",
-    "specName": "kusama",
-    "addressPrefix": 30,
-    "chainId": "0xd43540ba6d3eb4897c28a77d48cb5b729fea37603cbbfc7a86a73b72adb3be8d",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Khala.svg",
-    "options": [],
-    "nodes": [
-      {
-        "url": "wss://khala-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc.helikon.io/khala",
-        "name": "Helikon node"
-      },
-      {
-        "url": "wss://khala.api.onfinality.io/public-ws",
-        "name": "OnFinality node"
-      },
-      {
-        "url": "wss://khala-api.phala.network/ws",
-        "name": "Phala node"
-      },
-      {
-        "url": "wss://khala.public.curie.radiumblock.co/ws",
-        "name": "RadiumBlock node"
-      }
-    ],
-    "assets": [
-      {
-        "name": "Phala",
-        "assetId": 0,
-        "symbol": "PHA",
-        "precision": 12,
-        "type": "native",
-        "priceId": "pha",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PHA.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PHA.svg"
-        }
-      },
-      {
-        "name": "Kusama",
-        "assetId": 1,
-        "symbol": "KSM",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "kusama",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KSM.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KSM.svg"
-        },
-        "typeExtras": {
-          "assetId": "0"
-        }
-      },
-      {
-        "name": "Karura",
-        "assetId": 2,
-        "symbol": "KAR",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "karura",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KAR.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KAR.svg"
-        },
-        "typeExtras": {
-          "assetId": "1"
-        }
-      },
-      {
-        "name": "Bifrost",
-        "assetId": 3,
-        "symbol": "BNC",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "bifrost-native-coin",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BNC.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BNC.svg"
-        },
-        "typeExtras": {
-          "assetId": "2"
-        }
-      },
-      {
-        "name": "Zenlink Network",
-        "assetId": 4,
-        "symbol": "ZLK",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "zenlink-network-token",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ZLK.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ZLK.svg"
-        },
-        "typeExtras": {
-          "assetId": "3"
-        }
-      },
-      {
-        "name": "Acala SEED",
-        "assetId": 5,
-        "symbol": "aSEEDk",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "ausd-seed-karura",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/aSEEDk.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/aSEEDk.svg"
-        },
-        "typeExtras": {
-          "assetId": "4"
-        }
-      },
-      {
-        "name": "Basilisk",
-        "assetId": 6,
-        "symbol": "BSX",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "basilisk",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BSX.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BSX.svg"
-        },
-        "typeExtras": {
-          "assetId": "9"
-        }
-      },
-      {
-        "name": "Moonriver",
-        "assetId": 7,
-        "symbol": "MOVR",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "moonriver",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MOVR.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MOVR.svg"
-        },
-        "typeExtras": {
-          "assetId": "6"
-        }
-      },
-      {
-        "name": "Parallel Heiko",
-        "assetId": 8,
-        "symbol": "HKO",
-        "precision": 12,
-        "type": "statemine",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/HKO.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/HKO.svg"
-        },
-        "typeExtras": {
-          "assetId": "7"
-        }
-      },
-      {
-        "name": "Calamari Network",
-        "assetId": 9,
-        "symbol": "KMA",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "calamari-network",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KMA.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KMA.svg"
-        },
-        "typeExtras": {
-          "assetId": "8"
-        }
-      },
-      {
-        "name": "Turing",
-        "assetId": 10,
-        "symbol": "TUR",
-        "precision": 10,
-        "type": "statemine",
-        "priceId": "turing-network",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TUR.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TUR.svg"
-        },
-        "typeExtras": {
-          "assetId": "10"
-        }
-      },
-      {
-        "name": "Darwinia Crab",
-        "assetId": 11,
-        "symbol": "CRAB",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "darwinia-network-native-token",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CRAB.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CRAB.svg"
-        },
-        "typeExtras": {
-          "assetId": "11"
-        }
-      },
-      {
-        "name": "Shiden",
-        "assetId": 12,
-        "symbol": "SDN",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "shiden",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SDN.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SDN.svg"
-        },
-        "typeExtras": {
-          "assetId": "12"
-        }
-      },
-      {
-        "name": "Metaverse.Network Pioneer",
-        "assetId": 13,
-        "symbol": "NEER",
-        "precision": 18,
-        "type": "statemine",
-        "priceId": "metaverse-network-pioneer",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/NEER.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/NEER.svg"
-        },
-        "typeExtras": {
-          "assetId": "13"
-        }
-      },
-      {
-        "name": "Bit.Country Pioneer",
-        "assetId": 14,
-        "symbol": "BIT",
-        "precision": 18,
-        "type": "statemine",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BIT.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BIT.svg"
-        },
-        "typeExtras": {
-          "assetId": "14"
-        }
-      },
-      {
-        "name": "Picasso",
-        "assetId": 15,
-        "symbol": "PICA",
-        "precision": 12,
-        "type": "statemine",
-        "priceId": "picasso",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/PICA.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/PICA.svg"
-        },
-        "typeExtras": {
-          "assetId": "15"
-        }
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://khala.subscan.io/extrinsic/{hash}",
-        "account": "https://khala.subscan.io/account/{address}",
-        "multisig": "https://khala.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      },
-      {
-        "name": "Sub.ID",
-        "account": "https://sub.id/{address}"
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://gateway.subquery.network/query/0x3a"
         }
       ]
     }
@@ -3776,6 +3504,10 @@
     "options": [],
     "nodes": [
       {
+        "url": "wss://parallel.gatotech.network",
+        "name": "Gatotech node"
+      },
+      {
         "url": "wss://polkadot-parallel-rpc.parallel.fi",
         "name": "Parallel node"
       }
@@ -4007,6 +3739,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://rpc-assethub.novasama-tech.org",
+        "name": "Novasama node"
+      },
+      {
         "url": "wss://sys.ibp.network/asset-hub-polkadot",
         "name": "IBP1 node"
       },
@@ -4143,6 +3879,7 @@
         "symbol": "WUD",
         "precision": 10,
         "type": "statemine",
+        "priceId": "gavun-wud",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WUD.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WUD.svg"
@@ -4726,6 +4463,10 @@
       "pure_proxy"
     ],
     "nodes": [
+      {
+        "url": "wss://rpc-hydra.novasama-tech.org",
+        "name": "Novasama node"
+      },
       {
         "url": "wss://rpc.hydradx.cloud",
         "name": "Galactic Council node"
@@ -5315,6 +5056,7 @@
         "symbol": "WUD",
         "precision": 10,
         "type": "orml",
+        "priceId": "gavun-wud",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WUD.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WUD.svg"
@@ -6028,7 +5770,7 @@
   {
     "name": "Bifrost Polkadot",
     "specName": "polkadot",
-    "addressPrefix": 6,
+    "addressPrefix": 0,
     "chainId": "0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bifrost_Polkadot.svg",
@@ -6543,42 +6285,6 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-imbue"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Tinkernet",
-    "specName": "kusama",
-    "addressPrefix": 117,
-    "chainId": "0xd42e9606a995dfe433dc7955dc2a70f495f350f373daa200098ae84437816ad2",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Tinkernet.svg",
-    "options": [],
-    "nodes": [
-      {
-        "url": "wss://tinkernet-rpc.dwellir.com",
-        "name": "Dwellir node"
-      }
-    ],
-    "assets": [
-      {
-        "name": "Tinkernet",
-        "assetId": 0,
-        "symbol": "TNKR",
-        "precision": 12,
-        "type": "native",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TNKR.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TNKR.svg"
-        }
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-tinkernet"
         }
       ]
     }
@@ -7099,7 +6805,9 @@
     "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Collectives.svg",
-    "options": [],
+    "options": [
+      "regular_proxy"
+    ],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/collectives-polkadot",
@@ -7155,6 +6863,12 @@
         {
           "type": "subquery",
           "url": "https://api.subquery.network/sq/nova-wallet/polkadot-collectives"
+        }
+      ],
+      "collectives": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-collectives-polkadot-stg.novasama-tech.org"
         }
       ]
     }

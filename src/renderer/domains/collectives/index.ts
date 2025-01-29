@@ -1,4 +1,18 @@
-export { collectiveDomain } from './init';
+export {
+  collectiveDomain,
+  $collectiveStore,
+  membersService,
+  referendumService,
+  tracksService,
+  votingService,
+  members,
+  referendums,
+  referendumMeta,
+  tracks,
+  voting,
+} from './init';
+
+export * as config from './configuration/inject';
 
 export type { CollectivePalletsType } from './_lib/types';
 

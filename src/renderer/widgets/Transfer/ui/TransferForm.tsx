@@ -100,7 +100,11 @@ const AccountSelector = () => {
 
   return (
     <Field text={t('operation.selectAccountLabel')}>
-      <Select placeholder={t('operation.selectAccount')} value={account.value.id.toString()} onChange={selectAccount}>
+      <Select
+        placeholder={t('operation.selectAccount')}
+        value={account.value ? account.value.id.toString() : null}
+        onChange={selectAccount}
+      >
         {accounts.map(({ account, balances }) => {
           const isShard = accountUtils.isVaultShardAccount(account);
           const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });

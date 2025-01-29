@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
@@ -16,6 +16,7 @@ import {
 import {
   Step,
   formatAmount,
+  getBalanceBn,
   getRelaychainAsset,
   isStep,
   nonNullable,
@@ -26,15 +27,16 @@ import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { basketModel } from '@/entities/basket';
-import { votingService } from '@/entities/governance';
+import { votingModel, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
   networkSelectorModel,
   tracksAggregate,
+  votingAggregate,
 } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -64,10 +66,20 @@ const $tracks = createStore<number[]>([]).reset(flowFinished);
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
 const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $isUnchanged = createStore(false);
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+
+const $activeDelegations = combine(
+  { delegations: delegationAggregate.$activeDelegations, delegate: $target },
+  ({ delegations, delegate }) => {
+    if (!delegate) return {};
+
+    return delegations[delegate.accountId] || {};
+  },
+);
 
 type FeeParams = {
   api: ApiPromise;
@@ -154,6 +166,12 @@ sample({
 });
 
 sample({
+  clock: formModel.output.formChanged,
+  fn: ({ isUnchanged }) => isUnchanged,
+  target: $isUnchanged,
+});
+
+sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => {
     const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
@@ -182,17 +200,25 @@ sample({
     tracks: $tracks,
     accounts: $accounts,
     activeTracks: delegationAggregate.$activeTracks,
+    activeDelegations: $activeDelegations,
   },
   filter: ({ walletData, target, tracks }) => {
     return Boolean(walletData.chain) && Boolean(target) && Boolean(tracks.length);
   },
-  fn: ({ walletData, accounts, target, tracks, activeTracks }, delegateData) => {
+  fn: ({ walletData, accounts, target, tracks, activeTracks, activeDelegations }, delegateData) => {
     return accounts.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+      const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
+      const amount = delegateData!.isUnchanged
+        ? activeDelegations[address].balance.toString()
+        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
+
       return transactionBuilder.buildEditDelegation({
         chain: walletData.chain!,
         accountId: shard.accountId,
-        balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
-        conviction: delegateData!.conviction || 'None',
+        balance: amount || '0',
+        conviction: conviction || 'None',
+        previousConviction: activeDelegations[address].conviction || 'None',
         target: target?.accountId || '',
         tracks,
         undelegateTracks:
@@ -287,10 +313,13 @@ sample({
 
 sample({
   clock: selectTracksModel.output.formSubmitted,
-  source: $walletData,
-  filter: (walletData) => Boolean(walletData.chain) && Boolean(walletData.wallet),
-  fn: (walletData, { tracks, accounts }) => ({
-    event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts },
+  source: {
+    walletData: $walletData,
+    activeDelegations: $activeDelegations,
+  },
+  filter: ({ walletData }) => Boolean(walletData.chain) && Boolean(walletData.wallet),
+  fn: ({ walletData, activeDelegations }, { tracks, accounts }) => ({
+    event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts, activeDelegations },
     tracks,
     accounts,
     step: Step.INIT,
@@ -315,17 +344,33 @@ sample({
     accounts: $accounts,
     txWrappers: $txWrappers,
     delegateData: $delegateData,
+    activeDelegations: $activeDelegations,
+    isUnchanged: $isUnchanged,
     coreTxs: $coreTxs,
     step: $step,
   },
   filter: ({ walletData, delegateData, step }) =>
     Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
-  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
+  fn: ({
+    feeData,
+    balances,
+    walletData,
+    txWrappers,
+    tracks,
+    target,
+    shards,
+    delegateData,
+    coreTxs,
+    activeDelegations,
+    isUnchanged,
+  }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
 
     return {
       event: shards.map((shard, index) => {
+        const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+
         return {
           chain: walletData.chain!,
           asset: asset!,
@@ -335,6 +380,11 @@ sample({
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
           ...delegateData!,
+          ...(isUnchanged && {
+            balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
+            conviction: activeDelegations[address].conviction,
+          }),
+          previousConviction: activeDelegations[address].conviction,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
@@ -441,6 +491,30 @@ sample({
   filter: ({ network, delegateData }) => nonNullable(network) && nonNullable(delegateData),
   fn: ({ network }) => ({ api: network!.api, chain: network!.chain }),
   target: tracksAggregate.events.requestTracks,
+});
+
+// TODO: On edit delegations we receive wrong data on this subscription. Need to resubscribe.
+sample({
+  clock: signModel.output.formSubmitted,
+  target: votingModel.events.unsubscribeVoting,
+});
+
+sample({
+  clock: combineEvents({
+    events: [submitModel.output.formSubmitted, votingModel.events.unsubscribeVoting],
+    reset: flowStarted,
+  }),
+  source: {
+    network: networkSelectorModel.$network,
+    wallet: walletModel.$activeWallet,
+  },
+  filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
+  fn: ({ network, wallet }) => ({
+    api: network!.api,
+    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    chain: network!.chain,
+  }),
+  target: votingAggregate.events.requestVoting,
 });
 
 sample({

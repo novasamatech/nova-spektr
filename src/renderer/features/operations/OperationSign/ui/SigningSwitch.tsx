@@ -1,15 +1,18 @@
 import { SigningType } from '@/shared/core';
 import { type SigningProps } from '../lib/types';
 
-import { Vault } from './Vault';
+import { Extension } from './Extension';
+import { PolkadotVault } from './PolkadotVault';
 import { WalletConnect } from './WalletConnect';
+import { WatchOnly } from './WatchOnly';
 
 const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
-  [SigningType.MULTISIG]: (props) => <Vault {...props} />,
-  [SigningType.POLKADOT_VAULT]: (props) => <Vault {...props} />,
-  [SigningType.PARITY_SIGNER]: (props) => <Vault {...props} />,
+  [SigningType.MULTISIG]: (props) => <PolkadotVault {...props} />,
+  [SigningType.POLKADOT_VAULT]: (props) => <PolkadotVault {...props} />,
+  [SigningType.EXTENSION]: (props) => <Extension {...props} />,
+  [SigningType.PARITY_SIGNER]: (props) => <PolkadotVault {...props} />,
   [SigningType.WALLET_CONNECT]: (props) => <WalletConnect {...props} />,
-  [SigningType.WATCH_ONLY]: () => null,
+  [SigningType.WATCH_ONLY]: (props) => <WatchOnly {...props} />,
 };
 
 export const SigningSwitch = (props: SigningProps) => {

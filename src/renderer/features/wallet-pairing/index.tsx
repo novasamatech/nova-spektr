@@ -1,4 +1,4 @@
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { walletSelectActionsSlot } from '@/features/wallet-select';
 
 import { WalletPairingSelect, walletPairingDropdownOptionsSlot } from './components/WalletPairingSelect';

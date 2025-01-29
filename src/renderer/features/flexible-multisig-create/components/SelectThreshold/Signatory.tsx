@@ -178,12 +178,14 @@ export const Signatory = ({
     });
   };
 
-  const onAddressChange = (address: AccountAddress, walletId?: ID) => {
+  const onAddressChange = (value: AccountAddress | { address: AccountAddress; walletId?: ID }) => {
+    const newSignatory = typeof value === 'string' ? { address: value } : value;
+
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
       name: signatoryName,
-      address: address,
-      walletId: walletId?.toString(), // will be undefined for contact
+      address: newSignatory.address,
+      walletId: newSignatory.walletId?.toString(), // will be undefined for contact
     });
   };
 
@@ -203,6 +205,7 @@ export const Signatory = ({
         <Box width="100%">
           <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
+              invalid={isDuplicate}
               placeholder={t('createMultisigAccount.signatorySelection')}
               options={options}
               query={query}
@@ -215,7 +218,7 @@ export const Signatory = ({
                   canCopy={false}
                 />
               }
-              onChange={({ value }) => onAddressChange(value.address, value.walletId)}
+              onChange={({ value }) => onAddressChange(value)}
               onInput={setQuery}
             />
 

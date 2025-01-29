@@ -1,20 +1,20 @@
 import { combine, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { attachToFeatureInput } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { collectiveDomain } from '@/domains/collectives';
+import { membersService, referendumService, referendums, tracksService, voting } from '@/domains/collectives';
+import { accountsService } from '@/domains/network';
 
+import { votingFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
-import { votingFeatureStatus } from './status';
 
-const gate = createGate<{ referendumId: ReferendumId | null }>({
+const flow = createGate<{ referendumId: ReferendumId | null }>({
   defaultState: { referendumId: null },
 });
 
-const $referendumId = gate.state.map(({ referendumId }) => referendumId);
+const $referendumId = flow.state.map(({ referendumId }) => referendumId);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $members = fellowshipModel.$store.map(x => x?.members ?? []);
 const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
@@ -24,16 +24,16 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $currentMember = combine(votingFeatureStatus.input, $members, (featureInput, members) => {
-  if (nullable(featureInput)) return null;
+const $currentMember = combine(votingFeatureStatus.input, $members, (input, members) => {
+  if (nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMatchingMember(featureInput.activeAccounts, members);
+  return membersService.findMatchingMember(input.accounts, members);
 });
 
 const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
   if (nullable(member) || nullable(input)) return null;
 
-  return collectiveDomain.membersService.findMatchingAccount(input.activeAccounts, member);
+  return membersService.findMatchingAccount(input.accounts, member);
 });
 
 const $hasRequiredRank = combine(
@@ -43,48 +43,59 @@ const $hasRequiredRank = combine(
     maxRank: $maxRank,
   },
   ({ member, referendum, maxRank }) => {
-    if (nullable(member) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
+    if (nullable(member) || nullable(referendum) || referendumService.isCompleted(referendum)) {
       return false;
     }
 
-    return collectiveDomain.tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
+    return tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
   },
 );
 
-const $canVote = $currentMember.map(nonNullable);
+const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
 
-const $walletVoting = restore(
-  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { wallet }, data: voting }) => {
-    const accounts = toKeysRecord(wallet.accounts.map(a => a.accountId));
+const $accountsVotes = restore(
+  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { accounts }, data: voting }) => {
+    const accountsMap = toKeysRecord(accounts.map(a => a.accountId));
 
-    return voting.filter(voting => voting.accountId in accounts);
+    return voting.filter(voting => voting.accountId in accountsMap);
   }),
   [],
 );
 
-const $referendumVoting = combine($walletVoting, $referendumId, (voting, referendumId) => {
+const $referendumVoting = combine($accountsVotes, $referendumId, (voting, referendumId) => {
   return voting.find(vote => vote.referendumId === referendumId) ?? null;
 });
 
 sample({
-  clock: attachToFeatureInput(votingFeatureStatus, $referendums),
+  clock: attachToFeatureInput(votingFeatureStatus, flow.open),
+  fn({ data: { referendumId }, input: { api, chainId, palletType } }) {
+    return {
+      api,
+      chainId,
+      palletType,
+      referendums: [referendumId].filter(nonNullable),
+    };
+  },
+  target: referendums.request,
+});
 
-  fn: ({ input: { palletType, api, chainId, activeAccounts }, data: referendums }) => {
+sample({
+  clock: votingFeatureStatus.running,
+  fn: ({ palletType, api, chain, accounts }) => {
     return {
       palletType,
       api,
-      chainId,
-      referendums: referendums.map(r => r.id),
-      accounts: activeAccounts.map(a => pjsSchema.helpers.toAccountId(a.accountId)),
+      chainId: chain.chainId,
+      accounts: accounts.map(a => a.accountId),
     };
   },
 
-  target: collectiveDomain.voting.subscribeAccountsVoting,
+  target: voting.subscribeAccountsVoting,
 });
 
 sample({
   clock: votingFeatureStatus.stopped,
-  target: collectiveDomain.voting.unsubscribeAccountsVoting,
+  target: voting.unsubscribeAccountsVoting,
 });
 
 export const votingStatusModel = {
@@ -92,7 +103,8 @@ export const votingStatusModel = {
   $hasRequiredRank,
   $votingAccount,
   $currentMember,
+  $maxRank,
   $canVote,
   $referendum,
-  gate,
+  flow,
 };

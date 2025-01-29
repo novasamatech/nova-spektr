@@ -7,7 +7,9 @@ import { spread } from 'patronum';
 import { type Asset, type Chain, type Conviction } from '@/shared/core';
 import {
   ZERO_BALANCE,
+  allEqual,
   formatAmount,
+  getBalanceBn,
   getRelaychainAsset,
   nonNullable,
   toAddress,
@@ -29,9 +31,21 @@ type FormParams = {
   amount: string;
   conviction: Conviction;
   locks: Record<string, BN>;
+  isUnchanged: boolean;
 };
 
-const formInitiated = createEvent<WalletData & { shards: AnyAccount[] }>();
+const formInitiated = createEvent<
+  WalletData & {
+    shards: AnyAccount[];
+    activeDelegations: Record<
+      string,
+      {
+        conviction: Conviction;
+        balance: BN;
+      }
+    >;
+  }
+>();
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
@@ -52,6 +66,7 @@ const $shards = createStore<AnyAccount[]>([]);
 const $delegateBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
+const $previousConviction = createStore<Conviction>('None');
 
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
@@ -168,12 +183,12 @@ const $delegateForm = createForm<FormParams>({
         {
           name: 'required',
           errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
+          validator: (value, { isUnchanged }) => isUnchanged || !!value,
         },
         {
           name: 'notZero',
           errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
+          validator: (value, { isUnchanged }) => isUnchanged || value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
@@ -219,6 +234,10 @@ const $delegateForm = createForm<FormParams>({
     },
     locks: {
       init: {},
+      rules: [],
+    },
+    isUnchanged: {
+      init: false,
       rules: [],
     },
   },
@@ -313,6 +332,73 @@ sample({
   filter: (shards) => shards.length > 0,
   fn: (shards) => shards,
   target: $delegateForm.fields.shards.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  source: $networkStore,
+  filter: (network, { activeDelegations, shards }) => {
+    const convictions = shards.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+
+      return activeDelegations[address].conviction;
+    });
+
+    return allEqual(convictions);
+  },
+  fn: (network, { activeDelegations, shards }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+
+    return activeDelegations[address].conviction;
+  },
+  target: $delegateForm.fields.conviction.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  source: $networkStore,
+  filter: (network, { shards, activeDelegations }) => {
+    const balances = shards.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+
+      return activeDelegations[address].balance;
+    });
+
+    return !!network && allEqual(balances, (a, b) => a.eq(b));
+  },
+  fn: (network, { shards, activeDelegations }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+    const balance = activeDelegations[address].balance.toString();
+    const precision = network!.asset.precision;
+
+    return getBalanceBn(balance, precision).toString();
+  },
+  target: $delegateForm.fields.amount.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ shards }) => Object.keys(shards).length > 1,
+  fn: () => true,
+  target: $delegateForm.fields.isUnchanged.onChange,
+});
+
+sample({
+  clock: $delegateForm.fields.isUnchanged.onChange,
+  filter: Boolean,
+  fn: (): Conviction => 'None',
+  target: $delegateForm.fields.conviction.onChange,
+});
+
+sample({
+  clock: formInitiated,
+  source: $networkStore,
+  fn: (network, { activeDelegations, shards }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+
+    return activeDelegations[address].conviction;
+  },
+  target: $previousConviction,
 });
 
 sample({
@@ -421,6 +507,7 @@ export const formModel = {
   $accountsBalances,
   $delegateBalanceRange,
   $proxyBalance,
+  $previousConviction,
 
   $feeData,
   $isFeeLoading,

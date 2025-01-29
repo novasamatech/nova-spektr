@@ -6,12 +6,14 @@ import { formatAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { collectiveDomain } from '@/domains/collectives';
+import { type OngoingReferendum, tracksService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
   account: AnyAccount;
   rank: number;
+  maxRank: number;
+  referendum: OngoingReferendum;
   wallets: Wallet[];
   chain: Chain;
   asset: Asset;
@@ -19,11 +21,10 @@ type Props = {
   fee: BN;
 };
 
-export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, rank }: Props) => {
+export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, rank, maxRank, referendum }: Props) => {
   const { t } = useI18n();
 
-  // TODO it should be placed somewhere in config
-  const votes = collectiveDomain.tracksService.getGeometricVoteWeight(rank);
+  const votes = tracksService.getVoteWeight({ pallet: 'fellowship', rank, maxRank, track: referendum.track });
 
   return (
     <Box gap={6}>

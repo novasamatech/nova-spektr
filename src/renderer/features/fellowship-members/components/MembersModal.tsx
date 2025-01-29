@@ -1,27 +1,25 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { fellowshipMembersFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { membersModel } from '../model/members';
-import { membersFeatureStatus } from '../model/status';
 
 import { Member } from './Member';
 import { MembersListEmptyState } from './MembersListEmptyState';
 
 export const MembersModal = ({ children }: PropsWithChildren) => {
-  useGate(membersFeatureStatus.gate);
-
   const { t } = useI18n();
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
   const members = useUnit(membersModel.$list);
   const identities = useUnit(identityModel.$identity);
-  const input = useUnit(membersFeatureStatus.input);
+  const input = useUnit(fellowshipMembersFeature.input);
 
   const chain = input?.chain ?? null;
 

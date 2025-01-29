@@ -2,7 +2,7 @@ import { attach, createEffect, createStore, restore, sample } from 'effector';
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { merge, nonNullable, nullable } from '@/shared/lib/utils';
+import { merge, nonNullable } from '@/shared/lib/utils';
 
 import { accountsService } from './service';
 import { type AnyAccount, type AnyAccountDraft } from './types';
@@ -22,26 +22,28 @@ const createAccountsFx = createEffect(async (accounts: AnyAccount[]): Promise<An
     .then(x => x ?? []);
 });
 
-const updateAccountFx = createEffect(async (account: AnyAccountDraft | null): Promise<boolean> => {
-  if (nullable(account)) return false;
+const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<boolean> => {
+  if (accounts.length === 0) return false;
 
-  const id = accountsService.uniqId(account);
-  const record = { ...account };
-  delete record['id'];
+  const drafts = accounts.map(a => {
+    const id = accountsService.uniqId(a);
 
-  return storageService.accounts2.update(id, record).then(nonNullable);
+    return { ...a, id };
+  });
+
+  return storageService.accounts2.updateAll(drafts).then(nonNullable);
 });
 
 const updateAccount = attach({
   source: $accounts,
   mapParams: (draft: AnyAccountDraft, accounts) => {
     if (accounts.find(a => accountsService.uniqId(a) === accountsService.uniqId(draft))) {
-      return draft;
+      return [draft];
     }
 
-    return null;
+    return [];
   },
-  effect: updateAccountFx,
+  effect: updateAccountsFx,
 });
 
 const deleteAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
@@ -75,9 +77,25 @@ sample({
   fn: (accounts, { params: draft }) => {
     const draftId = accountsService.uniqId(draft);
 
-    return accounts.map(a =>
-      accountsService.uniqId(a) === draftId ? ({ ...a, ...draft } as AnyAccount) : a,
-    ) as AnyAccount[];
+    return accounts.map(a => (accountsService.uniqId(a) === draftId ? { ...a, ...draft } : a));
+  },
+  target: $accounts,
+});
+
+sample({
+  clock: updateAccountsFx.done,
+  source: $accounts,
+  filter: (_, { result: successful }) => successful,
+  fn: (accounts, { params: drafts }) => {
+    const draftsMap = drafts.reduce<Record<string, AnyAccountDraft>>((acc, draft) => {
+      acc[accountsService.uniqId(draft)] = draft;
+
+      return acc;
+    }, {});
+
+    return accounts.map<AnyAccount>(a =>
+      accountsService.uniqId(a) in draftsMap ? { ...a, ...draftsMap[accountsService.uniqId(a)] } : a,
+    );
   },
   target: $accounts,
 });
@@ -100,10 +118,10 @@ export const accountsDomainModel = {
   populate: populateFx,
   createAccounts: createAccountsFx,
   updateAccount,
+  updateAccounts: updateAccountsFx,
   deleteAccounts: deleteAccountsFx,
 
   __test: {
     $list: $accounts,
-    updateAccountFx,
   },
 };

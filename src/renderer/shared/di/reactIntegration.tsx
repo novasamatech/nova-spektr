@@ -47,5 +47,5 @@ export const usePipeline = <Value, Meta>(...[pipeline, value, meta]: UsePipeline
   // eslint-disable-next-line effector/no-watch
   useEffect(() => pipeline.updateHandlers.watch(update), []);
 
-  return pipeline.apply(value, fixedMeta);
+  return pipeline(value, fixedMeta);
 };

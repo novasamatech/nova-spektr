@@ -1,6 +1,6 @@
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
-import { createFeature } from '@/shared/effector';
+import { createFeature } from '@/shared/feature';
 import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';

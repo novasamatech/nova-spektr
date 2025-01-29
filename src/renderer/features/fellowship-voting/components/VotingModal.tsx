@@ -1,17 +1,18 @@
 import { useGate, useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { referendumService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { votingFeatureStatus } from '../model/status';
+import { votingFeatureStatus } from '../model/feature';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';
 
@@ -32,15 +33,29 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const [step, setStep] = useState<Step>('confirm');
 
   const input = useUnit(votingFeatureStatus.input);
+  const referendum = useUnit(votingStatusModel.$referendum);
+  const maxRank = useUnit(votingStatusModel.$maxRank);
   const account = useUnit(votingStatusModel.$votingAccount);
   const member = useUnit(votingStatusModel.$currentMember);
   const fee = useUnit(votingModel.$fee);
 
-  if (nullable(input) || nullable(member) || nullable(account) || nullable(vote)) {
+  useEffect(() => {
+    setStep('confirm');
+  }, [isOpen]);
+
+  if (
+    nullable(input) ||
+    nullable(member) ||
+    nullable(account) ||
+    nullable(vote) ||
+    nullable(referendum) ||
+    referendumService.isCompleted(referendum)
+  ) {
     return null;
   }
 
   const wallet = walletUtils.getWalletFilteredAccounts(input.wallets, {
+    walletFn: w => w.id === account.walletId,
     accountFn: a => a.accountId === account.accountId,
   });
 
@@ -77,42 +92,52 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
     );
   }
 
+  if (nullable(account)) {
+    return (
+      <OperationResult
+        isOpen={isOpen}
+        variant="error"
+        autoCloseTimeout={2000}
+        title={t('fellowship.voting.errors.noAccount')}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <Modal isOpen={isOpen} size="md" onToggle={handleToggle}>
       <Modal.Title close>
         <OperationTitle title={t('fellowship.voting.title')} chainId={input.chainId} />
       </Modal.Title>
       <Modal.Content>
-        {nonNullable(account) ? (
-          <Carousel item={step}>
-            <Carousel.Item id="confirm" index={0}>
-              <Box>
-                <Box padding={[4, 5]}>
-                  <VotingConfirmation
-                    asset={input.asset}
-                    chain={input.chain}
-                    wallets={input.wallets}
-                    account={account}
-                    vote={vote}
-                    rank={member.rank}
-                    fee={fee}
-                  />
-                </Box>
-                <Modal.Footer>
-                  {wallet && basketUtils.isBasketAvailable(wallet) && (
-                    <Button pallet="secondary" onClick={handleBasketSave}>
-                      {t('operation.addToBasket')}
-                    </Button>
-                  )}
-                  {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
-                </Modal.Footer>
-              </Box>
-            </Carousel.Item>
-            <Carousel.Item id="sign" index={1}>
-              <OperationSign onGoBack={() => setStep('confirm')} />
-            </Carousel.Item>
-          </Carousel>
-        ) : null}
+        <Carousel item={step}>
+          <Carousel.Item id="confirm" index={0}>
+            <Box padding={[4, 5]}>
+              <VotingConfirmation
+                asset={input.asset}
+                chain={input.chain}
+                wallets={input.wallets}
+                account={account}
+                vote={vote}
+                rank={member.rank}
+                referendum={referendum}
+                maxRank={maxRank}
+                fee={fee}
+              />
+            </Box>
+            <Modal.Footer>
+              {wallet && basketUtils.isBasketAvailable(wallet) && (
+                <Button pallet="secondary" onClick={handleBasketSave}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )}
+              {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
+            </Modal.Footer>
+          </Carousel.Item>
+          <Carousel.Item id="sign" index={1}>
+            <OperationSign onSuccess={() => setStep('submit')} onGoBack={() => setStep('confirm')} />
+          </Carousel.Item>
+        </Carousel>
       </Modal.Content>
     </Modal>
   );

@@ -1,17 +1,20 @@
-import { createEvent, createStore, sample } from 'effector';
-import { persist } from 'effector-storage/session';
+import { type UnitValue, combine, createEvent, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
+import { produce } from 'immer';
 
 import { isDev } from '@/shared/lib/utils';
+
+type Features = UnitValue<typeof $defaultFeatures>;
 
 export const updateFeatureStatus = createEvent<[feature: string, status: boolean]>();
 export const resetFeatureStatuses = createEvent();
 
-export const $features = createStore({
+export const $mutatedFeatures = createStore<Partial<Features>>({});
+export const $defaultFeatures = createStore({
   assets: true,
   staking: true,
   governance: true,
-  // TODO: Dev only
-  fellowship: isDev(),
+  fellowship: true,
   importDB: isDev(),
   operations: true,
   basket: true,
@@ -26,22 +29,39 @@ export const $features = createStore({
   walletConnect: true,
   watchOnly: true,
   ledger: true,
+  extensionWallets: true,
 });
 
+export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));
+
 persist({
-  key: 'feature-toggle',
-  store: $features,
+  key: 'spektr_features_v1',
+  store: $mutatedFeatures,
+  sync: true,
 });
 
 sample({
   clock: updateFeatureStatus,
-  source: $features,
-  filter: (features, [feature]) => feature in features,
-  fn: (features, [feature, status]) => ({ ...features, [feature]: status }),
-  target: $features,
+  source: { mutated: $mutatedFeatures, desired: $defaultFeatures },
+  fn({ desired, mutated }, [key, value]) {
+    return produce(mutated, (draft) => {
+      const featureKey = key as keyof Features;
+
+      if (key in desired) {
+        if (desired[featureKey] === value) {
+          delete draft[featureKey];
+        } else {
+          draft[featureKey] = value;
+        }
+      } else {
+        delete draft[featureKey];
+      }
+    });
+  },
+  target: $mutatedFeatures,
 });
 
 sample({
   clock: resetFeatureStatuses,
-  target: $features.reinit,
+  target: $mutatedFeatures.reinit,
 });

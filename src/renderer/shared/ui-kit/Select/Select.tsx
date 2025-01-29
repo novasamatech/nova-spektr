@@ -6,6 +6,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -107,35 +108,38 @@ const Content = ({ children }: PropsWithChildren) => {
   const { testId } = useContext(Context);
 
   return (
-    <RadixSelect.Portal container={portalContainer}>
-      <RadixSelect.Content
-        asChild
-        position="popper"
-        avoidCollisions={false}
-        collisionPadding={gridSpaceConverter(2)}
-        sideOffset={gridSpaceConverter(2)}
-        style={{ width: 'var(--radix-select-trigger-width)' }}
-        data-testid={testId}
-      >
-        <Surface
-          elevation={1}
-          className={cnTw(
-            'z-50 flex flex-col',
-            'h-max max-h-[--radix-popper-available-height] min-w-20',
-            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
-            {
-              'border-border-dark bg-background-dark': theme === 'dark',
-            },
-          )}
+    <ThemeProvider preferStaticContent>
+      <RadixSelect.Portal container={portalContainer}>
+        <RadixSelect.Content
+          asChild
+          position="popper"
+          avoidCollisions={false}
+          collisionPadding={gridSpaceConverter(2)}
+          sideOffset={gridSpaceConverter(2)}
+          align="center"
+          style={{ width: 'var(--radix-select-trigger-width)' }}
+          data-testid={testId}
         >
-          <ScrollArea>
-            <RadixSelect.Viewport asChild>
-              <div className="flex flex-col gap-y-1 p-1">{children}</div>
-            </RadixSelect.Viewport>
-          </ScrollArea>
-        </Surface>
-      </RadixSelect.Content>
-    </RadixSelect.Portal>
+          <Surface
+            elevation={1}
+            className={cnTw(
+              'z-50 flex flex-col',
+              'h-max max-h-[--radix-popper-available-height] min-w-20',
+              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              {
+                'border-border-dark bg-background-dark': theme === 'dark',
+              },
+            )}
+          >
+            <ScrollArea>
+              <RadixSelect.Viewport asChild>
+                <div className="flex flex-col gap-y-1 p-1">{children}</div>
+              </RadixSelect.Viewport>
+            </ScrollArea>
+          </Surface>
+        </RadixSelect.Content>
+      </RadixSelect.Portal>
+    </ThemeProvider>
   );
 };
 

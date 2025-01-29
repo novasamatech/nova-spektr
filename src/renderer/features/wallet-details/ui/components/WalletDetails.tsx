@@ -3,6 +3,7 @@ import { useGate, useUnit } from 'effector-react';
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
+import { polkadotExtensionService } from '@/features/extension-wallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
@@ -21,8 +22,6 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
 
   const multiShardAccounts = useUnit(walletDetailsModel.$multiShardAccounts);
-  // TODO move inside MultisigWalletDetails
-  const signatories = useUnit(walletDetailsModel.$signatories);
 
   if (!isOpen || nullable(wallet)) {
     return null;
@@ -38,15 +37,7 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
 
   // TODO: Separate wallet details for regular and flexible multisig
   if (walletUtils.isMultisig(wallet)) {
-    return (
-      <MultisigWalletDetails
-        wallet={wallet}
-        signatoryWallets={signatories.wallets}
-        signatoryContacts={signatories.contacts}
-        signatoryPeople={signatories.people}
-        onClose={onClose}
-      />
-    );
+    return <MultisigWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {
@@ -59,6 +50,10 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
 
   if (walletUtils.isProxied(wallet)) {
     return <ProxiedWalletDetails wallet={wallet} onClose={onClose} />;
+  }
+
+  if (polkadotExtensionService.isExtensionWallet(wallet)) {
+    return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   return null;

@@ -55,7 +55,7 @@ describe('accounts model', () => {
   it('should successfully update account', async () => {
     const scope = fork({
       values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.__test.updateAccountFx, () => true]],
+      handlers: [[accountsDomainModel.updateAccount, () => true]],
     });
 
     const draft: AnyAccountDraft = {
@@ -64,6 +64,8 @@ describe('accounts model', () => {
       walletId: 0,
       type: 'chain',
       name: 'test',
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
     };
 
     await allSettled(accountsDomainModel.updateAccount, {
@@ -77,7 +79,7 @@ describe('accounts model', () => {
   it('should skip update if account is not defined', async () => {
     const scope = fork({
       values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.__test.updateAccountFx, () => false]],
+      handlers: [[accountsDomainModel.updateAccounts, () => false]],
     });
 
     const draft: AnyAccountDraft = {
@@ -86,6 +88,8 @@ describe('accounts model', () => {
       walletId: 0,
       type: 'chain',
       name: 'test',
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
     };
 
     await allSettled(accountsDomainModel.updateAccount, {

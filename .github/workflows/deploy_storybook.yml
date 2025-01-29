@@ -23,7 +23,7 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: Build app
+      - name: Build storybook
         run: |
           pnpm storybook:build
 

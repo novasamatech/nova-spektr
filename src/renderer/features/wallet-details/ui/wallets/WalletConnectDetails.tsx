@@ -1,16 +1,23 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
-import { chainsService } from '@/shared/api/network';
 import { type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { Button, ConfirmModal, FootnoteText, Icon, IconButton, SmallTitleText, StatusModal } from '@/shared/ui';
+import {
+  Button,
+  ConfirmModal,
+  FootnoteText,
+  Icon,
+  IconButton,
+  SmallTitleText,
+  StatusLabel,
+  StatusModal,
+} from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
-import { walletConnectUtils } from '@/entities/walletConnect';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
@@ -18,7 +25,8 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { wcDetailsModel } from '../../model/wc-details-model';
+import { walletConnectForget } from '../../model/walletConnectForgot';
+import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
@@ -38,34 +46,25 @@ type Props = {
   onClose: () => void;
 };
 export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
-  useGate(wcDetailsModel.walletConnectDetailsFlow, { wallet });
+  useGate(walletConnectForget.flow, { accounts: wallet.accounts });
+  useGate(walletConnectReconnect.flow, { accounts: wallet.accounts });
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
-  const forgetStep = useUnit(wcDetailsModel.$forgetStep);
-  const reconnectStep = useUnit(wcDetailsModel.$reconnectStep);
+  const connected = useUnit(walletConnectReconnect.$connected);
+  const forgetStep = useUnit(walletConnectForget.$forgetStep);
+  const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const [_, startTransition] = useTransition();
 
   const [tab, setTab] = useState('accounts');
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
+  const [isConfirmReconnectOpen, toggleConfirmReconnect] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
 
-  useEffect(() => {
-    wcDetailsModel.events.reset();
-  }, []);
-
-  const reconnect = () => {
-    wcDetailsModel.events.reconnectStarted({
-      chains: walletConnectUtils.getWalletConnectChains(chainsService.getChainsData()),
-      pairing: { topic: wallet.accounts[0].signingExtras?.pairingTopic },
-      currentSession: wallet.accounts[0].signingExtras?.sessionTopic,
-    });
-  };
-
   const handleForgetWallet = () => {
-    wcDetailsModel.events.forgetButtonClicked(wallet);
+    walletConnectForget.forget(wallet);
     forgetWalletModel.events.forgetWcWallet(wallet);
     toggleConfirmForget();
   };
@@ -84,7 +83,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     {
       icon: 'refresh' as IconNames,
       title: t('walletDetails.walletConnect.refreshButton'),
-      onClick: wcDetailsModel.events.confirmReconnectShown,
+      onClick: walletConnectReconnect.start,
     },
   ];
 
@@ -133,8 +132,14 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-5 border-b border-divider px-5 py-6">
-            <WalletCardLg full wallet={wallet} />
+          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
+            <WalletCardLg wallet={wallet}>
+              <StatusLabel
+                className="ml-auto"
+                title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
+                variant={connected ? 'success' : 'waiting'}
+              />
+            </WalletCardLg>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
@@ -165,11 +170,17 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
       <ConfirmModal
         panelClass="w-[300px]"
-        isOpen={wcDetailsUtils.isConfirmation(reconnectStep)}
+        isOpen={isConfirmReconnectOpen}
         confirmText={t('walletDetails.walletConnect.confirmButton')}
         cancelText={t('walletDetails.common.cancelButton')}
-        onConfirm={reconnect}
-        onClose={wcDetailsModel.events.reconnectAborted}
+        onConfirm={() => {
+          toggleConfirmReconnect();
+          walletConnectReconnect.start();
+        }}
+        onClose={() => {
+          toggleConfirmReconnect();
+          walletConnectReconnect.abort();
+        }}
       >
         <SmallTitleText className="mb-2" align="center">
           {t('walletDetails.walletConnect.reconnectConfirmTitle')}
@@ -206,7 +217,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         content={
           forgetStep === ForgetStep.FORGETTING ? <Animation variant="loading" loop /> : <Animation variant="success" />
         }
-        onClose={wcDetailsModel.events.forgetModalClosed}
+        onClose={walletConnectForget.abort}
       />
 
       <StatusModal
@@ -214,9 +225,9 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         title={t('walletDetails.walletConnect.rejectTitle')}
         description={t('walletDetails.walletConnect.rejectDescription')}
         content={<Animation variant="error" />}
-        onClose={wcDetailsModel.events.reconnectAborted}
+        onClose={walletConnectReconnect.abort}
       >
-        <Button onClick={() => wcDetailsModel.events.reconnectAborted()}>
+        <Button onClick={() => walletConnectReconnect.abort()}>
           {t('walletDetails.walletConnect.abortRejectButton')}
         </Button>
       </StatusModal>

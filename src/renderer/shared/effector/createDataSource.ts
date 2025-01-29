@@ -37,7 +37,7 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   fn,
   map,
   filter = () => true,
-  mutateParams = (params) => params,
+  mutateParams = params => params,
 }: FactoryParams<Params, Source, Awaited<Response>, Target>) => {
   const empty = Symbol();
 
@@ -100,8 +100,8 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   sample({
     clock: retry,
     source: $lastParams,
-    filter: (value) => value !== empty,
-    fn: (value) => value as Params,
+    filter: value => value !== empty,
+    fn: value => value as Params,
     target: request,
   });
 

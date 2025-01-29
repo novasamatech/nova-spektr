@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
-import { BaseModal } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { CreateContactForm } from '@/features/contacts';
 
 type Props = {
@@ -21,25 +20,23 @@ export const CreateContactModal = ({ isOpen = true, onClose }: Props) => {
     }
 
     if (!isOpen && isModalOpen) {
-      closeContactModal();
+      toggleContactModal(false);
     }
   }, [isOpen]);
 
-  const closeContactModal = () => {
-    toggleIsModalOpen();
-    setTimeout(onClose, DEFAULT_TRANSITION);
+  const toggleContactModal = (open: boolean) => {
+    if (!open) {
+      toggleIsModalOpen();
+      onClose();
+    }
   };
 
   return (
-    <BaseModal
-      closeButton
-      isOpen={isModalOpen}
-      title={t('addressBook.createContact.title')}
-      headerClass="py-[15px] px-5"
-      contentClass="px-5 pb-4 w-[440px]"
-      onClose={closeContactModal}
-    >
-      <CreateContactForm onSubmit={closeContactModal} />
-    </BaseModal>
+    <Modal size="md" isOpen={isModalOpen} onToggle={toggleContactModal}>
+      <Modal.Title close>{t('addressBook.createContact.title')}</Modal.Title>
+      <Modal.Content>
+        <CreateContactForm onSubmit={() => toggleContactModal(false)} />
+      </Modal.Content>
+    </Modal>
   );
 };

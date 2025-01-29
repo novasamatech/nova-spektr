@@ -1,8 +1,7 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { Shimmering } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 
 type Props = {
   src?: string;
@@ -12,19 +11,18 @@ type Props = {
 };
 
 export const ChainIcon = memo(({ src, name, size = 16, className }: Props) => {
-  const [isImgLoaded, toggleImgLoaded] = useToggle();
+  const [isImgLoaded, toggleImgLoaded] = useState(false);
 
   return (
-    <>
-      {!isImgLoaded && <Shimmering width={size} height={size} className={cnTw('rounded', className)} />}
+    <Skeleton active={!isImgLoaded}>
       <img
         src={src}
-        className={cnTw('pointer-events-none inline-block select-none', !isImgLoaded && 'hidden', className)}
+        className={cnTw('pointer-events-none select-none', className)}
         width={size}
         height={size}
         alt={name}
-        onLoad={toggleImgLoaded}
+        onLoad={() => toggleImgLoaded(true)}
       />
-    </>
+    </Skeleton>
   );
 });

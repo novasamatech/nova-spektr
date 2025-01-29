@@ -1,0 +1,37 @@
+name: Deploy documentation to bucket
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: "docs-deploy"
+  cancel-in-progress: false
+
+env:
+  S3_BUCKET: s3://spektr-dev-docs
+  S3_REGION: pl-waw
+
+jobs:
+  deploy-to-bucket:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: Build docs
+        run: |
+          pnpm docs:build
+
+      - name: 🤌 Upload to s3
+        uses: ./.github/workflows/upload-to-s3
+        with:
+          s3_region: ${{ env.S3_REGION }}
+          s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
+          s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
+          s3_bucket: ${{ env.S3_BUCKET }}
+          source: "release/docs"
