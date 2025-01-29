@@ -2,6 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Conviction, type Transaction, TransactionType } from '@/shared/core';
 import { toSerializable } from '@/shared/lib/utils';
+import { isProxyTransaction } from '@/entities/transaction';
 import {
   type TransactionSplitAbstainVote,
   type TransactionStandardVote,
@@ -9,6 +10,20 @@ import {
 } from '../types/voteTransaction';
 
 import { votingService } from './votingService';
+
+const getVote = (tx: Transaction): TransactionVote => {
+  const coreTx = getCoreTx(tx);
+
+  return coreTx?.args.vote;
+};
+
+const getCoreTx = (tx: Transaction): Transaction => {
+  if (isProxyTransaction(tx)) {
+    return tx.args.transaction;
+  }
+
+  return tx;
+};
 
 const isStandardVote = (vote: TransactionVote): vote is TransactionStandardVote => {
   return 'Standard' in vote;
@@ -19,11 +34,15 @@ const isSplitAbstainVote = (vote: TransactionVote): vote is TransactionSplitAbst
 };
 
 const isVoteTransaction = (t: Transaction): boolean => {
-  return t.type === TransactionType.VOTE || (t.args?.transaction && isVoteTransaction(t.args?.transaction));
+  const coreTx = getCoreTx(t);
+
+  return coreTx.type === TransactionType.VOTE;
 };
 
 const isRevoteTransaction = (t: Transaction): boolean => {
-  return t.type === TransactionType.REVOTE || (t.args?.transaction && isRevoteTransaction(t.args.transaction));
+  const coreTx = getCoreTx(t);
+
+  return coreTx.type === TransactionType.REVOTE;
 };
 
 const isRemoveVoteTransaction = (t: Transaction): boolean => {
@@ -31,7 +50,9 @@ const isRemoveVoteTransaction = (t: Transaction): boolean => {
     return t.args.transactions?.some(isRemoveVoteTransaction);
   }
 
-  return t.type === TransactionType.REMOVE_VOTE || (t.args?.transaction && isRemoveVoteTransaction(t.args.transaction));
+  const coreTx = getCoreTx(t);
+
+  return coreTx.type === TransactionType.REMOVE_VOTE;
 };
 
 const createTransactionVote = (
@@ -83,6 +104,7 @@ const getVotes = (vote: TransactionVote): BN => {
 export const voteTransactionService = {
   getDecision,
   getVotes,
+  getVote,
 
   isVoteTransaction,
   isRevoteTransaction,

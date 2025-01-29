@@ -64,7 +64,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     return null;
   }
 
-  const vote = wrappedTransactions.coreTx.args.vote || wrappedTransactions.coreTx.args?.transaction?.args.vote;
+  const vote = voteTransactionService.getVote(wrappedTransactions.coreTx);
 
   const decision = voteTransactionService.isStandardVote(vote) ? (vote.Standard.vote.aye ? 'aye' : 'nay') : 'abstain';
   const conviction = voteTransactionService.isStandardVote(vote) ? vote.Standard.vote.conviction : 'None';
