@@ -142,8 +142,12 @@ const getMultisigsFx = createEffect(
   },
 );
 
+// TODO: Refactor this logic
+// Added debounce to prevent duplicate requests when simultaneous triggers occur from:
+// 1. Polling updates
+// 2. MultisigsModel requests
+// This prevents race conditions when database updates are still pending
 const mergedRequest = merge([updateRequested, request]);
-
 const debouncedRequest = debounce({
   source: mergedRequest,
   timeout: 15000,
