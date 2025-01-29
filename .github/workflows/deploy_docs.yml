@@ -1,15 +1,15 @@
-name: Deploy storybook to bucket
+name: Deploy documentation to bucket
 on:
   push:
     branches:
       - dev
 
 concurrency:
-  group: "storybook-deploy"
+  group: "docs-deploy"
   cancel-in-progress: false
 
 env:
-  S3_BUCKET: s3://storybook
+  S3_BUCKET: s3://spektr-dev-docs
   S3_REGION: pl-waw
 
 jobs:
@@ -23,9 +23,9 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: Build storybook
+      - name: Build docs
         run: |
-          pnpm storybook:build
+          pnpm docs:build
 
       - name: 🤌 Upload to s3
         uses: ./.github/workflows/upload-to-s3
@@ -34,4 +34,4 @@ jobs:
           s3_access_key: ${{ secrets.S3_ACCESS_KEY }}
           s3_secret_key: ${{ secrets.S3_SECRET_KEY }}
           s3_bucket: ${{ env.S3_BUCKET }}
-          source: "release/storybook"
+          source: "release/docs"
