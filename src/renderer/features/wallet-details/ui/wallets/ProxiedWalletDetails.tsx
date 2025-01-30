@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
@@ -43,6 +43,7 @@ type Props = {
 };
 
 export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
+  useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);

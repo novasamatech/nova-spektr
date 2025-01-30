@@ -71,16 +71,16 @@ const populate = async () => {
   await networkModel.startNetworks();
   await accounts.populate();
   await walletModel.populate();
-  proxiesModel.findAllProxies();
+  await proxyModel.populate();
   multisigsModel.subscribe();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
   governanceModel.events.governanceStarted();
-  proxyModel.events.proxyStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   basketModel.events.basketStarted();
+  proxiesModel.findAllProxies();
 };
 
 export const bootstrap = () => {

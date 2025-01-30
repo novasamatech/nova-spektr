@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
@@ -33,6 +33,7 @@ type Props = {
   onClose: () => void;
 };
 export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
+  useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);

@@ -48,6 +48,8 @@ type Props = {
 export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
   useGate(walletConnectReconnect.flow, { accounts: wallet.accounts });
+  useGate(walletDetailsModel.flow, { wallet });
+
   const { t } = useI18n();
 
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
