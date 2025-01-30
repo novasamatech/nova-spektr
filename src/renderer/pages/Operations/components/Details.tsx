@@ -162,7 +162,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
     (isXcmTransaction(tx.transaction) && transaction?.args.destinationChain) ||
     isManageProxyTransaction(tx.transaction) ||
     destination ||
-    transaction?.args.payee;
+    selectedValidators.length !== 0;
 
   return (
     <dl className="flex w-full flex-col gap-y-4">

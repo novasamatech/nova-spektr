@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Address, type MultisigTransaction, TransactionType } from '@/shared/core';
+import { type Address, type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
@@ -47,13 +47,6 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
       setIsUndelegationLoading(false);
     });
   }, [api, operation]);
-
-  if (
-    transaction?.type &&
-    ![TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transaction.type)
-  ) {
-    return null;
-  }
 
   // TODO: Move this to domain layer
   const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
