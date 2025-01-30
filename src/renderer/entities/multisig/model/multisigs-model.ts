@@ -19,12 +19,13 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
+import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { multisigService } from '../api';
+import { type MultisigResult, multisigService } from '../api';
 import { multisigUtils } from '../lib/mulitisigs-utils';
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
@@ -35,9 +36,7 @@ const request = createEvent<AnyAccount[]>();
 
 const createWallets = attach({ effect: walletModel.createWallets });
 
-const $multisigAccounts = walletModel.$allWallets
-  .map(walletUtils.getAllAccounts)
-  .map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
+const $multisigAccounts = accounts.$list.map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
 
 const { tick: pollingRequest, isRunning: $isPollingRunning } = interval({
   start: subscribe,
@@ -73,7 +72,6 @@ const $multisigChains = combine(networkModel.$chains, (chains) => {
 type GetMultisigsParams = {
   chains: Chain[];
   accounts: AnyAccount[];
-  multisigAccounts: AnyAccount[];
 };
 
 type MultisigResponse = {
@@ -90,65 +88,39 @@ type FlexibleMultisigResponse = {
 
 type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
-const getMultisigsFx = createEffect(
-  ({ chains, accounts, multisigAccounts }: GetMultisigsParams): Promise<GetMultisigResponse[]> => {
-    const requests = chains.flatMap(async (chain) => {
-      const multisigIndexer = networkUtils.getProxyExternalApi(chain);
+const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): Promise<MultisigResult[]> => {
+  const requests = chains.flatMap(async (chain) => {
+    const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
-      if (nullable(multisigIndexer) || accounts.length === 0) return [];
+    if (nullable(multisigIndexer) || accounts.length === 0) return [];
 
-      const client = new GraphQLClient(multisigIndexer.url);
-      const accountIds = uniq(
-        accounts.filter((a) => accountUtils.isChainIdMatch(a, chain.chainId)).map((account) => account.accountId),
-      );
+    const client = new GraphQLClient(multisigIndexer.url);
+    const accountIds = uniq(
+      accounts.filter((a) => accountUtils.isChainIdMatch(a, chain.chainId)).map((account) => account.accountId),
+    );
 
-      if (accountIds.length === 0) return [];
+    if (accountIds.length === 0) return [];
 
-      const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds);
+    const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds, chain);
 
-      return (
-        indexedMultisigs
-          // filter out multisigs that already exists
-          .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
-          .map(({ threshold, accountId, signatories }): GetMultisigResponse => {
-            // TODO: run a proxy worker for new multisiig since we don't have these proxies at the moment
+    return indexedMultisigs;
+  });
 
-            // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
-            // if (proxy) {
-            //   return {
-            //     type: 'flexibleMultisig',
-            //     account: multisigUtils.buildFlexibleMultisigAccount({
-            //       threshold,
-            //       proxyAccount: proxy,
-            //       accountId,
-            //       signatories,
-            //       chain,
-            //     }),
-            //     chain,
-            //   };
-            // }
+  return Promise.all(requests).then((res) => res.flat());
+});
 
-            return {
-              type: 'multisig',
-              account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
-              chain,
-            };
-          })
-      );
-    });
-
-    return Promise.all(requests).then((res) => res.flat());
-  },
-);
+const getLastMultisigsFx = takeLast({
+  fn: getMultisigsFx,
+  key: (params) => JSON.stringify(params),
+});
 
 sample({
   clock: [updateRequested, request],
   source: {
-    multisigAccounts: $multisigAccounts,
     chains: $multisigChains,
     connections: networkModel.$connections,
   },
-  fn: ({ multisigAccounts, chains, connections }, accounts) => {
+  fn: ({ chains, connections }, accounts) => {
     const filteredChains = chains.filter((chain) => {
       if (nullable(connections[chain.chainId])) return false;
 
@@ -157,23 +129,64 @@ sample({
 
     return {
       chains: filteredChains,
-      multisigAccounts,
       accounts,
     };
   },
-  target: getMultisigsFx,
+  target: getLastMultisigsFx,
+});
+
+type FilteredMultisigParams = { multisigAccounts: AnyAccount[]; indexedMultisigs: MultisigResult[] };
+
+const filterMultisigFx = createEffect(
+  ({ multisigAccounts, indexedMultisigs }: FilteredMultisigParams): GetMultisigResponse[] => {
+    return (
+      indexedMultisigs
+        // filter out multisigs that already exists
+        .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
+        .map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
+          // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
+          // if (proxy) {
+          //   return {
+          //     type: 'flexibleMultisig',
+          //     account: multisigUtils.buildFlexibleMultisigAccount({
+          //       threshold,
+          //       proxyAccount: proxy,
+          //       accountId,
+          //       signatories,
+          //       chain,
+          //     }),
+          //     chain,
+          //   };
+          // }
+
+          return {
+            type: 'multisig',
+            account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
+            chain,
+          };
+        })
+    );
+  },
+);
+
+sample({
+  clock: getLastMultisigsFx.doneData,
+  source: $multisigAccounts,
+  filter: (_, multisigs) => multisigs.length > 0,
+  fn: (multisigAccounts, indexedMultisigs) => ({ multisigAccounts, indexedMultisigs }),
+  target: filterMultisigFx,
 });
 
 const populateWallets = createEvent<GetMultisigResponse[]>();
 
 sample({
-  clock: getMultisigsFx.doneData,
+  clock: filterMultisigFx.doneData,
   filter: (response) => response.length > 0,
   target: populateWallets,
 });
 
 sample({
-  clock: getMultisigsFx.done,
+  clock: filterMultisigFx.done,
   source: $isPollingRunning,
   filter: (isRunning) => isRunning,
   target: [stop, subscribe],
