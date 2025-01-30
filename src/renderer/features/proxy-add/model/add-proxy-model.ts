@@ -156,6 +156,12 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  target: flowFinished,
+});
+
+sample({
   clock: flowFinished,
   source: {
     activeWallet: walletModel.$activeWallet,
