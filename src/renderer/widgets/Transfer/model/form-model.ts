@@ -1,13 +1,9 @@
 /* eslint-disable import-x/max-dependencies */
-import { type ApiPromise } from '@polkadot/api';
-import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { camelCase, isEmpty } from 'lodash';
 import { spread } from 'patronum';
 
-import { type XcmConfig, xcmService } from '@/shared/api/xcm';
 import {
   type Account,
   type Address,
@@ -28,7 +24,6 @@ import {
   nonNullable,
   toAccountId,
   toAddress,
-  toLocalChainId,
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
@@ -65,7 +60,7 @@ type FormSubmitEvent = {
     proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
-    deliveryFee: string;
+    deliveryFee: string | null;
     multisigDeposit: string;
   };
 };
@@ -96,7 +91,6 @@ const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
-const $deliveryFee = createStore(BN_ZERO);
 const $selectedSignatories = createStore<Account[]>([]);
 
 const $transferForm = createForm<FormParams>({
@@ -150,7 +144,7 @@ const $transferForm = createForm<FormParams>({
         TransferRules.amount.insufficientBalanceForXcmFee(
           combine({
             fee: $fee,
-            // delivery fee?
+            deliveryFee: xcmTransferModel.$deliveryFee,
             xcmFee: xcmTransferModel.$xcmFee,
             network: $networkStore,
             balance: $accountBalance,
@@ -165,37 +159,6 @@ const $transferForm = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
-
-// Effects
-
-const getDeliveryFeeFx = createEffect(
-  async ({
-    config,
-    parachainId,
-    api,
-    extrinsic,
-    destinationChain,
-  }: {
-    config: XcmConfig | null;
-    parachainId: number | null;
-    api: ApiPromise | null;
-    extrinsic?: SubmittableExtrinsic<'promise'> | null;
-    destinationChain: Chain | null;
-  }) => {
-    if (!config || !api || !parachainId || !extrinsic || !destinationChain) {
-      return BN_ZERO;
-    }
-
-    return xcmService.getDeliveryFeeFromConfig({
-      config,
-      originChain: toLocalChainId(api.genesisHash.toHex()) || '',
-      originApi: api,
-      destinationChainId: parachainId,
-      extrinsic,
-      destinationChain,
-    });
-  },
-);
 
 // Computed
 
@@ -443,7 +406,7 @@ const $canSubmit = combine(
     isFormValid: $transferForm.$isValid,
     isFeeLoading: $isFeeLoading,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
-    isDeliveryFeeLoading: getDeliveryFeeFx.pending,
+    isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
   },
   ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
     return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
@@ -459,18 +422,6 @@ const $extrinsic = combine(
     if (!api || !coreTx) return null;
 
     return getExtrinsic[coreTx.type](coreTx.args, api);
-  },
-);
-
-const $xcmChain = combine(
-  {
-    chains: networkModel.$chains,
-    xcmChainId: xcmTransferModel.$xcmChainId,
-  },
-  ({ chains, xcmChainId }) => {
-    if (!xcmChainId) return null;
-
-    return chains[xcmChainId] ?? null;
   },
 );
 
@@ -671,13 +622,13 @@ sample({
     isProxy: $isProxy,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: $deliveryFee,
+    deliveryFee: xcmTransferModel.$deliveryFee,
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ network, transaction }) => {
     return Boolean(network) && Boolean(transaction);
   },
-  fn: ({ realAccount, network, transaction, isProxy, deliveryFee, ...fee }, formData) => {
+  fn: ({ realAccount, network, transaction, isProxy, ...fee }, formData) => {
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
@@ -689,7 +640,6 @@ sample({
       formData: {
         ...fee,
         ...formData,
-        deliveryFee: deliveryFee.toString(),
         amount,
         account: realAccount,
         ...(isProxy && { proxiedAccount: formData.account as ProxiedAccount }),
@@ -701,25 +651,8 @@ sample({
 
 sample({
   clock: $extrinsic,
-  source: {
-    api: $api,
-    parachainId: xcmTransferModel.$xcmParaId,
-    config: xcmTransferModel.$config,
-    extrinsic: $extrinsic,
-    destinationChain: $xcmChain,
-  },
-  target: getDeliveryFeeFx,
-});
-
-sample({
-  clock: getDeliveryFeeFx.doneData,
-  target: $deliveryFee,
-});
-
-sample({
-  clock: getDeliveryFeeFx.fail,
-  fn: () => BN_ZERO,
-  target: $deliveryFee,
+  filter: nonNullable,
+  target: xcmTransferModel.events.deliveryFeeRequested,
 });
 
 export const formModel = {
@@ -739,7 +672,7 @@ export const formModel = {
 
   $fee,
   $multisigDeposit,
-  $deliveryFee,
+  $deliveryFee: xcmTransferModel.$deliveryFee,
 
   $coreTx,
   $fakeTx,

@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
-import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
+import { getParachainId, nullable, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { xcmModel } from '@/entities/xcm';
@@ -14,6 +15,7 @@ const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<string>();
+const deliveryFeeRequested = createEvent<SubmittableExtrinsic<'promise'>>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
 const amountChanged = createEvent<string>();
 const destinationChanged = createEvent<AccountId>();
@@ -22,6 +24,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
+const $deliveryFee = createStore<string | null>(null);
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
@@ -35,6 +38,30 @@ const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
 const getXcmParaIdFx = createEffect((api: ApiPromise): Promise<number | null> => {
   return getParachainId(api);
 });
+
+type DeliveryFeeParams = {
+  api: ApiPromise | null;
+  config: XcmConfig | null;
+  parachainId: number | null;
+  extrinsic?: SubmittableExtrinsic<'promise'> | null;
+  destinationChain: Chain | null;
+};
+const getDeliveryFeeFx = createEffect(
+  async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
+    if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
+      return null;
+    }
+
+    return xcmService.getDeliveryFeeFromConfig({
+      config,
+      originApi: api,
+      originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+      destinationChainId: parachainId,
+      extrinsic,
+      destinationChain,
+    });
+  },
+);
 
 const $xcmAsset = combine(
   {
@@ -104,9 +131,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $apiDestination = combine(
@@ -203,6 +229,7 @@ const $xcmData = combine(
   {
     api: $api,
     xcmFee: $xcmFee,
+    deliveryFee: $deliveryFee,
     xcmAsset: $txAsset,
     xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
@@ -263,21 +290,57 @@ sample({
   target: $xcmParaId,
 });
 
+sample({
+  clock: deliveryFeeRequested,
+  source: {
+    api: $api,
+    parachainId: $xcmParaId,
+    config: $config,
+    xcmChainId: $xcmChainId,
+    chains: networkModel.$chains,
+  },
+  fn: ({ chains, xcmChainId, ...rest }, extrinsic) => ({
+    destinationChain: xcmChainId ? (chains[xcmChainId] ?? null) : null,
+    extrinsic,
+    ...rest,
+  }),
+  target: getDeliveryFeeFx,
+});
+
+sample({
+  clock: getDeliveryFeeFx.doneData,
+  fn: (deliveryFee) => {
+    if (nullable(deliveryFee)) return null;
+
+    return deliveryFee.isZero() ? null : deliveryFee.toString();
+  },
+  target: $deliveryFee,
+});
+
+sample({
+  clock: getDeliveryFeeFx.fail,
+  fn: () => null,
+  target: $deliveryFee,
+});
+
 export const xcmTransferModel = {
   $config,
   $apiDestination,
   $xcmData,
   $xcmFee,
-  $isXcmFeeLoading,
+  $deliveryFee,
   $transferDirections,
   $xcmParaId,
   $xcmChainId,
+  $isXcmFeeLoading,
+  $isDeliveryFeeLoading: getDeliveryFeeFx.pending,
 
   events: {
     xcmStarted,
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
+    deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,

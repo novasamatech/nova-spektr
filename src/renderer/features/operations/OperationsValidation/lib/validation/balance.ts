@@ -27,6 +27,7 @@ function insufficientBalanceForFee(
     asset,
     balance,
     fee,
+    deliveryFee,
 
     isNative,
     isProxy,
@@ -35,15 +36,14 @@ function insufficientBalanceForFee(
   }: TransferFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  if (isXcm && !isNative) {
-    if (isLteThanBalance(fee, balance)) {
-      return true;
-    }
+  const totalFee = new BN(fee).add(new BN(deliveryFee || ZERO_BALANCE));
+
+  if (isXcm && !isNative && isLteThanBalance(totalFee, balance)) {
+    return true;
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, asset.precision) : amount);
-  const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : fee);
-  const value = amountBN.add(feeBN);
+  const value = isProxy || isMultisig ? amountBN : amountBN.add(totalFee);
 
   return isLteThanBalance(value, balance);
 }
@@ -55,8 +55,9 @@ function insufficientBalanceForXcmFee(
     nativeBalance,
     transferableAsset,
     transferableBalance,
-    xcmFee,
     fee,
+    xcmFee,
+    deliveryFee,
     isProxy,
     isMultisig,
     amount,
@@ -65,17 +66,18 @@ function insufficientBalanceForXcmFee(
 ) {
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
   const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+  const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
   const feeBN = new BN(fee || ZERO_BALANCE);
 
   let totalTransferableSpend;
   let totalNativeSpend;
 
   if (isNative) {
-    totalTransferableSpend = isProxy || isMultisig ? amountBN : amountBN.add(feeBN);
+    totalTransferableSpend = isProxy || isMultisig ? amountBN : amountBN.add(feeBN).add(deliveryFeeBN);
     totalNativeSpend = xcmFeeBN;
   } else {
     totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
-    totalNativeSpend = feeBN;
+    totalNativeSpend = feeBN.add(deliveryFeeBN);
   }
 
   return (

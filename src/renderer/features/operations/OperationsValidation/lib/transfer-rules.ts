@@ -105,7 +105,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
+        { network, isNative, isProxy, isMultisig, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -114,12 +114,11 @@ export const TransferRules = {
             amount,
             asset: network.asset,
             balance: isXcm || !isNative ? balance.native : balance.balance,
-            xcmFee,
-            fee,
             isNative,
             isProxy,
             isMultisig,
             isXcm,
+            ...fee,
           },
           config,
         );
@@ -135,7 +134,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isProxy, isMultisig, isNative, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -145,12 +144,11 @@ export const TransferRules = {
             transferableAsset: network.asset,
             transferableBalance: balance.balance,
             nativeBalance: balance.native,
-            xcmFee,
-            fee,
             isXcm,
             isNative,
             isProxy,
             isMultisig,
+            ...fee,
           },
           config,
         );

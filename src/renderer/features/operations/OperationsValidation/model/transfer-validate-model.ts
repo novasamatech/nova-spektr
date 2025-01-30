@@ -90,6 +90,7 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
         multisigDeposit: '0',
         fee,
         xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
         // TODO: Add support proxy
         isProxy: false,
         isNative: chain.assets[0].assetId === asset.assetId,

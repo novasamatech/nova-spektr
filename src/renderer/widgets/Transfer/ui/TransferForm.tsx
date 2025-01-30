@@ -4,7 +4,7 @@ import { type FormEvent } from 'react';
 
 import { type ChainId, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
 import { Address as AccountAddress } from '@/shared/ui-entities';
 import { Field, Input, Select } from '@/shared/ui-kit';
@@ -313,7 +313,6 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction?.wrappedTx || fakeTx}
-        extraFee={deliveryFee}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
@@ -329,7 +328,7 @@ const FeeSection = () => {
         />
       )}
 
-      {!deliveryFee.isZero() && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.asset} />}
+      {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
     </div>
   );
 };

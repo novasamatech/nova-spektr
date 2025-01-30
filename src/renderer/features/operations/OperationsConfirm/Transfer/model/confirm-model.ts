@@ -39,7 +39,7 @@ type Input = {
 
   fee: string;
   xcmFee: string;
-  deliveryFee: string;
+  deliveryFee: string | null;
   multisigDeposit: string;
   coreTx?: Transaction | null;
 };
@@ -150,6 +150,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
+        deliveryFee: store.deliveryFee,
         isProxy: !!store.proxiedAccount,
         isNative: store.chain.assets[0].assetId === store.asset.assetId,
         isXcm: store.xcmChain.chainId !== store.chain.chainId,
