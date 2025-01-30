@@ -15,8 +15,8 @@ import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { identityDomain } from '@/domains/identity';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
 
 type Props = {
@@ -39,7 +39,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
   const result = [];
 
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getCoreTx(operation);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const identities = useStoreMap({

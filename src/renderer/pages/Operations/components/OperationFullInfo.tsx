@@ -66,8 +66,6 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     updateCallData(api, tx, callData as CallData);
   };
 
-  if (!walletUtils.isMultisig(activeWallet)) return null;
-
   const isRejectAvailable = wallets.some((wallet) => {
     const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
 
@@ -79,6 +77,9 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
       operation: tx,
     },
   });
+
+  if (!walletUtils.isMultisig(activeWallet)) return null;
+
   const isFinalSigning = events.length === activeWallet.accounts[0].threshold - 1;
   const isApproveAvailable = !isFinalSigning || (tx.callData && validateCallData(tx.callData, tx.callHash));
 
