@@ -1,37 +1,63 @@
 /* eslint-disable i18next/no-literal-string */
-import { type ElementType } from 'react';
+import { formatDuration } from 'date-fns/formatDuration';
+import { intervalToDuration } from 'date-fns/intervalToDuration';
+import { type Duration as DurationType } from 'date-fns/types';
+import { type ElementType, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-
-import { DurationFormat } from './common/types';
-import { timeUtils } from './common/utils';
 
 type Props = {
   as?: ElementType;
   seconds: string | number;
-  hideDaysHours?: boolean;
   className?: string;
 };
 
-export const Duration = ({ as: Tag = 'span', seconds, hideDaysHours, className }: Props) => {
-  const { t } = useI18n();
-
-  const numericSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
-  const duration = timeUtils.secondsToDuration(numericSeconds);
-  const i18nKey = timeUtils.getDurationFormat(duration);
-
-  if (i18nKey !== DurationFormat.DAYS_HOURS) {
-    const durationParams = timeUtils.getDurationParams(duration, i18nKey);
-
-    return <Tag className={className}>{t(`time.${i18nKey}`, durationParams)}</Tag>;
+const stripDuration = (duration: DurationType): DurationType => {
+  if (duration.years) {
+    return {
+      years: duration.years,
+      months: duration.months,
+    };
   }
 
-  const days = t(`time.${DurationFormat.DAYS}`, timeUtils.getDurationParams(duration, DurationFormat.DAYS));
-  const hours = t(`time.${DurationFormat.HOURS}`, timeUtils.getDurationParams(duration, DurationFormat.HOURS));
+  if (duration.months) {
+    return {
+      months: duration.months,
+      days: duration.days,
+    };
+  }
 
-  return (
-    <Tag className={className}>
-      {days}&nbsp;{!hideDaysHours && hours}
-    </Tag>
-  );
+  if (duration.days) {
+    return {
+      days: duration.days,
+      hours: duration.hours,
+    };
+  }
+
+  if (duration.hours) {
+    return {
+      hours: duration.hours,
+      minutes: duration.minutes,
+    };
+  }
+
+  return {
+    minutes: duration.minutes,
+    seconds: duration.seconds,
+  };
+};
+
+export const Duration = ({ as: Tag = 'span', seconds, className }: Props) => {
+  const { dateLocale } = useI18n();
+  const numericSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+
+  const duration = useMemo(() => {
+    const duration = intervalToDuration({ start: 0, end: numericSeconds * 1000 });
+
+    return stripDuration(duration);
+  }, [numericSeconds]);
+
+  const formatted = useMemo(() => formatDuration(duration, { locale: dateLocale }), [duration, dateLocale]);
+
+  return <Tag className={className}>{formatted}</Tag>;
 };
