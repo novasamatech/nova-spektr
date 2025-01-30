@@ -30,7 +30,7 @@ export const Address = memo(
     testId = 'Address',
     hideAddress,
   }: Props) => {
-    const titleNode = title ? <span className="w-fit truncate">{title}</span> : null;
+    const titleNode = title ? <span className="w-fit max-w-full truncate">{title}</span> : null;
 
     const addressNode = (
       <span
