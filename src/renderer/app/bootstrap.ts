@@ -71,8 +71,8 @@ const populate = async () => {
   await networkModel.startNetworks();
   await accounts.populate();
   await walletModel.populate();
-  await proxyModel.populate();
   multisigsModel.subscribe();
+  await proxyModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
