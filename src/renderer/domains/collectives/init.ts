@@ -7,6 +7,8 @@ import { membersService } from './members/service';
 import { referendumDomainModel } from './referendum/model';
 import { referendumService } from './referendum/service';
 import { referendumMetaModel } from './referendumMeta/model';
+import { salary } from './salary/model';
+import { salaryService } from './salary/service';
 import { tracksDomainModel } from './tracks/model';
 import { tracksService } from './tracks/service';
 import { votingService } from './voting/service';
@@ -20,6 +22,7 @@ const $store = combine(
     tracks: tracksDomainModel.$list,
     maxRank: tracksDomainModel.$maxRank,
     voting: votingDomainModel.$votes,
+    salaryStatus: salary.$status,
     feed: feed.$list,
   },
   combineStores,
@@ -49,9 +52,11 @@ export {
   referendumDomainModel as referendums,
   referendumMetaModel as referendumMeta,
   votingDomainModel as voting,
+  salary,
   feed,
   tracksService,
   membersService,
   referendumService,
   votingService,
+  salaryService,
 };

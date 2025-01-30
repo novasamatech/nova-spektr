@@ -78,7 +78,6 @@ module.exports = {
     ],
 
     'no-irregular-whitespace': 'off',
-    'newline-before-return': 'error',
 
     'no-restricted-properties': [
       'error',

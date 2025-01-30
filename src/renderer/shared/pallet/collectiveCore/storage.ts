@@ -27,7 +27,7 @@ export const storage = {
    * The overall status of the system.
    */
   params(type: PalletType, api: ApiPromise) {
-    return substrateRpcPool.call(() => getQuery(type, api, 'params').entries()).then(collectiveCoreParams.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'params')()).then(collectiveCoreParams.parse);
   },
 
   /**

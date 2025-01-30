@@ -1,11 +1,11 @@
 import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
 
-import { SalaryCard } from './components/SalaryCard';
+import { EntrypointCard } from './components/EntrypointCard';
 import { fellowshipSalaryFeature } from './model/feature';
 
 export { fellowshipSalaryFeature };
 
 fellowshipSalaryFeature.inject(fellowshipHeaderCardsSlot, {
-  order: 2,
-  render: () => <SalaryCard />,
+  order: 1,
+  render: () => <EntrypointCard />,
 });

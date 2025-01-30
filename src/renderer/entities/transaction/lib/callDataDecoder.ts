@@ -452,6 +452,14 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         isActive: decoded.args[0].toPrimitive(),
       };
     },
+    [TransactionType.COLLECTIVE_SALARY_REQUEST]: (): Record<string, any> => {
+      return {};
+    },
+    [TransactionType.COLLECTIVE_SALARY_PAYOUT]: (decoded): Record<string, any> => {
+      return {
+        beneficiary: decoded.args[0] ? decoded.args[0].toString() : null,
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {

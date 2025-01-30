@@ -504,6 +504,38 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.COLLECTIVE_SALARY_REQUEST]: (transaction, info, options) => {
+    const { pallet } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: {},
+          name: 'register',
+          pallet: `${pallet}Salary`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
+  [TransactionType.COLLECTIVE_SALARY_PAYOUT]: (transaction, info, options) => {
+    const { pallet, beneficiary } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: beneficiary ? { beneficiary } : {},
+          name: beneficiary ? 'payoutOther' : 'payout',
+          pallet: `${pallet}Salary`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -646,6 +678,12 @@ export const getExtrinsic: Record<
   },
   [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
     return api.tx[`${pallet}Core`].setActive(isActive);
+  },
+  [TransactionType.COLLECTIVE_SALARY_REQUEST]: ({ pallet }, api) => {
+    return api.tx[`${pallet}Salary`].request();
+  },
+  [TransactionType.COLLECTIVE_SALARY_PAYOUT]: ({ pallet, beneficiary }, api) => {
+    return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
   },
 };
 

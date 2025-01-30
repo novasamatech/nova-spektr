@@ -36,6 +36,7 @@ export const Account = memo(
           showIcon={!hideIcon}
           iconSize={iconSize}
           variant={variant}
+          iconSize={iconSize}
           hideAddress={hideAddress}
           title={title}
           address={toAddress(accountId, { prefix: chain.addressPrefix })}

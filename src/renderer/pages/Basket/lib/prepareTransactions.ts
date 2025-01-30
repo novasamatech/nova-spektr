@@ -29,10 +29,12 @@ import { eraService, useStakingData, validatorsService } from '@/entities/stakin
 import { transactionService } from '@/entities/transaction';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
+  type CollectiveSalaryRequestConfirm,
   type CollectiveSetActiveConfirm,
   type CollectiveVoteConfirm,
   type VoteConfirm,
 } from '@/features/operations/OperationsConfirm';
+import { type CollectiveSalaryPayoutConfirm } from '@/features/operations/OperationsConfirm/FellowshipSalaryPayout';
 import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
 
@@ -71,6 +73,8 @@ export const prepareTransaction = {
   prepareRemoveVoteTransaction,
   prepareCollectiveVoteTransaction,
   prepareCollectiveSetActiveTransaction,
+  prepareCollectiveSalaryRequestTransaction,
+  prepareCollectiveSalaryPayoutTransaction,
 };
 
 async function getTransactionData(
@@ -763,4 +767,57 @@ async function prepareCollectiveSetActiveTransaction({ transaction, wallets, cha
       txWrappers: transaction.txWrappers,
     }),
   } satisfies CollectiveSetActiveConfirm;
+}
+
+// TODO refactor this
+async function prepareCollectiveSalaryRequestTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveSalaryRequestConfirm['pallet'],
+    fee: new BN(fee),
+    signatory: null,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveSalaryRequestConfirm;
+}
+
+// TODO refactor this
+async function prepareCollectiveSalaryPayoutTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveSalaryPayoutConfirm['pallet'],
+    fee: new BN(fee),
+    signatory: null,
+    beneficiary: coreTx.args.beneficiary ?? null,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveSalaryPayoutConfirm;
 }
