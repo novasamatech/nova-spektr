@@ -19,7 +19,7 @@ const $multiShardAccounts = $wallet.map(wallet => {
 });
 
 const $canCreateProxy = $wallet.map(wallet => {
-  if (nullable(wallet)) return false;
+  if (nullable(wallet) || wallet.accounts.length === 0) return false;
 
   const canCreateAnyProxy = permissionUtils.canCreateAnyProxy(wallet);
   const canCreateNonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);

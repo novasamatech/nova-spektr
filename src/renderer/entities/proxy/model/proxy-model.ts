@@ -8,7 +8,6 @@ import { proxyUtils } from '../lib/proxy-utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
-const proxyStarted = createEvent();
 const proxiesAdded = createEvent<NoID<ProxyAccount>[]>();
 const proxiesRemoved = createEvent<ProxyAccount[]>();
 
@@ -51,9 +50,9 @@ const removeProxyGroupsFx = createEffect((groups: ProxyGroup[]): Promise<ID[] | 
   return storageService.proxyGroups.deleteAll(groups.map((p) => p.id));
 });
 
-sample({
-  clock: proxyStarted,
-  target: [populateProxiesFx, populateProxyGroupsFx],
+const proxyStartFx = createEffect(async () => {
+  await populateProxiesFx();
+  await populateProxyGroupsFx();
 });
 
 sample({
@@ -183,8 +182,10 @@ export const proxyModel = {
   $proxies,
   $proxyGroups,
   $walletsProxyGroups,
+
+  populate: proxyStartFx,
+
   events: {
-    proxyStarted,
     proxiesAdded,
     proxiesRemoved,
 

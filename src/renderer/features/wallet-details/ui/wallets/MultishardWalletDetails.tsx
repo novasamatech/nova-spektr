@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 
 import { type MultiShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -35,6 +35,7 @@ type Props = {
   onClose: () => void;
 };
 export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
+  useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
