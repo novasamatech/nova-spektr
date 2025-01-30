@@ -1,6 +1,7 @@
 import { combine } from 'effector';
 
 import { combineStores } from './_lib/helpers';
+import { feed } from './feed/model';
 import { membersDomainModel } from './members/model';
 import { membersService } from './members/service';
 import { referendumDomainModel } from './referendum/model';
@@ -19,6 +20,7 @@ const $store = combine(
     tracks: tracksDomainModel.$list,
     maxRank: tracksDomainModel.$maxRank,
     voting: votingDomainModel.$votes,
+    feed: feed.$list,
   },
   combineStores,
 );
@@ -47,6 +49,7 @@ export {
   referendumDomainModel as referendums,
   referendumMetaModel as referendumMeta,
   votingDomainModel as voting,
+  feed,
   tracksService,
   membersService,
   referendumService,

@@ -12,7 +12,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { requestFromChain, requestFromSubQuery } from './source';
+import { requestFromChain, requestFromSubQuery } from './resource';
 import { type Vote } from './types';
 
 type RequestVotesParams = {

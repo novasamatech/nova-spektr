@@ -341,10 +341,19 @@
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "tasks": {
-      "cardTitle": "Tasks"
+      "cardTitle": "Actions Required"
     },
     "activityFeed": {
-      "lastActivityCardTitle": "Last activity"
+      "lastActivityCardTitle": "Last activity",
+      "record": {
+        "activeChanged": "changed his status to {status}",
+        "promoted": "has been promoted to rank {rank}",
+        "demoted": "has been bumped to rank {rank}",
+        "proven": "proved his rank {rank}",
+        "imported": "has been imported with rank {rank}",
+        "submittedRetention": "submitted evidence with a wish to retention",
+        "submittedPromotion": "submitted evidence with a wish to promotion"
+      }
     },
     "members": {
       "active": "Active",
@@ -1627,6 +1636,8 @@
     }
   },
   "time": {
+    "weeks_one": "{ count } week",
+    "weeks_other": "{ count } weeks",
     "days_one": "{ count } day",
     "days_other": "{ count } days",
     "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
