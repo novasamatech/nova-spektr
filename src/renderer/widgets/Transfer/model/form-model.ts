@@ -101,7 +101,6 @@ const $transferForm = createForm<FormParams>({
         TransferRules.account.noProxyFee(
           combine({
             fee: $fee,
-            // delivery fee?
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
@@ -115,7 +114,6 @@ const $transferForm = createForm<FormParams>({
         TransferRules.signatory.notEnoughTokens(
           combine({
             fee: $fee,
-            // delivery fee?
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             balance: $signatoryBalance,

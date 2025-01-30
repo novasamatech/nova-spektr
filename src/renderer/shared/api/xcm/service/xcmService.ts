@@ -39,8 +39,6 @@ export const xcmService = {
   parseXcmPalletExtrinsic,
   parseXTokensExtrinsic,
   decodeXcm,
-
-  getParentChain,
 };
 
 async function fetchXcmConfig(): Promise<XcmConfig> {
@@ -360,12 +358,6 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     value: data.amount,
     dest: data.destAccountId,
   };
-}
-
-function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
-  if (!chain.parentId) return chain;
-
-  return chains[chain.parentId];
 }
 
 async function getDeliveryFeeFromConfig({

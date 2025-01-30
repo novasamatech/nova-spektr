@@ -129,7 +129,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForXcmFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
       source,
       validator: (
         amount: string,

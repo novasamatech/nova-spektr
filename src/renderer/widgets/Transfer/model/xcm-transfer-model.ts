@@ -52,10 +52,15 @@ const getDeliveryFeeFx = createEffect(
       return null;
     }
 
+    const originChainId = api.genesisHash.toHex();
+    if (originChainId === destinationChain.chainId) {
+      return null;
+    }
+
     return xcmService.getDeliveryFeeFromConfig({
       config,
       originApi: api,
-      originChain: toLocalChainId(api.genesisHash.toHex()) || '',
+      originChain: toLocalChainId(originChainId),
       destinationChainId: parachainId,
       extrinsic,
       destinationChain,
@@ -318,7 +323,7 @@ sample({
 });
 
 sample({
-  clock: getDeliveryFeeFx.fail,
+  clock: [xcmChainSelected, getDeliveryFeeFx.fail],
   fn: () => null,
   target: $deliveryFee,
 });
