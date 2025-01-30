@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 
@@ -46,6 +46,7 @@ type Props = {
   onClose: () => void;
 };
 export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
+  useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
