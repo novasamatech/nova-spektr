@@ -157,7 +157,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  source: $addProxyStore,
+  filter: (addProxyStore, results) => nonNullable(addProxyStore) && submitUtils.isSuccessResult(results[0].result),
   target: flowFinished,
 });
 
