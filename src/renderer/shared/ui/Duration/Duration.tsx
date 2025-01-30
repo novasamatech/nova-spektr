@@ -16,7 +16,6 @@ const stripDuration = (duration: DurationType): DurationType => {
   if (duration.years) {
     return {
       years: duration.years,
-      months: duration.months,
     };
   }
 
@@ -41,10 +40,11 @@ const stripDuration = (duration: DurationType): DurationType => {
     };
   }
 
-  return {
-    minutes: duration.minutes,
-    seconds: duration.seconds,
-  };
+  if (duration.minutes) {
+    return { minutes: duration.minutes };
+  }
+
+  return { seconds: duration.seconds };
 };
 
 export const Duration = ({ as: Tag = 'span', seconds, className }: Props) => {

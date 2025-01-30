@@ -3,9 +3,11 @@ import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { nullable } from '@/shared/lib/utils';
-import { Duration, FootnoteText, HelpText } from '@/shared/ui';
+import { Duration, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identity } from '../model/identity';
@@ -33,24 +35,48 @@ function getMessage(t: TFunction, record: FeedRecord) {
   }
 }
 
+const ActivityPlaceholder = () => {
+  return (
+    <div className="flex flex-col gap-1 px-5">
+      <div className="flex items-center gap-4 text-button-small">
+        <div className="flex min-w-0 grow items-center py-1.5">
+          <Box direction="row" verticalAlign="center" gap={2}>
+            <Icon name="emptyIdenticon" size={20} />
+            <Skeleton width="10ch" height="1em" />
+          </Box>
+        </div>
+        <HelpText className="h-fit">
+          <Skeleton height="1em" width="5ch" />
+        </HelpText>
+      </div>
+      <FootnoteText>
+        <Skeleton width="100%" height="1lh" />
+      </FootnoteText>
+    </div>
+  );
+};
+
 export const ActivityList = memo(() => {
   const { t } = useI18n();
   const feed = useUnit(activityFeed.$activityFeed);
   const input = useUnit(fellowshipActivityFeedFeature.input);
   const identities = useUnit(identity.$list);
 
+  const { list, isLoading } = useDeferredList({ list: feed, isLoading: feed.length === 0 });
+
   if (nullable(input)) return null;
 
   const now = Date.now();
 
   return (
-    <div className="flex flex-col gap-3">
-      {feed.map(record => {
+    <div className="flex flex-col gap-3 pb-3">
+      {isLoading ? Array.from({ length: 10 }).map((_, i) => <ActivityPlaceholder key={i} />) : null}
+      {list.map(record => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pb-3">
-            <div className="flex gap-4 text-button-small">
+          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5">
+            <div className="flex items-center gap-4 py-1.5 text-button-small">
               <div className="min-w-0 grow">
                 <Account
                   title={identity?.name}
@@ -61,7 +87,7 @@ export const ActivityList = memo(() => {
                   chain={input.chain}
                 />
               </div>
-              <HelpText className="max-w-[50%] shrink-0 text-text-secondary">
+              <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
                 <Duration seconds={(now - record.at.getTime()) / 1000} />
               </HelpText>
             </div>
