@@ -30,6 +30,7 @@ type ValidateParams = {
   feeMap: FeeMap;
 };
 
+// HINT: Proxy and Multisig cannot be added to basket
 const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances, feeMap }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
 
@@ -43,7 +44,6 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
       source: {
         fee,
-        // TODO: Add support proxy
         isProxy: false,
         proxyBalance: { native: '0' },
       },
@@ -85,13 +85,37 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
       }),
       source: {
         network: { chain, asset },
-        // TODO: ADd support multisig
         isMultisig: false,
         multisigDeposit: '0',
         fee,
         xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
         deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
-        // TODO: Add support proxy
+        isProxy: false,
+        isNative: chain.assets[0].assetId === asset.assetId,
+        isXcm: Boolean(transaction.args.xcmData),
+        balance: {
+          native: transferableAmount(
+            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+          ),
+          balance: transferableAmount(
+            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+          ),
+        },
+      },
+    },
+    {
+      value: transaction.args.value,
+      form: {},
+      ...TransferRules.amount.insufficientBalanceForXcmFee({} as Store<TransferAmountFeeStore>, {
+        withFormatAmount: false,
+      }),
+      source: {
+        network: { chain, asset },
+        isMultisig: false,
+        multisigDeposit: '0',
+        fee,
+        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
         isProxy: false,
         isNative: chain.assets[0].assetId === asset.assetId,
         isXcm: Boolean(transaction.args.xcmData),
