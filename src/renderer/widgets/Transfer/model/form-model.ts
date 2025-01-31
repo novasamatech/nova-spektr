@@ -105,6 +105,18 @@ const $totalFee = combine(
   ({ fee, deliveryFee }) => new BN(fee).add(deliveryFee).toString(),
 );
 
+const $xcmChain = combine(
+  {
+    chains: networkModel.$chains,
+    xcmChainId: xcmTransferModel.$xcmChainId,
+  },
+  ({ chains, xcmChainId }) => {
+    if (!xcmChainId) return null;
+
+    return chains[xcmChainId] ?? null;
+  },
+);
+
 const $transferForm = createForm<FormParams>({
   fields: {
     account: {
@@ -138,7 +150,7 @@ const $transferForm = createForm<FormParams>({
     },
     destination: {
       init: '',
-      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient],
+      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient($xcmChain)],
     },
     amount: {
       init: '',
@@ -430,18 +442,6 @@ const $extrinsic = combine(
     if (!api || !coreTx) return null;
 
     return getExtrinsic[coreTx.type](coreTx.args, api);
-  },
-);
-
-const $xcmChain = combine(
-  {
-    chains: networkModel.$chains,
-    xcmChainId: xcmTransferModel.$xcmChainId,
-  },
-  ({ chains, xcmChainId }) => {
-    if (!xcmChainId) return null;
-
-    return chains[xcmChainId] ?? null;
   },
 );
 
