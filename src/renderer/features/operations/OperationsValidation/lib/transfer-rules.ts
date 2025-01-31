@@ -62,8 +62,6 @@ export const TransferRules = {
       source,
       // Second argument for validator is form data, but we need chain
       validator: (destination: string, _: any, chain: Chain) => {
-        console.log(chain, destination);
-
         if (!chain) return false;
 
         return chain && validateAddress(destination, chain);
