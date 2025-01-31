@@ -1,4 +1,4 @@
 {
-  "*.{ts,tsx}": "pnpm types:files globals.d.ts vite-env.d.ts src/main/shared/bridge.ts",
+  "src/**/*.{ts,tsx}": "pnpm types:files globals.d.ts vite-env.d.ts src/main/preload.ts",
   "*.{js,ts,tsx}": "pnpm lint:generic"
 }

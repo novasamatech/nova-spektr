@@ -204,7 +204,7 @@ sample({
 
     return {
       signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
-        account: accounts.proxy || accounts.initiator,
+        account: accounts.initiator,
         chain: meta.chain,
         transaction: meta.wrappedTransactions.wrappedTx,
         signatory: accounts.signer,

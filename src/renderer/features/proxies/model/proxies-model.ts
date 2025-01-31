@@ -153,7 +153,10 @@ const findProxiesFx = attach({
 });
 
 const findAllProxiesFx = attach({
-  source: { accounts: walletModel.$availableAccounts, chains: networkModel.$chains },
+  source: {
+    accounts: walletModel.$availableAccounts,
+    chains: networkModel.$chains,
+  },
   mapParams(_: void, { chains, accounts }) {
     return Object.values(chains)
       .filter(proxiesUtils.chainSupportProxy)
@@ -267,7 +270,6 @@ sample({
 });
 
 export const proxiesModel = {
-  findProxies: findProxiesFx,
   findAllProxies: findAllProxiesFx,
   createProxiedWallet: createProxiedWalletFx,
   createProxiesWallets: createProxiesWalletsFx,

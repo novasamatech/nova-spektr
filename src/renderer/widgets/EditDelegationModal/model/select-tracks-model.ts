@@ -38,10 +38,10 @@ const $votedTracks = createStore<string[]>([]).reset(formInitiated);
 const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
-const $accounts = createStore<Account[]>([]);
-const $availableAccounts = createStore<Account[]>([]);
-const $delegate = createStore<DelegateAccount | null>(null);
-const $isMaxWeightReached = createStore(false);
+const $accounts = createStore<Account[]>([]).reset(formInitiated);
+const $availableAccounts = createStore<Account[]>([]).reset(formInitiated);
+const $delegate = createStore<DelegateAccount | null>(null).reset(formInitiated);
+const $isMaxWeightReached = createStore(false).reset(formInitiated);
 
 const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);

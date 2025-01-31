@@ -18,7 +18,6 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { waitFor } from '@/shared/effector';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -528,16 +527,12 @@ sample({
   target: $transferForm.fields.destination.reset,
 });
 
-const accountsUpdated = waitFor({
-  source: $accounts,
-  clock: $transferForm.fields.account.$value,
-  filter: nonNullable,
-});
-
 sample({
-  clock: accountsUpdated,
-  fn: ({ event: accounts, trigger: account }) => {
-    const match = accounts.find((a) => a.account.id === account.id);
+  clock: $transferForm.fields.account.onChange,
+  source: $accounts,
+  filter: (_, account) => nonNullable(account),
+  fn: (accounts, account) => {
+    const match = accounts.find((a) => a.account.id === account!.id);
 
     return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },

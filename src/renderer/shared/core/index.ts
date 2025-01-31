@@ -91,6 +91,7 @@ export type {
   MultisigTransaction,
   FlexibleMultisigTransaction,
   MultisigTransactionKey,
+  ProxyTransaction,
   TxWrapper,
   TxWrappers_OLD,
   MultisigTxWrapper,

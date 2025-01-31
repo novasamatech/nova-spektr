@@ -12,6 +12,7 @@
     "strict": true,
     "target": "es2022",
     "module": "es2022",
+    "moduleResolution": "node",
     "lib": ["es2022", "dom"],
     "jsx": "preserve",
     "pretty": true,
@@ -20,7 +21,6 @@
     // TODO turn on
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "sourceMap": true,
@@ -32,6 +32,6 @@
     "noEmit": true,
     "types": ["@testing-library/jest-dom", "vitest/globals"]
   },
-  "include": ["src", ".storybook", "tests", "config", "*.ts", "*.js", "*.cjs"],
+  "include": ["src", ".storybook", "tests", "config", ".eslintrc.cjs", "*.ts", "*.js", "*.cjs"],
   "exclude": ["node_modules"]
 }

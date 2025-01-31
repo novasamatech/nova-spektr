@@ -156,6 +156,13 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  source: $addProxyStore,
+  filter: (addProxyStore, results) => nonNullable(addProxyStore) && submitUtils.isSuccessResult(results[0].result),
+  target: flowFinished,
+});
+
+sample({
   clock: flowFinished,
   source: {
     activeWallet: walletModel.$activeWallet,
