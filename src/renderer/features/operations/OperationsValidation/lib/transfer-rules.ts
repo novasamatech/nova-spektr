@@ -64,7 +64,7 @@ export const TransferRules = {
       validator: (destination: string, _: any, chain: Chain) => {
         if (!chain) return false;
 
-        return chain && validateAddress(destination, chain);
+        return validateAddress(destination, chain);
       },
     }),
   },
