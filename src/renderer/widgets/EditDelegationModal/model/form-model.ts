@@ -349,7 +349,7 @@ sample({
   fn: (network, { activeDelegations, shards }) => {
     const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
 
-    return { conviction: activeDelegations[address].conviction, isUnchanged: shards.length > 0 };
+    return { conviction: activeDelegations[address].conviction, isUnchanged: shards.length > 1 };
   },
   target: spread({
     conviction: $delegateForm.fields.conviction.onChange,
