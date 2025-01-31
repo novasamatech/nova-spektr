@@ -1,1 +1,1 @@
-export { fellowshipNetwork } from './model/fellowshipNetwork';
+export { fellowshipNetwork } from './model';

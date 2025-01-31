@@ -9,7 +9,6 @@ const $selectedWallet = walletModel.$wallets.map(wallets => {
   return wallets.find(wallet => wallet.isActive) ?? null;
 });
 
-// TODO: ideally it should be a feature
 const $selectedAccounts = combine($selectedWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
 
