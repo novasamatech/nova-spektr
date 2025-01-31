@@ -199,14 +199,14 @@ const Destination = () => {
   const { t } = useI18n();
 
   const {
-    fields: { destination },
+    fields: { destination, xcmChain },
   } = useForm(formModel.$transferForm);
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(destination.value) ? (
+      {validateAddress(destination.value, xcmChain.value) ? (
         <Identicon size={20} address={destination.value} background={false} />
       ) : (
         <Icon size={20} name="emptyIdenticon" />
