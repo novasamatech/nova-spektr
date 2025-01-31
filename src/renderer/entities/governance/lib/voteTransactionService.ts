@@ -98,7 +98,7 @@ const getVotes = (vote: TransactionVote): BN => {
     );
   }
 
-  return new BN(vote.SplitAbstain.abstain);
+  return new BN(vote.SplitAbstain.abstain.replaceAll(',', ''));
 };
 
 export const voteTransactionService = {
