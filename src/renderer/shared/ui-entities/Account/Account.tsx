@@ -34,7 +34,6 @@ export const Account = memo(
       <div className="flex w-max min-w-0 max-w-full items-center gap-2">
         <Address
           showIcon={!hideIcon}
-          iconSize={iconSize}
           variant={variant}
           iconSize={iconSize}
           hideAddress={hideAddress}

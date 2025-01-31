@@ -37,7 +37,6 @@ const stripDuration = (duration: DurationType): DurationType => {
   if (duration.hours) {
     return {
       hours: duration.hours,
-      minutes: duration.minutes,
     };
   }
 

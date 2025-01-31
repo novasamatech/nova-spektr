@@ -4,7 +4,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
@@ -64,13 +64,11 @@ export const ActivityList = memo(() => {
 
   const { list, isLoading } = useDeferredList({ list: feed, isLoading: feed.length === 0 });
 
-  if (nullable(input)) return null;
-
   const now = Date.now();
 
   return (
     <div className="flex flex-col gap-3 pb-3">
-      {isLoading ? Array.from({ length: 10 }).map((_, i) => <ActivityPlaceholder key={i} />) : null}
+      {isLoading || nullable(input) ? Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />) : null}
       {list.map(record => {
         const identity = identities[record.accountId];
 
@@ -78,14 +76,16 @@ export const ActivityList = memo(() => {
           <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5">
             <div className="flex items-center gap-4 py-1.5 text-button-small">
               <div className="min-w-0 grow">
-                <Account
-                  title={identity?.name}
-                  hideAddress
-                  iconSize={20}
-                  variant="short"
-                  accountId={record.accountId}
-                  chain={input.chain}
-                />
+                {nonNullable(input?.chain) && (
+                  <Account
+                    title={identity?.name}
+                    hideAddress
+                    iconSize={20}
+                    variant="short"
+                    accountId={record.accountId}
+                    chain={input.chain}
+                  />
+                )}
               </div>
               <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
                 <Duration seconds={(now - record.at.getTime()) / 1000} />

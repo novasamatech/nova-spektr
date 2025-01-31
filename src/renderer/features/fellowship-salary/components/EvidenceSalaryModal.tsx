@@ -3,7 +3,6 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { Separator } from '@/shared/ui';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
@@ -38,10 +37,7 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
             </Tabs.List>
           </Box>
           <Tabs.Content value="salary">
-            <Box>
-              <SalaryInfo />
-              <Separator />
-            </Box>
+            <SalaryInfo />
           </Tabs.Content>
         </Tabs>
       </Modal.Content>

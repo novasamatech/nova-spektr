@@ -3,7 +3,7 @@ import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
-import { Button, DetailRow, Duration, FootnoteText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
+import { Button, Duration, FootnoteText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
@@ -46,47 +46,56 @@ export const SalaryInfo = memo(() => {
       {canInteractWithSalary && (
         <Box>
           {currentPeriod?.type === 'registration' && (
-            <div className="flex flex-col items-start gap-4 rounded-lg border p-4">
-              {nonNullable(salary) && (
-                <DetailRow
-                  label={t('fellowship.salary.salaryInfo.requestSalaryCall', {
+            <div className="flex items-start gap-4 rounded-lg border p-4">
+              <div className="flex grow flex-col gap-1">
+                <FootnoteText className="text-text-secondary">
+                  {t('fellowship.salary.salaryInfo.requestSalaryCall', {
                     salary: formatBalance(salary.active, 6, { K: true }).formatted,
                   })}
-                >
-                  <SmallTitleText>
-                    <Duration seconds={timeLeft / 1000} />
-                  </SmallTitleText>
-                </DetailRow>
-              )}
-              {isSalaryRequested ? (
-                <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
-                  <Icon name="voted" size={16} className="text-inherit" />
-                  <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
                 </FootnoteText>
-              ) : (
+
+                <SmallTitleText>
+                  <Duration seconds={timeLeft / 1000} />
+                </SmallTitleText>
+
+                {isSalaryRequested && (
+                  <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                    <Icon name="voted" size={16} className="text-inherit" />
+                    <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
+                  </FootnoteText>
+                )}
+              </div>
+
+              {!isSalaryRequested && (
                 <Button variant="fill" disabled>
                   {t('fellowship.salary.salaryInfo.requestSalary')}
                 </Button>
               )}
             </div>
           )}
+
           {currentPeriod?.type === 'payout' && (
-            <div className="flex flex-col items-start gap-4 rounded-lg border p-4">
-              <DetailRow
-                label={t('fellowship.salary.salaryInfo.payoutSalaryCall', {
-                  salary: formatBalance(salary.active, 6, { K: true }).formatted,
-                })}
-              >
+            <div className="flex items-start gap-4 rounded-lg border p-4">
+              <div className="flex grow flex-col gap-1">
+                <FootnoteText className="text-text-secondary">
+                  {t('fellowship.salary.salaryInfo.payoutSalaryCall', {
+                    salary: formatBalance(salary.active, 6, { K: true }).formatted,
+                  })}
+                </FootnoteText>
+
                 <SmallTitleText>
                   <Duration seconds={timeLeft / 1000} />
                 </SmallTitleText>
-              </DetailRow>
-              {isPayoutRequested ? (
-                <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
-                  <Icon name="voted" size={16} className="text-inherit" />
-                  <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
-                </FootnoteText>
-              ) : (
+
+                {isPayoutRequested && (
+                  <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                    <Icon name="voted" size={16} className="text-inherit" />
+                    <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
+                  </FootnoteText>
+                )}
+              </div>
+
+              {!isPayoutRequested && (
                 <Button variant="fill" disabled>
                   {t('fellowship.salary.salaryInfo.payoutSalary')}
                 </Button>
