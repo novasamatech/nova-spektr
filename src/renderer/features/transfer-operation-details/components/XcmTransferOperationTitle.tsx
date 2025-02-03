@@ -11,7 +11,8 @@ type Props = {
 
 export const XcmTransferOperationTitle = ({ operation }: Props) => {
   const assetId = operation.transaction?.args.assetId || operation.transaction?.args.asset;
-  const asset = getAssetById(assetId, chainsService.getChainById(operation.chainId)?.assets);
+  const chainId = operation.transaction?.args.destinationChain || operation.chainId;
+  const asset = getAssetById(assetId, chainsService.getChainById(chainId)?.assets);
 
   const amount = operation.transaction && getTransactionAmount(operation.transaction);
 

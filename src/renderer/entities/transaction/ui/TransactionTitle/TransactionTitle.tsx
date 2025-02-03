@@ -11,6 +11,7 @@ type Props = {
   className?: string;
 };
 
+// TODO decompose
 export const TransactionTitle = ({ tx, className, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
