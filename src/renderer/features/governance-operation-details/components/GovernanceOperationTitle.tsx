@@ -4,6 +4,7 @@ import { getAssetById } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
@@ -11,14 +12,15 @@ type Props = {
 };
 
 export const GovernanceOperationTitle = ({ operation }: Props) => {
+  const transaction = getTransactionFromMultisigTx(operation);
+
   const asset =
-    operation.transaction &&
-    getAssetById(operation.transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
-  const amount = operation.transaction && getTransactionAmount(operation.transaction);
+    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  const amount = transaction && getTransactionAmount(transaction);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={operation.transaction} />
+      <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
 
       {asset && amount && (
         <Box width="160px">

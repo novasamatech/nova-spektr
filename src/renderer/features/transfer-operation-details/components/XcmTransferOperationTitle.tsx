@@ -3,6 +3,7 @@ import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { XcmChains } from '@/entities/chain';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
@@ -10,15 +11,16 @@ type Props = {
 };
 
 export const XcmTransferOperationTitle = ({ operation }: Props) => {
-  const assetId = operation.transaction?.args.assetId || operation.transaction?.args.asset;
-  const chainId = operation.transaction?.args.destinationChain || operation.chainId;
-  const asset = getAssetById(assetId, chainsService.getChainById(chainId)?.assets);
+  const transaction = getTransactionFromMultisigTx(operation);
 
-  const amount = operation.transaction && getTransactionAmount(operation.transaction);
+  const assetId = transaction?.args.assetId || transaction?.args.asset;
+  const asset = getAssetById(assetId, chainsService.getChainById(operation.chainId)?.assets);
+
+  const amount = transaction && getTransactionAmount(transaction);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={operation.transaction} />
+      <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
 
       {asset && amount && (
         <div className="w-[160px]">
@@ -26,11 +28,7 @@ export const XcmTransferOperationTitle = ({ operation }: Props) => {
         </div>
       )}
 
-      <XcmChains
-        chainIdFrom={operation.chainId}
-        chainIdTo={operation.transaction?.args.destinationChain}
-        className="w-[114px]"
-      />
+      <XcmChains chainIdFrom={operation.chainId} chainIdTo={transaction?.args.destinationChain} className="w-[114px]" />
     </>
   );
 };
