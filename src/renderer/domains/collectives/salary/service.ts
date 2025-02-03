@@ -81,6 +81,28 @@ function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: Salary
   return claimStatus.lastActive === period.cycleIndex;
 }
 
+function isClaimantRequestedSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
+  return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'registered';
+}
+
+function isClaimantRequestedSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
+  return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'payout';
+}
+
+function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
+  return (
+    isClaimantActiveInCurrentCycle(claimStatus, period) &&
+    period.type === 'registration' &&
+    claimStatus.type !== 'registered'
+  );
+}
+
+function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
+  return (
+    isClaimantActiveInCurrentCycle(claimStatus, period) && period.type === 'payout' && claimStatus.type !== 'payout'
+  );
+}
+
 type SalaryPayoutTransactionParams = {
   pallet: CollectivePalletsType;
   account: AnyAccount;
@@ -109,6 +131,11 @@ export const salaryService = {
   getCurrentPeriod,
 
   isClaimantActiveInCurrentCycle,
+  isClaimantRequestedSalary,
+  isClaimantRequestedSalaryPayout,
+
+  canRequestSalary,
+  canRequestSalaryPayout,
 
   createSalaryRequestTransaction,
   createSalaryPayoutTransaction,

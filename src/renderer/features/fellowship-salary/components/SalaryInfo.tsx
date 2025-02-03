@@ -29,12 +29,22 @@ export const SalaryInfo = memo(() => {
   }, [input?.api, currentPeriod]);
 
   const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
-  const isCurrentCycle =
+  const canRequestSalary =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&
-    salaryService.isClaimantActiveInCurrentCycle(claimStatus, currentPeriod);
-  const isSalaryRequested = isCurrentCycle && claimStatus && claimStatus.type === 'registered';
-  const isPayoutRequested = isCurrentCycle && claimStatus && claimStatus.type === 'payout';
+    salaryService.canRequestSalary(claimStatus, currentPeriod);
+  const canRequestSalaryPayout =
+    nonNullable(claimStatus) &&
+    nonNullable(currentPeriod) &&
+    salaryService.canRequestSalaryPayout(claimStatus, currentPeriod);
+  const isSalaryRequested =
+    nonNullable(claimStatus) &&
+    nonNullable(currentPeriod) &&
+    salaryService.isClaimantRequestedSalary(claimStatus, currentPeriod);
+  const isPayoutRequested =
+    nonNullable(claimStatus) &&
+    nonNullable(currentPeriod) &&
+    salaryService.isClaimantRequestedSalaryPayout(claimStatus, currentPeriod);
 
   return (
     <Box padding={[4, 5, 5]} gap={6}>
@@ -70,7 +80,7 @@ export const SalaryInfo = memo(() => {
                 )}
               </div>
 
-              {!isSalaryRequested && (
+              {canRequestSalary && (
                 <Button variant="fill" disabled>
                   {t('fellowship.salary.salaryInfo.requestSalary')}
                 </Button>
@@ -99,7 +109,7 @@ export const SalaryInfo = memo(() => {
                 )}
               </div>
 
-              {!isPayoutRequested && (
+              {canRequestSalaryPayout && (
                 <Button variant="fill" disabled>
                   {t('fellowship.salary.salaryInfo.payoutSalary')}
                 </Button>
