@@ -163,6 +163,18 @@ const $transferForm = createForm<FormParams>({
             balance: $accountBalance,
           }),
         ),
+        TransferRules.amount.insufficientBalanceForFee(
+          combine({
+            fee: $totalFee,
+            xcmFee: xcmTransferModel.$xcmFee,
+            network: $networkStore,
+            balance: $accountBalance,
+            isNative: $isNative,
+            isMultisig: $isMultisig,
+            isXcm: $isXcm,
+            isProxy: $isProxy,
+          }),
+        ),
         TransferRules.amount.insufficientBalanceForXcmFee(
           combine({
             fee: $totalFee,
