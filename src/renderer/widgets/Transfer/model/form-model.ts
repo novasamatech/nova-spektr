@@ -152,7 +152,7 @@ const $transferForm = createForm<FormParams>({
             isProxy: $isProxy,
           }),
         ),
-        TransferRules.amount.insufficientBalanceForXcmFee(
+        TransferRules.amount.insufficientBalanceForDeliveryFee(
           combine({
             fee: $fee,
             deliveryFee: xcmTransferModel.$deliveryFee,
@@ -165,7 +165,7 @@ const $transferForm = createForm<FormParams>({
             isProxy: $isProxy,
           }),
         ),
-        TransferRules.amount.insufficientBalanceForDeliveryFee(
+        TransferRules.amount.insufficientBalanceForXcmFee(
           combine({
             fee: $fee,
             deliveryFee: xcmTransferModel.$deliveryFee,

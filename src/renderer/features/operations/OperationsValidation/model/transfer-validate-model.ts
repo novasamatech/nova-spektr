@@ -106,6 +106,32 @@ const validateFx = createEffect(async ({ id, api, chain, asset, transaction, bal
     {
       value: transaction.args.value,
       form: {},
+      ...TransferRules.amount.insufficientBalanceForDeliveryFee({} as Store<TransferAmountFeeStore>, {
+        withFormatAmount: false,
+      }),
+      source: {
+        network: { chain, asset },
+        isMultisig: false,
+        isProxy: false,
+        multisigDeposit: '0',
+        fee,
+        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+        isNative: chain.assets[0].assetId === asset.assetId,
+        isXcm: Boolean(transaction.args.xcmData),
+        balance: {
+          native: transferableAmount(
+            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+          ),
+          balance: transferableAmount(
+            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+          ),
+        },
+      } as TransferAmountFeeStore,
+    },
+    {
+      value: transaction.args.value,
+      form: {},
       ...TransferRules.amount.insufficientBalanceForXcmFee({} as Store<TransferAmountFeeStore>, {
         withFormatAmount: false,
       }),

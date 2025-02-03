@@ -124,36 +124,6 @@ export const TransferRules = {
         );
       },
     }),
-    insufficientBalanceForXcmFee: (
-      source: Store<TransferAmountFeeStore>,
-      config: { withFormatAmount: boolean } = { withFormatAmount: true },
-    ) => ({
-      name: 'insufficientBalanceForXcmFee',
-      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
-      source,
-      validator: (
-        amount: string,
-        _: any,
-        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
-      ) => {
-        if (!network) return false;
-
-        return balanceValidation.insufficientBalanceForXcmFee(
-          {
-            amount,
-            transferableAsset: network.asset,
-            transferableBalance: balance.balance,
-            nativeBalance: balance.native,
-            isXcm,
-            isNative,
-            isProxy,
-            isMultisig,
-            ...fee,
-          },
-          config,
-        );
-      },
-    }),
     insufficientBalanceForDeliveryFee: (
       source: Store<TransferAmountFeeStore>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
@@ -170,6 +140,36 @@ export const TransferRules = {
         if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee) return true;
 
         return balanceValidation.insufficientBalanceForDeliveryFee(
+          {
+            amount,
+            transferableAsset: network.asset,
+            transferableBalance: balance.balance,
+            nativeBalance: balance.native,
+            isXcm,
+            isNative,
+            isProxy,
+            isMultisig,
+            ...fee,
+          },
+          config,
+        );
+      },
+    }),
+    insufficientBalanceForXcmFee: (
+      source: Store<TransferAmountFeeStore>,
+      config: { withFormatAmount: boolean } = { withFormatAmount: true },
+    ) => ({
+      name: 'insufficientBalanceForXcmFee',
+      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
+      source,
+      validator: (
+        amount: string,
+        _: any,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
+      ) => {
+        if (!network) return false;
+
+        return balanceValidation.insufficientBalanceForXcmFee(
           {
             amount,
             transferableAsset: network.asset,
