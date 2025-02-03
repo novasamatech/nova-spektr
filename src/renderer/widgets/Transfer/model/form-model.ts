@@ -92,18 +92,6 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
 const $selectedSignatories = createStore<Account[]>([]);
 
-const $xcmChain = combine(
-  {
-    chains: networkModel.$chains,
-    xcmChainId: xcmTransferModel.$xcmChainId,
-  },
-  ({ chains, xcmChainId }) => {
-    if (!xcmChainId) return null;
-
-    return chains[xcmChainId] ?? null;
-  },
-);
-
 const $transferForm = createForm<FormParams>({
   fields: {
     account: {
@@ -137,7 +125,10 @@ const $transferForm = createForm<FormParams>({
     },
     destination: {
       init: '',
-      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient($xcmChain)],
+      rules: [
+        TransferRules.destination.required,
+        TransferRules.destination.incorrectRecipient(xcmTransferModel.$xcmChain),
+      ],
     },
     amount: {
       init: '',

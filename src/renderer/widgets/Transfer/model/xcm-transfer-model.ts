@@ -68,6 +68,18 @@ const getDeliveryFeeFx = createEffect(
   },
 );
 
+const $xcmChain = combine(
+  {
+    chains: networkModel.$chains,
+    xcmChainId: $xcmChainId,
+  },
+  ({ chains, xcmChainId }) => {
+    if (!xcmChainId) return null;
+
+    return chains[xcmChainId] ?? null;
+  },
+);
+
 const $xcmAsset = combine(
   {
     config: $config,
@@ -301,11 +313,10 @@ sample({
     api: $api,
     parachainId: $xcmParaId,
     config: $config,
-    xcmChainId: $xcmChainId,
-    chains: networkModel.$chains,
+    xcmChain: $xcmChain,
   },
-  fn: ({ chains, xcmChainId, ...rest }, extrinsic) => ({
-    destinationChain: xcmChainId ? (chains[xcmChainId] ?? null) : null,
+  fn: ({ xcmChain, ...rest }, extrinsic) => ({
+    destinationChain: xcmChain,
     extrinsic,
     ...rest,
   }),
@@ -333,6 +344,7 @@ export const xcmTransferModel = {
   $transferDirections,
   $xcmParaId,
   $xcmChainId,
+  $xcmChain,
   $isXcmFeeLoading,
   $isDeliveryFeeLoading: getDeliveryFeeFx.pending,
 
