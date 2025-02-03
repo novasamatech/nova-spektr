@@ -12,13 +12,37 @@ export const governanceOperationDetailFeature = createFeature({
 });
 
 governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
-  render: ({ operation }) => <GovernanceVoteDetails operation={operation} />,
+  render: ({ operation }) => {
+    const transaction = getTransactionFromMultisigTx(operation);
+
+    if (
+      transaction?.type &&
+      [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
+        transaction.type,
+      )
+    ) {
+      return <GovernanceVoteDetails operation={operation} />;
+    }
+
+    return null;
+  },
   order: 1,
 });
 
 governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
-  render: ({ operation }) => <GovernanceDelegateDetails operation={operation} />,
-  order: 1,
+  render: ({ operation }) => {
+    const transaction = getTransactionFromMultisigTx(operation);
+
+    if (
+      transaction?.type &&
+      [TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transaction.type)
+    ) {
+      return <GovernanceDelegateDetails operation={operation} />;
+    }
+
+    return null;
+  },
+  order: 2,
 });
 
 governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {

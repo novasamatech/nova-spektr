@@ -15,7 +15,6 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { waitFor } from '@/shared/effector';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -93,6 +92,18 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
 const $selectedSignatories = createStore<Account[]>([]);
 
+const $xcmChain = combine(
+  {
+    chains: networkModel.$chains,
+    xcmChainId: xcmTransferModel.$xcmChainId,
+  },
+  ({ chains, xcmChainId }) => {
+    if (!xcmChainId) return null;
+
+    return chains[xcmChainId] ?? null;
+  },
+);
+
 const $transferForm = createForm<FormParams>({
   fields: {
     account: {
@@ -126,7 +137,7 @@ const $transferForm = createForm<FormParams>({
     },
     destination: {
       init: '',
-      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient],
+      rules: [TransferRules.destination.required, TransferRules.destination.incorrectRecipient($xcmChain)],
     },
     amount: {
       init: '',
@@ -506,16 +517,12 @@ sample({
   target: $transferForm.fields.destination.reset,
 });
 
-const accountsUpdated = waitFor({
-  source: $accounts,
-  clock: $transferForm.fields.account.$value,
-  filter: nonNullable,
-});
-
 sample({
-  clock: accountsUpdated,
-  fn: ({ event: accounts, trigger: account }) => {
-    const match = accounts.find((a) => a.account.id === account.id);
+  clock: $transferForm.fields.account.onChange,
+  source: $accounts,
+  filter: (_, account) => nonNullable(account),
+  fn: (accounts, account) => {
+    const match = accounts.find((a) => a.account.id === account!.id);
 
     return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },

@@ -154,3 +154,12 @@ export type WrapAsMulti = {
 };
 
 export type TxWrappers_OLD = WrapAsMulti;
+
+export type ProxyTransaction = {
+  accountId: AccountId;
+  chainId: ChainId;
+  call: string;
+  forceProxyType: string;
+  real: AccountId;
+  transaction?: Transaction | DecodedTransaction;
+};

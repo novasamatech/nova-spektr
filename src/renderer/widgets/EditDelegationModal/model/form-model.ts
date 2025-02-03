@@ -349,9 +349,12 @@ sample({
   fn: (network, { activeDelegations, shards }) => {
     const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
 
-    return activeDelegations[address].conviction;
+    return { conviction: activeDelegations[address].conviction, isUnchanged: shards.length > 1 };
   },
-  target: $delegateForm.fields.conviction.onChange,
+  target: spread({
+    conviction: $delegateForm.fields.conviction.onChange,
+    isUnchanged: $delegateForm.fields.isUnchanged.onChange,
+  }),
 });
 
 sample({
@@ -374,20 +377,6 @@ sample({
     return getBalanceBn(balance, precision).toString();
   },
   target: $delegateForm.fields.amount.onChange,
-});
-
-sample({
-  clock: formInitiated,
-  filter: ({ shards }) => Object.keys(shards).length > 1,
-  fn: () => true,
-  target: $delegateForm.fields.isUnchanged.onChange,
-});
-
-sample({
-  clock: $delegateForm.fields.isUnchanged.onChange,
-  filter: Boolean,
-  fn: (): Conviction => 'None',
-  target: $delegateForm.fields.conviction.onChange,
 });
 
 sample({

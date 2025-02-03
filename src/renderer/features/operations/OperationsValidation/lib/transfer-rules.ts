@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account } from '@/shared/core';
+import { type Account, type Chain } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
 import {
   type BalanceMap,
@@ -56,12 +56,17 @@ export const TransferRules = {
       errorText: 'transfer.requiredRecipientError',
       validator: Boolean,
     },
-    incorrectRecipient: {
+    incorrectRecipient: (source: Store<Chain | null>) => ({
       name: 'incorrectRecipient',
       errorText: 'transfer.incorrectRecipientError',
+      source,
       // Second argument for validator is form data, but we need chain
-      validator: (destination: string) => validateAddress(destination),
-    },
+      validator: (destination: string, _: any, chain: Chain) => {
+        if (!chain) return false;
+
+        return validateAddress(destination, chain);
+      },
+    }),
   },
   amount: {
     required: {

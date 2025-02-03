@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { AccountType, ChainOptions, ConnectionType, ExternalType, WalletType } from '@/shared/core';
+import { AccountType, type Chain, ChainOptions, ConnectionType, ExternalType, WalletType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO multisig model should be in some kind of feature
 // eslint-disable-next-line boundaries/element-types
@@ -37,6 +37,7 @@ describe('multisigs model', () => {
         accountId: '0x00' as AccountId,
         threshold: 2,
         signatories: ['0x01' as AccountId, '0x02' as AccountId, '0x03' as AccountId],
+        chain: mockChains['0x01'] as Chain,
       },
     ]);
   });

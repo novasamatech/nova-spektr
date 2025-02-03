@@ -1,10 +1,8 @@
-import { useGate, useUnit } from 'effector-react';
-
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
-import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletDetailsUtils } from '../../lib/utils';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
 import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
@@ -19,9 +17,10 @@ type Props = {
 };
 
 export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
-  useGate(walletDetailsModel.flow, { wallet });
-
-  const multiShardAccounts = useUnit(walletDetailsModel.$multiShardAccounts);
+  const multiShardAccounts =
+    nullable(wallet) || !walletUtils.isMultiShard(wallet)
+      ? new Map()
+      : walletDetailsUtils.getMultishardMap(wallet.accounts);
 
   if (!isOpen || nullable(wallet)) {
     return null;

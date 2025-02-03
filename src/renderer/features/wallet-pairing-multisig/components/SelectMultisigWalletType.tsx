@@ -25,7 +25,8 @@ export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
     } else {
       flowModel.flow.close();
       flexibleMultisigModel.flow.close();
-      setSelectedFlow(null);
+      // TODO: make null when we're ready to work with flexible multisig
+      setSelectedFlow('regularMultisig');
     }
   };
 
