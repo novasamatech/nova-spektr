@@ -374,12 +374,12 @@ async function getDeliveryFeeFromConfig({
   originApi: ApiPromise;
   destinationChainId: number;
   extrinsic: SubmittableExtrinsic<'promise'>;
-}): Promise<BN> {
+}): Promise<BN | null> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  if (!deliveryFeeConfig) return new BN(0);
+  if (!deliveryFeeConfig) return null;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
   const directionFactor = {

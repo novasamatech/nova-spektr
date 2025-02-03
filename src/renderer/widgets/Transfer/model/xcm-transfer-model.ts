@@ -5,7 +5,7 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 
 import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
-import { getParachainId, nullable, toLocalChainId } from '@/shared/lib/utils';
+import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { xcmModel } from '@/entities/xcm';
@@ -314,11 +314,7 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
-  fn: (deliveryFee) => {
-    if (nullable(deliveryFee)) return null;
-
-    return deliveryFee.isZero() ? null : deliveryFee.toString();
-  },
+  fn: (deliveryFee) => deliveryFee?.toString() || null,
   target: $deliveryFee,
 });
 

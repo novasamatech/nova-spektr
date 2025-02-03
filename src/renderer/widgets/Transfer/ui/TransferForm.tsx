@@ -7,13 +7,13 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
 import { Address as AccountAddress } from '@/shared/ui-entities';
-import { Field, Input, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -32,7 +32,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
+        <AlertForProxyFee />
         <XcmChainSelector />
         <AccountSelector />
         <Signatories />
@@ -42,6 +42,9 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
       </div>
+      <Box>
+        <AlertForDeliveryFee />
+      </Box>
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -49,7 +52,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   );
 };
 
-const ProxyFeeAlert = () => {
+const AlertForProxyFee = () => {
   const {
     fields: { account },
   } = useForm(formModel.$transferForm);
@@ -330,6 +333,35 @@ const FeeSection = () => {
 
       {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
     </div>
+  );
+};
+
+const AlertForDeliveryFee = () => {
+  const {
+    fields: { account },
+  } = useForm(formModel.$transferForm);
+
+  const deliveryFee = useUnit(formModel.$deliveryFee);
+  const { native } = useUnit(formModel.$accountBalance);
+  const network = useUnit(formModel.$networkStore);
+  const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
+  const asset = network?.chain.assets.at(0);
+
+  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError) {
+    return null;
+  }
+
+  const formattedFee = formatBalance(deliveryFee, asset.precision).value;
+  const formattedBalance = formatBalance(native, asset.precision).value;
+
+  return (
+    <DeliveryFeeAlert
+      address={toAddress(account.value.accountId, { prefix: network.chain.addressPrefix })}
+      fee={formattedFee}
+      balance={formattedBalance}
+      symbol={asset.symbol}
+      onClose={account.resetErrors}
+    />
   );
 };
 

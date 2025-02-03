@@ -139,7 +139,33 @@ const $transferForm = createForm<FormParams>({
             balance: $accountBalance,
           }),
         ),
+        TransferRules.amount.insufficientBalanceForFee(
+          combine({
+            fee: $fee,
+            deliveryFee: xcmTransferModel.$deliveryFee,
+            xcmFee: xcmTransferModel.$xcmFee,
+            network: $networkStore,
+            balance: $accountBalance,
+            isNative: $isNative,
+            isMultisig: $isMultisig,
+            isXcm: $isXcm,
+            isProxy: $isProxy,
+          }),
+        ),
         TransferRules.amount.insufficientBalanceForXcmFee(
+          combine({
+            fee: $fee,
+            deliveryFee: xcmTransferModel.$deliveryFee,
+            xcmFee: xcmTransferModel.$xcmFee,
+            network: $networkStore,
+            balance: $accountBalance,
+            isNative: $isNative,
+            isMultisig: $isMultisig,
+            isXcm: $isXcm,
+            isProxy: $isProxy,
+          }),
+        ),
+        TransferRules.amount.insufficientBalanceForDeliveryFee(
           combine({
             fee: $fee,
             deliveryFee: xcmTransferModel.$deliveryFee,
@@ -423,6 +449,10 @@ const $extrinsic = combine(
   },
 );
 
+const $hasDeliveryError = $transferForm.fields.amount.$errors.map((errors) => {
+  return errors.some((error) => error.rule === 'insufficientBalanceForDeliveryFee');
+});
+
 // Fields connections
 
 sample({
@@ -671,6 +701,7 @@ export const formModel = {
   $fee,
   $multisigDeposit,
   $deliveryFee: xcmTransferModel.$deliveryFee,
+  $hasDeliveryError,
 
   $coreTx,
   $fakeTx,

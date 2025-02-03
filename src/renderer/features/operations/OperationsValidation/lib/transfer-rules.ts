@@ -39,7 +39,7 @@ export const TransferRules = {
     }),
     notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: 'transfer.notEnoughBalanceForDepositError',
       source,
       validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: TransferSignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -139,6 +139,37 @@ export const TransferRules = {
         if (!network) return false;
 
         return balanceValidation.insufficientBalanceForXcmFee(
+          {
+            amount,
+            transferableAsset: network.asset,
+            transferableBalance: balance.balance,
+            nativeBalance: balance.native,
+            isXcm,
+            isNative,
+            isProxy,
+            isMultisig,
+            ...fee,
+          },
+          config,
+        );
+      },
+    }),
+    insufficientBalanceForDeliveryFee: (
+      source: Store<TransferAmountFeeStore>,
+      config: { withFormatAmount: boolean } = { withFormatAmount: true },
+    ) => ({
+      name: 'insufficientBalanceForDeliveryFee',
+      errorText: 'transfer.notEnoughBalanceForDeliveryFeeError',
+      source,
+      validator: (
+        amount: string,
+        _: any,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
+      ) => {
+        if (!network) return false;
+        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee) return true;
+
+        return balanceValidation.insufficientBalanceForDeliveryFee(
           {
             amount,
             transferableAsset: network.asset,
