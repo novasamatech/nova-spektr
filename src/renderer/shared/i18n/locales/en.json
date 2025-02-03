@@ -317,11 +317,11 @@
       "retentionEvidenceModalDescription": "Please fill out the following form. Other attributes necessary for the evidence (your credentials, voting record, etc.) will be automatically gathered from the blockchain.",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
-        "requestSalaryCall": "Request a {salary} USDT salary within:",
+        "requestSalaryCall": "Request a {salary} salary within:",
         "requestSalary": "Request",
         "requestSalarySuccess": "Salary request was completed successfully.",
         "payoutSalary": "Withdraw",
-        "payoutSalaryCall": "Payout a {salary} USDT salary within:",
+        "payoutSalaryCall": "Payout a {salary} salary within:",
         "payoutSalarySuccess": "Salary payout was completed successfully."
       },
       "salaryRequest": "Request salary on",
@@ -331,6 +331,9 @@
       "modalTitle": "Profile",
       "fellow": "Fellow",
       "active": "Active",
+      "activeSalary": "Active salary",
+      "passiveSalary": "Passive salary",
+      "activity": "Activity",
       "setActive": {
         "title": "Set active status on",
         "isActive": "Active",

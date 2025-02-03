@@ -10,8 +10,6 @@ import { fellowshipSalaryFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const $members = fellowshipModel.$store.map(store => store?.members ?? []);
-const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
-
 const $accounts = fellowshipSalaryFeature.input.map(store => (store ? store.accounts : []));
 
 const $identities = combine(fellowshipSalaryFeature.input, identityDomain.identity.$list, (featureInput, list) => {
@@ -28,18 +26,6 @@ const $identity = combine($member, $identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;
-});
-
-const $track = combine($member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
-
-  return tracks.find(t => t.id === member.rank) ?? null;
-});
-
-const $isAccountExist = fellowshipSalaryFeature.input.map(store => {
-  if (!store) return false;
-
-  return store.accounts.length > 0;
 });
 
 const $pendingMember = and(
@@ -70,8 +56,6 @@ sample({
 
 export const member = {
   $member,
-  $track,
   $identity,
-  $isAccountExist,
   $pending: or($pendingMember, fellowshipSalaryFeature.isStarting),
 };

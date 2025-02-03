@@ -22,7 +22,7 @@ type BoxProps = PropsWithChildren<{
   hideOverflow?: boolean;
   grow?: number;
   wrap?: boolean;
-  gap?: BoxSpacing;
+  gap?: BoxSpacing | string;
   padding?: BoxPadding;
   testId?: string;
 }>;

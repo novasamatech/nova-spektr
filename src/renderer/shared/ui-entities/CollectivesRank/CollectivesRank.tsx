@@ -1,6 +1,6 @@
-import { type ComponentProps, memo } from 'react';
+import { type ComponentProps, type PropsWithChildren, memo } from 'react';
 
-import { Label } from '@/shared/ui-kit';
+import { Box, Label } from '@/shared/ui-kit';
 
 const romanNumbersLookup = [
   ['M', 1000],
@@ -40,16 +40,17 @@ const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] =>
   return rankVariants[rank] ?? (rank > 7 ? 'blue' : 'gray');
 };
 
-type Props = {
+type Props = PropsWithChildren<{
   rank: number;
-  title?: string;
-};
+}>;
 
-export const CollectivesRank = memo(({ rank, title }: Props) => {
+export const CollectivesRank = memo(({ rank, children }: Props) => {
   return (
     <Label variant={pickRankColor(rank)}>
-      {rank ? toRomanNumeral(rank) : '0'}
-      {title ? ` ${title}` : ''}
+      <Box direction="row">
+        <span>{rank ? toRomanNumeral(rank) : '0'}</span>
+        {children ? <> {children}</> : null}
+      </Box>
     </Label>
   );
 });

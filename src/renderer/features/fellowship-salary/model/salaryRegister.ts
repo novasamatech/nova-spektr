@@ -4,7 +4,7 @@ import { reshape } from 'patronum';
 import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { membersService } from '@/domains/collectives';
+import { membersService, salaryService } from '@/domains/collectives';
 import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -38,16 +38,15 @@ const $coreTx = combine(
     input: fellowshipSalaryFeature.input,
     account: $account,
   },
-  ({ input, account, isActive }) => {
+  ({ input, account }) => {
     if (nullable(input) || nullable(account)) {
       return null;
     }
 
-    return membersService.createSetActiveTransaction({
+    return salaryService.createSalaryRequestTransaction({
       pallet: 'fellowship',
       chain: input.chain,
       account,
-      isActive,
     });
   },
 );
@@ -152,8 +151,7 @@ sample({
   target: basketModel.events.transactionsCreated,
 });
 
-export const setActive = {
-  flow,
+export const salaryRegister = {
   $fee,
   $input: fellowshipSalaryFeature.input,
   $wallet,

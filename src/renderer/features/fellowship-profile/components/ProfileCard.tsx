@@ -71,7 +71,7 @@ export const ProfileCard = memo(() => {
               <Box direction="row" width="100%" gap={2} verticalAlign="center">
                 <Address
                   showIcon
-                  iconSize={20}
+                  iconSize={18}
                   title={identity?.name}
                   address={toAddress(member.accountId, { prefix: featureInput?.chain.addressPrefix })}
                   hideAddress

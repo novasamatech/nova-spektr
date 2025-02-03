@@ -10,7 +10,6 @@ import { fellowshipSalaryFeature } from './feature';
 import { member } from './member';
 
 const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
-const $salaries = salaryModel.$salaries.map(s => s['fellowship'] ?? {});
 const $fellowshipClaimantStatuses = salaryModel.$claimantStatus.map(s => s['fellowship'] ?? {});
 
 const $status = combine(fellowshipSalaryFeature.input, $statuses, (featureInput, statuses) => {
@@ -28,6 +27,8 @@ const $chainClaimantStatuses = combine(
     return statuses[featureInput.chainId] ?? null;
   },
 );
+
+const $salaries = salaryModel.$salaries.map(s => s['fellowship'] ?? {});
 
 const $chainSalaries = combine(fellowshipSalaryFeature.input, $salaries, (featureInput, salaries) => {
   if (nullable(featureInput)) return null;

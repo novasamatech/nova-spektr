@@ -1,42 +1,61 @@
+import { type BN } from '@polkadot/util';
+
 import { type Chain, TransactionType } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
-import { type SalaryCycleStatus, type SalaryPayoutTransaction, type SalaryRequestTransaction } from './types';
+import {
+  type ClaimStatus,
+  type SalaryCycle,
+  type SalaryCyclePeriod,
+  type SalaryPayoutTransaction,
+  type SalaryRequestTransaction,
+} from './types';
 
-function getCurrentPeriod(status: SalaryCycleStatus, currentBlock: BlockHeight) {
-  const cycleEnd = getCycleEnd(status);
+/**
+ * Special hardcode for USDT formatting - real USDT asset is defined in asset
+ * hub chain, but we don't know where to read this relation is code.
+ */
+function formatSalaryAmount(salary: BN) {
+  return `${formatBalance(salary, 6, { K: true }).formatted} USDT`;
+}
 
-  if (currentBlock < status.cycleStart || currentBlock > cycleEnd) {
+function getCurrentPeriod(salaryCycle: SalaryCycle, currentBlock: BlockHeight): SalaryCyclePeriod {
+  const cycleEnd = getCycleEnd(salaryCycle);
+
+  // Out of range. Maybe salary cycle index is incorrect
+  if (currentBlock < salaryCycle.cycleStart || currentBlock > cycleEnd) {
     return {
       type: 'unknown',
-      cycleIndex: status.cycleIndex,
-    } as const;
+      cycleIndex: salaryCycle.cycleIndex,
+    };
   }
 
-  const payoutStart = status.cycleStart + status.registrationPeriod;
+  const payoutStart = salaryCycle.cycleStart + salaryCycle.registrationPeriod;
 
   if (currentBlock >= payoutStart) {
     return {
       type: 'payout',
       left: pjsSchema.helpers.toBlockHeight(cycleEnd - currentBlock),
       until: pjsSchema.helpers.toBlockHeight(cycleEnd),
-      cycleIndex: status.cycleIndex,
-    } as const;
+      cycleIndex: salaryCycle.cycleIndex,
+    };
   }
 
   return {
     type: 'registration',
     left: pjsSchema.helpers.toBlockHeight(payoutStart - currentBlock),
     until: pjsSchema.helpers.toBlockHeight(payoutStart),
-    cycleIndex: status.cycleIndex,
-  } as const;
+    cycleIndex: salaryCycle.cycleIndex,
+  };
 }
 
-function getCycleEnd(status: SalaryCycleStatus) {
-  return pjsSchema.helpers.toBlockHeight(status.cycleStart + status.registrationPeriod + status.payoutPeriod);
+function getCycleEnd(salaryCycle: SalaryCycle) {
+  return pjsSchema.helpers.toBlockHeight(
+    salaryCycle.cycleStart + salaryCycle.registrationPeriod + salaryCycle.payoutPeriod,
+  );
 }
 
 type SalaryRequestTransactionParams = {
@@ -56,6 +75,10 @@ function createSalaryRequestTransaction({
     type: TransactionType.COLLECTIVE_SALARY_REQUEST,
     args: { pallet },
   };
+}
+
+function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
+  return claimStatus.lastActive === period.cycleIndex;
 }
 
 type SalaryPayoutTransactionParams = {
@@ -80,8 +103,12 @@ function createSalaryPayoutTransaction({
 }
 
 export const salaryService = {
+  formatSalaryAmount,
+
   getCycleEnd,
   getCurrentPeriod,
+
+  isClaimantActiveInCurrentCycle,
 
   createSalaryRequestTransaction,
   createSalaryPayoutTransaction,

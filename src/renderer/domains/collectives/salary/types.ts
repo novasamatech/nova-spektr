@@ -9,7 +9,7 @@ import { type CollectivePalletsType } from '../_lib/types';
  *
  * ^ cycle start
  */
-export type SalaryCycleStatus = {
+export type SalaryCycle = {
   cycleIndex: number;
   cycleStart: BlockHeight;
   registrationPeriod: BlockHeight;
@@ -18,6 +18,24 @@ export type SalaryCycleStatus = {
   totalRegistrations: BN;
   totalUnregisteredPaid: BN;
 };
+
+export type SalaryCyclePeriod =
+  | {
+      type: 'unknown';
+      cycleIndex: number;
+    }
+  | {
+      type: 'registration';
+      left: BlockHeight;
+      until: BlockHeight;
+      cycleIndex: number;
+    }
+  | {
+      type: 'payout';
+      left: BlockHeight;
+      until: BlockHeight;
+      cycleIndex: number;
+    };
 
 export type Salaries = {
   active: BN[];

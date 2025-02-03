@@ -2,10 +2,11 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { salaryService } from '@/domains/collectives';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
 import { memberSalary } from '../model/memberSalary';
@@ -28,7 +29,10 @@ export const SalaryInfo = memo(() => {
   }, [input?.api, currentPeriod]);
 
   const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
-  const isCurrentCycle = nonNullable(claimStatus) && claimStatus?.lastActive === currentPeriod?.cycleIndex;
+  const isCurrentCycle =
+    nonNullable(claimStatus) &&
+    nonNullable(currentPeriod) &&
+    salaryService.isClaimantActiveInCurrentCycle(claimStatus, currentPeriod);
   const isSalaryRequested = isCurrentCycle && claimStatus && claimStatus.type === 'registered';
   const isPayoutRequested = isCurrentCycle && claimStatus && claimStatus.type === 'payout';
 
@@ -50,7 +54,7 @@ export const SalaryInfo = memo(() => {
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.requestSalaryCall', {
-                    salary: formatBalance(salary.active, 6, { K: true }).formatted,
+                    salary: salaryService.formatSalaryAmount(salary.active),
                   })}
                 </FootnoteText>
 
@@ -79,7 +83,7 @@ export const SalaryInfo = memo(() => {
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.payoutSalaryCall', {
-                    salary: formatBalance(salary.active, 6, { K: true }).formatted,
+                    salary: salaryService.formatSalaryAmount(salary.active),
                   })}
                 </FootnoteText>
 

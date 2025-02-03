@@ -10,7 +10,7 @@ import { salaryPallet } from '@/shared/pallet/salary';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { type ClaimStatus, type Salaries, type SalaryCycleStatus } from './types';
+import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
 
 type StatusRequestParams = {
   api: ApiPromise;
@@ -19,8 +19,8 @@ type StatusRequestParams = {
 };
 
 const { $: $status, request: requestStatus } = createDataSource({
-  initial: {} as CollectivesStruct<SalaryCycleStatus | null>,
-  async fn({ api, palletType }: StatusRequestParams): Promise<SalaryCycleStatus | null> {
+  initial: {} as CollectivesStruct<SalaryCycle | null>,
+  async fn({ api, palletType }: StatusRequestParams): Promise<SalaryCycle | null> {
     const status = await salaryPallet.storage.status(palletType, api);
     if (nullable(status)) return null;
 
