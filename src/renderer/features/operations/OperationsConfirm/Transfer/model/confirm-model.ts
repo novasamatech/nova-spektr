@@ -178,7 +178,10 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
 
   if (!result) return;
 
-  throw new Error(result.errorText);
+  const error = new Error(result.errorText);
+  console.error(error);
+
+  throw error;
 });
 
 const $initiatorWallets = combine(
