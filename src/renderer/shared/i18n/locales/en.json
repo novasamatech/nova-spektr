@@ -1505,7 +1505,7 @@
     },
     "notEnoughBalanceError": "Not enough funds to complete operation",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
-    "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
     "notEnoughStakedError": "Not enough staked to unstake specific amount",
     "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
@@ -1650,7 +1650,7 @@
     "noAmount": "Please provide amount",
     "notEnoughBalanceError": "Not enough funds to transfer specific amount",
     "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
-    "notEnoughBalanceForFeeError": "Insufficient balance to pay network fee",
+    "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
     "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",

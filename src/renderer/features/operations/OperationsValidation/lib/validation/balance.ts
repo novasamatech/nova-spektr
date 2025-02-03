@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { ZERO_BALANCE, formatAmount } from '@/shared/lib/utils';
 import { type Config, type TransferFeeStore, type TransferXcmFeeStore } from '../../types/types';
@@ -31,21 +31,17 @@ function insufficientBalanceForFee(
     isNative,
     isProxy,
     isMultisig,
-    isXcm,
   }: TransferFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  if (isXcm && !isNative) {
-    if (isLteThanBalance(fee, balance)) {
-      return true;
-    }
+  if (!isNative) {
+    return isLteThanBalance(fee, balance);
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, asset.precision) : amount);
-  const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : fee);
-  const value = amountBN.add(feeBN);
+  const feeBN = isProxy || isMultisig ? BN_ZERO : new BN(fee);
 
-  return isLteThanBalance(value, balance);
+  return isLteThanBalance(amountBN.add(feeBN), balance);
 }
 
 function insufficientBalanceForXcmFee(
