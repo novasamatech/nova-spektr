@@ -7,7 +7,7 @@ import { isObject } from 'lodash';
 import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { assert, nonNullable, nullable } from '@/shared/lib/utils';
 import { walletConnectService } from '../lib/service';
 
 import { signClient } from './signClient';
@@ -66,6 +66,28 @@ const createSessionFx = createEffect(
   },
 );
 
+const removeSessionFx = attach({
+  source: { client: signClient.$client },
+  async effect({ client }, { pairingTopic }: { pairingTopic: string }) {
+    assert(client, 'WalletConnect Client not found');
+
+    const sessions = client.session.getAll();
+    const session = sessions.find(s => s.pairingTopic === pairingTopic);
+
+    if (!session) return;
+
+    const reason = getSdkError('USER_DISCONNECTED');
+
+    return client.disconnect({
+      topic: session.topic,
+      reason,
+    });
+  },
+});
+
+/**
+ * Try to get actual session or create a new one.
+ */
 const restoreSessionFx = attach({
   source: { client: signClient.$client, sessions: $sessions },
   async effect({ client, sessions }, { pairingTopic, chains }: { pairingTopic?: string; chains: ChainId[] }) {
@@ -91,22 +113,31 @@ const restoreSessionFx = attach({
   },
 });
 
-const removeSessionFx = attach({
+/**
+ * Kill previous session and create a new one.
+ */
+const refreshSessionFx = attach({
   source: { client: signClient.$client },
-  async effect({ client }, { pairingTopic }: { pairingTopic: string }) {
-    if (nullable(client)) throw new Error('WalletConnect Client not found');
+  async effect({ client }, { pairingTopic, chains }: { pairingTopic?: string; chains: ChainId[] }) {
+    assert(client, 'WalletConnect Client not found');
 
-    const sessions = client.session.getAll();
-    const session = sessions.find(s => s.pairingTopic === pairingTopic);
+    // killing existing session
+    if (pairingTopic) {
+      await removeSessionFx({ pairingTopic });
+    }
 
-    if (!session) return;
+    try {
+      // trying to restore not expiring session
+      return await createSessionFx({ client, chains, pairingTopic });
+    } catch (e) {
+      // direct reject should be handled immediately
+      if (isObject(e) && 'code' in e && e.code === SDK_ERRORS.USER_REJECTED.code) {
+        throw e;
+      }
 
-    const reason = getSdkError('USER_DISCONNECTED');
-
-    return client.disconnect({
-      topic: session.topic,
-      reason,
-    });
+      // creating new session (with qr code scanning)
+      return await createSessionFx({ client, chains });
+    }
   },
 });
 
@@ -163,6 +194,7 @@ export const walletConnect = {
 
   createSession: createSessionFx,
   restoreSession: restoreSessionFx,
+  refreshSession: refreshSessionFx,
   removeSession: removeSessionFx,
   removePairing: removePairingFx,
 };

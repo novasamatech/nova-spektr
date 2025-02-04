@@ -5,7 +5,9 @@ import {
   AccountType,
   type Chain,
   type ChainId,
+  CryptoType,
   type NovaWalletWallet,
+  SigningType,
   type Wallet,
   type WalletConnectWallet,
   WalletType,
@@ -13,7 +15,7 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, accountsService } from '@/domains/network';
 
 import {
   DEFAULT_POLKADOT_EVENTS,
@@ -94,6 +96,34 @@ function getAccountsFromSession(session: SessionTypes.Struct, chains: Chain[]) {
   return res;
 }
 
+type CreateAccountParams = {
+  walletId: number;
+  name: string;
+  accountId: AccountId;
+  chainId: ChainId;
+  session: SessionTypes.Struct;
+};
+
+function createAccount({
+  walletId,
+  name,
+  accountId,
+  chainId,
+  session,
+}: CreateAccountParams): AnyAccountDraft<WcAccount> {
+  return {
+    type: 'chain',
+    walletId,
+    name,
+    accountId,
+    accountType: AccountType.WALLET_CONNECT,
+    signingType: SigningType.WALLET_CONNECT,
+    cryptoType: CryptoType.SR25519,
+    chainId: chainId,
+    signingExtras: { pairingTopic: session?.pairingTopic, sessionTopic: session?.topic },
+  };
+}
+
 function updateAccount(account: WcAccount, session: SessionTypes.Struct): WcAccount {
   return {
     ...account,
@@ -105,7 +135,9 @@ function updateAccount(account: WcAccount, session: SessionTypes.Struct): WcAcco
 }
 
 function isConnected(sessions: Record<string, SessionTypes.Struct>, pairingTopic: string): boolean {
-  return pairingTopic in sessions;
+  const session = sessions[pairingTopic];
+
+  return nonNullable(session) && session.acknowledged;
 }
 
 function isAccountConnected(sessions: Record<string, SessionTypes.Struct>, account: AnyAccount): boolean {
@@ -133,5 +165,6 @@ export const walletConnectService = {
   getAccountsFromSession,
 
   createNamespaces,
+  createAccount,
   updateAccount,
 };
