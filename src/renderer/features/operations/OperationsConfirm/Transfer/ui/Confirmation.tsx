@@ -24,7 +24,9 @@ type Props = {
 
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletModel.$wallets);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
@@ -49,8 +51,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
-
-  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
     return null;

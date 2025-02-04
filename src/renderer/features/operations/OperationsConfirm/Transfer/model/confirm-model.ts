@@ -122,7 +122,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
           native: transferableAmount(
             balanceUtils.getBalance(
               balances,
-              store.account.accountId,
+              store.proxiedAccount?.accountId || store.account.accountId,
               store.chain.chainId,
               store.chain.assets[0].assetId.toFixed(),
             ),
@@ -130,7 +130,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
           balance: transferableAmount(
             balanceUtils.getBalance(
               balances,
-              store.account.accountId,
+              store.proxiedAccount?.accountId || store.account.accountId,
               store.chain.chainId,
               store.asset.assetId.toFixed(),
             ),
@@ -252,7 +252,10 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
 
   if (!result) return;
 
-  throw new Error(result.errorText);
+  const error = new Error(result.errorText);
+  console.error(error);
+
+  throw error;
 });
 
 const $initiatorWallets = combine(
