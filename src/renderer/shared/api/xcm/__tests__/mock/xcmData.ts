@@ -314,6 +314,69 @@ export const XCMPALLET_TRANSFER_PAH_MYTH = {
   },
 };
 
+export const XCMPALLET_TRANSFER_PAH_MOONBEAM = {
+  dest: {
+    V4: {
+      interior: {
+        X1: [
+          {
+            Parachain: '2,004',
+          },
+        ],
+      },
+      parents: 1,
+    },
+  },
+  beneficiary: {
+    V4: {
+      interior: {
+        X1: [
+          {
+            AccountKey20: {
+              key: '0xb32b41625e14e55757a5d0cfcdd9768a1695c5f3',
+              network: null,
+            },
+          },
+        ],
+      },
+      parents: 0,
+    },
+  },
+  assets: {
+    V4: [
+      {
+        fun: {
+          Fungible: '5340000000000000',
+        },
+        id: {
+          interior: {
+            X2: [
+              {
+                PalletInstance: 50,
+              },
+              {
+                GeneralIndex: '23',
+              },
+            ],
+          },
+          parents: 0,
+        },
+      },
+      {
+        fun: {
+          Fungible: '156796325',
+        },
+        id: {
+          interior: {
+            Here: 'NULL',
+          },
+          parents: 1,
+        },
+      },
+    ],
+  },
+};
+
 export const XTOKENS_ACA_DOT = {
   asset: {
     V2: {
