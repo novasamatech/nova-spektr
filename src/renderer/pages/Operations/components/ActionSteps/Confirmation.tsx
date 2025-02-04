@@ -52,9 +52,8 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets) || chain.assets[0];
-
   const transaction = getTransactionFromMultisigTx(tx);
+  const asset = getAssetById(transaction?.args.assetId, chain.assets) || chain.assets[0];
 
   const xcmApi = useStoreMap({
     store: networkModel.$apis,
@@ -75,9 +74,9 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
       <div className="mb-6 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name={getIconName(tx.transaction)} size={60} />
+        <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {tx.transaction && <TransactionAmount tx={tx.transaction} />}
+        {transaction && <TransactionAmount tx={transaction} />}
       </div>
 
       <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />
