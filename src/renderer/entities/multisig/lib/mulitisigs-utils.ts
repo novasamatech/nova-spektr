@@ -31,7 +31,7 @@ function getOtherSignatories(
   return account.signatories
     .map((s) => toAddress(s.accountId, { prefix: addressPrefix }))
     .filter((address) => address !== signerAddress)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function isMultisigSupported(chain: Chain) {
