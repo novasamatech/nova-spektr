@@ -28,10 +28,10 @@ function getOtherSignatories(
 ) {
   const signerAddress = toAddress(signer, { prefix: addressPrefix });
 
-  return account.signatories
+  return Array.from(account.signatories)
+    .sort((a, b) => a.accountId.localeCompare(b.accountId))
     .map((s) => toAddress(s.accountId, { prefix: addressPrefix }))
-    .filter((address) => address !== signerAddress)
-    .sort((a, b) => a.localeCompare(b));
+    .filter((address) => address !== signerAddress);
 }
 
 function isMultisigSupported(chain: Chain) {
