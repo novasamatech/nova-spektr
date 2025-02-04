@@ -1,5 +1,6 @@
 import { type BN } from '@polkadot/util';
 
+import { type HexString } from '@/shared/core';
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
@@ -19,6 +20,7 @@ export type OngoingReferendum = {
   id: ReferendumId;
   origin: string;
   track: TrackId;
+  proposal: HexString;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

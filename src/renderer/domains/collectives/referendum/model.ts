@@ -8,7 +8,7 @@ import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { mapReferendums } from './mapper';
+import { mapReferendums } from './resource';
 import { type Referendum } from './types';
 
 const $list = createStore<CollectivesStruct<Referendum[]>>({});

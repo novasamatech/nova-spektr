@@ -14,6 +14,7 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
         type: info.type,
         track: info.data.track,
         submitted: info.data.submitted,
+        proposal: info.data.proposal.data,
         origin: info.data.origin.type,
         enactment: {
           value: info.data.enactment.data,
