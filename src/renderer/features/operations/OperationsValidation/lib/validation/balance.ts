@@ -91,13 +91,14 @@ function insufficientBalanceForDeliveryFee(
   { nativeBalance, transferableAsset, transferableBalance, xcmFee, deliveryFee, amount, isNative }: TransferXcmFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
-  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
   const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
 
-  if (isNative) {
-    return isLteThanBalance(amountBN.add(deliveryFeeBN).add(xcmFeeBN), transferableBalance);
+  if (!isNative) {
+    return isLteThanBalance(deliveryFeeBN, nativeBalance);
   }
 
-  return isLteThanBalance(deliveryFeeBN, nativeBalance);
+  const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
+  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+
+  return isLteThanBalance(amountBN.add(deliveryFeeBN).add(xcmFeeBN), transferableBalance);
 }
