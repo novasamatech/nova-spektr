@@ -1,5 +1,6 @@
 import {
   AccountType,
+  type Address,
   type Chain,
   ChainOptions,
   CryptoType,
@@ -17,7 +18,21 @@ export const multisigUtils = {
   isFlexibleMultisigSupported,
   buildMultisigAccount,
   buildFlexibleMultisigAccount,
+  getOtherSignatories,
 };
+
+function getOtherSignatories(
+  account: MultisigAccount | FlexibleMultisigAccount,
+  signer: AccountId | Address,
+  addressPrefix: number,
+) {
+  const signerAddress = toAddress(signer, { prefix: addressPrefix });
+
+  return account.signatories
+    .map((s) => toAddress(s.accountId, { prefix: addressPrefix }))
+    .filter((address) => address !== signerAddress)
+    .sort();
+}
 
 function isMultisigSupported(chain: Chain) {
   return chain.options?.includes(ChainOptions.MULTISIG) ?? false;
