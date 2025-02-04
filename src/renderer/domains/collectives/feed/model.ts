@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Event } from '@polkadot/types/interfaces/system';
 import { createStore } from 'effector';
 
 import { type Chain } from '@/shared/core';
@@ -31,31 +30,17 @@ const {
       throw new Error(`Collectives indexer doesn't support ${chain.name} chain`);
     }
 
-    fetchAllActivities(url, palletType).then(value => {
-      callback({ done: true, value });
-    });
-
-    const fn = (event: Event) => {
-      console.log(event);
+    const fn = () => {
+      fetchAllActivities(url, palletType).then(value => {
+        callback({ done: true, value });
+      });
     };
 
+    fn();
+
     const unsubscribe = Promise.all([
-      polkadotjsHelpers.subscribeSystemEvents(
-        {
-          api,
-          section: `${palletType}Salary`,
-          methods: ['Paid'],
-        },
-        fn,
-      ),
-      polkadotjsHelpers.subscribeSystemEvents(
-        {
-          api,
-          section: `${palletType}Core`,
-          methods: ['Imported', 'Proven', 'Requested', 'Promoted', 'Demoted', 'ActiveChanged'],
-        },
-        fn,
-      ),
+      polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Salary` }, fn),
+      polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Core` }, fn),
     ]);
 
     return unsubscribe.then(fns => () => {
