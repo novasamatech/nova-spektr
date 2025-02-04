@@ -1,13 +1,13 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { sortBy } from 'lodash';
 
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
-import { type Address, type Chain, type Transaction } from '@/shared/core';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { type Chain, type Transaction } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
+import { multisigUtils } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -82,13 +82,7 @@ sample({
   },
   filter: ({ account }) => nonNullable(account),
   fn: ({ account, wrappedTx }, { signerAccountId, chain, tx }) => {
-    const otherSignatories = account!.signatories.reduce<Address[]>((acc, s) => {
-      if (signerAccountId !== s.accountId) {
-        acc.push(toAddress(s.accountId, { prefix: chain?.addressPrefix }));
-      }
-
-      return acc;
-    }, []);
+    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId, chain.addressPrefix);
 
     if (accountUtils.isFlexibleMultisigAccount(account!) && wrappedTx) {
       return transactionBuilder.buildRejectFlexibleMultisigTx({
@@ -97,7 +91,7 @@ sample({
         threshold: account!.threshold,
         accountId: account!.accountId,
         transaction: wrappedTx.wrappedTx,
-        otherSignatories: sortBy(otherSignatories),
+        otherSignatories,
         tx,
       });
     }
@@ -106,7 +100,7 @@ sample({
       chain,
       signerAccountId,
       threshold: account!.threshold,
-      otherSignatories: sortBy(otherSignatories),
+      otherSignatories,
       tx,
     });
   },
