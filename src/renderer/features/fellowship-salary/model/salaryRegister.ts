@@ -4,33 +4,22 @@ import { reshape } from 'patronum';
 import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { membersService, salaryService } from '@/domains/collectives';
+import { salaryService } from '@/domains/collectives';
 import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
-import { member } from './member';
 
-const { $api, $chain, $wallets } = reshape({
+const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
+    $wallet: x => x?.wallet ?? null,
+    $account: x => x?.account ?? null,
     $chain: x => x?.chain ?? null,
   },
-});
-
-const $account = combine(fellowshipSalaryFeature.input, member.$member, (input, member) => {
-  if (nullable(member) || nullable(input)) return null;
-
-  return membersService.findMatchingAccount(input.accounts, member);
-});
-
-const $wallet = combine($wallets, $account, (wallets, account) => {
-  if (nullable(account)) return null;
-
-  return wallets.find(w => w.id === account.walletId) ?? null;
 });
 
 const $coreTx = combine(

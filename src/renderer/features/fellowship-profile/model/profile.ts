@@ -2,26 +2,21 @@ import { combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
-import { members, membersService, tracks } from '@/domains/collectives';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { members, tracks } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipProfileFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
-const $members = fellowshipModel.$store.map(store => store?.members ?? []);
 const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
+const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
+const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
 const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
-});
-
-const $accounts = fellowshipProfileFeature.input.map(store => (store ? store.accounts : []));
-
-const $member = combine($accounts, $members, (accounts, members) => {
-  return membersService.findMatchingMember(accounts, members);
 });
 
 const $identity = combine($member, $identities, (member, identities) => {
@@ -36,16 +31,7 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $isAccountExist = fellowshipProfileFeature.input.map(store => {
-  if (!store) return false;
-
-  return store.accounts.length > 0;
-});
-
-const $pendingMember = and(
-  or(members.pending, identity.pending),
-  $members.map(m => m.length === 0),
-);
+const $pendingMember = and(or(members.pending, identity.pending), $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 

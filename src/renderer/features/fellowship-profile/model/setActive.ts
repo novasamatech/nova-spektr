@@ -5,37 +5,26 @@ import { reshape } from 'patronum';
 import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { membersService } from '@/domains/collectives';
+import { memberService } from '@/domains/collectives';
 import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipProfileFeature } from './feature';
-import { profile } from './profile';
 
 const flow = createGate<{ isActive: boolean }>({ defaultState: { isActive: false } });
 
 const $isActive = flow.state.map(({ isActive }) => isActive);
 
-const { $api, $chain, $wallets } = reshape({
+const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipProfileFeature.input,
   shape: {
     $api: x => x?.api ?? null,
-    $wallets: x => x?.wallets ?? [],
+    $wallet: x => x?.wallet ?? null,
+    $account: x => x?.account ?? null,
     $chain: x => x?.chain ?? null,
+    $wallets: x => x?.wallets ?? [],
   },
-});
-
-const $account = combine(fellowshipProfileFeature.input, profile.$member, (input, member) => {
-  if (nullable(member) || nullable(input)) return null;
-
-  return membersService.findMatchingAccount(input.accounts, member);
-});
-
-const $wallet = combine($wallets, $account, (wallets, account) => {
-  if (nullable(account)) return null;
-
-  return wallets.find(w => w.id === account.walletId) ?? null;
 });
 
 const $coreTx = combine(
@@ -49,7 +38,7 @@ const $coreTx = combine(
       return null;
     }
 
-    return membersService.createSetActiveTransaction({
+    return memberService.createSetActiveTransaction({
       pallet: 'fellowship',
       chain: input.chain,
       account,

@@ -49,7 +49,7 @@ export const CollectivesRank = memo(({ rank, children }: Props) => {
     <Label variant={pickRankColor(rank)}>
       <Box direction="row">
         <span>{rank ? toRomanNumeral(rank) : '0'}</span>
-        {children ? <> {children}</> : null}
+        {children ? <>&nbsp;{children}</> : null}
       </Box>
     </Label>
   );

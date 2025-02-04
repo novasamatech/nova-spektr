@@ -1,7 +1,7 @@
 export {
   collectiveDomain,
   $collectiveStore,
-  membersService,
+  memberService,
   referendumService,
   tracksService,
   votingService,

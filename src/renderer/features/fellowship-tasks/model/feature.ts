@@ -3,17 +3,18 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { isDev, nullable } from '@/shared/lib/utils';
-import { accountsService } from '@/domains/network';
-import { walletModel } from '@/entities/wallet';
+import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { ERROR } from '../constants';
 
 const $input = combine(
   {
     network: fellowshipNetwork.$network,
-    accounts: walletModel.$availableAccounts,
+    member: fellowshipMember.$currentMember,
+    walletId: walletSelect.$selectedWalletId,
   },
-  ({ network, accounts }) => {
+  ({ network, member }) => {
     if (nullable(network)) return null;
 
     return {
@@ -22,7 +23,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
-      accounts: accountsService.filterAccountOnChain(accounts, network.chain),
+      member,
     };
   },
 );

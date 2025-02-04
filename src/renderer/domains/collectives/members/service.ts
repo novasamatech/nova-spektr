@@ -5,17 +5,26 @@ import { type CollectivePalletsType } from '../_lib/types';
 
 import { type CoreMember, type Member, type SetActiveTransaction } from './types';
 
-function findMatchingMember(accounts: AnyAccount[], members: Member[]) {
+function findMatchingMember(accounts: AnyAccount[], members: Member[], walletId: number | null) {
   const accountsDictionary = dictionary(accounts, 'accountId');
+  const m = members.filter(member => member.accountId in accountsDictionary);
 
-  return members.find(member => member.accountId in accountsDictionary) ?? null;
+  if (m.length > 1 && walletId) {
+    m.sort(a => {
+      const acc = accountsDictionary[a.accountId];
+      return acc?.walletId === walletId ? -1 : 1;
+    });
+  }
+
+  return m.at(0) ?? null;
 }
 
-function findMatchingAccount(accounts: AnyAccount[], member: Member) {
+function findMatchingAccount(accounts: AnyAccount[], member: Member, selectedWallet: number | null) {
   const found = accounts.filter(a => a.accountId === member.accountId);
 
   if (found.length > 1) {
-    const accountWithWritePermission = found.find(accountsService.hasPermissionToMakeActions);
+    const currentWalletAccounts = found.filter(a => a.walletId === selectedWallet);
+    const accountWithWritePermission = currentWalletAccounts.find(accountsService.hasPermissionToMakeActions);
     if (accountWithWritePermission) {
       return accountWithWritePermission;
     }
@@ -53,7 +62,7 @@ function createSetActiveTransaction({
   };
 }
 
-export const membersService = {
+export const memberService = {
   findMatchingMember,
   findMatchingAccount,
   isCoreMember,

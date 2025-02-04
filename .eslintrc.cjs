@@ -344,7 +344,7 @@ module.exports = {
               },
               {
                 from: 'aggregates',
-                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities', 'aggregates'],
               },
               {
                 from: 'processes',

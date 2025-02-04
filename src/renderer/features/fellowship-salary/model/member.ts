@@ -3,23 +3,17 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { members, membersService, tracks } from '@/domains/collectives';
+import { members, tracks } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipSalaryFeature } from './feature';
-import { fellowshipModel } from './fellowship';
 
-const $members = fellowshipModel.$store.map(store => store?.members ?? []);
-const $accounts = fellowshipSalaryFeature.input.map(store => (store ? store.accounts : []));
+const $member = fellowshipSalaryFeature.input.map(store => (store ? store.member : null));
 
 const $identities = combine(fellowshipSalaryFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
-});
-
-const $member = combine($accounts, $members, (accounts, members) => {
-  return membersService.findMatchingMember(accounts, members);
 });
 
 const $identity = combine($member, $identities, (member, identities) => {
@@ -28,10 +22,7 @@ const $identity = combine($member, $identities, (member, identities) => {
   return identities[member.accountId] ?? null;
 });
 
-const $pendingMember = and(
-  or(members.pending, identity.pending),
-  $members.map(m => m.length === 0),
-);
+const $pendingMember = and(or(members.pending, identity.pending), $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipSalaryFeature, $member);
 

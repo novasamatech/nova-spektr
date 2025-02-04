@@ -6,7 +6,7 @@ import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { membersService } from '@/domains/collectives';
+import { memberService } from '@/domains/collectives';
 import { ERROR } from '../constants';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -78,7 +78,7 @@ export const ProfileCard = memo(() => {
                   variant="truncate"
                 />
 
-                {membersService.isCoreMember(member) && member.isActive && (
+                {memberService.isCoreMember(member) && member.isActive && (
                   <FootnoteText className="text-text-positive">{t('fellowship.members.active')}</FootnoteText>
                 )}
 

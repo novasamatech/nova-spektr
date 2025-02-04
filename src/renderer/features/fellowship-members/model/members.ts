@@ -1,12 +1,12 @@
 import { sample } from 'effector';
 import { and, or } from 'patronum';
 
-import { members, membersService } from '@/domains/collectives';
+import { memberService, members } from '@/domains/collectives';
 
 import { fellowshipMembersFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
-const $list = fellowshipModel.$store.map(store => store?.members?.filter(membersService.isCoreMember) ?? []);
+const $list = fellowshipModel.$store.map(store => store?.members?.filter(memberService.isCoreMember) ?? []);
 
 const $pendingMembers = and(
   members.pending,

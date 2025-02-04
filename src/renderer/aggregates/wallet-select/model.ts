@@ -9,6 +9,8 @@ const $selectedWallet = walletModel.$wallets.map(wallets => {
   return wallets.find(wallet => wallet.isActive) ?? null;
 });
 
+const $selectedWalletId = $selectedWallet.map(w => w?.id ?? null);
+
 const $selectedAccounts = combine($selectedWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
 
@@ -53,6 +55,7 @@ sample({
 
 export const walletSelect = {
   $selectedWallet,
+  $selectedWalletId,
   $selectedAccounts,
   select: selectWalletFx,
 };

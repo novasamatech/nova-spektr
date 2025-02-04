@@ -1,23 +1,18 @@
-import { combine, restore, sample } from 'effector';
+import { restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { waitFor } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable } from '@/shared/lib/utils';
-import { membersService, voting } from '@/domains/collectives';
+import { voting } from '@/domains/collectives';
 
 import { referendumsFeatureStatus } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
-const $members = fellowshipModel.$store.map(x => x?.members ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 
-const $accounts = referendumsFeatureStatus.input.map(store => (store ? store.accounts : []));
-
-const $currentMember = combine($accounts, $members, (accounts, members) =>
-  membersService.findMatchingMember(accounts, members),
-);
+const $currentMember = referendumsFeatureStatus.input.map(store => (store ? store.member : null));
 
 const votesUpdated = waitFor({
   source: $voting,
@@ -30,15 +25,14 @@ const $accountVotes = restore(votesUpdated, []).reset(referendumsFeatureStatus.s
 
 sample({
   clock: referendumsFeatureStatus.running,
-  fn: ({ palletType, api, chainId, accounts }) => {
+  fn({ palletType, api, chainId, account }) {
     return {
       palletType,
       api,
       chainId,
-      accounts: accounts.map(a => a.accountId),
+      accounts: account ? [account.accountId] : [],
     };
   },
-
   target: voting.subscribeAccountsVoting,
 });
 

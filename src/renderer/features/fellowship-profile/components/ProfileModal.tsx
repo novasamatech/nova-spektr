@@ -7,7 +7,7 @@ import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, HeaderTitleText, Identicon, Separator, Switch } from '@/shared/ui';
 import { Account, CollectivesRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Member, membersService, salaryService } from '@/domains/collectives';
+import { type Member, memberService, salaryService } from '@/domains/collectives';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 import { memberSalary } from '../model/salary';
@@ -33,8 +33,8 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   }
 
   const address = toAddress(member.accountId, { prefix: featureInput.chain.addressPrefix });
-  const active = membersService.isCoreMember(member) && member.isActive;
-  const setActiveDisabled = !membersService.isCoreMember(member);
+  const active = memberService.isCoreMember(member) && member.isActive;
+  const setActiveDisabled = !memberService.isCoreMember(member);
 
   return (
     <Modal size="md" height="fit">

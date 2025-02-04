@@ -3,7 +3,7 @@ import { combine } from 'effector';
 import { combineStores } from './_lib/helpers';
 import { feed } from './feed/model';
 import { membersDomainModel } from './members/model';
-import { membersService } from './members/service';
+import { memberService } from './members/service';
 import { referendumDomainModel } from './referendum/model';
 import { referendumService } from './referendum/service';
 import { referendumMetaModel } from './referendumMeta/model';
@@ -40,7 +40,7 @@ export const collectiveDomain = {
   voting: votingDomainModel,
 
   tracksService,
-  membersService,
+  membersService: memberService,
   referendumService,
   votingService,
 };
@@ -55,7 +55,7 @@ export {
   salary,
   feed,
   tracksService,
-  membersService,
+  memberService,
   referendumService,
   votingService,
   salaryService,
