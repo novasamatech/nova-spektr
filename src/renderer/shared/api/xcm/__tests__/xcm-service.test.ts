@@ -4,6 +4,7 @@ import {
   CONFIG,
   XCMPALLET_TRANSFER_HUB_ASTAR,
   XCMPALLET_TRANSFER_KSM_BIFROST,
+  XCMPALLET_TRANSFER_PAH_MOONBEAM,
   XCMPALLET_TRANSFER_PAH_MYTH,
   XTOKENS_ACA_DOT,
   XTOKENS_ACA_PARALLEL,
@@ -35,6 +36,21 @@ describe('shared/api/xcm/service/xcm-service', () => {
       assetParachain: 3369,
       destAccountId: '0x3da9ea1622ee74cf87144e3d2c7f7cce4d167d9c',
       destParachain: 3369,
+      toRelayChain: false,
+      type: 'xcmPallet',
+    });
+  });
+
+  test('should parse xcmPallet parachain > eth parachain 2', () => {
+    const result = xcmService.parseXcmPalletExtrinsic(XCMPALLET_TRANSFER_PAH_MOONBEAM);
+
+    expect(result).toEqual({
+      isRelayToken: false,
+      amount: '5340000000000000',
+      assetGeneralIndex: '23',
+      assetParachain: 0,
+      destAccountId: '0xb32b41625e14e55757a5d0cfcdd9768a1695c5f3',
+      destParachain: 2004,
       toRelayChain: false,
       type: 'xcmPallet',
     });
