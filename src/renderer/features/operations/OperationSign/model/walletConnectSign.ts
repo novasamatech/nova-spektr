@@ -149,11 +149,12 @@ sample({
 sample({
   clock: gotFirstPayload,
   source: networkModel.$chains,
-  fn: (chains, { account }) => {
+  fn: (chains, { account, signatory }) => {
+    // TODO remove this hardcode
+    const ac = signatory || account;
+
     return {
-      pairingTopic: walletConnectService.isWalletConnectAccount(account)
-        ? account.signingExtras.pairingTopic
-        : undefined,
+      pairingTopic: walletConnectService.isWalletConnectAccount(ac) ? ac.signingExtras.pairingTopic : undefined,
       chains: Object.values(chains).map((c) => c.chainId),
     };
   },
