@@ -339,6 +339,16 @@
         "isActive": "Active",
         "activeTrue": "Yes",
         "activeFalse": "No"
+      },
+      "activityFeed": {
+        "activeTrue": "Status active",
+        "activeFalse": "Status passive",
+        "imported": "Imported",
+        "promoted": "Promoted to rank {rank}",
+        "demoted": "Demoted to rank {rank}",
+        "proven": "Proven at rank {rank}",
+        "requested": "Salary requested",
+        "paid": "Salary"
       }
     },
     "details": {
