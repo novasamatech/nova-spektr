@@ -4054,8 +4054,8 @@
     ],
     "nodes": [
       {
-        "url": "wss://rpc-assethub.novasama-tech.org",
-        "name": "Novasama node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://sys.ibp.network/asset-hub-polkadot",
@@ -4066,8 +4066,8 @@
         "name": "IBP2 node"
       },
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://rpc-assethub.novasama-tech.org",
+        "name": "Novasama node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
