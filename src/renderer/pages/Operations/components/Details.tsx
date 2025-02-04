@@ -123,19 +123,19 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   }, [validatorsMap]);
 
   const startStakingValidators: Address[] =
-    (tx.transaction?.type === 'batchAll' &&
-      tx.transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
+    (transaction?.type === 'batchAll' &&
+      transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
   const selectedValidators: Validator[] =
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: AccountType } | undefined => {
-    if (!tx.transaction || !isProxyTransaction(tx.transaction)) {
+    if (!transaction || !isProxyTransaction(transaction)) {
       return undefined;
     }
 
-    const proxiedAccountId = toAccountId(tx.transaction.args.real);
+    const proxiedAccountId = toAccountId(transaction.args.real);
     const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AccountType }>(
       (acc, wallet) => {
         if (acc.wallet) {
@@ -156,11 +156,11 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
     return { wallet, account };
   }, [tx, wallets]);
 
-  const hasSender = isXcmTransaction(tx.transaction) || isTransferTransaction(tx.transaction);
+  const hasSender = isXcmTransaction(transaction) || isTransferTransaction(transaction);
 
   const isDividerVisible =
-    (isXcmTransaction(tx.transaction) && transaction?.args.destinationChain) ||
-    isManageProxyTransaction(tx.transaction) ||
+    (isXcmTransaction(transaction) && transaction?.args.destinationChain) ||
+    isManageProxyTransaction(transaction) ||
     destination ||
     selectedValidators.length !== 0;
 
@@ -267,7 +267,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
         </DetailRow>
       )}
 
-      {isXcmTransaction(tx.transaction) && destinationChain && (
+      {isXcmTransaction(transaction) && destinationChain && (
         <DetailRow label={t('operation.details.toNetwork')}>
           <ChainTitle chainId={destinationChain} />
         </DetailRow>
