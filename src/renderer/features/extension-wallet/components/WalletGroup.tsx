@@ -26,6 +26,7 @@ type Props = {
 
 export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {
   const { t } = useI18n();
+
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -49,8 +50,8 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map((wallet) => (
               <WalletCardMd
-                key={wallet.id}
                 hideIcon
+                key={wallet.id}
                 wallet={wallet}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />

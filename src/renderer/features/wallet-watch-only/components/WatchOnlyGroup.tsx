@@ -25,6 +25,7 @@ type Props = {
 
 export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletsModel.$wallets);
 
   const filteredWallets = performSearch({

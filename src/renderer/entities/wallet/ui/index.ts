@@ -3,6 +3,7 @@ export { WalletIcon } from './WalletIcon/WalletIcon';
 export { WalletCardSm } from './Cards/WalletCardSm';
 export { WalletCardMd } from './Cards/WalletCardMd';
 export { WalletCardLg } from './Cards/WalletCardLg';
+export { WalletManagement } from './Cards/WalletManagement';
 export { RootAccountLg } from './Cards/RootAccountLg';
 export { RootAccountMd } from './Cards/RootAccountMd';
 export { DerivedAccount } from './Cards/DerivedAccount';

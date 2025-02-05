@@ -8,7 +8,8 @@ import { accountsService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
-import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+import { WalletGroup } from './components/WalletGroup';
+import { walletActionsSlot } from './components/WalletRow';
 import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
