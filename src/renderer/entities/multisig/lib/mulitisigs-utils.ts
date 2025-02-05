@@ -63,7 +63,7 @@ type BuildFlexibleMultisigParams = {
   accountId: AccountId;
   signatories: AccountId[];
   chain: Chain;
-  proxyAccount: ProxiedAccount;
+  proxyAccount?: ProxiedAccount;
 };
 
 function buildFlexibleMultisigAccount({
