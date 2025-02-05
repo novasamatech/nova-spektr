@@ -343,7 +343,7 @@
       "activityFeed": {
         "activeTrue": "Status active",
         "activeFalse": "Status passive",
-        "imported": "Imported",
+        "imported": "Imported to rank {rank}",
         "promoted": "Promoted to rank {rank}",
         "demoted": "Demoted to rank {rank}",
         "proven": "Proven at rank {rank}",

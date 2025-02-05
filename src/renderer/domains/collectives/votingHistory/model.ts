@@ -83,8 +83,10 @@ const { subscribe: subscribeAccountsVoting, unsubscribe: unsubscribeAccountsVoti
   VotingSubscribeParams,
   Vote
 >({
+  key({ palletType, chainId, accounts }) {
+    return `${palletType}-${chainId}-${accounts.join(',')}`;
+  },
   initial: $votes,
-
   fn({ palletType, api, accounts }, callback) {
     const number = z.string().transform(v => parseInt(v));
     const eventSchema = z.object({

@@ -1,15 +1,10 @@
 import { sample } from 'effector';
 import { and, or } from 'patronum';
 
-import { referendumMeta, referendumService, referendums } from '@/domains/collectives';
+import { referendumService, referendums } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowshipModel } from './fellowship';
-
-sample({
-  clock: fellowshipTasksFeature.running,
-  target: [referendums.subscribe, referendumMeta.request],
-});
 
 sample({
   clock: fellowshipTasksFeature.stopped,

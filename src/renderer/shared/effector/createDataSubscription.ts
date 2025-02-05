@@ -17,6 +17,7 @@ type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
 type SubscriptionParams<Value, Params, Response> = {
+  key?: (params: Params) => string;
   initial: Value | StoreWritable<Value>;
   fn: SubscribeFn<Params, Response>;
   map: (store: Value, result: { params: Params; result: Response }) => Value;
@@ -72,6 +73,7 @@ type SubscriptionParams<Value, Params, Response> = {
  * @param scope - Optional scope for testing
  */
 export const createDataSubscription = <Value, Params = void, Response = void>({
+  key = () => Math.random().toString(),
   initial,
   fn,
   map,
@@ -85,8 +87,8 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   const $store = is.store(initial) ? initial : createStore<Value>(initial);
   const $pending = createStore(false);
   const $fulfilled = createStore(false);
-  const $unsubscribeFn = createStore<UnsubscribeFn | null>(null);
-  const $subscribed = $unsubscribeFn.map(nonNullable);
+  const $currentSubscription = createStore<{ unsubscribe: UnsubscribeFn; key: string } | null>(null);
+  const $subscribed = $currentSubscription.map(nonNullable);
 
   const subscribeFx = createEffect<Params, UnsubscribeFn>(params => {
     const bindedReceived = scope ? scopeBind(received, { scope }) : received;
@@ -117,7 +119,7 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   // subscribe, if stale
   sample({
     clock: subscribe,
-    source: $unsubscribeFn,
+    source: $currentSubscription,
     filter: nullable,
     // TODO check params with shallow equal fn
     fn: (_, params) => params,
@@ -127,23 +129,24 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   // unsubscribe and pass param down for resubscription later
   sample({
     clock: subscribe,
-    source: $unsubscribeFn,
-    filter: nonNullable,
-    fn: (fn, resubscribe) => ({ fn, resubscribe }),
+    source: $currentSubscription,
+    filter: (sub, params) => nonNullable(sub) && sub.key !== key(params),
+    fn: (sub, resubscribe) => ({ fn: sub?.unsubscribe ?? null, resubscribe }),
     target: unsubscribeFx,
   });
 
   // save unsubscribe fn
   sample({
-    clock: subscribeFx.doneData,
-    target: $unsubscribeFn,
+    clock: subscribeFx.done,
+    fn: ({ params, result: unsubscribe }) => ({ key: key(params), unsubscribe }),
+    target: $currentSubscription,
   });
 
   // simple unsubscribe
   sample({
     clock: unsubscribe,
-    source: $unsubscribeFn,
-    fn: subscribeFn => ({ fn: subscribeFn, resubscribe: null }),
+    source: $currentSubscription,
+    fn: sub => ({ fn: sub?.unsubscribe ?? null, resubscribe: null }),
     target: unsubscribeFx,
   });
 
@@ -160,7 +163,7 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
     clock: unsubscribeFx.done,
     filter: ({ params }) => nullable(params.resubscribe),
     fn: () => null,
-    target: $unsubscribeFn,
+    target: $currentSubscription,
   });
 
   // store update

@@ -24,6 +24,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
   ReferendumSubscriptionParams,
   Referendum[]
 >({
+  key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
   initial: $list,
   fn: ({ api, palletType }, callback) => {
     let abortController = new AbortController();

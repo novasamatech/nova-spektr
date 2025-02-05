@@ -56,7 +56,9 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                 />
               </HeaderTitleText>
               <Box direction="row" gap={2}>
-                <CollectivesRank rank={member.rank}>{nonNullable(track) && track.name}</CollectivesRank>
+                <CollectivesRank rank={member.rank}>
+                  {nonNullable(track) && track.name.replace(/s$/, '')}
+                </CollectivesRank>
               </Box>
             </Box>
             <Box direction="row" verticalAlign="center" gap={2}>

@@ -15,7 +15,7 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   }
 
   if (record.type === 'imported') {
-    return t('fellowship.profile.activityFeed.imported');
+    return t('fellowship.profile.activityFeed.imported', { rank: record.rank });
   }
 
   if (record.type === 'promoted') {

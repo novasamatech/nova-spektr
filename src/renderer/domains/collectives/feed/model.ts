@@ -23,6 +23,7 @@ const {
   subscribe,
   unsubscribe,
 } = createDataSubscription<CollectivesStruct<FeedRecord[]>, SubscriptionParams, FeedRecord[]>({
+  key: ({ palletType, chain }) => `${palletType}-${chain.chainId}`,
   initial: $feed,
   fn({ api, chain, palletType }: SubscriptionParams, callback) {
     const url = chain.externalApi?.collectives.find(x => x.type === 'subquery')?.url;

@@ -24,6 +24,7 @@ const {
   fulfilled,
   received,
 } = createDataSubscription<CollectivesStruct<(Member | CoreMember)[]>, RequestParams, (Member | CoreMember)[]>({
+  key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
   initial: {},
   fn: ({ api, palletType }, callback) => {
     let abortController = new AbortController();

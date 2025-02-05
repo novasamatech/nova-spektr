@@ -24,7 +24,7 @@ export const Referendums = memo<Props>(({ onSelect }) => {
   const isTitlesLoading = false;
 
   const featureState = useUnit(referendumsFeatureStatus.state);
-  const referendums = useUnit(referendumListModel.$filteredReferendum);
+  const referendums = useUnit(referendumListModel.$referendums);
   const fulfilled = useUnit(referendumListModel.$fulfilled);
 
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
