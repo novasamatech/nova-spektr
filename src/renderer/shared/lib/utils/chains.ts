@@ -6,8 +6,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { toAddress } from './address';
 import { RelayChains, SS58_DEFAULT_PREFIX } from './constants';
 
-export const toLocalChainId = (chainId?: ChainId): string | undefined => {
-  return chainId?.replace('0x', '');
+export const toLocalChainId = (chainId?: ChainId): string => {
+  return chainId ? chainId.replace('0x', '') : '';
 };
 
 export const toHexChainId = (chainId?: string): ChainId | undefined => {

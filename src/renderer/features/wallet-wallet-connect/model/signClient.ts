@@ -17,7 +17,7 @@ const $client = createStore<Client | null>(null);
 const changeConnectionStatus = createEvent<boolean>();
 const $connected = restore(changeConnectionStatus, false);
 
-const createClientFx = createEffect(async () => {
+const createClientFx = createEffect(() => {
   const core = new Core({
     logger: DEFAULT_LOGGER,
     relayUrl: DEFAULT_RELAY_URL,
@@ -32,12 +32,10 @@ const createClientFx = createEffect(async () => {
     changeConnectionStatus(false);
   });
 
-  const client = await Client.init({
+  return Client.init({
     core,
     metadata: DEFAULT_APP_METADATA,
   });
-
-  return client;
 });
 
 const extendSessionsFx = createEffect(async (client: Client) => {

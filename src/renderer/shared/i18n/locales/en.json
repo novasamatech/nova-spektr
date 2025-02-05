@@ -989,6 +989,7 @@
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
       "title": "Flexible multisig is creating..."
     },
+    "deliveryFee": "Delivery fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -1022,6 +1023,7 @@
       "wallet": "Wallet"
     },
     "detailsTitle": "Details",
+    "errorWatchOnly": "Can't sign with watch only account.",
     "explorerLink": "View in explorer",
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
@@ -1034,7 +1036,9 @@
     "networkFeeTotal": "Total network fee",
     "openOperationsButton": "Open operations",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
+    "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
+    "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "selectAccount": "Select account",
@@ -1084,8 +1088,7 @@
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
-    "xcmFee": "Cross-chain fee",
-    "errorWatchOnly": "Can't sign with watch only account."
+    "xcmFee": "Cross-chain fee"
   },
   "operations": {
     "callData": {
@@ -1648,9 +1651,11 @@
     "invalidAddress": "Invalid address",
     "noSignatoryError": "Please select operation signatory",
     "noAmount": "Please provide amount",
-    "notEnoughBalanceError": "Not enough funds to transfer specific amount",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
+    "notEnoughBalanceError": "Not enough tokens to transfer specific amount",
+    "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
     "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
+    "notEnoughBalanceForXcmFeeError": "Not enough tokens to pay for the cross-chain fee",
+    "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
     "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",

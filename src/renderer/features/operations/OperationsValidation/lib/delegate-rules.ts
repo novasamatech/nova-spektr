@@ -99,6 +99,7 @@ export const DelegateRules = {
             balance: balance.native,
             fee,
             xcmFee: '0',
+            deliveryFee: '0',
             isNative: true,
             isProxy: false,
             isMultisig,
