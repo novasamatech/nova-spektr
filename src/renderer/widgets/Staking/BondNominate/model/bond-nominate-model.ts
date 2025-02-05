@@ -14,12 +14,12 @@ import {
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
-import { basketModel } from '@/entities/basket';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -437,7 +437,7 @@ sample({
 
     return txs;
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({

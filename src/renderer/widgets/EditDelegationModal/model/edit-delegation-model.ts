@@ -26,11 +26,11 @@ import {
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { basketModel } from '@/entities/basket';
 import { votingModel, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
@@ -558,7 +558,7 @@ sample({
       } as BasketTransaction;
     });
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({
