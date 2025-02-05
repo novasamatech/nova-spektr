@@ -1,8 +1,10 @@
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { spread } from 'patronum';
 
 import { type WcAccount } from '@/shared/core';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { assert } from '@/shared/lib/utils';
+import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletConnect, walletConnectService } from '@/features/wallet-wallet-connect';
 import { ReconnectStep } from '../lib/constants';
@@ -32,7 +34,7 @@ const updateSessionFx = attach({
       chains: Object.values(chains).map(c => c.chainId),
     };
   },
-  effect: walletConnect.restoreSession,
+  effect: walletConnect.refreshSession,
 });
 
 const $reconnectStep = createStore<ReconnectStep>(ReconnectStep.NOT_STARTED).reset(flow.close);
@@ -51,20 +53,39 @@ sample({
   },
   fn: ({ accounts, chains }, { result: session }) => {
     const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
-    const accountsToUpdate = walletConnectService.getAccountsFromSession(session, Object.values(chains));
-    const updates: WcAccount[] = [];
+    const accountsFromSession = walletConnectService.getAccountsFromSession(session, Object.values(chains));
+    const create: AnyAccountDraft<WcAccount>[] = [];
+    const update: WcAccount[] = [];
 
-    for (const { accountId, chain } of accountsToUpdate) {
+    const name = wcAccounts.map(a => a.name).at(0) ?? 'unknown';
+    const walletId = wcAccounts.map(a => a.walletId).at(0);
+
+    assert(walletId, "Can't get walletId from accounts");
+
+    for (const { accountId, chain } of accountsFromSession) {
       const account = wcAccounts.find(a => a.accountId === accountId && a.chainId === chain.chainId);
 
       if (account) {
-        updates.push(walletConnectService.updateAccount(account, session));
+        update.push(walletConnectService.updateAccount(account, session));
+      } else {
+        create.push(
+          walletConnectService.createAccount({
+            walletId,
+            name,
+            accountId,
+            chainId: chain.chainId,
+            session,
+          }),
+        );
       }
     }
 
-    return updates;
+    return { create, update };
   },
-  target: accounts.updateAccounts,
+  target: spread({
+    create: accounts.createAccounts,
+    update: accounts.updateAccounts,
+  }),
 });
 
 sample({

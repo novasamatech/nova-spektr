@@ -38,7 +38,7 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
           const isBase = accountUtils.isVaultBaseAccount(a);
           const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-          return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
+          return !isBase || !isPolkadotVault;
         },
       });
 

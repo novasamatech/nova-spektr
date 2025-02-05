@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { ZERO_BALANCE, formatAmount } from '@/shared/lib/utils';
 import { type Config, type TransferFeeStore, type TransferXcmFeeStore } from '../../types/types';
@@ -8,6 +8,7 @@ export const balanceValidation = {
   isLteThanBalance,
   insufficientBalanceForFee,
   insufficientBalanceForXcmFee,
+  insufficientBalanceForDeliveryFee,
 };
 
 function isNonZeroBalance(value: string | BN): boolean {
@@ -31,54 +32,73 @@ function insufficientBalanceForFee(
     isNative,
     isProxy,
     isMultisig,
-    isXcm,
   }: TransferFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  if (isXcm && !isNative) {
-    if (isLteThanBalance(fee, balance)) {
-      return true;
-    }
+  if (!isNative) {
+    return isLteThanBalance(fee, balance);
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, asset.precision) : amount);
-  const feeBN = new BN(isProxy || isMultisig ? ZERO_BALANCE : fee);
-  const value = amountBN.add(feeBN);
+  const feeBN = isProxy || isMultisig ? BN_ZERO : new BN(fee);
 
-  return isLteThanBalance(value, balance);
+  return isLteThanBalance(amountBN.add(feeBN), balance);
 }
 
 function insufficientBalanceForXcmFee(
   {
-    isXcm,
-    isNative,
     nativeBalance,
     transferableAsset,
     transferableBalance,
-    xcmFee,
     fee,
+    xcmFee,
+    deliveryFee,
+    amount,
+
+    isXcm,
+    isNative,
     isProxy,
     isMultisig,
-    amount,
   }: TransferXcmFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
+  const isAuthority = isProxy || isMultisig;
+
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
   const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+  const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
   const feeBN = new BN(fee || ZERO_BALANCE);
 
-  let totalTransferableSpend;
-  let totalNativeSpend;
-
   if (isNative) {
-    totalTransferableSpend = isProxy || isMultisig ? amountBN : amountBN.add(feeBN);
-    totalNativeSpend = xcmFeeBN;
-  } else {
-    totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
-    totalNativeSpend = feeBN;
+    const totalTransferableSpend = isAuthority
+      ? amountBN.add(deliveryFeeBN).add(xcmFeeBN)
+      : amountBN.add(feeBN).add(deliveryFeeBN).add(xcmFeeBN);
+
+    return isLteThanBalance(totalTransferableSpend, transferableBalance);
   }
+
+  const totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
+  const totalNativeSpend = isAuthority ? deliveryFeeBN : deliveryFeeBN.add(feeBN);
 
   return (
     isLteThanBalance(totalTransferableSpend, transferableBalance) && isLteThanBalance(totalNativeSpend, nativeBalance)
   );
+}
+
+// Delivery fee check is included into insufficientBalanceForXcmFee
+// this validation is only for Multisig and Proxy
+function insufficientBalanceForDeliveryFee(
+  { nativeBalance, transferableAsset, transferableBalance, xcmFee, deliveryFee, amount, isNative }: TransferXcmFeeStore,
+  config: Config = { withFormatAmount: true },
+) {
+  const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
+
+  if (!isNative) {
+    return isLteThanBalance(deliveryFeeBN, nativeBalance);
+  }
+
+  const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
+  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+
+  return isLteThanBalance(amountBN.add(deliveryFeeBN).add(xcmFeeBN), transferableBalance);
 }

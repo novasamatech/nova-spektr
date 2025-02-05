@@ -8,10 +8,11 @@ import {
   defineMethod,
   methods,
 } from '@substrate/txwrapper-polkadot';
-import { sortBy, zipWith } from 'lodash';
+import { zipWith } from 'lodash';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { multisigUtils } from '@/entities/multisig';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { getMaxWeight, hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
@@ -651,9 +652,11 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = sortBy(txWrapper.multisigAccount.signatories, 'accountId')
-    .filter(({ accountId }) => accountId !== txWrapper.signer.accountId)
-    .map(({ accountId }) => toAddress(accountId, { prefix: addressPrefix }));
+  const otherSignatories = multisigUtils.getOtherSignatories(
+    txWrapper.multisigAccount,
+    txWrapper.signer.accountId,
+    addressPrefix,
+  );
 
   return {
     chainId: transaction.chainId,

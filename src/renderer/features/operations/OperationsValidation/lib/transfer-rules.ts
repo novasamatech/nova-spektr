@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account } from '@/shared/core';
+import { type Account, type Chain } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
 import {
   type BalanceMap,
@@ -39,7 +39,7 @@ export const TransferRules = {
     }),
     notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: 'transfer.notEnoughBalanceForDepositError',
       source,
       validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: TransferSignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -56,12 +56,17 @@ export const TransferRules = {
       errorText: 'transfer.requiredRecipientError',
       validator: Boolean,
     },
-    incorrectRecipient: {
+    incorrectRecipient: (source: Store<Chain | null>) => ({
       name: 'incorrectRecipient',
       errorText: 'transfer.incorrectRecipientError',
+      source,
       // Second argument for validator is form data, but we need chain
-      validator: (destination: string) => validateAddress(destination),
-    },
+      validator: (destination: string, _: any, chain: Chain) => {
+        if (!chain) return false;
+
+        return validateAddress(destination, chain);
+      },
+    }),
   },
   amount: {
     required: {
@@ -105,7 +110,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isNative, isProxy, isMultisig, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
+        { network, isNative, isProxy, isMultisig, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -114,12 +119,42 @@ export const TransferRules = {
             amount,
             asset: network.asset,
             balance: isXcm || !isNative ? balance.native : balance.balance,
-            xcmFee,
-            fee,
             isNative,
             isProxy,
             isMultisig,
             isXcm,
+            ...fee,
+          },
+          config,
+        );
+      },
+    }),
+    insufficientBalanceForDeliveryFee: (
+      source: Store<TransferAmountFeeStore>,
+      config: { withFormatAmount: boolean } = { withFormatAmount: true },
+    ) => ({
+      name: 'insufficientBalanceForDeliveryFee',
+      errorText: 'transfer.notEnoughBalanceForDeliveryFeeError',
+      source,
+      validator: (
+        amount: string,
+        _: any,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
+      ) => {
+        if (!network) return false;
+        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee) return true;
+
+        return balanceValidation.insufficientBalanceForDeliveryFee(
+          {
+            amount,
+            transferableAsset: network.asset,
+            transferableBalance: balance.balance,
+            nativeBalance: balance.native,
+            isXcm,
+            isNative,
+            isProxy,
+            isMultisig,
+            ...fee,
           },
           config,
         );
@@ -130,12 +165,12 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForXcmFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
       source,
       validator: (
         amount: string,
         _: any,
-        { network, isProxy, isMultisig, isNative, isXcm, balance, fee, xcmFee }: TransferAmountFeeStore,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -145,12 +180,11 @@ export const TransferRules = {
             transferableAsset: network.asset,
             transferableBalance: balance.balance,
             nativeBalance: balance.native,
-            xcmFee,
-            fee,
             isXcm,
             isNative,
             isProxy,
             isMultisig,
+            ...fee,
           },
           config,
         );

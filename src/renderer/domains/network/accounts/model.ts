@@ -16,7 +16,7 @@ const $populated = restore(
 
 const populateFx = createEffect((): Promise<AnyAccount[]> => storageService.accounts2.readAll());
 
-const createAccountsFx = createEffect(async (accounts: AnyAccount[]): Promise<AnyAccount[]> => {
+const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<AnyAccount[]> => {
   return storageService.accounts2
     .createAll(accounts.map(a => ({ ...a, id: accountsService.uniqId(a) })))
     .then(x => x ?? []);

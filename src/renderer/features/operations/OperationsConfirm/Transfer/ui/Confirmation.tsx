@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -24,7 +24,9 @@ type Props = {
 
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletModel.$wallets);
+  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
@@ -49,8 +51,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
-
-  const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
     return null;
@@ -140,6 +140,18 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={confirmStore.xcmFee} asset={confirmStore.xcmAsset} />
               <AssetFiatBalance asset={confirmStore.xcmAsset} amount={confirmStore.xcmFee} />
+            </div>
+          </DetailRow>
+        )}
+
+        {isXcm && nonNullable(confirmStore.deliveryFee) && (
+          <DetailRow
+            label={<FootnoteText className="text-text-tertiary">{t('operation.deliveryFee')}</FootnoteText>}
+            className="text-text-primary"
+          >
+            <div className="flex flex-col items-end gap-y-0.5">
+              <AssetBalance value={confirmStore.deliveryFee} asset={confirmStore.chain.assets[0]} />
+              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.deliveryFee} />
             </div>
           </DetailRow>
         )}

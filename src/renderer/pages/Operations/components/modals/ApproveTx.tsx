@@ -23,7 +23,7 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { useMultisigEvent } from '@/entities/multisig';
+import { multisigUtils, useMultisigEvent } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -153,17 +153,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
 
   const getMultisigTx = (signer: Address): Transaction => {
     const signerAddress = toAddress(signer, { prefix: chain?.addressPrefix });
-
-    const otherSignatories = account.signatories.reduce<Address[]>((acc, s) => {
-      const signatoryAddress = toAddress(s.accountId, { prefix: chain?.addressPrefix });
-
-      if (signerAddress !== signatoryAddress) {
-        acc.push(signatoryAddress);
-      }
-
-      return acc;
-    }, []);
-
+    const otherSignatories = multisigUtils.getOtherSignatories(account, signer, chain.addressPrefix);
     const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
 
     return {
@@ -172,7 +162,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
       type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
-        otherSignatories: otherSignatories.sort(),
+        otherSignatories,
         maxWeight: txWeight,
         maybeTimepoint: {
           height: tx.blockCreated,

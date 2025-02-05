@@ -39,8 +39,6 @@ export const xcmService = {
   parseXcmPalletExtrinsic,
   parseXTokensExtrinsic,
   decodeXcm,
-
-  getParentChain,
 };
 
 async function fetchXcmConfig(): Promise<XcmConfig> {
@@ -218,7 +216,8 @@ type XTokensPayload = ParsedPayload & {
 function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem' | 'weightLimit'>): XcmPalletPayload {
   const xcmVersion = Object.keys(args.dest as NonNullable<unknown>)[0];
 
-  const assetInterior = get(args.assets, `${xcmVersion}[0].id.Concrete.interior`) as unknown as NonNullable<unknown>;
+  const assetInterior = (get(args.assets, `${xcmVersion}[0].id.Concrete.interior`) ||
+    get(args.assets, `${xcmVersion}[0].id.interior`)) as unknown as NonNullable<unknown>;
   const destInterior = get(args.dest, `${xcmVersion}.interior`) as unknown as NonNullable<unknown>;
   const beneficiaryInterior = get(args.beneficiary, `${xcmVersion}.interior`) as unknown as NonNullable<unknown>;
 
@@ -234,14 +233,20 @@ function parseXcmPalletExtrinsic(args: Omit<XcmPalletTransferArgs, 'feeAssetItem
   };
 
   const beneficiaryJunction = Object.keys(beneficiaryInterior)[0];
-  const substrateAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountId32.id`) as unknown as string;
-  const ethAccountId = get(beneficiaryInterior, `${beneficiaryJunction}.AccountKey20.key`) as unknown as string;
-  parsedPayload.destAccountId = substrateAccountId || ethAccountId;
+
+  const beneficiaryCols = xcmUtils.getJunctionCols<{ AccountId32: any; AccountKey20: any }>(
+    beneficiaryInterior,
+    beneficiaryJunction,
+  );
+
+  parsedPayload.destAccountId = (get(beneficiaryCols, 'AccountId32.id') ||
+    get(beneficiaryCols, 'AccountKey20.key')) as unknown as string;
 
   const destJunction = Object.keys(destInterior)[0];
-  parsedPayload.destParachain = Number(xcmUtils.toRawString(get(destInterior, `${destJunction}.Parachain`)));
+  const destParachain = xcmUtils.getJunctionCols<{ Parachain: string }>(destInterior, destJunction);
+  parsedPayload.destParachain = Number(xcmUtils.toRawString(get(destParachain, 'Parachain')));
 
-  if (!parsedPayload.isRelayToken) {
+  if (!parsedPayload.isRelayToken && assetInterior) {
     const assetJunction = Object.keys(assetInterior)[0];
     const cols = xcmUtils.getJunctionCols<{ GeneralIndex: string; Parachain: number }>(assetInterior, assetJunction);
 
@@ -280,10 +285,8 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   parsedPayload.toRelayChain = destJunction === 'X1';
 
   if (parsedPayload.toRelayChain) {
-    const substrateAccountId = get(destInterior, `X1.AccountId32.id`) as unknown as string;
-    const ethAccountId = get(destInterior, `X1.AccountKey20.key`) as unknown as string;
-
-    parsedPayload.destAccountId = substrateAccountId || ethAccountId;
+    const cols = xcmUtils.getJunctionCols<{ AccountId32?: any; AccountKey20?: any }>(destInterior, destJunction);
+    parsedPayload.destAccountId = (get(cols, 'AccountId32.id') || get(cols, 'AccountKey20.key')) as unknown as string;
   } else {
     const cols = xcmUtils.getJunctionCols<{ Parachain?: number }>(destInterior, destJunction);
     if (cols.Parachain) {
@@ -362,12 +365,6 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
   };
 }
 
-function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
-  if (!chain.parentId) return chain;
-
-  return chains[chain.parentId];
-}
-
 async function getDeliveryFeeFromConfig({
   config,
   originChain,
@@ -382,28 +379,22 @@ async function getDeliveryFeeFromConfig({
   originApi: ApiPromise;
   destinationChainId: number;
   extrinsic: SubmittableExtrinsic<'promise'>;
-}): Promise<BN> {
+}): Promise<BN | null> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  if (!deliveryFeeConfig) return new BN(0);
+  if (!deliveryFeeConfig) return null;
 
-  let deliveryFactor: string;
+  const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
+  const directionFactor = {
+    toParent: () => query.upwardDeliveryFeeFactor(),
+    toParachain: () => query.deliveryFeeFactor(destinationChainId),
+  };
 
-  if (direction === 'toParent') {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
-    ).toString();
-  } else {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
-    ).toString();
-  }
-
+  const deliveryFactor = (await directionFactor[direction]()).toString();
   const weight = new BN(extrinsic.encodedLength).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
-  const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 
-  return deliveryFee;
+  return feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 }
