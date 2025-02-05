@@ -18,7 +18,6 @@ import {
   type NoID,
   NotificationType,
   type ProxiedAccount,
-  ProxyVariant,
   SigningType,
   WalletType,
 } from '@/shared/core';
@@ -148,7 +147,7 @@ type FilteredMultisigParams = {
 };
 
 const filterMultisigFx = createEffect(
-  async ({ multisigAccounts, apis, indexedMultisigs }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
+  async ({ multisigAccounts, indexedMultisigs }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
     // filter out multisigs that already exists
     const filteredMultisigs = indexedMultisigs.filter((multisigResult) =>
       nullable(
@@ -160,43 +159,54 @@ const filterMultisigFx = createEffect(
       ),
     );
 
-    const { regularMultisigs, flexibleMultisigs } = await multisigService.findFlexibleMultisigs(
-      apis,
-      filteredMultisigs,
-    );
+    if (filteredMultisigs.length === 0) return [];
 
-    const buildFlex = flexibleMultisigs.map(
-      ({ threshold, proxied, accountId, signatories, chain }): FlexibleMultisigResponse => {
-        return {
-          type: 'flexibleMultisig',
-          activated: Boolean(proxied),
-          account: multisigUtils.buildFlexibleMultisigAccount({
-            threshold,
-            proxyAccount: proxied
-              ? ({
-                  ...proxied,
-                  accountType: AccountType.PROXIED,
-                  proxyVariant: ProxyVariant.PURE,
-                } as ProxiedAccount)
-              : undefined,
-            accountId,
-            signatories,
-            chain,
-          }),
-          chain,
-        };
-      },
-    );
+    // TODO: uncomment when flexible multisigs will be supported
+    // const { regularMultisigs, flexibleMultisigs } = await multisigService.findFlexibleMultisigs(
+    //   apis,
+    //   filteredMultisigs,
+    // );
 
-    const buildRegular = regularMultisigs.map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
+    // const buildFlex = flexibleMultisigs.map(
+    //   ({ threshold, proxied, accountId, signatories, chain }): FlexibleMultisigResponse => {
+    //     return {
+    //       type: 'flexibleMultisig',
+    //       activated: Boolean(proxied),
+    //       account: multisigUtils.buildFlexibleMultisigAccount({
+    //         threshold,
+    //         proxyAccount: proxied
+    //           ? ({
+    //               ...proxied,
+    //               accountType: AccountType.PROXIED,
+    //               proxyVariant: ProxyVariant.PURE,
+    //             } as ProxiedAccount)
+    //           : undefined,
+    //         accountId,
+    //         signatories,
+    //         chain,
+    //       }),
+    //       chain,
+    //     };
+    //   },
+    // );
+
+    // const buildRegular = regularMultisigs.map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
+    //   return {
+    //     type: 'multisig',
+    //     account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
+    //     chain,
+    //   };
+    // });
+
+    // return [...buildRegular, ...buildFlex];
+
+    return filteredMultisigs.map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
       return {
         type: 'multisig',
         account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
         chain,
       };
     });
-
-    return [...buildRegular, ...buildFlex];
   },
 );
 
