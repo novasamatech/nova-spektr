@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
@@ -14,6 +15,7 @@ const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<string>();
+const deliveryFeeRequested = createEvent<SubmittableExtrinsic<'promise'>>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
 const amountChanged = createEvent<string>();
 const destinationChanged = createEvent<AccountId>();
@@ -22,6 +24,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
+const $deliveryFee = createStore<string | null>(null);
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
@@ -35,6 +38,47 @@ const fetchConfigFx = attach({ effect: xcmModel.effects.fetchConfigFx });
 const getXcmParaIdFx = createEffect((api: ApiPromise): Promise<number | null> => {
   return getParachainId(api);
 });
+
+type DeliveryFeeParams = {
+  api: ApiPromise | null;
+  config: XcmConfig | null;
+  parachainId: number | null;
+  extrinsic?: SubmittableExtrinsic<'promise'> | null;
+  destinationChain: Chain | null;
+};
+const getDeliveryFeeFx = createEffect(
+  async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
+    if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
+      return null;
+    }
+
+    const originChainId = api.genesisHash.toHex();
+    if (originChainId === destinationChain.chainId) {
+      return null;
+    }
+
+    return xcmService.getDeliveryFeeFromConfig({
+      config,
+      originApi: api,
+      originChain: toLocalChainId(originChainId),
+      destinationChainId: parachainId,
+      extrinsic,
+      destinationChain,
+    });
+  },
+);
+
+const $xcmChain = combine(
+  {
+    chains: networkModel.$chains,
+    xcmChainId: $xcmChainId,
+  },
+  ({ chains, xcmChainId }) => {
+    if (!xcmChainId) return null;
+
+    return chains[xcmChainId] ?? null;
+  },
+);
 
 const $xcmAsset = combine(
   {
@@ -104,9 +148,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $apiDestination = combine(
@@ -203,6 +246,7 @@ const $xcmData = combine(
   {
     api: $api,
     xcmFee: $xcmFee,
+    deliveryFee: $deliveryFee,
     xcmAsset: $txAsset,
     xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
@@ -263,21 +307,53 @@ sample({
   target: $xcmParaId,
 });
 
+sample({
+  clock: deliveryFeeRequested,
+  source: {
+    api: $api,
+    parachainId: $xcmParaId,
+    config: $config,
+    xcmChain: $xcmChain,
+  },
+  fn: ({ xcmChain, ...rest }, extrinsic) => ({
+    destinationChain: xcmChain,
+    extrinsic,
+    ...rest,
+  }),
+  target: getDeliveryFeeFx,
+});
+
+sample({
+  clock: getDeliveryFeeFx.doneData,
+  fn: (deliveryFee) => deliveryFee?.toString() || null,
+  target: $deliveryFee,
+});
+
+sample({
+  clock: [xcmChainSelected, getDeliveryFeeFx.fail],
+  fn: () => null,
+  target: $deliveryFee,
+});
+
 export const xcmTransferModel = {
   $config,
   $apiDestination,
   $xcmData,
   $xcmFee,
-  $isXcmFeeLoading,
+  $deliveryFee,
   $transferDirections,
   $xcmParaId,
   $xcmChainId,
+  $xcmChain,
+  $isXcmFeeLoading,
+  $isDeliveryFeeLoading: getDeliveryFeeFx.pending,
 
   events: {
     xcmStarted,
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
+    deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,

@@ -89,7 +89,10 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTx: $coreTx },
+  source: {
+    networkStore: $networkStore,
+    coreTx: $coreTx,
+  },
   filter: ({ networkStore }) => Boolean(networkStore),
   fn: ({ networkStore, coreTx }, { formData }) => ({
     event: [

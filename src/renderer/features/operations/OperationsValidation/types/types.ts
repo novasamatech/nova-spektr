@@ -94,14 +94,15 @@ export type AmountFeeStore = {
 };
 
 export type TransferAmountFeeStore = {
-  fee: string;
   balance: BalanceMap;
   network: NetworkStore | null;
   isXcm: boolean;
   isNative: boolean;
   isMultisig: boolean;
   isProxy: boolean;
+  fee: string;
   xcmFee: string;
+  deliveryFee: string | null;
 };
 
 export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {
@@ -110,16 +111,10 @@ export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network
   balance: string;
 };
 
-export type TransferXcmFeeStore = {
-  isXcm: boolean;
-  isNative: boolean;
+export type TransferXcmFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {
   transferableAsset: Asset;
   transferableBalance: string;
   nativeBalance: string;
-  isMultisig: boolean;
-  isProxy: boolean;
-  xcmFee: string;
-  fee: string;
   amount: string;
 };
 

@@ -39,8 +39,6 @@ export const xcmService = {
   parseXcmPalletExtrinsic,
   parseXTokensExtrinsic,
   decodeXcm,
-
-  getParentChain,
 };
 
 async function fetchXcmConfig(): Promise<XcmConfig> {
@@ -367,12 +365,6 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
   };
 }
 
-function getParentChain(chain: Chain, chains: Record<ChainId, Chain>) {
-  if (!chain.parentId) return chain;
-
-  return chains[chain.parentId];
-}
-
 async function getDeliveryFeeFromConfig({
   config,
   originChain,
@@ -387,28 +379,22 @@ async function getDeliveryFeeFromConfig({
   originApi: ApiPromise;
   destinationChainId: number;
   extrinsic: SubmittableExtrinsic<'promise'>;
-}): Promise<BN> {
+}): Promise<BN | null> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  if (!deliveryFeeConfig) return new BN(0);
+  if (!deliveryFeeConfig) return null;
 
-  let deliveryFactor: string;
+  const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
+  const directionFactor = {
+    toParent: () => query.upwardDeliveryFeeFactor(),
+    toParachain: () => query.deliveryFeeFactor(destinationChainId),
+  };
 
-  if (direction === 'toParent') {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].upwardDeliveryFeeFactor()
-    ).toString();
-  } else {
-    deliveryFactor = (
-      await originApi.query[camelCase(deliveryFeeConfig.factorPallet)].deliveryFeeFactor(destinationChainId)
-    ).toString();
-  }
-
+  const deliveryFactor = (await directionFactor[direction]()).toString();
   const weight = new BN(extrinsic.encodedLength).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
-  const deliveryFee = feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 
-  return deliveryFee;
+  return feeSize.mul(new BN(deliveryFactor)).div(BN_TEN.pow(FACTOR_MULTIPLIER));
 }

@@ -2,16 +2,18 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
-import { type Chain, type MultisigAccount } from '@/shared/core';
+import { type ChainId, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import { Button, HelpText, Icon, Identicon, InputHint, Select } from '@/shared/ui';
-import { Field, Input } from '@/shared/ui-kit';
+import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Address as AccountAddress } from '@/shared/ui-entities';
+import { Box, Field, Input, Select } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountAddress, AccountSelectModal, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -30,7 +32,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
+        <AlertForProxyFee />
         <XcmChainSelector />
         <AccountSelector />
         <Signatories />
@@ -40,6 +42,9 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
       </div>
+      <Box>
+        <AlertForDeliveryFee />
+      </Box>
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -47,7 +52,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   );
 };
 
-const ProxyFeeAlert = () => {
+const AlertForProxyFee = () => {
   const {
     fields: { account },
   } = useForm(formModel.$transferForm);
@@ -89,38 +94,42 @@ const AccountSelector = () => {
     return null;
   }
 
-  const options = accounts.map(({ account, balances }) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+  const selectAccount = (id: AnyAccount['id']) => {
+    const accountMatch = accounts.find(({ account }) => account.id === id);
+    if (!accountMatch) return;
 
-    return {
-      id: account.id.toString(),
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balances.balance} asset={network.asset} />
-        </div>
-      ),
-    };
-  });
+    account.onChange(accountMatch.account);
+  };
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <Field text={t('operation.selectAccountLabel')}>
       <Select
-        label={t('operation.selectAccountLabel')}
         placeholder={t('operation.selectAccount')}
-        selectedId={account.value?.id?.toString()}
-        options={options}
-        onChange={({ value }) => account.onChange(value)}
-      />
-    </div>
+        value={account.value ? account.value.id.toString() : null}
+        onChange={selectAccount}
+      >
+        {accounts.map(({ account, balances }) => {
+          const isShard = accountUtils.isVaultShardAccount(account);
+          const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+
+          return (
+            <Select.Item key={account.id} value={account.id}>
+              <div className="flex w-full justify-between">
+                <AccountAddress
+                  showIcon
+                  iconSize={20}
+                  variant="short"
+                  address={address}
+                  title={isShard ? toShortAddress(address, 16) : account.name}
+                  canCopy={false}
+                />
+                <AssetBalance value={balances.balance} asset={network.asset} />
+              </div>
+            </Select.Item>
+          );
+        })}
+      </Select>
+    </Field>
   );
 };
 
@@ -165,33 +174,36 @@ const XcmChainSelector = () => {
     return null;
   }
 
-  const getXcmOptions = (chains: Chain[]) => {
-    const [nativeLabel, xcmLabel] = ['transfer.onChainPlaceholder', 'transfer.crossChainPlaceholder'].map(
-      (title, index) => ({
-        id: index.toString(),
-        value: index.toString(),
-        element: <HelpText className="text-text-secondary">{t(title)}</HelpText>,
-        disabled: true,
-      }),
-    );
-    const [nativeChain, ...xcmChains] = chains.map((chain) => ({
-      id: chain.chainId,
-      value: chain,
-      element: <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />,
-    }));
+  const [nativeChain, ...xcmChains] = chains;
 
-    return [nativeLabel, nativeChain, xcmLabel, ...xcmChains];
+  const selectChain = (chainId: ChainId) => {
+    const chainMatch = chains.find((chain) => chain.chainId === chainId);
+    if (!chainMatch) return;
+
+    xcmChain.onChange(chainMatch);
   };
 
   return (
-    <Select
-      label={t('transfer.destinationChainLabel')}
-      placeholder={t('transfer.destinationChainPlaceholder')}
-      invalid={xcmChain.hasError()}
-      selectedId={xcmChain.value.chainId}
-      options={getXcmOptions(chains)}
-      onChange={({ value }) => xcmChain.onChange(value)}
-    />
+    <Field text={t('transfer.destinationChainLabel')}>
+      <Select
+        placeholder={t('transfer.destinationChainPlaceholder')}
+        value={xcmChain.value.chainId}
+        onChange={selectChain}
+      >
+        <Select.Group title={t('transfer.onChainPlaceholder')}>
+          <Select.Item value={nativeChain.chainId}>
+            <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
+          </Select.Item>
+        </Select.Group>
+        <Select.Group title={t('transfer.crossChainPlaceholder')}>
+          {xcmChains.map((chain) => (
+            <Select.Item key={chain.chainId} value={chain.chainId}>
+              <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
+            </Select.Item>
+          ))}
+        </Select.Group>
+      </Select>
+    </Field>
   );
 };
 
@@ -304,7 +316,6 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction?.wrappedTx || fakeTx}
-        extraFee={deliveryFee}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
@@ -319,7 +330,38 @@ const FeeSection = () => {
           onFeeLoading={formModel.events.isXcmFeeLoadingChanged}
         />
       )}
+
+      {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
     </div>
+  );
+};
+
+const AlertForDeliveryFee = () => {
+  const {
+    fields: { account },
+  } = useForm(formModel.$transferForm);
+
+  const deliveryFee = useUnit(formModel.$deliveryFee);
+  const { native } = useUnit(formModel.$accountBalance);
+  const network = useUnit(formModel.$networkStore);
+  const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
+  const asset = network?.chain.assets.at(0);
+
+  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError) {
+    return null;
+  }
+
+  const formattedFee = formatBalance(deliveryFee, asset.precision).value;
+  const formattedBalance = formatBalance(native, asset.precision).value;
+
+  return (
+    <DeliveryFeeAlert
+      address={toAddress(account.value.accountId, { prefix: network.chain.addressPrefix })}
+      fee={formattedFee}
+      balance={formattedBalance}
+      symbol={asset.symbol}
+      onClose={account.resetErrors}
+    />
   );
 };
 
