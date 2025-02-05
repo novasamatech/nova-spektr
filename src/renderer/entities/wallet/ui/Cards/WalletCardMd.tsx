@@ -5,24 +5,14 @@ import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
-type Props = {
+type Props = PropsWithChildren<{
   wallet: Wallet;
   description?: string | ReactNode;
   meta?: ReactNode;
-  prefix?: ReactNode;
-  hideIcon?: boolean;
   onClick?: () => void;
-};
+}>;
 
-export const WalletCardMd = ({
-  wallet,
-  description,
-  meta,
-  prefix,
-  hideIcon,
-  children,
-  onClick,
-}: PropsWithChildren<Props>) => {
+export const WalletCardMd = ({ wallet, description, meta, children, onClick }: Props) => {
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
@@ -46,9 +36,7 @@ export const WalletCardMd = ({
         })}
         onClick={handleClick(onClick)}
       >
-        {prefix}
-
-        {!hideIcon && <WalletIcon type={wallet.type} size={20} className="shrink-0" />}
+        <WalletIcon type={wallet.type} size={20} className="shrink-0" />
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-x-2">
             <BodyText

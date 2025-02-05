@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
-import { WalletCardMd } from '@/entities/wallet';
+import { WalletManagement } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
 // TODO invert this dependency
@@ -21,7 +21,7 @@ type Props = {
   icon: IconNames;
   wallets: Wallet[];
   query: string;
-  onSelect: (wallet: Wallet) => unknown;
+  onSelect: (wallet: Wallet) => void;
 };
 
 export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {
@@ -49,24 +49,16 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map((wallet) => (
-              <WalletCardMd
-                hideIcon
+              <WalletManagement
                 key={wallet.id}
                 wallet={wallet}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                 }
-                prefix={
-                  wallet.isActive ? (
-                    <Icon name="checkmark" className="shrink-0 text-icon-accent" size={20} />
-                  ) : (
-                    <div className="row-span-2 h-5 w-5 shrink-0" />
-                  )
-                }
                 onClick={() => onSelect(wallet)}
               >
                 <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletCardMd>
+              </WalletManagement>
             ))}
           </Box>
         </Accordion.Content>

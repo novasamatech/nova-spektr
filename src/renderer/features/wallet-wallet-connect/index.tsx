@@ -50,7 +50,8 @@ walletWalletConnectFeature.inject(walletGroupSlot, {
 });
 
 export { walletWalletConnectFeature } from './model/feature';
-export { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+export { WalletGroup } from './components/WalletGroup';
+export { walletActionsSlot } from './components/WalletRow';
 export { type InitConnectParams, type InitReconnectParams } from './lib/types';
 export { DEFAULT_POLKADOT_METHODS } from './lib/constants';
 export { walletConnectService } from './lib/service';
