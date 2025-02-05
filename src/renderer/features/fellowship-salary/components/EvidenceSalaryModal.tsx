@@ -7,13 +7,14 @@ import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
 
+import { EvidenceInfo } from './EvidenceInfo';
 import { SalaryInfo } from './SalaryInfo';
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipSalaryFeature.input);
   const currentMember = useUnit(member.$member);
-  const [tab, setTab] = useState('salary');
+  const [tab, setTab] = useState('evidence');
 
   const disabled = nullable(currentMember) || nullable(featureInput);
 
@@ -30,12 +31,13 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
         <Tabs value={tab} onChange={setTab}>
           <Box padding={[0, 5]}>
             <Tabs.List>
-              <Tabs.Trigger value="evidence" disabled>
-                {t('fellowship.salary.evidence')}
-              </Tabs.Trigger>
+              <Tabs.Trigger value="evidence">{t('fellowship.salary.evidence')}</Tabs.Trigger>
               <Tabs.Trigger value="salary">{t('fellowship.salary.salary')}</Tabs.Trigger>
             </Tabs.List>
           </Box>
+          <Tabs.Content value="evidence">
+            <EvidenceInfo />
+          </Tabs.Content>
           <Tabs.Content value="salary">
             <SalaryInfo />
           </Tabs.Content>

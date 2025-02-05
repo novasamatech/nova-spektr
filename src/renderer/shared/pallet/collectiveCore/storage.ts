@@ -47,14 +47,9 @@ export const storage = {
   /**
    * Some evidence together with the desired outcome for which it was presented.
    */
-  memberEvidences(type: PalletType, api: ApiPromise, addresses: AccountId[]) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
-        ['status', pjsSchema.optional(collectiveCoreMemberEvidence)],
-      ),
-    );
+  memberEvidence(type: PalletType, api: ApiPromise, account: AccountId) {
+    const schema = pjsSchema.optional(collectiveCoreMemberEvidence);
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'memberEvidences').entries(addresses)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'memberEvidence')(account)).then(schema.parse);
   },
 };

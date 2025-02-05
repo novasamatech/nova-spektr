@@ -7,7 +7,7 @@ import { SmallTitleText } from '@/shared/ui';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
-import { referendumDetailsModel } from '../model/details';
+import { referendumDetails } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/feature';
 
 import { Card } from './Card';
@@ -27,12 +27,12 @@ type Props = {
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
   useGate(referendumsDetailsFeatureStatus.gate);
-  useGate(referendumDetailsModel.gate, { referendumId });
+  useGate(referendumDetails.gate, { referendumId });
 
   const { t } = useI18n();
 
-  const referendum = useUnit(referendumDetailsModel.$referendum);
-  const pendingReferendum = useUnit(referendumDetailsModel.$pending);
+  const referendum = useUnit(referendumDetails.$referendum);
+  const pendingReferendum = useUnit(referendumDetails.$pending);
 
   const loadingState = pendingReferendum && nullable(referendum);
 

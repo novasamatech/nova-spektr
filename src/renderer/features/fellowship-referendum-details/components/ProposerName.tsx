@@ -5,16 +5,16 @@ import { nullable, toAddress } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { referendumDetailsModel } from '../model/details';
+import { referendumDetails } from '../model/details';
 import { referendumsDetailsFeatureStatus } from '../model/feature';
 
 export const ProposerName = () => {
   const { t } = useI18n();
 
   const input = useUnit(referendumsDetailsFeatureStatus.input);
-  const proposer = useUnit(referendumDetailsModel.$proposer);
-  const proposerIdentity = useUnit(referendumDetailsModel.$proposerIdentity);
-  const isProposerLoading = useUnit(referendumDetailsModel.$pendingProposer);
+  const proposer = useUnit(referendumDetails.$proposer);
+  const proposerIdentity = useUnit(referendumDetails.$proposerIdentity);
+  const isProposerLoading = useUnit(referendumDetails.$pendingProposer);
 
   if (nullable(proposer) || nullable(input)) {
     return null;

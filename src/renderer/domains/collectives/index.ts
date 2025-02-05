@@ -6,6 +6,7 @@ export {
   tracksService,
   votingService,
   salaryService,
+  evidenceService,
   members,
   referendums,
   referendumMeta,
@@ -13,6 +14,7 @@ export {
   voting,
   salary,
   feed,
+  evidence,
 } from './init';
 
 export * as config from './configuration/inject';

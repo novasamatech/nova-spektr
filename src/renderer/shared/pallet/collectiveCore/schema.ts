@@ -19,4 +19,7 @@ export const collectiveCoreMemberStatus = pjsSchema.object({
 });
 
 export type CollectiveCoreMemberEvidence = z.infer<typeof collectiveCoreMemberEvidence>;
-export const collectiveCoreMemberEvidence = pjsSchema.enumType('Retention', 'Promotion');
+export const collectiveCoreMemberEvidence = pjsSchema.tupleMap(
+  ['wish', pjsSchema.enumType('Retention', 'Promotion')],
+  ['value', pjsSchema.bytesHex],
+);
