@@ -1,22 +1,11 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Wallet, type WalletType } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
-import { cnTw, performSearch } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
+import { performSearch } from '@/shared/lib/utils';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { WalletCardMd, WalletIcon } from '@/entities/wallet';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-import { walletConnectService } from '../lib/service';
-import { walletConnect } from '../model/connect';
+import { WalletIcon } from '@/entities/wallet';
 
-// TODO invert this dependency
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
-
-export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
+import { WalletRow } from './WalletRow';
 
 type Props = {
   title: string;
@@ -27,8 +16,6 @@ type Props = {
 };
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
-  const sessions = useUnit(walletConnect.$sessions);
-
   const filteredWallets = performSearch({
     query,
     records: wallets,
@@ -49,36 +36,9 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => {
-              const accounts = wallet.accounts.filter(walletConnectService.isWalletConnectAccount);
-              const connected = walletConnectService.areAccountsConnected(sessions, accounts);
-
-              return (
-                <WalletCardMd
-                  key={wallet.id}
-                  hideIcon
-                  wallet={wallet}
-                  description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                  }
-                  prefix={
-                    wallet.isActive ? (
-                      <Icon name="checkmark" className="shrink-0 text-icon-accent" size={20} />
-                    ) : (
-                      <div className="row-span-2 h-5 w-5 shrink-0" />
-                    )
-                  }
-                  meta={
-                    <span
-                      className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')}
-                    />
-                  }
-                  onClick={() => onSelect(wallet)}
-                >
-                  <Slot id={walletActionsSlot} props={{ wallet }} />
-                </WalletCardMd>
-              );
-            })}
+            {filteredWallets.map(wallet => (
+              <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
+            ))}
           </Box>
         </Accordion.Content>
       </Accordion>

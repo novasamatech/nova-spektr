@@ -53,7 +53,6 @@ export interface WatchOnlyWallet extends Wallet {
   accounts: VaultBaseAccount[];
 }
 
-// TODO: try to move signatories data out of account
 export interface MultisigWallet extends Wallet {
   type: WalletType.MULTISIG;
   accounts: MultisigAccount[];

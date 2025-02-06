@@ -5,9 +5,9 @@ import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { WalletCardMd, WalletIcon } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
 
@@ -25,6 +25,7 @@ type Props = {
 
 export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletsModel.$wallets);
 
   const filteredWallets = performSearch({
@@ -48,24 +49,16 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => (
-              <WalletCardMd
+              <WalletManagement
                 key={wallet.id}
-                hideIcon
                 wallet={wallet}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                 }
-                prefix={
-                  wallet.isActive ? (
-                    <Icon name="checkmark" className="shrink-0 text-icon-accent" size={20} />
-                  ) : (
-                    <div className="row-span-2 h-5 w-5 shrink-0" />
-                  )
-                }
                 onClick={() => onSelect(wallet)}
               >
                 <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletCardMd>
+              </WalletManagement>
             ))}
           </Box>
         </Accordion.Content>
