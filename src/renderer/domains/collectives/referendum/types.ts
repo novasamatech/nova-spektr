@@ -20,7 +20,10 @@ export type OngoingReferendum = {
   id: ReferendumId;
   origin: string;
   track: TrackId;
-  proposal: HexString;
+  proposal: {
+    type: 'Inline' | 'Lookup' | 'Legacy';
+    data: HexString;
+  };
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

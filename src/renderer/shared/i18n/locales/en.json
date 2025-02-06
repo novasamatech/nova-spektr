@@ -366,6 +366,8 @@
     "tasks": {
       "cardTitle": "Actions Required",
       "skip": "Skip for now",
+      "emptyTitle": "All tasks completed",
+      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "task": {
         "requestSalary": {
           "title": "Request your salary",
@@ -378,6 +380,15 @@
           "left": "Left: <duration/>",
           "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
           "request": "Withdraw"
+        },
+        "promotionVoting": {
+          "title": "Review promotion evidence"
+        },
+        "retentionVoting": {
+          "title": "Review retention evidence"
+        },
+        "anyReferendum": {
+          "title": "Review referendum"
         }
       }
     },

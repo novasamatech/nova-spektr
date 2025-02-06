@@ -45,7 +45,9 @@ const $referendumMeta = combine($meta, gate.state, (meta, { referendumId }) => {
 const $proposer = combine($referendum, $api, (referendum, api) => {
   if (nullable(api) || nullable(referendum) || referendumService.isCompleted(referendum)) return null;
 
-  return evidenceService.getProposalAccount(api, referendum.proposal);
+  return referendum.proposal.type === 'Inline'
+    ? evidenceService.getProposalAccount(api, referendum.proposal.data)
+    : null;
 });
 
 const $proposerIdentity = combine($identities, $proposer, (identities, proposer) => {

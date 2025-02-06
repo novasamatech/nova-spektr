@@ -1,0 +1,75 @@
+import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
+
+import { useI18n } from '@/shared/i18n';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { Button, TitleText } from '@/shared/ui';
+import { Box, FilledIconButton } from '@/shared/ui-kit';
+import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
+import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { fellowshipTasksFeature } from '../../model/feature';
+import { referendumList } from '../../model/referendums';
+
+const {
+  views: { VotingModal },
+} = fellowshipVotingFeature;
+
+type Props = {
+  referendum: OngoingReferendum;
+  canSkip: boolean;
+  onSkip: VoidFunction;
+};
+
+export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
+  const { t } = useI18n();
+  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
+
+  const input = useUnit(fellowshipTasksFeature.input);
+  const tracks = useUnit(referendumList.$tracks);
+
+  const api = input?.api;
+  const track = tracks.find(t => t.id === referendum.track);
+  if (nullable(track) || nullable(api)) return null;
+
+  const proposer =
+    referendum.proposal.type === 'Inline' ? evidenceService.getProposalAccount(api, referendum.proposal.data) : null;
+
+  useEffect(() => {
+    if (proposer) {
+      referendumList.requestEvidence(proposer);
+    }
+  }, [proposer]);
+
+  const isRetentionTrack = tracksService.isRetentionTrack(track.id);
+  const isPromotionTrack = tracksService.isPromotionTrack(track.id);
+
+  let title = t('fellowship.tasks.task.anyReferendum.title');
+
+  if (isRetentionTrack) {
+    title = t('fellowship.tasks.task.retentionVoting.title');
+  }
+  if (isPromotionTrack) {
+    title = t('fellowship.tasks.task.promotionVoting.title');
+  }
+
+  return (
+    <>
+      <Box fillContainer padding={5} gap={5}>
+        <TitleText>{title}</TitleText>
+        <Box grow={1} />
+        <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
+          <Box direction="row" gap={3}>
+            <FilledIconButton variant="negative" icon="thumbDown" onClick={() => setDecision('nay')} />
+            <FilledIconButton variant="positive" icon="thumbUp" onClick={() => setDecision('aye')} />
+          </Box>
+          {canSkip && (
+            <Button variant="text" onClick={onSkip}>
+              {t('fellowship.tasks.skip')}
+            </Button>
+          )}
+        </Box>
+      </Box>
+      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+    </>
+  );
+};

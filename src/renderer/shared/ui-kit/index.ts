@@ -26,5 +26,6 @@ export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
+export { FilledIconButton } from './FilledIconButton/FilledIconButton';
 
 export { defaultEasing } from './_helpers/easing';
