@@ -114,29 +114,31 @@ async function categorizeMultisigs(
   const regularMultisigs: MultisigResult[] = [];
   const apiMap = new Map<ChainId, ApiPromise>();
 
-  for (const mult of multisigs) {
-    const id = `${mult.chain.chainId}-${mult.accountId}`;
-    const api = apis[mult.chain.chainId];
+  await Promise.all(
+    multisigs.map(async (mult) => {
+      const id = `${mult.chain.chainId}-${mult.accountId}`;
+      const api = apis[mult.chain.chainId];
 
-    const txs = await getPendingMultisigTxs(api, mult.accountId);
+      const txs = await getPendingMultisigTxs(api, mult.accountId);
 
-    if (txs.length === 0) {
-      flexMultisigs.set(id, mult);
-      apiMap.set(mult.chain.chainId, api);
-
-      continue;
-    } else if (txs.length === 1) {
-      const isProxyTx = await isCreateProxyTransaction(api, txs[0], mult.accountId);
-      if (isProxyTx) {
-        shellFlexibleMultisigs.set(id, mult);
+      if (txs.length === 0) {
+        flexMultisigs.set(id, mult);
         apiMap.set(mult.chain.chainId, api);
+
+        return;
+      } else if (txs.length === 1) {
+        const isProxyTx = await isCreateProxyTransaction(api, txs[0], mult.accountId);
+        if (isProxyTx) {
+          shellFlexibleMultisigs.set(id, mult);
+          apiMap.set(mult.chain.chainId, api);
+
+          return;
+        }
       }
 
-      continue;
-    }
-
-    regularMultisigs.push(mult);
-  }
+      regularMultisigs.push(mult);
+    }),
+  );
 
   return { flexMultisigs, shellFlexibleMultisigs, regularMultisigs, apiMap };
 }
@@ -174,7 +176,7 @@ async function findFlexibleMultisigs(
     for (const { account, value } of entries) {
       const proxyMultisigAccount = value.accounts.at(0);
       const id = `${chainId}-${proxyMultisigAccount?.delegate}`;
-      // if no proxy - than delet it from flex
+
       if (!proxyMultisigAccount || (!flexMultisigs.has(id) && !shellFlexibleMultisigs.has(id))) continue;
 
       // For flexible multisig shell creation, the multisig should have no proxy
