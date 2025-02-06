@@ -388,7 +388,8 @@
           "title": "Review retention evidence"
         },
         "anyReferendum": {
-          "title": "Review referendum"
+          "title": "Review referendum",
+          "viewEvidence": "View <a>the full evidence</a>"
         }
       }
     },
