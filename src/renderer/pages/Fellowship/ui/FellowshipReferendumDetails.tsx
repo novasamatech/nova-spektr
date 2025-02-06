@@ -1,11 +1,15 @@
 import { generatePath, useParams } from 'react-router-dom';
 
-import { referendaPallet } from '@/shared/pallet/referenda';
+import { Slot, createSlot } from '@/shared/di';
+import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { Paths } from '@/shared/routes';
-import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
 import { navigationModel } from '@/features/navigation';
 
-const { ReferendumDetailsModal } = fellowshipReferendumDetailsFeature.views;
+export const referendumDetalsPageRouteSlot = createSlot<{
+  referendumId: ReferendumId;
+  isOpen: boolean;
+  onToggle: (open: boolean) => unknown;
+}>();
 
 export const FellowshipReferendumDetails = () => {
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
@@ -17,10 +21,13 @@ export const FellowshipReferendumDetails = () => {
   const id = referendaPallet.helpers.toReferendumId(parseInt(referendumId));
 
   return (
-    <ReferendumDetailsModal
-      referendumId={id}
-      isOpen
-      onToggle={() => navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))}
+    <Slot
+      id={referendumDetalsPageRouteSlot}
+      props={{
+        referendumId: id,
+        isOpen: true,
+        onToggle: () => navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId })),
+      }}
     />
   );
 };

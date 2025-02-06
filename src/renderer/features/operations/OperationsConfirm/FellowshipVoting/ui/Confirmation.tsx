@@ -1,6 +1,7 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
@@ -8,9 +9,7 @@ import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
 // eslint-disable-next-line boundaries/entry-point
-import { VotingConfirmation } from '@/features/fellowship-voting/components/VotingConfirmation';
-// eslint-disable-next-line boundaries/entry-point
-import { votingStatusModel } from '@/features/fellowship-voting/model/votingStatus';
+import { VotingConfirmation, votingStatusModel } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -29,7 +28,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
-  useGate(votingStatusModel.flow, {
+  useFlow(votingStatusModel.flow, {
     referendumId: confirm?.meta?.poll ? referendaPallet.helpers.toReferendumId(parseInt(confirm?.meta?.poll)) : null,
   });
 

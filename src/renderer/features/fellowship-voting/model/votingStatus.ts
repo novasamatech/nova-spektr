@@ -1,6 +1,6 @@
 import { combine, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 
+import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
@@ -10,9 +10,7 @@ import { accountsService } from '@/domains/network';
 import { fellowshipVotingFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
-const flow = createGate<{ referendumId: ReferendumId | null }>({
-  defaultState: { referendumId: null },
-});
+const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
 
 const $referendumId = flow.state.map(({ referendumId }) => referendumId);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);

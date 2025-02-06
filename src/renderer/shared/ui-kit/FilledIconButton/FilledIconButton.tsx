@@ -15,7 +15,7 @@ export const FilledIconButton = ({ variant, disabled, icon, onClick }: Props) =>
   return (
     <button
       type="button"
-      className={cnTw('flex h-10.5 w-10.5 items-center justify-center rounded-full', {
+      className={cnTw('flex h-10.5 w-10.5 shrink-0 items-center justify-center rounded-full', {
         'bg-[#F52163] text-white': variant === 'negative',
         'bg-[#01A63E] text-white': variant === 'positive',
         'opacity-75': disabled,

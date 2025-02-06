@@ -6,7 +6,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Box, Skeleton, Surface } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
-import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
+import { fellowshipReferendumDetailsF } from '@/features/fellowship-referendum-details';
 import { referendumListModel } from '../../model/list';
 
 import { AccountVoting } from './AccountVoting';
@@ -17,8 +17,7 @@ type Props = {
   onSelect: (value: Referendum) => void;
 };
 
-const { ReferendumTrackInfo, ReferendumVoteChart, ReferendumVotingStatusBadge } =
-  fellowshipReferendumDetailsFeature.views;
+const { ReferendumTrackInfo, ReferendumVoteChart, ReferendumVotingStatusBadge } = fellowshipReferendumDetailsF.views;
 
 export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSelect }) => {
   const { t } = useI18n();

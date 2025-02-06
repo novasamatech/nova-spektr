@@ -1,6 +1,7 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useState } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
@@ -17,7 +18,7 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
-  useGate(fellowshipVotingFeature.gate);
+  useFlow(votingStatusModel.flow, { referendumId });
 
   const { t } = useI18n();
 
@@ -40,12 +41,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
 
   return (
     <>
-      <VotingModal
-        referendumId={referendumId}
-        isOpen={nonNullable(decision)}
-        vote={decision}
-        onClose={() => setDecision(null)}
-      />
+      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
       <Box gap={4}>
         <Box direction="row" gap={4}>
           {renderAyeButton ? (

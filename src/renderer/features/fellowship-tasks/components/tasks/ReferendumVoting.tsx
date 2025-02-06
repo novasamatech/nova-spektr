@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
-import { Trans } from 'react-i18next';
+import { useEffect } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -9,15 +8,11 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, TitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
-import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendumList } from '../../model/referendums';
 
-const {
-  views: { ReferendumDetailsModal },
-} = fellowshipReferendumDetailsFeature;
-
 export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
+export const taskVotingDetailsActionSlot = createSlot<{ referendumId: ReferendumId }>();
 
 type Props = {
   referendum: OngoingReferendum;
@@ -27,7 +22,6 @@ type Props = {
 
 export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const { t } = useI18n();
-  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const input = useUnit(fellowshipTasksFeature.input);
   const tracks = useUnit(referendumList.$tracks);
@@ -58,30 +52,18 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   }
 
   return (
-    <>
-      <Box fillContainer padding={5} gap={5}>
-        <TitleText>{title}</TitleText>
-        <span className="flex whitespace-pre text-button-large">
-          <Trans
-            t={t}
-            i18nKey="fellowship.tasks.task.anyReferendum.viewEvidence"
-            components={{
-              a: <Button variant="text" className="inline-flex h-auto p-0" onClick={() => setDetailsOpen(true)} />,
-            }}
-          />
-        </span>
-        <Box grow={1} />
-        <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
-          <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
-          {canSkip && (
-            <Button variant="text" onClick={onSkip}>
-              {t('fellowship.tasks.skip')}
-            </Button>
-          )}
-        </Box>
+    <Box fillContainer padding={5} gap={5}>
+      <TitleText>{title}</TitleText>
+      <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
+      <Box grow={1} />
+      <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
+        <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
+        {canSkip && (
+          <Button variant="text" onClick={onSkip}>
+            {t('fellowship.tasks.skip')}
+          </Button>
+        )}
       </Box>
-
-      <ReferendumDetailsModal referendumId={referendum.id} isOpen={detailsOpen} onToggle={setDetailsOpen} />
-    </>
+    </Box>
   );
 };

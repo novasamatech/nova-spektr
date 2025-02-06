@@ -8,7 +8,7 @@ import { SmallTitleText } from '@/shared/ui';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { referendumDetails } from '../model/details';
-import { referendumsDetailsFeatureStatus } from '../model/feature';
+import { referendumsDetailsFeature } from '../model/feature';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
@@ -28,7 +28,7 @@ type Props = {
 };
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useGate(referendumsDetailsFeatureStatus.gate);
+  useGate(referendumsDetailsFeature.gate);
   useGate(referendumDetails.gate, { referendumId });
 
   const { t } = useI18n();

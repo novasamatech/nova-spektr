@@ -1,6 +1,7 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
@@ -13,7 +14,7 @@ type Props = {
 };
 
 export const WalletVotingInfo = memo(({ referendumId }: Props) => {
-  useGate(votingStatusModel.flow, { referendumId });
+  useFlow(votingStatusModel.flow, { referendumId });
 
   const { t } = useI18n();
   const voting = useUnit(votingStatusModel.$referendumVoting);
