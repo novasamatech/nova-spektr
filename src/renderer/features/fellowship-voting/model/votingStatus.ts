@@ -7,7 +7,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { referendum, referendumService, tracksService, voting } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 
-import { votingFeatureStatus } from './feature';
+import { fellowshipVotingFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const flow = createGate<{ referendumId: ReferendumId | null }>({
@@ -18,8 +18,8 @@ const $referendumId = flow.state.map(({ referendumId }) => referendumId);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
 const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
-const $currentMember = votingFeatureStatus.input.map(input => input?.member ?? null);
-const $votingAccount = votingFeatureStatus.input.map(input => input?.account ?? null);
+const $currentMember = fellowshipVotingFeature.input.map(input => input?.member ?? null);
+const $votingAccount = fellowshipVotingFeature.input.map(input => input?.account ?? null);
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
@@ -43,7 +43,7 @@ const $hasRequiredRank = combine(
 const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
 
 const $accountsVotes = restore(
-  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { account }, data: voting }) => {
+  attachToFeatureInput(fellowshipVotingFeature, $voting).map(({ input: { account }, data: voting }) => {
     return voting.filter(voting => voting.accountId === account?.accountId);
   }),
   [],
@@ -54,7 +54,7 @@ const $referendumVoting = combine($accountsVotes, $referendumId, (voting, refere
 });
 
 sample({
-  clock: attachToFeatureInput(votingFeatureStatus, flow.open),
+  clock: attachToFeatureInput(fellowshipVotingFeature, flow.open),
   fn({ data: { referendumId }, input: { api, chainId, palletType } }) {
     return {
       api,
@@ -67,7 +67,7 @@ sample({
 });
 
 sample({
-  clock: votingFeatureStatus.running,
+  clock: fellowshipVotingFeature.running,
   fn: ({ palletType, api, chain, account }) => {
     return {
       palletType,
@@ -81,7 +81,7 @@ sample({
 });
 
 sample({
-  clock: votingFeatureStatus.stopped,
+  clock: fellowshipVotingFeature.stopped,
   target: voting.unsubscribeAccountsVoting,
 });
 

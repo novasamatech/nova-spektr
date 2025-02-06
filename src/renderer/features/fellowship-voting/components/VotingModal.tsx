@@ -13,7 +13,7 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { votingFeatureStatus } from '../model/feature';
+import { fellowshipVotingFeature } from '../model/feature';
 import { votingModel } from '../model/voting';
 import { votingStatusModel } from '../model/votingStatus';
 
@@ -29,14 +29,14 @@ type Props = {
 };
 
 export const VotingModal = ({ referendumId, isOpen, onClose, vote }: Props) => {
-  useGate(votingFeatureStatus.gate);
+  useGate(fellowshipVotingFeature.gate);
   useGate(votingStatusModel.flow, { referendumId });
   useGate(votingModel.gate, { vote });
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
 
-  const input = useUnit(votingFeatureStatus.input);
+  const input = useUnit(fellowshipVotingFeature.input);
   const referendum = useUnit(votingStatusModel.$referendum);
   const maxRank = useUnit(votingStatusModel.$maxRank);
   const account = useUnit(votingStatusModel.$votingAccount);

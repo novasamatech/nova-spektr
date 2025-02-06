@@ -10,7 +10,7 @@ import { basketModel } from '@/entities/basket';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { votingFeatureStatus } from './feature';
+import { fellowshipVotingFeature } from './feature';
 import { votingStatusModel } from './votingStatus';
 
 const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
@@ -18,7 +18,7 @@ const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: 
 const $vote = gate.state.map(({ vote }) => vote);
 
 const { $api, $chain, $wallets } = reshape({
-  source: votingFeatureStatus.input,
+  source: fellowshipVotingFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
@@ -28,7 +28,7 @@ const { $api, $chain, $wallets } = reshape({
 
 const $coreTx = combine(
   {
-    input: votingFeatureStatus.input,
+    input: fellowshipVotingFeature.input,
     account: votingStatusModel.$votingAccount,
     referendum: votingStatusModel.$referendum,
     member: votingStatusModel.$currentMember,

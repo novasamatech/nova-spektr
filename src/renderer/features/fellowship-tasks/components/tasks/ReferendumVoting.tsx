@@ -2,23 +2,22 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, TitleText } from '@/shared/ui';
-import { Box, FilledIconButton } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
 import { fellowshipReferendumDetailsFeature } from '@/features/fellowship-referendum-details';
-import { fellowshipVotingFeature, votingStatusModel } from '@/features/fellowship-voting';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendumList } from '../../model/referendums';
 
 const {
-  views: { VotingModal },
-} = fellowshipVotingFeature;
-
-const {
   views: { ReferendumDetailsModal },
 } = fellowshipReferendumDetailsFeature;
+
+export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
 
 type Props = {
   referendum: OngoingReferendum;
@@ -28,15 +27,10 @@ type Props = {
 
 export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const { t } = useI18n();
-  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const input = useUnit(fellowshipTasksFeature.input);
   const tracks = useUnit(referendumList.$tracks);
-  const canVote = useUnit(votingStatusModel.$canVote);
-  const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
-
-  const disabled = !canVote || !hasRequiredRank;
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
@@ -78,20 +72,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
         </span>
         <Box grow={1} />
         <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
-          <Box direction="row" gap={3}>
-            <FilledIconButton
-              variant="negative"
-              icon="thumbDown"
-              disabled={disabled}
-              onClick={() => setDecision('nay')}
-            />
-            <FilledIconButton
-              variant="positive"
-              icon="thumbUp"
-              disabled={disabled}
-              onClick={() => setDecision('aye')}
-            />
-          </Box>
+          <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
           {canSkip && (
             <Button variant="text" onClick={onSkip}>
               {t('fellowship.tasks.skip')}
@@ -99,12 +80,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
           )}
         </Box>
       </Box>
-      <VotingModal
-        referendumId={referendum.id}
-        isOpen={nonNullable(decision)}
-        vote={decision}
-        onClose={() => setDecision(null)}
-      />
+
       <ReferendumDetailsModal referendumId={referendum.id} isOpen={detailsOpen} onToggle={setDetailsOpen} />
     </>
   );

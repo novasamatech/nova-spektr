@@ -30,7 +30,7 @@ const $input = combine(
   },
 );
 
-export const votingFeatureStatus = createFeature({
+export const fellowshipVotingFeature = createFeature({
   name: 'fellowship/voting',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,

@@ -82,7 +82,7 @@ const { $: $claimantStatus, request: requestClaimantStatus } = createDataSource(
       if (nullable(claim)) {
         res[account] = {
           type: 'none',
-          lastActive: 0,
+          lastActive: 1,
         };
         continue;
       }

@@ -7,7 +7,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { ButtonCard, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
-import { votingFeatureStatus } from '../model/feature';
+import { fellowshipVotingFeature } from '../model/feature';
 import { votingStatusModel } from '../model/votingStatus';
 
 import { VotingModal } from './VotingModal';
@@ -17,11 +17,11 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
-  useGate(votingFeatureStatus.gate);
+  useGate(fellowshipVotingFeature.gate);
 
   const { t } = useI18n();
 
-  const chain = useStoreMap(votingFeatureStatus.input, input => input?.chain ?? null);
+  const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
   const referendum = useUnit(votingStatusModel.$referendum);
   const canVote = useUnit(votingStatusModel.$canVote);
   const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
