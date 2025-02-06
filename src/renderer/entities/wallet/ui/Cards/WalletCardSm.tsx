@@ -1,19 +1,16 @@
-import { type MouseEvent } from 'react';
+import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, IconButton } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
-type Props = {
+type Props = PropsWithChildren<{
   wallet: Wallet;
-  iconSize?: number;
-  className?: string;
   onClick?: () => void;
-  onInfoClick?: () => void;
-};
+}>;
 
-export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfoClick }: Props) => {
+export const WalletCardSm = ({ wallet, onClick, children }: Props) => {
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
@@ -28,11 +25,10 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfo
       className={cnTw(
         'group relative flex w-full items-center rounded transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
-        className,
       )}
     >
       <button className="flex w-full items-center gap-x-2 rounded py-[3px] pl-2 pr-7" onClick={handleClick(onClick)}>
-        <WalletIcon className="shrink-0" type={wallet.type} size={iconSize} />
+        <WalletIcon className="shrink-0" type={wallet.type} size={16} />
         <FootnoteText
           className={cnTw(
             'truncate text-text-secondary transition-colors',
@@ -42,8 +38,15 @@ export const WalletCardSm = ({ wallet, className, iconSize = 16, onClick, onInfo
           {wallet.name}
         </FootnoteText>
       </button>
-      {/* TODO: do the same as in WalletCardMd */}
-      <IconButton className="absolute right-2" name="details" size={16} onClick={handleClick(onInfoClick)} />
+
+      <div
+        className={cnTw(
+          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
+          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };

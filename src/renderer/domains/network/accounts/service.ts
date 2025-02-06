@@ -22,7 +22,7 @@ function isUniversalAccount(account: Pick<AnyAccount, 'type'>): account is Unive
 }
 
 function isAccountAvailableOnChain(account: Pick<AnyAccount, 'type' | 'cryptoType'>, chain: Chain) {
-  if (isCryptoMatch(account, chain) === false) {
+  if (!isCryptoMatch(account, chain)) {
     return false;
   }
 
