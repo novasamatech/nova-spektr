@@ -21,7 +21,7 @@ export interface UniversalAccount {
 
 /**
  * @summary
- * Account related to specific chain. This is most common case and such accounts
+ * Account related to specific chain. This is the most common case and such accounts
  * have "one to one" relations with other entities in the system.
  */
 export interface ChainAccount {

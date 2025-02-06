@@ -10,13 +10,13 @@ import { walletActionsSlot as proxiedActionsSlot } from '@/features/wallet-proxi
 import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet-wallet-connect';
 import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/wallet-watch-only';
 
-import { WalletDetails } from './ui/components/WalletDetails';
+import { WalletDetails } from './ui/components';
 
 export { WalletDetails };
 
 /**
  * The reason for the existence of this feature is WalletDetails component
- * implementation. walletDetailsFeature should be absolete and details for each
+ * implementation. walletDetailsFeature should be obsolete and details for each
  * type of wallet should be coupled with wallet implementation.
  */
 
