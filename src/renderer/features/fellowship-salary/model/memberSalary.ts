@@ -7,26 +7,17 @@ import { salary as salaryModel, salaryService } from '@/domains/collectives';
 
 import { block } from './block';
 import { fellowshipSalaryFeature } from './feature';
+import { fellowship } from './fellowship';
 import { member } from './member';
 
 const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
-const $fellowshipClaimantStatuses = salaryModel.$claimantStatus.map(s => s['fellowship'] ?? {});
+const $claimantStatuses = fellowship.$store.map(store => store?.claimantStatus ?? {});
 
 const $status = combine(fellowshipSalaryFeature.input, $statuses, (featureInput, statuses) => {
   if (nullable(featureInput)) return null;
 
   return statuses[featureInput.chainId] ?? null;
 });
-
-const $chainClaimantStatuses = combine(
-  fellowshipSalaryFeature.input,
-  $fellowshipClaimantStatuses,
-  (featureInput, statuses) => {
-    if (nullable(featureInput)) return null;
-
-    return statuses[featureInput.chainId] ?? null;
-  },
-);
 
 const $salaries = salaryModel.$salaries.map(s => s['fellowship'] ?? {});
 
@@ -47,7 +38,7 @@ const $memberSalary = combine(member.$member, $chainSalaries, (member, salaries)
   return salaryService.getMemberSalary(member, salaries);
 });
 
-const $memberClaimStatus = combine(member.$member, $chainClaimantStatuses, (member, statuses) => {
+const $memberClaimStatus = combine(member.$member, $claimantStatuses, (member, statuses) => {
   if (nullable(member)) return null;
   return statuses?.[member.accountId] ?? null;
 });

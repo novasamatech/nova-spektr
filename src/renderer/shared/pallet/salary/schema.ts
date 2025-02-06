@@ -4,7 +4,7 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type SalaryClaimState = z.infer<typeof salaryClaimState>;
 export const salaryClaimState = pjsSchema.enumValue({
-  Nothing: z.undefined(),
+  Nothing: z.unknown(),
   Registered: pjsSchema.u128,
   Attempted: pjsSchema.object({
     registered: pjsSchema.optional(pjsSchema.u128),

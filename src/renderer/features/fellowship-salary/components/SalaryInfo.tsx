@@ -31,11 +31,10 @@ export const SalaryInfo = memo(() => {
   }, [input?.api, currentPeriod]);
 
   const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
-  // const canRequestSalary =
-  //   nonNullable(claimStatus) &&
-  //   nonNullable(currentPeriod) &&
-  //   salaryService.canRequestSalary(claimStatus, currentPeriod);
-  const canRequestSalary = nonNullable(claimStatus) && nonNullable(currentPeriod) && true;
+  const canRequestSalary =
+    nonNullable(claimStatus) &&
+    nonNullable(currentPeriod) &&
+    salaryService.canRequestSalary(claimStatus, currentPeriod);
   const canRequestSalaryPayout =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&

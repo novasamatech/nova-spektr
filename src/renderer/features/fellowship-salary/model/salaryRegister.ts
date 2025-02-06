@@ -142,7 +142,6 @@ sample({
 
 export const salaryRegister = {
   $fee,
-  $input: fellowshipSalaryFeature.input,
   $wallet,
   $account,
   $wrappedTx,

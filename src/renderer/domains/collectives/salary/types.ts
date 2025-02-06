@@ -44,15 +44,23 @@ export type Salaries = {
 
 export type ClaimStatus =
   | {
+      // Member is not indicted
       type: 'none';
       lastActive: number;
     }
   | {
+      // No actions yet
+      type: 'nothing';
+      lastActive: number;
+    }
+  | {
+      // Salary request is registered
       type: 'registered';
       amount: BN;
       lastActive: number;
     }
   | {
+      // Salary is paid
       type: 'payout';
       registered: BN;
       amount: BN;

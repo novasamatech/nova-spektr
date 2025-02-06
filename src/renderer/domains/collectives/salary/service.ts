@@ -102,13 +102,17 @@ function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return (
     isClaimantActiveInCurrentCycle(claimStatus, period) &&
     period.type === 'registration' &&
-    claimStatus.type !== 'registered'
+    claimStatus.type !== 'registered' &&
+    claimStatus.type !== 'none'
   );
 }
 
 function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return (
-    isClaimantActiveInCurrentCycle(claimStatus, period) && period.type === 'payout' && claimStatus.type !== 'payout'
+    isClaimantActiveInCurrentCycle(claimStatus, period) &&
+    period.type === 'payout' &&
+    claimStatus.type !== 'payout' &&
+    claimStatus.type !== 'none'
   );
 }
 

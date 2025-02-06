@@ -79,10 +79,18 @@ const { $: $claimantStatus, request: requestClaimantStatus } = createDataSource(
     const res: Record<AccountId, ClaimStatus> = {};
 
     for (const { account, claim } of mapped) {
-      if (nullable(claim) || claim.status.type === 'Nothing') {
+      if (nullable(claim)) {
         res[account] = {
           type: 'none',
-          lastActive: claim?.lastActive ?? 0,
+          lastActive: 0,
+        };
+        continue;
+      }
+
+      if (claim.status.type === 'Nothing') {
+        res[account] = {
+          type: 'nothing',
+          lastActive: claim.lastActive,
         };
         continue;
       }

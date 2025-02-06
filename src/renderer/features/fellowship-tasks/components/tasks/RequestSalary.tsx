@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getCreatedDateFromApi, getRelativeTimeFromApi } from '@/shared/lib/utils';
 import { Button, Duration, HeadlineText, Icon, SmallTitleText, TitleText } from '@/shared/ui';
@@ -9,6 +10,8 @@ import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
+
+export const requestSalaryActionSlot = createSlot();
 
 type Props = {
   canSkip: boolean;
@@ -30,6 +33,7 @@ export const RequestSalary = ({ canSkip, onSkip }: Props) => {
       getCreatedDateFromApi(currentPeriod.until, input.api).then(setPeriodEnd);
     }
   }, [input?.api, currentPeriod]);
+
   return (
     <Box fillContainer padding={5} gap={5}>
       <TitleText>{t('fellowship.tasks.task.requestSalary.title')}</TitleText>
@@ -51,7 +55,7 @@ export const RequestSalary = ({ canSkip, onSkip }: Props) => {
       </HeadlineText>
       <Box grow={1} />
       <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
-        <Button variant="fill">{t('fellowship.tasks.task.requestSalary.request')}</Button>
+        <Slot id={requestSalaryActionSlot} />
         {canSkip && (
           <Button variant="text" onClick={onSkip}>
             {t('fellowship.tasks.skip')}

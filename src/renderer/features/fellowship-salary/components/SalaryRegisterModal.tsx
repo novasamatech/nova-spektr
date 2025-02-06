@@ -10,6 +10,7 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { fellowshipSalaryFeature } from '../model/feature';
 import { salaryRegister } from '../model/salaryRegister';
 
 import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
@@ -24,9 +25,9 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('confirm');
+  const input = useUnit(fellowshipSalaryFeature.input);
   const account = useUnit(salaryRegister.$account);
   const wallet = useUnit(salaryRegister.$wallet);
-  const input = useUnit(salaryRegister.$input);
   const fee = useUnit(salaryRegister.$fee);
 
   const handleToggle = (open: boolean) => {

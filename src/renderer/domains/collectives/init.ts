@@ -25,6 +25,7 @@ const $store = combine(
     maxRank: tracks.$maxRank,
     voting: voting.$votes,
     salaryStatus: salary.$status,
+    claimantStatus: salary.$claimantStatus,
     evidence: evidence.$list,
     evidencePeriods: evidence.$periods,
     feed: feed.$list,
