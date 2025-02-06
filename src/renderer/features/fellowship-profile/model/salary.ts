@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { combine } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
-import { salary } from '@/domains/collectives';
+import { salary, salaryService } from '@/domains/collectives';
 
 import { fellowshipProfileFeature } from './feature';
 import { profile } from './profile';
@@ -16,17 +16,14 @@ const $chainSalaries = combine(fellowshipProfileFeature.input, $salaries, (featu
 });
 
 const $memberSalary = combine(profile.$member, $chainSalaries, (member, salaries) => {
-  if (nullable(member)) {
+  if (nullable(member) || nullable(salaries)) {
     return {
       active: BN_ZERO,
       passive: BN_ZERO,
     };
   }
 
-  return {
-    active: salaries?.active.at(member.rank) ?? BN_ZERO,
-    passive: salaries?.passive.at(member.rank) ?? BN_ZERO,
-  };
+  return salaryService.getMemberSalary(member, salaries);
 });
 
 export const memberSalary = {

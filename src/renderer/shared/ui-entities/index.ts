@@ -10,4 +10,4 @@ export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';
 export { WalletOnboardingCard } from './WalletOnboardingCard/WalletOnboardingCard';
 export { ChainAccountsList } from './ChainAccountsList/ChainAccountsList';
-export { CollectivesRank } from './CollectivesRank/CollectivesRank';
+export { CollectiveRank } from './CollectiveRank/CollectiveRank';

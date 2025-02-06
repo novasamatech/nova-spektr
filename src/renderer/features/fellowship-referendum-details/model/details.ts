@@ -5,7 +5,7 @@ import { and, or } from 'patronum';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { evidence, evidenceService, referendumMeta, referendumService, referendums } from '@/domains/collectives';
+import { evidence, evidenceService, referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
 
 import { referendumsDetailsFeatureStatus } from './feature';
@@ -60,7 +60,7 @@ const $evidence = combine($evidences, $proposer, (list, proposer) => {
   return list.find(x => x.accountId === proposer) ?? null;
 });
 
-const $pendingReferendum = and($referendum.map(nullable), referendums.pending);
+const $pendingReferendum = and($referendum.map(nullable), referendum.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
 
 const proposeEvidenceRequested = attachToFeatureInput(referendumsDetailsFeatureStatus, $proposer).filterMap(
@@ -94,5 +94,5 @@ export const referendumDetails = {
   $pendingProposer: identityDomain.identity.pending,
   $pendingMeta: or($pendingReferendumMeta, referendumsDetailsFeatureStatus.isStarting),
   $pending: or($pendingReferendum, referendumsDetailsFeatureStatus.isStarting),
-  $fulfilled: and(referendums.fulfilled, referendumsDetailsFeatureStatus.isRunning),
+  $fulfilled: and(referendum.fulfilled, referendumsDetailsFeatureStatus.isRunning),
 };

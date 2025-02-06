@@ -8,7 +8,7 @@ export {
   salaryService,
   evidenceService,
   members,
-  referendums,
+  referendum,
   referendumMeta,
   tracks,
   voting,

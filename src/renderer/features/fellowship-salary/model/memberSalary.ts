@@ -37,17 +37,14 @@ const $chainSalaries = combine(fellowshipSalaryFeature.input, $salaries, (featur
 });
 
 const $memberSalary = combine(member.$member, $chainSalaries, (member, salaries) => {
-  if (nullable(member)) {
+  if (nullable(member) || nullable(salaries)) {
     return {
       active: BN_ZERO,
       passive: BN_ZERO,
     };
   }
 
-  return {
-    active: salaries?.active.at(member.rank) ?? BN_ZERO,
-    passive: salaries?.passive.at(member.rank) ?? BN_ZERO,
-  };
+  return salaryService.getMemberSalary(member, salaries);
 });
 
 const $memberClaimStatus = combine(member.$member, $chainClaimantStatuses, (member, statuses) => {

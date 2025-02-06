@@ -5,7 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, HeaderTitleText, Identicon, Separator, Switch } from '@/shared/ui';
-import { Account, CollectivesRank } from '@/shared/ui-entities';
+import { Account, CollectiveRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService, salaryService } from '@/domains/collectives';
 import { fellowshipProfileFeature } from '../model/feature';
@@ -56,9 +56,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                 />
               </HeaderTitleText>
               <Box direction="row" gap={2}>
-                <CollectivesRank rank={member.rank}>
-                  {nonNullable(track) && track.name.replace(/s$/, '')}
-                </CollectivesRank>
+                <CollectiveRank rank={member.rank}>{nonNullable(track) && track.name.replace(/s$/, '')}</CollectiveRank>
               </Box>
             </Box>
             <Box direction="row" verticalAlign="center" gap={2}>

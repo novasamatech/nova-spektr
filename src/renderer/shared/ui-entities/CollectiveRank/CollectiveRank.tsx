@@ -44,7 +44,7 @@ type Props = PropsWithChildren<{
   rank: number;
 }>;
 
-export const CollectivesRank = memo(({ rank, children }: Props) => {
+export const CollectiveRank = memo(({ rank, children }: Props) => {
   return (
     <Label variant={pickRankColor(rank)}>
       <Box direction="row">

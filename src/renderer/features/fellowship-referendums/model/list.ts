@@ -3,7 +3,7 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable } from '@/shared/lib/utils';
-import { referendumMeta, referendumService, referendums } from '@/domains/collectives';
+import { referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';
 
 import { referendumsFeatureStatus } from './feature';
@@ -25,12 +25,12 @@ sample({
 
 sample({
   clock: referendumsFeatureStatus.running,
-  target: [referendums.subscribe, referendumMeta.request],
+  target: [referendum.subscribe, referendumMeta.request],
 });
 
 sample({
   clock: referendumsFeatureStatus.stopped,
-  target: referendums.unsubscribe,
+  target: referendum.unsubscribe,
 });
 
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
@@ -44,6 +44,6 @@ export const referendumListModel = {
   $ongoing,
   $completed,
   $meta,
-  $pending: or(referendums.pending, referendumsFeatureStatus.isStarting),
-  $fulfilled: and(referendums.fulfilled, referendumsFeatureStatus.isRunning),
+  $pending: or(referendum.pending, referendumsFeatureStatus.isStarting),
+  $fulfilled: and(referendum.fulfilled, referendumsFeatureStatus.isRunning),
 };

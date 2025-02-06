@@ -101,7 +101,7 @@ const { request } = createDataSource<CollectivesStruct<Referendum[]>, Referendum
   },
 });
 
-export const referendumDomainModel = {
+export const referendum = {
   $list,
   pending,
   request,

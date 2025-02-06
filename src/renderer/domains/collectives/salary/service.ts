@@ -1,13 +1,15 @@
-import { type BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
 import { type Chain, TransactionType } from '@/shared/core';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
+import { type Member } from '../members/types';
 
 import {
   type ClaimStatus,
+  type Salaries,
   type SalaryCycle,
   type SalaryCyclePeriod,
   type SalaryPayoutTransaction,
@@ -56,6 +58,13 @@ function getCycleEnd(salaryCycle: SalaryCycle) {
   return pjsSchema.helpers.toBlockHeight(
     salaryCycle.cycleStart + salaryCycle.registrationPeriod + salaryCycle.payoutPeriod,
   );
+}
+
+function getMemberSalary(member: Member, salaries: Salaries) {
+  return {
+    active: salaries.active.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
+    passive: salaries.passive.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
+  };
 }
 
 type SalaryRequestTransactionParams = {
@@ -129,6 +138,7 @@ export const salaryService = {
 
   getCycleEnd,
   getCurrentPeriod,
+  getMemberSalary,
 
   isClaimantActiveInCurrentCycle,
   isClaimantRequestedSalary,

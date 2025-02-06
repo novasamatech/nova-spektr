@@ -102,7 +102,7 @@ const {
   },
 });
 
-export const membersDomainModel = {
+export const members = {
   $list,
 
   pending,

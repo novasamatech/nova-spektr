@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Identicon } from '@/shared/ui';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
-import { CollectivesRank } from '../CollectivesRank/CollectivesRank';
+import { CollectiveRank } from '../CollectiveRank/CollectiveRank';
 
 type Props = {
   name?: string;
@@ -23,7 +23,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
     <div className="flex items-center justify-between">
       <div className="flex grow items-center gap-2 px-2 py-3 contain-inline-size">
         <div className="shrink-0">
-          <CollectivesRank rank={rank} />
+          <CollectiveRank rank={rank} />
         </div>
         <div className="relative min-w-0 shrink grow">
           <div className="flex grow items-center gap-4.5">

@@ -60,7 +60,7 @@ export const SalaryInfo = memo(() => {
       {canInteractWithSalary && (
         <Box>
           {currentPeriod?.type === 'registration' && (
-            <div className="flex items-start gap-4 rounded-lg border p-4">
+            <div className="flex items-start gap-4 border-t pt-6">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.requestSalaryCall', {
@@ -89,7 +89,7 @@ export const SalaryInfo = memo(() => {
           )}
 
           {currentPeriod?.type === 'payout' && (
-            <div className="flex items-start gap-4 rounded-lg border p-4">
+            <div className="flex items-start gap-4 rounded-lg border-t p-4">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.payoutSalaryCall', {

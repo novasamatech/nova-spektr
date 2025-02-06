@@ -1,4 +1,4 @@
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 export type Evidence = {
   wish: 'Promotion' | 'Retention';
@@ -7,3 +7,21 @@ export type Evidence = {
   cid: string;
   content: string;
 };
+
+export type EvidencePeriods = {
+  minPromotionPeriod: BlockHeight[];
+  demotionPeriod: BlockHeight[];
+  offboardTimeout: BlockHeight;
+};
+
+export type CurrentMemberPeriod =
+  | {
+      type: 'Promotion';
+      left: BlockHeight;
+      end: BlockHeight;
+    }
+  | {
+      type: 'Retention';
+      left: BlockHeight;
+      end: BlockHeight;
+    };

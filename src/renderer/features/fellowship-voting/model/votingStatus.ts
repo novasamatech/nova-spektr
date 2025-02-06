@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { referendumService, referendums, tracksService, voting } from '@/domains/collectives';
+import { referendum, referendumService, tracksService, voting } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 
 import { votingFeatureStatus } from './feature';
@@ -63,7 +63,7 @@ sample({
       referendums: [referendumId].filter(nonNullable),
     };
   },
-  target: referendums.request,
+  target: referendum.request,
 });
 
 sample({

@@ -9,11 +9,11 @@ import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/type
 
 import { fetchEvidenceFromSubsquare } from './resource';
 import { evidenceService } from './service';
-import { type Evidence } from './types';
+import { type Evidence, type EvidencePeriods } from './types';
 
-type Store = CollectivesStruct<Evidence[]>;
+type EvidenceStore = CollectivesStruct<Evidence[]>;
 
-type RequestParams = {
+type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chain: Chain;
@@ -21,12 +21,17 @@ type RequestParams = {
 };
 
 const { $: $list, request } = createDataSource({
-  initial: {} as Store,
-  async fn({ palletType, api, accountId }: RequestParams): Promise<Evidence | null> {
+  initial: {} as EvidenceStore,
+  async fn({ palletType, api, accountId }: EvidenceRequestParams): Promise<Evidence | null> {
     const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
 
     if (evidence) {
-      const content = await fetchEvidenceFromSubsquare(evidence.value);
+      let content = '';
+      try {
+        content = await fetchEvidenceFromSubsquare(evidence.value);
+      } catch (e) {
+        console.error('ipfs request error:', e);
+      }
 
       return {
         wish: evidence.wish,
@@ -40,17 +45,47 @@ const { $: $list, request } = createDataSource({
     return null;
   },
   map(source, { params, result }) {
-    if (nullable(result)) {
-      return source;
-    }
-
     const list = pickNestedValue(source, params.palletType, params.chain.chainId) ?? [];
+
+    if (nullable(result)) {
+      const filtered = list.filter(x => x.accountId !== params.accountId);
+      return setNestedValue(source, params.palletType, params.chain.chainId, filtered);
+    }
 
     return setNestedValue(source, params.palletType, params.chain.chainId, list.concat(result));
   },
 });
 
+type PeriodsStore = CollectivesStruct<EvidencePeriods>;
+
+type PeriodsRequestParams = {
+  palletType: CollectivePalletsType;
+  api: ApiPromise;
+  chain: Chain;
+};
+
+const { $: $periods, request: requestPeriods } = createDataSource({
+  initial: {} as PeriodsStore,
+  filter(params: PeriodsRequestParams, store) {
+    return nullable(pickNestedValue(store, params.palletType, params.chain.chainId));
+  },
+  async fn({ api, palletType }: PeriodsRequestParams): Promise<EvidencePeriods> {
+    const params = await collectiveCorePallet.storage.params(palletType, api);
+
+    return {
+      minPromotionPeriod: params.minPromotionPeriod,
+      demotionPeriod: params.demotionPeriod,
+      offboardTimeout: params.offboardTimeout,
+    };
+  },
+  map(store, { params, result }) {
+    return setNestedValue(store, params.palletType, params.chain.chainId, result);
+  },
+});
+
 export const evidence = {
   $list,
+  $periods,
   request,
+  requestPeriods,
 };

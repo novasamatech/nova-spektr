@@ -8,6 +8,7 @@ import rendererConfig from './vite.config.renderer';
 
 const testsPriority = [
   resolve(folders.rendererRoot, 'domains'),
+  resolve(folders.rendererRoot, 'aggregates'),
   resolve(folders.rendererRoot, 'features'),
   resolve(folders.rendererRoot, 'entities'),
   resolve(folders.rendererRoot, 'shared'),
@@ -51,7 +52,7 @@ const config: UserConfigFnPromise = async (options) => {
         ['**/*.ts', 'node'],
       ],
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: ['basic', 'junit'],
+      reporters: ['default', 'junit'],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },

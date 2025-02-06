@@ -133,7 +133,7 @@ const { subscribe: subscribeAccountsVoting, unsubscribe: unsubscribeAccountsVoti
   },
 });
 
-export const votingDomainModel = {
+export const voting = {
   $votes: readonly($votes),
 
   subscribeAccountsVoting,
