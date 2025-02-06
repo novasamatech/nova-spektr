@@ -19,11 +19,11 @@ import { nonNullable, nullable, toAccountId, toAddress, transferableAmount } fro
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { basketModel } from '@/entities/basket';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -459,7 +459,7 @@ sample({
 
     return [tx];
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({

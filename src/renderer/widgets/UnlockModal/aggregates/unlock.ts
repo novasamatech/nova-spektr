@@ -5,7 +5,7 @@ import { type ClaimChunkWithAddress, UnlockChunkType } from '@/shared/api/govern
 import { type BasketTransaction, type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { basketModel } from '@/entities/basket';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
@@ -238,7 +238,7 @@ sample({
 
     return txs;
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({

@@ -4,9 +4,9 @@ import { createGate } from 'effector-react';
 import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { basketModel } from '@/entities/basket';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import {
   delegationAggregate,
   lockPeriodsModel,
@@ -85,7 +85,7 @@ sample({
 
     return [tx];
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 // Steps
