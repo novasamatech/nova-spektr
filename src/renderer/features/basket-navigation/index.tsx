@@ -4,8 +4,8 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
-import { basketModel } from '@/entities/basket';
 import { walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationBottomLinksPipeline } from '@/features/app-shell';
 import { basketUtils } from '@/features/operations/OperationsConfirm/lib/basket-utils';
 
@@ -16,7 +16,7 @@ export const basketNavigationFeature = createFeature({
 
 basketNavigationFeature.inject(navigationBottomLinksPipeline, (items) => {
   const wallet = useUnit(walletModel.$activeWallet);
-  const basket = useUnit(basketModel.$basket);
+  const basket = useUnit(basketOperations.$list);
 
   if (!wallet || !basketUtils.isBasketAvailable(wallet)) {
     return items;
