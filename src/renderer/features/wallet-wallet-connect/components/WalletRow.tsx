@@ -3,8 +3,8 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { cnTw } from '@/shared/lib/utils';
+import { WalletManagement } from '@/shared/ui-entities';
 import { accounts as accountsDomainModel, accountsService } from '@/domains/network';
-import { WalletManagement } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';
 import { walletConnect } from '../model/connect';
@@ -17,7 +17,7 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
 type Props = {
   wallet: Wallet;
-  onSelect: (wallet: Wallet) => void;
+  onSelect: (wallet: Wallet) => unknown;
 };
 export const WalletRow = ({ wallet, onSelect }: Props) => {
   const sessions = useUnit(walletConnect.$sessions);

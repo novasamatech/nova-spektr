@@ -14,7 +14,7 @@ type Props = {
   walletType: WalletType;
   wallets: Wallet[];
   query: string;
-  onSelect: (wallet: Wallet) => void;
+  onSelect: (wallet: Wallet) => unknown;
 };
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {

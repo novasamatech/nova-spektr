@@ -5,8 +5,8 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
-import { WalletManagement } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
 // TODO invert this dependency
@@ -21,7 +21,7 @@ type Props = {
   icon: IconNames;
   wallets: Wallet[];
   query: string;
-  onSelect: (wallet: Wallet) => void;
+  onSelect: (wallet: Wallet) => unknown;
 };
 
 export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {

@@ -3,8 +3,9 @@ import { memo } from 'react';
 import { type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { performSearch } from '@/shared/lib/utils';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { WalletIcon, WalletManagement } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
 // TODO invert this dependency

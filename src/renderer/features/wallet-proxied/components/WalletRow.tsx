@@ -2,10 +2,10 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
+import { WalletManagement } from '@/shared/ui-entities';
 import { accounts as accountsDomainModel, accountsService } from '@/domains/network';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { WalletManagement } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
 const {
@@ -16,7 +16,7 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
 type Props = {
   wallet: Wallet;
-  onSelect: (wallet: Wallet) => void;
+  onSelect: (wallet: Wallet) => unknown;
 };
 export const WalletRow = ({ wallet, onSelect }: Props) => {
   const chains = useUnit(networkModel.$chains);
