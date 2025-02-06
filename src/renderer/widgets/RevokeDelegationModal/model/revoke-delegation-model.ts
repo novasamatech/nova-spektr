@@ -15,11 +15,11 @@ import {
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { basketModel } from '@/entities/basket';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -437,7 +437,7 @@ sample({
       } as BasketTransaction;
     });
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({

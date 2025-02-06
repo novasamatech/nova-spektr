@@ -8,15 +8,14 @@ import {
   type AccountVote,
   type Address,
   type Asset,
-  type BasketTransaction,
   type Chain,
   type ReferendumId,
   type TrackId,
 } from '@/shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { basketModel } from '@/entities/basket';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { lockPeriodsModel, locksModel, votingAggregate } from '@/features/governance';
 import { createMultipleTxStore } from '@/features/governance/lib/createMultipleTxStore';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
@@ -158,7 +157,7 @@ sample({
       return { initiatorWallet: account.walletId, coreTx: transactions[index].coreTx, txWrappers: txWrappers[index] };
     });
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 // Steps

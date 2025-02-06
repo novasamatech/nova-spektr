@@ -1,7 +1,7 @@
 import { combine, createEvent, restore } from 'effector';
 
-import { basketModel } from '@/entities/basket';
 import { walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { type SelectedFilters } from '../common/types';
 import { filterTx } from '../lib/utils';
 
@@ -20,7 +20,7 @@ const $invalidTxs = restore(invalidTxsSet, []);
 const $basketTxs = combine(
   {
     wallet: walletModel.$activeWallet,
-    basket: basketModel.$basket,
+    basket: basketOperations.$list,
   },
   ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id).reverse(),
 );

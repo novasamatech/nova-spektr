@@ -4,8 +4,8 @@ import { spread } from 'patronum';
 import { type BasketTransaction, type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { basketModel } from '@/entities/basket';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -202,7 +202,7 @@ sample({
       } as BasketTransaction;
     });
   },
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 sample({
