@@ -11,6 +11,8 @@ import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
 import { memberSalary } from '../model/memberSalary';
 
+import { SalaryRegisterModal } from './SalaryRegisterModal';
+
 export const SalaryInfo = memo(() => {
   const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
@@ -29,10 +31,11 @@ export const SalaryInfo = memo(() => {
   }, [input?.api, currentPeriod]);
 
   const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
-  const canRequestSalary =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.canRequestSalary(claimStatus, currentPeriod);
+  // const canRequestSalary =
+  //   nonNullable(claimStatus) &&
+  //   nonNullable(currentPeriod) &&
+  //   salaryService.canRequestSalary(claimStatus, currentPeriod);
+  const canRequestSalary = nonNullable(claimStatus) && nonNullable(currentPeriod) && true;
   const canRequestSalaryPayout =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&
@@ -60,7 +63,7 @@ export const SalaryInfo = memo(() => {
       {canInteractWithSalary && (
         <Box>
           {currentPeriod?.type === 'registration' && (
-            <div className="flex items-start gap-4 border-t pt-6">
+            <div className="flex items-center gap-4 border-t pt-6">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.requestSalaryCall', {
@@ -81,15 +84,15 @@ export const SalaryInfo = memo(() => {
               </div>
 
               {canRequestSalary && (
-                <Button variant="fill" disabled>
-                  {t('fellowship.salary.salaryInfo.requestSalary')}
-                </Button>
+                <SalaryRegisterModal>
+                  <Button variant="fill">{t('fellowship.salary.salaryInfo.requestSalary')}</Button>
+                </SalaryRegisterModal>
               )}
             </div>
           )}
 
           {currentPeriod?.type === 'payout' && (
-            <div className="flex items-start gap-4 rounded-lg border-t p-4">
+            <div className="flex items-center gap-4 rounded-lg border-t p-4">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.payoutSalaryCall', {

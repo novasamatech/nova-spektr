@@ -1,4 +1,4 @@
-import { useGate, useStoreMap } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -6,7 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
 // eslint-disable-next-line boundaries/entry-point
-import { SetActiveConfirmation, setActive } from '@/features/fellowship-profile';
+import { SalaryRegisterConfirmation } from '@/features/fellowship-salary';
 import { confirmModel } from '../model/confirm-model';
 // eslint-disable-next-line boundaries/entry-point
 
@@ -26,21 +26,18 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
-  useGate(setActive.flow, { isActive: confirm?.meta?.isActive ?? false });
-
   if (nullable(confirm)) {
     return null;
   }
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
-      <SetActiveConfirmation
+      <SalaryRegisterConfirmation
         account={confirm.accounts.initiator}
         asset={confirm.meta.asset}
         chain={confirm.meta.chain}
         wallets={confirm.meta.wallets}
         fee={confirm.meta.fee}
-        isActive={confirm.meta.isActive}
       />
 
       <div className="mt-3 flex w-full justify-between">
