@@ -45,7 +45,7 @@ function canStake(wallet: Wallet): boolean {
 function canCreateMultisigTx(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isMultisig(wallet)) return false;
-  if (!wallet.accounts.at(0)) return false;
+  if (!wallet.accounts?.at(0)) return false;
 
   if (walletUtils.isProxied(wallet)) {
     const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
