@@ -8,18 +8,16 @@ const $basketTransactions = createStore<BasketTransaction[]>([]);
 
 const populateFx = createEffect((): Promise<BasketTransaction[]> => storageService.basketTransactions.readAll());
 
-const addTransactionsFx = createEffect(
-  async (transactions: BasketTransaction[]): Promise<BasketTransaction[] | undefined> => {
-    return storageService.basketTransactions.createAll(transactions);
-  },
-);
+const addTransactionsFx = createEffect(async (transactions: BasketTransaction[]): Promise<BasketTransaction[]> => {
+  return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
+});
 
-const updateTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[] | undefined> => {
-  return storageService.basketTransactions.updateAll(transactions);
+const updateTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[]> => {
+  return storageService.basketTransactions.updateAll(transactions).then(result => result ?? []);
 });
 
 const removeTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[] | undefined> => {
-  return storageService.basketTransactions.deleteAll(transactions.map(t => t.id));
+  return storageService.basketTransactions.deleteAll(transactions.map(t => t.id)).then(result => result ?? []);
 });
 
 sample({
