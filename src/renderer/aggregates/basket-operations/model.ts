@@ -6,7 +6,7 @@ import { type BasketTransaction } from '@/shared/core';
 
 const $basketTransactions = createStore<BasketTransaction[]>([]);
 
-const populateFx = createEffect((): Promise<BasketTransaction[]> => storageService.basketTransactions.readAll());
+const populateFx = createEffect(() => storageService.basketTransactions.readAll());
 
 const addTransactionsFx = createEffect(async (transactions: BasketTransaction[]): Promise<BasketTransaction[]> => {
   return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
