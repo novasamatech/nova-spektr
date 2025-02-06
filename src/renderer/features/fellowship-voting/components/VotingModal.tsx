@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
@@ -23,10 +24,13 @@ type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  referendumId: ReferendumId;
   vote: 'aye' | 'nay' | null;
 };
 
-export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
+export const VotingModal = ({ referendumId, isOpen, onClose, vote }: Props) => {
+  useGate(votingFeatureStatus.gate);
+  useGate(votingStatusModel.flow, { referendumId });
   useGate(votingModel.gate, { vote });
 
   const { t } = useI18n();

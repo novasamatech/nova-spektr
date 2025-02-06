@@ -6,7 +6,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, TitleText } from '@/shared/ui';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
-import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { fellowshipVotingFeature, votingStatusModel } from '@/features/fellowship-voting';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendumList } from '../../model/referendums';
 
@@ -26,6 +26,10 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   const input = useUnit(fellowshipTasksFeature.input);
   const tracks = useUnit(referendumList.$tracks);
+  const canVote = useUnit(votingStatusModel.$canVote);
+  const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
+
+  const disabled = !canVote || !hasRequiredRank;
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
@@ -59,8 +63,18 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
         <Box grow={1} />
         <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
           <Box direction="row" gap={3}>
-            <FilledIconButton variant="negative" icon="thumbDown" onClick={() => setDecision('nay')} />
-            <FilledIconButton variant="positive" icon="thumbUp" onClick={() => setDecision('aye')} />
+            <FilledIconButton
+              variant="negative"
+              icon="thumbDown"
+              disabled={disabled}
+              onClick={() => setDecision('nay')}
+            />
+            <FilledIconButton
+              variant="positive"
+              icon="thumbUp"
+              disabled={disabled}
+              onClick={() => setDecision('aye')}
+            />
           </Box>
           {canSkip && (
             <Button variant="text" onClick={onSkip}>
@@ -69,7 +83,12 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
           )}
         </Box>
       </Box>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      <VotingModal
+        referendumId={referendum.id}
+        isOpen={nonNullable(decision)}
+        vote={decision}
+        onClose={() => setDecision(null)}
+      />
     </>
   );
 };

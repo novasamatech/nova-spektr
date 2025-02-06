@@ -6,7 +6,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { ButtonCard, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { collectiveDomain } from '@/domains/collectives';
+import { referendumService } from '@/domains/collectives';
 import { votingFeatureStatus } from '../model/feature';
 import { votingStatusModel } from '../model/votingStatus';
 
@@ -18,7 +18,6 @@ type Props = {
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
   useGate(votingFeatureStatus.gate);
-  useGate(votingStatusModel.flow, { referendumId });
 
   const { t } = useI18n();
 
@@ -30,7 +29,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
-  if (nullable(chain) || nullable(referendum) || collectiveDomain.referendumService.isCompleted(referendum)) {
+  if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum)) {
     return null;
   }
 
@@ -41,7 +40,12 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
 
   return (
     <>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      <VotingModal
+        referendumId={referendumId}
+        isOpen={nonNullable(decision)}
+        vote={decision}
+        onClose={() => setDecision(null)}
+      />
       <Box gap={4}>
         <Box direction="row" gap={4}>
           {renderAyeButton ? (
