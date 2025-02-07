@@ -7,7 +7,7 @@ import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { fetchEvidenceFromSubsquare } from './resource';
+import { fetchEvidenceFromSubsquare, fetchEvidenceSummary } from './resource';
 import { evidenceService } from './service';
 import { type Evidence, type EvidencePeriods } from './types';
 
@@ -22,16 +22,20 @@ type EvidenceRequestParams = {
 
 const { $: $list, request } = createDataSource({
   initial: {} as EvidenceStore,
-  async fn({ palletType, api, accountId }: EvidenceRequestParams): Promise<Evidence | null> {
+  async fn({ palletType, api, chain, accountId }: EvidenceRequestParams): Promise<Evidence | null> {
     const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
 
     if (evidence) {
-      let content = '';
-      try {
-        content = await fetchEvidenceFromSubsquare(evidence.value);
-      } catch (e) {
-        console.error('ipfs request error:', e);
-      }
+      const [content, summary] = await Promise.allSettled([
+        fetchEvidenceFromSubsquare(evidence.value),
+        fetchEvidenceSummary(evidence.value, chain.chainId, 'en'),
+      ]).then(
+        ([contentResponse, summaryResponse]) =>
+          [
+            contentResponse.status === 'fulfilled' ? contentResponse.value : '',
+            summaryResponse.status === 'fulfilled' ? summaryResponse.value : '',
+          ] as const,
+      );
 
       return {
         wish: evidence.wish,
@@ -39,6 +43,7 @@ const { $: $list, request } = createDataSource({
         cid: evidenceService.getCidByEvidence(evidence.value),
         hash: evidence.value,
         content,
+        summary,
       };
     }
 

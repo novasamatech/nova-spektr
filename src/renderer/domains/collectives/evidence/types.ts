@@ -6,6 +6,7 @@ export type Evidence = {
   hash: string;
   cid: string;
   content: string;
+  summary: string;
 };
 
 export type EvidencePeriods = {

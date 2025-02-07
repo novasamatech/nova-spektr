@@ -5,7 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { Button, TitleText } from '@/shared/ui';
+import { Button, Markdown, TitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -25,6 +25,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   const input = useUnit(fellowshipTasksFeature.input);
   const tracks = useUnit(referendumList.$tracks);
+  const evidences = useUnit(referendumList.$evidences);
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
@@ -32,6 +33,8 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   const proposer =
     referendum.proposal.type === 'Inline' ? evidenceService.getProposalAccount(api, referendum.proposal.data) : null;
+
+  const evidence = evidences.find(e => e.accountId === proposer);
 
   useEffect(() => {
     if (proposer) {
@@ -54,6 +57,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   return (
     <Box fillContainer padding={5} gap={5}>
       <TitleText>{title}</TitleText>
+      <Markdown>{evidence?.summary ?? ''}</Markdown>
       <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
       <Box grow={1} />
       <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
