@@ -680,7 +680,7 @@ export const getExtrinsic: Record<
     return api.tx[`${pallet}Core`].setActive(isActive);
   },
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: ({ pallet }, api) => {
-    return api.tx[`${pallet}Salary`].request();
+    return api.tx[`${pallet}Salary`].register();
   },
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: ({ pallet, beneficiary }, api) => {
     return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();

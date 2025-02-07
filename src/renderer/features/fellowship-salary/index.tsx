@@ -4,11 +4,12 @@ import { requestSalaryActionSlot } from '@/features/fellowship-tasks';
 import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { EntrypointCard } from './components/EntrypointCard';
+import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation';
 import { SalaryRegisterConfirmation } from './components/SalaryRegisterConfirmation';
 import { SalaryRegisterModal } from './components/SalaryRegisterModal';
 import { fellowshipSalaryFeature } from './model/feature';
 
-export { fellowshipSalaryFeature, SalaryRegisterConfirmation };
+export { fellowshipSalaryFeature, SalaryRegisterConfirmation, SalaryPayoutConfirmation };
 
 fellowshipSalaryFeature.inject(fellowshipHeaderCardsSlot, {
   order: 1,

@@ -1,7 +1,7 @@
 import { attach, combine, sample } from 'effector';
-import { createGate } from 'effector-react';
 import { and, or } from 'patronum';
 
+import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
@@ -13,14 +13,16 @@ import { fellowshipModel } from './fellowship';
 
 const requestEvidence = attach({ effect: evidence.request });
 
-const gate = createGate<{ referendumId: ReferendumId | null }>({ defaultState: { referendumId: null } });
+const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
+
+const $referendumId = flow.state.map(state => state.referendumId);
 
 const $api = referendumsDetailsFeature.input.map(input => input?.api ?? null);
 const $evidences = fellowshipModel.$store.map(store => store?.evidence ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
 
-const $referendum = combine($referendums, gate.state, (referendums, { referendumId }) => {
+const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   if (referendums.length === 0 || referendumId === null) return null;
 
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
@@ -32,7 +34,7 @@ const $identities = combine(identityDomain.identity.$list, referendumsDetailsFea
   return identities[input.chainId] ?? {};
 });
 
-const $referendumMeta = combine($meta, gate.state, (meta, { referendumId }) => {
+const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
   if (referendumId === null) return null;
 
   return meta[referendumId] ?? null;
@@ -80,7 +82,7 @@ sample({
 });
 
 export const referendumDetails = {
-  gate,
+  flow,
 
   $proposer,
   $proposerIdentity,

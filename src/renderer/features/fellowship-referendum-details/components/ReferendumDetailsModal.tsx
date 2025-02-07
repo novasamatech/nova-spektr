@@ -1,6 +1,7 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { Slot, createSlot } from '@/shared/di';
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
@@ -8,7 +9,6 @@ import { SmallTitleText } from '@/shared/ui';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { referendumDetails } from '../model/details';
-import { referendumsDetailsFeature } from '../model/feature';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
@@ -28,8 +28,7 @@ type Props = {
 };
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useGate(referendumsDetailsFeature.gate);
-  useGate(referendumDetails.gate, { referendumId });
+  useFlow(referendumDetails.flow, { referendumId });
 
   const { t } = useI18n();
 

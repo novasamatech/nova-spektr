@@ -3,7 +3,6 @@ import { type BN } from '@polkadot/util';
 import { createEvent } from 'effector';
 
 import { type Asset, type Wallet } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '@/domains/collectives';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
@@ -15,24 +14,23 @@ import {
   createTransactionConfirmStore,
 } from '@/features/operations/OperationsConfirm/lib/createTransactionConfirmStore';
 
-export type CollectiveSalaryPayoutConfirm = ConfirmInfo & {
+export type CollectiveSalaryRequestConfirm = ConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
   pallet: CollectivePalletsType;
   wallets: Wallet[];
-  beneficiary: AccountId | null;
   fee: BN;
 };
 
 const sign = createEvent();
 
-const confirmStore = createTransactionConfirmStore<CollectiveSalaryPayoutConfirm>({
+const confirmStore = createTransactionConfirmStore<CollectiveSalaryRequestConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
   $multisigTransactions: operationsModel.$multisigTransactions,
 });
 
-export const confirmModel = {
+export const confirm = {
   $confirmMap: confirmStore.$confirmMap,
 
   events: {

@@ -8,7 +8,6 @@ import { referendaPallet } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-// eslint-disable-next-line boundaries/entry-point
 import { VotingConfirmation, votingStatusModel } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 

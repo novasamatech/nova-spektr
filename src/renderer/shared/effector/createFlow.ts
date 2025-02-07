@@ -70,7 +70,7 @@ export const createFlow = <Props>(defaultState: Props): Flow<Props> => {
   };
 };
 
-export const useFlow = <Props>(flow: Flow<Props>, props: Props) => {
+export const useFlow = <Props>(flow: Flow<Props>, props: NoInfer<Props>) => {
   const previous = usePrevious(props);
   useEffect(() => {
     flow.open(props);

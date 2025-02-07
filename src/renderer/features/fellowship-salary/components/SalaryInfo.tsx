@@ -11,6 +11,7 @@ import { fellowshipSalaryFeature } from '../model/feature';
 import { member } from '../model/member';
 import { memberSalary } from '../model/memberSalary';
 
+import { SalaryPayoutModal } from './SalaryPayoutModal';
 import { SalaryRegisterModal } from './SalaryRegisterModal';
 
 export const SalaryInfo = memo(() => {
@@ -75,7 +76,7 @@ export const SalaryInfo = memo(() => {
                 </SmallTitleText>
 
                 {isSalaryRequested && (
-                  <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                  <FootnoteText className="flex items-center gap-1 pt-2 text-tab-text-accent">
                     <Icon name="voted" size={16} className="text-inherit" />
                     <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
                   </FootnoteText>
@@ -104,7 +105,7 @@ export const SalaryInfo = memo(() => {
                 </SmallTitleText>
 
                 {isPayoutRequested && (
-                  <FootnoteText className="flex items-center gap-1 text-tab-text-accent">
+                  <FootnoteText className="flex items-center gap-1 pt-2 text-tab-text-accent">
                     <Icon name="voted" size={16} className="text-inherit" />
                     <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
                   </FootnoteText>
@@ -112,9 +113,9 @@ export const SalaryInfo = memo(() => {
               </div>
 
               {canRequestSalaryPayout && (
-                <Button variant="fill" disabled>
-                  {t('fellowship.salary.salaryInfo.payoutSalary')}
-                </Button>
+                <SalaryPayoutModal beneficiary={null}>
+                  <Button variant="fill">{t('fellowship.salary.salaryInfo.payoutSalary')}</Button>
+                </SalaryPayoutModal>
               )}
             </div>
           )}

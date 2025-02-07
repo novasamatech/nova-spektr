@@ -86,6 +86,27 @@ function createSalaryRequestTransaction({
   };
 }
 
+type SalaryPayoutTransactionParams = {
+  pallet: CollectivePalletsType;
+  beneficiary: AccountId | null;
+  account: AnyAccount;
+  chain: Chain;
+};
+
+function createSalaryPayoutTransaction({
+  pallet,
+  account,
+  beneficiary,
+  chain,
+}: SalaryPayoutTransactionParams): SalaryPayoutTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SALARY_PAYOUT,
+    args: { pallet, beneficiary },
+  };
+}
+
 function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return claimStatus.lastActive === period.cycleIndex;
 }
@@ -114,27 +135,6 @@ function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePer
     claimStatus.type !== 'payout' &&
     claimStatus.type !== 'none'
   );
-}
-
-type SalaryPayoutTransactionParams = {
-  pallet: CollectivePalletsType;
-  account: AnyAccount;
-  chain: Chain;
-  beneficiary: AccountId | null;
-};
-
-function createSalaryPayoutTransaction({
-  pallet,
-  account,
-  chain,
-  beneficiary,
-}: SalaryPayoutTransactionParams): SalaryPayoutTransaction {
-  return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-    chainId: chain.chainId,
-    type: TransactionType.COLLECTIVE_SALARY_REQUEST,
-    args: { pallet, beneficiary },
-  };
 }
 
 export const salaryService = {
