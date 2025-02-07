@@ -3,14 +3,14 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { members } from '@/domains/collectives';
+import { member, track } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
-import { fellowshipTasksFeature } from './feature';
+import { fellowshipSalaryFeature } from './feature';
 
-const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
+const $member = fellowshipSalaryFeature.input.map(store => (store ? store.member : null));
 
-const $identities = combine(fellowshipTasksFeature.input, identityDomain.identity.$list, (featureInput, list) => {
+const $identities = combine(fellowshipSalaryFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
@@ -22,18 +22,18 @@ const $identity = combine($member, $identities, (member, identities) => {
   return identities[member.accountId] ?? null;
 });
 
-const $pendingMember = and(or(members.pending, identity.pending), $member.map(nullable));
+const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
 
-const memberUpdate = attachToFeatureInput(fellowshipTasksFeature, $member);
+const memberUpdate = attachToFeatureInput(fellowshipSalaryFeature, $member);
 
 sample({
-  clock: fellowshipTasksFeature.running,
-  target: members.subscribe,
+  clock: fellowshipSalaryFeature.running,
+  target: [member.subscribe, track.request],
 });
 
 sample({
-  clock: fellowshipTasksFeature.stopped,
-  target: members.unsubscribe,
+  clock: fellowshipSalaryFeature.stopped,
+  target: member.unsubscribe,
 });
 
 sample({
@@ -45,8 +45,8 @@ sample({
   target: identityDomain.identity.request,
 });
 
-export const member = {
+export const profile = {
   $member,
   $identity,
-  $pending: or($pendingMember, fellowshipTasksFeature.isStarting),
+  $pending: or($pendingMember, fellowshipSalaryFeature.isStarting),
 };

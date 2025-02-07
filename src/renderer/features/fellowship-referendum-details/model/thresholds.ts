@@ -31,13 +31,13 @@ const $thresholds = combine(
       }
 
       result[referendum.id] = {
-        support: collectiveDomain.tracksService.supportThreshold({
+        support: collectiveDomain.trackService.supportThreshold({
           track,
           maxRank,
           members,
           tally: referendum.tally,
         }),
-        approval: collectiveDomain.tracksService.approvalThreshold({
+        approval: collectiveDomain.trackService.approvalThreshold({
           track,
           maxRank,
           tally: referendum.tally,

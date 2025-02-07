@@ -102,7 +102,7 @@ const {
   },
 });
 
-export const members = {
+export const member = {
   $list,
 
   pending,

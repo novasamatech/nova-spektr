@@ -169,7 +169,7 @@ const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, track: Trac
   return getExcessRank(rank, maxRank, track) >= 0;
 };
 
-export const tracksService = {
+export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
 

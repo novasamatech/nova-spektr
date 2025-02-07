@@ -1,12 +1,12 @@
 import { combine } from 'effector';
 
-import { memberService, members } from '@/domains/collectives';
+import { member, memberService } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
-const $fellowshipMembers = members.$list.map(members => members['fellowship'] ?? {});
+const $fellowshipMembers = member.$list.map(members => members['fellowship'] ?? {});
 const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (network, members) =>
   network ? (members[network.chainId] ?? []) : [],
 );

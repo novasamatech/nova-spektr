@@ -6,11 +6,11 @@ import { nonNullable } from '@/shared/lib/utils';
 import { referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { governanceModel } from '@/entities/governance';
 
-import { referendumsFeatureStatus } from './feature';
+import { fellowshipReferendumsFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 // TODO do smth about it, this connection looks terrible
-const metadataProviderUpdated = attachToFeatureInput(referendumsFeatureStatus, governanceModel.$governanceApi);
+const metadataProviderUpdated = attachToFeatureInput(fellowshipReferendumsFeature, governanceModel.$governanceApi);
 
 sample({
   clock: metadataProviderUpdated,
@@ -24,12 +24,12 @@ sample({
 });
 
 sample({
-  clock: referendumsFeatureStatus.running,
+  clock: fellowshipReferendumsFeature.running,
   target: [referendum.subscribe, referendumMeta.request],
 });
 
 sample({
-  clock: referendumsFeatureStatus.stopped,
+  clock: fellowshipReferendumsFeature.stopped,
   target: referendum.unsubscribe,
 });
 
@@ -44,6 +44,6 @@ export const referendumListModel = {
   $ongoing,
   $completed,
   $meta,
-  $pending: or(referendum.pending, referendumsFeatureStatus.isStarting),
-  $fulfilled: and(referendum.fulfilled, referendumsFeatureStatus.isRunning),
+  $pending: or(referendum.pending, fellowshipReferendumsFeature.isStarting),
+  $fulfilled: and(referendum.fulfilled, fellowshipReferendumsFeature.isRunning),
 };

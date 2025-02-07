@@ -20,7 +20,7 @@ const $input = combine(fellowshipNetwork.$network, walletModel.$availableAccount
   };
 });
 
-export const referendumsDetailsFeature = createFeature({
+export const fellowshipReferendumsDetailsFeature = createFeature({
   name: 'fellowship/referendum details',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,

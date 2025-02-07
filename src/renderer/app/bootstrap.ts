@@ -3,7 +3,7 @@
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
-import { config as collectivesConfig, tracksService } from '@/domains/collectives';
+import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { basketModel } from '@/entities/basket';
 import { governanceModel } from '@/entities/governance';
@@ -21,7 +21,8 @@ import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-fe
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
-import { referendumsDetailsFeature } from '@/features/fellowship-referendum-details';
+import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
+import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
 import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
 import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
@@ -57,11 +58,11 @@ const configureDomains = () => {
 
   config.inject(collectivesConfig.calculateVoteWeightPipeline, (defaultValue, { pallet, excessRank }) => {
     if (pallet === 'fellowship') {
-      return tracksService.getGeometricVoteWeight(excessRank);
+      return trackService.getGeometricVoteWeight(excessRank);
     }
 
     if (pallet === 'ambassador') {
-      return tracksService.getLinearVoteWeight(excessRank);
+      return trackService.getLinearVoteWeight(excessRank);
     }
 
     return defaultValue;
@@ -102,13 +103,14 @@ export const bootstrap = () => {
     settingsNavigationFeature,
     flexibleMultisigNavigationFeature,
 
-    fellowshipNavigationFeature,
-    referendumsDetailsFeature,
-    fellowshipTasksFeature,
-    fellowshipSalaryFeature,
-    fellowshipProfileFeature,
-    fellowshipMembersFeature,
     fellowshipActivityFeedFeature,
+    fellowshipMembersFeature,
+    fellowshipNavigationFeature,
+    fellowshipProfileFeature,
+    fellowshipReferendumsDetailsFeature,
+    fellowshipReferendumsFeature,
+    fellowshipSalaryFeature,
+    fellowshipTasksFeature,
     fellowshipVotingFeature,
 
     walletSelectFeature.feature,

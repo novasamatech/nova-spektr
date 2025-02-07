@@ -6,12 +6,12 @@ import { Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { referendumDetails } from '../model/details';
-import { referendumsDetailsFeature } from '../model/feature';
+import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 
 export const ProposerName = () => {
   const { t } = useI18n();
 
-  const input = useUnit(referendumsDetailsFeature.input);
+  const input = useUnit(fellowshipReferendumsDetailsFeature.input);
   const proposer = useUnit(referendumDetails.$proposer);
   const proposerIdentity = useUnit(referendumDetails.$proposerIdentity);
   const isProposerLoading = useUnit(referendumDetails.$pendingProposer);

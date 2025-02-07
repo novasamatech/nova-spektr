@@ -6,8 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, Markdown, TitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, evidenceService, tracksService } from '@/domains/collectives';
+import { Box, Skeleton } from '@/shared/ui-kit';
+import { type OngoingReferendum, evidenceService, trackService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendumList } from '../../model/referendums';
 
@@ -26,6 +26,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const input = useUnit(fellowshipTasksFeature.input);
   const tracks = useUnit(referendumList.$tracks);
   const evidences = useUnit(referendumList.$evidences);
+  const evidencePending = useUnit(referendumList.$evidencePending);
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
@@ -42,8 +43,8 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
     }
   }, [proposer]);
 
-  const isRetentionTrack = tracksService.isRetentionTrack(track.id);
-  const isPromotionTrack = tracksService.isPromotionTrack(track.id);
+  const isRetentionTrack = trackService.isRetentionTrack(track.id);
+  const isPromotionTrack = trackService.isPromotionTrack(track.id);
 
   let title = t('fellowship.tasks.task.anyReferendum.title');
 
@@ -57,6 +58,13 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   return (
     <Box fillContainer padding={5} gap={5}>
       <TitleText>{title}</TitleText>
+      {!evidence?.summary && evidencePending && (
+        <Box gap={1}>
+          <Skeleton height="1em" width="95%" />
+          <Skeleton height="1em" width="75%" />
+          <Skeleton height="1em" width="60%" />
+        </Box>
+      )}
       <Markdown>{evidence?.summary ?? ''}</Markdown>
       <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
       <Box grow={1} />

@@ -5,7 +5,7 @@ import { type TrackId } from '@/shared/pallet/referenda';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Box } from '@/shared/ui-kit';
-import { referendumsDetailsFeature } from '../../model/feature';
+import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { tracksModel } from '../../model/tracks';
 
 function getTrackInfo(trackId: TrackId) {
@@ -41,7 +41,7 @@ type Props = {
 };
 
 export const ReferendumTrackInfo = memo<Props>(({ track }) => {
-  useGate(referendumsDetailsFeature.gate);
+  useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const trackInfo = useStoreMap({
     store: tracksModel.$list,

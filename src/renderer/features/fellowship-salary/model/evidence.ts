@@ -6,7 +6,7 @@ import { evidence, evidenceService, memberService } from '@/domains/collectives'
 import { block } from './block';
 import { fellowshipSalaryFeature } from './feature';
 import { fellowship } from './fellowship';
-import { member } from './member';
+import { profile } from './profile';
 
 const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
@@ -17,20 +17,20 @@ const $chainEvidences = combine(fellowshipSalaryFeature.input, $fellowshipEviden
   return evidences[input.chainId] ?? [];
 });
 
-const $track = combine(member.$member, $tracks, (member, tracks) => {
+const $track = combine(profile.$member, $tracks, (member, tracks) => {
   if (nullable(member)) return null;
 
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $memberEvidence = combine(member.$member, $chainEvidences, (member, evidences) => {
+const $memberEvidence = combine(profile.$member, $chainEvidences, (member, evidences) => {
   return member ? (evidences.find(e => e.accountId === member.accountId) ?? null) : null;
 });
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 
 const $currentPeriod = combine(
-  { member: member.$member, periods: $periods, currentBlock: block.$currentBlock },
+  { member: profile.$member, periods: $periods, currentBlock: block.$currentBlock },
   ({ member, periods, currentBlock }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
     return evidenceService.getCurrentMembersPeriod(member, periods, currentBlock);

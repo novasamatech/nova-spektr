@@ -70,7 +70,7 @@ sample({
   target: [requestTracks, requestMaxRank],
 });
 
-export const tracks = {
+export const track = {
   $list,
   $maxRank,
   fulfilled,

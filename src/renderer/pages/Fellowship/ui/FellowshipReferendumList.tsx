@@ -3,10 +3,10 @@ import { Outlet, generatePath, useParams } from 'react-router-dom';
 import { Paths } from '@/shared/routes';
 import { Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
-import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
+import { fellowshipReferendumsF } from '@/features/fellowship-referendums';
 import { navigationModel } from '@/features/navigation';
 
-const { Referendums } = fellowshipReferendumsFeature.views;
+const { Referendums } = fellowshipReferendumsF.views;
 
 export const FellowshipReferendumList = () => {
   const { chainId } = useParams<'chainId'>();

@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { member } from '../model/member';
+import { profile } from '../model/profile';
 
 import { EvidenceInfo } from './EvidenceInfo';
 import { SalaryInfo } from './SalaryInfo';
@@ -13,7 +13,7 @@ import { SalaryInfo } from './SalaryInfo';
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipSalaryFeature.input);
-  const currentMember = useUnit(member.$member);
+  const currentMember = useUnit(profile.$member);
   const [tab, setTab] = useState('salary');
 
   const disabled = nullable(currentMember) || nullable(featureInput);

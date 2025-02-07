@@ -4,25 +4,25 @@ import { combineStores } from './_lib/helpers';
 import { evidence } from './evidence/model';
 import { evidenceService } from './evidence/service';
 import { feed } from './feed/model';
-import { members } from './members/model';
+import { member } from './members/model';
 import { memberService } from './members/service';
 import { referendum } from './referendum/model';
 import { referendumService } from './referendum/service';
 import { referendumMeta } from './referendumMeta/model';
 import { salary } from './salary/model';
 import { salaryService } from './salary/service';
-import { tracks } from './tracks/model';
-import { tracksService } from './tracks/service';
+import { track } from './tracks/model';
+import { trackService } from './tracks/service';
 import { votingService } from './voting/service';
 import { voting } from './votingHistory/model';
 
 const $store = combine(
   {
-    members: members.$list,
+    members: member.$list,
     referendums: referendum.$list,
     referendumMeta: referendumMeta.$list,
-    tracks: tracks.$list,
-    maxRank: tracks.$maxRank,
+    tracks: track.$list,
+    maxRank: track.$maxRank,
     voting: voting.$votes,
     salaryStatus: salary.$status,
     claimantStatus: salary.$claimantStatus,
@@ -38,13 +38,13 @@ const $store = combine(
  */
 export const collectiveDomain = {
   $store,
-  members,
-  tracks,
+  members: member,
+  tracks: track,
   referendum,
   referendumMeta,
   voting,
 
-  tracksService,
+  trackService,
   memberService,
   referendumService,
   votingService,
@@ -52,16 +52,16 @@ export const collectiveDomain = {
 
 export {
   $store as $collectiveStore,
-  members as members,
-  tracks as tracks,
-  referendum as referendum,
+  member,
+  track,
+  referendum,
   referendumMeta,
   voting,
   salary,
   feed,
   evidence,
   evidenceService,
-  tracksService,
+  trackService,
   memberService,
   referendumService,
   votingService,

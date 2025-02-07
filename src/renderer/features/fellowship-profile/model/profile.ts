@@ -3,7 +3,7 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { members, tracks } from '@/domains/collectives';
+import { member, track } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipProfileFeature } from './feature';
@@ -31,18 +31,18 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $pendingMember = and(or(members.pending, identity.pending), $member.map(nullable));
+const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 
 sample({
   clock: fellowshipProfileFeature.running,
-  target: [members.subscribe, tracks.request],
+  target: [member.subscribe, track.request],
 });
 
 sample({
   clock: fellowshipProfileFeature.stopped,
-  target: members.unsubscribe,
+  target: member.unsubscribe,
 });
 
 sample({

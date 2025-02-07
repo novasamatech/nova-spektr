@@ -7,7 +7,7 @@ import { salary as salaryModel, salaryService } from '@/domains/collectives';
 
 import { block } from './block';
 import { fellowshipTasksFeature } from './feature';
-import { member } from './member';
+import { profile } from './profile';
 
 const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
 const $fellowshipClaimantStatuses = salaryModel.$claimantStatus.map(s => s['fellowship'] ?? {});
@@ -36,7 +36,7 @@ const $chainSalaries = combine(fellowshipTasksFeature.input, $salaries, (feature
   return salaries[featureInput.chainId] ?? null;
 });
 
-const $memberSalary = combine(member.$member, $chainSalaries, (member, salaries) => {
+const $memberSalary = combine(profile.$member, $chainSalaries, (member, salaries) => {
   if (nullable(member)) {
     return {
       active: BN_ZERO,
@@ -50,7 +50,7 @@ const $memberSalary = combine(member.$member, $chainSalaries, (member, salaries)
   };
 });
 
-const $memberClaimStatus = combine(member.$member, $chainClaimantStatuses, (member, statuses) => {
+const $memberClaimStatus = combine(profile.$member, $chainClaimantStatuses, (member, statuses) => {
   if (nullable(member)) return null;
   return statuses?.[member.accountId] ?? null;
 });
@@ -65,7 +65,7 @@ sample({
   target: [salaryModel.requestStatus, salaryModel.requestSalaries],
 });
 
-const memberUpdated = attachToFeatureInput(fellowshipTasksFeature, member.$member).filterMap(({ data, input }) => {
+const memberUpdated = attachToFeatureInput(fellowshipTasksFeature, profile.$member).filterMap(({ data, input }) => {
   if (!data) return;
 
   return {

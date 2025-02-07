@@ -7,14 +7,14 @@ import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { retentionEvidence } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { member } from '../model/member';
+import { profile } from '../model/profile';
 
 export const EvidenceInfo = memo(() => {
   // const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipSalaryFeature.input);
-  const currentMember = useUnit(member.$member);
+  const currentMember = useUnit(profile.$member);
   // const memberEvidence = useUnit(retentionEvidence.$memberEvidence);
   // const periods = useUnit(retentionEvidence.$periods);
   const track = useUnit(retentionEvidence.$track);

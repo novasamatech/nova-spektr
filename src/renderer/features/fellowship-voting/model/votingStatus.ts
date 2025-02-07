@@ -4,7 +4,7 @@ import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { referendum, referendumService, tracksService, voting } from '@/domains/collectives';
+import { referendum, referendumService, trackService, voting } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 
 import { fellowshipVotingFeature } from './feature';
@@ -34,7 +34,7 @@ const $hasRequiredRank = combine(
       return false;
     }
 
-    return tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
+    return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
   },
 );
 

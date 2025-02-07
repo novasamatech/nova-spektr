@@ -8,7 +8,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { evidence, evidenceService, referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { identityDomain } from '@/domains/identity';
 
-import { referendumsDetailsFeature } from './feature';
+import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const requestEvidence = attach({ effect: evidence.request });
@@ -17,7 +17,7 @@ const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: n
 
 const $referendumId = flow.state.map(state => state.referendumId);
 
-const $api = referendumsDetailsFeature.input.map(input => input?.api ?? null);
+const $api = fellowshipReferendumsDetailsFeature.input.map(input => input?.api ?? null);
 const $evidences = fellowshipModel.$store.map(store => store?.evidence ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
 const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
@@ -28,11 +28,15 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $identities = combine(identityDomain.identity.$list, referendumsDetailsFeature.input, (identities, input) => {
-  if (nullable(input)) return {};
+const $identities = combine(
+  identityDomain.identity.$list,
+  fellowshipReferendumsDetailsFeature.input,
+  (identities, input) => {
+    if (nullable(input)) return {};
 
-  return identities[input.chainId] ?? {};
-});
+    return identities[input.chainId] ?? {};
+  },
+);
 
 const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
   if (referendumId === null) return null;
@@ -63,7 +67,7 @@ const $evidence = combine($evidences, $proposer, (list, proposer) => {
 const $pendingReferendum = and($referendum.map(nullable), referendum.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
 
-const proposeEvidenceRequested = attachToFeatureInput(referendumsDetailsFeature, $proposer).filterMap(
+const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(
   ({ input, data }) => {
     if (nullable(data)) return;
 
@@ -92,7 +96,7 @@ export const referendumDetails = {
 
   $pendingEvidence: requestEvidence.pending,
   $pendingProposer: identityDomain.identity.pending,
-  $pendingMeta: or($pendingReferendumMeta, referendumsDetailsFeature.isStarting),
-  $pending: or($pendingReferendum, referendumsDetailsFeature.isStarting),
-  $fulfilled: and(referendum.fulfilled, referendumsDetailsFeature.isRunning),
+  $pendingMeta: or($pendingReferendumMeta, fellowshipReferendumsDetailsFeature.isStarting),
+  $pending: or($pendingReferendum, fellowshipReferendumsDetailsFeature.isStarting),
+  $fulfilled: and(referendum.fulfilled, fellowshipReferendumsDetailsFeature.isRunning),
 };

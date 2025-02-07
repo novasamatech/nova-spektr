@@ -8,8 +8,8 @@ import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { member } from '../model/member';
 import { memberSalary } from '../model/memberSalary';
+import { profile } from '../model/profile';
 
 import { SalaryPayoutModal } from './SalaryPayoutModal';
 import { SalaryRegisterModal } from './SalaryRegisterModal';
@@ -19,8 +19,8 @@ export const SalaryInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipSalaryFeature.input);
-  const currentMember = useUnit(member.$member);
-  const identity = useUnit(member.$identity);
+  const currentMember = useUnit(profile.$member);
+  const identity = useUnit(profile.$identity);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const claimStatus = useUnit(memberSalary.$memberClaimStatus);
   const salary = useUnit(memberSalary.$memberSalary);

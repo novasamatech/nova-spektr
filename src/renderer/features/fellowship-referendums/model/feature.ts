@@ -28,7 +28,7 @@ const $input = combine(
   },
 );
 
-export const referendumsFeatureStatus = createFeature({
+export const fellowshipReferendumsFeature = createFeature({
   name: 'fellowship/referendums',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
@@ -46,5 +46,5 @@ export const referendumsFeatureStatus = createFeature({
 sample({
   clock: fellowshipNetwork.$isActive,
   filter: fellowshipNetwork.$isActive,
-  target: referendumsFeatureStatus.restore,
+  target: fellowshipReferendumsFeature.restore,
 });

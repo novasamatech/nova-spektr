@@ -10,9 +10,9 @@ import { ReferendumDetailsModal, additionalInfoSlot, referendumActionsSlot } fro
 import { ReferendumTrackInfo } from './components/shared/ReferendumTrackInfo';
 import { ReferendumVoteChart } from './components/shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './components/shared/ReferendumVotingStatusBadge';
-import { referendumsDetailsFeature } from './model/feature';
+import { fellowshipReferendumsDetailsFeature } from './model/feature';
 
-export { referendumsDetailsFeature, additionalInfoSlot, referendumActionsSlot };
+export { fellowshipReferendumsDetailsFeature, additionalInfoSlot, referendumActionsSlot };
 
 export const fellowshipReferendumDetailsF = {
   views: {
@@ -22,7 +22,7 @@ export const fellowshipReferendumDetailsF = {
   },
 };
 
-referendumsDetailsFeature.inject(taskVotingDetailsActionSlot, ({ referendumId }) => {
+fellowshipReferendumsDetailsFeature.inject(taskVotingDetailsActionSlot, ({ referendumId }) => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   return (
@@ -41,6 +41,6 @@ referendumsDetailsFeature.inject(taskVotingDetailsActionSlot, ({ referendumId })
   );
 });
 
-referendumsDetailsFeature.inject(referendumDetalsPageRouteSlot, ({ referendumId, isOpen, onToggle }) => {
+fellowshipReferendumsDetailsFeature.inject(referendumDetalsPageRouteSlot, ({ referendumId, isOpen, onToggle }) => {
   return <ReferendumDetailsModal referendumId={referendumId} isOpen={isOpen} onToggle={onToggle} />;
 });
