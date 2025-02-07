@@ -6,7 +6,7 @@ export type BasketTransaction = {
   initiatorWallet: ID;
   coreTx: Transaction;
   txWrappers: TxWrapper[];
-  error?: BasketError;
+  error?: ChainError | ClientError;
   groupId?: number;
 };
 

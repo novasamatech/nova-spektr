@@ -1,4 +1,4 @@
-import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
+import { type BasketTransaction, type Chain, type Transaction, TransactionType } from '@/shared/core';
 import { getAssetById } from '@/shared/lib/utils';
 import {
   type MultisigTransactionTypes,
@@ -7,10 +7,17 @@ import {
   type UtilityTransactionTypes,
   type XcmTransactionTypes,
   XcmTypes,
+  findCoreBatchAll,
   isEditDelegationTransaction,
 } from '@/entities/transaction';
 
-import { getCoreTx } from './utils';
+export const getCoreTx = (tx: BasketTransaction): Transaction => {
+  if (isEditDelegationTransaction(tx.coreTx)) {
+    return tx.coreTx;
+  }
+
+  return tx.coreTx.type === TransactionType.BATCH_ALL ? findCoreBatchAll(tx.coreTx) : tx.coreTx;
+};
 
 type Title = {
   title: string;
