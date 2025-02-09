@@ -23,6 +23,7 @@ export * from './Referendum/RemoveVote';
 export * from './FellowshipVoting';
 export * from './FellowshipSetActive';
 export * from './FellowshipSalaryRequest';
+export * from './FellowshipSalaryPayout';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 

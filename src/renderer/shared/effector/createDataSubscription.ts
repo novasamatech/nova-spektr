@@ -1,13 +1,4 @@
-import {
-  type Scope,
-  type StoreWritable,
-  createEffect,
-  createEvent,
-  createStore,
-  is,
-  sample,
-  scopeBind,
-} from 'effector';
+import { type Scope, type StoreWritable, createDomain, is, sample, scopeBind } from 'effector';
 import { readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -79,18 +70,20 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   map,
   scope,
 }: SubscriptionParams<Value, Params, Response>) => {
-  const subscribe = createEvent<Params>();
-  const unsubscribe = createEvent();
-  const received = createEvent<{ params: Params; result: Response }>();
-  const done = createEvent();
+  const domain = createDomain({ name: 'data subscription' });
 
-  const $store = is.store(initial) ? initial : createStore<Value>(initial);
-  const $pending = createStore(false);
-  const $fulfilled = createStore(false);
-  const $currentSubscription = createStore<{ unsubscribe: UnsubscribeFn; key: string } | null>(null);
+  const subscribe = domain.createEvent<Params>({ name: 'subscribe' });
+  const unsubscribe = domain.createEvent({ name: 'unsubscribe' });
+  const received = domain.createEvent<{ params: Params; result: Response }>({ name: 'received' });
+  const done = domain.createEvent({ name: 'done' });
+
+  const $store = is.store(initial) ? initial : domain.createStore<Value>(initial);
+  const $pending = domain.createStore(false, { name: 'pending' });
+  const $fulfilled = domain.createStore(false, { name: 'fulfilled' });
+  const $currentSubscription = domain.createStore<{ unsubscribe: UnsubscribeFn; key: string } | null>(null);
   const $subscribed = $currentSubscription.map(nonNullable);
 
-  const subscribeFx = createEffect<Params, UnsubscribeFn>(params => {
+  const subscribeFx = domain.createEffect<Params, UnsubscribeFn>(params => {
     const bindedReceived = scope ? scopeBind(received, { scope }) : received;
     const bindedDone = scope ? scopeBind(done, { scope }) : done;
 
@@ -106,7 +99,7 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
     });
   });
 
-  const unsubscribeFx = createEffect(({ fn }: { fn: UnsubscribeFn | null; resubscribe: Params | null }) => {
+  const unsubscribeFx = domain.createEffect(({ fn }: { fn: UnsubscribeFn | null; resubscribe: Params | null }) => {
     if (fn) {
       if (fn instanceof Promise) {
         return fn.then(x => x());

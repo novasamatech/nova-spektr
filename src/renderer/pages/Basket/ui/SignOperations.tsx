@@ -26,6 +26,8 @@ import {
   ConfirmSlider,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipSalaryPayoutConfirmation,
+  FellowshipSalaryRequestConfirmation,
   FellowshipSetActiveConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
@@ -130,6 +132,12 @@ export const SignOperations = () => {
       [TransactionType.COLLECTIVE_VOTE]: () => <FellowshipVotingConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.COLLECTIVE_SET_ACTIVE]: () => (
         <FellowshipSetActiveConfirmation id={transaction.id} hideSignButton />
+      ),
+      [TransactionType.COLLECTIVE_SALARY_REQUEST]: () => (
+        <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />
+      ),
+      [TransactionType.COLLECTIVE_SALARY_PAYOUT]: () => (
+        <FellowshipSalaryPayoutConfirmation id={transaction.id} hideSignButton />
       ),
     };
 

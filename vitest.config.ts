@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
-import { BaseSequencer, type WorkspaceSpec } from 'vitest/node';
+import { BaseSequencer, type TestSpecification } from 'vitest/node';
 
 import { folders } from './config/index.js';
 import rendererConfig from './vite.config.renderer';
@@ -16,7 +16,7 @@ const testsPriority = [
 ];
 
 class Seqencer extends BaseSequencer {
-  async sort(files: WorkspaceSpec[]) {
+  async sort(files: TestSpecification[]) {
     return files.sort((a, b) => {
       const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
       const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));

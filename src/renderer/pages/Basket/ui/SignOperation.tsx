@@ -24,6 +24,8 @@ import {
   BondNominateConfirmation,
   DelegateConfirmation,
   EditDelegationConfirmation,
+  FellowshipSalaryPayoutConfirmation,
+  FellowshipSalaryRequestConfirmation,
   FellowshipSetActiveConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
@@ -185,6 +187,12 @@ export const SignOperation = () => {
           id={transaction.id}
           onGoBack={() => signOperationsModel.output.flowFinished()}
         />
+      ),
+      [TransactionType.COLLECTIVE_SALARY_REQUEST]: () => (
+        <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />
+      ),
+      [TransactionType.COLLECTIVE_SALARY_PAYOUT]: () => (
+        <FellowshipSalaryPayoutConfirmation id={transaction.id} hideSignButton />
       ),
     };
 
