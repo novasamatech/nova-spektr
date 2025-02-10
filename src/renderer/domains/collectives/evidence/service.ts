@@ -18,6 +18,12 @@ function getCidByEvidence(evidence: HexString) {
     .toString();
 }
 
+function getEvidenceFromCid(cid: string): HexString {
+  const digest = CID.parse(cid).toV0().multihash.digest;
+
+  return `0x${Buffer.from(digest).toString('hex')}`;
+}
+
 function getEvidenceIpfsUrl(evidence: HexString) {
   return new URL(`ipfs/${getCidByEvidence(evidence)}`, 'https://subsquare.infura-ipfs.io/');
 }
@@ -59,6 +65,7 @@ function getCurrentMembersPeriod(
 export const evidenceService = {
   getEvidenceIpfsUrl,
   getCidByEvidence,
+  getEvidenceFromCid,
   getProposalAccount,
   getCurrentMembersPeriod,
 };
