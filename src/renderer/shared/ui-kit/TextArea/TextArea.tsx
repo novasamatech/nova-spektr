@@ -1,6 +1,7 @@
 import { type ComponentPropsWithoutRef, forwardRef } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui/Typography';
 
 type HTMLTextAreaProps =
   | 'value'
@@ -13,6 +14,7 @@ type HTMLTextAreaProps =
   | 'spellCheck';
 
 type Props = Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> & {
+  autosize?: boolean;
   testId?: string;
   invalid?: boolean;
   value?: string;
@@ -20,26 +22,40 @@ type Props = Pick<ComponentPropsWithoutRef<'textarea'>, HTMLTextAreaProps> & {
 };
 
 export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
-  ({ invalid, disabled, testId = 'TextArea', value, onChange, ...props }, ref) => {
-    return (
+  ({ autosize, invalid, disabled, testId = 'TextArea', value, onChange, rows = 3, ...props }, ref) => {
+    const textarea = (
       <textarea
+        {...props}
         className={cnTw(
-          'w-full rounded px-[11px] py-[7px]',
-          'resize-none text-footnote text-text-primary outline-offset-1',
-          'border border-filter-border bg-input-background placeholder:text-text-secondary',
+          'w-full rounded px-3 py-2',
+          'resize-none text-footnote text-text-primary',
+          'bg-input-background outline outline-1 outline-filter-border placeholder:text-text-secondary',
           {
-            'border-filter-border-negative': invalid,
-            'focus-within:border-active-container-border hover:shadow-card-shadow': !disabled,
+            'outline-filter-border-negative': invalid,
+            'focus-within:outline-active-container-border hover:shadow-card-shadow focus:outline-1': !disabled,
             'bg-input-background-disabled text-text-tertiary placeholder:text-text-tertiary': disabled,
+            'absolute inset-0': autosize,
           },
         )}
         ref={ref}
+        rows={rows}
         value={value}
         data-testid={testId}
+        data-invalid={invalid}
         disabled={disabled}
         onChange={event => onChange?.(event.target.value)}
-        {...props}
       />
     );
+
+    if (autosize) {
+      return (
+        <div className="relative whitespace-pre-wrap px-3 py-2" style={{ minHeight: 16 + rows * 18 }}>
+          <FootnoteText>{value}&nbsp;</FootnoteText>
+          {textarea}
+        </div>
+      );
+    }
+
+    return textarea;
   },
 );
