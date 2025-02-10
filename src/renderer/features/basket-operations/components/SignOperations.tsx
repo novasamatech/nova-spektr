@@ -32,7 +32,7 @@ export const SignOperations = () => {
   }
 
   return (
-    <Modal size="lg" isOpen={isModalOpen} onToggle={() => closeModal()}>
+    <Modal size="fit" isOpen={isModalOpen} onToggle={() => closeModal()}>
       <Modal.Title close>
         <HeaderTitleText>{t('basket.signOperations.title', { transactions: transactions?.length })}</HeaderTitleText>
       </Modal.Title>
