@@ -1,5 +1,4 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect } from 'react';
 
 import { type BasketTransaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -26,10 +25,6 @@ export const BasketOperations = ({ operations }: Props) => {
   const selectedTxs = useUnit(selectOperations.$selectedTxs);
 
   const isSignAvailable = selectedTxs.length > 0;
-
-  useEffect(() => {
-    selectOperations.filterTxs(operations);
-  }, [operations.length]);
 
   return (
     <>
