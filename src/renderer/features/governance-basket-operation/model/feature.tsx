@@ -86,8 +86,9 @@ governanceBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const transaction = basketOperationsService.getCoreTx(operation);
   const title = getModalTitle(transaction);
 
-  if (title)
-    return <OperationTitle className="m-3 justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
+  if (title) {
+    return <OperationTitle className="justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
+  }
 
   return null;
 });

@@ -79,7 +79,7 @@ proxyBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const title = getModalTitle(transaction);
 
   if (title) {
-    return <OperationTitle className="m-3 justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
+    return <OperationTitle className="justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
   }
 
   return null;

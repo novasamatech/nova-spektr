@@ -65,19 +65,23 @@ transferBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const asset = getAssetById(transaction.args.assetId, chain.assets);
 
   if (isTransferTransaction(transaction)) {
-    <OperationTitle
-      className="m-3 justify-center"
-      title={t('transfer.title', { asset: asset?.symbol })}
-      chainId={operation.coreTx.chainId}
-    />;
+    return (
+      <OperationTitle
+        className="justify-center"
+        title={t('transfer.title', { asset: asset?.symbol })}
+        chainId={operation.coreTx.chainId}
+      />
+    );
   }
 
   if (isXcmTransaction(transaction)) {
-    <OperationTitle
-      className="m-3 justify-center"
-      title={t('transfer.xcmTitle', { asset: asset?.symbol })}
-      chainId={operation.coreTx.chainId}
-    />;
+    return (
+      <OperationTitle
+        className="justify-center"
+        title={t('transfer.xcmTitle', { asset: asset?.symbol })}
+        chainId={operation.coreTx.chainId}
+      />
+    );
   }
 
   return null;

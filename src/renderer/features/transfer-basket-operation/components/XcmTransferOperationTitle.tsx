@@ -31,7 +31,7 @@ export const XcmTransferOperationTitle = ({ operation, coreTx, error, errorText,
     <div className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}>
       <TransactionTitle
         className="flex-1 overflow-hidden"
-        title={t('transfer.title', { asset: asset?.symbol })}
+        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
         icon="transferConfirm"
       />
 
