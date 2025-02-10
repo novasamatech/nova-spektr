@@ -1,10 +1,9 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { TransactionType } from '@/shared/core';
+import { type Transaction, TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { OperationTitle, getOperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
+import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
   validate as basketValidate,
@@ -29,32 +28,52 @@ export const governanceBasketOperationFeature = createFeature({
   name: 'governance/basket-operations',
 });
 
+const getOperationTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.UNLOCK]: 'operations.titles.unlock',
+    [TransactionType.VOTE]: 'operations.titles.vote',
+    [TransactionType.REVOTE]: 'operations.titles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
+    [TransactionType.DELEGATE]: 'operations.titles.delegate',
+    [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
+    [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+  };
+
+  return Title[transaction.type];
+};
+
+const getModalTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
+    [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.EDIT_DELEGATION]: 'operations.modalTitles.editDelegationOn',
+    [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
+    [TransactionType.VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.REVOTE]: 'operations.modalTitles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
+  };
+
+  return Title[transaction.type];
+};
+
 governanceBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
+  const { t } = useI18n();
   const transaction = basketOperationsService.getCoreTx(operation);
 
   useGate(validate.gates.flow, { id: operation.id, operation, feeMap: {} });
   const pendingTxs = useUnit(validate.$pendingTxs);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.DELEGATE,
-      TransactionType.EDIT_DELEGATION,
-      TransactionType.UNDELEGATE,
-      TransactionType.UNLOCK,
-      TransactionType.VOTE,
-      TransactionType.REVOTE,
-      TransactionType.REMOVE_VOTE,
-    ].includes(transaction.type)
-  ) {
+  const title = getOperationTitle(transaction);
+
+  if (title) {
     return (
       <GovernanceOperationTitle
-        coreTx={transaction}
+        title={t(title)}
+        operation={operation}
+        chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        onClick={() => {}}
-        onTxRemoved={() => {}}
       />
     );
   }
@@ -64,32 +83,11 @@ governanceBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
 
 governanceBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
-  const chain = chains[operation.coreTx.chainId];
   const transaction = basketOperationsService.getCoreTx(operation);
+  const title = getModalTitle(transaction);
 
-  const { title, params } = getOperationTitle(operation, chain);
-
-  if (
-    transaction?.type &&
-    [
-      TransactionType.DELEGATE,
-      TransactionType.EDIT_DELEGATION,
-      TransactionType.UNDELEGATE,
-      TransactionType.UNLOCK,
-      TransactionType.VOTE,
-      TransactionType.REVOTE,
-      TransactionType.REMOVE_VOTE,
-    ].includes(transaction.type)
-  ) {
-    return (
-      <OperationTitle
-        className="m-3 justify-center"
-        title={`${t(title, { ...params })}`}
-        chainId={operation.coreTx.chainId}
-      />
-    );
-  }
+  if (title)
+    return <OperationTitle className="m-3 justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
 
   return null;
 });

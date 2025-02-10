@@ -1,61 +1,34 @@
-import { chainsService } from '@/shared/api/network';
-import { type Transaction } from '@/shared/core';
-import { type ChainError, type ClientError } from '@/shared/core/types/basket';
-import { cnTw, getAssetById } from '@/shared/lib/utils';
-import { IconButton } from '@/shared/ui';
+import { type ChainId } from '@/shared/core';
+import { type BasketTransaction, type ChainError, type ClientError } from '@/shared/core/types/basket';
+import { cnTw } from '@/shared/lib/utils';
 import { BasketOperationStatus } from '@/shared/ui-entities';
-import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
-import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
+import { TransactionTitle } from '@/entities/transaction';
+import { RemoveOperation } from '@/features/basket-operations';
 
 type Props = {
-  coreTx: Transaction;
+  operation: BasketTransaction;
+  title: string;
+  chainId: ChainId;
   error?: ChainError | ClientError;
   validating?: boolean;
   errorText?: string;
-  onClick: () => void;
-  onTxRemoved: () => void;
 };
 
-export const StakingOperationTitle = ({ coreTx, error, errorText, validating, onClick, onTxRemoved }: Props) => {
-  const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
-  const amount = getTransactionAmount(coreTx);
-
+export const StakingOperationTitle = ({ operation, title, chainId, error, errorText, validating }: Props) => {
   const disabled = errorText || validating;
 
-  const onTxClicked = () => {
-    if (disabled) return;
-
-    onClick();
-  };
-
-  const handleTxRemoved = (event: any) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    onTxRemoved();
-  };
-
   return (
-    <div
-      className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}
-      onClick={onTxClicked}
-    >
-      <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />
+    <div className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}>
+      <TransactionTitle className="flex-1 overflow-hidden" title={title} icon="proxyConfirm" />
 
-      {asset && amount && (
-        <div className="w-[160px]">
-          <AssetBalance value={amount} asset={asset} showIcon />
-        </div>
-      )}
-
-      <ChainTitle chainId={coreTx.chainId} className="w-[114px]" />
+      <ChainTitle chainId={chainId} className="w-[114px]" />
 
       <div className="flex w-[106px] justify-center">
         <BasketOperationStatus validating={validating} errorText={errorText} error={error} />
       </div>
 
-      <IconButton name="delete" onClick={handleTxRemoved} />
+      <RemoveOperation operation={operation} />
     </div>
   );
 };

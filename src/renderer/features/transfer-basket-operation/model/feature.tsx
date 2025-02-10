@@ -2,7 +2,8 @@ import { useGate, useUnit } from 'effector-react';
 
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { OperationTitle, getOperationTitle } from '@/entities/chain';
+import { getAssetById } from '@/shared/lib/utils';
+import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
@@ -32,12 +33,11 @@ transferBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   if (isTransferTransaction(transaction)) {
     return (
       <TransferOperationTitle
+        operation={operation}
         coreTx={transaction}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        onClick={() => {}}
-        onTxRemoved={() => {}}
       />
     );
   }
@@ -45,12 +45,11 @@ transferBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   if (isXcmTransaction(transaction)) {
     return (
       <XcmTransferOperationTitle
+        operation={operation}
         coreTx={transaction}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        onClick={() => {}}
-        onTxRemoved={() => {}}
       />
     );
   }
@@ -63,18 +62,25 @@ transferBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.coreTx.chainId];
   const transaction = basketOperationsService.getCoreTx(operation);
+  const asset = getAssetById(transaction.args.assetId, chain.assets);
 
-  if (!isTransferTransaction(transaction) && !isXcmTransaction(transaction)) return null;
-
-  const { title, params } = getOperationTitle(operation, chain);
-
-  return (
+  if (isTransferTransaction(transaction)) {
     <OperationTitle
       className="m-3 justify-center"
-      title={`${t(title, { ...params })}`}
+      title={t('transfer.title', { asset: asset?.symbol })}
       chainId={operation.coreTx.chainId}
-    />
-  );
+    />;
+  }
+
+  if (isXcmTransaction(transaction)) {
+    <OperationTitle
+      className="m-3 justify-center"
+      title={t('transfer.xcmTitle', { asset: asset?.symbol })}
+      chainId={operation.coreTx.chainId}
+    />;
+  }
+
+  return null;
 });
 
 transferBasketOperationFeature.inject(confirmDetailsSlot, ({ operation }) => {

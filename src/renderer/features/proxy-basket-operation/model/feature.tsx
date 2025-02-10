@@ -1,10 +1,9 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { TransactionType } from '@/shared/core';
+import { type Transaction, TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { OperationTitle, getOperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
+import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
   validate as basketValidate,
@@ -27,29 +26,46 @@ export const proxyBasketOperationFeature = createFeature({
   name: 'proxy/basket-operations',
 });
 
+const getOperationTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
+    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
+    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
+  };
+
+  return Title[transaction.type];
+};
+
+const getModalTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
+    [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
+    [TransactionType.CREATE_PURE_PROXY]: 'operations.modalTitles.addPureProxyOn',
+    [TransactionType.REMOVE_PURE_PROXY]: 'operations.modalTitles.removePureProxyOn',
+  };
+
+  return Title[transaction.type];
+};
+
 proxyBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
+  const { t } = useI18n();
   const transaction = basketOperationsService.getCoreTx(operation);
 
   useGate(validate.gates.flow, { id: operation.id, operation, feeMap: {} });
   const pendingTxs = useUnit(validate.$pendingTxs);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.ADD_PROXY,
-      TransactionType.REMOVE_PROXY,
-      TransactionType.CREATE_PURE_PROXY,
-      TransactionType.REMOVE_PURE_PROXY,
-    ].includes(transaction.type)
-  ) {
+  const title = getOperationTitle(transaction);
+
+  if (title) {
     return (
       <ProxyOperationTitle
-        coreTx={transaction}
+        title={t(title)}
+        chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        onClick={() => {}}
-        onTxRemoved={() => {}}
+        operation={operation}
       />
     );
   }
@@ -59,28 +75,11 @@ proxyBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
 
 proxyBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
-  const chain = chains[operation.coreTx.chainId];
   const transaction = basketOperationsService.getCoreTx(operation);
+  const title = getModalTitle(transaction);
 
-  const { title, params } = getOperationTitle(operation, chain);
-
-  if (
-    transaction?.type &&
-    [
-      TransactionType.ADD_PROXY,
-      TransactionType.REMOVE_PROXY,
-      TransactionType.CREATE_PURE_PROXY,
-      TransactionType.REMOVE_PURE_PROXY,
-    ].includes(transaction.type)
-  ) {
-    return (
-      <OperationTitle
-        className="m-3 justify-center"
-        title={`${t(title, { ...params })}`}
-        chainId={operation.coreTx.chainId}
-      />
-    );
+  if (title) {
+    return <OperationTitle className="m-3 justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
   }
 
   return null;

@@ -1,10 +1,9 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { TransactionType } from '@/shared/core';
+import { type Transaction, TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { OperationTitle, getOperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
+import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
   validate as basketValidate,
@@ -15,6 +14,8 @@ import {
 import {
   BondExtraConfirmation,
   BondNominateConfirmation,
+  NominateConfirmation,
+  PayeeConfirmation,
   RestakeConfirmation,
   UnstakeConfirmation,
   WithdrawConfirmation,
@@ -28,30 +29,52 @@ export const stakingBasketOperationFeature = createFeature({
   name: 'staking/basket-operations',
 });
 
+const getOperationTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.BOND]: 'operations.titles.startStaking',
+    [TransactionType.NOMINATE]: 'operations.titles.nominate',
+    [TransactionType.STAKE_MORE]: 'operations.titles.stakeMore',
+    [TransactionType.REDEEM]: 'operations.titles.redeem',
+    [TransactionType.RESTAKE]: 'operations.titles.restake',
+    [TransactionType.DESTINATION]: 'operations.titles.destination',
+    [TransactionType.UNSTAKE]: 'operations.titles.unstake',
+  };
+
+  return Title[transaction.type];
+};
+
+const getModalTitle = (transaction: Transaction): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.BOND]: 'operations.modalTitles.startStakingOn',
+    [TransactionType.NOMINATE]: 'operations.modalTitles.nominateOn',
+    [TransactionType.STAKE_MORE]: 'operations.modalTitles.stakeMoreOn',
+    [TransactionType.REDEEM]: 'operations.modalTitles.redeemOn',
+    [TransactionType.RESTAKE]: 'operations.modalTitles.restakeOn',
+    [TransactionType.DESTINATION]: 'operations.modalTitles.destinationOn',
+    [TransactionType.UNSTAKE]: 'operations.modalTitles.unstakeOn',
+  };
+
+  return Title[transaction.type];
+};
+
 stakingBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
+  const { t } = useI18n();
   const transaction = basketOperationsService.getCoreTx(operation);
 
   useGate(validate.gates.flow, { id: operation.id, operation, feeMap: {} });
   const pendingTxs = useUnit(validate.$pendingTxs);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.BOND,
-      TransactionType.STAKE_MORE,
-      TransactionType.UNSTAKE,
-      TransactionType.RESTAKE,
-      TransactionType.REDEEM,
-    ].includes(transaction.type)
-  ) {
+  const title = getOperationTitle(transaction);
+
+  if (title) {
     return (
       <StakingOperationTitle
-        coreTx={transaction}
+        title={t(title)}
+        operation={operation}
+        chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        onClick={() => {}}
-        onTxRemoved={() => {}}
       />
     );
   }
@@ -61,29 +84,12 @@ stakingBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
 
 stakingBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const chains = useUnit(networkModel.$chains);
-  const chain = chains[operation.coreTx.chainId];
   const transaction = basketOperationsService.getCoreTx(operation);
 
-  const { title, params } = getOperationTitle(operation, chain);
+  const title = getModalTitle(transaction);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.BOND,
-      TransactionType.STAKE_MORE,
-      TransactionType.UNSTAKE,
-      TransactionType.RESTAKE,
-      TransactionType.REDEEM,
-    ].includes(transaction.type)
-  ) {
-    return (
-      <OperationTitle
-        className="m-3 justify-center"
-        title={`${t(title, { ...params })}`}
-        chainId={operation.coreTx.chainId}
-      />
-    );
+  if (title) {
+    return <OperationTitle className="m-3 justify-center" title={t(title)} chainId={operation.coreTx.chainId} />;
   }
 
   return null;
@@ -100,6 +106,8 @@ stakingBasketOperationFeature.inject(confirmDetailsSlot, ({ operation }) => {
   if (transaction.type === TransactionType.UNSTAKE) return <UnstakeConfirmation id={operation.id} hideSignButton />;
   if (transaction.type === TransactionType.RESTAKE) return <RestakeConfirmation id={operation.id} hideSignButton />;
   if (transaction.type === TransactionType.REDEEM) return <WithdrawConfirmation id={operation.id} hideSignButton />;
+  if (transaction.type === TransactionType.NOMINATE) return <NominateConfirmation id={operation.id} hideSignButton />;
+  if (transaction.type === TransactionType.DESTINATION) return <PayeeConfirmation id={operation.id} hideSignButton />;
 
   return null;
 });

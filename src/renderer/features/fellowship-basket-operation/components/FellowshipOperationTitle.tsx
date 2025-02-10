@@ -15,7 +15,7 @@ type Props = {
   errorText?: string;
 };
 
-export const GovernanceOperationTitle = ({ operation, title, chainId, error, errorText, validating }: Props) => {
+export const FellowshipOperationTitle = ({ operation, title, chainId, error, errorText, validating }: Props) => {
   const disabled = errorText || validating;
 
   return (

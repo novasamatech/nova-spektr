@@ -1,47 +1,39 @@
-import { chainsService } from '@/shared/api/network';
+import { useUnit } from 'effector-react';
+
 import { type Transaction } from '@/shared/core';
-import { type ChainError, type ClientError } from '@/shared/core/types/basket';
+import { type BasketTransaction, type ChainError, type ClientError } from '@/shared/core/types/basket';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, getAssetById } from '@/shared/lib/utils';
-import { IconButton } from '@/shared/ui';
 import { BasketOperationStatus } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
+import { RemoveOperation } from '@/features/basket-operations';
 
 type Props = {
+  operation: BasketTransaction;
   coreTx: Transaction;
   error?: ChainError | ClientError;
   validating?: boolean;
   errorText?: string;
-  onClick: () => void;
-  onTxRemoved: () => void;
 };
 
-export const TransferOperationTitle = ({ coreTx, error, errorText, validating, onClick, onTxRemoved }: Props) => {
-  const asset = getAssetById(coreTx.args.asset, chainsService.getChainById(coreTx.chainId)?.assets);
+export const TransferOperationTitle = ({ operation, coreTx, error, errorText, validating }: Props) => {
+  const { t } = useI18n();
+  const chains = useUnit(networkModel.$chains);
+  const asset = getAssetById(coreTx.args.asset, chains[coreTx.chainId]?.assets);
   const amount = getTransactionAmount(coreTx);
 
   const disabled = errorText || validating;
 
-  const onTxClicked = () => {
-    if (disabled) return;
-
-    onClick();
-  };
-
-  const handleTxRemoved = (event: any) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    onTxRemoved();
-  };
-
   return (
-    <div
-      className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}
-      onClick={onTxClicked}
-    >
-      <TransactionTitle className="flex-1 overflow-hidden" tx={coreTx} />
+    <div className={cnTw('flex h-[52px] w-full items-center gap-x-4 overflow-hidden', !disabled && 'cursor-pointer')}>
+      <TransactionTitle
+        className="flex-1 overflow-hidden"
+        title={t('transfer.title', { asset: asset?.symbol })}
+        icon="transferConfirm"
+      />
 
       {asset && amount && (
         <div className="w-[160px]">
@@ -55,7 +47,7 @@ export const TransferOperationTitle = ({ coreTx, error, errorText, validating, o
         <BasketOperationStatus validating={validating} errorText={errorText} error={error} />
       </div>
 
-      <IconButton name="delete" onClick={handleTxRemoved} />
+      <RemoveOperation operation={operation} />
     </div>
   );
 };
