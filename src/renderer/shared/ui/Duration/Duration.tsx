@@ -17,6 +17,7 @@ const stripDuration = (duration: DurationType): DurationType => {
   if (duration.years) {
     return {
       years: duration.years,
+      months: duration.months,
     };
   }
 

@@ -18,11 +18,9 @@ export type EvidencePeriods = {
 export type CurrentMemberPeriod =
   | {
       type: 'Promotion';
-      left: BlockHeight;
       end: BlockHeight;
     }
   | {
       type: 'Retention';
-      left: BlockHeight;
       end: BlockHeight;
     };

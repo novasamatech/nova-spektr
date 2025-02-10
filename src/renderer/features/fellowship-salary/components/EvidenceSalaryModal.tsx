@@ -14,7 +14,7 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipSalaryFeature.input);
   const currentMember = useUnit(profile.$member);
-  const [tab, setTab] = useState('salary');
+  const [tab, setTab] = useState('evidence');
 
   const disabled = nullable(currentMember) || nullable(featureInput);
 
@@ -26,14 +26,12 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   return (
     <Modal size="md" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.profile.modalTitle')}</Modal.Title>
+      <Modal.Title close>{t('fellowship.salary.modalTitle')}</Modal.Title>
       <Modal.Content disableScroll>
         <Tabs value={tab} onChange={setTab}>
           <Box padding={[0, 5]}>
             <Tabs.List>
-              <Tabs.Trigger value="evidence" disabled>
-                {t('fellowship.salary.evidence')}
-              </Tabs.Trigger>
+              <Tabs.Trigger value="evidence">{t('fellowship.salary.evidence')}</Tabs.Trigger>
               <Tabs.Trigger value="salary">{t('fellowship.salary.salary')}</Tabs.Trigger>
             </Tabs.List>
           </Box>

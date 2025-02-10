@@ -29,13 +29,15 @@ const $memberEvidence = combine(profile.$member, $chainEvidences, (member, evide
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 
-const $currentPeriod = combine(
-  { member: profile.$member, periods: $periods, currentBlock: block.$currentBlock },
-  ({ member, periods, currentBlock }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-    return evidenceService.getCurrentMembersPeriod(member, periods, currentBlock);
-  },
-);
+const $promotionPeriod = combine(profile.$member, $periods, (member, periods) => {
+  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+  return evidenceService.getPromotionPeriod(member, periods);
+});
+
+const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => {
+  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+  return evidenceService.getDemotionPeriod(member, periods);
+});
 
 const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
@@ -53,9 +55,11 @@ sample({
 });
 
 export const retentionEvidence = {
+  $currentBlock: block.$currentBlock,
   $track,
   $periods,
-  $currentPeriod,
+  $promotionPeriod,
+  $demotionPeriod,
   $memberEvidence,
   $hasRetentionEvidence,
 };

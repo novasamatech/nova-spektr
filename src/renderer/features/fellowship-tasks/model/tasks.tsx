@@ -1,7 +1,7 @@
 import { combine } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
-import { type OngoingReferendum, salaryService } from '@/domains/collectives';
+import { type OngoingReferendum, salaryService, trackService } from '@/domains/collectives';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestSalary } from '../components/tasks/RequestSalary';
@@ -45,14 +45,18 @@ const $salaryTasks = combine(
 const $referendumTasks = combine(
   referendumList.$notVotedReferendumns,
   (referendums): TaskDescription<{ referendum: OngoingReferendum }>[] => {
-    return referendums.map(referendum => {
-      return {
-        id: `referendum - ${referendum.id}`,
-        priority: 1,
-        body: ReferendumVoting,
-        meta: { referendum },
-      };
-    });
+    return referendums
+      .filter(referendum => {
+        return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track);
+      })
+      .map(referendum => {
+        return {
+          id: `referendum - ${referendum.id}`,
+          priority: 1,
+          body: ReferendumVoting,
+          meta: { referendum },
+        };
+      });
   },
 );
 

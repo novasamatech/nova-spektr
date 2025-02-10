@@ -58,13 +58,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   return (
     <Box fillContainer padding={5} gap={5}>
       <TitleText>{title}</TitleText>
-      {!evidence?.summary && evidencePending && (
-        <Box gap={1}>
-          <Skeleton height="1em" width="95%" />
-          <Skeleton height="1em" width="75%" />
-          <Skeleton height="1em" width="60%" />
-        </Box>
-      )}
+      {!evidence?.summary && evidencePending && <Skeleton height="5em" width="85%" />}
       <Markdown>{evidence?.summary ?? ''}</Markdown>
       <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
       <Box grow={1} />

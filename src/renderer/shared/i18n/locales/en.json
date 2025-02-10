@@ -311,6 +311,7 @@
   "fellowship": {
     "salary": {
       "cardTitle": "Evidence & Salary",
+      "modalTitle": "Evidence & Salary",
       "salary": "Salary",
       "evidence": "Evidence",
       "beneficiary": "Beneficiary",

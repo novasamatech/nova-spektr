@@ -2,9 +2,10 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Duration } from '@/shared/ui';
+import { Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { memberService } from '@/domains/collectives';
 import { retentionEvidence } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -15,17 +16,23 @@ export const EvidenceInfo = memo(() => {
 
   const input = useUnit(fellowshipSalaryFeature.input);
   const currentMember = useUnit(profile.$member);
-  // const memberEvidence = useUnit(retentionEvidence.$memberEvidence);
-  // const periods = useUnit(retentionEvidence.$periods);
   const track = useUnit(retentionEvidence.$track);
-  const currentPeriod = useUnit(retentionEvidence.$currentPeriod);
-  // const hasEvidence = nonNullable(memberEvidence);
+  const currentBlock = useUnit(retentionEvidence.$currentBlock);
+  const demotionPeriod = useUnit(retentionEvidence.$demotionPeriod);
+  const hasRetentionEvidence = useUnit(retentionEvidence.$hasRetentionEvidence);
 
   useEffect(() => {
-    if (input?.api && currentPeriod) {
-      getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
+    if (input?.api && demotionPeriod) {
+      const gone =
+        currentBlock - (currentMember && memberService.isCoreMember(currentMember) ? currentMember.lastProof : 0);
+      const left = demotionPeriod - gone;
+      if (left > 0) {
+        getRelativeTimeFromApi(demotionPeriod - gone, input.api).then(setTimeLeft);
+      } else {
+        setTimeLeft(0);
+      }
     }
-  }, [input?.api, currentPeriod]);
+  }, [input?.api, demotionPeriod, currentMember]);
 
   // const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
   // const canRequestSalary =
@@ -48,8 +55,28 @@ export const EvidenceInfo = memo(() => {
   return (
     <Box padding={[4, 5, 5]} gap={6}>
       <CollectiveRank rank={currentMember?.rank ?? 0}>{track?.name.replace(/s$/, '')}</CollectiveRank>
-      <span>{currentPeriod?.type}</span>
-      <Duration seconds={timeLeft / 1000} />
+
+      {!hasRetentionEvidence && (
+        <Box direction="row" grow={1}>
+          <Box gap={1}>
+            <FootnoteText className="text-text-secondary">Retention evidence within:</FootnoteText>
+            <SmallTitleText>
+              <Duration seconds={timeLeft / 1000} />
+            </SmallTitleText>
+          </Box>
+          <Button>Submit evidence</Button>
+        </Box>
+      )}
+
+      {hasRetentionEvidence && (
+        <Box direction="row" grow={1}>
+          <Box gap={1}>
+            <FootnoteText className="text-text-secondary">Applied for retention:</FootnoteText>
+            <SmallTitleText>Evidence submitted</SmallTitleText>
+          </Box>
+          {/*TODO implement evidence manipulation*/}
+        </Box>
+      )}
     </Box>
   );
 });

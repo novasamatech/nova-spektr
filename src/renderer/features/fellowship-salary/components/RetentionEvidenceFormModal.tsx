@@ -36,13 +36,19 @@ export const RetentionEvidenceFormModal = memo(({ children }: Props) => {
             </Field>
             <Field text="Evidence (document hash, url, etc.)">
               <TextArea
+                autosize
                 name="evidence"
-                rows={10}
+                rows={3}
                 placeholder="Enter more about the work you did, add links, and tell about your future work plans"
               />
             </Field>
             <Field text="Comments">
-              <TextArea name="comments" rows={10} placeholder="Enter comments about how your retention period went" />
+              <TextArea
+                autosize
+                name="comments"
+                rows={10}
+                placeholder="Enter comments about how your retention period went"
+              />
             </Field>
           </Box>
         </Modal.Content>
