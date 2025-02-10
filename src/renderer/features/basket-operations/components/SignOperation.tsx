@@ -10,7 +10,7 @@ import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperations } from '../model/sign';
 import { Step } from '../types';
 
-import { confirmDetailsSlot, confirmTitleSlot } from './OperationConfirm';
+import { confirmDetailsSlot, confirmTitleSlot } from './SignOperations';
 
 export const SignOperation = () => {
   const transactions = useUnit(signOperations.$transactions);
