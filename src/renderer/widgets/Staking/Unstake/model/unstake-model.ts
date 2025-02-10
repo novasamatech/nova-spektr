@@ -192,8 +192,8 @@ sample({
   filter: ({ store, coreTxs, txWrappers }) => {
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
+  fn: ({ store, coreTxs, txWrappers }) =>
+    coreTxs!.map(
       (coreTx) =>
         ({
           initiatorWallet: store!.shards[0].walletId,
@@ -201,10 +201,7 @@ sample({
           txWrappers,
           groupId: Date.now(),
         }) as BasketTransaction,
-    );
-
-    return txs;
-  },
+    ),
   target: basketOperations.addTransactions,
 });
 

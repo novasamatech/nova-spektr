@@ -5,7 +5,6 @@ import { combineEvents, delay, spread } from 'patronum';
 
 import {
   type Account,
-  type BasketTransaction,
   type NoID,
   type PartialProxiedAccount,
   type ProxyGroup,
@@ -359,9 +358,9 @@ sample({
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: store!.account.walletId,
-      coreTx,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+    };
 
     return [tx];
   },

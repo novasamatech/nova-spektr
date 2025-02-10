@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type Transaction } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -210,9 +210,9 @@ sample({
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: store!.account.walletId,
-      coreTx,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+    };
 
     return [tx];
   },
