@@ -1,5 +1,6 @@
 import { chainsService } from '@/shared/api/network';
 import { type MultisigTransaction } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export const TransferOperationTitle = ({ operation }: Props) => {
+  const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 
   const asset =
@@ -19,7 +21,11 @@ export const TransferOperationTitle = ({ operation }: Props) => {
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
+      <TransactionTitle
+        className="flex-1 overflow-hidden"
+        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        icon="transferMst"
+      />
 
       {asset && amount && (
         <div className="w-[160px]">

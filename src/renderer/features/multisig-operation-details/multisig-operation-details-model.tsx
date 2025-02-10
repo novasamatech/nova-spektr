@@ -1,4 +1,5 @@
 import { createFeature } from '@/shared/feature';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
@@ -21,9 +22,11 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
 
   if (transaction && transaction.type) return null;
 
+  const title = transaction && formatSectionAndMethod(transaction.section, transaction.method);
+
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
+      <TransactionTitle className="flex-1 overflow-hidden" title={title || ''} icon="unknownMst" />
 
       <ChainTitle chainId={operation.chainId} className="w-[114px]" />
     </>

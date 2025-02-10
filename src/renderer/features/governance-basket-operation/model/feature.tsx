@@ -3,6 +3,7 @@ import { useGate, useUnit } from 'effector-react';
 import { type Transaction, TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { type IconNames } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
@@ -42,6 +43,20 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
   return Title[transaction.type];
 };
 
+const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
+  const Title: { [key in TransactionType]?: IconNames } = {
+    [TransactionType.UNLOCK]: 'unlockMst',
+    [TransactionType.VOTE]: 'voteMst',
+    [TransactionType.REVOTE]: 'revoteMst',
+    [TransactionType.REMOVE_VOTE]: 'retractMst',
+    [TransactionType.DELEGATE]: 'delegateMst',
+    [TransactionType.UNDELEGATE]: 'undelegateMst',
+    [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
+  };
+
+  return Title[transaction.type];
+};
+
 const getModalTitle = (transaction: Transaction): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
     [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
@@ -64,11 +79,13 @@ governanceBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   const pendingTxs = useUnit(validate.$pendingTxs);
 
   const title = getOperationTitle(transaction);
+  const icon = getOperationIcon(transaction);
 
-  if (title) {
+  if (title && icon) {
     return (
       <GovernanceOperationTitle
         title={t(title)}
+        icon={icon}
         operation={operation}
         chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
