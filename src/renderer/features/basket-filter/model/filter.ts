@@ -2,8 +2,9 @@ import { combine, createEvent, restore } from 'effector';
 
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { type SelectedFilters } from '../common/types';
 import { filterTx } from '../lib/utils';
+
+import { type SelectedFilters } from './types';
 
 const EmptySelectedFilters: SelectedFilters = {
   status: [],
@@ -12,10 +13,8 @@ const EmptySelectedFilters: SelectedFilters = {
 };
 
 const selectedOptionsChanged = createEvent<SelectedFilters>();
-const invalidTxsSet = createEvent<number[]>();
 
 const $selectedOptions = restore(selectedOptionsChanged, EmptySelectedFilters);
-const $invalidTxs = restore(invalidTxsSet, []);
 
 const $basketTxs = combine(
   {
@@ -29,21 +28,17 @@ const $filteredTxs = combine(
   {
     basketTxs: $basketTxs,
     selectedOptions: $selectedOptions,
-    invalidTxs: $invalidTxs,
   },
-  ({ basketTxs, selectedOptions, invalidTxs }) => {
-    return basketTxs.filter((tx) => filterTx(tx, invalidTxs, selectedOptions));
+  ({ basketTxs, selectedOptions }) => {
+    return basketTxs.filter((tx) => filterTx(tx, [], selectedOptions));
   },
 );
 
-export const basketFilterModel = {
+export const filter = {
   $selectedOptions,
   $basketTxs,
   $filteredTxs,
 
-  events: {
-    selectedOptionsChanged,
-    selectedOptionsReset: $selectedOptions.reinit,
-    invalidTxsSet,
-  },
+  selectedOptionsChanged,
+  selectedOptionsReset: $selectedOptions.reinit,
 };

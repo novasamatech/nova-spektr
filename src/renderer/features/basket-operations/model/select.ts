@@ -1,7 +1,10 @@
 import { createEvent, createStore, sample } from 'effector';
+import { createGate } from 'effector-react';
 
 import { type BasketTransaction } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
+
+const flow = createGate<BasketTransaction[]>();
 
 const selectTx = createEvent<BasketTransaction>();
 const selectTxs = createEvent<BasketTransaction[]>();
@@ -24,13 +27,15 @@ sample({
 });
 
 sample({
-  clock: filterTxs,
+  clock: flow.state,
   source: $selectedTxs,
   fn: (selectedTxs, txs) => selectedTxs.filter((s) => txs.some((tx) => tx.id === s.id)),
   target: $selectedTxs,
 });
 
 export const selectOperations = {
+  flow,
+
   $selectedTxs,
 
   selectTx,

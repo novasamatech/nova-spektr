@@ -3,7 +3,7 @@ import { type TFunction } from 'i18next';
 import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { XcmTypes, findCoreBatchAll } from '@/entities/transaction';
-import { type SelectedFilters } from '../common/types';
+import { type SelectedFilters } from '../model/types';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
 

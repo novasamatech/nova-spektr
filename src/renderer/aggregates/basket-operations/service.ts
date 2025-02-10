@@ -15,8 +15,8 @@ const getCoreTx = (tx: BasketTransaction): Transaction => {
 
 async function getTransactionData(
   transaction: BasketTransaction,
-  apis: Record<`0x${string}`, ApiPromise>,
-  chains: Record<`0x${string}`, Chain>,
+  apis: Record<ChainId, ApiPromise>,
+  chains: Record<ChainId, Chain>,
   accounts: AnyAccount[],
 ) {
   const chainId = transaction.coreTx.chainId as ChainId;

@@ -5,9 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { networkModel } from '@/entities/network';
-import { type FilterName, type FiltersOptions } from '../common/types';
 import { getAvailableFiltersOptions } from '../lib/utils';
-import { basketFilterModel } from '../model/baket-filter-model';
+import { filter } from '../model/filter';
+import { type FilterName, type FiltersOptions } from '../model/types';
 
 const EmptyOptions: FiltersOptions = {
   status: new Set<DropdownOption>(),
@@ -20,8 +20,8 @@ export const BasketFilter = () => {
 
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
 
-  const selectedOptions = useUnit(basketFilterModel.$selectedOptions);
-  const basketTxs = useUnit(basketFilterModel.$basketTxs);
+  const selectedOptions = useUnit(filter.$selectedOptions);
+  const basketTxs = useUnit(filter.$basketTxs);
   const chains = useStoreMap(networkModel.$chains, (chains) => Object.values(chains));
 
   useEffect(() => {
@@ -31,11 +31,11 @@ export const BasketFilter = () => {
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values };
 
-    basketFilterModel.events.selectedOptionsChanged(newSelectedOptions);
+    filter.selectedOptionsChanged(newSelectedOptions);
   };
 
   const clearFilters = () => {
-    basketFilterModel.events.selectedOptionsReset();
+    filter.selectedOptionsReset();
   };
 
   const filtersSelected =

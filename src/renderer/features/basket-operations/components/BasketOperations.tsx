@@ -1,7 +1,8 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { type BasketTransaction } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
@@ -9,7 +10,6 @@ import { selectOperations } from '../model/select';
 import { signOperations } from '../model/sign';
 
 import { EmptyBasket } from './EmptyBasket';
-import { Operation } from './Operation';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
 
@@ -17,8 +17,12 @@ type Props = {
   operations: BasketTransaction[];
 };
 
+export const operationTitleSlot = createSlot<{ operation: BasketTransaction }>();
+
 export const BasketOperations = ({ operations }: Props) => {
   const { t } = useI18n();
+  useGate(selectOperations.flow);
+
   const selectedTxs = useUnit(selectOperations.$selectedTxs);
 
   const isSignAvailable = selectedTxs.length > 0;
@@ -58,25 +62,25 @@ export const BasketOperations = ({ operations }: Props) => {
       {operations.length > 0 && (
         <div className="scrollbar-stable mt-4 flex w-full flex-col items-center gap-4 overflow-y-auto">
           <ul className="flex w-[736px] flex-col gap-y-1.5 divide-y rounded-md">
-            {operations.map((tx) => (
+            {operations.map((operation) => (
               <li
-                key={tx.id}
+                key={operation.id}
                 className="flex gap-x-4 bg-block-background-default px-3"
-                onClick={() => signOperations.events.flowStarted({ transactions: [tx], feeMap: {} })}
+                onClick={() => signOperations.events.flowStarted({ transactions: [operation], feeMap: {} })}
               >
                 <div className="flex items-center justify-center">
                   <Checkbox
-                    checked={selectedTxs.includes(tx)}
+                    checked={selectedTxs.includes(operation)}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
 
-                      selectOperations.selectTx(tx);
+                      selectOperations.selectTx(operation);
                     }}
                   />
                 </div>
 
-                <Operation operation={tx} />
+                <Slot id={operationTitleSlot} props={{ operation }} />
               </li>
             ))}
           </ul>
