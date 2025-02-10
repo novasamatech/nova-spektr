@@ -11,7 +11,7 @@ type Props = {
   error?: ChainError | ClientError;
 };
 
-export const OperationStatus = ({ validating, errorText, error }: Props) => {
+export const BasketOperationStatus = ({ validating, errorText, error }: Props) => {
   const { t } = useI18n();
 
   if (validating) {

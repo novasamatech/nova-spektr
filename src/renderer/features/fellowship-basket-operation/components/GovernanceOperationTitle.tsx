@@ -3,11 +3,10 @@ import { type Transaction } from '@/shared/core';
 import { type ChainError, type ClientError } from '@/shared/core/types/basket';
 import { cnTw, getAssetById } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui';
+import { BasketOperationStatus } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
-
-import { OperationStatus } from './OperationStatus';
 
 type Props = {
   coreTx: Transaction;
@@ -53,7 +52,7 @@ export const FellowshipOperationTitle = ({ coreTx, error, errorText, validating,
       <ChainTitle chainId={coreTx.chainId} className="w-[114px]" />
 
       <div className="flex w-[106px] justify-center">
-        <OperationStatus validating={validating} errorText={errorText} error={error} />
+        <BasketOperationStatus validating={validating} errorText={errorText} error={error} />
       </div>
 
       <IconButton name="delete" onClick={handleTxRemoved} />
