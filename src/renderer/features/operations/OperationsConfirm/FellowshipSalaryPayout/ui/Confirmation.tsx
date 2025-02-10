@@ -5,8 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
-import { SalaryPayoutConfirmation } from '@/features/fellowship-salary';
 import { confirm } from '../model/confirm';
+
+import { SalaryPayoutConfirmation } from 'src/renderer/features/fellowship-evidence-salary';
 
 type Props = {
   id?: number;

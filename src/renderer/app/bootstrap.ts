@@ -23,7 +23,6 @@ import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
 import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
-import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
 import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
@@ -52,6 +51,8 @@ import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
+
+import { fellowshipSalaryFeature } from 'src/renderer/features/fellowship-evidence-salary';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });

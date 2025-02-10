@@ -23,11 +23,19 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
+const $nextTrack = combine(profile.$member, $tracks, (member, tracks) => {
+  if (nullable(member)) return null;
+  const index = tracks.findIndex(t => t.id === member.rank);
+
+  return tracks.at(index + 1) ?? null;
+});
+
 const $memberEvidence = combine(profile.$member, $chainEvidences, (member, evidences) => {
   return member ? (evidences.find(e => e.accountId === member.accountId) ?? null) : null;
 });
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
+const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 const $promotionPeriod = combine(profile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
@@ -57,9 +65,11 @@ sample({
 export const retentionEvidence = {
   $currentBlock: block.$currentBlock,
   $track,
+  $nextTrack,
   $periods,
   $promotionPeriod,
   $demotionPeriod,
   $memberEvidence,
   $hasRetentionEvidence,
+  $hasPromotionEvidence,
 };
