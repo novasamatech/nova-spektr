@@ -36,9 +36,9 @@ ${comments}
   return (
     <Modal size="lg" height="lg" isOpen={open} onToggle={setOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.evidence.retentionEvidenceModalTitle')}</Modal.Title>
+      <Modal.Title close>{t('fellowship.salary.retentionEvidenceModalTitle')}</Modal.Title>
       <Modal.HeaderContent>
-        <Box padding={[4, 5, 6]}>{t('fellowship.evidence.retentionEvidenceModalDescription')}</Box>
+        <Box padding={[4, 8, 6, 5]}>{t('fellowship.salary.retentionEvidenceModalDescription')}</Box>
         <Separator />
       </Modal.HeaderContent>
       <Modal.Content>

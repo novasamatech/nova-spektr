@@ -1,45 +1,55 @@
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { CaptionText } from '@/shared/ui';
+import { Button, CaptionText, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { memberService } from '@/domains/collectives';
-import { retentionEvidence } from '../model/evidence';
+import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { profile } from '../model/profile';
 
 export const PromotionInfo = memo(() => {
+  const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipSalaryFeature.input);
-  const currentMember = useUnit(profile.$member);
-  const nextTrack = useUnit(retentionEvidence.$nextTrack);
-  const currentBlock = useUnit(retentionEvidence.$currentBlock);
-  const promotionPeriod = useUnit(retentionEvidence.$promotionPeriod);
+  const nextTrack = useUnit(evidenceInfo.$nextTrack);
+  const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
+  const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotionPeriod);
 
   useEffect(() => {
-    if (input?.api && promotionPeriod) {
-      const gone =
-        currentBlock - (currentMember && memberService.isCoreMember(currentMember) ? currentMember.lastPromotion : 0);
-      const left = promotionPeriod - gone;
-      if (left > 0) {
-        getRelativeTimeFromApi(promotionPeriod - gone, input.api).then(setTimeLeft);
+    if (input?.api && leftToPromotionPeriod) {
+      if (leftToPromotionPeriod > 0) {
+        getRelativeTimeFromApi(leftToPromotionPeriod, input.api).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
     }
-  }, [input?.api, promotionPeriod, currentBlock, currentMember]);
-
-  if (timeLeft > 0) return null;
+  }, [input?.api, leftToPromotionPeriod]);
 
   return (
     <Box gap={6}>
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-        <CaptionText className="uppercase text-text-secondary">Next promotion</CaptionText>
+        <CaptionText className="uppercase text-text-secondary">{t('fellowship.salary.promotionNextRank')}</CaptionText>
         <CollectiveRank rank={nextTrack?.id ?? 0}>{nextTrack?.name.replace(/s$/, '')}</CollectiveRank>
       </Box>
+      {!hasPromotionEvidence && (
+        <Box direction="row">
+          <Box gap={1} grow={1}>
+            <FootnoteText className="text-text-secondary">{t('fellowship.salary.promotionUntilNext')}</FootnoteText>
+            {!hasPromotionEvidence && timeLeft === 0 && (
+              <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>
+            )}
+            {timeLeft > 0 && (
+              <SmallTitleText>
+                <Duration seconds={timeLeft / 1000} />
+              </SmallTitleText>
+            )}
+          </Box>
+          {!hasPromotionEvidence && timeLeft === 0 && <Button>{t('general.button.applyButton')}</Button>}
+        </Box>
+      )}
     </Box>
   );
 });

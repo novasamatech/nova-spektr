@@ -42,6 +42,16 @@ const $promotionPeriod = combine(profile.$member, $periods, (member, periods) =>
   return evidenceService.getPromotionPeriod(member, periods);
 });
 
+const $leftToPromotionPeriod = combine(
+  { promotionPeriod: $promotionPeriod, currentBlock: block.$currentBlock, member: profile.$member },
+  ({ promotionPeriod, currentBlock, member }) => {
+    if (nullable(promotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
+
+    const gone = currentBlock - member.lastPromotion;
+    return Math.max(0, promotionPeriod - gone);
+  },
+);
+
 const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
   return evidenceService.getDemotionPeriod(member, periods);
@@ -62,12 +72,13 @@ sample({
   target: [evidence.request, evidence.requestPeriods],
 });
 
-export const retentionEvidence = {
+export const evidenceInfo = {
   $currentBlock: block.$currentBlock,
   $track,
   $nextTrack,
   $periods,
   $promotionPeriod,
+  $leftToPromotionPeriod,
   $demotionPeriod,
   $memberEvidence,
   $hasRetentionEvidence,

@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { createAnyOf, useAnyOf } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
@@ -13,6 +14,8 @@ import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
+export const hasActionRequestAnyOf = createAnyOf();
+
 export const ProfileCard = memo(() => {
   const { t } = useI18n();
   const featureState = useUnit(fellowshipProfileFeature.state);
@@ -21,6 +24,7 @@ export const ProfileCard = memo(() => {
   const identity = useUnit(profile.$identity);
   const pending = useUnit(profile.$pending);
   const isAccountExist = useUnit(profile.$isAccountExist);
+  const hasActionRequest = useAnyOf(hasActionRequestAnyOf);
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
   const disabled = !isAccountExist || nullable(member);
@@ -77,6 +81,8 @@ export const ProfileCard = memo(() => {
                   hideAddress
                   variant="truncate"
                 />
+
+                {hasActionRequest && <div className="h-[9px] w-[9px] shrink-0 rounded-full bg-icon-warning" />}
 
                 {memberService.isCoreMember(member) && member.isActive && (
                   <FootnoteText className="text-text-positive">{t('fellowship.members.active')}</FootnoteText>
