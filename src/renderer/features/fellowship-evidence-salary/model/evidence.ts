@@ -1,4 +1,5 @@
-import { combine, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 
 import { nullable } from '@/shared/lib/utils';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
@@ -8,34 +9,20 @@ import { fellowshipSalaryFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
-const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
-const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
+// evidences
 
-const $fellowshipEvidences = evidence.$list.map(s => s['fellowship'] ?? {});
-const $chainEvidences = combine(fellowshipSalaryFeature.input, $fellowshipEvidences, (input, evidences) => {
-  if (nullable(input)) return [];
-  return evidences[input.chainId] ?? [];
-});
+const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 
-const $track = combine(profile.$member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
-
-  return tracks.find(t => t.id === member.rank) ?? null;
-});
-
-const $nextTrack = combine(profile.$member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
-  const index = tracks.findIndex(t => t.id === member.rank);
-
-  return tracks.at(index + 1) ?? null;
-});
-
-const $memberEvidence = combine(profile.$member, $chainEvidences, (member, evidences) => {
+const $memberEvidence = combine(profile.$member, $evidences, (member, evidences) => {
   return member ? (evidences.find(e => e.accountId === member.accountId) ?? null) : null;
 });
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
+
+// periods
+
+const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
 const $promotionPeriod = combine(profile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
@@ -57,6 +44,25 @@ const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => 
   return evidenceService.getDemotionPeriod(member, periods);
 });
 
+// tracks
+
+const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+
+const $nextTrack = combine(profile.$member, $tracks, (member, tracks) => {
+  if (nullable(member)) return null;
+  const index = tracks.findIndex(t => t.id === member.rank);
+
+  return tracks.at(index + 1) ?? null;
+});
+
+const $track = combine(profile.$member, $tracks, (member, tracks) => {
+  if (nullable(member)) return null;
+
+  return tracks.find(t => t.id === member.rank) ?? null;
+});
+
+// requesting data
+
 const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
   return {
@@ -72,6 +78,23 @@ sample({
   target: [evidence.request, evidence.requestPeriods],
 });
 
+// attention message
+
+const $showAttention = createStore(true);
+const hideAttention = createEvent();
+
+persist({
+  key: 'fellowship-evidence-show-attention',
+  store: $showAttention,
+  sync: true,
+});
+
+sample({
+  clock: hideAttention,
+  fn: () => false,
+  target: $showAttention,
+});
+
 export const evidenceInfo = {
   $currentBlock: block.$currentBlock,
   $track,
@@ -83,4 +106,7 @@ export const evidenceInfo = {
   $memberEvidence,
   $hasRetentionEvidence,
   $hasPromotionEvidence,
+
+  $showAttention,
+  hideAttention,
 };

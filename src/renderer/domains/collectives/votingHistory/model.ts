@@ -36,8 +36,9 @@ const { fulfilled, pending, request } = createDataSource<
 >({
   source: $source,
   target: $votes,
-  filter: ({ referendums }) => referendums.length > 0,
   fn: async ({ chainId, palletType, referendums }, { apis, chains }) => {
+    if (referendums.length === 0) return [];
+
     const api = apis[chainId];
     const chain = chains[chainId];
 

@@ -71,8 +71,8 @@ type PeriodsRequestParams = {
 
 const { $: $periods, request: requestPeriods } = createDataSource({
   initial: {} as PeriodsStore,
-  filter(params: PeriodsRequestParams, store) {
-    return nullable(pickNestedValue(store, params.palletType, params.chain.chainId));
+  cache(params: PeriodsRequestParams, store) {
+    return pickNestedValue(store, params.palletType, params.chain.chainId) ?? false;
   },
   async fn({ api, palletType }: PeriodsRequestParams): Promise<EvidencePeriods> {
     const params = await collectiveCorePallet.storage.params(palletType, api);

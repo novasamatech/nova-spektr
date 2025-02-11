@@ -22,6 +22,7 @@ export const RetentionEvidenceInfo = memo(() => {
   const track = useUnit(evidenceInfo.$track);
   const currentBlock = useUnit(evidenceInfo.$currentBlock);
   const demotionPeriod = useUnit(evidenceInfo.$demotionPeriod);
+  const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
 
@@ -66,11 +67,18 @@ export const RetentionEvidenceInfo = memo(() => {
         </Box>
       )}
 
-      {hasPromotionEvidence && (
-        <Alert active variant="warn" title={t('fellowship.salary.promotionAppliedAlertTitle')}>
-          <Alert.Item withDot={false}>{t('fellowship.salary.promotionAppliedAlertDescription')}</Alert.Item>
-        </Alert>
-      )}
+      <Alert active={hasPromotionEvidence} variant="warn" title={t('fellowship.salary.promotionAppliedAlertTitle')}>
+        <Alert.Item withDot={false}>{t('fellowship.salary.promotionAppliedAlertDescription')}</Alert.Item>
+      </Alert>
+
+      <Alert
+        active={showAttention}
+        variant="info"
+        title={t('fellowship.salary.retentionAlertTitle')}
+        onClose={evidenceInfo.hideAttention}
+      >
+        <Alert.Item withDot={false}>{t('fellowship.salary.retentionAlertDescription')}</Alert.Item>
+      </Alert>
     </Box>
   );
 });

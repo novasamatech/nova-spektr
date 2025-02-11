@@ -18,7 +18,7 @@ const romanNumbersLookup = [
   ['I', 1],
 ] as const;
 
-const toRomanNumeral = (num: number) => {
+export const toRomanNumeral = (num: number) => {
   return romanNumbersLookup.reduce((acc, [k, v]) => {
     acc += k.repeat(Math.floor(num / v));
     num = num % v;

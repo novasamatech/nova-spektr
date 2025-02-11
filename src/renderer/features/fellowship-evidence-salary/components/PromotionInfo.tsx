@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Button, CaptionText, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { CollectiveRank } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
+import { Button, CaptionText, Duration, FootnoteText, InfoLink, LabelHelpBox, SmallTitleText } from '@/shared/ui';
+import { CollectiveRank, toRomanNumeral } from '@/shared/ui-entities';
+import { Box, Popover } from '@/shared/ui-kit';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 
@@ -50,6 +51,38 @@ export const PromotionInfo = memo(() => {
           {!hasPromotionEvidence && timeLeft === 0 && <Button>{t('general.button.applyButton')}</Button>}
         </Box>
       )}
+      <DescriptionInfo />
     </Box>
+  );
+});
+
+const DescriptionInfo = memo(() => {
+  const { t } = useI18n();
+  const nextTrack = useUnit(evidenceInfo.$nextTrack);
+  if (!nextTrack) return null;
+
+  return (
+    <Popover dialog align="start">
+      <Popover.Trigger>
+        <div>
+          <LabelHelpBox>
+            {t('fellowship.salary.promotionRankHelpLabel', {
+              rank: toRomanNumeral(nextTrack.id),
+              name: nextTrack.name.replace(/s$/, ''),
+            })}
+          </LabelHelpBox>
+        </div>
+      </Popover.Trigger>
+      <Popover.Content>
+        <Box padding={4} gap={2} width={90}>
+          <FootnoteText as="ul" className="list-disc pl-3 text-text-secondary">
+            <Trans t={t} i18nKey={`fellowship.salary.promotionHelpRank${nextTrack.id}`} components={{ li: <li /> }} />
+          </FootnoteText>
+          <InfoLink url="https://github.com/polkadot-fellows/manifesto/blob/main/manifesto.pdf">
+            {t('fellowship.salary.promotionReadManifesto')}
+          </InfoLink>
+        </Box>
+      </Popover.Content>
+    </Popover>
   );
 });
