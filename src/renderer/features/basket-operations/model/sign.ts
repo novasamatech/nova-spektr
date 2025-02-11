@@ -1,4 +1,4 @@
-import { createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
@@ -10,6 +10,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { type FeeMap } from '@/features/operations/OperationsValidation';
+import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { Step } from '../types';
 
 const flowStarted = createEvent<{ transactions: BasketTransaction[]; feeMap: FeeMap }>();
@@ -19,6 +20,8 @@ const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE).reset(flowFinished);
 const $transactions = createStore<BasketTransaction[]>([]).reset(flowFinished);
+
+const $isModalOpen = combine($step, (step) => !signOperationsUtils.isNoneStep(step));
 
 sample({
   clock: flowStarted,
@@ -141,6 +144,7 @@ sample({
 export const signOperations = {
   $step,
   $transactions,
+  $isModalOpen,
 
   events: {
     flowStarted,

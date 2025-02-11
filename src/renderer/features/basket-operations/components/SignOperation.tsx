@@ -1,10 +1,9 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
-import { useSlot } from '@/shared/di';
-import { useModalClose } from '@/shared/lib/hooks';
+import { Slot } from '@/shared/di';
 import { Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { signOperationsUtils } from '../lib/sign-operations-utils';
 import { signOperations } from '../model/sign';
@@ -15,31 +14,27 @@ import { confirmDetailsSlot, confirmTitleSlot } from './SignOperations';
 export const SignOperation = () => {
   const transactions = useUnit(signOperations.$transactions);
   const step = useUnit(signOperations.$step);
+  const isModalOpen = useUnit(signOperations.$isModalOpen);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const operation = transactions[0];
 
-  const confirmTitle = useSlot(confirmTitleSlot, { props: { operation } });
-  const confirmDetails = useSlot(confirmDetailsSlot, { props: { operation } });
-
-  const [isModalOpen, closeModal] = useModalClose(
-    !signOperationsUtils.isNoneStep(step),
-    signOperations.output.flowFinished,
-  );
-
   if (signOperationsUtils.isSubmitStep(step)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={signOperations.output.flowFinished} />;
   }
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={() => closeModal()}>
-      <Modal.Title close>{confirmTitle}</Modal.Title>
+    <Modal size="md" isOpen={isModalOpen} onToggle={() => signOperations.output.flowFinished()}>
+      <Modal.Title close>
+        <Slot id={confirmTitleSlot} props={{ operation }} />
+      </Modal.Title>
       <Modal.Content>
         {signOperationsUtils.isConfirmStep(step) && (
           <div>
-            {confirmDetails}
+            <Slot id={confirmDetailsSlot} props={{ operation }} />
 
             <Modal.Footer>
-              <SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperations.events.txsConfirmed} />
+              <SignButton isDefault type={wallet?.type} onClick={signOperations.events.txsConfirmed} />
             </Modal.Footer>
           </div>
         )}
