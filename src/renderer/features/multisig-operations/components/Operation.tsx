@@ -11,6 +11,7 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 export const operationTitleSlot = createSlot<SlotProps>();
+export const logTitleSlot = createSlot<SlotProps>();
 
 // TODO: Temp solution
 export const Operation = ({ operation }: Props) => {

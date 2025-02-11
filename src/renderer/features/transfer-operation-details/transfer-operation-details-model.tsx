@@ -1,6 +1,17 @@
+import { useUnit } from 'effector-react';
+
 import { createFeature } from '@/shared/feature';
+import { useI18n } from '@/shared/i18n';
+import { getAssetById } from '@/shared/lib/utils';
+import { AssetBalance } from '@/entities/asset';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
+import { networkModel } from '@/entities/network';
+import {
+  TransactionTitle,
+  getTransactionAmount,
+  isTransferTransaction,
+  isXcmTransaction,
+} from '@/entities/transaction';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 import { TransferOperationDetails } from './components/TransferOperationDetails';
@@ -33,6 +44,43 @@ transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationT
 
   if (isXcmTransaction(transaction)) {
     return <XcmTransferOperationTitle operation={operation} />;
+  }
+
+  return null;
+});
+
+transferOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+  const { t } = useI18n();
+  const transaction = getTransactionFromMultisigTx(operation);
+  const chains = useUnit(networkModel.$chains);
+
+  const assetId = transaction?.args.assetId || transaction?.args.asset;
+  const asset = getAssetById(assetId, chains[operation.chainId]?.assets);
+
+  const amount = transaction && getTransactionAmount(transaction);
+
+  if (isTransferTransaction(transaction)) {
+    return (
+      <TransactionTitle
+        className="overflow-hidden"
+        title={t('operations.titles.transfer', { asset: asset?.symbol })}
+        icon="transferMst"
+      >
+        {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
+      </TransactionTitle>
+    );
+  }
+
+  if (isXcmTransaction(transaction)) {
+    return (
+      <TransactionTitle
+        className="overflow-hidden"
+        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        icon="transferMst"
+      >
+        {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
+      </TransactionTitle>
+    );
   }
 
   return null;

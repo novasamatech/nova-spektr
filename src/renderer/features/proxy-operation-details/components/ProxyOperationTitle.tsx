@@ -1,5 +1,5 @@
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransaction, TransactionType } from '@/shared/core';
+import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
@@ -8,29 +8,17 @@ import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
+  title: string;
   operation: MultisigTransaction;
 };
 
-const getOperationTitle = (transactionType: TransactionType): string | undefined => {
-  const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
-    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
-  };
-
-  return Title[transactionType];
-};
-
-export const ProxyOperationTitle = ({ operation }: Props) => {
+export const ProxyOperationTitle = ({ operation, title }: Props) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 
   const asset =
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
   const amount = transaction && getTransactionAmount(transaction);
-
-  const title = transaction?.type && getOperationTitle(transaction.type);
 
   return (
     <>

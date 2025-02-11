@@ -11,6 +11,7 @@ import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
+  TransactionTitle,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
@@ -23,6 +24,17 @@ import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
 });
+
+const getOperationTitle = (transactionType: TransactionType): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
+    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
+    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
+  };
+
+  return Title[transactionType];
+};
 
 proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
   render: ({ operation }) => {
@@ -77,16 +89,23 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
 proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.ADD_PROXY,
-      TransactionType.REMOVE_PROXY,
-      TransactionType.CREATE_PURE_PROXY,
-      TransactionType.REMOVE_PURE_PROXY,
-    ].includes(transaction.type)
-  ) {
-    return <ProxyOperationTitle operation={operation} />;
+  const title = transaction?.type && getOperationTitle(transaction.type);
+
+  if (title) {
+    return <ProxyOperationTitle operation={operation} title={title} />;
+  }
+
+  return null;
+});
+
+proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+  const { t } = useI18n();
+  const transaction = getTransactionFromMultisigTx(operation);
+
+  const title = transaction?.type && getOperationTitle(transaction.type);
+
+  if (title) {
+    return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;
   }
 
   return null;

@@ -1,4 +1,4 @@
-import { operationDetailsSlot, operationTitleSlot } from './components/Operation';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from './components/Operation';
 import { operationsModel } from './model/list';
 
 export const multisigOperationsFeature = {
@@ -9,5 +9,6 @@ export const multisigOperationsFeature = {
   slots: {
     operationDetails: operationDetailsSlot,
     operationTitle: operationTitleSlot,
+    logTitle: logTitleSlot,
   },
 };

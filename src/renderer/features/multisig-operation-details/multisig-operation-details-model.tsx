@@ -37,3 +37,13 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
   render: ({ operation }) => <OperationAdvancedDetails operation={operation} />,
   order: 999,
 });
+
+multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+  const transaction = getTransactionFromMultisigTx(operation);
+
+  if (transaction && transaction.type) return null;
+
+  const title = transaction && formatSectionAndMethod(transaction.section, transaction.method);
+
+  return <TransactionTitle className="overflow-hidden" title={title || ''} icon="unknownMst" />;
+});

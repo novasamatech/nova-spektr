@@ -23,7 +23,7 @@ export const TransferOperationTitle = ({ operation }: Props) => {
     <>
       <TransactionTitle
         className="flex-1 overflow-hidden"
-        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        title={t('operations.titles.transfer', { asset: asset?.symbol })}
         icon="transferMst"
       />
 
