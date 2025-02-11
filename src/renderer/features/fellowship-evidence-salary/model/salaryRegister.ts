@@ -5,7 +5,7 @@ import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
-import { basketModel } from '@/entities/basket';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -137,7 +137,7 @@ sample({
 sample({
   clock: basketSaveRequestCreated.filter({ fn: nonNullable }),
   fn: tx => [tx],
-  target: basketModel.events.transactionsCreated,
+  target: basketOperations.addTransactions,
 });
 
 export const salaryRegister = {
