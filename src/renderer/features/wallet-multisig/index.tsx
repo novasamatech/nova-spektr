@@ -8,7 +8,8 @@ import { accountsService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
-import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
+import { WalletGroup } from './components/WalletGroup';
+import { walletActionsSlot } from './components/WalletRow';
 import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
@@ -39,7 +40,7 @@ walletMultisigFeature.inject(walletGroupSlot, {
   render({ query, onSelect }) {
     const { t } = useI18n();
     const regular = useUnit(walletsModel.$regularMultisig);
-    const flexible = useUnit(walletsModel.$flexibleMutisig);
+    const flexible = useUnit(walletsModel.$flexibleMultisig);
 
     return (
       <>

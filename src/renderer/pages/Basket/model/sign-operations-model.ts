@@ -14,7 +14,6 @@ import {
 import { type ChainError } from '@/shared/core/types/basket';
 import { toAccountId } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
-import { basketModel } from '@/entities/basket';
 import { networkModel } from '@/entities/network';
 import {
   type MultisigTransactionTypes,
@@ -26,6 +25,7 @@ import {
   isEditDelegationTransaction,
 } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
@@ -582,7 +582,7 @@ sample({
       results.some((result) => result.id === index && result.result === ExtrinsicResult.SUCCESS),
     );
   },
-  target: basketModel.events.transactionsRemoved,
+  target: basketOperations.removeTransactions,
 });
 
 sample({
@@ -607,7 +607,7 @@ sample({
       return acc;
     }, []);
   },
-  target: basketModel.events.transactionsUpdated,
+  target: basketOperations.updateTransactions,
 });
 
 export const signOperationsModel = {

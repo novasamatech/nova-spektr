@@ -14,7 +14,6 @@ import { delay, throttle } from 'patronum';
 
 import { type BasketTransaction, type ChainId, type ID, TransactionType } from '@/shared/core';
 import { addUnique, removeFromCollection } from '@/shared/lib/utils';
-import { basketModel } from '@/entities/basket';
 import { networkModel, networkUtils } from '@/entities/network';
 import {
   type MultisigTransactionTypes,
@@ -27,6 +26,7 @@ import {
   transactionService,
 } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { basketFilterModel } from '@/features/basket';
 import { unlockValidateModel, voteValidateModel } from '@/features/governance';
 import {
@@ -193,7 +193,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
 const $basketTransactions = combine(
   {
     wallet: walletModel.$activeWallet,
-    basket: basketModel.$basket,
+    basket: basketOperations.$list,
   },
   ({ wallet, basket }) => basket.filter((tx) => tx.initiatorWallet === wallet?.id).reverse(),
 );
@@ -523,7 +523,7 @@ sample({
 sample({
   clock: txRemoved,
   fn: (tx) => [tx],
-  target: basketModel.events.transactionsRemoved,
+  target: basketOperations.removeTransactions,
 });
 
 sample({
@@ -534,9 +534,9 @@ sample({
 
 sample({
   clock: walletModel.events.walletRemovedSuccess,
-  source: basketModel.$basket,
+  source: basketOperations.$list,
   fn: (txs, { params }) => txs.filter((t) => t.initiatorWallet === params.id),
-  target: basketModel.events.transactionsRemoved,
+  target: basketOperations.removeTransactions,
 });
 
 export const basketPageModel = {
