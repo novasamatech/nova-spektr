@@ -8,13 +8,15 @@ import { AssetBalance } from '@/entities/asset';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { ExplorersPopover, WalletCardSm } from '@/entities/wallet';
-import { InteractionStyle } from '../common/constants';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
   wallets: Wallet[];
   chain: Chain;
 };
+
+const InteractionStyle =
+  'rounded hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
 export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
   const { t } = useI18n();

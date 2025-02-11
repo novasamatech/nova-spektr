@@ -3,7 +3,7 @@ import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { OperationAdvancedDetails } from './components/OperationAdvancedDetails';
 import { OperationDetails } from './components/OperationDetails';
@@ -12,12 +12,12 @@ export const multisigOperationDetailsFeature = createFeature({
   name: 'multisig/operation details',
 });
 
-multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+multisigOperationDetailsFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => <OperationDetails operation={operation} />,
   order: 0,
 });
 
-multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+multisigOperationDetailsFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   if (transaction && transaction.type) return null;
@@ -33,12 +33,12 @@ multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operation
   );
 });
 
-multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+multisigOperationDetailsFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => <OperationAdvancedDetails operation={operation} />,
   order: 999,
 });
 
-multisigOperationDetailsFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+multisigOperationDetailsFeature.inject(logTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   if (transaction && transaction.type) return null;

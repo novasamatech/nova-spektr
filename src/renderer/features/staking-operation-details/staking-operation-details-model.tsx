@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { PayeeOperationDetails } from './components/PayeeOperationDetails';
 import { StakingOperationTitle } from './components/StakingOperationTitle';
@@ -42,7 +42,7 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   return Icon[transactionType];
 };
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+stakingOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -64,7 +64,7 @@ stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDe
   order: 1,
 });
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+stakingOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -77,7 +77,7 @@ stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDe
   order: 2,
 });
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+stakingOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   const title = transaction?.type && getOperationTitle(transaction.type);
@@ -90,7 +90,7 @@ stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTi
   return null;
 });
 
-stakingOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+stakingOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 

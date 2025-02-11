@@ -12,7 +12,7 @@ import {
   isTransferTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
@@ -22,7 +22,7 @@ export const transferOperationDetailFeature = createFeature({
   name: 'transfer/operations',
 });
 
-transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+transferOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -35,7 +35,7 @@ transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationD
   order: 1,
 });
 
-transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   if (isTransferTransaction(transaction)) {
@@ -49,7 +49,7 @@ transferOperationDetailFeature.inject(multisigOperationsFeature.slots.operationT
   return null;
 });
 
-transferOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
   const chains = useUnit(networkModel.$chains);

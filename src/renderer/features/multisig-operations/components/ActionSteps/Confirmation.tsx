@@ -28,8 +28,8 @@ import {
 } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
-import { TransactionAmount } from '@/pages/Operations/components/TransactionAmount';
 import { Details } from '../Details';
+import { TransactionAmount } from '../TransactionAmount';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;

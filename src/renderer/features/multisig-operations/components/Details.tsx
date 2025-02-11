@@ -42,7 +42,6 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
-import { InteractionStyle } from '../common/constants';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -216,7 +215,10 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
           <DetailRow label={t('operation.details.validators')}>
             <button
               type="button"
-              className={cnTw('flex items-center gap-x-1', InteractionStyle)}
+              className={cnTw(
+                '-mr-2 flex cursor-pointer items-center gap-x-1 rounded px-2 py-[3px]',
+                'hover:bg-action-background-hover hover:text-text-primary',
+              )}
               onClick={toggleValidators}
             >
               <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">

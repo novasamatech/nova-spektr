@@ -17,7 +17,7 @@ import {
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
@@ -36,7 +36,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
   return Title[transactionType];
 };
 
-proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+proxyOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const { t } = useI18n();
     const transaction = getTransactionFromMultisigTx(operation);
@@ -86,7 +86,7 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDeta
   order: 1,
 });
 
-proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   const title = transaction?.type && getOperationTitle(transaction.type);
@@ -98,7 +98,7 @@ proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitl
   return null;
 });
 
-proxyOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 

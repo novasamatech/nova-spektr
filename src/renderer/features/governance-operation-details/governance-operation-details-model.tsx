@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
 import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
@@ -42,7 +42,7 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   return Title[transactionType];
 };
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -60,7 +60,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   order: 1,
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -76,7 +76,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   order: 2,
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
   const title = transaction?.type && getOperationTitle(transaction.type);
@@ -89,7 +89,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   return null;
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.logTitle, ({ operation }) => {
+governanceOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 

@@ -3,7 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMultisigChainContext } from '@/app/providers';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
-import { useSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
@@ -12,7 +12,6 @@ import { useMultisigTx } from '@/entities/multisig';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils, operationsModel } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
@@ -23,6 +22,12 @@ type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
   account: MultisigAccount | FlexibleMultisigAccount | null;
 };
+
+type SlotProps = {
+  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+};
+
+export const operationDetailsSlot = createSlot<SlotProps>();
 
 export const OperationFullInfo = ({ tx, account }: Props) => {
   const { t } = useI18n();
@@ -72,12 +77,6 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
 
-  const operationDetails = useSlot(multisigOperationsFeature.slots.operationDetails, {
-    props: {
-      operation: tx,
-    },
-  });
-
   if (!walletUtils.isMultisig(activeWallet)) return null;
 
   const isFinalSigning = events.length === activeWallet.accounts[0].threshold - 1;
@@ -106,7 +105,9 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
           )}
         </div>
 
-        <div className="flex w-full flex-col gap-y-1">{operationDetails}</div>
+        <div className="flex w-full flex-col gap-y-1">
+          <Slot id={operationDetailsSlot} props={{ operation: tx }} />{' '}
+        </div>
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (

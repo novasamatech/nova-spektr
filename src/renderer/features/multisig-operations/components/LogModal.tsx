@@ -12,7 +12,7 @@ import {
   type Wallet,
   type WalletsMap,
 } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { SS58_DEFAULT_PREFIX, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -22,7 +22,6 @@ import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
@@ -60,6 +59,12 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
     return acc;
   }, {});
 };
+
+type SlotProps = {
+  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+};
+
+export const logTitleSlot = createSlot<SlotProps>();
 
 const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props) => {
   const { t, formatDate } = useI18n();
@@ -100,7 +105,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
       <Modal.Title close>{t('log.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex items-center justify-between gap-2 px-4 py-3">
-          <Slot id={multisigOperationsFeature.slots.logTitle} props={{ operation: tx }} />
+          <Slot id={logTitleSlot} props={{ operation: tx }} />
 
           <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
         </div>
