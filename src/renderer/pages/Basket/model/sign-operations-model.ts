@@ -128,6 +128,7 @@ const startDataPreparationFx = createEffect(async ({ transactions, ...preparatio
       [TransactionType.REMOVE_VOTE]: prepareTransaction.prepareRemoveVoteTransaction,
       [TransactionType.COLLECTIVE_VOTE]: prepareTransaction.prepareCollectiveVoteTransaction,
       [TransactionType.COLLECTIVE_SET_ACTIVE]: prepareTransaction.prepareCollectiveSetActiveTransaction,
+      [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: prepareTransaction.prepareCollectiveSubmitEvidenceTransaction,
       [TransactionType.COLLECTIVE_SALARY_REQUEST]: prepareTransaction.prepareCollectiveSalaryRequestTransaction,
       [TransactionType.COLLECTIVE_SALARY_PAYOUT]: prepareTransaction.prepareCollectiveSalaryPayoutTransaction,
     };

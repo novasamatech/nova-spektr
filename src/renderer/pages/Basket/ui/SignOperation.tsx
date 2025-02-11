@@ -27,6 +27,7 @@ import {
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
   FellowshipSetActiveConfirmation,
+  FellowshipSubmitEvidenceConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
@@ -184,6 +185,12 @@ export const SignOperation = () => {
       ),
       [TransactionType.COLLECTIVE_SET_ACTIVE]: () => (
         <FellowshipSetActiveConfirmation
+          id={transaction.id}
+          onGoBack={() => signOperationsModel.output.flowFinished()}
+        />
+      ),
+      [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => (
+        <FellowshipSubmitEvidenceConfirmation
           id={transaction.id}
           onGoBack={() => signOperationsModel.output.flowFinished()}
         />

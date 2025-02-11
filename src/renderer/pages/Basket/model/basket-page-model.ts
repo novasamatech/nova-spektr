@@ -176,6 +176,7 @@ const validateFx = createEffect(({ transactions, feeMap }: ValidateParams) => {
       [TransactionType.COLLECTIVE_SET_ACTIVE]: collectiveSetActiveValidateModel.validate,
       [TransactionType.COLLECTIVE_SALARY_REQUEST]: genericValidateModel.validate,
       [TransactionType.COLLECTIVE_SALARY_PAYOUT]: genericValidateModel.validate,
+      [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: genericValidateModel.validate,
     };
 
     if (coreTx.type in TransactionValidatorsRecord) {

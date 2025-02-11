@@ -349,7 +349,30 @@
         "payoutSalarySuccess": "Salary payout was completed successfully."
       },
       "salaryRequest": "Request salary on",
-      "salaryPayout": "Request payout on"
+      "salaryPayout": "Request payout on",
+      "promotionTitle": "Request promotion on",
+      "evidenceForm": {
+        "uploadError": "Upload error",
+        "areas": {
+          "label": "Areas of expertise and interest",
+          "placeholder": "Enter areas",
+          "required": "Areas are required"
+        },
+        "evidence": {
+          "label": "Evidence (document hash, url, etc.)",
+          "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
+          "required": "Evidence are required"
+        },
+        "comments": {
+          "label": "Comments",
+          "placeholder": "Enter comments about how your retention period went",
+          "required": "Comments are required"
+        }
+      },
+      "submitEvidenceConfirm": {
+        "wish": "Wish",
+        "evidence": "Evidence"
+      }
     },
     "profile": {
       "modalTitle": "Profile",

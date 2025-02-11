@@ -271,6 +271,7 @@ const TransactionTitles: Record<TransactionType, string> = {
   // Collectives
   [TransactionType.COLLECTIVE_VOTE]: 'operations.titles.vote',
   [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
+  [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.salary.promotionTitle',
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'fellowship.salary.salaryRequest',
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.salary.salaryPayout',
 };
@@ -331,6 +332,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.COLLECTIVE_SET_ACTIVE]: () => 'fellowship.profile.setActive.title',
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: () => 'fellowship.salary.salaryRequest',
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: () => 'fellowship.salary.salaryPayout',
+  [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => 'fellowship.salary.promotionTitle',
 };
 
 export const getTransactionTitle = (t: TFunction, transaction?: Transaction | DecodedTransaction): string => {

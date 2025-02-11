@@ -1,32 +1,24 @@
 /* eslint-disable i18next/no-literal-string */
+import { useForm } from 'effector-forms';
+import { useUnit } from 'effector-react';
 import { type FormEventHandler, type PropsWithChildren, memo, useState } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { Button, Markdown, Separator } from '@/shared/ui';
+import { Alert, Button, InputHint, Separator } from '@/shared/ui';
 import { Box, Field, Modal, TextArea } from '@/shared/ui-kit';
+import { evidenceForm } from '../model/evidenceForm';
 
 type Props = PropsWithChildren;
 
 export const RetentionEvidenceFormModal = memo(({ children }: Props) => {
+  useFlow(evidenceForm.flow, { wish: 'Retention' });
+
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
-  const [areas, setAreas] = useState('');
-  const [evidence, setEvidence] = useState('');
-  const [comments, setComments] = useState('');
-  const [md, setMd] = useState('');
-
-  const submit = () => {
-    const md = `
-# Areas of work
-${areas}
-# Evidence
-${evidence}
-# Comments
-${comments}
-    `;
-
-    setMd(md);
-  };
+  const { fields, submit } = useForm(evidenceForm.form);
+  const uploadError = useUnit(evidenceForm.$uploadError);
+  const step = useUnit(evidenceForm.$step);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
@@ -44,39 +36,58 @@ ${comments}
       <Modal.Content>
         <form className="flex flex-grow flex-col" onSubmit={handleSubmit}>
           <Box padding={[4, 5]} gap={4}>
-            <Field text="Areas of expertise and interest">
-              <TextArea autosize name="areas" rows={1} placeholder="Enter areas" value={areas} onChange={setAreas} />
+            <Alert active={!!uploadError} variant="error" title={t('fellowship.salary.evidenceForm.uploadError')}>
+              <Alert.Item withDot={false}>{uploadError}</Alert.Item>
+            </Alert>
+            <Field text={t('fellowship.salary.evidenceForm.areas.label')}>
+              <TextArea
+                autosize
+                name="areas"
+                rows={1}
+                placeholder={t('fellowship.salary.evidenceForm.areas.placeholder')}
+                value={fields.areas.value}
+                onChange={fields.areas.onChange}
+              />
+              <InputHint variant="error" active={fields.areas.hasError()}>
+                {t(fields.areas.errorText())}
+              </InputHint>
             </Field>
-            <Field text="Evidence (document hash, url, etc.)">
+            <Field text={t('fellowship.salary.evidenceForm.evidence.label')}>
               <TextArea
                 autosize
                 name="evidence"
                 rows={3}
-                placeholder="Enter more about the work you did, add links, and tell about your future work plans"
-                value={evidence}
-                onChange={setEvidence}
+                placeholder={t('fellowship.salary.evidenceForm.evidence.placeholder')}
+                value={fields.evidence.value}
+                onChange={fields.evidence.onChange}
               />
+              <InputHint variant="error" active={fields.evidence.hasError()}>
+                {t(fields.evidence.errorText())}
+              </InputHint>
             </Field>
-            <Field text="Comments">
+            <Field text={t('fellowship.salary.evidenceForm.comments.label')}>
               <TextArea
                 autosize
                 name="comments"
                 rows={3}
-                placeholder="Enter comments about how your retention period went"
-                value={comments}
-                onChange={setComments}
+                placeholder={t('fellowship.salary.evidenceForm.comments.placeholder')}
+                value={fields.comments.value}
+                onChange={fields.comments.onChange}
               />
+              <InputHint variant="error" active={fields.comments.hasError()}>
+                {t(fields.comments.errorText())}
+              </InputHint>
             </Field>
+            {step}
           </Box>
         </form>
-        <Markdown>{md}</Markdown>
       </Modal.Content>
       <Modal.Footer>
         <Button variant="text" onClick={() => setOpen(false)}>
           {t('general.button.closeButton')}
         </Button>
         <Box grow={1} />
-        <Button onClick={submit}>{t('general.button.submitButton')}</Button>
+        <Button onClick={() => submit()}>{t('general.button.submitButton')}</Button>
       </Modal.Footer>
     </Modal>
   );

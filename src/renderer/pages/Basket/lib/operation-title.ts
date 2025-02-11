@@ -68,6 +68,7 @@ export const getOperationTitle = (transaction: BasketTransaction, chain: Chain):
     // Collectives
     [TransactionType.COLLECTIVE_VOTE]: 'operations.modalTitles.vote',
     [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
+    [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.salary.promotionTitle',
     [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'fellowship.salary.salaryRequest',
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.salary.salaryPayout',
   };

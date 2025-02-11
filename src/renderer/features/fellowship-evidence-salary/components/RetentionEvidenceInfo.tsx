@@ -6,7 +6,6 @@ import { getRelativeTimeFromApi } from '@/shared/lib/utils';
 import { Alert, Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { memberService } from '@/domains/collectives';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -20,24 +19,20 @@ export const RetentionEvidenceInfo = memo(() => {
   const input = useUnit(fellowshipSalaryFeature.input);
   const currentMember = useUnit(profile.$member);
   const track = useUnit(evidenceInfo.$track);
-  const currentBlock = useUnit(evidenceInfo.$currentBlock);
-  const demotionPeriod = useUnit(evidenceInfo.$demotionPeriod);
+  const leftToDemotion = useUnit(evidenceInfo.$leftToDemotion);
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
 
   useEffect(() => {
-    if (input?.api && demotionPeriod) {
-      const gone =
-        currentBlock - (currentMember && memberService.isCoreMember(currentMember) ? currentMember.lastProof : 0);
-      const left = demotionPeriod - gone;
-      if (left > 0) {
-        getRelativeTimeFromApi(demotionPeriod - gone, input.api).then(setTimeLeft);
+    if (input?.api && leftToDemotion) {
+      if (leftToDemotion > 0) {
+        getRelativeTimeFromApi(leftToDemotion, input.api).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
     }
-  }, [input?.api, demotionPeriod, currentBlock, currentMember]);
+  }, [input?.api, leftToDemotion]);
 
   return (
     <Box padding={[4, 5, 5]} gap={6}>

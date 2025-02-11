@@ -17,17 +17,17 @@ export const PromotionInfo = memo(() => {
   const input = useUnit(fellowshipSalaryFeature.input);
   const nextTrack = useUnit(evidenceInfo.$nextTrack);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
-  const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotionPeriod);
+  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
 
   useEffect(() => {
-    if (input?.api && leftToPromotionPeriod) {
-      if (leftToPromotionPeriod > 0) {
-        getRelativeTimeFromApi(leftToPromotionPeriod, input.api).then(setTimeLeft);
+    if (input?.api && leftToPromotion) {
+      if (leftToPromotion > 0) {
+        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
     }
-  }, [input?.api, leftToPromotionPeriod]);
+  }, [input?.api, leftToPromotion]);
 
   return (
     <Box gap={6}>

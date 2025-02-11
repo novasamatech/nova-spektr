@@ -11,10 +11,11 @@ import { PromotionInfo } from './components/PromotionInfo';
 import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation';
 import { SalaryRegisterConfirmation } from './components/SalaryRegisterConfirmation';
 import { SalaryRegisterModal } from './components/SalaryRegisterModal';
+import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
 import { evidenceInfo } from './model/evidence';
 import { fellowshipSalaryFeature } from './model/feature';
 
-export { fellowshipSalaryFeature, SalaryRegisterConfirmation, SalaryPayoutConfirmation };
+export { fellowshipSalaryFeature, SalaryRegisterConfirmation, SalaryPayoutConfirmation, SubmitEvidenceConfirmation };
 
 fellowshipSalaryFeature.inject(fellowshipHeaderCardsSlot, {
   order: 1,
@@ -35,6 +36,6 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(hasActionRequestAnyOf, () => {
-  const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotionPeriod);
+  const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
   return leftToPromotionPeriod === 0;
 });

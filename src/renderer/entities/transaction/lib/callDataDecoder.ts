@@ -460,6 +460,12 @@ export const useCallDataDecoder = (): ICallDataDecoder => {
         beneficiary: decoded.args[0] ? decoded.args[0].toString() : null,
       };
     },
+    [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: (decoded): Record<string, any> => {
+      return {
+        wish: decoded.args[0].toString(),
+        evidence: decoded.args[1].toString(),
+      };
+    },
   };
 
   const isBatchExtrinsic = (method: string, section: string): boolean => {

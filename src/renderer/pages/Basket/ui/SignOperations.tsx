@@ -29,6 +29,7 @@ import {
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
   FellowshipSetActiveConfirmation,
+  FellowshipSubmitEvidenceConfirmation,
   FellowshipVotingConfirmation,
   NominateConfirmation,
   PayeeConfirmation,
@@ -132,6 +133,9 @@ export const SignOperations = () => {
       [TransactionType.COLLECTIVE_VOTE]: () => <FellowshipVotingConfirmation id={transaction.id} hideSignButton />,
       [TransactionType.COLLECTIVE_SET_ACTIVE]: () => (
         <FellowshipSetActiveConfirmation id={transaction.id} hideSignButton />
+      ),
+      [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => (
+        <FellowshipSubmitEvidenceConfirmation id={transaction.id} hideSignButton />
       ),
       [TransactionType.COLLECTIVE_SALARY_REQUEST]: () => (
         <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />

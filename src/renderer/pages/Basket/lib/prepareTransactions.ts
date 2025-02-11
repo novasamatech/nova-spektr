@@ -31,6 +31,7 @@ import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
   type CollectiveSalaryRequestConfirm,
   type CollectiveSetActiveConfirm,
+  type CollectiveSubmitEvidenceConfirm,
   type CollectiveVoteConfirm,
   type VoteConfirm,
 } from '@/features/operations/OperationsConfirm';
@@ -75,6 +76,7 @@ export const prepareTransaction = {
   prepareCollectiveSetActiveTransaction,
   prepareCollectiveSalaryRequestTransaction,
   prepareCollectiveSalaryPayoutTransaction,
+  prepareCollectiveSubmitEvidenceTransaction,
 };
 
 async function getTransactionData(
@@ -767,6 +769,34 @@ async function prepareCollectiveSetActiveTransaction({ transaction, wallets, cha
       txWrappers: transaction.txWrappers,
     }),
   } satisfies CollectiveSetActiveConfirm;
+}
+
+// TODO refactor this
+async function prepareCollectiveSubmitEvidenceTransaction({ transaction, wallets, chains, apis, feeMap }: DataParams) {
+  const coreTx = getCoreTx(transaction);
+
+  const { chainId, chain, account, fee } = await getTransactionData(transaction, feeMap, apis, chains, wallets);
+  const api = apis[chainId];
+
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveSetActiveConfirm['pallet'],
+    wish: coreTx.args.wish,
+    evidence: coreTx.args.evidence,
+    fee: new BN(fee),
+    signatory: null,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveSubmitEvidenceConfirm;
 }
 
 // TODO refactor this
