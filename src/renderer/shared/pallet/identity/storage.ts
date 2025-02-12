@@ -3,6 +3,7 @@ import { zipWith } from 'lodash';
 import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
+import { nullable } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { identityRegistration, identityRegistrationInfo } from './schema';
@@ -58,7 +59,12 @@ export const storage = {
     return substrateRpcPool
       .call(() => getQuery(api, 'identityOf').multi(accounts))
       .then(schema.parse)
-      .then(response => zipWith(accounts, response, (account, identity) => ({ account, identity })));
+      .then(response =>
+        zipWith(accounts, response, (account, identity) => ({
+          account,
+          identity,
+        })),
+      );
   },
 
   /**
@@ -111,8 +117,19 @@ export const storage = {
    * within that context. If the account is not some other account's
    * sub-identity, then just `None`.
    */
-  superOf() {
-    throw new Error('identityPallet.storage.superOf method not implemented yet.');
+  superOf(api: ApiPromise, accounts: AccountId[]) {
+    const schema = pjsSchema.vec(pjsSchema.optional(z.tuple([pjsSchema.accountId, pjsSchema.dataString])));
+
+    return substrateRpcPool
+      .call(() => getQuery(api, 'superOf').multi(accounts))
+      .then(schema.parse)
+      .then(response =>
+        zipWith(accounts, response, (account, identity) => ({
+          sub: account,
+          parent: nullable(identity) ? account : identity[0],
+          name: nullable(identity) ? '' : identity[1],
+        })),
+      );
   },
 
   /**

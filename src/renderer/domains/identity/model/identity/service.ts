@@ -1,5 +1,5 @@
 import { type Chain, type ChainId } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 const findIdentityChain = (chains: Record<ChainId, Chain>, initialChainId: ChainId) => {
   let chainId = initialChainId;
@@ -21,11 +21,10 @@ const findIdentityChain = (chains: Record<ChainId, Chain>, initialChainId: Chain
     } else {
       const identityChainId = chain.additional?.identityChain;
 
-      if (nullable(identityChainId)) {
-        break;
+      if (nonNullable(identityChainId)) {
+        identityChain = chains[identityChainId] ?? null;
       }
 
-      identityChain = chains[identityChainId] ?? null;
       break;
     }
   }

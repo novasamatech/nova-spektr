@@ -34,6 +34,8 @@ const subscribe = createEvent();
 const stop = createEvent();
 const request = createEvent<AnyAccount[]>();
 
+const populateWallets = createEvent<GetMultisigResponse[]>();
+
 const createWallets = attach({ effect: walletModel.createWallets });
 
 const $multisigAccounts = accounts.$list.map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
@@ -89,7 +91,7 @@ type FlexibleMultisigResponse = {
 type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): Promise<MultisigResult[]> => {
-  const requests = chains.flatMap(async (chain) => {
+  const requests = chains.flatMap((chain) => {
     const multisigIndexer = networkUtils.getProxyExternalApi(chain);
 
     if (nullable(multisigIndexer) || accounts.length === 0) return [];
@@ -101,9 +103,7 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams): 
 
     if (accountIds.length === 0) return [];
 
-    const indexedMultisigs = await multisigService.filterMultisigsAccounts(client, accountIds, chain);
-
-    return indexedMultisigs;
+    return multisigService.filterMultisigsAccounts(client, accountIds, chain);
   });
 
   return Promise.all(requests).then((res) => res.flat());
@@ -177,8 +177,6 @@ sample({
   target: filterMultisigFx,
 });
 
-const populateWallets = createEvent<GetMultisigResponse[]>();
-
 sample({
   clock: filterMultisigFx.doneData,
   filter: (response) => response.length > 0,
@@ -192,17 +190,20 @@ sample({
   target: [stop, subscribe],
 });
 
-const populateMultisigWallets = populateWallets.map((drafts) => drafts.filter((x) => x.type === 'multisig'));
+const populateMultisigWallets = populateWallets.map((drafts) => {
+  return drafts.filter((x) => x.type === 'multisig');
+});
 
-const populateFlexibleMultisigWallets = populateWallets.map((drafts) =>
-  drafts.filter((x) => x.type === 'flexibleMultisig'),
-);
+const populateFlexibleMultisigWallets = populateWallets.map((drafts) => {
+  return drafts.filter((x) => x.type === 'flexibleMultisig');
+});
 
 sample({
   clock: populateMultisigWallets,
   fn(responses) {
     return responses.map(({ chain, account }) => {
       const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
         name: walletName,
         type: WalletType.MULTISIG,
@@ -223,6 +224,7 @@ sample({
   fn(responses) {
     return responses.map(({ chain, account }) => {
       const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
         name: walletName,
         type: WalletType.FLEXIBLE_MULTISIG,

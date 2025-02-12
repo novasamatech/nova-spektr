@@ -44,20 +44,28 @@ const {
   },
   filter: ({ accounts }) => accounts.length > 0,
   async fn({ api, accounts }) {
-    const response = await identityPallet.storage.identityOf(api, accounts);
+    const subIdentities = await identityPallet.storage.superOf(api, accounts);
+    const parentAccounts = subIdentities.map(sub => sub.parent);
+    const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
 
-    return response.reduce<IdentityData>((acc, record) => {
-      if (record.identity) {
-        acc[record.account] = {
-          accountId: record.account,
-          name: record.identity[0].info.display,
-          email: record.identity[0].info.email,
-          image: record.identity[0].info.image,
-        };
-      }
+    const result: IdentityData = {};
 
-      return acc;
-    }, {});
+    for (let index = 0; index < parentIdentities.length; index++) {
+      const parent = parentIdentities[index];
+      if (nullable(parent?.identity)) continue;
+
+      const subIdentityName = subIdentities[index]?.name;
+      const identityName = parent.identity[0].info.display;
+
+      result[parent.account] = {
+        accountId: parent.account,
+        name: subIdentityName ? `${identityName}/${subIdentityName}` : identityName,
+        email: parent.identity[0].info.email,
+        image: parent.identity[0].info.image,
+      };
+    }
+
+    return result;
   },
   map(store, { params, result }) {
     const previousData = store[params.chainId] ?? {};
@@ -72,13 +80,15 @@ const {
   },
 });
 
-const { $apis, $chains } = networkModel;
-
 const request = attach({
   effect: requestIdentity,
-  source: { apis: $apis, chains: $chains },
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+  },
   mapParams: ({ chainId, accounts }: RequestParams, { apis, chains }) => {
     const identityChain = identityService.findIdentityChain(chains, chainId);
+
     if (nullable(identityChain)) {
       throw new Error(`Chain path from ${chainId} is broken, trace chain.parentId fields in config.`);
     }
