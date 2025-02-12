@@ -76,7 +76,7 @@ fellowshipBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   if (title && icon) {
     return (
       <FellowshipOperationTitle
-        title={t(title, { asset: 'test' })}
+        title={t(title)}
         icon={icon}
         chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
@@ -107,7 +107,7 @@ fellowshipBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
     return (
       <OperationTitle
         className="justify-center"
-        title={t('operations.modalTitles.vote', { asset: asset.symbol })}
+        title={t('fellowship.voting.title')}
         chainId={operation.coreTx.chainId}
       />
     );
