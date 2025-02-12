@@ -30,11 +30,10 @@ export const ProfileCard = memo(() => {
 
   return (
     <ProfileModal>
-      <button
+      <div
         className={cnTw('rounded-xl border border-filter-border bg-card-background text-button-small', {
           'text-text-tertiary': disabled,
         })}
-        disabled={disabled}
       >
         <Box direction="row" verticalAlign="center" padding={4}>
           <Skeleton fullWidth active={pending || isNetworkDisabled}>
@@ -92,7 +91,7 @@ export const ProfileCard = memo(() => {
             )}
           </Skeleton>
         </Box>
-      </button>
+      </div>
     </ProfileModal>
   );
 });

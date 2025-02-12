@@ -1,14 +1,12 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { referendaPallet } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-import { VotingConfirmation, votingStatus } from '@/features/fellowship-voting';
+import { VotingConfirmation, fellowship, votingStatus } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -27,26 +25,33 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
-  useFlow(votingStatus.flow, {
-    referendumId: confirm?.meta?.poll ? referendaPallet.helpers.toReferendumId(parseInt(confirm?.meta?.poll)) : null,
+  // What a mess, we should find a solution for rendering multiple confirms
+  const votingReferendum = useStoreMap({
+    store: fellowship.$store,
+    keys: [confirm?.meta],
+    fn: (store, [meta]) => {
+      if (!meta) return null;
+      const list = store?.referendums ?? [];
+
+      return list.find((r) => r.id === parseInt(meta.poll)) ?? null;
+    },
   });
 
-  const referendum = useUnit(votingStatus.$referendum);
   const maxRank = useUnit(votingStatus.$maxRank);
 
-  if (nullable(confirm) || nullable(referendum) || referendumService.isCompleted(referendum)) {
+  if (nullable(confirm) || nullable(votingReferendum) || referendumService.isCompleted(votingReferendum)) {
     return null;
   }
 
   return (
-    <div className="flex w-full flex-col items-center gap-4 px-5 py-4">
+    <div className="px-5 py-4">
       <VotingConfirmation
         account={confirm.accounts.initiator}
         asset={confirm.meta.asset}
         chain={confirm.meta.chain}
         vote={confirm.meta.aye ? 'aye' : 'nay'}
         wallets={confirm.meta.wallets}
-        referendum={referendum}
+        referendum={votingReferendum}
         maxRank={maxRank}
         fee={confirm.meta.fee}
         rank={confirm.meta.rank}

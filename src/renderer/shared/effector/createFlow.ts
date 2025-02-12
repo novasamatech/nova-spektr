@@ -21,8 +21,6 @@ export const createFlow = <Props>(defaultState: Props): Flow<Props> => {
   const close = createEvent<Props>();
   const shut = createEvent();
 
-  // debug($stack, $state);
-
   sample({
     clock: open,
     source: $stack,

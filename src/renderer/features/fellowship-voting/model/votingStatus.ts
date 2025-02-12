@@ -8,14 +8,14 @@ import { referendum, referendumService, trackService, voting } from '@/domains/c
 import { accountsService } from '@/domains/network';
 
 import { fellowshipVotingFeature } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowship } from './fellowship';
 
 const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
 
 const $referendumId = flow.state.map(({ referendumId }) => referendumId);
-const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
-const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
-const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
+const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
+const $voting = fellowship.$store.map(x => x?.voting ?? []);
 const $currentMember = fellowshipVotingFeature.input.map(input => input?.member ?? null);
 const $votingAccount = fellowshipVotingFeature.input.map(input => input?.account ?? null);
 
