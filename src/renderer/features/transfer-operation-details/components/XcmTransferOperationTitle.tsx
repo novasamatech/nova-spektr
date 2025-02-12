@@ -1,5 +1,6 @@
 import { chainsService } from '@/shared/api/network';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { XcmChains } from '@/entities/chain';
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export const XcmTransferOperationTitle = ({ operation }: Props) => {
+  const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
 
   const assetId = transaction?.args.assetId || transaction?.args.asset;
@@ -20,7 +22,11 @@ export const XcmTransferOperationTitle = ({ operation }: Props) => {
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" tx={transaction} />
+      <TransactionTitle
+        className="flex-1 overflow-hidden"
+        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        icon="crossChain"
+      />
 
       {asset && amount && (
         <div className="w-[160px]">

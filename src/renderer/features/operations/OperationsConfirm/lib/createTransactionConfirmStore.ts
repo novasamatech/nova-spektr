@@ -11,14 +11,15 @@ import {
   type Wallet,
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export type ConfirmInfo = {
   id?: number;
-  account: Account;
-  signatory: Account | null;
+  account: AnyAccount;
+  signatory: AnyAccount | null;
   chain: Chain;
   wrappedTransactions: WrappedTransactions;
 };

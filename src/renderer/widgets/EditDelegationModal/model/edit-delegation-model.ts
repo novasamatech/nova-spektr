@@ -6,7 +6,6 @@ import { combineEvents, spread } from 'patronum';
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
   type Account,
-  type BasketTransaction,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
@@ -549,14 +548,12 @@ sample({
     return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
-    return coreTxs!.map((coreTx) => {
-      return {
-        initiatorWallet: walletData.wallet!.id,
-        coreTx,
-        txWrappers,
-        groupId: Date.now(),
-      } as BasketTransaction;
-    });
+    return coreTxs!.map((coreTx) => ({
+      initiatorWallet: walletData.wallet!.id,
+      coreTx,
+      txWrappers,
+      groupId: Date.now(),
+    }));
   },
   target: basketOperations.addTransactions,
 });

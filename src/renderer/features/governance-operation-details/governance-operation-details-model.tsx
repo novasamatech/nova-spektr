@@ -1,7 +1,10 @@
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
+import { useI18n } from '@/shared/i18n';
+import { type IconNames } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { multisigOperationsFeature } from '@/features/multisig-operations';
+import { TransactionTitle } from '@/entities/transaction';
+import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
 import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
@@ -11,7 +14,35 @@ export const governanceOperationDetailFeature = createFeature({
   name: 'governance/operation-details',
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+const getOperationTitle = (transactionType: TransactionType): string | undefined => {
+  const Title: { [key in TransactionType]?: string } = {
+    [TransactionType.UNLOCK]: 'operations.titles.unlock',
+    [TransactionType.VOTE]: 'operations.titles.vote',
+    [TransactionType.REVOTE]: 'operations.titles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
+    [TransactionType.DELEGATE]: 'operations.titles.delegate',
+    [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
+    [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+  };
+
+  return Title[transactionType];
+};
+
+const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
+  const Title: { [key in TransactionType]?: IconNames } = {
+    [TransactionType.UNLOCK]: 'unlockMst',
+    [TransactionType.VOTE]: 'voteMst',
+    [TransactionType.REVOTE]: 'revoteMst',
+    [TransactionType.REMOVE_VOTE]: 'retractMst',
+    [TransactionType.DELEGATE]: 'delegateMst',
+    [TransactionType.UNDELEGATE]: 'undelegateMst',
+    [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
+  };
+
+  return Title[transactionType];
+};
+
+governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -29,7 +60,7 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   order: 1,
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationDetails, {
+governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -45,22 +76,28 @@ governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operatio
   order: 2,
 });
 
-governanceOperationDetailFeature.inject(multisigOperationsFeature.slots.operationTitle, ({ operation }) => {
+governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = getTransactionFromMultisigTx(operation);
 
-  if (
-    transaction?.type &&
-    [
-      TransactionType.UNLOCK,
-      TransactionType.VOTE,
-      TransactionType.REVOTE,
-      TransactionType.REMOVE_VOTE,
-      TransactionType.DELEGATE,
-      TransactionType.UNDELEGATE,
-      TransactionType.EDIT_DELEGATION,
-    ].includes(transaction.type)
-  ) {
-    return <GovernanceOperationTitle operation={operation} />;
+  const title = transaction?.type && getOperationTitle(transaction.type);
+  const icon = transaction?.type && getOperationIcon(transaction.type);
+
+  if (title) {
+    return <GovernanceOperationTitle operation={operation} title={title} icon={icon} />;
+  }
+
+  return null;
+});
+
+governanceOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
+  const { t } = useI18n();
+  const transaction = getTransactionFromMultisigTx(operation);
+
+  const title = transaction?.type && getOperationTitle(transaction.type);
+  const icon = transaction?.type && getOperationIcon(transaction.type);
+
+  if (title) {
+    return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon={icon} />;
   }
 
   return null;
