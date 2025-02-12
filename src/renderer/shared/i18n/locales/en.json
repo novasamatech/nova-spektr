@@ -415,6 +415,8 @@
       "skip": "Skip for now",
       "emptyTitle": "All tasks completed",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "reviewBasket_one": "Confirm {count} decision",
+      "reviewBasket_other": "Confirm {count} decisions",
       "task": {
         "requestSalary": {
           "title": "Request your salary",

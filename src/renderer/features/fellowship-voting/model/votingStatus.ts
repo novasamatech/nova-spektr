@@ -83,7 +83,7 @@ sample({
   target: voting.unsubscribeAccountsVoting,
 });
 
-export const votingStatusModel = {
+export const votingStatus = {
   $referendumVoting,
   $hasRequiredRank,
   $votingAccount,

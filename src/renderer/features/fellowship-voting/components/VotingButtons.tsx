@@ -9,7 +9,7 @@ import { ButtonCard, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
 import { fellowshipVotingFeature } from '../model/feature';
-import { votingStatusModel } from '../model/votingStatus';
+import { votingStatus } from '../model/votingStatus';
 
 import { VotingModal } from './VotingModal';
 
@@ -18,15 +18,15 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendumId }: Props) => {
-  useFlow(votingStatusModel.flow, { referendumId });
+  useFlow(votingStatus.flow, { referendumId });
 
   const { t } = useI18n();
 
   const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
-  const referendum = useUnit(votingStatusModel.$referendum);
-  const canVote = useUnit(votingStatusModel.$canVote);
-  const hasRequiredRank = useUnit(votingStatusModel.$hasRequiredRank);
-  const voting = useUnit(votingStatusModel.$referendumVoting);
+  const referendum = useUnit(votingStatus.$referendum);
+  const canVote = useUnit(votingStatus.$canVote);
+  const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
+  const voting = useUnit(votingStatus.$referendumVoting);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 

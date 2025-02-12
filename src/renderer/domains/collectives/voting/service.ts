@@ -1,4 +1,4 @@
-import { type Chain, TransactionType } from '@/shared/core';
+import { type Chain, type Transaction, TransactionType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AnyAccount } from '@/domains/network';
@@ -36,6 +36,11 @@ const createVoteTransaction = ({
   };
 };
 
+function isVotingTransaction(transaction: Transaction): transaction is VotingTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_VOTE;
+}
+
 export const votingService = {
   createVoteTransaction,
+  isVotingTransaction,
 };

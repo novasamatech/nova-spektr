@@ -1,4 +1,4 @@
-import { type Chain, TransactionType } from '@/shared/core';
+import { type Chain, type Transaction, TransactionType } from '@/shared/core';
 import { dictionary, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountsService } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -62,10 +62,15 @@ function createSetActiveTransaction({
   };
 }
 
+function isSetActiveTransaction(transaction: Transaction): transaction is SetActiveTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SET_ACTIVE;
+}
+
 export const memberService = {
   findMatchingMember,
   findMatchingAccount,
   isCoreMember,
 
   createSetActiveTransaction,
+  isSetActiveTransaction,
 };

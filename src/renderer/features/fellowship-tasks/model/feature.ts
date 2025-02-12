@@ -5,16 +5,15 @@ import { createFeature } from '@/shared/feature';
 import { isDev, nullable } from '@/shared/lib/utils';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { ERROR } from '../constants';
 
 const $input = combine(
   {
     network: fellowshipNetwork.$network,
     member: fellowshipMember.$currentMember,
-    walletId: walletSelect.$selectedWalletId,
+    account: fellowshipMember.$currentMemberAccount,
   },
-  ({ network, member }) => {
+  ({ network, member, account }) => {
     if (nullable(network)) return null;
 
     return {
@@ -24,6 +23,7 @@ const $input = combine(
       chainId: network.chainId,
       palletType: network.palletType,
       member,
+      account,
     };
   },
 );

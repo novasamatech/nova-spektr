@@ -11,7 +11,7 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { salaryRegister } from '../model/salaryRegister';
+import { salaryRequest } from '../model/salaryRequest';
 
 import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
 
@@ -26,9 +26,9 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('confirm');
   const input = useUnit(fellowshipSalaryFeature.input);
-  const account = useUnit(salaryRegister.$account);
-  const wallet = useUnit(salaryRegister.$wallet);
-  const fee = useUnit(salaryRegister.$fee);
+  const account = useUnit(salaryRequest.$account);
+  const wallet = useUnit(salaryRequest.$wallet);
+  const fee = useUnit(salaryRequest.$fee);
 
   const handleToggle = (open: boolean) => {
     if (disabled) return;
@@ -37,12 +37,12 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   };
 
   const handleSign = () => {
-    salaryRegister.sign();
+    salaryRequest.sign();
     setStep('sign');
   };
 
   const handleBasketSave = () => {
-    salaryRegister.saveToBasket();
+    salaryRequest.saveToBasket();
     setStep('basket');
   };
 

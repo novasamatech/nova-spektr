@@ -1,6 +1,6 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 
-import { type Chain, TransactionType } from '@/shared/core';
+import { type Chain, type Transaction, TransactionType } from '@/shared/core';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
@@ -86,6 +86,10 @@ function createSalaryRequestTransaction({
   };
 }
 
+function isSalaryRequestTransaction(transaction: Transaction): transaction is SalaryRequestTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SALARY_REQUEST;
+}
+
 type SalaryPayoutTransactionParams = {
   pallet: CollectivePalletsType;
   beneficiary: AccountId | null;
@@ -105,6 +109,10 @@ function createSalaryPayoutTransaction({
     type: TransactionType.COLLECTIVE_SALARY_PAYOUT,
     args: { pallet, beneficiary },
   };
+}
+
+function isSalaryPayoutTransaction(transaction: Transaction): transaction is SalaryPayoutTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SALARY_PAYOUT;
 }
 
 function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
@@ -152,5 +160,8 @@ export const salaryService = {
   canRequestSalaryPayout,
 
   createSalaryRequestTransaction,
+  isSalaryRequestTransaction,
+
   createSalaryPayoutTransaction,
+  isSalaryPayoutTransaction,
 };

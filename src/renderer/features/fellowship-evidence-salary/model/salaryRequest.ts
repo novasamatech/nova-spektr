@@ -140,7 +140,7 @@ sample({
   target: basketOperations.addTransactions,
 });
 
-export const salaryRegister = {
+export const salaryRequest = {
   $fee,
   $wallet,
   $account,

@@ -8,7 +8,7 @@ import { referendaPallet } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-import { VotingConfirmation, votingStatusModel } from '@/features/fellowship-voting';
+import { VotingConfirmation, votingStatus } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -27,12 +27,12 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
-  useFlow(votingStatusModel.flow, {
+  useFlow(votingStatus.flow, {
     referendumId: confirm?.meta?.poll ? referendaPallet.helpers.toReferendumId(parseInt(confirm?.meta?.poll)) : null,
   });
 
-  const referendum = useUnit(votingStatusModel.$referendum);
-  const maxRank = useUnit(votingStatusModel.$maxRank);
+  const referendum = useUnit(votingStatus.$referendum);
+  const maxRank = useUnit(votingStatus.$maxRank);
 
   if (nullable(confirm) || nullable(referendum) || referendumService.isCompleted(referendum)) {
     return null;
