@@ -488,6 +488,70 @@ export const getUnsignedTransaction: Record<
       options,
     );
   },
+
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: (transaction, info, options) => {
+    const { pallet, isActive } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: { isActive },
+          name: 'setActive',
+          pallet: `${pallet}Core`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
+  [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: (transaction, info, options) => {
+    const { pallet, wish, evidence } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: { wish, evidence },
+          name: 'setActive',
+          pallet: `${pallet}Core`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
+  [TransactionType.COLLECTIVE_SALARY_REQUEST]: (transaction, info, options) => {
+    const { pallet } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: {},
+          name: 'register',
+          pallet: `${pallet}Salary`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
+  [TransactionType.COLLECTIVE_SALARY_PAYOUT]: (transaction, info, options) => {
+    const { pallet, beneficiary } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: beneficiary ? { beneficiary } : {},
+          name: beneficiary ? 'payoutOther' : 'payout',
+          pallet: `${pallet}Salary`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
 };
 
 export const getExtrinsic: Record<
@@ -627,6 +691,32 @@ export const getExtrinsic: Record<
   },
   [TransactionType.COLLECTIVE_VOTE]: ({ pallet, poll, aye }, api) => {
     return api.tx[`${pallet}Collective`].vote(poll, aye);
+  },
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
+    return api.tx[`${pallet}Core`].setActive(isActive);
+  },
+  /**
+   * Provide evidence that a rank is deserved.
+   *
+   * This is free as long as no evidence for the forthcoming judgement is
+   * already submitted. Evidence is cleared after an outcome (either demotion,
+   * promotion of approval).
+   *
+   * - `origin`: A `Signed` origin of an inducted and ranked account.
+   * - `wish`: The stated desire of the member.
+   * - `evidence`: A dump of evidence to be considered. This should generally be
+   *   either a Markdown-encoded document or a series of 32-byte hashes which
+   *   can be found on a decentralised content-based-indexing system such as
+   *   IPFS.
+   */
+  [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: ({ pallet, wish, evidence }, api) => {
+    return api.tx[`${pallet}Core`].submitEvidence(wish, evidence);
+  },
+  [TransactionType.COLLECTIVE_SALARY_REQUEST]: ({ pallet }, api) => {
+    return api.tx[`${pallet}Salary`].register();
+  },
+  [TransactionType.COLLECTIVE_SALARY_PAYOUT]: ({ pallet, beneficiary }, api) => {
+    return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
   },
 };
 

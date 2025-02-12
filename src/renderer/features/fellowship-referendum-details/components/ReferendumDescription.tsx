@@ -1,22 +1,19 @@
 import { useUnit } from 'effector-react';
 
-import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText, HeaderTitleText, Markdown } from '@/shared/ui';
-import { Box, Graphics, Skeleton } from '@/shared/ui-kit';
-import { referendumDetailsModel } from '../model/details';
+import { HeaderTitleText, Markdown } from '@/shared/ui';
+import { Box, Skeleton } from '@/shared/ui-kit';
+import { referendumDetails } from '../model/details';
 
 import { ProposerName } from './ProposerName';
 
 export const ReferendumDescription = () => {
-  const { t } = useI18n();
-
-  const referendumMeta = useUnit(referendumDetailsModel.$referendumMeta);
-  const pendingReferendumMeta = useUnit(referendumDetailsModel.$pendingMeta);
+  const referendumMeta = useUnit(referendumDetails.$referendumMeta);
+  const pendingReferendumMeta = useUnit(referendumDetails.$pendingMeta);
+  const pendingEvidence = useUnit(referendumDetails.$pendingEvidence);
+  const evidence = useUnit(referendumDetails.$evidence);
 
   const metaLoadingState = pendingReferendumMeta && nullable(referendumMeta);
-
-  const empty = !metaLoadingState && !referendumMeta?.title && !referendumMeta?.description;
 
   return (
     <Box padding={6} gap={4}>
@@ -24,17 +21,7 @@ export const ReferendumDescription = () => {
       <HeaderTitleText className="text-balance">
         {metaLoadingState ? <Skeleton height="1lh" width="80%" /> : referendumMeta?.title}
       </HeaderTitleText>
-      {metaLoadingState ? (
-        <Skeleton height="8lh" width="100%" />
-      ) : (
-        <Markdown>{referendumMeta?.description ?? ''}</Markdown>
-      )}
-      {empty && (
-        <Box gap={2} horizontalAlign="center">
-          <Graphics name="emptyList" size={64} />
-          <FootnoteText>{t('fellowship.details.noDetails')}</FootnoteText>
-        </Box>
-      )}
+      {pendingEvidence ? <Skeleton height="8lh" width="100%" /> : <Markdown>{evidence?.content ?? ''}</Markdown>}
     </Box>
   );
 };

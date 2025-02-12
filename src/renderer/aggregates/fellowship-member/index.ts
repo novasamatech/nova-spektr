@@ -1,0 +1,1 @@
+export { fellowshipMember } from './model';

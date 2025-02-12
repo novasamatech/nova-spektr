@@ -63,7 +63,7 @@ export const performSearch = <T extends object, M extends object = Record<string
           }
 
           found = true;
-          weight += (weights[key] ?? 0) + (value.length - result) * 0.1;
+          weight += (weights[key] ?? 0) - result * 0.05;
           break;
         }
       }

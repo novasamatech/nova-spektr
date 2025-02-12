@@ -11,4 +11,5 @@ export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';
 export { WalletOnboardingCard } from './WalletOnboardingCard/WalletOnboardingCard';
 export { ChainAccountsList } from './ChainAccountsList/ChainAccountsList';
+export { CollectiveRank, toRomanNumeral } from './CollectiveRank/CollectiveRank';
 export { BasketOperationStatus } from './BasketOperationStatus/BasketOperationStatus';

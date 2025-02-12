@@ -6,7 +6,7 @@ import { formatAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, tracksService } from '@/domains/collectives';
+import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
@@ -24,7 +24,7 @@ type Props = {
 export const VotingConfirmation = ({ fee, account, wallets, chain, asset, vote, rank, maxRank, referendum }: Props) => {
   const { t } = useI18n();
 
-  const votes = tracksService.getVoteWeight({ pallet: 'fellowship', rank, maxRank, track: referendum.track });
+  const votes = trackService.getVoteWeight({ pallet: 'fellowship', rank, maxRank, track: referendum.track });
 
   return (
     <Box gap={6}>

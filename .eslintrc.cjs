@@ -78,7 +78,6 @@ module.exports = {
     ],
 
     'no-irregular-whitespace': 'off',
-    'newline-before-return': 'error',
 
     'no-restricted-properties': [
       'error',
@@ -345,7 +344,7 @@ module.exports = {
               },
               {
                 from: 'aggregates',
-                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities', 'aggregates'],
               },
               {
                 from: 'processes',

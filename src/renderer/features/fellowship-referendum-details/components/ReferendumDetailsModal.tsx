@@ -1,14 +1,14 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
+import { Slot, createSlot } from '@/shared/di';
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
-import { referendumDetailsModel } from '../model/details';
-import { referendumsDetailsFeatureStatus } from '../model/feature';
+import { referendumDetails } from '../model/details';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
@@ -16,8 +16,10 @@ import { Threshold } from './Threshold';
 import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
-const { VotingButtons, WalletVotingInfo } = fellowshipVotingFeature.views;
 const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
+
+export const additionalInfoSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumActionsSlot = createSlot<{ referendumId: ReferendumId }>();
 
 type Props = {
   isOpen: boolean;
@@ -26,13 +28,12 @@ type Props = {
 };
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useGate(referendumsDetailsFeatureStatus.gate);
-  useGate(referendumDetailsModel.gate, { referendumId });
+  useFlow(referendumDetails.flow, { referendumId });
 
   const { t } = useI18n();
 
-  const referendum = useUnit(referendumDetailsModel.$referendum);
-  const pendingReferendum = useUnit(referendumDetailsModel.$pending);
+  const referendum = useUnit(referendumDetails.$referendum);
+  const pendingReferendum = useUnit(referendumDetails.$pending);
 
   const loadingState = pendingReferendum && nullable(referendum);
 
@@ -49,14 +50,14 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 </Card>
               </Box>
               <Box width="350px" shrink={0} gap={4}>
-                <WalletVotingInfo referendumId={referendumId} />
+                <Slot id={additionalInfoSlot} props={{ referendumId }} />
                 <Card>
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
                     <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
                     <Threshold referendum={referendum} pending={loadingState} />
-                    <VotingButtons referendumId={referendumId} />
+                    <Slot id={referendumActionsSlot} props={{ referendumId }} />
                   </Box>
                 </Card>
                 <Card>

@@ -20,7 +20,7 @@ const isCompleted = (referendum: Referendum): referendum is CompletedReferendum 
 const getOngoingReferendums = (referendums: Referendum[]) => referendums.filter(isOngoing);
 const getCompletedReferendums = (referendums: Referendum[]) => referendums.filter(isCompleted);
 
-const isReferendumInTrack = (selectedTrackIds: TrackId[], referendum: Referendum) => {
+function isReferendumInTrack(selectedTrackIds: TrackId[], referendum: Referendum) {
   if (selectedTrackIds.length === 0) {
     return true;
   }
@@ -30,16 +30,16 @@ const isReferendumInTrack = (selectedTrackIds: TrackId[], referendum: Referendum
   }
 
   return selectedTrackIds.includes(referendum.track);
-};
+}
 
 // waiting for deposit, deciding, passing
-const getOperationStatus = (referendum: OngoingReferendum) => {
+function getOperationStatus(referendum: OngoingReferendum) {
   if (!referendum.decisionDeposit) return 'no_deposit';
 
   if (referendum.deciding) return 'no_deposit';
 
   return 'deciding';
-};
+}
 
 export const referendumService = {
   isOngoing,

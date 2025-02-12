@@ -10,15 +10,15 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { votingFeatureStatus } from './feature';
-import { votingStatusModel } from './votingStatus';
+import { fellowshipVotingFeature } from './feature';
+import { votingStatus } from './votingStatus';
 
-const gate = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
+const flow = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
 
-const $vote = gate.state.map(({ vote }) => vote);
+const $vote = flow.state.map(({ vote }) => vote);
 
 const { $api, $chain, $wallets } = reshape({
-  source: votingFeatureStatus.input,
+  source: fellowshipVotingFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
@@ -28,10 +28,10 @@ const { $api, $chain, $wallets } = reshape({
 
 const $coreTx = combine(
   {
-    input: votingFeatureStatus.input,
-    account: votingStatusModel.$votingAccount,
-    referendum: votingStatusModel.$referendum,
-    member: votingStatusModel.$currentMember,
+    input: fellowshipVotingFeature.input,
+    account: votingStatus.$votingAccount,
+    referendum: votingStatus.$referendum,
+    member: votingStatus.$currentMember,
     vote: $vote,
   },
   ({ input, referendum, account, member, vote }) => {
@@ -50,7 +50,7 @@ const $coreTx = combine(
   },
 );
 
-const $votingWallet = combine($wallets, votingStatusModel.$votingAccount, (wallets, account) => {
+const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, account) => {
   if (nullable(account)) return null;
 
   return wallets.find(w => w.id === account.walletId) ?? null;
@@ -62,7 +62,7 @@ const { $fee, $wrappedTx, $txWrappers } = createTxStore({
   $wallets,
   $chain,
   $coreTx,
-  $account: votingStatusModel.$votingAccount,
+  $account: votingStatus.$votingAccount,
 });
 
 // Signing
@@ -74,7 +74,7 @@ sample({
   clock: sign,
   source: {
     transactions: $wrappedTx,
-    account: votingStatusModel.$votingAccount,
+    account: votingStatus.$votingAccount,
     chain: $chain,
   },
   fn: ({ transactions, account, chain }) => {
@@ -102,7 +102,7 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     transactions: $wrappedTx,
-    account: votingStatusModel.$votingAccount,
+    account: votingStatus.$votingAccount,
     chain: $chain,
   },
   filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
@@ -130,7 +130,7 @@ sample({
   clock: saveToBasket,
   source: {
     transactions: $wrappedTx,
-    account: votingStatusModel.$votingAccount,
+    account: votingStatus.$votingAccount,
     txWrappers: $txWrappers,
   },
   fn: ({ account, transactions, txWrappers }) => {
@@ -156,8 +156,8 @@ sample({
   target: basketOperations.addTransactions,
 });
 
-export const votingModel = {
-  gate,
+export const voting = {
+  flow,
   $fee,
   $wrappedTx,
   $txWrappers,

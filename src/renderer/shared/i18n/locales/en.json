@@ -309,11 +309,95 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
-    "evidence": {
-      "cardTitle": "Evidence"
-    },
     "salary": {
-      "cardTitle": "Salary"
+      "cardTitle": "Evidence & Salary",
+      "modalTitle": "Evidence & Salary",
+      "salary": "Salary",
+      "evidence": "Evidence",
+      "beneficiary": "Beneficiary",
+      "retentionEvidenceModalTitle": "Submit your retention evidence",
+      "promotionEvidenceModalTitle": "Submit your promotion evidence",
+      "retentionEvidenceModalDescription": "Please fill out the following form. Other attributes necessary for the evidence (your credentials, voting record, etc.) will be automatically gathered from the blockchain.",
+      "retentionLeft": "Retention evidence within:",
+      "retentionSubmit": "Submit evidence",
+      "retentionApplied": "Applied for retention:",
+      "retentionAppliedDescription": "Evidence submitted",
+      "retentionAlertTitle": "Retention",
+      "retentionAlertDescription": "To retain at your current rank, you must submit an evidence every 90 days. Ensure you submit it at least 15 days before the retention period ends to avoid automatic bump to a lower rank. ",
+      "promotionAppliedAlertTitle": "Promotion evidence is uploaded",
+      "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again — the previous one will be replaced.",
+      "promotionNextRank": "Next promotion",
+      "promotionUntilNext": "Until the promotion opportunity:",
+      "promotionReadyToApply": "Ready to apply for a promotion",
+      "promotionRankHelpLabel": "What is expected from Rank {rank} ({name})",
+      "promotionReadManifesto": "Read manifesto",
+      "promotionHelpRank1": "<li>Provide three examples of meaningful protocol contributions.</li><li>Actively design a deployable or future protocol component at PRP² standards.</li><li>Assist in analysis, formalization, or implementation at peer-reviewed or PRP standards.</li><li>Know Polkadot’s key goals and principles.</li><li>Examples: fixing key issues, enabling network fixes, proposing innovations, or improving protocol design.</li>",
+      "promotionHelpRank2": "<li>Lead formalization, implementation, or analysis of a major protocol component, with peer-reviewed publication or justified exception.</li><li>Publish at least one long-form semi-technical article on Polkadot.</li>",
+      "promotionHelpRank3": "<li>In-person review on contributions.</li><li>Defend Polkadot's role confidently.</li><li>Advocate via articles, social media, or events.</li><li>Share knowledge: forums, talks, or platforms.</li><li>Lead protocol design or implementation with review or deployment.</li>",
+      "promotionHelpRank4": "<li>Play a key role in creating and formalizing a major protocol component, with formalization in a peer-reviewed publication or deployment in the protocol after expert code review.</li><li>Promote or defend Polkadot outside the ecosystem through a public presentation or notable media (e.g., journal or news).</li>",
+      "promotionHelpRank5": "<li>Publish a long-form article on relevant technology beyond Polkadot.</li><li>Lead ideation, design, and formalization or prototyping of a major component.</li><li>Contribute to the creation of three other major components.</li><li>Assist in shaping the long-term technical roadmap through advocacy, research, or analysis.</li>",
+      "promotionHelpRank6": "<li>Lead the design and implementation of a major protocol innovation.</li><li>Publish at least three long-form articles on relevant technology beyond Polkadot.</li><li>Discuss: What have you learnt from this individual which you might ultimately find useful in your efforts to help Polkadot succeed?</li>",
+      "promotionHelpRank7": "<li>Deepened understanding of Polkadot’s philosophy through discussion, literature parallels, or expert discourse.</li><li>Delivered major presentations on Polkadot to peers from other ecosystems or industries.</li><li>Discuss: Does the wider academic community or industry tend to learn from this individual (even if the individual did not discover this knowledge themselves)?</li>",
+      "promotionHelpRank8": "<li>Publish a canonical article on Polkadot’s philosophical principles.</li><li>Publish an industry-recognized article on a relevant innovation beyond Polkadot.</li><li>Be widely recognized as an intellectual leader beyond the Polkadot ecosystem.</li><li>Discuss: How did this individual's idea or invention become adopted in the wider academic community or industry?</li>",
+      "promotionHelpRank9": "<li>Generally recognised as a philosophical, social, artistic, political and/or technological heavyweight outside of blockchain or crypto.</li><li>Discuss: what outstanding service did the individual provide to the Polkadot network?</li>",
+      "salaryInfo": {
+        "beneficiary": "Beneficiary",
+        "requestSalaryCall": "Request a {salary} salary within:",
+        "requestSalary": "Request",
+        "requestSalarySuccess": "Salary request was completed successfully.",
+        "payoutSalary": "Withdraw",
+        "payoutSalaryCall": "Payout a {salary} salary within:",
+        "payoutSalarySuccess": "Salary payout was completed successfully."
+      },
+      "salaryRequest": "Request salary on",
+      "salaryPayout": "Request payout on",
+      "promotionTitle": "Request promotion on",
+      "evidenceForm": {
+        "uploadError": "Upload error",
+        "areas": {
+          "label": "Areas of expertise and interest",
+          "placeholder": "Enter areas",
+          "required": "Areas are required"
+        },
+        "evidence": {
+          "label": "Evidence (document hash, url, etc.)",
+          "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
+          "required": "Evidence are required"
+        },
+        "comments": {
+          "label": "Comments",
+          "placeholder": "Enter comments about how your retention period went",
+          "required": "Comments are required"
+        }
+      },
+      "submitEvidenceConfirm": {
+        "wish": "Wish",
+        "evidence": "Evidence"
+      }
+    },
+    "profile": {
+      "modalTitle": "Profile",
+      "fellow": "Fellow",
+      "active": "Active",
+      "activeSalary": "Active salary",
+      "passiveSalary": "Passive salary",
+      "activity": "Activity",
+      "setActive": {
+        "title": "Set active status on",
+        "isActive": "Active",
+        "activeTrue": "Yes",
+        "activeFalse": "No"
+      },
+      "activityFeed": {
+        "activeTrue": "Status active",
+        "activeFalse": "Status passive",
+        "imported": "Imported to rank {rank}",
+        "promoted": "Promoted to rank {rank}",
+        "demoted": "Demoted to rank {rank}",
+        "proven": "Proven at rank {rank}",
+        "requested": "Salary requested",
+        "paid": "Salary"
+      }
     },
     "details": {
       "noDetails": "Details not found"
@@ -327,6 +411,50 @@
     },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
+    "tasks": {
+      "cardTitle": "Actions Required",
+      "skip": "Skip for now",
+      "emptyTitle": "All tasks completed",
+      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "reviewBasket_one": "Confirm {count} decision",
+      "reviewBasket_other": "Confirm {count} decisions",
+      "task": {
+        "requestSalary": {
+          "title": "Request your salary",
+          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to submit your request by {endDate} to receive your payout on time.",
+          "request": "Request"
+        },
+        "requestPayout": {
+          "title": "Withdraw your salary",
+          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
+          "request": "Withdraw"
+        },
+        "promotionVoting": {
+          "title": "Review promotion evidence"
+        },
+        "retentionVoting": {
+          "title": "Review retention evidence"
+        },
+        "anyReferendum": {
+          "title": "Review referendum",
+          "viewEvidence": "View <a>the full evidence</a>"
+        }
+      }
+    },
+    "activityFeed": {
+      "lastActivityCardTitle": "Last activity",
+      "record": {
+        "activeChanged": "changed his status to {status}",
+        "promoted": "has been promoted to rank {rank}",
+        "demoted": "has been bumped to rank {rank}",
+        "proven": "proved his rank {rank}",
+        "imported": "has been imported with rank {rank}",
+        "submittedRetention": "submitted evidence with a wish to retention",
+        "submittedPromotion": "submitted evidence with a wish to promotion"
+      }
+    },
     "members": {
       "active": "Active",
       "emptyList": "There is no members",
@@ -401,6 +529,8 @@
       "cancelButton": "Cancel",
       "backButton": "Back",
       "closeButton": "Close",
+      "submitButton": "Submit",
+      "applyButton": "Apply",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
@@ -1607,6 +1737,8 @@
     }
   },
   "time": {
+    "weeks_one": "{ count } week",
+    "weeks_other": "{ count } weeks",
     "days_one": "{ count } day",
     "days_other": "{ count } days",
     "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",

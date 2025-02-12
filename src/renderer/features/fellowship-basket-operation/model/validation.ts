@@ -31,25 +31,25 @@ sample({
       feeMap,
     };
   },
-  target: collectiveVoteValidateModel.events.validationStarted,
+  target: collectiveVoteValidateModel.validate,
 });
 
 sample({
-  clock: collectiveVoteValidateModel.events.validationStarted,
+  clock: collectiveVoteValidateModel.validate,
   source: $pendingTxs,
   fn: (pendingTxs, tx) => addUnique(pendingTxs, tx.id),
   target: $pendingTxs,
 });
 
 sample({
-  clock: collectiveVoteValidateModel.output.txValidated,
+  clock: collectiveVoteValidateModel.validate.doneData,
   source: $pendingTxs,
   fn: (pendingTxs, { id }) => removeFromCollection(pendingTxs, id),
   target: $pendingTxs,
 });
 
 sample({
-  clock: collectiveVoteValidateModel.output.txValidated,
+  clock: collectiveVoteValidateModel.validate.doneData,
   source: $invalidTxs,
   fn: (txs, { id, result }) => {
     const invalidTxs = new Map(txs);
