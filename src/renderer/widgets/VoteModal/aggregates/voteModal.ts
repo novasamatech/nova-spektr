@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type AccountVote, type Address, type BasketTransaction, type OngoingReferendum } from '@/shared/core';
+import { type AccountVote, type Address, type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
@@ -76,8 +76,7 @@ sample({
   fn: ({ account, transaction, txWrappers }) => {
     if (!account || !transaction) return [];
 
-    // @ts-expect-error TODO fix id field
-    const tx: BasketTransaction = {
+    const tx = {
       initiatorWallet: account.walletId,
       coreTx: transaction.coreTx,
       txWrappers,
