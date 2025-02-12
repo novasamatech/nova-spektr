@@ -97,7 +97,7 @@ sample({
 sample({
   clock: prepareCollectiveVoteDataFx.doneData,
   fn: data => [data],
-  target: fellowshipVotingConfirmModel.events.fillConfirm,
+  target: fellowshipVotingConfirmModel.events.addConfirms,
 });
 
 export const confirm = {

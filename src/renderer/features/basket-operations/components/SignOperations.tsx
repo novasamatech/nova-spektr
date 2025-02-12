@@ -4,7 +4,7 @@ import { type BasketTransaction, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { HeaderTitleText } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider } from '@/features/operations/OperationsConfirm';
@@ -41,7 +41,9 @@ export const SignOperations = () => {
           >
             {transactions.map((t) => (
               <ConfirmSlider.Item key={t.id}>
-                <Slot id={confirmTitleSlot} props={{ operation: t }} />
+                <Box padding={5}>
+                  <Slot id={confirmTitleSlot} props={{ operation: t }} />
+                </Box>
                 <Slot id={confirmDetailsSlot} props={{ operation: t }} />
               </ConfirmSlider.Item>
             ))}

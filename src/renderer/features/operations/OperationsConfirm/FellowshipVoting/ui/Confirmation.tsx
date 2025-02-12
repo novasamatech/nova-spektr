@@ -39,7 +39,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 px-5 py-4">
+    <div className="flex w-full flex-col items-center gap-4 px-5 py-4">
       <VotingConfirmation
         account={confirm.accounts.initiator}
         asset={confirm.meta.asset}
