@@ -15,14 +15,17 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
+import { basketOperationsFeature } from '@/features/basket-operations';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
+import { fellowshipBasketOperationFeature } from '@/features/fellowship-basket-operation';
 import { fellowshipEvidenceFeature } from '@/features/fellowship-evidence';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
+import { governanceBasketOperationFeature } from '@/features/governance-basket-operation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
 import { importDBFeature } from '@/features/import-db';
@@ -30,10 +33,13 @@ import { multisigOperationDetailsFeature } from '@/features/multisig-operation-d
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
+import { proxyBasketOperationFeature } from '@/features/proxy-basket-operation';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
+import { stakingBasketOperationFeature } from '@/features/staking-basket-operation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { stakingOperationDetailFeature } from '@/features/staking-operation-details';
+import { transferBasketOperationFeature } from '@/features/transfer-basket-operation';
 import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
 import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletMultisigFeature } from '@/features/wallet-multisig';
@@ -127,6 +133,13 @@ export const bootstrap = () => {
     proxyOperationDetailFeature,
     stakingOperationDetailFeature,
     transferOperationDetailFeature,
+
+    basketOperationsFeature,
+    transferBasketOperationFeature,
+    stakingBasketOperationFeature,
+    governanceBasketOperationFeature,
+    proxyBasketOperationFeature,
+    fellowshipBasketOperationFeature,
 
     importDBFeature,
   ]);

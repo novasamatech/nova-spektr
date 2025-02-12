@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
-import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -225,19 +225,13 @@ sample({
   filter: ({ unlockData, coreTxs, txWrappers }) => {
     return !!unlockData && !!coreTxs && !!txWrappers;
   },
-  fn: ({ unlockData, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: unlockData!.shards[0].walletId,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
-
-    return txs;
-  },
+  fn: ({ unlockData, coreTxs, txWrappers }) =>
+    coreTxs!.map((coreTx) => ({
+      initiatorWallet: unlockData!.shards[0].walletId,
+      coreTx,
+      txWrappers,
+      groupId: Date.now(),
+    })),
   target: basketOperations.addTransactions,
 });
 

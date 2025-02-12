@@ -2,7 +2,6 @@ import { combine, createEvent, createStore, restore, sample, split } from 'effec
 import { spread } from 'patronum';
 
 import {
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type MultisigTxWrapper,
@@ -453,9 +452,9 @@ sample({
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: store!.account.walletId,
-      coreTx,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+    };
 
     return [tx];
   },

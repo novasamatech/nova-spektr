@@ -6,26 +6,21 @@ export type BasketTransaction = {
   initiatorWallet: ID;
   coreTx: Transaction;
   txWrappers: TxWrapper[];
-  error?: BasketError;
+  error?: ChainError | ClientError;
   groupId?: number;
 };
 
-const enum ErrorType {
-  CLIENT = 'client',
-  CHAIN = 'chain',
-}
-
 interface BasketError {
-  type: ErrorType;
+  type: 'chain' | 'client';
   message: string;
 }
 
 export interface ChainError extends BasketError {
-  type: ErrorType.CHAIN;
+  type: 'chain';
   dateCreated: number;
 }
 
 export interface ClientError extends BasketError {
-  type: ErrorType.CLIENT;
+  type: 'client';
   args?: Record<string, any>;
 }

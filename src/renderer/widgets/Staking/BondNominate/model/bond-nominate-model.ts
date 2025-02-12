@@ -4,7 +4,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import {
-  type BasketTransaction,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
@@ -424,19 +423,14 @@ sample({
   filter: ({ store, coreTxs, txWrappers }) => {
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) => {
-    const txs = coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: store!.wallet.id,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    );
+  fn: ({ store, coreTxs, txWrappers }) =>
+    coreTxs!.map((coreTx) => ({
+      initiatorWallet: store!.wallet.id,
+      coreTx,
+      txWrappers,
+      groupId: Date.now(),
+    })),
 
-    return txs;
-  },
   target: basketOperations.addTransactions,
 });
 
