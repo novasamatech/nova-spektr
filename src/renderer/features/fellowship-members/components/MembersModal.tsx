@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
@@ -20,13 +21,14 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
   const members = useUnit(membersModel.$list);
   const identities = useUnit(identityModel.$identity);
   const input = useUnit(fellowshipMembersFeature.input);
+  const { list } = useDeferredList({ list: members });
 
   const chain = input?.chain ?? null;
 
   const filteredMembers = useMemo(() => {
     return performSearch({
       query: deferredQuery,
-      records: members,
+      records: list,
       getMeta: member => ({
         address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
         name: identities[member.accountId]?.name ?? '',
@@ -36,7 +38,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
         address: 0.5,
       },
     });
-  }, [members, chain, deferredQuery]);
+  }, [list, chain, deferredQuery]);
 
   return (
     <Modal size="md" height="full">

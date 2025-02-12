@@ -4,7 +4,7 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type SalaryClaimState = z.infer<typeof salaryClaimState>;
 export const salaryClaimState = pjsSchema.enumValue({
-  Nothing: z.undefined(),
+  Nothing: z.unknown(),
   Registered: pjsSchema.u128,
   Attempted: pjsSchema.object({
     registered: pjsSchema.optional(pjsSchema.u128),
@@ -14,7 +14,10 @@ export const salaryClaimState = pjsSchema.enumValue({
 
 export type SalaryClaimantStatus = z.infer<typeof salaryClaimantStatus>;
 export const salaryClaimantStatus = pjsSchema.object({
-  lastActive: pjsSchema.blockHeight,
+  /**
+   * Last active cycle
+   */
+  lastActive: pjsSchema.u32,
   status: salaryClaimState,
 });
 

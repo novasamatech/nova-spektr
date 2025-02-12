@@ -6,6 +6,7 @@ import { type AnyAccount, type AnyAccountDraft, type ChainAccount, type Universa
 
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
+const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
 
 function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): boolean {
   const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
@@ -47,6 +48,10 @@ function hasPermissionToMakeActions(account: AnyAccount) {
   return accountActionPermissionAnyOf.check({ account });
 }
 
+function canSignMultipleTransactions(account: AnyAccount) {
+  return accountCanSignMultipleAnyOf.check({ account });
+}
+
 /**
  * ATTENTION! This method is the source of stable id for different types of
  * account. If you want to change implementation you should also write db
@@ -67,12 +72,15 @@ function uniqId(account: AnyAccountDraft) {
 export const accountsService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
+  accountCanSignMultipleAnyOf,
 
   uniqId,
 
   isChainAccount,
   isUniversalAccount,
   isAccountAvailableOnChain,
+
+  canSignMultipleTransactions,
 
   hasPermissionToMakeActions,
 

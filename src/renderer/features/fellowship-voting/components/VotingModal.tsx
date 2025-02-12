@@ -12,9 +12,9 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { votingFeatureStatus } from '../model/feature';
-import { votingModel } from '../model/voting';
-import { votingStatusModel } from '../model/votingStatus';
+import { fellowshipVotingFeature } from '../model/feature';
+import { voting } from '../model/voting';
+import { votingStatus } from '../model/votingStatus';
 
 import { VotingConfirmation } from './VotingConfirmation';
 
@@ -27,17 +27,17 @@ type Props = {
 };
 
 export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
-  useGate(votingModel.gate, { vote });
+  useGate(voting.flow, { vote });
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
 
-  const input = useUnit(votingFeatureStatus.input);
-  const referendum = useUnit(votingStatusModel.$referendum);
-  const maxRank = useUnit(votingStatusModel.$maxRank);
-  const account = useUnit(votingStatusModel.$votingAccount);
-  const member = useUnit(votingStatusModel.$currentMember);
-  const fee = useUnit(votingModel.$fee);
+  const input = useUnit(fellowshipVotingFeature.input);
+  const referendum = useUnit(votingStatus.$referendum);
+  const maxRank = useUnit(votingStatus.$maxRank);
+  const account = useUnit(votingStatus.$votingAccount);
+  const member = useUnit(votingStatus.$currentMember);
+  const fee = useUnit(voting.$fee);
 
   useEffect(() => {
     setStep('confirm');
@@ -67,12 +67,12 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   };
 
   const handleSign = () => {
-    votingModel.sign();
+    voting.sign();
     setStep('sign');
   };
 
   const handleBasketSave = () => {
-    votingModel.saveToBasket();
+    voting.saveToBasket();
     setStep('basket');
   };
 

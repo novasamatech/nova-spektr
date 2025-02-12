@@ -1,10 +1,10 @@
-import { Filters, Search } from './components/Filter';
 import { Referendums } from './components/List';
+import { fellowshipReferendumsFeature } from './model/feature';
 
-export const fellowshipReferendumsFeature = {
+export { fellowshipReferendumsFeature };
+
+export const fellowshipReferendumsF = {
   views: {
     Referendums,
-    Filters,
-    Search,
   },
 };

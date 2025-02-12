@@ -1,15 +1,20 @@
 export {
   collectiveDomain,
   $collectiveStore,
-  membersService,
+  memberService,
   referendumService,
-  tracksService,
+  trackService,
   votingService,
-  members,
-  referendums,
+  salaryService,
+  evidenceService,
+  member,
+  referendum,
   referendumMeta,
-  tracks,
+  track,
   voting,
+  salary,
+  feed,
+  evidence,
 } from './init';
 
 export * as config from './configuration/inject';
@@ -43,3 +48,5 @@ export type { VotingTransaction } from './voting/types';
 export type { Member, CoreMember } from './members/types';
 
 export type { Vote } from './votingHistory/types';
+
+export type { FeedRecord } from './feed/types';

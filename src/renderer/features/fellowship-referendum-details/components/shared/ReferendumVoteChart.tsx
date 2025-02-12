@@ -8,7 +8,7 @@ import { FootnoteText } from '@/shared/ui';
 import { VoteChart } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
-import { referendumsDetailsFeatureStatus } from '../../model/feature';
+import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 };
 
 export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition }) => {
-  useGate(referendumsDetailsFeatureStatus.gate);
+  useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const { t } = useI18n();
 

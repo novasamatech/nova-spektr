@@ -1,3 +1,5 @@
+export { genericValidateModel } from './model/generic-validate-model';
+
 export { transferValidateModel } from './model/transfer-validate-model';
 
 export { addProxyValidateModel } from './model/add-proxy-validate-model';
@@ -16,6 +18,7 @@ export { delegateValidateModel } from './model/delegate-validate-model';
 export { revokeDelegationValidateModel } from './model/revoke-delegation-validate-model';
 export { removeVoteValidateModel } from './model/remove-vote-validate-model';
 export { collectiveVoteValidateModel } from './model/collective-vote-validate-model';
+export { collectiveSetActiveValidateModel } from './model/collective-set-active-validate-model';
 
 export { TransferRules } from './lib/transfer-rules';
 

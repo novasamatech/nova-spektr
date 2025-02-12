@@ -26,12 +26,12 @@ const {
   request: requestTracks,
 } = createDataSource<CollectivesStruct<Track[]>, RequestTracksParams, Track[]>({
   initial: {},
-  filter: ({ chainId, palletType }, store) => {
+  cache({ chainId, palletType }, store) {
     const value = pickNestedValue(store, palletType, chainId);
 
-    return nullable(value) || value.length === 0;
+    return nullable(value) || value.length === 0 ? false : value;
   },
-  fn: ({ api, palletType }) => {
+  fn({ api, palletType }) {
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
     return tracks.map(({ track, info }) => {
@@ -50,7 +50,7 @@ const {
       };
     });
   },
-  map: (store, { params, result }) => {
+  map(store, { params, result }) {
     return setNestedValue(store, params.palletType, params.chainId, result);
   },
 });
@@ -70,7 +70,7 @@ sample({
   target: [requestTracks, requestMaxRank],
 });
 
-export const tracksDomainModel = {
+export const track = {
   $list,
   $maxRank,
   fulfilled,

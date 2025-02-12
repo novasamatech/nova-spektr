@@ -2,13 +2,13 @@ import { sample } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
 
 export const votingHistoryFeatureStatus = createFeature({
   name: 'fellowship/voting history',
   enable: $features.map(({ fellowship }) => fellowship),
-  input: fellowshipNetworkFeature.model.network.$network,
+  input: fellowshipNetwork.$network,
   filter: input => {
     if (input.api.isConnected) return null;
 
@@ -21,7 +21,7 @@ export const votingHistoryFeatureStatus = createFeature({
 });
 
 sample({
-  clock: fellowshipNetworkFeature.model.network.$isActive,
-  filter: fellowshipNetworkFeature.model.network.$isActive,
+  clock: fellowshipNetwork.$isActive,
+  filter: fellowshipNetwork.$isActive,
   target: votingHistoryFeatureStatus.restore,
 });

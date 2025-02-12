@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { type AnyOfIdentifier } from './createAnyOf';
 import { type PipelineIdentifier } from './createPipeline';
 import { type SlotIdentifier, type SlotProps } from './createSlot';
 
@@ -48,4 +49,19 @@ export const usePipeline = <Value, Meta>(...[pipeline, value, meta]: UsePipeline
   useEffect(() => pipeline.updateHandlers.watch(update), []);
 
   return pipeline(value, fixedMeta);
+};
+
+export type UseAnyOfArguments<Value> =
+  IsVoid<Value> extends true
+    ? [anyOf: AnyOfIdentifier<Value>, value?: Value]
+    : [anyOf: AnyOfIdentifier<Value>, value: Value];
+
+export const useAnyOf = <Value,>(...[anyOf, value]: UseAnyOfArguments<Value>) => {
+  const [_, update] = useForceUpdate();
+  const fixedValue = value as Value;
+
+  // eslint-disable-next-line effector/no-watch
+  useEffect(() => anyOf.updateHandlers.watch(update), []);
+
+  return anyOf.check(fixedValue);
 };

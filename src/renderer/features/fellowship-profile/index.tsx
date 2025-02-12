@@ -1,9 +1,12 @@
 import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
 
-import { ProfileCard } from './components/ProfileCard';
+import { ProfileCard, additionalProfileCardInfoSlot } from './components/ProfileCard';
+import { profileInfoSlot } from './components/ProfileModal';
+import { SetActiveConfirmation } from './components/SetActiveConfirmation';
 import { fellowshipProfileFeature } from './model/feature';
+import { setActive } from './model/setActive';
 
-export { fellowshipProfileFeature };
+export { fellowshipProfileFeature, SetActiveConfirmation, setActive, profileInfoSlot, additionalProfileCardInfoSlot };
 
 fellowshipProfileFeature.inject(fellowshipHeaderCardsSlot, {
   order: 0,

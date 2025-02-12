@@ -12,7 +12,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { requestFromChain, requestFromSubQuery } from './source';
+import { requestFromChain, requestFromSubQuery } from './resource';
 import { type Vote } from './types';
 
 type RequestVotesParams = {
@@ -36,8 +36,9 @@ const { fulfilled, pending, request } = createDataSource<
 >({
   source: $source,
   target: $votes,
-  filter: ({ referendums }) => referendums.length > 0,
   fn: async ({ chainId, palletType, referendums }, { apis, chains }) => {
+    if (referendums.length === 0) return [];
+
     const api = apis[chainId];
     const chain = chains[chainId];
 
@@ -83,8 +84,10 @@ const { subscribe: subscribeAccountsVoting, unsubscribe: unsubscribeAccountsVoti
   VotingSubscribeParams,
   Vote
 >({
+  key({ palletType, chainId, accounts }) {
+    return `${palletType}-${chainId}-${accounts.join(',')}`;
+  },
   initial: $votes,
-
   fn({ palletType, api, accounts }, callback) {
     const number = z.string().transform(v => parseInt(v));
     const eventSchema = z.object({
@@ -131,7 +134,7 @@ const { subscribe: subscribeAccountsVoting, unsubscribe: unsubscribeAccountsVoti
   },
 });
 
-export const votingDomainModel = {
+export const voting = {
   $votes: readonly($votes),
 
   subscribeAccountsVoting,

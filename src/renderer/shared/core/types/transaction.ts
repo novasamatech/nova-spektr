@@ -51,6 +51,10 @@ export const enum TransactionType {
   EDIT_DELEGATION = 'edit_delegation',
 
   COLLECTIVE_VOTE = 'collective_vote',
+  COLLECTIVE_SET_ACTIVE = 'collective_core_set_active',
+  COLLECTIVE_SALARY_REQUEST = 'collective_salary_request',
+  COLLECTIVE_SALARY_PAYOUT = 'collective_salary_payout',
+  COLLECTIVE_SUBMIT_EVIDENCE = 'collective_submit_evidence',
 }
 
 export type SigningStatus =

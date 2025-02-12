@@ -1,16 +1,26 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react';
+import { expect, within } from '@storybook/test';
 
 import { Duration } from './Duration';
 
-export default {
+const meta: Meta<typeof Duration> = {
   title: 'v1/ui/Duration',
   component: Duration,
   parameters: { actions: { argTypesRegex: '^on.*' } },
-} as Meta<typeof Duration>;
+};
 
-const Template: StoryFn<typeof Duration> = (args) => <Duration {...args} />;
+export default meta;
 
-export const Primary = Template.bind({});
-Primary.args = {
-  seconds: '1',
+type Story = StoryObj<typeof Duration>;
+
+export const Primary: Story = {
+  args: {
+    seconds: 1,
+  },
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const element = await canvas.findByTestId('Duration');
+
+    expect(element.textContent).toBe('1 second');
+  },
 };

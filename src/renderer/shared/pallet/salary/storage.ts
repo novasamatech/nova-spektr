@@ -29,7 +29,7 @@ export const storage = {
   claimant: (type: PalletType, api: ApiPromise, accounts: AccountId[]) => {
     const schema = pjsSchema.vec(pjsSchema.optional(salaryClaimantStatus));
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'claimant').entries(accounts)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'claimant').multi(accounts)).then(schema.parse);
   },
 
   /**
@@ -38,6 +38,6 @@ export const storage = {
   status: (type: PalletType, api: ApiPromise) => {
     const schema = pjsSchema.optional(salaryStatusType);
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'statis')()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, api, 'status')()).then(schema.parse);
   },
 };

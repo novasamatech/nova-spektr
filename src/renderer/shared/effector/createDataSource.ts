@@ -27,7 +27,7 @@ type FactoryParams<Params, Source, Response, Target> = Units<Source, Target> & {
   fn(params: Params, source: Source): Response | Promise<Response>;
   map(source: Source, params: { params: Params; result: Response }): Target;
   mutateParams?(params: Params, store: Source): Params;
-  filter?(params: Params, store: Source): boolean;
+  cache?(params: Params, store: Source): Response | false;
 };
 
 export const createDataSource = <Source, Params, Response = Source, Target = Source>({
@@ -36,7 +36,7 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   target,
   fn,
   map,
-  filter = () => true,
+  cache = () => false,
   mutateParams = params => params,
 }: FactoryParams<Params, Source, Awaited<Response>, Target>) => {
   const empty = Symbol();
@@ -63,12 +63,13 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
     source: $source,
     effect: (source: Source, params: Params) => {
       const mutatedParams = mutateParams(params, source);
+      const cached = cache(mutatedParams, source);
 
-      if (filter(mutatedParams, source)) {
-        return fx({ params: mutatedParams, source }).then(() => undefined);
+      if (cached) {
+        return fx({ params: mutatedParams, source });
       }
 
-      return Promise.resolve(undefined);
+      return fx({ params: mutatedParams, source });
     },
   });
 
