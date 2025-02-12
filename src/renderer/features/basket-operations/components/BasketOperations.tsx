@@ -1,11 +1,11 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { type BasketTransaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
-import { selectOperations } from '../model/select';
+import { basketOperations } from '@/aggregates/basket-operations';
 import { signOperations } from '../model/sign';
 
 import { EmptyBasket } from './EmptyBasket';
@@ -21,11 +21,10 @@ export const operationTitleSlot = createSlot<{ operation: BasketTransaction }>()
 
 export const BasketOperations = ({ operations }: Props) => {
   const { t } = useI18n();
-  useGate(selectOperations.flow);
 
-  const selectedTxs = useUnit(selectOperations.$selectedTxs);
+  const selected = useUnit(basketOperations.$selected);
 
-  const isSignAvailable = selectedTxs.length > 0;
+  const isSignAvailable = selected.length > 0;
 
   return (
     <>
@@ -33,12 +32,16 @@ export const BasketOperations = ({ operations }: Props) => {
         <div className="flex w-[736px] items-center justify-between">
           <div className="ml-3">
             <Checkbox
-              checked={operations.length > 0 && operations.length === selectedTxs.length}
-              semiChecked={selectedTxs.length > 0 && operations.length !== selectedTxs.length}
-              onChange={() => selectOperations.selectTxs(operations)}
+              checked={operations.length > 0 && operations.length === selected.length}
+              semiChecked={selected.length > 0 && operations.length !== selected.length}
+              onChange={(value) => {
+                value
+                  ? basketOperations.select(operations.map((x) => x.id))
+                  : basketOperations.deselect(operations.map((x) => x.id));
+              }}
             >
               <FootnoteText className="text-text-secondary">
-                {t('basket.selectedStatus', { count: operations.length, selected: selectedTxs.length })}
+                {t('basket.selectedStatus', { count: operations.length, selected: selected.length })}
               </FootnoteText>
             </Checkbox>
           </div>
@@ -47,9 +50,9 @@ export const BasketOperations = ({ operations }: Props) => {
               size="sm"
               className="w-[125px]"
               disabled={!isSignAvailable}
-              onClick={() => signOperations.events.flowStarted({ transactions: selectedTxs, feeMap: {} })}
+              onClick={() => signOperations.events.flowStarted({ transactions: selected, feeMap: {} })}
             >
-              {t(selectedTxs.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
+              {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
             </Button>
           </div>
         </div>
@@ -62,12 +65,12 @@ export const BasketOperations = ({ operations }: Props) => {
               <li key={operation.id} className="flex gap-x-4 bg-block-background-default px-3">
                 <div className="flex items-center justify-center">
                   <Checkbox
-                    checked={selectedTxs.includes(operation)}
+                    checked={selected.includes(operation)}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
 
-                      selectOperations.selectTx(operation);
+                      basketOperations.toggle(operation.id);
                     }}
                   />
                 </div>
@@ -88,7 +91,7 @@ export const BasketOperations = ({ operations }: Props) => {
 
       {operations.length === 0 && <EmptyBasket />}
 
-      {selectedTxs.length > 1 ? <SignOperations /> : <SignOperation />}
+      {selected.length > 1 ? <SignOperations /> : <SignOperation />}
     </>
   );
 };

@@ -3,7 +3,7 @@ import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
 import { tasks } from '../model/tasks';
@@ -19,7 +19,9 @@ export const Tasks = memo(() => {
 
   if (nullable(input)) {
     return (
-      <div className="col-span-2 flex h-[504px] flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background" />
+      <div className="col-span-2 flex h-[504px] flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
+        <Loader color="primary" />
+      </div>
     );
   }
 

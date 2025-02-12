@@ -408,6 +408,7 @@ module.exports = {
         // TODO error
         '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
 
+        '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
 
         'no-restricted-syntax': [

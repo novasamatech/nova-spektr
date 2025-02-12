@@ -52,7 +52,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
   type ConfirmMap = Record<ID, ConfirmItem<Input>>;
 
   const fillConfirm = createEvent<Input[]>();
-  const addConfirms = createEvent<Input>();
+  const addConfirms = createEvent<Input[]>();
   const replaceWithConfirm = createEvent<Input>();
   const resetConfirm = createEvent();
 
@@ -113,7 +113,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
   sample({
     clock: addConfirms,
     source: $store,
-    fn: (store, input) => [...store, input],
+    fn: (store, input) => store.concat(input),
     target: $store,
   });
 

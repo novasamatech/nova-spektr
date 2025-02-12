@@ -75,12 +75,11 @@ module.exports = {
           return;
         }
 
-        const { source } = node;
-        if (!isLiteral(source)) {
+        if (!isLiteral(node.source)) {
           return;
         }
 
-        const requestPath = source.value.toString();
+        const requestPath = node.source.value.toString();
 
         // Child import
         if (requestPath.startsWith('./')) {
@@ -132,9 +131,9 @@ module.exports = {
             {
               desc: `Replace with relative path ${replacedPath}`,
               fix(fixer) {
-                const stringQ = source.raw.charAt(0);
+                const stringQ = node.source.raw.charAt(0);
 
-                return fixer.replaceText(source, `${stringQ}${replacedPath}${stringQ}`);
+                return fixer.replaceText(node.source, `${stringQ}${replacedPath}${stringQ}`);
               },
             },
           ],
