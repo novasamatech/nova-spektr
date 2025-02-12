@@ -33,7 +33,6 @@ transferBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   if (isTransferTransaction(transaction)) {
     return (
       <TransferOperationTitle
-        operation={operation}
         coreTx={transaction}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
@@ -45,7 +44,6 @@ transferBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
   if (isXcmTransaction(transaction)) {
     return (
       <XcmTransferOperationTitle
-        operation={operation}
         coreTx={transaction}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}

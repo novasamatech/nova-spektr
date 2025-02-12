@@ -9,6 +9,7 @@ import { selectOperations } from '../model/select';
 import { signOperations } from '../model/sign';
 
 import { EmptyBasket } from './EmptyBasket';
+import { RemoveOperation } from './RemoveOperation';
 import { SignOperation } from './SignOperation';
 import { SignOperations } from './SignOperations';
 
@@ -32,7 +33,7 @@ export const BasketOperations = ({ operations }: Props) => {
         <div className="flex w-[736px] items-center justify-between">
           <div className="ml-3">
             <Checkbox
-              checked={operations.length === selectedTxs.length}
+              checked={operations.length > 0 && operations.length === selectedTxs.length}
               semiChecked={selectedTxs.length > 0 && operations.length !== selectedTxs.length}
               onChange={() => selectOperations.selectTxs(operations)}
             >
@@ -58,11 +59,7 @@ export const BasketOperations = ({ operations }: Props) => {
         <div className="scrollbar-stable mt-4 flex w-full flex-col items-center gap-4 overflow-y-auto">
           <ul className="flex w-[736px] flex-col gap-y-1.5 divide-y rounded-md">
             {operations.map((operation) => (
-              <li
-                key={operation.id}
-                className="flex gap-x-4 bg-block-background-default px-3"
-                onClick={() => signOperations.events.flowStarted({ transactions: [operation], feeMap: {} })}
-              >
+              <li key={operation.id} className="flex gap-x-4 bg-block-background-default px-3">
                 <div className="flex items-center justify-center">
                   <Checkbox
                     checked={selectedTxs.includes(operation)}
@@ -75,7 +72,14 @@ export const BasketOperations = ({ operations }: Props) => {
                   />
                 </div>
 
-                <Slot id={operationTitleSlot} props={{ operation }} />
+                <div
+                  className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden"
+                  onClick={() => signOperations.events.flowStarted({ transactions: [operation], feeMap: {} })}
+                >
+                  <Slot id={operationTitleSlot} props={{ operation }} />
+                </div>
+
+                <RemoveOperation operation={operation} />
               </li>
             ))}
           </ul>

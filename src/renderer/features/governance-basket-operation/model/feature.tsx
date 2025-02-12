@@ -86,7 +86,6 @@ governanceBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
       <GovernanceOperationTitle
         title={t(title)}
         icon={icon}
-        operation={operation}
         chainId={transaction.chainId}
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}

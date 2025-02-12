@@ -65,7 +65,6 @@ proxyBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
         validating={pendingTxs.includes(operation.id)}
         errorText={operation.error?.message}
         error={operation.error}
-        operation={operation}
       />
     );
   }
