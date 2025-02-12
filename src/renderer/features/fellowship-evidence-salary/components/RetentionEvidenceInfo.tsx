@@ -47,7 +47,7 @@ export const RetentionEvidenceInfo = memo(() => {
             </SmallTitleText>
           </Box>
           <EvidenceFormModal wish="Retention">
-            <Button>{t('fellowship.salary.retentionSubmit')}</Button>
+            <Button disabled>{t('fellowship.salary.retentionSubmit')}</Button>
           </EvidenceFormModal>
         </Box>
       )}

@@ -52,7 +52,7 @@ export const PromotionInfo = memo(() => {
           </Box>
           {!hasPromotionEvidence && timeLeft === 0 && (
             <EvidenceFormModal wish="Promotion">
-              <Button>{t('general.button.applyButton')}</Button>
+              <Button disabled>{t('general.button.applyButton')}</Button>
             </EvidenceFormModal>
           )}
         </Box>
