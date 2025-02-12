@@ -5,10 +5,10 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
+import { basketUtils } from '@/entities/basket';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { NavItem, navigationBottomLinksSlot } from '@/features/app-shell';
-import { basketUtils } from '@/features/operations/OperationsConfirm/lib/basket-utils';
 
 export const basketNavigationFeature = createFeature({
   name: 'basket/navigation',
@@ -19,23 +19,23 @@ basketNavigationFeature.inject(navigationBottomLinksSlot, {
   order: 0,
   render() {
     const { t } = useI18n();
-    const wallet = useUnit(walletSelect.$selectedWallet);
+    const accounts = useUnit(walletSelect.$selectedAccounts);
     const basket = useUnit(basketOperations.$list);
 
-    if (!wallet || !basketUtils.isBasketAvailable(wallet)) {
+    const isAvailable = accounts.some(basketUtils.isBasketAvailableForAccount);
+
+    if (!isAvailable) {
       return null;
     }
+
+    const availableOperations = basket.filter((tx) => accounts.some((a) => a.walletId === tx.initiatorWallet));
 
     return (
       <NavItem
         icon="operations"
         title={t('navigation.basketLabel')}
         link={Paths.BASKET}
-        badge={
-          <BodyText className="ml-auto text-text-tertiary">
-            {basket.filter((tx) => tx.initiatorWallet === wallet?.id).length || ''}
-          </BodyText>
-        }
+        badge={<BodyText className="ml-auto text-text-tertiary">{availableOperations.length || ''}</BodyText>}
       ></NavItem>
     );
   },
