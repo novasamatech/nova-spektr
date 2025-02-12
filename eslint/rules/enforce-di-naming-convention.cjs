@@ -15,6 +15,8 @@ const IDENTIFIERS_SUFFIXES = {
   createAnyOf: 'AnyOf',
 };
 
+const DEFAULT_IMPORT_SOURCES = [/@\/shared\/di/];
+
 const fixName = (name, suffix) => camelCase(name.replace(new RegExp(suffix, 'gi'), '').replace(/\$/g, '') + suffix);
 
 /**
@@ -57,7 +59,7 @@ module.exports = {
       ...IDENTIFIERS_SUFFIXES,
       ...(settings.identifierCreators || {}),
     };
-    const importSources = [/@\/shared\/di/, ...(settings.importSources || [])];
+    const importSources = [...DEFAULT_IMPORT_SOURCES, ...(settings.importSources || [])];
 
     return {
       VariableDeclarator(node) {

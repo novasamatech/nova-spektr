@@ -13,10 +13,11 @@ import { VotingConfirmation } from './components/VotingConfirmation';
 import { VotingModal } from './components/VotingModal';
 import { WalletVotingInfo } from './components/WalletVotingInfo';
 import { fellowshipVotingFeature } from './model/feature';
+import { fellowship } from './model/fellowship';
 import { voting } from './model/voting';
 import { votingStatus } from './model/votingStatus';
 
-export { fellowshipVotingFeature, VotingConfirmation, votingStatus };
+export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
 
 fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendumId }) => {
   useFlow(votingStatus.flow, { referendumId });

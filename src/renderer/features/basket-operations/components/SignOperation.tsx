@@ -17,7 +17,9 @@ export const SignOperation = () => {
   const isModalOpen = useUnit(signOperations.$isModalOpen);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
-  const operation = transactions[0];
+  const operation = transactions.at(0);
+
+  if (!operation) return null;
 
   if (signOperationsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={signOperations.output.flowFinished} />;

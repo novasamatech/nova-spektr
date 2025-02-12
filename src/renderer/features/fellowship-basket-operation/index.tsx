@@ -2,6 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
@@ -90,15 +91,23 @@ fellowshipBasketOperationFeature.inject(operationTitleSlot, ({ operation }) => {
 
 fellowshipBasketOperationFeature.inject(confirmTitleSlot, ({ operation }) => {
   const { t } = useI18n();
+  const input = useUnit(fellowshipBasketOperationFeature.input);
+
+  if (nullable(input)) return null;
+
   const transaction = basketOperationsService.getCoreTx(operation);
+  const chain = input.chains[transaction.chainId];
+  if (nullable(chain)) return null;
+  const asset = chain.assets.at(0);
+  if (nullable(asset)) return null;
 
   const title = getModalTitle(transaction);
 
   if (title) {
     return (
       <OperationTitle
-        className="m-3 justify-center"
-        title={t('operations.modalTitles.vote')}
+        className="justify-center"
+        title={t('fellowship.voting.title')}
         chainId={operation.coreTx.chainId}
       />
     );
