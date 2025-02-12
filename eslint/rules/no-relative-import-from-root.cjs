@@ -35,12 +35,11 @@ module.exports = {
 
     return {
       ImportDeclaration(node) {
-        const { source } = node;
-        if (!isLiteral(source)) {
+        if (!isLiteral(node.source)) {
           return;
         }
 
-        const requestPath = source.value.toString();
+        const requestPath = node.source.value.toString();
         // Not relative import to parent
         if (!requestPath.startsWith('../')) {
           return;
