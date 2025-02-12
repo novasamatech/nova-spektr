@@ -6,7 +6,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
-import { SearchInput } from '@/shared/ui-kit';
+import { Box, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -38,46 +38,45 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
   const shouldRenderList = !shouldRenderLoader && deferredItems.length > 0;
 
   return (
-    <div className="flex flex-col gap-6 pb-4 pt-6">
-      <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-      <div className="min-h-0">
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between px-2">
-            <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
-            <FootnoteText className="text-text-tertiary">
-              {t('governance.voteHistory.listColumnVotingPower')}
-            </FootnoteText>
-          </div>
-          <div className="flex flex-col gap-1">
-            {shouldRenderLoader && <VotingHistoryListPlaceholder />}
-            {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
-            {shouldRenderList &&
-              deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
-                return (
-                  <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-3 px-2 text-body">
-                    <div className="flex min-w-0 shrink grow items-center gap-1">
-                      <Address address={voter} title={name ?? ''} variant="truncate" showIcon />
-                      <AccountExplorers accountId={toAccountId(voter)} chain={chain} />
-                    </div>
-                    <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
-                      <BodyText className="whitespace-nowrap">
-                        {t('governance.voteHistory.totalVotesCount', {
-                          value: formatBalance(votingPower, asset.precision).formatted,
-                        })}
-                      </BodyText>
-                      <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                        {t('general.actions.multiply', {
-                          value: formatAsset(balance, asset),
-                          multiplier: conviction,
-                        })}
-                      </FootnoteText>
-                    </div>
+    <Box fitContainer>
+      <Box padding={[6, 5]} shrink={0}>
+        <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
+      </Box>
+
+      <Box direction="row" horizontalAlign="space-between" padding={[0, 5, 2]} shrink={0}>
+        <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnVotingPower')}</FootnoteText>
+      </Box>
+      <ScrollArea>
+        <div className="flex flex-col gap-1 px-3 pb-2">
+          {shouldRenderLoader && <VotingHistoryListPlaceholder />}
+          {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
+          {shouldRenderList &&
+            deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
+              return (
+                <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-3 px-2 text-body">
+                  <div className="flex min-w-0 shrink grow items-center gap-1">
+                    <Address address={voter} title={name ?? ''} variant="truncate" showIcon />
+                    <AccountExplorers accountId={toAccountId(voter)} chain={chain} />
                   </div>
-                );
-              })}
-          </div>
+                  <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
+                    <BodyText className="whitespace-nowrap">
+                      {t('governance.voteHistory.totalVotesCount', {
+                        value: formatBalance(votingPower, asset.precision).formatted,
+                      })}
+                    </BodyText>
+                    <FootnoteText className="whitespace-nowrap text-text-tertiary">
+                      {t('general.actions.multiply', {
+                        value: formatAsset(balance, asset),
+                        multiplier: conviction,
+                      })}
+                    </FootnoteText>
+                  </div>
+                </div>
+              );
+            })}
         </div>
-      </div>
-    </div>
+      </ScrollArea>
+    </Box>
   );
 });
