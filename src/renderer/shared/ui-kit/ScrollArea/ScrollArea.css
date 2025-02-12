@@ -4,6 +4,7 @@
   --scroll-area-top-fade: 0px;
   --scroll-area-bottom-fade: 0px;
 
+  contain: layout;
   mask-image: linear-gradient(
     to bottom,
     transparent 0px,
