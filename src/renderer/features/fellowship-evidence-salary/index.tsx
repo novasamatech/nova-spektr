@@ -3,10 +3,11 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
-import { hasActionRequestAnyOf, profileInfoSlot } from '@/features/fellowship-profile';
+import { additionalProfileCardInfoSlot, profileInfoSlot } from '@/features/fellowship-profile';
 import { payoutSalaryActionSlot, requestSalaryActionSlot } from '@/features/fellowship-tasks';
 import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
 
+import { DotIndicator } from './components/DotIndicator';
 import { EntrypointCard } from './components/EntrypointCard';
 import { PromotionInfo } from './components/PromotionInfo';
 import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation';
@@ -65,7 +66,7 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
   return <PromotionInfo />;
 });
 
-fellowshipSalaryFeature.inject(hasActionRequestAnyOf, () => {
+fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
   const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
-  return leftToPromotionPeriod === 0;
+  return leftToPromotionPeriod === 0 ? <DotIndicator /> : null;
 });

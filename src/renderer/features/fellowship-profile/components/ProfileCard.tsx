@@ -1,30 +1,29 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { createAnyOf, useAnyOf } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { memberService } from '@/domains/collectives';
+import { type Member, memberService } from '@/domains/collectives';
 import { ERROR } from '../constants';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
-export const hasActionRequestAnyOf = createAnyOf();
+export const additionalProfileCardInfoSlot = createSlot<{ member: Member }>();
 
 export const ProfileCard = memo(() => {
   const { t } = useI18n();
   const featureState = useUnit(fellowshipProfileFeature.state);
-  const featureInput = useUnit(fellowshipProfileFeature.input);
+  const input = useUnit(fellowshipProfileFeature.input);
   const member = useUnit(profile.$member);
   const identity = useUnit(profile.$identity);
   const pending = useUnit(profile.$pending);
   const isAccountExist = useUnit(profile.$isAccountExist);
-  const hasActionRequest = useAnyOf(hasActionRequestAnyOf);
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
   const disabled = !isAccountExist || nullable(member);
@@ -50,7 +49,7 @@ export const ProfileCard = memo(() => {
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
-                    {t('fellowship.tooltips.noAccount', { chain: featureInput?.chain.name || '' })}
+                    {t('fellowship.tooltips.noAccount', { chain: input?.chain.name || '' })}
                   </Tooltip.Content>
                 </Tooltip>
               </Box>
@@ -77,12 +76,12 @@ export const ProfileCard = memo(() => {
                   showIcon
                   iconSize={18}
                   title={identity?.name}
-                  address={toAddress(member.accountId, { prefix: featureInput?.chain.addressPrefix })}
+                  address={toAddress(member.accountId, { prefix: input?.chain.addressPrefix })}
                   hideAddress
                   variant="truncate"
                 />
 
-                {hasActionRequest && <div className="h-[9px] w-[9px] shrink-0 rounded-full bg-icon-warning" />}
+                <Slot id={additionalProfileCardInfoSlot} props={{ member }} />
 
                 {memberService.isCoreMember(member) && member.isActive && (
                   <FootnoteText className="text-text-positive">{t('fellowship.members.active')}</FootnoteText>
