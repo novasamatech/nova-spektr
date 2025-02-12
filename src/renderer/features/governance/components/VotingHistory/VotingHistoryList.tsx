@@ -48,7 +48,7 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
         <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnVotingPower')}</FootnoteText>
       </Box>
       <ScrollArea>
-        <div className="flex flex-col gap-1 px-3 pb-2">
+        <Box gap={1} padding={[0, 3, 2]}>
           {shouldRenderLoader && <VotingHistoryListPlaceholder />}
           {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
           {shouldRenderList &&
@@ -75,7 +75,7 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
                 </div>
               );
             })}
-        </div>
+        </Box>
       </ScrollArea>
     </Box>
   );
