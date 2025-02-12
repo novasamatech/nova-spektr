@@ -316,6 +316,7 @@
       "evidence": "Evidence",
       "beneficiary": "Beneficiary",
       "retentionEvidenceModalTitle": "Submit your retention evidence",
+      "promotionEvidenceModalTitle": "Submit your promotion evidence",
       "retentionEvidenceModalDescription": "Please fill out the following form. Other attributes necessary for the evidence (your credentials, voting record, etc.) will be automatically gathered from the blockchain.",
       "retentionLeft": "Retention evidence within:",
       "retentionSubmit": "Submit evidence",

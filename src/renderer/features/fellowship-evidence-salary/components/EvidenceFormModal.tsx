@@ -9,16 +9,23 @@ import { Alert, Button, InputHint, Separator } from '@/shared/ui';
 import { Box, Field, Modal, TextArea } from '@/shared/ui-kit';
 import { evidenceForm } from '../model/evidenceForm';
 
-type Props = PropsWithChildren;
+type Props = PropsWithChildren<{
+  wish: 'Promotion' | 'Retention';
+}>;
 
-export const RetentionEvidenceFormModal = memo(({ children }: Props) => {
-  useFlow(evidenceForm.flow, { wish: 'Retention' });
+export const EvidenceFormModal = memo(({ wish, children }: Props) => {
+  useFlow(evidenceForm.flow, { wish });
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const { fields, submit } = useForm(evidenceForm.form);
   const uploadError = useUnit(evidenceForm.$uploadError);
   const step = useUnit(evidenceForm.$step);
+
+  const title =
+    wish === 'Retention'
+      ? t('fellowship.salary.retentionEvidenceModalTitle')
+      : t('fellowship.salary.promotionEvidenceModalTitle');
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault();
@@ -28,7 +35,7 @@ export const RetentionEvidenceFormModal = memo(({ children }: Props) => {
   return (
     <Modal size="lg" height="lg" isOpen={open} onToggle={setOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.salary.retentionEvidenceModalTitle')}</Modal.Title>
+      <Modal.Title close>{title}</Modal.Title>
       <Modal.HeaderContent>
         <Box padding={[4, 8, 6, 5]}>{t('fellowship.salary.retentionEvidenceModalDescription')}</Box>
         <Separator />
