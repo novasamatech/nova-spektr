@@ -20,7 +20,7 @@ export const EvidenceFormModal = memo(({ wish, children }: Props) => {
   const [open, setOpen] = useState(false);
   const { fields, submit } = useForm(evidenceForm.form);
   const uploadError = useUnit(evidenceForm.$uploadError);
-  const step = useUnit(evidenceForm.$step);
+  const pending = useUnit(evidenceForm.$pending);
 
   const title =
     wish === 'Retention'
@@ -85,7 +85,6 @@ export const EvidenceFormModal = memo(({ wish, children }: Props) => {
                 {t(fields.comments.errorText())}
               </InputHint>
             </Field>
-            {step}
           </Box>
         </form>
       </Modal.Content>
@@ -94,7 +93,9 @@ export const EvidenceFormModal = memo(({ wish, children }: Props) => {
           {t('general.button.closeButton')}
         </Button>
         <Box grow={1} />
-        <Button onClick={() => submit()}>{t('general.button.submitButton')}</Button>
+        <Button isLoading={pending} disabled={pending} onClick={() => submit()}>
+          {t('general.button.submitButton')}
+        </Button>
       </Modal.Footer>
     </Modal>
   );

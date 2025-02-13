@@ -9,7 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 
-import { EvidenceFormModal } from './EvidenceFormModal';
+import { EvidencePostFlowModal } from './EvidencePostFlowModal';
 import { TrackDescription } from './TrackDescription';
 
 export const PromotionInfo = memo(() => {
@@ -51,9 +51,9 @@ export const PromotionInfo = memo(() => {
             )}
           </Box>
           {!hasPromotionEvidence && timeLeft === 0 && (
-            <EvidenceFormModal wish="Promotion">
-              <Button disabled>{t('general.button.applyButton')}</Button>
-            </EvidenceFormModal>
+            <EvidencePostFlowModal wish="Promotion">
+              <Button>{t('general.button.applyButton')}</Button>
+            </EvidencePostFlowModal>
           )}
         </Box>
       )}

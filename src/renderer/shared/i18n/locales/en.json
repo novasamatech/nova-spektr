@@ -433,6 +433,8 @@
       "promotionReadyToApply": "Ready to apply for a promotion",
       "promotionTitle": "Request promotion on",
       "promotionUntilNext": "Until the promotion opportunity:",
+      "requestPromotion": "Request promotion on",
+      "requestRetention": "Request retention on",
       "retentionAlertDescription": "To retain at your current rank, you must submit an evidence every 90 days. Ensure you submit it at least 15 days before the retention period ends to avoid automatic bump to a lower rank. ",
       "retentionAlertTitle": "Retention",
       "retentionApplied": "Applied for retention:",

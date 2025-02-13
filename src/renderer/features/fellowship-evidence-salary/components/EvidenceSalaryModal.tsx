@@ -7,7 +7,7 @@ import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-import { RetentionEvidenceInfo } from './RetentionEvidenceInfo';
+import { RetentionInfo } from './RetentionInfo';
 import { SalaryInfo } from './SalaryInfo';
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
@@ -36,7 +36,7 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
             </Tabs.List>
           </Box>
           <Tabs.Content value="evidence">
-            <RetentionEvidenceInfo />
+            <RetentionInfo />
           </Tabs.Content>
           <Tabs.Content value="salary">
             <SalaryInfo />

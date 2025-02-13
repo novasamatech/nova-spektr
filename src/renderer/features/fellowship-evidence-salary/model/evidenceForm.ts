@@ -1,13 +1,17 @@
-import { createEffect, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
+import { type HexString } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
 import { evidenceService } from '@/domains/collectives';
 
 // flow
 
+const reset = createEvent();
+
 const flow = createFlow<{ wish: 'Promotion' | 'Retention' | null }>({ wish: null });
 const $wish = flow.state.map(x => x.wish);
+const $evidence = createStore<HexString | null>(null);
 
 // requests
 
@@ -99,7 +103,6 @@ ${comments}
 
 // upload flow
 
-const $evidenceHex = createStore<string | null>(null);
 const $uploadError = createStore('');
 
 sample({
@@ -125,7 +128,7 @@ sample({
 sample({
   clock: postEvidenceFx.doneData,
   fn: evidenceService.getEvidenceFromCid,
-  target: $evidenceHex,
+  target: $evidence,
 });
 
 // steps
@@ -150,11 +153,34 @@ sample({
   target: $step,
 });
 
+// reset
+
+sample({
+  clock: reset,
+  fn: () => 'form' as const,
+  target: $step,
+});
+
+sample({
+  clock: reset,
+  fn: () => null,
+  target: [$evidence, $uploadError],
+});
+
+sample({
+  clock: flow.close,
+  target: [reset, form.reset],
+});
+
 export const evidenceForm = {
   flow,
   form,
   $step,
+  $wish,
+  $evidence,
   $formattedMarkdown,
   $uploadError,
-  $posting: postEvidenceFx,
+  $pending: postEvidenceFx.pending,
+  posting: postEvidenceFx,
+  reset,
 };
