@@ -6,6 +6,7 @@ import { combineEvents, interval } from 'patronum';
 import {
   AccountType,
   type Chain,
+  type ChainId,
   ExternalType,
   type FlexibleMultisigAccount,
   type FlexibleMultisigCreated,
@@ -19,8 +20,11 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
+import { series, waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identityDomain } from '@/domains/identity';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -53,11 +57,13 @@ const readyToRequest = combineEvents({
 const updateRequested = sample({
   clock: [pollingRequest, readyToRequest],
   source: walletModel.$availableAccounts,
-  fn(accounts) {
+  fn: (accounts) => {
     return accounts.filter((a) => {
-      return (
-        !accountUtils.isWatchOnlyAccount(a) && !accountUtils.isProxiedAccount(a) && !accountUtils.isMultisigAccount(a)
-      );
+      const isWatchOnly = accountUtils.isWatchOnlyAccount(a);
+      const isProxied = accountUtils.isProxiedAccount(a);
+      const isMultisig = accountUtils.isMultisigAccount(a);
+
+      return !isWatchOnly && !isProxied && !isMultisig;
     });
   },
 });
@@ -127,45 +133,47 @@ sample({
       return !networkUtils.isDisabledConnection(connections[chain.chainId]);
     });
 
-    return {
-      chains: filteredChains,
-      accounts,
-    };
+    return { chains: filteredChains, accounts };
   },
   target: getLastMultisigsFx,
 });
 
-type FilteredMultisigParams = { multisigAccounts: AnyAccount[]; indexedMultisigs: MultisigResult[] };
-
-const filterMultisigFx = createEffect(
+type FilteredMultisigParams = {
+  multisigAccounts: AnyAccount[];
+  indexedMultisigs: MultisigResult[];
+};
+const enrichIndexedMultisigsFx = createEffect(
   ({ multisigAccounts, indexedMultisigs }: FilteredMultisigParams): GetMultisigResponse[] => {
-    return (
-      indexedMultisigs
-        // filter out multisigs that already exists
-        .filter((multisigResult) => nullable(multisigAccounts.find((a) => a.accountId === multisigResult.accountId)))
-        .map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
-          // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
-          // if (proxy) {
-          //   return {
-          //     type: 'flexibleMultisig',
-          //     account: multisigUtils.buildFlexibleMultisigAccount({
-          //       threshold,
-          //       proxyAccount: proxy,
-          //       accountId,
-          //       signatories,
-          //       chain,
-          //     }),
-          //     chain,
-          //   };
-          // }
+    const multisigSet = new Set(multisigAccounts.map((a) => a.accountId));
 
-          return {
-            type: 'multisig',
-            account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
-            chain,
-          };
-        })
-    );
+    const result: GetMultisigResponse[] = [];
+
+    for (const indexedMultisig of indexedMultisigs) {
+      if (multisigSet.has(indexedMultisig.accountId)) continue;
+
+      // TODO check if there's a multisig with no proxy and only one ongoing operation 'create pure proxy' - build flexible shell
+      // if (proxy) {
+      //   return {
+      //     type: 'flexibleMultisig',
+      //     account: multisigUtils.buildFlexibleMultisigAccount({
+      //       threshold,
+      //       proxyAccount: proxy,
+      //       accountId,
+      //       signatories,
+      //       chain,
+      //     }),
+      //     chain,
+      //   };
+      // }
+
+      result.push({
+        type: 'multisig',
+        chain: indexedMultisig.chain,
+        account: multisigUtils.buildMultisigAccount(indexedMultisig),
+      });
+    }
+
+    return result;
   },
 );
 
@@ -174,17 +182,41 @@ sample({
   source: $multisigAccounts,
   filter: (_, multisigs) => multisigs.length > 0,
   fn: (multisigAccounts, indexedMultisigs) => ({ multisigAccounts, indexedMultisigs }),
-  target: filterMultisigFx,
+  target: enrichIndexedMultisigsFx,
+});
+
+const identitySeries = series(identityDomain.identity.request);
+
+sample({
+  clock: enrichIndexedMultisigsFx.doneData,
+  fn: (multisigs) => {
+    const grouped: Record<ChainId, AccountId[]> = {};
+
+    for (const { chain, account } of multisigs) {
+      if (nullable(grouped[chain.chainId])) {
+        grouped[chain.chainId] = [account.accountId];
+      } else {
+        grouped[chain.chainId].push(account.accountId);
+      }
+    }
+
+    return Object.entries(grouped).map((entry) => {
+      const [chainId, accounts] = entry as [ChainId, AccountId[]];
+
+      return { chainId, accounts };
+    });
+  },
+  target: identitySeries,
 });
 
 sample({
-  clock: filterMultisigFx.doneData,
+  clock: enrichIndexedMultisigsFx.doneData,
   filter: (response) => response.length > 0,
   target: populateWallets,
 });
 
 sample({
-  clock: filterMultisigFx.done,
+  clock: enrichIndexedMultisigsFx.done,
   source: $isPollingRunning,
   filter: (isRunning) => isRunning,
   target: [stop, subscribe],
@@ -198,44 +230,57 @@ const populateFlexibleMultisigWallets = populateWallets.map((drafts) => {
   return drafts.filter((x) => x.type === 'flexibleMultisig');
 });
 
+const identityFinished = waitFor({
+  clock: identitySeries.pending,
+  source: identityDomain.identity.$list,
+  filter: (pending): pending is boolean => !pending,
+  reset: [identitySeries.done, identitySeries.fail],
+});
+
 sample({
-  clock: populateMultisigWallets,
-  fn(responses) {
-    return responses.map(({ chain, account }) => {
-      const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+  clock: combineEvents({
+    events: {
+      multisigs: populateMultisigWallets,
+      identity: identityFinished,
+    },
+  }),
+  fn: ({ multisigs, identity }) => {
+    return multisigs.map(({ chain, account }) => {
+      const walletIdentity = identity.event[chain.chainId]?.[account.accountId];
+      const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletName,
+        name: walletIdentity?.name ?? address,
         type: WalletType.MULTISIG,
         signingType: SigningType.MULTISIG,
       };
 
-      return {
-        wallet,
-        accounts: [account],
-      };
+      return { wallet, accounts: [account] };
     });
   },
   target: createWallets,
 });
 
 sample({
-  clock: populateFlexibleMultisigWallets,
-  fn(responses) {
-    return responses.map(({ chain, account }) => {
-      const walletName = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
+  clock: combineEvents({
+    events: {
+      multisigs: populateFlexibleMultisigWallets,
+      identity: identityFinished,
+    },
+  }),
+  fn: ({ multisigs, identity }) => {
+    return multisigs.map(({ chain, account }) => {
+      const walletIdentity = identity.event[chain.chainId]?.[account.accountId];
+      const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletName,
+        name: walletIdentity?.name ?? address,
         type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
         activated: false,
       };
 
-      return {
-        wallet,
-        accounts: [account],
-      };
+      return { wallet, accounts: [account] };
     });
   },
   target: createWallets,
