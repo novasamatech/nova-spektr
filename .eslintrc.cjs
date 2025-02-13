@@ -1,6 +1,6 @@
 const path = require('path');
 
-const localesPath = './src/renderer/shared/api/translation/locales';
+const localesPath = 'src/renderer/shared/i18n/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
 const boundaryTypes = [

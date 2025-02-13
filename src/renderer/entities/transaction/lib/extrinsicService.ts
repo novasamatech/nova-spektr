@@ -521,6 +521,22 @@ export const getUnsignedTransaction: Record<
     );
   },
 
+  [TransactionType.COLLECTIVE_SALARY_INDUCT]: (transaction, info, options) => {
+    const { pallet } = transaction.args;
+
+    return defineMethod(
+      {
+        method: {
+          args: {},
+          name: 'induct',
+          pallet: `${pallet}Salary`,
+        },
+        ...info,
+      },
+      options,
+    );
+  },
+
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: (transaction, info, options) => {
     const { pallet } = transaction.args;
 
@@ -711,6 +727,9 @@ export const getExtrinsic: Record<
    */
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: ({ pallet, wish, evidence }, api) => {
     return api.tx[`${pallet}Core`].submitEvidence(wish, evidence);
+  },
+  [TransactionType.COLLECTIVE_SALARY_INDUCT]: ({ pallet }, api) => {
+    return api.tx[`${pallet}Salary`].induct();
   },
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: ({ pallet }, api) => {
     return api.tx[`${pallet}Salary`].register();
