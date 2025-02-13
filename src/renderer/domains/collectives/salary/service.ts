@@ -12,6 +12,7 @@ import {
   type Salaries,
   type SalaryCycle,
   type SalaryCyclePeriod,
+  type SalaryInductTransaction,
   type SalaryPayoutTransaction,
   type SalaryRequestTransaction,
 } from './types';
@@ -115,6 +116,29 @@ function isSalaryPayoutTransaction(transaction: Transaction): transaction is Sal
   return transaction.type === TransactionType.COLLECTIVE_SALARY_PAYOUT;
 }
 
+type SalaryInductTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+};
+
+function createSalaryInductTransaction({
+  pallet,
+  account,
+  chain,
+}: SalaryInductTransactionParams): SalaryInductTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SALARY_INDUCT,
+    args: { pallet },
+  };
+}
+
+function isSalaryInductTransaction(transaction: Transaction): transaction is SalaryInductTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SALARY_INDUCT;
+}
+
 function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return claimStatus.lastActive === period.cycleIndex;
 }
@@ -125,6 +149,10 @@ function isClaimantRequestedSalary(claimStatus: ClaimStatus, period: SalaryCycle
 
 function isClaimantRequestedSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'payout';
+}
+
+function canInductSalary(claimStatus: ClaimStatus) {
+  return claimStatus.type === 'none';
 }
 
 function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
@@ -156,8 +184,12 @@ export const salaryService = {
   isClaimantRequestedSalary,
   isClaimantRequestedSalaryPayout,
 
+  canInductSalary,
   canRequestSalary,
   canRequestSalaryPayout,
+
+  createSalaryInductTransaction,
+  isSalaryInductTransaction,
 
   createSalaryRequestTransaction,
   isSalaryRequestTransaction,
