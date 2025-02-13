@@ -12,6 +12,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestSalary } from '../components/tasks/RequestSalary';
+import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
 import { type OperationType, type TaskDescription } from '../types';
 
 import { memberSalary } from './memberSalary';
@@ -38,7 +39,10 @@ const $basketOperationsIds = $basketOperations.map(operations => {
         return 'set_active';
       }
 
-      // TODO support other types
+      if (salaryService.isSalaryInductTransaction(operation.coreTx)) {
+        return 'salary_induct';
+      }
+
       if (salaryService.isSalaryRequestTransaction(operation.coreTx)) {
         return 'salary_request';
       }
@@ -79,6 +83,17 @@ const $salaryTasks = combine(
           id: 'salary_payout',
           priority: 0,
           body: RequestPayout,
+          meta: {},
+        },
+      ];
+    }
+
+    if (salaryService.canInductSalary(claimStatus)) {
+      return [
+        {
+          id: 'salary_induct',
+          priority: 0,
+          body: RequestSalaryInduct,
           meta: {},
         },
       ];

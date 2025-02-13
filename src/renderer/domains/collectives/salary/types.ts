@@ -71,6 +71,10 @@ export type SalaryRequestTransaction = Transaction<{
   pallet: CollectivePalletsType;
 }>;
 
+export type SalaryInductTransaction = Transaction<{
+  pallet: CollectivePalletsType;
+}>;
+
 export type SalaryPayoutTransaction = Transaction<{
   pallet: CollectivePalletsType;
   beneficiary: AccountId | null;

@@ -4,6 +4,7 @@ import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
+import { salaryService, votingService } from '@/domains/collectives';
 import { OperationTitle } from '@/entities/chain';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
@@ -55,6 +56,7 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
   const Icon: { [key in TransactionType]?: IconNames } = {
     [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
     [TransactionType.COLLECTIVE_SET_ACTIVE]: 'unknownMst',
+    [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'unknownMst',
     [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'unknownMst',
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'unknownMst',
@@ -121,7 +123,7 @@ fellowshipBasketOperationFeature.inject(confirmDetailsSlot, ({ operation }) => {
 
   const transaction = basketOperationsService.getCoreTx(operation);
 
-  if (transaction.type === TransactionType.COLLECTIVE_VOTE) {
+  if (votingService.isVotingTransaction(transaction)) {
     return <FellowshipVotingConfirmation id={operation.id} hideSignButton />;
   }
 
@@ -129,11 +131,15 @@ fellowshipBasketOperationFeature.inject(confirmDetailsSlot, ({ operation }) => {
     return <FellowshipSetActiveConfirmation id={operation.id} hideSignButton />;
   }
 
-  if (transaction.type === TransactionType.COLLECTIVE_SALARY_REQUEST) {
+  if (salaryService.isSalaryInductTransaction(transaction)) {
     return <FellowshipSalaryRequestConfirmation id={operation.id} hideSignButton />;
   }
 
-  if (transaction.type === TransactionType.COLLECTIVE_SALARY_PAYOUT) {
+  if (salaryService.isSalaryRequestTransaction(transaction)) {
+    return <FellowshipSalaryRequestConfirmation id={operation.id} hideSignButton />;
+  }
+
+  if (salaryService.isSalaryPayoutTransaction(transaction)) {
     return <FellowshipSalaryPayoutConfirmation id={operation.id} hideSignButton />;
   }
 
