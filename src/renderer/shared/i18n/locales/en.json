@@ -140,9 +140,9 @@
     "duplicateSignatoryAddress": "Signatory address already exist",
     "errorMessage": "Something went wrong",
     "flexibleMultisig": {
+      "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "flexible": "Flexible multisig",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
-      "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "proxyDeposit": "Proxy deposit:",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "title": "Create flexible multisig"
@@ -176,14 +176,14 @@
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "flexibleDescription": "Can modify signatories",
-      "regularDescription": "Regular multisig wallet",
-      "featureOne": "<strong>Multiple Signatories</strong> required to approve transactions",
-      "featureTwo": "<strong>Set custom signatory threshold</strong> which must be met for transactions to be executed",
-      "featureThree": "<strong>Delegate authority</strong> over certain operations",
-      "featureFour": "<strong>Change signatories and threshold</strong> at any time",
       "featureFive": "<strong>Address does not change</strong> when changing signatories",
+      "featureFour": "<strong>Change signatories and threshold</strong> at any time",
+      "featureOne": "<strong>Multiple Signatories</strong> required to approve transactions",
+      "featureThree": "<strong>Delegate authority</strong> over certain operations",
+      "featureTwo": "<strong>Set custom signatory threshold</strong> which must be met for transactions to be executed",
+      "flexibleDescription": "Can modify signatories",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <strong>only works on the network</strong> it was created on.",
+      "regularDescription": "Regular multisig wallet",
       "regularNote": "Only multisig deposit is required. This wallet <strong>only works on the network</strong> it was created on."
     },
     "selectSigner": "Select signing wallet",
@@ -299,8 +299,8 @@
     "addAccountButton": "Add account",
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
-    "createMultisig": "Create a new multisig wallet",
     "createFlexibleMultisig": "Create a new flexible multisig wallet",
+    "createMultisig": "Create a new multisig wallet",
     "createOrImportAccount": "Create a new account or import an existing one"
   },
   "fallbackScreen": {
@@ -309,11 +309,17 @@
     "reloadButton": "Refresh"
   },
   "fellowship": {
-    "evidence": {
-      "cardTitle": "Evidence"
-    },
-    "salary": {
-      "cardTitle": "Salary"
+    "activityFeed": {
+      "lastActivityCardTitle": "Last activity",
+      "record": {
+        "activeChanged": "changed his status to {status}",
+        "demoted": "has been bumped to rank {rank}",
+        "imported": "has been imported with rank {rank}",
+        "promoted": "has been promoted to rank {rank}",
+        "proven": "proved his rank {rank}",
+        "submittedPromotion": "submitted evidence with a wish to promotion",
+        "submittedRetention": "submitted evidence with a wish to retention"
+      }
     },
     "details": {
       "noDetails": "Details not found"
@@ -335,7 +341,33 @@
     },
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
+    "profile": {
+      "active": "Active",
+      "activeSalary": "Active salary",
+      "activity": "Activity",
+      "activityFeed": {
+        "activeFalse": "Status passive",
+        "activeTrue": "Status active",
+        "demoted": "Demoted to rank {rank}",
+        "imported": "Imported to rank {rank}",
+        "paid": "Salary",
+        "promoted": "Promoted to rank {rank}",
+        "proven": "Proven at rank {rank}",
+        "requested": "Salary requested"
+      },
+      "fellow": "Fellow",
+      "modalTitle": "Profile",
+      "passiveSalary": "Passive salary",
+      "setActive": {
+        "activeFalse": "No",
+        "activeTrue": "Yes",
+        "isActive": "Active",
+        "title": "Set active status on"
+      }
+    },
     "referendums": {
+      "completed": "Completed referendums",
+      "ongoing": "Ongoing referendums",
       "tracks": {
         "architects": "Architects",
         "architectsAdept": "Architects Adept",
@@ -358,38 +390,140 @@
         "retainAtIvDan": "Retain At IV Dan",
         "retainAtVDan": "Retain At V Dan",
         "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "salary": {
+      "beneficiary": "Beneficiary",
+      "cardTitle": "Evidence & Salary",
+      "evidence": "Evidence",
+      "evidenceForm": {
+        "areas": {
+          "label": "Areas of expertise and interest",
+          "placeholder": "Enter areas",
+          "required": "Areas are required"
+        },
+        "comments": {
+          "label": "Comments",
+          "placeholder": "Enter comments about how your retention period went",
+          "required": "Comments are required"
+        },
+        "evidence": {
+          "label": "Evidence (document hash, url, etc.)",
+          "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
+          "required": "Evidence are required"
+        },
+        "uploadError": "Upload error"
       },
-      "ongoing": "Ongoing referendums",
-      "completed": "Completed referendums"
+      "modalTitle": "Evidence & Salary",
+      "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again — the previous one will be replaced.",
+      "promotionAppliedAlertTitle": "Promotion evidence is uploaded",
+      "promotionEvidenceModalTitle": "Submit your promotion evidence",
+      "promotionHelpRank1": "<li>Provide three examples of meaningful protocol contributions.</li><li>Actively design a deployable or future protocol component at PRP² standards.</li><li>Assist in analysis, formalization, or implementation at peer-reviewed or PRP standards.</li><li>Know Polkadot’s key goals and principles.</li><li>Examples: fixing key issues, enabling network fixes, proposing innovations, or improving protocol design.</li>",
+      "promotionHelpRank2": "<li>Lead formalization, implementation, or analysis of a major protocol component, with peer-reviewed publication or justified exception.</li><li>Publish at least one long-form semi-technical article on Polkadot.</li>",
+      "promotionHelpRank3": "<li>In-person review on contributions.</li><li>Defend Polkadot's role confidently.</li><li>Advocate via articles, social media, or events.</li><li>Share knowledge: forums, talks, or platforms.</li><li>Lead protocol design or implementation with review or deployment.</li>",
+      "promotionHelpRank4": "<li>Play a key role in creating and formalizing a major protocol component, with formalization in a peer-reviewed publication or deployment in the protocol after expert code review.</li><li>Promote or defend Polkadot outside the ecosystem through a public presentation or notable media (e.g., journal or news).</li>",
+      "promotionHelpRank5": "<li>Publish a long-form article on relevant technology beyond Polkadot.</li><li>Lead ideation, design, and formalization or prototyping of a major component.</li><li>Contribute to the creation of three other major components.</li><li>Assist in shaping the long-term technical roadmap through advocacy, research, or analysis.</li>",
+      "promotionHelpRank6": "<li>Lead the design and implementation of a major protocol innovation.</li><li>Publish at least three long-form articles on relevant technology beyond Polkadot.</li><li>Discuss: What have you learnt from this individual which you might ultimately find useful in your efforts to help Polkadot succeed?</li>",
+      "promotionHelpRank7": "<li>Deepened understanding of Polkadot’s philosophy through discussion, literature parallels, or expert discourse.</li><li>Delivered major presentations on Polkadot to peers from other ecosystems or industries.</li><li>Discuss: Does the wider academic community or industry tend to learn from this individual (even if the individual did not discover this knowledge themselves)?</li>",
+      "promotionHelpRank8": "<li>Publish a canonical article on Polkadot’s philosophical principles.</li><li>Publish an industry-recognized article on a relevant innovation beyond Polkadot.</li><li>Be widely recognized as an intellectual leader beyond the Polkadot ecosystem.</li><li>Discuss: How did this individual's idea or invention become adopted in the wider academic community or industry?</li>",
+      "promotionHelpRank9": "<li>Generally recognised as a philosophical, social, artistic, political and/or technological heavyweight outside of blockchain or crypto.</li><li>Discuss: what outstanding service did the individual provide to the Polkadot network?</li>",
+      "promotionNextRank": "Next promotion",
+      "promotionRankHelpLabel": "What is expected from Rank {rank} ({name})",
+      "promotionReadManifesto": "Read manifesto",
+      "promotionReadyToApply": "Ready to apply for a promotion",
+      "promotionTitle": "Request promotion on",
+      "promotionUntilNext": "Until the promotion opportunity:",
+      "retentionAlertDescription": "To retain at your current rank, you must submit an evidence every 90 days. Ensure you submit it at least 15 days before the retention period ends to avoid automatic bump to a lower rank. ",
+      "retentionAlertTitle": "Retention",
+      "retentionApplied": "Applied for retention:",
+      "retentionAppliedDescription": "Evidence submitted",
+      "retentionEvidenceModalDescription": "Please fill out the following form. Other attributes necessary for the evidence (your credentials, voting record, etc.) will be automatically gathered from the blockchain.",
+      "retentionEvidenceModalTitle": "Submit your retention evidence",
+      "retentionLeft": "Retention evidence within:",
+      "retentionSubmit": "Submit evidence",
+      "salary": "Salary",
+      "salaryInduct": "Induct salary on",
+      "salaryInfo": {
+        "beneficiary": "Beneficiary",
+        "payoutSalary": "Withdraw",
+        "payoutSalaryCall": "Payout a {salary} salary within:",
+        "payoutSalarySuccess": "Salary payout was completed successfully.",
+        "requestSalary": "Request",
+        "requestSalaryCall": "Request a {salary} salary within:",
+        "requestSalarySuccess": "Salary request was completed successfully."
+      },
+      "salaryPayout": "Request payout on",
+      "salaryRequest": "Request salary on",
+      "submitEvidenceConfirm": {
+        "evidence": "Evidence",
+        "wish": "Wish"
+      }
+    },
+    "tasks": {
+      "cardTitle": "Actions Required",
+      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "emptyTitle": "All tasks completed",
+      "reviewBasket_one": "Confirm {count} decision",
+      "reviewBasket_other": "Confirm {count} decisions",
+      "skip": "Skip for now",
+      "task": {
+        "anyReferendum": {
+          "title": "Review referendum",
+          "viewEvidence": "View <a>the full evidence</a>"
+        },
+        "promotionVoting": {
+          "title": "Review promotion evidence"
+        },
+        "requestPayout": {
+          "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
+          "left": "Left: <duration/>",
+          "request": "Withdraw",
+          "title": "Withdraw your salary"
+        },
+        "requestSalary": {
+          "description": "Your current earnings are {salary}. Don’t forget to submit your request by {endDate} to receive your payout on time.",
+          "left": "Left: <duration/>",
+          "request": "Request",
+          "title": "Request your salary"
+        },
+        "requestSalaryInduct": {
+          "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
+          "request": "Activate payments",
+          "title": "Activate your payments"
+        },
+        "retentionVoting": {
+          "title": "Review retention evidence"
+        }
+      }
     },
     "title": "Fellowship",
     "tooltips": {
-      "noProfile": "You are not a fellowship member",
-      "noAccount": "Please add or create account to the { chain } network"
+      "noAccount": "Please add or create account to the { chain } network",
+      "noProfile": "You are not a fellowship member"
     },
     "voting": {
-      "voted": "Voted:",
+      "aye": "Aye",
+      "confirmation": {
+        "fee": "Fee",
+        "vote": "Vote"
+      },
       "errors": {
         "noAccount": "Account for voting not found",
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
-      "votingStatus": "Voting status",
-      "summary": "Summary",
-      "title": "Vote on",
-      "threshold": "Threshold",
-      "aye": "Aye",
       "nay": "Nay",
-      "confirmation": {
-        "vote": "Vote",
-        "fee": "Fee"
-      }
+      "summary": "Summary",
+      "threshold": "Threshold",
+      "title": "Vote on",
+      "voted": "Voted:",
+      "votingStatus": "Voting status"
     },
     "votingHistory": {
+      "emptyList": "There is no vote history",
       "modalTitle": "Vote history",
+      "showHistoryButton": "View vote history",
       "votes_one": "{count} vote",
       "votes_other": "{count} votes",
-      "showHistoryButton": "View vote history",
-      "emptyList": "There is no vote history",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
@@ -398,13 +532,15 @@
       "multiply": "{value} × {multiplier}"
     },
     "button": {
-      "cancelButton": "Cancel",
+      "applyButton": "Apply",
       "backButton": "Back",
+      "cancelButton": "Cancel",
       "closeButton": "Close",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
+      "submitButton": "Submit",
       "uploadButton": "Upload"
     },
     "explorers": {
@@ -468,10 +604,11 @@
       "delegateActivity": "Delegate activity",
       "delegateIdentity": "Delegate identity",
       "delegateTitle": "Delegate",
+      "delegatedTracksDescription": "{ tracks } tracks are unavailable for delegation because they are already delegated to another delegate. Please revoke the current delegation in order to delegate on those tracks.",
+      "delegatedTracksTitle": "Some tracks are unavailable for delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier.",
-      "unchangeLabel": "Unchange voting power",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",
@@ -545,13 +682,12 @@
         "wishForChangeDescription": "Origin for signaling that the network wishes for some change."
       },
       "tracksLabel": "Tracks",
+      "unchangeLabel": "Unchange voting power",
       "viewDelegationButton": "View delegations",
       "viewSummary": "View summary",
       "votedAllTime": "Voted for all time",
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
-      "delegatedTracksTitle": "Some tracks are unavailable for delegation",
-      "delegatedTracksDescription": "{ tracks } tracks are unavailable for delegation because they are already delegated to another delegate. Please revoke the current delegation in order to delegate on those tracks.",
       "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
@@ -712,8 +848,8 @@
     "vote": {
       "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction. You will vote with 1 vote.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
-      "delegationErrorTitle": "Already delegating votes",
       "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
+      "delegationErrorTitle": "Already delegating votes",
       "errors": {
         "noAccountError": "Please select your account",
         "noSignatoryError": "Please select operation signatory"
@@ -764,11 +900,11 @@
   },
   "importDB": {
     "continueButton": "Continue",
+    "deleteButton": "Erase all data",
     "errors": {
       "invalidStructure": "Invalid file structure"
     },
     "exportButton": "Export database",
-    "deleteButton": "Erase all data",
     "fileInputPlaceholder": "Select .json file on your computer",
     "importTitle": "Import database"
   },
@@ -804,14 +940,14 @@
   },
   "notifications": {
     "details": {
+      "flexibleMultisigWalletSignAction": "Sign operation",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength } available on  <chain />",
       "multisigCreatedTitle": "New multisig wallet added",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
-      "flexibleMultisigWalletSignAction": "Sign operation"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -823,6 +959,24 @@
     "checkAccountsButton": "Check your accounts",
     "confirmAccountsListButton": "Yes, these are my accounts",
     "continueButton": "Continue",
+    "extension": {
+      "accountsTitle": "Manage accounts",
+      "askPermissionAgain": "Request permission again",
+      "beta": "beta",
+      "create": "Create",
+      "emptyState": "All your accounts in different networks will be shown here",
+      "manageTitle": "Set up your wallet",
+      "pairingStep": "Pairing...",
+      "permissionStep": "Request permission",
+      "polkadotJsTitle": "Add Polkadot js extension account",
+      "requestPairing": "Request pairing",
+      "requestRejected": "Request was rejected",
+      "selectAccountLabel": "Account",
+      "selectAccountPlacehilder": "Select one of accounts",
+      "subWalletTitle": "Add SubWallet extension account",
+      "talismanTitle": "Add Talisman extension account"
+    },
+    "extensionNotInstalled": "Not Installed",
     "novaWallet": {
       "scanTitle": "Scan with Nova Wallet",
       "title": "Add wallet by Nova Wallet"
@@ -903,23 +1057,6 @@
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
     },
-    "extension": {
-      "emptyState": "All your accounts in different networks will be shown here",
-      "accountsTitle": "Manage accounts",
-      "permissionStep": "Request permission",
-      "pairingStep": "Pairing...",
-      "selectAccountLabel": "Account",
-      "requestRejected": "Request was rejected",
-      "askPermissionAgain": "Request permission again",
-      "selectAccountPlacehilder": "Select one of accounts",
-      "requestPairing": "Request pairing",
-      "manageTitle": "Set up your wallet",
-      "create": "Create",
-      "beta": "beta",
-      "polkadotJsTitle": "Add Polkadot js extension account",
-      "talismanTitle": "Add Talisman extension account",
-      "subWalletTitle": "Add SubWallet extension account"
-    },
     "walletConnect": {
       "accountsTitle": "Manage accounts",
       "addressColumn": "Address",
@@ -953,25 +1090,24 @@
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
       "ledgerTitle": "Ledger",
-      "polkadotExtensionTitle": "Polkadot js extension",
-      "polkadotExtensionDescription": "Multi-chain browser extension",
-      "talismanTitle": "Talisman",
-      "talismanDescription": "Multi-chain browser extension",
-      "subWalletTitle": "SubWallet extension",
-      "subWalletDescription": "Multi-chain browser extension",
       "novaWalletDescription": "Seamless and secure transaction signing with Nova Wallet, leading mobile application for Polkadot eco",
       "novaWalletTitle": "Nova Wallet",
+      "polkadotExtensionDescription": "Multi-chain browser extension",
+      "polkadotExtensionTitle": "Polkadot js extension",
       "polkadotVaultDescription": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
       "polkadotVaultTitle": "Polkadot Vault",
       "privacy": "By continuing, you agree to our <terms>Terms of Services</terms> and <privacy>Privacy Policy</privacy>",
       "soonBadge": "soon",
+      "subWalletDescription": "Multi-chain browser extension",
+      "subWalletTitle": "SubWallet extension",
+      "talismanDescription": "Multi-chain browser extension",
+      "talismanTitle": "Talisman",
       "title": "Add your wallet",
       "walletConnectDescription": "Seamless and secure transaction signing with WalletConnect v2",
       "walletConnectTitle": "WalletConnect v2",
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
     },
-    "extensionNotInstalled": "Not Installed",
     "yourAccountsLabel": "Here are your accounts"
   },
   "operation": {
@@ -985,11 +1121,13 @@
     "continueButton": "Continue",
     "createFlexibleMultisig": {
       "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
-      "rejectConfirmTitle": "Reject finalizing the creation of your flexible multisig?",
       "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
+      "rejectConfirmTitle": "Reject finalizing the creation of your flexible multisig?",
       "title": "Flexible multisig is creating..."
     },
     "deliveryFee": "Delivery fee",
+    "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
+    "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -1036,9 +1174,7 @@
     "networkFeeTotal": "Total network fee",
     "openOperationsButton": "Open operations",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
-    "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
-    "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
     "selectAccount": "Select account",
@@ -1049,10 +1185,10 @@
     "sign": {
       "default": "Sign",
       "novaWallet": "Sign with Nova Wallet",
-      "polkadotVault": "Sign with Polkadot Vault",
       "polkadotExtension": "Sign with Polkadot js extension",
-      "talismanExtension": "Sign with Talisman extension",
+      "polkadotVault": "Sign with Polkadot Vault",
       "subWalletExtension": "Sign with SubWallet extension",
+      "talismanExtension": "Sign with Talisman extension",
       "title": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
@@ -1072,6 +1208,8 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "expiredDescription": "The operation isn’t valid anymore",
+      "failedDescription": "Scan with your mobile wallet to connect",
+      "failedTitle": "Waiting for Reconnect...",
       "reconnect": {
         "cancelButton": "Cancel",
         "confirmButton": "Reconnect",
@@ -1081,8 +1219,6 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "failedTitle": "Waiting for Reconnect...",
-      "failedDescription": "Scan with your mobile wallet to connect",
       "signTitle_one": "Confirm the operation on your { walletName } app",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
@@ -1612,7 +1748,9 @@
     "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
     "hours_one": "{ count } hour",
     "hours_other": "{ count } hours",
-    "minutesSeconds": "{ minutes }:{ seconds }"
+    "minutesSeconds": "{ minutes }:{ seconds }",
+    "weeks_one": "{ count } week",
+    "weeks_other": "{ count } weeks"
   },
   "transactionMessage": {
     "bond": "Stake { amount } { asset }",
@@ -1634,9 +1772,11 @@
     "destinationChainPlaceholder": "Select recipient network",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
+    "expired": "Transaction expired",
     "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
+    "invalidAddress": "Invalid address",
     "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
     "multiple": {
       "executing": "Submitting operations",
@@ -1647,15 +1787,13 @@
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
-    "expired": "Transaction expired",
-    "invalidAddress": "Invalid address",
-    "noSignatoryError": "Please select operation signatory",
     "noAmount": "Please provide amount",
+    "noSignatoryError": "Please select operation signatory",
     "notEnoughBalanceError": "Not enough tokens to transfer specific amount",
+    "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
     "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
     "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
     "notEnoughBalanceForXcmFeeError": "Not enough tokens to pay for the cross-chain fee",
-    "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
     "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
     "pasteButton": "Paste",
@@ -1751,8 +1889,8 @@
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
-      "shardsTitle": "Shards",
-      "noAccounts": "No actual accounts data"
+      "noAccounts": "No actual accounts data",
+      "shardsTitle": "Shards"
     },
     "walletConnect": {
       "abortRejectButton": "Close",
@@ -1761,43 +1899,43 @@
       "disconnectedDescription": "Resume the connection to work with the WalletConnect",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
+      "failedDescription": "Please try again later or create a new wallet",
+      "failedTitle": "Something went wrong",
       "reconnectButton": "Reconnect",
       "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect",
       "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
-      "rejectTitle": "Rejected",
-      "failedDescription": "Please try again later or create a new wallet",
-      "failedTitle": "Something went wrong"
+      "rejectTitle": "Rejected"
     }
   },
   "wallets": {
     "addButtonTitle": "Add",
     "addMultisig": "Multisig",
     "addNovaWallet": "Nova Wallet",
-    "addPolkadotVault": "Polkadot Vault",
     "addPolkadotExtension": "Polkadot js",
-    "addTalismanExtension": "Talisman",
+    "addPolkadotVault": "Polkadot Vault",
     "addSubWalletExtension": "SubWallet",
+    "addTalismanExtension": "Talisman",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
     "connectedLabel": "Connected",
     "disconnectedLabel": "Disconnected",
+    "emptyList": "Wallets not found",
+    "flexibleMultisigLabel": "Flexible Multisig",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
-    "flexibleMultisigLabel": "Flexible Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
-    "proxiedLabel": "Delegated to you (Proxied)",
     "polkadotExtensionLabel": "Polkadot js extension",
-    "talismanExtensionLabel": "Talisman extension",
-    "subWalletExtensionLabel": "SubWallet extension",
+    "proxiedLabel": "Delegated to you (Proxied)",
     "searchPlaceholder": "Search",
     "shards": "Shards",
+    "subWalletExtensionLabel": "SubWallet extension",
+    "talismanExtensionLabel": "Talisman extension",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
-    "watchOnlyLabel": "Watch-only",
-    "emptyList": "Wallets not found"
+    "watchOnlyLabel": "Watch-only"
   },
   "welcome": {
     "addLedgerButton": "Coming soon",

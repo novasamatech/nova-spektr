@@ -8,13 +8,13 @@ import { BaseModal, Button } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
+import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   ConfirmSlider,
   RevokeDelegationConfirmation as Confirmation,
   basketUtils,
 } from '@/features/operations/OperationsConfirm';
-import { SignatorySelectModal } from '@/pages/Operations';
 import { revokeDelegationModel } from '../model/revoke-delegation-model';
 
 export const RevokeDelegation = () => {

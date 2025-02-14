@@ -6,7 +6,6 @@ import { combineEvents, delay, spread } from 'patronum';
 import {
   type Account,
   type Address,
-  type BasketTransaction,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
@@ -434,7 +433,7 @@ sample({
         txWrappers,
         groupId: Date.now(),
         initiatorWallet: walletData.wallet!.id,
-      } as BasketTransaction;
+      };
     });
   },
   target: basketOperations.addTransactions,

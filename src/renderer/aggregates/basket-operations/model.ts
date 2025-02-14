@@ -1,16 +1,21 @@
-import { createEffect, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { uniq } from 'lodash';
 import { readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type BasketTransaction } from '@/shared/core';
+import { type BasketTransaction, type ID } from '@/shared/core';
 
-const $basketTransactions = createStore<BasketTransaction[]>([]);
+// list
+
+const $list = createStore<BasketTransaction[]>([]);
 
 const populateFx = createEffect(() => storageService.basketTransactions.readAll());
 
-const addTransactionsFx = createEffect(async (transactions: BasketTransaction[]): Promise<BasketTransaction[]> => {
-  return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
-});
+const addTransactionsFx = createEffect(
+  async (transactions: Omit<BasketTransaction, 'id'>[]): Promise<BasketTransaction[]> => {
+    return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
+  },
+);
 
 const updateTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[]> => {
   return storageService.basketTransactions.updateAll(transactions).then(result => result ?? []);
@@ -22,7 +27,7 @@ const removeTransactionsFx = createEffect((transactions: BasketTransaction[]): P
 
 sample({
   clock: populateFx.doneData,
-  target: $basketTransactions,
+  target: $list,
 });
 
 sample({
@@ -40,11 +45,48 @@ sample({
   target: populateFx,
 });
 
+// select
+
+const $selectedIds = createStore<ID[]>([]);
+const $selected = combine($list, $selectedIds, (list, ids) => {
+  return list.filter(record => ids.includes(record.id));
+});
+
+const select = createEvent<ID[]>();
+const toggle = createEvent<ID>();
+const deselect = createEvent<ID[]>();
+
+sample({
+  clock: select,
+  source: $selectedIds,
+  fn: (selected, toAdd) => uniq(selected.concat(toAdd)),
+  target: $selectedIds,
+});
+
+sample({
+  clock: toggle,
+  source: $selectedIds,
+  fn: (selected, id) => (selected.includes(id) ? selected.filter(x => x !== id) : uniq(selected.concat(id))),
+  target: $selectedIds,
+});
+
+sample({
+  clock: deselect,
+  source: $selectedIds,
+  fn: (selected, toRemove) => selected.filter(s => !toRemove.includes(s)),
+  target: $selectedIds,
+});
+
 export const basketOperations = {
-  $list: readonly($basketTransactions),
+  $list: readonly($list),
+  $selected: readonly($selected),
 
   populate: populateFx,
   addTransactions: addTransactionsFx,
   updateTransactions: updateTransactionsFx,
   removeTransactions: removeTransactionsFx,
+
+  select,
+  toggle,
+  deselect,
 };

@@ -1,26 +1,37 @@
-import { type MultisigTransaction } from '@/shared/core';
-import { createSlot, useSlot } from '@/shared/di';
+import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
+import { Accordion } from '@/shared/ui';
+import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
+
+import { OperationFullInfo } from './OperationFullInfo';
 
 type Props = {
-  operation: MultisigTransaction;
+  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransaction;
+  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
 };
 
-export const operationDetailsSlot = createSlot<SlotProps>();
 export const operationTitleSlot = createSlot<SlotProps>();
 
-// TODO: Temp solution
-export const Operation = ({ operation }: Props) => {
-  const operationDetails = useSlot(operationDetailsSlot, { props: { operation } });
-  const operationTitle = useSlot(operationTitleSlot, { props: { operation } });
-
+const Operation = ({ tx, account }: Props) => {
   return (
-    <nav className="h-full overflow-y-auto">
-      {operationTitle}
-      <div className="flex h-full flex-col gap-2">{operationDetails}</div>
-    </nav>
+    <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
+      <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
+        <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
+          <OperationTitleDate operation={tx} />
+          <Slot id={operationTitleSlot} props={{ operation: tx }} />
+          <OperationTitleStatus operation={tx} />
+        </div>
+      </Accordion.Button>
+      <Accordion.Content className="border-t border-divider">
+        <OperationFullInfo tx={tx} account={account} />
+      </Accordion.Content>
+    </Accordion>
   );
 };
+
+export default Operation;

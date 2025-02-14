@@ -49,6 +49,11 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 
   // Collectives
   [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
+  [TransactionType.COLLECTIVE_SET_ACTIVE]: 'unknownMst',
+  [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'unknownMst',
+  [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'unknownMst',
+  [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'unknownMst',
+  [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
 };
 
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {

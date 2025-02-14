@@ -1,3 +1,4 @@
+/* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
@@ -5,7 +6,6 @@ import { combineEvents, delay, spread } from 'patronum';
 
 import {
   type Account,
-  type BasketTransaction,
   type NoID,
   type PartialProxiedAccount,
   type ProxyGroup,
@@ -285,18 +285,20 @@ sample({
     return nonNullable(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
-    const proxiedAccount: PartialProxiedAccount = {
-      accountId,
-      chainId: chain.chainId,
-      proxyAccountId: account.accountId,
-      delay: 0,
-      proxyType: 'Any',
-      proxyVariant: ProxyVariant.PURE,
-      blockNumber,
-      extrinsicIndex,
-    };
+    const proxiedAccounts: PartialProxiedAccount[] = [
+      {
+        accountId,
+        chainId: chain.chainId,
+        proxyAccountId: account.accountId,
+        delay: 0,
+        proxyType: 'Any',
+        proxyVariant: ProxyVariant.PURE,
+        blockNumber,
+        extrinsicIndex,
+      },
+    ];
 
-    return [proxiedAccount];
+    return { proxiedAccounts };
   },
   target: proxiesModel.createProxiesWallets,
 });
@@ -359,9 +361,9 @@ sample({
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: store!.account.walletId,
-      coreTx,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+    };
 
     return [tx];
   },

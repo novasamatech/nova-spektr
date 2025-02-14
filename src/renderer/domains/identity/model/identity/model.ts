@@ -41,8 +41,9 @@ const {
       accounts,
     };
   },
-  filter: ({ accounts }) => accounts.length > 0,
   async fn({ api, accounts }) {
+    if (accounts.length === 0) return {};
+
     const subIdentities = await identityPallet.storage.superOf(api, accounts);
     const parentAccounts = subIdentities.map(sub => sub.parent);
     const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
@@ -87,6 +88,7 @@ const request = attach({
 
     const api = apis[identityChainId];
     if (nullable(api)) {
+      console.log('=== fail', chainId);
       throw new Error(`ApiPromise for chain ${identityChainId} not found`);
     }
 

@@ -33,7 +33,7 @@ const getVariant = (variant: Props['variant'], value: string) => {
   }
 
   if (variant === 'short') {
-    return truncate(value, 8, 8);
+    return truncate(value, 6, 6);
   }
 
   return null;

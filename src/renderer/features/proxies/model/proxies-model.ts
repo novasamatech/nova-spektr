@@ -227,10 +227,10 @@ const createProxiesWalletsFx = attach({
   },
   mapParams(
     {
-      identity,
+      identity = {},
       proxiedAccounts,
     }: {
-      identity: IdentityMap;
+      identity?: IdentityMap;
       proxiedAccounts: PartialProxiedAccount[];
     },
     { chains, wallets },

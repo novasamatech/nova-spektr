@@ -36,17 +36,19 @@ const List = ({ children }: PropsWithChildren) => {
 
 type TriggerProps = PropsWithChildren<{
   value: string;
+  disabled?: boolean;
 }>;
 
-const Trigger = ({ value, children }: TriggerProps) => {
+const Trigger = ({ value, disabled, children }: TriggerProps) => {
   return (
     <RadixTabs.Trigger
       value={value}
       className={cnTw(
-        'flex w-full items-center justify-center rounded bg-transparent px-2 py-1.5 text-button-small text-text-secondary',
+        'flex w-full items-center justify-center gap-1 rounded bg-transparent px-2 py-1.5 text-button-small text-text-secondary',
         'transition-all duration-100',
         'data-[state=active]:bg-white data-[state=active]:text-text-primary data-[state=active]:shadow-card-shadow',
       )}
+      disabled={disabled}
     >
       {' '}
       {children}

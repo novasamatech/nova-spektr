@@ -3,7 +3,7 @@
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
-import { config as collectivesConfig, tracksService } from '@/domains/collectives';
+import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { governanceModel } from '@/entities/governance';
 import { multisigsModel } from '@/entities/multisig';
@@ -15,14 +15,20 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
+import { basketOperationsFeature } from '@/features/basket-operations';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
-import { fellowshipEvidenceFeature } from '@/features/fellowship-evidence';
+import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-feed';
+import { fellowshipBasketOperationFeature } from '@/features/fellowship-basket-operation';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
-import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
+import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
+import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
+import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
+import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
+import { governanceBasketOperationFeature } from '@/features/governance-basket-operation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
 import { importDBFeature } from '@/features/import-db';
@@ -30,10 +36,13 @@ import { multisigOperationDetailsFeature } from '@/features/multisig-operation-d
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { proxiesModel } from '@/features/proxies';
+import { proxyBasketOperationFeature } from '@/features/proxy-basket-operation';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
+import { stakingBasketOperationFeature } from '@/features/staking-basket-operation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { stakingOperationDetailFeature } from '@/features/staking-operation-details';
+import { transferBasketOperationFeature } from '@/features/transfer-basket-operation';
 import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
 import { walletDetailsFeature } from '@/features/wallet-details';
 import { walletMultisigFeature } from '@/features/wallet-multisig';
@@ -49,16 +58,18 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
 import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
 
+import { fellowshipSalaryFeature } from 'src/renderer/features/fellowship-evidence-salary';
+
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
 
   config.inject(collectivesConfig.calculateVoteWeightPipeline, (defaultValue, { pallet, excessRank }) => {
     if (pallet === 'fellowship') {
-      return tracksService.getGeometricVoteWeight(excessRank);
+      return trackService.getGeometricVoteWeight(excessRank);
     }
 
     if (pallet === 'ambassador') {
-      return tracksService.getLinearVoteWeight(excessRank);
+      return trackService.getLinearVoteWeight(excessRank);
     }
 
     return defaultValue;
@@ -92,7 +103,6 @@ export const bootstrap = () => {
     assetsNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
-    fellowshipNavigationFeature,
     operationsNavigationFeature,
     contactsNavigationFeature,
     notificationsNavigationFeature,
@@ -100,10 +110,15 @@ export const bootstrap = () => {
     settingsNavigationFeature,
     flexibleMultisigNavigationFeature,
 
-    fellowshipSalaryFeature,
-    fellowshipEvidenceFeature,
-    fellowshipProfileFeature,
+    fellowshipActivityFeedFeature,
     fellowshipMembersFeature,
+    fellowshipNavigationFeature,
+    fellowshipProfileFeature,
+    fellowshipReferendumsDetailsFeature,
+    fellowshipReferendumsFeature,
+    fellowshipSalaryFeature,
+    fellowshipTasksFeature,
+    fellowshipVotingFeature,
 
     walletSelectFeature.feature,
     walletDetailsFeature,
@@ -127,6 +142,13 @@ export const bootstrap = () => {
     proxyOperationDetailFeature,
     stakingOperationDetailFeature,
     transferOperationDetailFeature,
+
+    basketOperationsFeature,
+    transferBasketOperationFeature,
+    stakingBasketOperationFeature,
+    governanceBasketOperationFeature,
+    proxyBasketOperationFeature,
+    fellowshipBasketOperationFeature,
 
     importDBFeature,
   ]);

@@ -10,6 +10,7 @@ type Props = {
   accountId: AccountId | AddresssType;
   title?: string;
   chain: Chain;
+  iconSize?: number;
   hideIcon?: boolean;
   hideAddress?: boolean;
   variant?: 'truncate' | 'short';
@@ -18,12 +19,23 @@ type Props = {
 };
 
 export const Account = memo(
-  ({ accountId, title, variant = 'truncate', hideAddress, hideIcon, chain, addressTestId, explorersTestId }: Props) => {
+  ({
+    accountId,
+    title,
+    variant = 'truncate',
+    iconSize,
+    hideAddress,
+    hideIcon,
+    chain,
+    addressTestId,
+    explorersTestId,
+  }: Props) => {
     return (
       <div className="flex w-max min-w-0 max-w-full items-center gap-2">
         <Address
           showIcon={!hideIcon}
           variant={variant}
+          iconSize={iconSize}
           hideAddress={hideAddress}
           title={title}
           address={toAddress(accountId, { prefix: chain.addressPrefix })}

@@ -5,6 +5,6 @@ export { createSlot, isSlotIdentifier, normalizeSlotHandler } from './createSlot
 export { skipAction } from './constants';
 export { combineIdentifiers, isIdentifier } from './helpers';
 
-export { usePipeline, useSlot, Slot } from './reactIntegration';
+export { usePipeline, useSlot, useAnyOf, Slot } from './reactIntegration';
 
 export type { AnyIdentifier, InferHandlerBody, InferInput, InferOutput, HandlerInput, Handler } from './types';

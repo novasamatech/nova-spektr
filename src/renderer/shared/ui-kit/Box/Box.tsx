@@ -11,8 +11,8 @@ type BoxPadding =
   | [verticalTop: BoxSpacing, horizontalRight: BoxSpacing, bottom?: BoxSpacing, right?: BoxSpacing];
 
 type BoxProps = PropsWithChildren<{
-  width?: CSS.Property.Width;
-  height?: CSS.Property.Height;
+  width?: CSS.Property.Width | number;
+  height?: CSS.Property.Height | number;
   verticalAlign?: CSS.Property.AlignItems;
   horizontalAlign?: CSS.Property.JustifyContent;
   direction?: CSS.Property.FlexDirection;
@@ -22,7 +22,7 @@ type BoxProps = PropsWithChildren<{
   hideOverflow?: boolean;
   grow?: number;
   wrap?: boolean;
-  gap?: BoxSpacing;
+  gap?: BoxSpacing | string;
   padding?: BoxPadding;
   testId?: string;
 }>;
@@ -87,8 +87,8 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
 
     const style = useMemo<React.CSSProperties>(
       () => ({
-        width,
-        height,
+        width: getBoxSize<CSS.Property.Width>(width),
+        height: getBoxSize<CSS.Property.Height>(height),
         padding: calculatedPadding,
         alignItems: isHorizontal ? verticalAlign : horizontalAlign,
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,

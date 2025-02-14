@@ -74,7 +74,7 @@ const {
   },
 });
 
-export const referendumMetaModel = {
+export const referendumMeta = {
   $list,
   request,
   pending,

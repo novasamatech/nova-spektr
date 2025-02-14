@@ -20,7 +20,7 @@ import {
   SigningType,
   WalletType,
 } from '@/shared/core';
-import { series, waitFor } from '@/shared/effector';
+import { series } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -230,23 +230,18 @@ const populateFlexibleMultisigWallets = populateWallets.map((drafts) => {
   return drafts.filter((x) => x.type === 'flexibleMultisig');
 });
 
-const identityFinished = waitFor({
-  clock: identitySeries.pending,
-  source: identityDomain.identity.$list,
-  filter: (pending): pending is boolean => !pending,
-  reset: [identitySeries.done, identitySeries.fail],
-});
-
 sample({
   clock: combineEvents({
     events: {
       multisigs: populateMultisigWallets,
-      identity: identityFinished,
+      identity: identitySeries.done,
     },
   }),
   fn: ({ multisigs, identity }) => {
     return multisigs.map(({ chain, account }) => {
-      const walletIdentity = identity.event[chain.chainId]?.[account.accountId];
+      const index = (identity.params as { chainId: ChainId }[]).findIndex(({ chainId }) => chainId === chain.chainId);
+      const walletIdentity = identity.result.at(index)?.[account.accountId];
+
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
@@ -265,12 +260,14 @@ sample({
   clock: combineEvents({
     events: {
       multisigs: populateFlexibleMultisigWallets,
-      identity: identityFinished,
+      identity: identitySeries.done,
     },
   }),
   fn: ({ multisigs, identity }) => {
     return multisigs.map(({ chain, account }) => {
-      const walletIdentity = identity.event[chain.chainId]?.[account.accountId];
+      const index = (identity.params as { chainId: ChainId }[]).findIndex(({ chainId }) => chainId === chain.chainId);
+      const walletIdentity = identity.result.at(index)?.[account.accountId];
+
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {

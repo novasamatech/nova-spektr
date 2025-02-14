@@ -28,7 +28,7 @@ export const consts = {
    * payout.
    */
   payoutPeriod: (type: PalletType, api: ApiPromise) => {
-    return pjsSchema.u32.parse(getPallet(api, type)['payoutPeriod']);
+    return pjsSchema.blockHeight.parse(getPallet(api, type)['payoutPeriod']);
   },
 
   /**
@@ -36,6 +36,6 @@ export const consts = {
    * intent to.
    */
   registrationPeriod: (type: PalletType, api: ApiPromise) => {
-    return pjsSchema.u32.parse(getPallet(api, type)['registrationPeriod']);
+    return pjsSchema.blockHeight.parse(getPallet(api, type)['registrationPeriod']);
   },
 };

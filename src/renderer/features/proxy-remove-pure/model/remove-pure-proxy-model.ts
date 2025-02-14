@@ -3,7 +3,6 @@ import { spread } from 'patronum';
 
 import {
   type Account,
-  type BasketTransaction,
   type ChainId,
   type MultisigTxWrapper,
   type ProxiedAccount,
@@ -502,9 +501,9 @@ sample({
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
       initiatorWallet: store!.account.walletId,
-      coreTx,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+    };
 
     return [tx];
   },

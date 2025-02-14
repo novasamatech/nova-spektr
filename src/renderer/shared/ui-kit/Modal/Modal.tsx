@@ -113,8 +113,12 @@ const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?
   );
 };
 
-const Trigger = ({ children }: PropsWithChildren) => {
-  return <Dialog.Trigger asChild>{children}</Dialog.Trigger>;
+const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean }>) => {
+  return (
+    <Dialog.Trigger disabled={disabled} asChild>
+      {children}
+    </Dialog.Trigger>
+  );
 };
 
 const Footer = ({ children, align = 'end' }: PropsWithChildren<{ align?: 'start' | 'end' }>) => {
