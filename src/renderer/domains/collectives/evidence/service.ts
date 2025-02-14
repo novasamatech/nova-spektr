@@ -3,11 +3,14 @@ import { hexToU8a } from '@polkadot/util';
 import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
-import { type HexString } from '@/shared/core';
+import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
+import { type CollectivePalletsType } from '../_lib/types';
 import { type CoreMember } from '../members/types';
 
-import { type EvidencePeriods } from './types';
+import { type EvidencePeriods, type EvidenceTransaction } from './types';
 
 function getCidByEvidence(evidence: HexString) {
   const SHA_256_CODE = 0x12;
@@ -26,7 +29,7 @@ function getEvidenceIpfsUrl(evidence: HexString) {
 }
 
 function getEvidenceUploadIpfsUrl() {
-  return new URL(`/api/ipfs/files`, 'https://collectives.subsquare.io');
+  return new URL(`/api/nova/ipfs/files`, 'https://collectives.subsquare.io');
 }
 
 function getProposalAccount(api: ApiPromise, inline: HexString) {
@@ -45,6 +48,34 @@ function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
+type EvidenceTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+  wish: 'Promotion' | 'Retention';
+  evidence: HexString;
+};
+
+function createEvidenceTransaction({
+  pallet,
+  account,
+
+  chain,
+  wish,
+  evidence,
+}: EvidenceTransactionParams): EvidenceTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SUBMIT_EVIDENCE,
+    args: { pallet, wish, evidence },
+  };
+}
+
+function isEvidenceTransaction(transaction: Transaction): transaction is EvidenceTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE;
+}
+
 export const evidenceService = {
   getEvidenceIpfsUrl,
   getEvidenceUploadIpfsUrl,
@@ -53,4 +84,7 @@ export const evidenceService = {
   getProposalAccount,
   getPromotionPeriod,
   getDemotionPeriod,
+
+  createEvidenceTransaction,
+  isEvidenceTransaction,
 };

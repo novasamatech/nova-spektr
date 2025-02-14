@@ -2,6 +2,7 @@ import { combine, createEvent, sample } from 'effector';
 import { reshape } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
+import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
@@ -10,6 +11,8 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
+
+const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -85,11 +88,14 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
+    open: flow.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
+  filter: ({ open, transactions, account, chain }) => {
+    return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
+  },
   fn({ transactions, account, chain }, signParams) {
     return {
       signatures: signParams.signatures,
@@ -141,6 +147,7 @@ sample({
 });
 
 export const salaryRequest = {
+  flow,
   $fee,
   $wallet,
   $account,

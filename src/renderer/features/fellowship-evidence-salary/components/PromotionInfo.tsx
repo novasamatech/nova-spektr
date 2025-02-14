@@ -9,7 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 
-import { EvidenceFormModal } from './EvidenceFormModal';
+import { EvidencePostFlowModal } from './EvidencePostFlowModal';
 import { TrackDescription } from './TrackDescription';
 
 export const PromotionInfo = memo(() => {
@@ -41,20 +41,26 @@ export const PromotionInfo = memo(() => {
         <Box direction="row">
           <Box gap={1} grow={1}>
             <FootnoteText className="text-text-secondary">{t('fellowship.salary.promotionUntilNext')}</FootnoteText>
-            {!hasPromotionEvidence && timeLeft === 0 && (
-              <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>
-            )}
+            {timeLeft === 0 && <SmallTitleText>{t('fellowship.salary.promotionReadyToApply')}</SmallTitleText>}
             {timeLeft > 0 && (
               <SmallTitleText>
                 <Duration seconds={timeLeft / 1000} />
               </SmallTitleText>
             )}
           </Box>
-          {!hasPromotionEvidence && timeLeft === 0 && (
-            <EvidenceFormModal wish="Promotion">
-              <Button disabled>{t('general.button.applyButton')}</Button>
-            </EvidenceFormModal>
+          {timeLeft === 0 && (
+            <EvidencePostFlowModal wish="Promotion">
+              <Button>{t('general.button.applyButton')}</Button>
+            </EvidencePostFlowModal>
           )}
+        </Box>
+      )}
+      {hasPromotionEvidence && (
+        <Box direction="row">
+          <Box gap={1} grow={1}>
+            <FootnoteText className="text-text-secondary">{t('fellowship.salary.promotionApplied')}</FootnoteText>
+            <SmallTitleText>{t('fellowship.salary.retentionAppliedDescription')}</SmallTitleText>
+          </Box>
         </Box>
       )}
       {nonNullable(nextTrack) && <TrackDescription track={nextTrack} />}
