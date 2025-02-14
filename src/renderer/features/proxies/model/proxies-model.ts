@@ -21,8 +21,8 @@ import {
   type Wallet,
   WalletType,
 } from '@/shared/core';
-import { series, waitFor } from '@/shared/effector';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { series } from '@/shared/effector';
+import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type IdentityMap, identityDomain } from '@/domains/identity';
 import { type AnyAccount, accountsService } from '@/domains/network';
@@ -240,50 +240,14 @@ const createProxiesWalletsFx = attach({
   effect: series(createProxiedWalletFx),
 });
 
-const identitySeries = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
-
 sample({
   clock: fetchProxiesFx.doneData,
   filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
-  fn: ({ proxiedAccountsToAdd }) => {
-    const grouped: Record<ChainId, AccountId[]> = {};
-
-    for (const { chainId, accountId } of proxiedAccountsToAdd) {
-      if (nullable(grouped[chainId])) {
-        grouped[chainId] = [accountId];
-      } else {
-        grouped[chainId].push(accountId);
-      }
-    }
-
-    return Object.entries(grouped).map((entry) => {
-      const [chainId, accounts] = entry as [ChainId, AccountId[]];
-
-      return { chainId, accounts };
-    });
-  },
-  target: identitySeries,
-});
-
-const identityFinished = waitFor({
-  clock: identitySeries.pending,
-  source: identityDomain.identity.$list,
-  filter: (pending): pending is boolean => !pending,
-  reset: [identitySeries.done, identitySeries.fail],
-});
-
-sample({
-  clock: combineEvents({
-    events: {
-      accounts: fetchProxiesFx.doneData,
-      identity: identityFinished,
-    },
+  fn: ({ proxiedAccountsToAdd }) => ({
+    chainId: proxiedAccountsToAdd[0].chainId,
+    accounts: proxiedAccountsToAdd.map((p) => p.accountId),
   }),
-  fn: ({ accounts, identity }) => ({
-    identity: identity.event,
-    proxiedAccounts: accounts.proxiedAccountsToAdd,
-  }),
-  target: createProxiesWalletsFx,
+  target: identityDomain.identity.request,
 });
 
 spread({
@@ -294,6 +258,20 @@ spread({
     proxiedAccountsToRemove: proxiedAccountsRemoved,
     deposits: depositsReceived,
   },
+});
+
+sample({
+  clock: combineEvents({
+    events: {
+      identity: identityDomain.identity.$list.updates,
+      proxiedAccounts: fetchProxiesFx.doneData.filterMap((result) => {
+        if (!result.proxiedAccountsToAdd.length) return;
+
+        return result.proxiedAccountsToAdd;
+      }),
+    },
+  }),
+  target: createProxiesWalletsFx,
 });
 
 sample({

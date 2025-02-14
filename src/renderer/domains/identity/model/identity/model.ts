@@ -67,7 +67,7 @@ const {
     return result;
   },
   map(store, { params, result }) {
-    if (isEmpty(result)) return store;
+    if (isEmpty(result)) return { ...store };
 
     return {
       ...store,
