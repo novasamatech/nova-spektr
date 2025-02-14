@@ -1,5 +1,5 @@
 import { Enum, Option } from '@polkadot/types';
-import { z } from 'zod';
+import { ZodOptional, z } from 'zod';
 
 const safeParse = <T extends z.ZodTypeAny>(schema: T, value: unknown, ctx: z.RefinementCtx): z.infer<T> | never => {
   const result = schema.safeParse(value);
@@ -40,17 +40,25 @@ export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
       const result: Record<string, unknown> = {};
 
       for (const [key, schema] of Object.entries(v)) {
-        let fieldValue;
+        const isOptionalSchema = schema instanceof ZodOptional;
         let hasValue = false;
+        let fieldValue;
+
         if (map instanceof Map) {
           if (map.has(key)) {
             fieldValue = map.get(key);
+            hasValue = true;
+          } else if (isOptionalSchema) {
+            fieldValue = undefined;
             hasValue = true;
           }
         } else {
           if (key in map) {
             // @ts-expect-error dynamic data
             fieldValue = map[key];
+            hasValue = true;
+          } else if (isOptionalSchema) {
+            fieldValue = undefined;
             hasValue = true;
           }
         }
