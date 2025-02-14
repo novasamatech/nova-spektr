@@ -1,24 +1,30 @@
 import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
 import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
-import { spread } from 'patronum';
+import { combineEvents, spread } from 'patronum';
 
 import {
+  AccountType,
   type Chain,
   type ChainId,
   type Connection,
+  CryptoType,
+  ExternalType,
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyDeposits,
+  ProxyVariant,
+  SigningType,
   type Wallet,
+  WalletType,
 } from '@/shared/core';
-import { AccountType, CryptoType, ExternalType, ProxyVariant, SigningType, WalletType } from '@/shared/core';
-import { series } from '@/shared/effector';
-import { dictionary } from '@/shared/lib/utils';
+import { series, waitFor } from '@/shared/effector';
+import { dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type IdentityMap, identityDomain } from '@/domains/identity';
 import { type AnyAccount, accountsService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -171,13 +177,17 @@ const findAllProxiesFx = attach({
 // Wallet management
 
 type ProxiedWalletsParams = {
+  identity: IdentityMap;
   proxiedAccount: PartialProxiedAccount;
   chains: Record<ChainId, Chain>;
   wallets: Wallet[];
 };
 
-const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wallets }: ProxiedWalletsParams) => {
-  const walletName = proxyUtils.getProxiedName(proxiedAccount, chains[proxiedAccount.chainId].addressPrefix);
+const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, wallets }: ProxiedWalletsParams) => {
+  const chain = chains[proxiedAccount.chainId];
+
+  const walletIdentity = chain ? identity[chain.chainId]?.[proxiedAccount.accountId] : null;
+  const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain.addressPrefix);
 
   const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (w) => walletUtils.isFlexibleMultisig(w),
@@ -188,7 +198,7 @@ const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wall
   const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
 
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
-    name: walletName,
+    name: walletIdentity?.name ?? proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,
     isHidden,
@@ -200,7 +210,7 @@ const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wall
     {
       ...proxiedAccount,
       type: 'chain',
-      name: walletName,
+      name: walletIdentity?.name ?? proxyBasedName,
       accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
@@ -211,11 +221,69 @@ const createProxiedWalletFx = createEffect(async ({ proxiedAccount, chains, wall
 });
 
 const createProxiesWalletsFx = attach({
-  source: { chains: networkModel.$chains, wallets: walletModel.$wallets },
-  mapParams(proxiedAccounts: PartialProxiedAccount[], { chains, wallets }) {
-    return proxiedAccounts.map((proxiedAccount) => ({ proxiedAccount, chains, wallets }));
+  source: {
+    chains: networkModel.$chains,
+    wallets: walletModel.$wallets,
+  },
+  mapParams(
+    {
+      identity,
+      proxiedAccounts,
+    }: {
+      identity: IdentityMap;
+      proxiedAccounts: PartialProxiedAccount[];
+    },
+    { chains, wallets },
+  ) {
+    return proxiedAccounts.map((proxiedAccount) => ({ identity, proxiedAccount, chains, wallets }));
   },
   effect: series(createProxiedWalletFx),
+});
+
+const identitySeries = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
+
+sample({
+  clock: fetchProxiesFx.doneData,
+  filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
+  fn: ({ proxiedAccountsToAdd }) => {
+    const grouped: Record<ChainId, AccountId[]> = {};
+
+    for (const { chainId, accountId } of proxiedAccountsToAdd) {
+      if (nullable(grouped[chainId])) {
+        grouped[chainId] = [accountId];
+      } else {
+        grouped[chainId].push(accountId);
+      }
+    }
+
+    return Object.entries(grouped).map((entry) => {
+      const [chainId, accounts] = entry as [ChainId, AccountId[]];
+
+      return { chainId, accounts };
+    });
+  },
+  target: identitySeries,
+});
+
+const identityFinished = waitFor({
+  clock: identitySeries.pending,
+  source: identityDomain.identity.$list,
+  filter: (pending): pending is boolean => !pending,
+  reset: [identitySeries.done, identitySeries.fail],
+});
+
+sample({
+  clock: combineEvents({
+    events: {
+      accounts: fetchProxiesFx.doneData,
+      identity: identityFinished,
+    },
+  }),
+  fn: ({ accounts, identity }) => ({
+    identity: identity.event,
+    proxiedAccounts: accounts.proxiedAccountsToAdd,
+  }),
+  target: createProxiesWalletsFx,
 });
 
 spread({
@@ -224,7 +292,6 @@ spread({
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
-    proxiedAccountsToAdd: createProxiesWalletsFx,
     deposits: depositsReceived,
   },
 });

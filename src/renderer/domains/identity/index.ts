@@ -6,4 +6,4 @@ export const identityDomain = {
 
 export { identityDomainModel as identity };
 
-export type { AccountIdentity } from './model/identity/types';
+export type { AccountIdentity, IdentityMap } from './model/identity/types';

@@ -1,3 +1,4 @@
+import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type AccountIdentity = {
@@ -6,3 +7,5 @@ export type AccountIdentity = {
   email: string;
   image: string;
 };
+
+export type IdentityMap = Record<ChainId, Record<AccountId, AccountIdentity>>;

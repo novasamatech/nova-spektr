@@ -185,7 +185,7 @@ sample({
   target: enrichIndexedMultisigsFx,
 });
 
-const identitySeries = series(identityDomain.identity.request);
+const identitySeries = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
 
 sample({
   clock: enrichIndexedMultisigsFx.doneData,

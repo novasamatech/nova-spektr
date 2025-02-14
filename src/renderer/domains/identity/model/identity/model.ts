@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach } from 'effector';
+import { isEmpty } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
@@ -8,11 +9,9 @@ import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
-import { identityService } from './service';
-import { type AccountIdentity } from './types';
+import { type AccountIdentity, type IdentityMap } from './types';
 
 type IdentityData = Record<AccountId, AccountIdentity>;
-type IdentityStore = Record<ChainId, IdentityData>;
 type RequestParams = {
   accounts: AccountId[];
   chainId: ChainId;
@@ -30,7 +29,7 @@ const {
   fulfilled,
   pending,
   fail,
-} = createDataSource<IdentityStore, InnerRequestParams, IdentityData>({
+} = createDataSource<IdentityMap, InnerRequestParams, IdentityData>({
   initial: {},
   mutateParams(params, store) {
     const chainIdentities = store[params.chainId] ?? {};
@@ -68,14 +67,11 @@ const {
     return result;
   },
   map(store, { params, result }) {
-    const previousData = store[params.chainId] ?? {};
+    if (isEmpty(result)) return store;
 
     return {
       ...store,
-      [params.chainId]: {
-        ...previousData,
-        ...result,
-      },
+      [params.chainId]: { ...store[params.chainId], ...result },
     };
   },
 });
@@ -87,22 +83,14 @@ const request = attach({
     chains: networkModel.$chains,
   },
   mapParams: ({ chainId, accounts }: RequestParams, { apis, chains }) => {
-    const identityChain = identityService.findIdentityChain(chains, chainId);
+    const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
 
-    if (nullable(identityChain)) {
-      throw new Error(`Chain path from ${chainId} is broken, trace chain.parentId fields in config.`);
-    }
-
-    const api = apis[identityChain.chainId];
+    const api = apis[identityChainId];
     if (nullable(api)) {
-      throw new Error(`ApiPromise for chain ${identityChain.chainId} not found`);
+      throw new Error(`ApiPromise for chain ${identityChainId} not found`);
     }
 
-    return {
-      accounts,
-      chainId,
-      api,
-    };
+    return { accounts, chainId, api };
   },
 });
 
