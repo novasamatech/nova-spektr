@@ -2,12 +2,12 @@ import { type Chain, type FlexibleMultisigTransaction, type MultisigTransaction,
 import { useI18n } from '@/shared/i18n';
 import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
+import { Account, AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { ExplorersPopover, WalletCardSm } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -73,13 +73,10 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
         <DetailRow label={t('operation.details.depositor')} className={valueClass}>
           <div className="min-w-min text-footnote">
             {depositorWallet ? (
-              <div className="-mr-2">
-                <ExplorersPopover
-                  button={<WalletCardSm wallet={depositorWallet} />}
-                  address={depositorSignatory.accountId}
-                  explorers={chain.explorers}
-                  addressPrefix={chain.addressPrefix}
-                />
+              <div className="flex items-center gap-2">
+                <WalletIcon size={16} type={depositorWallet.type} />
+                <span>{depositorWallet.name}</span>
+                <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
               </div>
             ) : (
               <Account
