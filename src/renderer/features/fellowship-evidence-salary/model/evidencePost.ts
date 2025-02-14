@@ -2,15 +2,18 @@ import { combine, createEvent, sample } from 'effector';
 import { reshape } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
+import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { evidenceService } from '@/domains/collectives';
+import { evidence, evidenceService } from '@/domains/collectives';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { evidenceForm } from './evidenceForm';
 import { fellowshipSalaryFeature } from './feature';
+
+const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -90,11 +93,14 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
+    open: flow.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
+  filter: ({ open, transactions, account, chain }) => {
+    return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
+  },
   fn({ transactions, account, chain }, signParams) {
     return {
       signatures: signParams.signatures,
@@ -108,6 +114,29 @@ sample({
     };
   },
   target: submitModel.events.formInitiated,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    open: flow.status,
+    transactions: $wrappedTx,
+    api: $api,
+    account: $account,
+    chain: $chain,
+  },
+  filter({ open }) {
+    return open;
+  },
+  fn({ api, account, chain }) {
+    return {
+      palletType: 'fellowship' as const,
+      api: api!,
+      chain: chain!,
+      accountId: account!.accountId,
+    };
+  },
+  target: evidence.request,
 });
 
 // Basket
@@ -146,6 +175,7 @@ sample({
 });
 
 export const evidencePost = {
+  flow,
   $fee,
   $wallet,
   $account,

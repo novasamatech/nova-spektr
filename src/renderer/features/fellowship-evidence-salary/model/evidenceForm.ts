@@ -1,13 +1,14 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { type HexString } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { evidenceService } from '@/domains/collectives';
 
 // flow
 
-const reset = createEvent();
+const skipUploading = createEvent();
 
 const flow = createFlow<{ wish: 'Promotion' | 'Retention' | null }>({ wish: null });
 const $wish = flow.state.map(x => x.wish);
@@ -101,6 +102,12 @@ ${comments}
 `;
 });
 
+sample({
+  clock: $formattedMarkdown.updates,
+  fn: () => null,
+  target: $evidence,
+});
+
 // upload flow
 
 const $uploadError = createStore('');
@@ -115,8 +122,16 @@ sample({
 
 sample({
   clock: form.formValidated,
-  source: { document: $formattedMarkdown, wish: $wish },
+  source: { evidence: $evidence, document: $formattedMarkdown, wish: $wish },
+  filter: ({ evidence }) => nullable(evidence),
   target: postEvidenceFx,
+});
+
+sample({
+  clock: form.formValidated,
+  source: $evidence,
+  filter: nonNullable,
+  target: skipUploading,
 });
 
 sample({
@@ -133,7 +148,8 @@ sample({
 
 // steps
 
-const $step = createStore<'form' | 'submit'>('form');
+const setStep = createEvent<'form' | 'submit'>();
+const $step = restore(setStep, 'form');
 
 sample({
   clock: flow.open,
@@ -148,7 +164,7 @@ sample({
 });
 
 sample({
-  clock: postEvidenceFx.done,
+  clock: [postEvidenceFx.done, skipUploading],
   fn: () => 'submit' as const,
   target: $step,
 });
@@ -156,20 +172,9 @@ sample({
 // reset
 
 sample({
-  clock: reset,
-  fn: () => 'form' as const,
-  target: $step,
-});
-
-sample({
-  clock: reset,
-  fn: () => null,
-  target: [$evidence, $uploadError],
-});
-
-sample({
   clock: flow.close,
-  target: [reset, form.reset],
+  fn: () => null,
+  target: [$evidence, $uploadError, form.reset],
 });
 
 export const evidenceForm = {
@@ -182,5 +187,5 @@ export const evidenceForm = {
   $uploadError,
   $pending: postEvidenceFx.pending,
   posting: postEvidenceFx,
-  reset,
+  setStep,
 };

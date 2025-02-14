@@ -21,7 +21,7 @@ export const EvidencePostFlowModal = ({ wish, children }: Props) => {
         isOpen={step === 'submit'}
         onToggle={open => {
           if (!open) {
-            evidenceForm.reset();
+            evidenceForm.setStep('form');
           }
         }}
       />

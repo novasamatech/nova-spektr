@@ -32,6 +32,13 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
 
   const handleToggle = (open: boolean) => {
     if (disabled) return;
+
+    if (open) {
+      salaryInduct.flow.open(null);
+    } else {
+      salaryInduct.flow.close(null);
+    }
+
     setOpen(open);
     setStep('confirm');
   };

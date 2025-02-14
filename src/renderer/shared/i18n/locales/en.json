@@ -415,6 +415,7 @@
         "uploadError": "Upload error"
       },
       "modalTitle": "Evidence & Salary",
+      "promotionApplied": "Applied for promotion:",
       "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again — the previous one will be replaced.",
       "promotionAppliedAlertTitle": "Promotion evidence is uploaded",
       "promotionEvidenceModalTitle": "Submit your promotion evidence",

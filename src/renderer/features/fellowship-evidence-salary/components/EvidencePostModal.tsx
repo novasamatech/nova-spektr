@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -24,6 +25,8 @@ type Props = PropsWithChildren<{
 }>;
 
 export const EvidencePostModal = ({ isOpen, onToggle, wish, children }: Props) => {
+  useFlow(evidencePost.flow, null);
+
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
   const input = useUnit(fellowshipSalaryFeature.input);
