@@ -10,7 +10,7 @@ import { AssetBalance } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { ExplorersPopover, WalletCardSm, accountUtils, walletModel } from '@/entities/wallet';
+import { WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
 
 type Props = {
   operation: MultisigTransaction;
@@ -88,27 +88,24 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
           {depositorSignatory && (
             <DetailRow label={t('operation.details.depositor')} className={valueClass}>
-              <div className="-mr-2">
-                {depositorWallet ? (
-                  <ExplorersPopover
-                    button={<WalletCardSm wallet={depositorWallet} />}
-                    address={depositorSignatory.accountId}
-                    explorers={explorers}
-                    addressPrefix={addressPrefix}
-                  />
-                ) : (
-                  <div className="flex min-w-min">
-                    <FootnoteText className="w-[180px] text-text-secondary">
-                      <Address
-                        address={toAddress(depositorSignatory.accountId, { prefix: addressPrefix })}
-                        variant="short"
-                        showIcon
-                      />
-                    </FootnoteText>
-                    <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
-                  </div>
-                )}
-              </div>
+              {depositorWallet ? (
+                <div className="flex items-center gap-2">
+                  <WalletIcon size={16} type={depositorWallet.type} />
+                  <span>{depositorWallet.name}</span>
+                  <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
+                </div>
+              ) : (
+                <div className="-mr-2 flex min-w-min">
+                  <FootnoteText className="w-[180px] text-text-secondary">
+                    <Address
+                      address={toAddress(depositorSignatory.accountId, { prefix: addressPrefix })}
+                      variant="short"
+                      showIcon
+                    />
+                  </FootnoteText>
+                  <AccountExplorers accountId={depositorSignatory.accountId} chain={chain} />
+                </div>
+              )}
             </DetailRow>
           )}
 
