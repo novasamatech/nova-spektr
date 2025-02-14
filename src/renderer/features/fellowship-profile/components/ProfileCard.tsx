@@ -31,7 +31,7 @@ export const ProfileCard = memo(() => {
   return (
     <ProfileModal>
       <div
-        className={cnTw('rounded-xl border border-filter-border bg-card-background text-button-small', {
+        className={cnTw('cursor-pointer rounded-xl border border-filter-border bg-card-background text-button-small', {
           'text-text-tertiary': disabled,
         })}
       >

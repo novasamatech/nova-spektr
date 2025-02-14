@@ -1,0 +1,29 @@
+import { type BN } from '@polkadot/util';
+
+import { type Asset, type Chain, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { formatAsset } from '@/shared/lib/utils';
+import { DetailRow, Separator } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
+import { type AnyAccount } from '@/domains/network';
+
+type Props = {
+  account: AnyAccount;
+  wallets: Wallet[];
+  chain: Chain;
+  asset: Asset;
+  wish: 'Promotion' | 'Retention';
+  fee: BN;
+};
+
+export const EvidencePostConfirmation = ({ fee, account, wallets, chain, asset, wish }: Props) => {
+  const { t } = useI18n();
+
+  return (
+    <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
+      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.wish')}>{wish}</DetailRow>
+      <Separator />
+      <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
+    </TransactionDetails>
+  );
+};

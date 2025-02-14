@@ -2,6 +2,7 @@ import { combine, createEvent, sample } from 'effector';
 import { reshape } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
+import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
@@ -10,6 +11,8 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
+
+const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -85,15 +88,16 @@ sample({
 const transactionSigned = sample({
   clock: signModel.output.formSubmitted,
   source: {
+    open: flow.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  fn({ account, chain, transactions }, signParams) {
-    return { account, chain, transactions, signParams };
+  fn({ open, account, chain, transactions }, signParams) {
+    return { open, account, chain, transactions, signParams };
   },
-}).filterMap(({ account, chain, transactions, signParams }) => {
-  if (nonNullable(chain) && nonNullable(transactions) && nonNullable(account)) {
+}).filterMap(({ open, account, chain, transactions, signParams }) => {
+  if (open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account)) {
     return { account, chain, transactions, signParams };
   }
 });
@@ -151,6 +155,7 @@ sample({
 });
 
 export const salaryInduct = {
+  flow,
   $fee,
   $wallet,
   $account,

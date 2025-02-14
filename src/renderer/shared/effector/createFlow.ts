@@ -12,7 +12,7 @@ type Flow<Props> = {
   state: Store<Props>;
 };
 
-export const createFlow = <Props>(defaultState: Props): Flow<Props> => {
+export const createFlow = <Props = void>(defaultState: Props): Flow<Props> => {
   const $state = createStore(defaultState);
   const $status = createStore(false);
 
@@ -70,20 +70,25 @@ export const createFlow = <Props>(defaultState: Props): Flow<Props> => {
   };
 };
 
-export const useFlow = <Props>(flow: Flow<Props>, props: NoInfer<Props>) => {
+export const useFlow = <Props>(
+  ...[flow, props]: Props extends undefined
+    ? [flow: Flow<Props>, props?: undefined]
+    : [flow: Flow<Props>, props: NoInfer<Props>]
+) => {
+  const fixedProps = props as Props;
   const previous = usePrevious(props);
   useEffect(() => {
-    flow.open(props);
+    flow.open(fixedProps);
     return () => {
-      flow.close(props);
+      flow.close(fixedProps);
     };
   }, []);
   useEffect(() => {
     if (!shallowEqual(previous, props)) {
-      flow.open(props);
+      flow.open(fixedProps);
       return () => {
-        flow.close(props);
+        flow.close(fixedProps);
       };
     }
-  }, [previous, props]);
+  }, [previous, fixedProps]);
 };

@@ -10,9 +10,9 @@ import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-import { EvidenceFormModal } from './EvidenceFormModal';
+import { EvidencePostFlowModal } from './EvidencePostFlowModal';
 
-export const RetentionEvidenceInfo = memo(() => {
+export const RetentionInfo = memo(() => {
   const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
 
@@ -46,9 +46,9 @@ export const RetentionEvidenceInfo = memo(() => {
               <Duration seconds={timeLeft / 1000} />
             </SmallTitleText>
           </Box>
-          <EvidenceFormModal wish="Retention">
-            <Button disabled>{t('fellowship.salary.retentionSubmit')}</Button>
-          </EvidenceFormModal>
+          <EvidencePostFlowModal wish="Retention">
+            <Button>{t('fellowship.salary.retentionSubmit')}</Button>
+          </EvidencePostFlowModal>
         </Box>
       )}
 
