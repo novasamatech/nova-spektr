@@ -1,4 +1,3 @@
-export { basketUtils } from './lib/basket-utils';
 export { createTransactionConfirmStore } from './lib/createTransactionConfirmStore';
 
 export * from './Transfer';

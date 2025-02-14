@@ -6,10 +6,11 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { VoteConfirmation, basketUtils } from '@/features/operations/OperationsConfirm';
+import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { VoteForm } from './VoteForm';

@@ -21,8 +21,6 @@ export const basketOperationsFeature = createFeature({
   input: $input,
 });
 
-basketOperationsFeature.start();
-
 sample({
   clock: walletSelect.$selectedWallet,
   filter: (wallet) => nonNullable(wallet) && walletUtils.isPolkadotVaultGroup(wallet),
