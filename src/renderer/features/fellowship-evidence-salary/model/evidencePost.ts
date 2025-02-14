@@ -4,18 +4,16 @@ import { reshape } from 'patronum';
 import { type BasketTransaction } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
-import { salaryService } from '@/domains/collectives';
+import { evidence, evidenceService } from '@/domains/collectives';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
+import { evidenceForm } from './evidenceForm';
 import { fellowshipSalaryFeature } from './feature';
 
-const flow = createFlow<{ beneficiary: AccountId | null }>({ beneficiary: null });
-
-const $beneficiary = flow.state.map(state => state.beneficiary);
+const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -32,18 +30,20 @@ const $coreTx = combine(
   {
     input: fellowshipSalaryFeature.input,
     account: $account,
-    beneficiary: $beneficiary,
+    wish: evidenceForm.$wish,
+    evidence: evidenceForm.$evidence,
   },
-  ({ input, account, beneficiary }) => {
-    if (nullable(input) || nullable(account)) {
+  ({ input, account, wish, evidence }) => {
+    if (nullable(input) || nullable(account) || nullable(wish) || nullable(evidence)) {
       return null;
     }
 
-    return salaryService.createSalaryPayoutTransaction({
+    return evidenceService.createEvidenceTransaction({
       pallet: 'fellowship',
       chain: input.chain,
       account,
-      beneficiary,
+      wish,
+      evidence,
     });
   },
 );
@@ -116,6 +116,29 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    open: flow.status,
+    transactions: $wrappedTx,
+    api: $api,
+    account: $account,
+    chain: $chain,
+  },
+  filter({ open }) {
+    return open;
+  },
+  fn({ api, account, chain }) {
+    return {
+      palletType: 'fellowship' as const,
+      api: api!,
+      chain: chain!,
+      accountId: account!.accountId,
+    };
+  },
+  target: evidence.request,
+});
+
 // Basket
 
 const saveToBasket = createEvent();
@@ -151,9 +174,8 @@ sample({
   target: basketOperations.addTransactions,
 });
 
-export const salaryPayout = {
+export const evidencePost = {
   flow,
-
   $fee,
   $wallet,
   $account,

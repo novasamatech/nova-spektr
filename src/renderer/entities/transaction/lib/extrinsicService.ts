@@ -512,7 +512,7 @@ export const getUnsignedTransaction: Record<
       {
         method: {
           args: { wish, evidence },
-          name: 'setActive',
+          name: 'submitEvidence',
           pallet: `${pallet}Core`,
         },
         ...info,

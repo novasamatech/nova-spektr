@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -10,57 +11,52 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { evidencePost } from '../model/evidencePost';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { salaryInduct } from '../model/salaryInduct';
 
-import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
+import { EvidencePostConfirmation } from './EvidencePostConfirmation';
 
 type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = PropsWithChildren<{
-  disabled?: boolean;
+  isOpen: boolean;
+  onToggle: (open: boolean) => unknown;
+  wish: 'Promotion' | 'Retention';
 }>;
 
-export const SalaryInductModal = ({ disabled, children }: Props) => {
+export const EvidencePostModal = ({ isOpen, onToggle, wish, children }: Props) => {
+  useFlow(evidencePost.flow, null);
+
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('confirm');
   const input = useUnit(fellowshipSalaryFeature.input);
-  const account = useUnit(salaryInduct.$account);
-  const wallet = useUnit(salaryInduct.$wallet);
-  const fee = useUnit(salaryInduct.$fee);
+  const account = useUnit(evidencePost.$account);
+  const wallet = useUnit(evidencePost.$wallet);
+  const fee = useUnit(evidencePost.$fee);
 
   const handleToggle = (open: boolean) => {
-    if (disabled) return;
-
-    if (open) {
-      salaryInduct.flow.open(null);
-    } else {
-      salaryInduct.flow.close(null);
-    }
-
-    setOpen(open);
+    onToggle(open);
     setStep('confirm');
   };
 
   const handleSign = () => {
-    salaryInduct.sign();
+    evidencePost.sign();
     setStep('sign');
   };
 
   const handleBasketSave = () => {
-    salaryInduct.saveToBasket();
+    evidencePost.saveToBasket();
     setStep('basket');
   };
 
   if (step === 'submit') {
-    return <OperationSubmit isOpen={open} onClose={() => handleToggle(false)} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false)} />;
   }
 
   if (step === 'basket') {
     return (
       <OperationResult
-        isOpen={open}
+        isOpen={isOpen}
         variant="success"
         autoCloseTimeout={2000}
         title={t('operation.addedToBasket')}
@@ -72,7 +68,7 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
   if (nullable(account) || nullable(input)) {
     return (
       <OperationResult
-        isOpen={open}
+        isOpen={isOpen}
         variant="error"
         autoCloseTimeout={2000}
         title={t('fellowship.voting.errors.noAccount')}
@@ -81,17 +77,21 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
     );
   }
 
+  const title =
+    wish === 'Retention' ? t('fellowship.salary.requestRetention') : t('fellowship.salary.requestPromotion');
+
   return (
-    <Modal size="md" isOpen={open} onToggle={handleToggle}>
-      <Modal.Trigger disabled={disabled}>{children}</Modal.Trigger>
+    <Modal size="md" isOpen={isOpen} onToggle={handleToggle}>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t('fellowship.salary.salaryInduct')} chainId={input.chain.chainId} />
+        <OperationTitle title={title} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SalaryRegisterConfirmation
+              <EvidencePostConfirmation
+                wish={wish}
                 asset={input.asset}
                 chain={input.chain}
                 wallets={input.wallets}
