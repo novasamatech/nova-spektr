@@ -97,17 +97,7 @@ sample({
     chain: networkSelectorModel.$governanceChain,
     identity: identityDomain.identity.$list,
   },
-  filter: ({ chain }, activeVotes) => {
-    if (nullable(chain)) return false;
-
-    for (const voteList of Object.values(activeVotes)) {
-      for (const vote of Object.values(voteList)) {
-        if (votingService.isDelegating(vote)) return true;
-      }
-    }
-
-    return false;
-  },
+  filter: ({ chain }) => nonNullable(chain),
   fn: ({ chain, identity }, activeVotes) => {
     const accounts = new Set<AccountId>();
 

@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { MONTH, getBlockTimeAgo, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { MONTH, getBlockTimeAgo, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identityDomain } from '@/domains/identity';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -71,11 +71,7 @@ sample({
     chain: networkSelectorModel.$governanceChain,
     identity: identityDomain.identity.$list,
   },
-  filter: ({ chain }, delegates) => {
-    if (nullable(chain)) return false;
-
-    return delegates.some((delegate) => nullable(delegate.name));
-  },
+  filter: ({ chain }) => nonNullable(chain),
   fn: ({ chain, identity }, delegates) => {
     const accounts = new Set<AccountId>();
 
