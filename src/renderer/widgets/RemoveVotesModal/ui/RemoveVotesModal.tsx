@@ -19,6 +19,7 @@ import { AccountSelectModal } from '@/shared/ui-entities';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
+import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import {
   ConfirmSlider,
@@ -26,7 +27,6 @@ import {
   basketUtils,
   removeVoteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { SignatorySelectModal } from '@/pages/Operations';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {

@@ -19,7 +19,7 @@ const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 const components: Components = {
   h1: ({ node: _, className, ...props }) => (
     <h1
-      className={cnTw('text-balance border-b pb-2 text-button-small [&:not(:first-child)]:mt-6', className)}
+      className={cnTw('text-balance border-b pb-2 text-header-title [&:not(:first-child)]:mt-6', className)}
       {...props}
     />
   ),

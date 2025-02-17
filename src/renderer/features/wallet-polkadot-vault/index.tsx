@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { WalletType } from '@/shared/core';
+import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { accountsService } from '@/domains/network';
@@ -19,6 +19,10 @@ export const walletPolkadotVaultFeature = createFeature({
 });
 
 walletPolkadotVaultFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+  return account.signingType === SigningType.POLKADOT_VAULT;
+});
+
+walletPolkadotVaultFeature.inject(accountsService.accountCanSignMultipleAnyOf, ({ account }) => {
   return (
     accountUtils.isVaultBaseAccount(account) ||
     accountUtils.isVaultChainAccount(account) ||

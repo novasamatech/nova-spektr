@@ -1,24 +1,34 @@
 import { combine } from 'effector';
 
 import { combineStores } from './_lib/helpers';
-import { membersDomainModel } from './members/model';
-import { membersService } from './members/service';
-import { referendumDomainModel } from './referendum/model';
+import { evidence } from './evidence/model';
+import { evidenceService } from './evidence/service';
+import { feed } from './feed/model';
+import { member } from './members/model';
+import { memberService } from './members/service';
+import { referendum } from './referendum/model';
 import { referendumService } from './referendum/service';
-import { referendumMetaModel } from './referendumMeta/model';
-import { tracksDomainModel } from './tracks/model';
-import { tracksService } from './tracks/service';
+import { referendumMeta } from './referendumMeta/model';
+import { salary } from './salary/model';
+import { salaryService } from './salary/service';
+import { track } from './tracks/model';
+import { trackService } from './tracks/service';
 import { votingService } from './voting/service';
-import { votingDomainModel } from './votingHistory/model';
+import { voting } from './votingHistory/model';
 
 const $store = combine(
   {
-    members: membersDomainModel.$list,
-    referendums: referendumDomainModel.$list,
-    referendumMeta: referendumMetaModel.$list,
-    tracks: tracksDomainModel.$list,
-    maxRank: tracksDomainModel.$maxRank,
-    voting: votingDomainModel.$votes,
+    members: member.$list,
+    referendums: referendum.$list,
+    referendumMeta: referendumMeta.$list,
+    tracks: track.$list,
+    maxRank: track.$maxRank,
+    voting: voting.$votes,
+    salaryStatus: salary.$status,
+    claimantStatus: salary.$claimantStatus,
+    evidence: evidence.$list,
+    evidencePeriods: evidence.$periods,
+    feed: feed.$list,
   },
   combineStores,
 );
@@ -28,27 +38,32 @@ const $store = combine(
  */
 export const collectiveDomain = {
   $store,
-  members: membersDomainModel,
-  tracks: tracksDomainModel,
-  referendum: referendumDomainModel,
-  referendumMeta: referendumMetaModel,
-  voting: votingDomainModel,
+  members: member,
+  tracks: track,
+  referendum,
+  referendumMeta,
+  voting,
 
-  tracksService,
-  membersService,
+  trackService,
+  memberService,
   referendumService,
   votingService,
 };
 
 export {
   $store as $collectiveStore,
-  membersDomainModel as members,
-  tracksDomainModel as tracks,
-  referendumDomainModel as referendums,
-  referendumMetaModel as referendumMeta,
-  votingDomainModel as voting,
-  tracksService,
-  membersService,
+  member,
+  track,
+  referendum,
+  referendumMeta,
+  voting,
+  salary,
+  feed,
+  evidence,
+  evidenceService,
+  trackService,
+  memberService,
   referendumService,
   votingService,
+  salaryService,
 };

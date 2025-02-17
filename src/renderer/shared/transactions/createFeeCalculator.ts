@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { type Store, combine, createEffect, createStore, sample } from 'effector';
+import { type Store, type UnitValue, combine, createEffect, createStore, sample } from 'effector';
 
 import { type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -31,6 +31,10 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     return transactionService.getTransactionFee(transaction, api, signerOptions).then((x) => new BN(x));
   });
 
+  const logErrorFx = createEffect((res: UnitValue<typeof fetchFeeFx.fail>) => {
+    console.error('fee calculation faied', res);
+  });
+
   sample({
     clock: $source,
     filter: nullable,
@@ -58,6 +62,11 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     filter: nonNullable,
     fn: (_) => BN_ZERO,
     target: $fee,
+  });
+
+  sample({
+    clock: fetchFeeFx.fail,
+    target: logErrorFx,
   });
 
   return { $: $fee, $pending: fetchFeeFx.pending };

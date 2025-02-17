@@ -4,3 +4,4 @@ export { createDataSubscription, createPagesHandler } from './createDataSubscrip
 export { series } from './series';
 export { waitFor } from './waitFor';
 export { createBuffer } from './createBuffer';
+export { createFlow, useFlow } from './createFlow';

@@ -35,12 +35,11 @@ module.exports = {
 
     return {
       ImportDeclaration(node) {
-        const { source } = node;
-        if (!isLiteral(source)) {
+        if (!isLiteral(node.source)) {
           return;
         }
 
-        const requestPath = source.value.toString();
+        const requestPath = node.source.value.toString();
         // Not relative import to parent
         if (!requestPath.startsWith('../')) {
           return;
@@ -52,7 +51,7 @@ module.exports = {
         if (possibleRoot === absoluteRoot) {
           return context.report({
             node,
-            message: `Relative import through root is forbidden.`,
+            message: `Relative imports through root are forbidden.`,
           });
         }
 
@@ -68,7 +67,7 @@ module.exports = {
         if (sourcePackage !== requestedPackage) {
           return context.report({
             node,
-            message: `Relative to another package is forbidden.\n${sourcePackage}\n${requestedPackage}`,
+            message: `Relative imports to another package are forbidden.\n${sourcePackage}\n${requestedPackage}`,
           });
         }
       },

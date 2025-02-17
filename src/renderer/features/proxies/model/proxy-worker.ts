@@ -21,7 +21,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { proxyWorkerUtils } from '../lib/worker-utils';
 
-async function connect(chain: Chain, connection: Connection) {
+async function connect(chain: Chain, connection: Connection): Promise<ApiPromise | null> {
   let provider: ProviderInterface | undefined;
 
   if (!connection || connection.connectionType === ConnectionType.AUTO_BALANCE) {
@@ -36,6 +36,8 @@ async function connect(chain: Chain, connection: Connection) {
       provider.connect();
     }
   }
+
+  if (!provider) return null;
 
   return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
 }

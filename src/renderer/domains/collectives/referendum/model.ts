@@ -8,7 +8,7 @@ import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { mapReferendums } from './mapper';
+import { mapReferendums } from './resource';
 import { type Referendum } from './types';
 
 const $list = createStore<CollectivesStruct<Referendum[]>>({});
@@ -24,6 +24,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
   ReferendumSubscriptionParams,
   Referendum[]
 >({
+  key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
   initial: $list,
   fn: ({ api, palletType }, callback) => {
     let abortController = new AbortController();
@@ -100,7 +101,7 @@ const { request } = createDataSource<CollectivesStruct<Referendum[]>, Referendum
   },
 });
 
-export const referendumDomainModel = {
+export const referendum = {
   $list,
   pending,
   request,

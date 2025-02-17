@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import 'fake-indexeddb/auto';
 
 import { default as crypto } from 'crypto';
 import { TextDecoder, TextEncoder } from 'util';

@@ -2,14 +2,16 @@ import { combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
-import { members, membersService } from '@/domains/collectives';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { member, track } from '@/domains/collectives';
 import { identity, identityDomain } from '@/domains/identity';
 
 import { fellowshipProfileFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
-const $members = fellowshipModel.$store.map(store => store?.members ?? []);
+const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
+const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
+const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
 const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
@@ -17,39 +19,30 @@ const $identities = combine(fellowshipProfileFeature.input, identityDomain.ident
   return list[featureInput.chainId] ?? {};
 });
 
-const $accounts = fellowshipProfileFeature.input.map(store => (store ? store.accounts : []));
-
-const $currentMember = combine($accounts, $members, (accounts, members) => {
-  return membersService.findMatchingMember(accounts, members);
-});
-
-const $identity = combine($currentMember, $identities, (member, identities) => {
+const $identity = combine($member, $identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;
 });
 
-const $isAccountExist = fellowshipProfileFeature.input.map(store => {
-  if (!store) return false;
+const $track = combine($member, $tracks, (member, tracks) => {
+  if (nullable(member)) return null;
 
-  return store.accounts.length > 0;
+  return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $pendingMember = and(
-  or(members.pending, identity.pending),
-  $members.map(m => m.length === 0),
-);
+const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $currentMember);
+const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 
 sample({
   clock: fellowshipProfileFeature.running,
-  target: members.subscribe,
+  target: [member.subscribe, track.request],
 });
 
 sample({
   clock: fellowshipProfileFeature.stopped,
-  target: members.unsubscribe,
+  target: member.unsubscribe,
 });
 
 sample({
@@ -61,8 +54,9 @@ sample({
   target: identityDomain.identity.request,
 });
 
-export const profileModel = {
-  $currentMember,
+export const profile = {
+  $member,
+  $track,
   $identity,
   $isAccountExist,
   $pending: or($pendingMember, fellowshipProfileFeature.isStarting),

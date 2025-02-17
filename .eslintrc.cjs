@@ -1,6 +1,6 @@
 const path = require('path');
 
-const localesPath = './src/renderer/shared/api/translation/locales';
+const localesPath = 'src/renderer/shared/i18n/locales';
 const defaultLocalePath = path.join(localesPath, 'en.json');
 
 const boundaryTypes = [
@@ -78,7 +78,6 @@ module.exports = {
     ],
 
     'no-irregular-whitespace': 'off',
-    'newline-before-return': 'error',
 
     'no-restricted-properties': [
       'error',
@@ -345,7 +344,7 @@ module.exports = {
               },
               {
                 from: 'aggregates',
-                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities', 'aggregates'],
               },
               {
                 from: 'processes',
@@ -409,6 +408,7 @@ module.exports = {
         // TODO error
         '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
 
+        '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
 
         'no-restricted-syntax': [

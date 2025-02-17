@@ -5,7 +5,7 @@ import { Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { InactiveNetwork } from '@/entities/network';
 import { ERROR } from '../../constants';
-import { referendumsFeatureStatus } from '../../model/feature';
+import { fellowshipReferendumsFeature } from '../../model/feature';
 import { referendumListModel } from '../../model/list';
 
 import { CompletedReferendums } from './CompletedReferendums';
@@ -18,13 +18,13 @@ type Props = {
 };
 
 export const Referendums = memo<Props>(({ onSelect }) => {
-  useGate(referendumsFeatureStatus.gate);
+  useGate(fellowshipReferendumsFeature.gate);
 
   const isSearching = false;
   const isTitlesLoading = false;
 
-  const featureState = useUnit(referendumsFeatureStatus.state);
-  const referendums = useUnit(referendumListModel.$filteredReferendum);
+  const featureState = useUnit(fellowshipReferendumsFeature.state);
+  const referendums = useUnit(referendumListModel.$referendums);
   const fulfilled = useUnit(referendumListModel.$fulfilled);
 
   const hasNetworkError = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;

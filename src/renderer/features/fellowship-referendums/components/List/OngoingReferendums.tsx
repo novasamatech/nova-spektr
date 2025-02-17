@@ -25,7 +25,6 @@ export const OngoingReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWith
   const [referendums, pending] = useUnit([referendumListModel.$ongoing, referendumListModel.$pending]);
 
   const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
-    isLoading: pending,
     list: referendums,
   });
 

@@ -152,8 +152,7 @@ sample({
   fn: ({ accounts, transactions, txWrappers }) => {
     if (nullable(accounts) || nullable(transactions)) return [];
 
-    // @ts-expect-error TODO fix id field
-    return accounts.map<BasketTransaction>((account, index) => {
+    return accounts.map((account, index) => {
       return { initiatorWallet: account.walletId, coreTx: transactions[index].coreTx, txWrappers: txWrappers[index] };
     });
   },

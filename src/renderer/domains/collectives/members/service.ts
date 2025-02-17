@@ -1,37 +1,76 @@
-import { dictionary } from '@/shared/lib/utils';
+import { type Chain, type Transaction, TransactionType } from '@/shared/core';
+import { dictionary, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountsService } from '@/domains/network';
+import { type CollectivePalletsType } from '../_lib/types';
 
-import { type CoreMember, type Member } from './types';
+import { type CoreMember, type Member, type SetActiveTransaction } from './types';
 
-const findMatchingMember = (accounts: AnyAccount[], members: Member[]) => {
+function findMatchingMember(accounts: AnyAccount[], members: Member[], walletId: number | null) {
   const accountsDictionary = dictionary(accounts, 'accountId');
+  const m = members.filter(member => member.accountId in accountsDictionary);
 
-  return members.find(member => member.accountId in accountsDictionary) ?? null;
-};
+  if (m.length > 1 && walletId) {
+    m.sort(a => {
+      const acc = accountsDictionary[a.accountId];
+      return acc?.walletId === walletId ? -1 : 1;
+    });
+  }
 
-const findMatchingAccount = (accounts: AnyAccount[], member: Member) => {
+  return m.at(0) ?? null;
+}
+
+function findMatchingAccount(accounts: AnyAccount[], member: Member, selectedWallet: number | null) {
   const found = accounts.filter(a => a.accountId === member.accountId);
 
   if (found.length > 1) {
-    const accountWithWritePermission = found.find(accountsService.hasPermissionToMakeActions);
+    const currentWalletAccounts = found.filter(a => a.walletId === selectedWallet);
+    const accountWithWritePermission = currentWalletAccounts.find(accountsService.hasPermissionToMakeActions);
     if (accountWithWritePermission) {
       return accountWithWritePermission;
     }
   }
 
   return found.at(0) ?? null;
-};
+}
 
-const isCoreMember = (member: Member | CoreMember): member is CoreMember => {
+function isCoreMember(member: Member | CoreMember): member is CoreMember {
   const hasActive = 'isActive' in member;
   const hasPromotion = 'lastPromotion' in member;
   const hasProof = 'lastProof' in member;
 
   return hasActive && hasPromotion && hasProof;
+}
+
+type SetActiveTransactionParams = {
+  pallet: CollectivePalletsType;
+  account: AnyAccount;
+  chain: Chain;
+  isActive: boolean;
 };
 
-export const membersService = {
+function createSetActiveTransaction({
+  pallet,
+  account,
+  chain,
+  isActive,
+}: SetActiveTransactionParams): SetActiveTransaction {
+  return {
+    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    chainId: chain.chainId,
+    type: TransactionType.COLLECTIVE_SET_ACTIVE,
+    args: { pallet, isActive },
+  };
+}
+
+function isSetActiveTransaction(transaction: Transaction): transaction is SetActiveTransaction {
+  return transaction.type === TransactionType.COLLECTIVE_SET_ACTIVE;
+}
+
+export const memberService = {
   findMatchingMember,
   findMatchingAccount,
   isCoreMember,
+
+  createSetActiveTransaction,
+  isSetActiveTransaction,
 };

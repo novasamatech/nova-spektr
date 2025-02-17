@@ -1,13 +1,14 @@
 import { resolve } from 'node:path';
 
 import { type UserConfigFnPromise, type ViteUserConfig, mergeConfig } from 'vitest/config';
-import { BaseSequencer, type WorkspaceSpec } from 'vitest/node';
+import { BaseSequencer, type TestSpecification } from 'vitest/node';
 
 import { folders } from './config/index.js';
 import rendererConfig from './vite.config.renderer';
 
 const testsPriority = [
   resolve(folders.rendererRoot, 'domains'),
+  resolve(folders.rendererRoot, 'aggregates'),
   resolve(folders.rendererRoot, 'features'),
   resolve(folders.rendererRoot, 'entities'),
   resolve(folders.rendererRoot, 'shared'),
@@ -15,7 +16,7 @@ const testsPriority = [
 ];
 
 class Seqencer extends BaseSequencer {
-  async sort(files: WorkspaceSpec[]) {
+  async sort(files: TestSpecification[]) {
     return files.sort((a, b) => {
       const ac = testsPriority.findIndex((dir) => a.moduleId.startsWith(dir));
       const bc = testsPriority.findIndex((dir) => b.moduleId.startsWith(dir));
@@ -51,7 +52,7 @@ const config: UserConfigFnPromise = async (options) => {
         ['**/*.ts', 'node'],
       ],
       setupFiles: resolve(folders.root, './vitest.setup.js'),
-      reporters: ['basic', 'junit'],
+      reporters: ['default', 'junit'],
       outputFile: {
         junit: resolve(folders.root, './junit.xml'),
       },

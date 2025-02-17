@@ -1,39 +1,26 @@
 import { combine, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 
+import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { membersService, referendumService, referendums, tracksService, voting } from '@/domains/collectives';
+import { referendum, referendumService, trackService, voting } from '@/domains/collectives';
 import { accountsService } from '@/domains/network';
 
-import { votingFeatureStatus } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowshipVotingFeature } from './feature';
+import { fellowship } from './fellowship';
 
-const flow = createGate<{ referendumId: ReferendumId | null }>({
-  defaultState: { referendumId: null },
-});
+const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
 
 const $referendumId = flow.state.map(({ referendumId }) => referendumId);
-const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
-const $members = fellowshipModel.$store.map(x => x?.members ?? []);
-const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
-const $voting = fellowshipModel.$store.map(x => x?.voting ?? []);
+const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
+const $voting = fellowship.$store.map(x => x?.voting ?? []);
+const $currentMember = fellowshipVotingFeature.input.map(input => input?.member ?? null);
+const $votingAccount = fellowshipVotingFeature.input.map(input => input?.account ?? null);
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
-});
-
-const $currentMember = combine(votingFeatureStatus.input, $members, (input, members) => {
-  if (nullable(input)) return null;
-
-  return membersService.findMatchingMember(input.accounts, members);
-});
-
-const $votingAccount = combine(votingFeatureStatus.input, $currentMember, (input, member) => {
-  if (nullable(member) || nullable(input)) return null;
-
-  return membersService.findMatchingAccount(input.accounts, member);
 });
 
 const $hasRequiredRank = combine(
@@ -47,17 +34,15 @@ const $hasRequiredRank = combine(
       return false;
     }
 
-    return tracksService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
+    return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
   },
 );
 
 const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
 
 const $accountsVotes = restore(
-  attachToFeatureInput(votingFeatureStatus, $voting).map(({ input: { accounts }, data: voting }) => {
-    const accountsMap = toKeysRecord(accounts.map(a => a.accountId));
-
-    return voting.filter(voting => voting.accountId in accountsMap);
+  attachToFeatureInput(fellowshipVotingFeature, $voting).map(({ input: { account }, data: voting }) => {
+    return voting.filter(voting => voting.accountId === account?.accountId);
   }),
   [],
 );
@@ -67,7 +52,7 @@ const $referendumVoting = combine($accountsVotes, $referendumId, (voting, refere
 });
 
 sample({
-  clock: attachToFeatureInput(votingFeatureStatus, flow.open),
+  clock: attachToFeatureInput(fellowshipVotingFeature, flow.open),
   fn({ data: { referendumId }, input: { api, chainId, palletType } }) {
     return {
       api,
@@ -76,17 +61,17 @@ sample({
       referendums: [referendumId].filter(nonNullable),
     };
   },
-  target: referendums.request,
+  target: referendum.request,
 });
 
 sample({
-  clock: votingFeatureStatus.running,
-  fn: ({ palletType, api, chain, accounts }) => {
+  clock: fellowshipVotingFeature.running,
+  fn: ({ palletType, api, chain, account }) => {
     return {
       palletType,
       api,
       chainId: chain.chainId,
-      accounts: accounts.map(a => a.accountId),
+      accounts: account ? [account.accountId] : [],
     };
   },
 
@@ -94,11 +79,11 @@ sample({
 });
 
 sample({
-  clock: votingFeatureStatus.stopped,
+  clock: fellowshipVotingFeature.stopped,
   target: voting.unsubscribeAccountsVoting,
 });
 
-export const votingStatusModel = {
+export const votingStatus = {
   $referendumVoting,
   $hasRequiredRank,
   $votingAccount,

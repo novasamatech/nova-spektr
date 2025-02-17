@@ -3,17 +3,20 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { accountsService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
-import { fellowshipNetworkFeature } from '@/features/fellowship-network';
+import { fellowshipMember } from '@/aggregates/fellowship-member';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
 
 const $input = combine(
   {
-    network: fellowshipNetworkFeature.model.network.$network,
-    accounts: walletModel.$availableAccounts,
+    network: fellowshipNetwork.$network,
+    member: fellowshipMember.$currentMember,
+    account: fellowshipMember.$currentMemberAccount,
+    wallet: fellowshipMember.$currentMemberWallet,
+    wallets: walletModel.$wallets,
   },
-  ({ network, accounts }) => {
+  ({ network, member, account, wallet, wallets }) => {
     if (nullable(network)) return null;
 
     return {
@@ -22,7 +25,10 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
-      accounts: accountsService.filterAccountOnChain(accounts, network.chain),
+      member,
+      account,
+      wallet,
+      wallets,
     };
   },
 );
@@ -43,7 +49,7 @@ export const fellowshipProfileFeature = createFeature({
 });
 
 sample({
-  clock: fellowshipNetworkFeature.model.network.$isActive,
-  filter: fellowshipNetworkFeature.model.network.$isActive,
+  clock: fellowshipNetwork.$isActive,
+  filter: fellowshipNetwork.$isActive,
   target: fellowshipProfileFeature.restore,
 });

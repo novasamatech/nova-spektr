@@ -82,7 +82,7 @@ const getTransactionFromChain = async ({
     return decodeCallData(api, accountId, callData);
   } catch (e) {
     console.warn('Error during update call data from chain', e);
-    
+
     return null;
   }
 };
