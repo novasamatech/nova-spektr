@@ -31,9 +31,9 @@ import {
   MAX_WEIGHT,
   OperationResult,
   getMultisigSignOperationTitle,
+  getTxFromCallData,
   isXcmTransaction,
   transactionService,
-  useCallDataDecoder,
   validateBalance,
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
@@ -65,7 +65,6 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const balances = useUnit(balanceModel.$balances);
   const apis = useUnit(networkModel.$apis);
 
-  const { getTxFromCallData } = useCallDataDecoder();
   const { getLiveTxEvents } = useMultisigEvent({});
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
