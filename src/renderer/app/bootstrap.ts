@@ -98,12 +98,9 @@ export const bootstrap = () => {
     config,
 
     assetsNavigationFeature,
-    stakingNavigationFeature,
-    governanceNavigationFeature,
     operationsNavigationFeature,
     contactsNavigationFeature,
     notificationsNavigationFeature,
-    basketNavigationFeature,
     settingsNavigationFeature,
     flexibleMultisigNavigationFeature,
 
@@ -116,6 +113,7 @@ export const bootstrap = () => {
     fellowshipSalaryFeature,
     fellowshipTasksFeature,
     fellowshipVotingFeature,
+    fellowshipBasketFeature,
 
     walletSelectFeature.feature,
     walletDetailsFeature,
@@ -134,18 +132,24 @@ export const bootstrap = () => {
     walletWatchOnlyFeature,
     extensionWalletFeature,
 
-    governanceOperationDetailFeature,
-    multisigOperationDetailsFeature,
-    proxyOperationDetailFeature,
-    stakingOperationDetailFeature,
-    transferOperationDetailFeature,
-
+    basketNavigationFeature,
     basketOperationsFeature,
-    transferBasketFeature,
-    stakingBasketFeature,
+
+    governanceNavigationFeature,
     governanceBasketFeature,
+    governanceOperationDetailFeature,
+
+    multisigOperationDetailsFeature,
+
+    transferOperationDetailFeature,
+    transferBasketFeature,
+
+    stakingNavigationFeature,
+    stakingOperationDetailFeature,
+    stakingBasketFeature,
+
+    proxyOperationDetailFeature,
     proxyBasketFeature,
-    fellowshipBasketFeature,
 
     importDBFeature,
   ]);
