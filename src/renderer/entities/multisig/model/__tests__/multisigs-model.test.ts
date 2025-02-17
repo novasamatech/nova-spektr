@@ -58,7 +58,8 @@ describe('multisigs model', () => {
           { walletId: 1, accountId: '0x03', type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x01' },
         ])
         .set(networkModel.$chains, mockChains)
-        .set(networkModel.$connections, mockConnections),
+        .set(networkModel.$connections, mockConnections)
+        .set(networkModel.$apis, { '0x01': {} }),
       handlers: new Map()
         .set(walletModel.createWallets, spySaveMultisig)
         .set(notificationModel.events.notificationsAdded, () => {}),
