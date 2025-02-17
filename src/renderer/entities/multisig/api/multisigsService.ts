@@ -51,6 +51,7 @@ async function filterMultisigsAccounts(
   return filteredMultisigs || [];
 }
 
+// TODO: can be deleted after a new indexer will be added
 type GetCallDataParams = {
   api: ApiPromise;
   callHash: CallHash;
@@ -80,7 +81,9 @@ const getTransactionFromChain = async ({
 
     return decodeCallData(api, accountId, callData);
   } catch (e) {
-    console.log('Error during update call data from chain', e);
+    console.warn('Error during update call data from chain', e);
+    
+    return null;
   }
 };
 

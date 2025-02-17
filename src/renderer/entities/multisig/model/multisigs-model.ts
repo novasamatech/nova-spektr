@@ -325,8 +325,8 @@ sample({
 });
 
 const readyforProxies = waitFor({
-  source: createWallets.doneData,
   clock: proxiesModel.findAllProxies.pending,
+  source: createWallets.doneData,
   filter: (val): val is boolean => !val,
   reset: createWallets.done,
 });
