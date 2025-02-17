@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText } from '@/shared/ui';
+import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { list } from '../model/list';
 import { signOperations } from '../model/sign';
+import { validation } from '../model/validation';
 
 import { BasketFilter } from './BasketFilter';
 import { BasketItem } from './BasketItem';
@@ -18,6 +19,7 @@ export const BasketList = () => {
 
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
+  const refreshPending = useUnit(validation.validateAll.pending);
 
   const isSignAvailable = selected.length > 0;
 
@@ -42,6 +44,15 @@ export const BasketList = () => {
             </Checkbox>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              size="sm"
+              variant="text"
+              isLoading={refreshPending}
+              prefixElement={<Icon size={16} name="refresh" className="text-inherit" />}
+              onClick={() => validation.validateAll()}
+            >
+              {t('basket.refreshButton')}
+            </Button>
             <Button
               size="sm"
               className="w-[125px]"

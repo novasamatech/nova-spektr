@@ -135,9 +135,21 @@ sample({
   target: series(validateFx),
 });
 
+const validateAllFx = attach({
+  source: list.$all,
+  mapParams(_: void, transactions) {
+    return transactions.map(transaction => {
+      // TODO pass signerOptions
+      return { transaction, signerOptions: undefined };
+    });
+  },
+  effect: series(validateFx),
+});
+
 export const validation = {
   validationAsyncPipeline,
   $validatingResults,
   $pending,
+  validateAll: validateAllFx,
   validateTransaction: validateFx,
 };

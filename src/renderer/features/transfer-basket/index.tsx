@@ -38,7 +38,7 @@ transferBasketFeature.inject(basketTransactionConfirmDetailsSlot, ({ transaction
   const tx = basketOperationsService.getCoreTx(transaction);
 
   if (isTransferTransaction(tx) || isXcmTransaction(tx)) {
-    <TransferConfirm id={transaction.id} hideSignButton />;
+    return <TransferConfirm id={transaction.id} hideSignButton />;
   }
 
   return null;
