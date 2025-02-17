@@ -5,7 +5,9 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { MONTH, getBlockTimeAgo, nonNullable } from '@/shared/lib/utils';
+import { MONTH, getBlockTimeAgo, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identityDomain } from '@/domains/identity';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const requestDelegateRegistry = createEvent();
@@ -61,6 +63,37 @@ sample({
     return newDelegates;
   },
   target: $delegateRegistry,
+});
+
+sample({
+  clock: $delegateRegistry,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    identity: identityDomain.identity.$list,
+  },
+  filter: ({ chain }, delegates) => {
+    if (nullable(chain)) return false;
+
+    return delegates.some((delegate) => nullable(delegate.name));
+  },
+  fn: ({ chain, identity }, delegates) => {
+    const accounts = new Set<AccountId>();
+
+    for (const delegate of delegates) {
+      if (nonNullable(delegate.name)) continue;
+
+      const accountId = toAccountId(delegate.address ?? delegate.accountId);
+      if (nonNullable(identity[chain!.chainId]?.[accountId])) continue;
+
+      accounts.add(accountId);
+    }
+
+    return {
+      chainId: chain!.chainId,
+      accounts: Array.from(accounts),
+    };
+  },
+  target: identityDomain.identity.request,
 });
 
 export const delegateRegistryAggregate = {
