@@ -74,6 +74,45 @@ export const useStakingData = (): IStakingDataService => {
     });
   };
 
+  const fetchLedger = async (chainId: ChainId, api: ApiPromise, addresses: Address[]): Promise<StakingMap> => {
+    const controllers = await getControllers(api, addresses);
+    const data = await api.query.staking.ledger.multi(controllers);
+
+    try {
+      const staking = data.reduce<StakingMap>((acc, ledger, index) => {
+        const address = addresses[index] as Address;
+
+        if (ledger.isNone) {
+          acc[address] = undefined;
+        } else {
+          const { active, stash, total, unlocking } = ledger.unwrap();
+
+          const formattedUnlocking = unlocking.toArray().map((unlock) => ({
+            value: unlock.value.toString(),
+            era: unlock.era.toString(),
+          }));
+
+          acc[address] = {
+            address,
+            chainId,
+            controller: controllers[index] || stash.toHuman(),
+            stash: stash.toHuman(),
+            active: active.toString(),
+            total: total.toString(),
+            unlocking: formattedUnlocking,
+          };
+        }
+
+        return acc;
+      }, {});
+
+      return staking;
+    } catch (error) {
+      console.warn(error);
+      return {};
+    }
+  };
+
   const getMinNominatorBond = async (api: ApiPromise): Promise<string> => {
     try {
       return (await api.query.staking.minNominatorBond()).toString();
@@ -123,6 +162,7 @@ export const useStakingData = (): IStakingDataService => {
   };
 
   return {
+    fetchLedger,
     subscribeStaking,
     getMinNominatorBond,
     getUnbondingPeriod,

@@ -4,6 +4,8 @@ import { readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type BasketTransaction, type ID } from '@/shared/core';
+// eslint-disable-next-line boundaries/element-types
+import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
 // list
 
@@ -75,6 +77,19 @@ sample({
   source: $selectedIds,
   fn: (selected, toRemove) => selected.filter(s => !toRemove.includes(s)),
   target: $selectedIds,
+});
+
+// sync
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: $list,
+  fn: (transactions, results) => {
+    return transactions.filter((tx, index) =>
+      results.some(result => result.id === index && result.result === ExtrinsicResult.SUCCESS),
+    );
+  },
+  target: removeTransactionsFx,
 });
 
 export const basketOperations = {

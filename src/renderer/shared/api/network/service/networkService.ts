@@ -73,5 +73,5 @@ function createSubstrateProvider(chainId: ChainId, metadata?: ChainMetadata): Pr
 function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderWithMetadata {
   const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
-  return new CachedWsProvider(nodes, 2000);
+  return new CachedWsProvider(nodes, 5000);
 }

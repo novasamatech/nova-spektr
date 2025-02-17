@@ -44,6 +44,8 @@ const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 const $metadata = createStore<ChainMetadata[]>([]);
 const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
+const $populated = createStore(false);
+
 const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
   return chainsService.getChainsMap({ sort: true });
 });
@@ -96,13 +98,7 @@ type CreateProviderParams = {
   DEBUG_NETWORKS?: boolean;
 };
 const createProviderFx = createEffect(
-  async ({
-    chainId,
-    nodes,
-    metadata,
-    providerType,
-    DEBUG_NETWORKS,
-  }: CreateProviderParams): Promise<ProviderWithMetadata> => {
+  async ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
@@ -143,7 +139,7 @@ const createProviderFx = createEffect(
        * Client section -
        * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
        */
-      await provider.connect();
+      provider.connect();
     }
 
     return provider;
@@ -214,6 +210,20 @@ sample({
     }, {});
   },
   target: $connections,
+});
+
+sample({
+  clock: combineEvents({
+    events: [populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done],
+  }),
+  fn: () => true,
+  target: $populated,
+});
+
+sample({
+  clock: startNetworksFx,
+  fn: () => false,
+  target: $populated,
 });
 
 const readyToConnect = combineEvents({
@@ -460,6 +470,7 @@ sample({
 });
 
 export const networkModel = {
+  $populated,
   $chains,
   $apis,
   $connectionStatuses,
