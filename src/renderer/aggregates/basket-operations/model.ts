@@ -85,8 +85,8 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: $list,
   fn: (transactions, results) => {
-    return transactions.filter((tx, index) =>
-      results.some(result => result.id === index && result.result === ExtrinsicResult.SUCCESS),
+    return transactions.filter(tx =>
+      results.some(result => result.id === tx.id && result.result === ExtrinsicResult.SUCCESS),
     );
   },
   target: removeTransactionsFx,

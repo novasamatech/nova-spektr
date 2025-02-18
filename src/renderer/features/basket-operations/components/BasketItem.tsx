@@ -39,7 +39,7 @@ export const BasketItem = ({ transaction }: { transaction: BasketTransaction }) 
   return (
     <li
       key={transaction.id}
-      className="grid h-[52px] grid-cols-[40px,398px,135px,124px,28px] items-center bg-block-background-default"
+      className="grid h-[52px] grid-cols-[40px,398px,135px,124px,auto] items-stretch bg-block-background-default"
     >
       <div className="flex items-center justify-center">
         <Checkbox
@@ -67,7 +67,7 @@ export const BasketItem = ({ transaction }: { transaction: BasketTransaction }) 
 
       <ChainTitle chainId={transaction.coreTx.chainId} className="px-2" />
 
-      <div className="px-2">
+      <div className="flex items-center justify-center px-2">
         <BasketOperationStatus
           validating={pendingValidation}
           errorText={validationResult.map(x => t(x.errorText)).join('\n')}
@@ -75,7 +75,7 @@ export const BasketItem = ({ transaction }: { transaction: BasketTransaction }) 
         />
       </div>
 
-      <div className="px-1">
+      <div className="flex items-center justify-center px-1">
         <RemoveOperation operation={transaction} />
       </div>
     </li>

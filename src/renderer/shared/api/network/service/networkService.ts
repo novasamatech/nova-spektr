@@ -13,16 +13,14 @@ export const networkService = {
   createApi,
 };
 
-function createApi(chainId: ChainId, provider: ProviderInterface): Promise<ApiPromise> {
-  const api = new ApiPromise({
+function createApi(chainId: ChainId, provider: ProviderInterface) {
+  return new ApiPromise({
     provider,
     noInitWarn: true,
     throwOnConnect: true,
     throwOnUnknown: true,
     ...EXTENSIONS[chainId]?.provider,
   });
-
-  return api.isReady;
 }
 
 type ProviderParams = {

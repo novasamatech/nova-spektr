@@ -1,6 +1,6 @@
 import { type ChainError } from '@/shared/core/types/basket';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { cnTw, nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
 
@@ -15,19 +15,22 @@ export const BasketOperationStatus = ({ validating, errorText, error }: Props) =
 
   let errorMessage;
   let label;
+  let variant;
 
   if (errorText) {
     errorMessage = t(errorText);
     label = t('basket.validationError');
+    variant = 'error';
   }
   if (error) {
     errorMessage = t(error.message);
     label = t('basket.chainError', {
       date: formatDate(error.at, 'dd/MM/yy'),
     });
+    variant = 'warning';
   }
 
-  if (nullable(errorMessage) && nullable(label)) {
+  if (nullable(errorMessage) && nullable(label) && nullable(variant)) {
     return null;
   }
 
@@ -35,7 +38,12 @@ export const BasketOperationStatus = ({ validating, errorText, error }: Props) =
     <Skeleton active={!!validating}>
       <Tooltip>
         <Tooltip.Trigger>
-          <div className="flex w-[108px] shrink-0 items-center justify-center gap-x-1 rounded-md bg-badge-red-background-default px-2 py-0.5">
+          <div
+            className={cnTw('flex w-[108px] shrink-0 items-center justify-center gap-x-1 rounded-md px-2 py-0.5', {
+              'bg-badge-red-background-default': variant === 'error',
+              'bg-badge-yellow-background-default': variant === 'warning',
+            })}
+          >
             <HelpText className="text-text-negative">{label}</HelpText>
           </div>
         </Tooltip.Trigger>

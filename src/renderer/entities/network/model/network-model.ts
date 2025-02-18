@@ -109,10 +109,14 @@ const createProviderFx = createEffect(
       { nodes, metadata },
       {
         onConnected: () => {
-          if (DEBUG_NETWORKS) {
-            console.info('🟢 Provider connected ==> ', chainId);
-          }
-          boundConnected(chainId);
+          // api.isConnected returns false right after provider connected signal.
+          // This timeout fixes this race condition
+          setTimeout(() => {
+            if (DEBUG_NETWORKS) {
+              console.info('🟢 Provider connected ==> ', chainId);
+            }
+            boundConnected(chainId);
+          }, 100);
         },
         onDisconnected: () => {
           if (DEBUG_NETWORKS) {
@@ -145,6 +149,8 @@ const createProviderFx = createEffect(
     return provider;
   },
 );
+
+const createProvidersFx = series(createProviderFx);
 
 type CreateApiParams = {
   chainId: ChainId;
@@ -214,7 +220,7 @@ sample({
 
 sample({
   clock: combineEvents({
-    events: [populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done],
+    events: [createProvidersFx.done],
   }),
   fn: () => true,
   target: $populated,
@@ -227,17 +233,41 @@ sample({
 });
 
 const readyToConnect = combineEvents({
-  events: [populateConnectionsFx.done, populateMetadataFx.done, populateChainsFx.done],
+  events: [populateConnectionsFx.doneData, populateMetadataFx.doneData, populateChainsFx.doneData],
   reset: startNetworksFx,
+}).map(([connections, metadata, chains]) => {
+  return { connections, metadata, chains };
 });
 
 sample({
   clock: readyToConnect,
-  source: $chains,
-  fn: (chains) => {
-    return Object.keys(chains).map((chainId) => chainId as ChainId);
+  fn: ({ connections, metadata, chains }) => {
+    return Object.values(chains)
+      .filter((chain) => {
+        const connection = connections.find((c) => c.chainId === chain.chainId);
+        return !connection || networkUtils.isEnabledConnection(connection);
+      })
+      .map<CreateProviderParams>((chain) => {
+        const connection = connections.find((c) => c.chainId === chain.chainId) ?? null;
+        const providerType =
+          connection && networkUtils.isLightClientConnection(connection)
+            ? ProviderType.LIGHT_CLIENT
+            : ProviderType.WEB_SOCKET;
+
+        const nodes = networkUtils.getChainNodes(chain, connection);
+        const actualMetadata = networkUtils.getNewestMetadata(metadata)[chain.chainId];
+
+        return {
+          chainId: chain.chainId,
+          nodes,
+          metadata: actualMetadata,
+          providerType,
+          // set true in case of some network issues
+          DEBUG_NETWORKS: false,
+        };
+      });
   },
-  target: series(chainConnected),
+  target: createProvidersFx,
 });
 
 sample({
@@ -257,11 +287,7 @@ sample({
       ? ProviderType.LIGHT_CLIENT
       : ProviderType.WEB_SOCKET;
 
-    const nodes =
-      !connection || networkUtils.isAutoBalanceConnection(connection)
-        ? [...(store.chains[chainId]?.nodes || []), ...(connection?.customNodes || [])].map((node) => node.url)
-        : [connection?.activeNode?.url || ''];
-
+    const nodes = networkUtils.getChainNodes(store.chains[chainId], connection);
     const metadata = networkUtils.getNewestMetadata(store.metadata)[chainId];
 
     return {
@@ -297,12 +323,12 @@ sample({
 });
 
 sample({
-  clock: connected,
-  source: { providers: $providers, apis: $apis },
-  fn: ({ providers, apis }, chainId) => ({
-    chainId,
-    provider: providers[chainId],
-    existingApi: apis[chainId] ?? null,
+  clock: createProviderFx.done,
+  source: $apis,
+  fn: (apis, { params, result: provider }) => ({
+    chainId: params.chainId,
+    provider,
+    existingApi: apis[params.chainId] ?? null,
   }),
   target: createApiFx,
 });
@@ -317,11 +343,11 @@ sample({
 });
 
 sample({
-  clock: createApiFx.done,
+  clock: connected,
   source: $connectionStatuses,
-  fn: (statuses, { params }) => ({
-    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
-    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.CONNECTED },
+    event: { chainId, status: ConnectionStatus.CONNECTED },
   }),
   target: spread({
     newStatuses: $connectionStatuses,

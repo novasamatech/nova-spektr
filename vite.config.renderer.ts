@@ -83,7 +83,9 @@ const config: UserConfigFn = async ({ mode, command }) => {
       command === 'serve' && mkcert(),
 
       react({
-        plugins: !isProd ? [['@effector/swc-plugin', {}]] : [],
+        plugins: !isProd
+          ? [['@effector/swc-plugin', { addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
+          : [],
       }),
       svgr({
         include: '**/*.svg?jsx',

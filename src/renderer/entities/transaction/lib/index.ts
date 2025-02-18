@@ -4,7 +4,6 @@ export * from './common/utils';
 export * from './common/types';
 export * from './common/constants';
 export * from './validateBalance';
-export * from './transactionConfirmIcon';
 export * from './extrinsicService';
 export { transactionBuilder } from './transactionBuilder';
 

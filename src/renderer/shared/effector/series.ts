@@ -33,13 +33,11 @@ type Config = {
  * ```
  */
 export const series = <T, R = void>(target: EventCallable<T> | Effect<T, R>, config?: Config) => {
-  type IterableType = Iterable<T> | AsyncIterable<T>;
-
   const isEffect = is.effect(target);
   const isParallel = config?.parallel ?? false;
   const skipErrors = config?.skipErrors ?? false;
 
-  const fx: Effect<IterableType, R[]> = createEffect(async (data: IterableType) => {
+  const fx: Effect<Iterable<T> | AsyncIterable<T>, R[]> = createEffect(async (data: Iterable<T> | AsyncIterable<T>) => {
     const t = scopeBind(target, { scope: config?.scope, safe: true });
     const acc: any[] = [];
 

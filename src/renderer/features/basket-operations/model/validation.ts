@@ -33,12 +33,14 @@ const validateFeeFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
-  effect({ chains, apis, balances }, { transaction, signerOptions }: ValidationParams) {
+  async effect({ chains, apis, balances }, { transaction, signerOptions }: ValidationParams) {
     const chain = chains[transaction.coreTx.chainId];
     const api = apis[transaction.coreTx.chainId];
     const asset = chain.assets.at(0);
 
-    if (nullable(chain) || nullable(chain) || nullable(asset)) throw new Error('Data for validation no found');
+    if (nullable(api) || nullable(chain) || nullable(asset)) throw new Error('Data for validation no found');
+
+    await api.isReady;
 
     const wrapped = transactionService.getWrappedTransaction({
       api,

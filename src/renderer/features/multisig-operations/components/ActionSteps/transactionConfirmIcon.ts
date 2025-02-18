@@ -1,7 +1,6 @@
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-
-import { isEditDelegationTransaction } from './common/utils';
+import { isEditDelegationTransaction } from '@/entities/transaction';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -56,6 +55,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
 };
 
+// TODO remove
 export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
   if (!transaction?.type) return 'unknownConfirm';
 
