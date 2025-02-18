@@ -6,12 +6,7 @@ import { type IconNames } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import {
-  basketTransactionConfirmDetailsSlot,
-  basketTransactionConfirmTitleSlot,
-  validation as basketValidate,
-  operationTitleSlot,
-} from '@/features/basket-operations';
+import { basketSDK } from '@/sdk/basket';
 import {
   BondExtraConfirmation,
   BondNominateConfirmation,
@@ -78,101 +73,100 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
   return Icon[transaction.type];
 };
 
-stakingBasketFeature.inject(operationTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
+basketSDK(stakingBasketFeature, {
+  operationTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-  const title = getOperationTitle(tx);
-  const icon = getOperationIcon(tx);
+    const title = getOperationTitle(tx);
+    const icon = getOperationIcon(tx);
 
-  if (title && icon) {
-    return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
-  }
+    if (title && icon) {
+      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
+    }
 
-  return null;
-});
+    return null;
+  },
+  transactionConfirmTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-stakingBasketFeature.inject(basketTransactionConfirmTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
+    const title = getModalTitle(tx);
 
-  const title = getModalTitle(tx);
+    if (title) {
+      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
+    }
 
-  if (title) {
-    return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
-  }
+    return null;
+  },
+  transactionConfirmDetails({ transaction }) {
+    useGate(confirm.flow, transaction);
 
-  return null;
-});
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-stakingBasketFeature.inject(basketTransactionConfirmDetailsSlot, ({ transaction }) => {
-  useGate(confirm.flow, transaction);
+    if (tx.type === TransactionType.BOND) return <BondNominateConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.STAKE_MORE) return <BondExtraConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.UNSTAKE) return <UnstakeConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.RESTAKE) return <RestakeConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REDEEM) return <WithdrawConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.NOMINATE) return <NominateConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.DESTINATION) return <PayeeConfirmation id={transaction.id} hideSignButton />;
 
-  const tx = basketOperationsService.getCoreTx(transaction);
+    return null;
+  },
+  validation(errors, { transaction }) {
+    if (transaction.coreTx.type === TransactionType.BOND) {
+      return bondNominateValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.STAKE_MORE) {
+      return bondExtraValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.UNSTAKE) {
+      return unstakeValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.RESTAKE) {
+      return restakeValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.REDEEM) {
+      return withdrawValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.NOMINATE) {
+      return nominateValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  if (tx.type === TransactionType.BOND) return <BondNominateConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.STAKE_MORE) return <BondExtraConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.UNSTAKE) return <UnstakeConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.RESTAKE) return <RestakeConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.REDEEM) return <WithdrawConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.NOMINATE) return <NominateConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.DESTINATION) return <PayeeConfirmation id={transaction.id} hideSignButton />;
+    // TODO implement
+    if (transaction.coreTx.type === TransactionType.DESTINATION) {
+      return payeeValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  return null;
-});
-
-stakingBasketFeature.inject(basketValidate.validationAsyncPipeline, (errors, { transaction }) => {
-  if (transaction.coreTx.type === TransactionType.BOND) {
-    return bondNominateValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.STAKE_MORE) {
-    return bondExtraValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.UNSTAKE) {
-    return unstakeValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.RESTAKE) {
-    return restakeValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.REDEEM) {
-    return withdrawValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.NOMINATE) {
-    return nominateValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-
-  // TODO implement
-  if (transaction.coreTx.type === TransactionType.DESTINATION) {
-    return payeeValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-
-  return errors;
+    return errors;
+  },
 });

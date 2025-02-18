@@ -5,12 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import {
-  basketTransactionConfirmDetailsSlot,
-  basketTransactionConfirmTitleSlot,
-  validation as basketValidate,
-  operationTitleSlot,
-} from '@/features/basket-operations';
+import { basketSDK } from '@/sdk/basket';
 import {
   AddProxyConfirm,
   AddPureProxiedConfirm,
@@ -51,75 +46,74 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
   return Title[transaction.type];
 };
 
-proxyBasketFeature.inject(operationTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
+basketSDK(proxyBasketFeature, {
+  operationTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-  const title = getOperationTitle(tx);
+    const title = getOperationTitle(tx);
 
-  if (title) {
-    return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon="proxyConfirm" />;
-  }
+    if (title) {
+      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon="proxyConfirm" />;
+    }
 
-  return null;
-});
+    return null;
+  },
+  transactionConfirmTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
+    const title = getModalTitle(tx);
 
-proxyBasketFeature.inject(basketTransactionConfirmTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
-  const title = getModalTitle(tx);
+    if (title) {
+      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
+    }
 
-  if (title) {
-    return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
-  }
+    return null;
+  },
+  transactionConfirmDetails({ transaction }) {
+    useGate(confirm.flow, transaction);
 
-  return null;
-});
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-proxyBasketFeature.inject(basketTransactionConfirmDetailsSlot, ({ transaction }) => {
-  useGate(confirm.flow, transaction);
+    if (tx.type === TransactionType.ADD_PROXY) return <AddProxyConfirm id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REMOVE_PROXY) return <RemoveProxyConfirm id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.CREATE_PURE_PROXY)
+      return <AddPureProxiedConfirm id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REMOVE_PURE_PROXY)
+      return <RemovePureProxiedConfirm id={transaction.id} hideSignButton />;
 
-  const tx = basketOperationsService.getCoreTx(transaction);
+    return null;
+  },
+  validation(errors, { transaction }) {
+    if (transaction.coreTx.type === TransactionType.ADD_PROXY) {
+      return addProxyValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.REMOVE_PROXY) {
+      return removeProxyValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.CREATE_PURE_PROXY) {
+      return addPureProxiedValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+    if (transaction.coreTx.type === TransactionType.REMOVE_PURE_PROXY) {
+      return removePureProxiedValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  if (tx.type === TransactionType.ADD_PROXY) return <AddProxyConfirm id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.REMOVE_PROXY) return <RemoveProxyConfirm id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.CREATE_PURE_PROXY)
-    return <AddPureProxiedConfirm id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.REMOVE_PURE_PROXY)
-    return <RemovePureProxiedConfirm id={transaction.id} hideSignButton />;
-
-  return null;
-});
-
-proxyBasketFeature.inject(basketValidate.validationAsyncPipeline, (errors, { transaction }) => {
-  if (transaction.coreTx.type === TransactionType.ADD_PROXY) {
-    return addProxyValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.REMOVE_PROXY) {
-    return removeProxyValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.CREATE_PURE_PROXY) {
-    return addPureProxiedValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-  if (transaction.coreTx.type === TransactionType.REMOVE_PURE_PROXY) {
-    return removePureProxiedValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-
-  return errors;
+    return errors;
+  },
 });

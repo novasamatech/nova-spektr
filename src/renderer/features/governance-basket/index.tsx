@@ -6,12 +6,7 @@ import { type IconNames } from '@/shared/ui';
 import { OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import {
-  basketTransactionConfirmDetailsSlot,
-  basketTransactionConfirmTitleSlot,
-  validation as basketValidate,
-  operationTitleSlot,
-} from '@/features/basket-operations';
+import { basketSDK } from '@/sdk/basket';
 import { unlockValidateModel, voteValidateModel } from '@/features/governance';
 import {
   DelegateConfirmation,
@@ -74,96 +69,95 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
   return title[transaction.type];
 };
 
-governanceBasketFeature.inject(operationTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
+basketSDK(governanceBasketFeature, {
+  operationTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-  const title = getOperationTitle(tx);
-  const icon = getOperationIcon(tx);
+    const title = getOperationTitle(tx);
+    const icon = getOperationIcon(tx);
 
-  if (title && icon) {
-    return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
-  }
+    if (title && icon) {
+      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
+    }
 
-  return null;
-});
+    return null;
+  },
+  transactionConfirmTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
+    const title = getModalTitle(tx);
 
-governanceBasketFeature.inject(basketTransactionConfirmTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
-  const title = getModalTitle(tx);
+    if (title) {
+      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
+    }
 
-  if (title) {
-    return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
-  }
+    return null;
+  },
+  transactionConfirmDetails: ({ transaction }) => {
+    useGate(confirm.flow, transaction);
 
-  return null;
-});
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-governanceBasketFeature.inject(basketTransactionConfirmDetailsSlot, ({ transaction }) => {
-  useGate(confirm.flow, transaction);
+    if (tx.type === TransactionType.DELEGATE)
+      return <DelegateConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.EDIT_DELEGATION)
+      return <EditDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.UNDELEGATE)
+      return <RevokeDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.UNLOCK) return <UnlockConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.VOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REVOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REMOVE_VOTE) return <RemoveVoteConfirmation id={transaction.id} hideSignButton />;
 
-  const tx = basketOperationsService.getCoreTx(transaction);
+    return null;
+  },
+  validation(errors, { transaction }) {
+    if (transaction.coreTx.type === TransactionType.DELEGATE) {
+      return delegateValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  if (tx.type === TransactionType.DELEGATE)
-    return <DelegateConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
-  if (tx.type === TransactionType.EDIT_DELEGATION)
-    return <EditDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
-  if (tx.type === TransactionType.UNDELEGATE)
-    return <RevokeDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
-  if (tx.type === TransactionType.UNLOCK) return <UnlockConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.VOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.REVOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
-  if (tx.type === TransactionType.REMOVE_VOTE) return <RemoveVoteConfirmation id={transaction.id} hideSignButton />;
+    if (transaction.coreTx.type === TransactionType.UNDELEGATE) {
+      return revokeDelegationValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  return null;
-});
+    if (transaction.coreTx.type === TransactionType.VOTE || transaction.coreTx.type === TransactionType.REVOTE) {
+      return voteValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-governanceBasketFeature.inject(basketValidate.validationAsyncPipeline, (errors, { transaction }) => {
-  if (transaction.coreTx.type === TransactionType.DELEGATE) {
-    return delegateValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
+    if (transaction.coreTx.type === TransactionType.REMOVE_VOTE) {
+      return removeVoteValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  if (transaction.coreTx.type === TransactionType.UNDELEGATE) {
-    return revokeDelegationValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
+    if (transaction.coreTx.type === TransactionType.UNLOCK) {
+      return unlockValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
 
-  if (transaction.coreTx.type === TransactionType.VOTE || transaction.coreTx.type === TransactionType.REVOTE) {
-    return voteValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
+    // TODO implement
+    if (transaction.coreTx.type === TransactionType.EDIT_DELEGATION) {
+      return errors;
+    }
 
-  if (transaction.coreTx.type === TransactionType.REMOVE_VOTE) {
-    return removeVoteValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-
-  if (transaction.coreTx.type === TransactionType.UNLOCK) {
-    return unlockValidateModel
-      .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
-      .then(({ result }) => {
-        return result ? errors.concat(result) : errors;
-      });
-  }
-
-  // TODO implement
-  if (transaction.coreTx.type === TransactionType.EDIT_DELEGATION) {
     return errors;
-  }
-
-  return errors;
+  },
 });

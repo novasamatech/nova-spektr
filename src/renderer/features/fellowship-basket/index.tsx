@@ -8,12 +8,7 @@ import { salaryService, votingService } from '@/domains/collectives';
 import { OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import {
-  basketTransactionConfirmDetailsSlot,
-  basketTransactionConfirmTitleSlot,
-  validation as basketValidate,
-  operationTitleSlot,
-} from '@/features/basket-operations';
+import { basketSDK } from '@/sdk/basket';
 import {
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
@@ -64,84 +59,83 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
   return Icon[transaction.type];
 };
 
-fellowshipBasketFeature.inject(operationTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const tx = basketOperationsService.getCoreTx(transaction);
+basketSDK(fellowshipBasketFeature, {
+  operationTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-  const title = getOperationTitle(tx);
-  const icon = getOperationIcon(tx);
+    const title = getOperationTitle(tx);
+    const icon = getOperationIcon(tx);
 
-  if (title && icon) {
-    return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
-  }
+    if (title && icon) {
+      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
+    }
 
-  return null;
-});
+    return null;
+  },
+  transactionConfirmTitle({ transaction }) {
+    const { t } = useI18n();
+    const input = useUnit(fellowshipBasketFeature.input);
 
-fellowshipBasketFeature.inject(basketTransactionConfirmTitleSlot, ({ transaction }) => {
-  const { t } = useI18n();
-  const input = useUnit(fellowshipBasketFeature.input);
+    if (nullable(input)) return null;
 
-  if (nullable(input)) return null;
+    const tx = basketOperationsService.getCoreTx(transaction);
+    const chain = input.chains[tx.chainId];
+    if (nullable(chain)) return null;
+    const asset = chain.assets.at(0);
+    if (nullable(asset)) return null;
 
-  const tx = basketOperationsService.getCoreTx(transaction);
-  const chain = input.chains[tx.chainId];
-  if (nullable(chain)) return null;
-  const asset = chain.assets.at(0);
-  if (nullable(asset)) return null;
+    const title = getModalTitle(tx);
 
-  const title = getModalTitle(tx);
+    if (title) {
+      return <OperationTitle className="justify-center" title={t('fellowship.voting.title')} chainId={tx.chainId} />;
+    }
 
-  if (title) {
-    return <OperationTitle className="justify-center" title={t('fellowship.voting.title')} chainId={tx.chainId} />;
-  }
+    return null;
+  },
+  transactionConfirmDetails({ transaction }) {
+    useGate(confirm.flow, transaction);
 
-  return null;
-});
+    const tx = basketOperationsService.getCoreTx(transaction);
 
-fellowshipBasketFeature.inject(basketTransactionConfirmDetailsSlot, ({ transaction }) => {
-  useGate(confirm.flow, transaction);
+    if (votingService.isVotingTransaction(tx)) {
+      return <FellowshipVotingConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  const tx = basketOperationsService.getCoreTx(transaction);
+    if (tx.type === TransactionType.COLLECTIVE_SET_ACTIVE) {
+      return <FellowshipSetActiveConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  if (votingService.isVotingTransaction(tx)) {
-    return <FellowshipVotingConfirmation id={transaction.id} hideSignButton />;
-  }
+    if (salaryService.isSalaryInductTransaction(tx)) {
+      return <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  if (tx.type === TransactionType.COLLECTIVE_SET_ACTIVE) {
-    return <FellowshipSetActiveConfirmation id={transaction.id} hideSignButton />;
-  }
+    if (salaryService.isSalaryRequestTransaction(tx)) {
+      return <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  if (salaryService.isSalaryInductTransaction(tx)) {
-    return <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />;
-  }
+    if (salaryService.isSalaryPayoutTransaction(tx)) {
+      return <FellowshipSalaryPayoutConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  if (salaryService.isSalaryRequestTransaction(tx)) {
-    return <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />;
-  }
+    if (tx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE) {
+      return <FellowshipSubmitEvidenceConfirmation id={transaction.id} hideSignButton />;
+    }
 
-  if (salaryService.isSalaryPayoutTransaction(tx)) {
-    return <FellowshipSalaryPayoutConfirmation id={transaction.id} hideSignButton />;
-  }
+    return null;
+  },
+  validation(result, { transaction }) {
+    if (
+      votingService.isVotingTransaction(transaction.coreTx) ||
+      salaryService.isSalaryInductTransaction(transaction.coreTx) ||
+      salaryService.isSalaryRequestTransaction(transaction.coreTx) ||
+      salaryService.isSalaryPayoutTransaction(transaction.coreTx) ||
+      transaction.coreTx.type === TransactionType.COLLECTIVE_SET_ACTIVE ||
+      transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE
+    ) {
+      return result;
+    }
 
-  if (tx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE) {
-    return <FellowshipSubmitEvidenceConfirmation id={transaction.id} hideSignButton />;
-  }
-
-  return null;
-});
-
-fellowshipBasketFeature.inject(basketValidate.validationAsyncPipeline, (result, { transaction }) => {
-  if (
-    votingService.isVotingTransaction(transaction.coreTx) ||
-    salaryService.isSalaryInductTransaction(transaction.coreTx) ||
-    salaryService.isSalaryRequestTransaction(transaction.coreTx) ||
-    salaryService.isSalaryPayoutTransaction(transaction.coreTx) ||
-    transaction.coreTx.type === TransactionType.COLLECTIVE_SET_ACTIVE ||
-    transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE
-  ) {
     return result;
-  }
-
-  return result;
+  },
 });
