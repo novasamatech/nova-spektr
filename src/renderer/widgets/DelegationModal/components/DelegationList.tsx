@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
 import { Box, SearchInput, Select } from '@/shared/ui-kit';
 import { SortType } from '../common/constants';
@@ -68,11 +69,15 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
 
           <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto">
             <ul className="flex w-[400px] flex-col gap-y-2">
-              {delegationList.map((delegate) => (
-                <button key={delegate.accountId} onClick={() => onClick(delegate)}>
-                  <DelegationCard key={delegate.accountId} delegate={delegate} />
-                </button>
-              ))}
+              {delegationList.map((delegate) => {
+                const accountId = toAccountId(delegate.address ?? delegate.accountId);
+
+                return (
+                  <button key={accountId} onClick={() => onClick(delegate)}>
+                    <DelegationCard key={accountId} delegate={delegate} />
+                  </button>
+                );
+              })}
             </ul>
 
             {delegationList.length === 0 && <EmptyState />}
