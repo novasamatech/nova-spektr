@@ -195,10 +195,10 @@ sample({
   },
   fn: ({ store, coreTxs, txWrappers }) =>
     coreTxs!.map((coreTx) => ({
-      initiatorWallet: store!.shards[0].walletId,
+      initiatorAccountId: store!.shards[0].accountId,
       coreTx,
       txWrappers,
-      groupId: Date.now(),
+      createdAt: Date.now(),
     })),
   target: basketOperations.addTransactions,
 });

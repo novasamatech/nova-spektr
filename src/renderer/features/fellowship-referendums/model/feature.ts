@@ -44,7 +44,7 @@ export const fellowshipReferendumsFeature = createFeature({
 });
 
 sample({
-  clock: fellowshipNetwork.$isActive,
-  filter: fellowshipNetwork.$isActive,
+  clock: fellowshipNetwork.$isConnected,
+  filter: fellowshipNetwork.$isConnected,
   target: fellowshipReferendumsFeature.restore,
 });

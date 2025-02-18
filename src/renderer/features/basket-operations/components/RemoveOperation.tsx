@@ -1,3 +1,5 @@
+import { type MouseEventHandler } from 'react';
+
 import { type BasketTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -12,16 +14,14 @@ export const RemoveOperation = ({ operation }: Props) => {
   const { t } = useI18n();
   const [isOpen, toggleIsOpen] = useToggle(false);
 
-  const handleTxRemoved = (event: any) => {
+  const handleTxRemoved: MouseEventHandler = event => {
     event.preventDefault();
     event.stopPropagation();
-
     toggleIsOpen();
   };
 
   const handleRemoveConfirmed = () => {
     basketOperations.removeTransactions([operation]);
-
     toggleIsOpen();
   };
 

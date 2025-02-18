@@ -4,7 +4,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, delay, spread } from 'patronum';
 
 import {
-  type Account,
   type Address,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
@@ -13,12 +12,14 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { type AnyAccount, accountsService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -27,20 +28,18 @@ import { type FeeData, type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<{ delegate: Address; accounts: Account[] }>();
+const flowStarted = createEvent<{ delegate: Address; accounts: AnyAccount[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $walletData = combine(
-  {
-    wallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ wallet, chain }) => ({ wallet, chain }),
-);
+const $walletData = combine({
+  wallet: walletSelect.$selectedWallet,
+  accounts: walletSelect.$selectedAccounts,
+  chain: networkSelectorModel.$governanceChain,
+});
 
 const $revokeDelegationData = createStore<RevokeDelegationData[]>([]);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
@@ -99,9 +98,9 @@ const $transactions = combine(
 
 // Signatory
 
-const selectSignatory = createEvent<Account>();
+const selectSignatory = createEvent<AnyAccount>();
 
-const $signatory = createStore<Account | null>(null);
+const $signatory = createStore<AnyAccount | null>(null);
 
 const $signatories = combine($walletData, walletModel.$wallets, (wallet, wallets) => {
   const account = wallet.wallet?.accounts[0];
@@ -427,12 +426,18 @@ sample({
     return nonNullable(walletData.wallet) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
+    const accounts = walletData.chain
+      ? accountsService.filterAccountOnChain(walletData.accounts, walletData.chain)
+      : [];
+    const account = accounts.at(0);
+    if (!account) throw new Error('Account not found');
+
     return coreTxs!.map((coreTx) => {
       return {
         coreTx,
         txWrappers,
-        groupId: Date.now(),
-        initiatorWallet: walletData.wallet!.id,
+        initiatorAccountId: account.accountId,
+        createdAt: Date.now(),
       };
     });
   },

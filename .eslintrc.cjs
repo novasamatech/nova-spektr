@@ -10,6 +10,7 @@ const boundaryTypes = [
   'entities',
   'processes',
   'aggregates',
+  'sdk',
   'features',
   'widgets',
   'pages',
@@ -340,12 +341,16 @@ module.exports = {
                 allow: ['app', 'shared', /* TODO fix */ 'entities'],
               },
               {
+                from: 'sdk',
+                allow: ['shared', 'features', 'domains'],
+              },
+              {
                 from: 'entities',
                 allow: ['app', 'shared', 'entities', 'domains', /* TODO fix */ 'features'],
               },
               {
                 from: 'domains',
-                allow: ['shared', 'domains', /* TODO fix */ 'entities'],
+                allow: ['shared', 'domains', /* TODO fix */ 'entities', 'sdk'],
               },
               {
                 from: 'aggregates',
@@ -366,6 +371,7 @@ module.exports = {
                   /* TODO fix */ 'features',
                   'aggregates',
                   'domains',
+                  'sdk',
                 ],
               },
               {

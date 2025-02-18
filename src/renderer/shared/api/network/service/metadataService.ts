@@ -11,8 +11,10 @@ type SubscribeParams = {
   callback: (api: ApiPromise) => void;
 };
 
-function subscribeRuntimeVersion({ api, cachedRuntimeVersion, callback }: SubscribeParams): UnsubscribePromise {
+async function subscribeRuntimeVersion({ api, cachedRuntimeVersion, callback }: SubscribeParams): UnsubscribePromise {
   let currectVersion = cachedRuntimeVersion ?? null;
+
+  await api.isReady;
 
   return api.rpc.state.subscribeRuntimeVersion((version) => {
     const receivedVersion = version.specVersion.toNumber();
