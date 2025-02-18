@@ -3,7 +3,7 @@ import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
 import { TEST_ADDRESS } from '@/shared/lib/utils';
-import { useCallDataDecoder } from '../callDataDecoder';
+import { decodeCallData } from '../callDataDecoder';
 
 import { metadata } from './metadata';
 
@@ -13,8 +13,6 @@ import { metadata } from './metadata';
  * code, which breaks backward compatability.
  */
 describe('entities/transaction/lib/callDataDecoder', () => {
-  const { decodeCallData } = useCallDataDecoder();
-
   const registry = new TypeRegistry();
   let provider: MockProvider;
   let api: ApiPromise;
