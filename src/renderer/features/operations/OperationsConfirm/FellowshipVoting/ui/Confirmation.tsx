@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -6,7 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-import { VotingConfirmation, fellowship, votingStatus } from '@/features/fellowship-voting';
+import { VotingConfirmation, fellowship, fellowshipVotingFeature, votingStatus } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -17,6 +17,7 @@ type Props = {
 };
 
 export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
+  useGate(fellowshipVotingFeature.gate);
   const { t } = useI18n();
 
   const confirm = useStoreMap({
