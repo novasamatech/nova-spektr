@@ -1,26 +1,19 @@
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
 import { type ID } from './general';
 import { type Transaction, type TxWrapper } from './transaction';
 
 export type BasketTransaction = {
   id: ID;
-  initiatorWallet: ID;
+  initiatorAccountId: AccountId;
   coreTx: Transaction;
   txWrappers: TxWrapper[];
-  error?: ChainError | ClientError;
-  groupId?: number;
+  error?: ChainError;
+  createdAt: number;
 };
 
-interface BasketError {
-  type: 'chain' | 'client';
-  message: string;
-}
-
-export interface ChainError extends BasketError {
+export type ChainError = {
   type: 'chain';
-  dateCreated: number;
-}
-
-export interface ClientError extends BasketError {
-  type: 'client';
-  args?: Record<string, any>;
-}
+  message: string;
+  at: number;
+};

@@ -211,7 +211,7 @@ sample({
     transaction: transactions!.wrappedTx,
     feeMap: {},
   }),
-  target: voteValidateModel.events.validationStarted,
+  target: voteValidateModel.validate,
 });
 
 export const voteFormAggregate = {

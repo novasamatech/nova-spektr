@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
-import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type Transaction } from '@/shared/core';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -208,10 +208,11 @@ sample({
   filter: ({ transferStore, coreTx, txWrappers }) => Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
   fn: ({ transferStore, coreTx, txWrappers }) => {
     const tx = {
-      initiatorWallet: transferStore!.account.walletId,
-      coreTx,
+      initiatorAccountId: transferStore!.account.accountId,
+      coreTx: coreTx!,
       txWrappers,
-    } as BasketTransaction;
+      createdAt: Date.now(),
+    };
 
     return [tx];
   },

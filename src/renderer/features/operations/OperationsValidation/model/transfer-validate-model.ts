@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, createEffect, createEvent, sample } from 'effector';
+import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
@@ -14,11 +14,8 @@ import {
   type TransferAccountStore,
   type TransferAmountFeeStore,
   type TransferSignatoryFeeStore,
-  type ValidationResult,
+  type ValidationStartedParams,
 } from '../types/types';
-
-const validationStarted = createEvent<{ id: ID; transaction: Transaction; feeMap: FeeMap }>();
-const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
 
 type ValidateParams = {
   id: ID;
@@ -31,144 +28,144 @@ type ValidateParams = {
 };
 
 // HINT: Proxy and Multisig cannot be added to basket
-const validateFx = createEffect(async ({ id, api, chain, asset, transaction, balances, feeMap }: ValidateParams) => {
-  const accountId = toAccountId(transaction.address);
+const rootValidateFx = createEffect(
+  async ({ id, api, chain, asset, transaction, balances, feeMap }: ValidateParams) => {
+    const accountId = toAccountId(transaction.address);
 
-  const fee =
-    feeMap?.[chain.chainId]?.[transaction.type] || (await transactionService.getTransactionFee(transaction, api));
+    const fee =
+      feeMap?.[chain.chainId]?.[transaction.type] || (await transactionService.getTransactionFee(transaction, api));
 
-  const rules = [
-    {
-      value: transaction.address,
-      form: {},
-      ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
-      source: {
-        fee,
-        isProxy: false,
-        proxyBalance: { native: '0' },
-      },
-    },
-    {
-      value: undefined,
-      form: {},
-      ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
-      source: {
-        fee,
-        isMultisig: false,
-        multisigDeposit: '0',
-        balance: '0',
-      } as TransferSignatoryFeeStore,
-    },
-    {
-      value: transaction.args.value,
-      form: {},
-      ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain: chain, asset: asset },
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-          ),
-        },
-      } as { network: NetworkStore | null; balance: BalanceMap },
-    },
-    {
-      value: transaction.args.value,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain, asset },
-        isMultisig: false,
-        multisigDeposit: '0',
-        fee,
-        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
-        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
-        isProxy: false,
-        isNative: chain.assets[0].assetId === asset.assetId,
-        isXcm: Boolean(transaction.args.xcmData),
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-          ),
+    const rules = [
+      {
+        value: transaction.address,
+        form: {},
+        ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
+        source: {
+          fee,
+          isProxy: false,
+          proxyBalance: { native: '0' },
         },
       },
-    },
-    {
-      value: transaction.args.value,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForDeliveryFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain, asset },
-        isMultisig: false,
-        isProxy: false,
-        multisigDeposit: '0',
-        fee,
-        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
-        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
-        isNative: chain.assets[0].assetId === asset.assetId,
-        isXcm: Boolean(transaction.args.xcmData),
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-          ),
+      {
+        value: undefined,
+        form: {},
+        ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
+        source: {
+          fee,
+          isMultisig: false,
+          multisigDeposit: '0',
+          balance: '0',
+        } as TransferSignatoryFeeStore,
+      },
+      {
+        value: transaction.args.value,
+        form: {},
+        ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
+          withFormatAmount: false,
+        }),
+        source: {
+          network: { chain: chain, asset: asset },
+          balance: {
+            native: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+            ),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
+          },
+        } as { network: NetworkStore | null; balance: BalanceMap },
+      },
+      {
+        value: transaction.args.value,
+        form: {},
+        ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
+          withFormatAmount: false,
+        }),
+        source: {
+          network: { chain, asset },
+          isMultisig: false,
+          multisigDeposit: '0',
+          fee,
+          xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+          deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+          isProxy: false,
+          isNative: chain.assets[0].assetId === asset.assetId,
+          isXcm: Boolean(transaction.args.xcmData),
+          balance: {
+            native: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+            ),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
+          },
         },
-      } as TransferAmountFeeStore,
-    },
-    {
-      value: transaction.args.value,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForXcmFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain, asset },
-        isMultisig: false,
-        multisigDeposit: '0',
-        fee,
-        xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
-        deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
-        isProxy: false,
-        isNative: chain.assets[0].assetId === asset.assetId,
-        isXcm: Boolean(transaction.args.xcmData),
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-          ),
-        },
-      } as TransferAmountFeeStore,
-    },
-  ];
+      },
+      {
+        value: transaction.args.value,
+        form: {},
+        ...TransferRules.amount.insufficientBalanceForDeliveryFee({} as Store<TransferAmountFeeStore>, {
+          withFormatAmount: false,
+        }),
+        source: {
+          network: { chain, asset },
+          isMultisig: false,
+          isProxy: false,
+          multisigDeposit: '0',
+          fee,
+          xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+          deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+          isNative: chain.assets[0].assetId === asset.assetId,
+          isXcm: Boolean(transaction.args.xcmData),
+          balance: {
+            native: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+            ),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
+          },
+        } as TransferAmountFeeStore,
+      },
+      {
+        value: transaction.args.value,
+        form: {},
+        ...TransferRules.amount.insufficientBalanceForXcmFee({} as Store<TransferAmountFeeStore>, {
+          withFormatAmount: false,
+        }),
+        source: {
+          network: { chain, asset },
+          isMultisig: false,
+          multisigDeposit: '0',
+          fee,
+          xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
+          deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+          isProxy: false,
+          isNative: chain.assets[0].assetId === asset.assetId,
+          isXcm: Boolean(transaction.args.xcmData),
+          balance: {
+            native: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+            ),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
+          },
+        } as TransferAmountFeeStore,
+      },
+    ];
 
-  return { id, result: validationUtils.applyValidationRules(rules) };
-});
+    return { id, result: validationUtils.applyValidationRules(rules) };
+  },
+);
 
-sample({
-  clock: validationStarted,
+const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
-  filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis, chains, balances }, { id, transaction, feeMap }) => {
+  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
@@ -183,19 +180,9 @@ sample({
       feeMap,
     };
   },
-  target: validateFx,
-});
-
-sample({
-  clock: validateFx.doneData,
-  target: txValidated,
+  effect: rootValidateFx,
 });
 
 export const transferValidateModel = {
-  events: {
-    validationStarted,
-  },
-  output: {
-    txValidated,
-  },
+  validate: validateFx,
 };

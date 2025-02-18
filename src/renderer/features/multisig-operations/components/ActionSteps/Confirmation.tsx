@@ -18,18 +18,13 @@ import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import {
-  Fee,
-  FeeLoader,
-  MultisigDepositWithLabel,
-  XcmFee,
-  getIconName,
-  isXcmTransaction,
-} from '@/entities/transaction';
+import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
 import { Details } from '../Details';
 import { TransactionAmount } from '../TransactionAmount';
+
+import { getIconName } from './transactionConfirmIcon';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;

@@ -13,6 +13,7 @@ export interface IStakingDataService {
     addresses: Address[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
+  fetchLedger: (chainId: ChainId, api: ApiPromise, addresses: Address[]) => Promise<StakingMap>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;

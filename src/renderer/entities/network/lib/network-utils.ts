@@ -29,6 +29,7 @@ export const networkUtils = {
   isAutoBalanceConnection,
 
   getNewestMetadata,
+  getChainNodes,
   getLightClientChains,
   getProxyExternalApi,
 
@@ -125,6 +126,12 @@ function getMainRelaychains(chains: Chain[]): Chain[] {
   const MainRelaychains = [RelayChains.POLKADOT, RelayChains.KUSAMA, RelayChains.WESTEND];
 
   return chains.filter(({ chainId }) => MainRelaychains.includes(chainId));
+}
+
+function getChainNodes(chain: Chain, connection: Connection | null) {
+  return !connection || networkUtils.isAutoBalanceConnection(connection)
+    ? chain.nodes.concat(connection?.customNodes || []).map((node) => node.url)
+    : [connection?.activeNode?.url || ''];
 }
 
 function chainNameToUrl(name: string): string {

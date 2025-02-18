@@ -24,7 +24,7 @@ async function getTransactionData(
 
   const chain = chains[chainId]!;
   const account = accounts.find(
-    a => a.walletId === transaction.initiatorWallet && a.accountId === toAccountId(transaction.coreTx.address),
+    a => a.accountId === transaction.initiatorAccountId && a.accountId === toAccountId(transaction.coreTx.address),
   );
 
   return { chainId, chain, account, fee };
