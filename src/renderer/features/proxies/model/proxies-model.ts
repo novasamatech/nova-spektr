@@ -224,20 +224,16 @@ const createProxiesWalletsFx = attach({
   source: {
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
+    identity: identityDomain.identity.$list,
   },
-  mapParams(
-    {
-      identity = {},
-      proxiedAccounts,
-    }: {
-      identity?: IdentityMap;
-      proxiedAccounts: PartialProxiedAccount[];
-    },
-    { chains, wallets },
-  ) {
+  mapParams(proxiedAccounts: PartialProxiedAccount[], { chains, wallets, identity }) {
     return proxiedAccounts.map((proxiedAccount) => ({ identity, proxiedAccount, chains, wallets }));
   },
   effect: series(createProxiedWalletFx),
+});
+
+const requestIdentityFx = attach({
+  effect: identityDomain.identity.request,
 });
 
 sample({
@@ -247,7 +243,7 @@ sample({
     chainId: proxiedAccountsToAdd[0].chainId,
     accounts: proxiedAccountsToAdd.map((p) => p.accountId),
   }),
-  target: identityDomain.identity.request,
+  target: requestIdentityFx,
 });
 
 spread({
@@ -263,7 +259,7 @@ spread({
 sample({
   clock: combineEvents({
     events: {
-      identity: identityDomain.identity.$list.updates,
+      identity: requestIdentityFx.doneData,
       proxiedAccounts: fetchProxiesFx.doneData.filterMap((result) => {
         if (!result.proxiedAccountsToAdd.length) return;
 
@@ -271,6 +267,7 @@ sample({
       }),
     },
   }),
+  fn: ({ proxiedAccounts }) => proxiedAccounts,
   target: createProxiesWalletsFx,
 });
 

@@ -185,7 +185,7 @@ sample({
   target: enrichIndexedMultisigsFx,
 });
 
-const identitySeries = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
+const requestIdentitiesFx = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
 
 sample({
   clock: enrichIndexedMultisigsFx.doneData,
@@ -206,7 +206,7 @@ sample({
       return { chainId, accounts };
     });
   },
-  target: identitySeries,
+  target: requestIdentitiesFx,
 });
 
 sample({
@@ -234,7 +234,7 @@ sample({
   clock: combineEvents({
     events: {
       multisigs: populateMultisigWallets,
-      identity: identitySeries.done,
+      identity: requestIdentitiesFx.done,
     },
   }),
   fn: ({ multisigs, identity }) => {
@@ -260,7 +260,7 @@ sample({
   clock: combineEvents({
     events: {
       multisigs: populateFlexibleMultisigWallets,
-      identity: identitySeries.done,
+      identity: requestIdentitiesFx.done,
     },
   }),
   fn: ({ multisigs, identity }) => {

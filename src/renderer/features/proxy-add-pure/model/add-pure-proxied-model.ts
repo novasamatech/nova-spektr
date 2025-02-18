@@ -285,7 +285,7 @@ sample({
     return nonNullable(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
-    const proxiedAccounts: PartialProxiedAccount[] = [
+    return [
       {
         accountId,
         chainId: chain.chainId,
@@ -296,9 +296,7 @@ sample({
         blockNumber,
         extrinsicIndex,
       },
-    ];
-
-    return { proxiedAccounts };
+    ] as PartialProxiedAccount[];
   },
   target: proxiesModel.createProxiesWallets,
 });

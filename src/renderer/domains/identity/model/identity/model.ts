@@ -45,7 +45,7 @@ const {
     if (accounts.length === 0) return {};
 
     const subIdentities = await identityPallet.storage.superOf(api, accounts);
-    const parentAccounts = subIdentities.map(sub => sub.parent);
+    const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
     const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
 
     const result: IdentityData = {};
@@ -54,7 +54,7 @@ const {
       const parent = parentIdentities[index];
       if (nullable(parent?.identity)) continue;
 
-      const subIdentityName = subIdentities[index]?.name;
+      const subIdentityName = subIdentities[index]?.identity?.[1] ?? '';
       const identityName = parent.identity[0].info.display;
 
       result[parent.account] = {
@@ -68,7 +68,7 @@ const {
     return result;
   },
   map(store, { params, result }) {
-    if (isEmpty(result)) return { ...store };
+    if (isEmpty(result)) return store;
 
     return {
       ...store,
@@ -88,7 +88,6 @@ const request = attach({
 
     const api = apis[identityChainId];
     if (nullable(api)) {
-      console.log('=== fail', chainId);
       throw new Error(`ApiPromise for chain ${identityChainId} not found`);
     }
 
