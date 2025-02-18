@@ -40,11 +40,11 @@ export const BasketOperationStatus = ({ validating, errorText, error }: Props) =
         <Tooltip.Trigger>
           <div
             className={cnTw('flex w-[108px] shrink-0 items-center justify-center gap-x-1 rounded-md px-2 py-0.5', {
-              'bg-badge-red-background-default': variant === 'error',
-              'bg-badge-yellow-background-default': variant === 'warning',
+              'bg-badge-red-background-default text-text-negative': variant === 'error',
+              'bg-badge-orange-background-default text-text-warning': variant === 'warning',
             })}
           >
-            <HelpText className="text-text-negative">{label}</HelpText>
+            <HelpText className="text-inherit">{label}</HelpText>
           </div>
         </Tooltip.Trigger>
         <Tooltip.Content>{errorMessage}</Tooltip.Content>
