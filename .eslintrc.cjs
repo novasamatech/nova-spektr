@@ -27,7 +27,13 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  extends: ['eslint:recommended', 'plugin:import-x/recommended', 'plugin:import-x/errors', 'plugin:import-x/warnings'],
+  extends: [
+    'eslint:recommended',
+    'plugin:import-x/recommended',
+    'plugin:import-x/errors',
+    'plugin:import-x/warnings',
+    'plugin:de-morgan/recommended-legacy',
+  ],
   plugins: ['prettier', 'import-x', 'unused-imports'],
   parserOptions: {
     sourceType: 'module',
@@ -136,16 +142,13 @@ module.exports = {
         'i18next/no-literal-string': [
           'error',
           {
-            mode: 'jsx-only',
+            mode: 'jsx-text-only',
             'should-validate-template': false,
             'jsx-attributes': {
               include: ['alt', 'aria-label', 'title', 'placeholder', 'label', 'description'],
             },
             callees: {
               exclude: ['Error', 'log', 'warn', 'includes', 'formatDate'],
-            },
-            words: {
-              exclude: ['[0-9!-/:-@[-`{-~]+', '[A-Z_-]+'],
             },
           },
         ],
@@ -228,7 +231,7 @@ module.exports = {
         'import-x/default': 'off',
         // Too heavy
         'import-x/no-rename-default': 'off',
-        'import-x/no-useless-path-segments': 'error',
+        'import-x/no-useless-path-segments': 'off',
         'no-restricted-imports': [
           'error',
           {
@@ -267,6 +270,8 @@ module.exports = {
         'effector/enforce-store-naming-convention': 'off',
         // Makes no sense since we're replacing effect handlers while testing
         'effector/strict-effect-handlers': 'off',
+        // Takes 500ms seconds for nothing
+        'effector/no-unnecessary-duplication': 'off',
 
         // Boundaries setup
         'boundaries/entry-point': [
