@@ -10,6 +10,7 @@ import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
 import {
+  FellowshipSalaryInductConfirmation,
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
   FellowshipSetActiveConfirmation,
@@ -22,32 +23,21 @@ import { fellowshipBasketFeature } from './model/feature';
 
 export { fellowshipBasketFeature };
 
-const getOperationTitle = (transaction: Transaction) => {
+const getTitle = (transaction: Transaction) => {
   const title: { [key in TransactionType]?: string } = {
     [TransactionType.COLLECTIVE_VOTE]: 'fellowship.voting.title',
     [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
     [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'fellowship.salary.salaryRequest',
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.salary.salaryPayout',
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.salary.promotionTitle',
+    [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'fellowship.salary.salaryInduct',
   };
 
   return transaction.type in title ? title[transaction.type] : null;
 };
 
-const getModalTitle = (transaction: Transaction) => {
-  const title: { [key in TransactionType]?: string } = {
-    [TransactionType.COLLECTIVE_VOTE]: 'fellowship.voting.title',
-    [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
-    [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'fellowship.salary.salaryRequest',
-    [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.salary.salaryPayout',
-    [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.salary.promotionTitle',
-  };
-
-  return transaction.type in title ? title[transaction.type] : null;
-};
-
-const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
-  const Icon: { [key in TransactionType]?: IconNames } = {
+const getIcon = (transaction: Transaction): IconNames | undefined => {
+  const icon: { [key in TransactionType]?: IconNames } = {
     [TransactionType.COLLECTIVE_VOTE]: 'voteMst',
     [TransactionType.COLLECTIVE_SET_ACTIVE]: 'unknownMst',
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'unknownMst',
@@ -56,7 +46,7 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'unknownMst',
   };
 
-  return Icon[transaction.type];
+  return icon[transaction.type];
 };
 
 basketSDK(fellowshipBasketFeature, {
@@ -64,8 +54,8 @@ basketSDK(fellowshipBasketFeature, {
     const { t } = useI18n();
     const tx = basketOperationsService.getCoreTx(transaction);
 
-    const title = getOperationTitle(tx);
-    const icon = getOperationIcon(tx);
+    const title = getTitle(tx);
+    const icon = getIcon(tx);
 
     if (title && icon) {
       return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
@@ -85,10 +75,10 @@ basketSDK(fellowshipBasketFeature, {
     const asset = chain.assets.at(0);
     if (nullable(asset)) return null;
 
-    const title = getModalTitle(tx);
+    const title = getTitle(tx);
 
     if (title) {
-      return <OperationTitle className="justify-center" title={t('fellowship.voting.title')} chainId={tx.chainId} />;
+      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
     }
 
     return null;
@@ -107,7 +97,7 @@ basketSDK(fellowshipBasketFeature, {
     }
 
     if (salaryService.isSalaryInductTransaction(tx)) {
-      return <FellowshipSalaryRequestConfirmation id={transaction.id} hideSignButton />;
+      return <FellowshipSalaryInductConfirmation id={transaction.id} hideSignButton />;
     }
 
     if (salaryService.isSalaryRequestTransaction(tx)) {

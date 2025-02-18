@@ -448,6 +448,9 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
+        "inductSalary": "Payments activation:",
+        "inductSalaryAction": "Activate",
+        "inductSalaryCall": "Your salary: {salary}, activate it.",
         "payoutSalary": "Withdraw",
         "payoutSalaryCall": "Payout a {salary} salary within:",
         "payoutSalarySuccess": "Salary payout was completed successfully.",

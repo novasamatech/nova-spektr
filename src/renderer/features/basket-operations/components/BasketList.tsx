@@ -1,6 +1,8 @@
 import { useUnit } from 'effector-react';
 
+import { type BasketTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -19,9 +21,18 @@ export const BasketList = () => {
 
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
+  const transactionsToSign = useUnit(signOperations.$transactions);
   const refreshPending = useUnit(validation.validateAll.pending);
 
   const isSignAvailable = selected.length > 0;
+
+  const openSignModal = (transaction: BasketTransaction) => {
+    signOperations.startFlow({ transactions: [transaction] });
+  };
+
+  const toggleSelection = (transaction: BasketTransaction) => {
+    basketOperations.toggle(transaction.id);
+  };
 
   return (
     <div className="flex flex-col gap-4 pt-4">
@@ -57,7 +68,7 @@ export const BasketList = () => {
               size="sm"
               className="w-[125px]"
               disabled={!isSignAvailable}
-              onClick={() => signOperations.events.flowStarted({ transactions: selected, feeMap: {} })}
+              onClick={() => signOperations.startFlow({ transactions: selected })}
             >
               {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
             </Button>
@@ -69,7 +80,13 @@ export const BasketList = () => {
         <div className="scrollbar-stable flex w-full flex-col items-center gap-4 overflow-y-auto">
           <ul className="flex w-[736px] flex-col gap-y-1.5 divide-y rounded-md">
             {operations.map(transaction => (
-              <BasketItem key={transaction.id} transaction={transaction} />
+              <BasketItem
+                key={transaction.id}
+                transaction={transaction}
+                selected={nonNullable(selected.find(s => s.id === transaction.id))}
+                onSelect={toggleSelection}
+                onClick={openSignModal}
+              />
             ))}
           </ul>
         </div>
@@ -77,7 +94,7 @@ export const BasketList = () => {
 
       {operations.length === 0 && <EmptyBasket />}
 
-      {selected.length > 1 ? <SignOperationsModal /> : <SignOperationModal />}
+      {transactionsToSign.length > 1 ? <SignOperationsModal /> : <SignOperationModal />}
     </div>
   );
 };

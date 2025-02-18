@@ -1,13 +1,10 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 
 import { type BasketTransaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
-import { basketOperations } from '@/aggregates/basket-operations';
-import { signOperations } from '../model/sign';
 import { validation } from '../model/validation';
 
 import { BasketOperationStatus } from './BasketOperationStatus';
@@ -15,10 +12,16 @@ import { RemoveOperation } from './RemoveOperation';
 
 export const operationTitleSlot = createSlot<{ transaction: BasketTransaction }>();
 
-export const BasketItem = ({ transaction }: { transaction: BasketTransaction }) => {
+type Props = {
+  transaction: BasketTransaction;
+  selected: boolean;
+  onSelect: (transaction: BasketTransaction) => void;
+  onClick: (tx: BasketTransaction) => void;
+};
+
+export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) => {
   const { t } = useI18n();
 
-  const selected = useUnit(basketOperations.$selected);
   const validationResult = useStoreMap({
     store: validation.$validatingResults,
     keys: [transaction.id],
@@ -42,23 +45,14 @@ export const BasketItem = ({ transaction }: { transaction: BasketTransaction }) 
       className="grid h-[52px] grid-cols-[40px,398px,135px,124px,auto] items-stretch bg-block-background-default"
     >
       <div className="flex items-center justify-center">
-        <Checkbox
-          checked={nonNullable(selected.find(s => s.id === transaction.id))}
-          disabled={disabled}
-          onClick={e => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            basketOperations.toggle(transaction.id);
-          }}
-        />
+        <Checkbox checked={selected} disabled={disabled} onClick={() => onSelect(transaction)} />
       </div>
 
       <div
         className="flex h-full w-full items-center gap-x-4 overflow-hidden px-2"
         onClick={() => {
           if (!disabled) {
-            signOperations.events.flowStarted({ transactions: [transaction], feeMap: {} });
+            onClick(transaction);
           }
         }}
       >

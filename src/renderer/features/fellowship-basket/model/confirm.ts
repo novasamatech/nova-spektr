@@ -18,7 +18,12 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import { type CollectiveVoteConfirm, fellowshipVotingConfirmModel } from '@/features/operations/OperationsConfirm';
+import {
+  type CollectiveSalaryInductConfirm,
+  type CollectiveVoteConfirm,
+  fellowshipSalaryInductConfirmModel,
+  fellowshipVotingConfirmModel,
+} from '@/features/operations/OperationsConfirm';
 
 type DataParams = {
   wallets: Wallet[];
@@ -32,40 +37,68 @@ type DataParams = {
 
 const flow = createGate<BasketTransaction>();
 
-const prepareCollectiveVoteDataFx = createEffect(
-  async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
-      transaction,
-      apis,
-      chains,
-      accounts,
-    );
+const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
+  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    transaction,
+    apis,
+    chains,
+    accounts,
+  );
 
-    const coreTx = basketOperationsService.getCoreTx(transaction);
-    const api = apis[chainId];
+  const coreTx = basketOperationsService.getCoreTx(transaction);
+  const api = apis[chainId];
 
-    return {
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
+    aye: coreTx.args.aye,
+    poll: coreTx.args.poll,
+    rank: coreTx.args.rank,
+    fee: new BN(fee),
+    signatory: null,
+    wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      chain,
-      wallets,
-      id: transaction.id,
-      asset: chain.assets[0],
-      account: account!,
-      pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
-      aye: coreTx.args.aye,
-      poll: coreTx.args.poll,
-      rank: coreTx.args.rank,
-      fee: new BN(fee),
-      signatory: null,
-      wrappedTransactions: transactionService.getWrappedTransaction({
-        api,
-        addressPrefix: chain.addressPrefix,
-        transaction: transaction.coreTx,
-        txWrappers: transaction.txWrappers,
-      }),
-    } satisfies CollectiveVoteConfirm;
-  },
-);
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveVoteConfirm;
+});
+
+const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
+  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    transaction,
+    apis,
+    chains,
+    accounts,
+  );
+
+  const coreTx = basketOperationsService.getCoreTx(transaction);
+  const api = apis[chainId];
+
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
+    fee: new BN(fee),
+    signatory: null,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: transaction.coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveSalaryInductConfirm;
+});
 
 sample({
   clock: flow.open,
@@ -91,13 +124,46 @@ sample({
     transaction: operation,
     balances,
   }),
-  target: prepareCollectiveVoteDataFx,
+  target: prepareVoteFx,
 });
 
 sample({
-  clock: prepareCollectiveVoteDataFx.doneData,
+  clock: flow.open,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    wallets: walletModel.$wallets,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    connections: networkModel.$connections,
+    balances: balanceModel.$balances,
+  },
+  filter: (_, operation) => {
+    const transaction = basketOperationsService.getCoreTx(operation);
+
+    return transaction.type === TransactionType.COLLECTIVE_SALARY_INDUCT;
+  },
+  fn: ({ wallets, accounts, chains, apis, connections, balances }, operation) => ({
+    wallets,
+    accounts,
+    chains,
+    apis,
+    connections,
+    transaction: operation,
+    balances,
+  }),
+  target: prepareSalaryInductFx,
+});
+
+sample({
+  clock: prepareVoteFx.doneData,
   fn: data => [data],
   target: fellowshipVotingConfirmModel.events.addConfirms,
+});
+
+sample({
+  clock: prepareSalaryInductFx.doneData,
+  fn: data => [data],
+  target: fellowshipSalaryInductConfirmModel.events.addConfirms,
 });
 
 export const confirm = {

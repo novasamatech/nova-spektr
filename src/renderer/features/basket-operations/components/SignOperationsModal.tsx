@@ -23,11 +23,11 @@ export const SignOperationsModal = () => {
   const isModalOpen = useUnit(signOperations.$isModalOpen);
 
   if (signOperationsUtils.isSubmitStep(step)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={signOperations.output.flowFinished} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={() => signOperations.finishFlow()} />;
   }
 
   return (
-    <Modal size="fit" isOpen={isModalOpen} onToggle={() => signOperations.output.flowFinished()}>
+    <Modal size="fit" isOpen={isModalOpen} onToggle={() => signOperations.finishFlow()}>
       <Modal.Title close>
         <HeaderTitleText>{t('basket.signOperations.title', { transactions: transactions?.length })}</HeaderTitleText>
       </Modal.Title>
@@ -35,9 +35,7 @@ export const SignOperationsModal = () => {
         {signOperationsUtils.isConfirmStep(step) && (
           <ConfirmSlider
             count={transactions.length}
-            footer={
-              <SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperations.events.txsConfirmed} />
-            }
+            footer={<SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperations.txsConfirmed} />}
           >
             {transactions.map(t => (
               <ConfirmSlider.Item key={t.id}>
@@ -51,7 +49,7 @@ export const SignOperationsModal = () => {
         )}
 
         {signOperationsUtils.isSignStep(step) && (
-          <OperationSign onGoBack={() => signOperations.events.stepChanged(Step.CONFIRM)} />
+          <OperationSign onGoBack={() => signOperations.changeStep(Step.CONFIRM)} />
         )}
       </Modal.Content>
     </Modal>

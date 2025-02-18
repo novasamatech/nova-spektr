@@ -11,6 +11,7 @@ import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
+import { SalaryInductModal } from './SalaryInductModal';
 import { SalaryPayoutModal } from './SalaryPayoutModal';
 import { SalaryRegisterModal } from './SalaryRegisterModal';
 
@@ -31,7 +32,8 @@ export const SalaryInfo = memo(() => {
     }
   }, [input?.api, currentPeriod]);
 
-  const canInteractWithSalary = nonNullable(claimStatus) && claimStatus.type !== 'none';
+  const canInteractWithSalary = nonNullable(claimStatus) && !salaryService.canInductSalary(claimStatus);
+  const canInductSalary = nonNullable(claimStatus) && salaryService.canInductSalary(claimStatus);
   const canRequestSalary =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&
@@ -120,6 +122,25 @@ export const SalaryInfo = memo(() => {
             </div>
           )}
         </Box>
+      )}
+      {canInductSalary && (
+        <div className="flex items-center gap-4 border-t pt-6">
+          <div className="flex grow flex-col gap-1">
+            <FootnoteText className="text-text-secondary">
+              {t('fellowship.salary.salaryInfo.inductSalary')}
+            </FootnoteText>
+
+            <SmallTitleText>
+              {t('fellowship.salary.salaryInfo.inductSalaryCall', {
+                salary: salaryService.formatSalaryAmount(salary.active),
+              })}
+            </SmallTitleText>
+          </div>
+
+          <SalaryInductModal>
+            <Button variant="fill">{t('fellowship.salary.salaryInfo.inductSalaryAction')}</Button>
+          </SalaryInductModal>
+        </div>
       )}
     </Box>
   );
