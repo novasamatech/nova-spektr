@@ -1,8 +1,10 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
+import { referendaPallet } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
@@ -17,7 +19,6 @@ type Props = {
 };
 
 export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
-  useGate(fellowshipVotingFeature.gate);
   const { t } = useI18n();
 
   const confirm = useStoreMap({
@@ -36,6 +37,11 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
 
       return list.find((r) => r.id === parseInt(meta.poll)) ?? null;
     },
+  });
+
+  useGate(fellowshipVotingFeature.gate);
+  useFlow(votingStatus.flow, {
+    referendumId: confirm ? referendaPallet.helpers.toReferendumId(parseInt(confirm.meta.poll)) : null,
   });
 
   const maxRank = useUnit(votingStatus.$maxRank);

@@ -78,7 +78,7 @@ export const BasketList = () => {
 
       {operations.length > 0 && (
         <div className="scrollbar-stable flex w-full flex-col items-center gap-4 overflow-y-auto">
-          <ul className="flex w-[736px] flex-col gap-y-1.5 divide-y rounded-md">
+          <ul className="flex w-[736px] flex-col gap-y-1.5 rounded-md">
             {operations.map(transaction => (
               <BasketItem
                 key={transaction.id}

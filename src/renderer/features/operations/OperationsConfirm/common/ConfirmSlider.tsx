@@ -5,7 +5,6 @@ import {
   type ReactNode,
   cloneElement,
   isValidElement,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -95,25 +94,23 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   );
 };
 
+const springConfig = {
+  initial: { opacity: 1 },
+  from: { opacity: 0 },
+  enter: { opacity: 1 },
+  leave: { opacity: 0 },
+  config: {
+    duration: 500,
+    easing: defaultEasing,
+  },
+};
+
 type ItemProps = PropsWithChildren<{
   __active?: boolean;
 }>;
 
 export const Item = ({ __active = false, children }: ItemProps) => {
-  const config = useMemo(() => {
-    return {
-      initial: { opacity: 1 },
-      from: { opacity: 0 },
-      enter: { opacity: 1 },
-      leave: { opacity: 0 },
-      config: {
-        duration: 500,
-        easing: defaultEasing,
-      },
-    };
-  }, []);
-
-  const transitions = useTransition(__active, config);
+  const transitions = useTransition(__active, springConfig);
 
   return (
     <div className="flex h-[580px] flex-col last-of-type:pr-4">

@@ -23,7 +23,7 @@ import { fellowshipBasketFeature } from './model/feature';
 
 export { fellowshipBasketFeature };
 
-const getTitle = (transaction: Transaction) => {
+const getModalTitle = (transaction: Transaction) => {
   const title: { [key in TransactionType]?: string } = {
     [TransactionType.COLLECTIVE_VOTE]: 'fellowship.voting.title',
     [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.profile.setActive.title',
@@ -31,6 +31,19 @@ const getTitle = (transaction: Transaction) => {
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.salary.salaryPayout',
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.salary.promotionTitle',
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'fellowship.salary.salaryInduct',
+  };
+
+  return transaction.type in title ? title[transaction.type] : null;
+};
+
+const getRecordTitle = (transaction: Transaction) => {
+  const title: { [key in TransactionType]?: string } = {
+    [TransactionType.COLLECTIVE_VOTE]: 'fellowship.basket.vote',
+    [TransactionType.COLLECTIVE_SET_ACTIVE]: 'fellowship.basket.setActive',
+    [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'fellowship.basket.salaryRequest',
+    [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'fellowship.basket.salaryPayout',
+    [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'fellowship.basket.submitEvidence',
+    [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'fellowship.basket.salaryInduct',
   };
 
   return transaction.type in title ? title[transaction.type] : null;
@@ -54,7 +67,7 @@ basketSDK(fellowshipBasketFeature, {
     const { t } = useI18n();
     const tx = basketOperationsService.getCoreTx(transaction);
 
-    const title = getTitle(tx);
+    const title = getRecordTitle(tx);
     const icon = getIcon(tx);
 
     if (title && icon) {
@@ -75,7 +88,7 @@ basketSDK(fellowshipBasketFeature, {
     const asset = chain.assets.at(0);
     if (nullable(asset)) return null;
 
-    const title = getTitle(tx);
+    const title = getModalTitle(tx);
 
     if (title) {
       return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;

@@ -321,6 +321,14 @@
         "submittedRetention": "submitted evidence with a wish to retention"
       }
     },
+    "basket": {
+      "salaryInduct": "Activate salary",
+      "salaryPayout": "Withdraw salary",
+      "salaryRequest": "Request salary",
+      "setActive": "Change status",
+      "submitEvidence": "Submit evidence",
+      "vote": "Vote"
+    },
     "details": {
       "noDetails": "Details not found"
     },

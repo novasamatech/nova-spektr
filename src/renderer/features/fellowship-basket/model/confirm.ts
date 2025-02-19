@@ -18,14 +18,17 @@ import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import {
   type CollectiveSalaryInductConfirm,
   type CollectiveSalaryPayoutConfirm,
   type CollectiveSalaryRequestConfirm,
+  type CollectiveSubmitEvidenceConfirm,
   type CollectiveVoteConfirm,
   fellowshipSalaryInductConfirmModel,
   fellowshipSalaryPayoutConfirmModel,
   fellowshipSalaryRequestConfirmModel,
+  fellowshipSubmitEvidenceConfirmModel,
   fellowshipVotingConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 
@@ -303,6 +306,83 @@ sample({
   clock: prepareSalaryPayoutFx.doneData,
   fn: data => [data],
   target: fellowshipSalaryPayoutConfirmModel.events.addConfirms,
+});
+
+// evidence
+
+const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, accounts, chains, apis }: DataParams) => {
+  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    transaction,
+    apis,
+    chains,
+    accounts,
+  );
+
+  const coreTx = basketOperationsService.getCoreTx(transaction);
+  const api = apis[chainId];
+
+  return {
+    api,
+    chain,
+    wallets,
+    id: transaction.id,
+    asset: chain.assets[0],
+    account: account!,
+    pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
+    fee: new BN(fee),
+    signatory: null,
+    wish: coreTx.args.wish,
+    evidence: coreTx.args.evidence,
+    wrappedTransactions: transactionService.getWrappedTransaction({
+      api,
+      addressPrefix: chain.addressPrefix,
+      transaction: coreTx,
+      txWrappers: transaction.txWrappers,
+    }),
+  } satisfies CollectiveSubmitEvidenceConfirm;
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    wallets: walletModel.$wallets,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    connections: networkModel.$connections,
+    balances: balanceModel.$balances,
+  },
+  filter: (_, operation) => {
+    const transaction = basketOperationsService.getCoreTx(operation);
+
+    return transaction.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE;
+  },
+  fn: ({ wallets, accounts, chains, apis, connections, balances }, operation) => ({
+    wallets,
+    accounts,
+    chains,
+    apis,
+    connections,
+    transaction: operation,
+    balances,
+  }),
+  target: prepareEvidencePayoutFx,
+});
+
+sample({
+  clock: prepareEvidencePayoutFx.doneData,
+  fn: data => [data],
+  target: fellowshipSubmitEvidenceConfirmModel.events.addConfirms,
+});
+
+// setting up env
+
+sample({
+  clock: flow.open,
+  fn(transaction) {
+    return { chainId: transaction.coreTx.chainId };
+  },
+  target: fellowshipNetwork.selectCollective,
 });
 
 export const confirm = {
