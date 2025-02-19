@@ -153,7 +153,12 @@ sample({
     if (nullable(accounts) || nullable(transactions)) return [];
 
     return accounts.map((account, index) => {
-      return { initiatorWallet: account.walletId, coreTx: transactions[index].coreTx, txWrappers: txWrappers[index] };
+      return {
+        initiatorAccountId: account.accountId,
+        coreTx: transactions[index].coreTx,
+        txWrappers: txWrappers[index],
+        createdAt: Date.now(),
+      };
     });
   },
   target: basketOperations.addTransactions,

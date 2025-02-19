@@ -8,7 +8,6 @@ import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
-import { identityService } from './service';
 import { type AccountIdentity } from './types';
 
 type IdentityData = Record<AccountId, AccountIdentity>;
@@ -79,14 +78,11 @@ const request = attach({
   effect: requestIdentity,
   source: { apis: $apis, chains: $chains },
   mapParams: ({ chainId, accounts }: RequestParams, { apis, chains }) => {
-    const identityChain = identityService.findIdentityChain(chains, chainId);
-    if (nullable(identityChain)) {
-      throw new Error(`Chain path from ${chainId} is broken, trace chain.parentId fields in config.`);
-    }
+    const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
 
-    const api = apis[identityChain.chainId];
+    const api = apis[identityChainId];
     if (nullable(api)) {
-      throw new Error(`ApiPromise for chain ${identityChain.chainId} not found`);
+      throw new Error(`ApiPromise for chain ${identityChainId} not found`);
     }
 
     return {

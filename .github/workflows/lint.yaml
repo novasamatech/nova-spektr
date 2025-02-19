@@ -21,5 +21,8 @@ jobs:
       - name: 🔪 Check by typescript
         run: pnpm types
 
+      - name: 🤞 Check by formatter
+        run: pnpm fmt:check
+
       - name: 📝 Check by linter
         run: TIMING=1 pnpm lint

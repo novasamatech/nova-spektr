@@ -4,15 +4,12 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
+import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import {
-  ConfirmSlider,
-  EditDelegationConfirmation as Confirmation,
-  basketUtils,
-} from '@/features/operations/OperationsConfirm';
+import { ConfirmSlider, EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
 
 import { DelegateForm } from './DelegateForm';

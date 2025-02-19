@@ -1,0 +1,163 @@
+import { useGate } from 'effector-react';
+
+import { type Transaction, TransactionType } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { type IconNames } from '@/shared/ui';
+import { OperationTitle } from '@/entities/chain';
+import { TransactionTitle } from '@/entities/transaction';
+import { basketOperationsService } from '@/aggregates/basket-operations';
+import { basketSDK } from '@/sdk/basket';
+import { unlockValidateModel, voteValidateModel } from '@/features/governance';
+import {
+  DelegateConfirmation,
+  EditDelegationConfirmation,
+  RemoveVoteConfirmation,
+  RevokeDelegationConfirmation,
+  VoteConfirmation,
+} from '@/features/operations/OperationsConfirm';
+import {
+  delegateValidateModel,
+  removeVoteValidateModel,
+  revokeDelegationValidateModel,
+} from '@/features/operations/OperationsValidation';
+import { UnlockConfirmation } from '@/widgets/UnlockModal';
+
+import { confirm } from './model/confirm';
+import { governanceBasketFeature } from './model/feature';
+
+export { governanceBasketFeature };
+
+const getOperationTitle = (transaction: Transaction): string | undefined => {
+  const title: { [key in TransactionType]?: string } = {
+    [TransactionType.UNLOCK]: 'operations.titles.unlock',
+    [TransactionType.VOTE]: 'operations.titles.vote',
+    [TransactionType.REVOTE]: 'operations.titles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
+    [TransactionType.DELEGATE]: 'operations.titles.delegate',
+    [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
+    [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+  };
+
+  return title[transaction.type];
+};
+
+const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
+  const icon: { [key in TransactionType]?: IconNames } = {
+    [TransactionType.UNLOCK]: 'unlockMst',
+    [TransactionType.VOTE]: 'voteMst',
+    [TransactionType.REVOTE]: 'revoteMst',
+    [TransactionType.REMOVE_VOTE]: 'retractMst',
+    [TransactionType.DELEGATE]: 'delegateMst',
+    [TransactionType.UNDELEGATE]: 'undelegateMst',
+    [TransactionType.EDIT_DELEGATION]: 'editDelegationMst',
+  };
+
+  return icon[transaction.type];
+};
+
+const getModalTitle = (transaction: Transaction): string | undefined => {
+  const title: { [key in TransactionType]?: string } = {
+    [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
+    [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
+    [TransactionType.EDIT_DELEGATION]: 'operations.modalTitles.editDelegationOn',
+    [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
+    [TransactionType.VOTE]: 'operations.modalTitles.vote',
+    [TransactionType.REVOTE]: 'operations.modalTitles.revote',
+    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
+  };
+
+  return title[transaction.type];
+};
+
+basketSDK(governanceBasketFeature, {
+  operationTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
+
+    const title = getOperationTitle(tx);
+    const icon = getOperationIcon(tx);
+
+    if (title && icon) {
+      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
+    }
+
+    return null;
+  },
+  transactionConfirmTitle({ transaction }) {
+    const { t } = useI18n();
+    const tx = basketOperationsService.getCoreTx(transaction);
+    const title = getModalTitle(tx);
+
+    if (title) {
+      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
+    }
+
+    return null;
+  },
+  transactionConfirmDetails: ({ transaction }) => {
+    useGate(confirm.flow, transaction);
+
+    const tx = basketOperationsService.getCoreTx(transaction);
+
+    if (tx.type === TransactionType.DELEGATE)
+      return <DelegateConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.EDIT_DELEGATION)
+      return <EditDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.UNDELEGATE)
+      return <RevokeDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
+    if (tx.type === TransactionType.UNLOCK) return <UnlockConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.VOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REVOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REMOVE_VOTE) return <RemoveVoteConfirmation id={transaction.id} hideSignButton />;
+
+    return null;
+  },
+  validation(errors, { transaction }) {
+    if (transaction.coreTx.type === TransactionType.DELEGATE) {
+      return delegateValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    if (transaction.coreTx.type === TransactionType.UNDELEGATE) {
+      return revokeDelegationValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    if (transaction.coreTx.type === TransactionType.VOTE || transaction.coreTx.type === TransactionType.REVOTE) {
+      return voteValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    if (transaction.coreTx.type === TransactionType.REMOVE_VOTE) {
+      return removeVoteValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    if (transaction.coreTx.type === TransactionType.UNLOCK) {
+      return unlockValidateModel
+        .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
+        .then(({ result }) => {
+          return result ? errors.concat(result) : errors;
+        });
+    }
+
+    // TODO implement
+    if (transaction.coreTx.type === TransactionType.EDIT_DELEGATION) {
+      return errors;
+    }
+
+    return errors;
+  },
+});

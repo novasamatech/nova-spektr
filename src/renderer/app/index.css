@@ -38,12 +38,11 @@
 }
 
 /* Search input reset  */
-[type="search"]::-webkit-search-cancel-button,
-[type="search"]::-webkit-search-decoration {
+[type='search']::-webkit-search-cancel-button,
+[type='search']::-webkit-search-decoration {
   -webkit-appearance: none;
   appearance: none;
 }
-
 
 *:focus-visible {
   outline: 2px solid var(--focus-container-border);
@@ -57,9 +56,9 @@ ul:focus-visible {
   transform: scaleY(-1);
   /* with color fallback */
   background: #501acb url('../shared/assets/images/misc/bg.webp');
-  background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .video-cover {
@@ -77,13 +76,13 @@ ul:focus-visible {
 
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  clip-path: inset(100%);
   margin: -1px;
   border: 0;
   padding: 0;
+  width: 1px;
+  height: 1px;
   white-space: nowrap;
-  clip-path: inset(100%);
   clip: rect(0 0 0 0);
   overflow: hidden;
 }

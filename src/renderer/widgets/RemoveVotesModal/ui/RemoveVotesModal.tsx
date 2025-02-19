@@ -16,17 +16,13 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
 import { AccountSelectModal } from '@/shared/ui-entities';
+import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import {
-  ConfirmSlider,
-  RemoveVoteConfirmation,
-  basketUtils,
-  removeVoteConfirmModel,
-} from '@/features/operations/OperationsConfirm';
+import { ConfirmSlider, RemoveVoteConfirmation, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';
 
 type Props = {

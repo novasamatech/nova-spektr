@@ -30,7 +30,6 @@ import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
   OperationResult,
-  getMultisigSignOperationTitle,
   getTxFromCallData,
   isXcmTransaction,
   transactionService,
@@ -42,6 +41,7 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
 import { SignatorySelectModal } from './SignatorySelectModal';
+import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;

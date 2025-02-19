@@ -51,7 +51,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
     }
   }, [validationError]);
 
-  const isCameraOn = !(error && CameraAccessErrors.includes(error));
+  const isCameraOn = !error || !CameraAccessErrors.includes(error);
 
   const onCameraList = (cameras: VideoInput[]) => {
     const formattedCameras = cameras.map((camera) => ({

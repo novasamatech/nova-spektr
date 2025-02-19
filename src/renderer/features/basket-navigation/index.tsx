@@ -28,7 +28,7 @@ basketNavigationFeature.inject(navigationBottomLinksSlot, {
       return null;
     }
 
-    const availableOperations = basket.filter((tx) => accounts.some((a) => a.walletId === tx.initiatorWallet));
+    const availableOperations = basket.filter(tx => accounts.some(a => a.accountId === tx.initiatorAccountId));
 
     return (
       <NavItem

@@ -8,12 +8,12 @@ import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
+import { basketUtils } from '@/entities/basket';
 import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { AccountsModal } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { basketUtils } from '@/features/operations/OperationsConfirm';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { unlockConfirmAggregate } from '../aggregates/unlockConfirm';
 

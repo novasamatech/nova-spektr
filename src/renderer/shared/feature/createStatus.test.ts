@@ -131,4 +131,27 @@ describe('createStatus', () => {
     await allSettled($input, { params: { failed: false }, scope });
     expect(scope.getState($state)).toEqual({ status: 'running', data: { failed: false } });
   });
+
+  it('should restore after fail', async () => {
+    const scope = fork();
+    const $input = createStore({});
+
+    const { $state, start, fail, restore } = createStatus({
+      enable: createStore(true),
+      input: $input,
+      reasons: ['test'],
+    });
+
+    await allSettled(start, { params: 'test', scope });
+    await allSettled(fail, { params: { type: 'error', error: new Error('test') }, scope });
+    expect(scope.getState($state)).toEqual({
+      status: 'failed',
+      type: 'error',
+      error: new Error('test'),
+      data: {},
+    });
+
+    await allSettled(restore, { scope });
+    expect(scope.getState($state)).toEqual({ status: 'running', data: {} });
+  });
 });

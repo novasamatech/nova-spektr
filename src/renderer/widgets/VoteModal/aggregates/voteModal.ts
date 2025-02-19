@@ -77,9 +77,10 @@ sample({
     if (!account || !transaction) return [];
 
     const tx = {
-      initiatorWallet: account.walletId,
+      initiatorAccountId: account.accountId,
       coreTx: transaction.coreTx,
       txWrappers,
+      createdAt: Date.now(),
     };
 
     return [tx];
