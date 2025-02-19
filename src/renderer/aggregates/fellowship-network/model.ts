@@ -34,24 +34,20 @@ const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chain
   chainId ? (apis[chainId] ?? null) : null,
 );
 
-const $network = combine(
-  { chain: $fellowshipChain, api: $fellowshipChainApi, connected: $isConnected },
-  ({ chain, api, connected }) => {
-    if (nullable(chain) || nullable(api) || !connected) return null;
+const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, ({ chain, api }) => {
+  if (nullable(chain) || nullable(api)) return null;
 
-    const asset = chain.assets.at(0);
-    if (nullable(asset)) return null;
+  const asset = chain.assets.at(0);
+  if (nullable(asset)) return null;
 
-    return {
-      palletType: 'fellowship' as const,
-      chainId: chain.chainId,
-      connected,
-      chain,
-      asset,
-      api,
-    };
-  },
-);
+  return {
+    palletType: 'fellowship' as const,
+    chainId: chain.chainId,
+    chain,
+    asset,
+    api,
+  };
+});
 
 export const fellowshipNetwork = {
   $network,

@@ -21,6 +21,7 @@ export * from './Referendum/Vote';
 export * from './Referendum/RemoveVote';
 export * from './FellowshipVoting';
 export * from './FellowshipSetActive';
+export * from './FellowshipSalaryInduct';
 export * from './FellowshipSalaryRequest';
 export * from './FellowshipSalaryPayout';
 export * from './FellowshipSubmitEvidence';

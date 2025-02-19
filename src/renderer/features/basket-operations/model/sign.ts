@@ -8,28 +8,27 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
-import { type FeeMap } from '@/features/operations/OperationsValidation';
 import { signOperationsUtils } from '../service/sign-operations-utils';
 import { Step } from '../types';
 
-const flowStarted = createEvent<{ transactions: BasketTransaction[]; feeMap: FeeMap }>();
-const flowFinished = createEvent();
-const stepChanged = createEvent<Step>();
+const startFlow = createEvent<{ transactions: BasketTransaction[] }>();
+const finishFlow = createEvent();
+const changeStep = createEvent<Step>();
 const txsConfirmed = createEvent();
 
-const $step = restore(stepChanged, Step.NONE).reset(flowFinished);
-const $transactions = createStore<BasketTransaction[]>([]).reset(flowFinished);
+const $step = restore(changeStep, Step.NONE).reset(finishFlow);
+const $transactions = createStore<BasketTransaction[]>([]).reset(finishFlow);
 
 const $isModalOpen = combine($step, step => !signOperationsUtils.isNoneStep(step));
 
 sample({
-  clock: flowStarted,
+  clock: startFlow,
   fn: () => Step.CONFIRM,
   target: $step,
 });
 
 sample({
-  clock: flowStarted,
+  clock: startFlow,
   fn: ({ transactions }) => transactions,
   target: $transactions,
 });
@@ -63,7 +62,7 @@ sample({
   },
   target: spread({
     event: signModel.events.formInitiated,
-    step: stepChanged,
+    step: changeStep,
   }),
 });
 
@@ -100,7 +99,7 @@ sample({
   },
   target: spread({
     event: submitModel.events.formInitiated,
-    step: stepChanged,
+    step: changeStep,
   }),
 });
 
@@ -145,12 +144,8 @@ export const signOperations = {
   $transactions,
   $isModalOpen,
 
-  events: {
-    flowStarted,
-    txsConfirmed,
-    stepChanged,
-  },
-  output: {
-    flowFinished,
-  },
+  startFlow,
+  finishFlow,
+  txsConfirmed,
+  changeStep,
 };
