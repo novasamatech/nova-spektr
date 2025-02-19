@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
+import { toAccountId } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
 import { Modal, SearchInput } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
@@ -45,16 +46,20 @@ export const CurrentDelegationModal = () => {
 
               <div className="scrollbar-stable flex flex-1 flex-col items-center overflow-y-auto">
                 <ul className="flex w-[400px] flex-col gap-y-2">
-                  {delegationList.map((delegate) => (
-                    <button key={delegate.accountId} onClick={() => delegateDetailsModel.events.flowStarted(delegate)}>
-                      <DelegationCard
-                        key={delegate.accountId}
-                        delegate={delegate}
-                        votes={Object.values(activeDelegations[delegate.accountId] || {})}
-                        tracks={[...new Set(Object.values(activeTracks[delegate.accountId] || {}).flat())]}
-                      />
-                    </button>
-                  ))}
+                  {delegationList.map((delegate) => {
+                    const accountId = toAccountId(delegate.address ?? delegate.accountId);
+
+                    return (
+                      <button key={accountId} onClick={() => delegateDetailsModel.events.flowStarted(delegate)}>
+                        <DelegationCard
+                          key={accountId}
+                          delegate={delegate}
+                          votes={Object.values(activeDelegations[delegate.accountId] || {})}
+                          tracks={[...new Set(Object.values(activeTracks[delegate.accountId] || {}).flat())]}
+                        />
+                      </button>
+                    );
+                  })}
                 </ul>
               </div>
             </>

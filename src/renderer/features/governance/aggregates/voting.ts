@@ -1,8 +1,10 @@
 import { combine, createEvent, sample } from 'effector';
 
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { votingModel } from '@/entities/governance';
+import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identityDomain } from '@/domains/identity';
+import { votingModel, votingService } from '@/entities/governance';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -87,6 +89,35 @@ sample({
     addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
   }),
   target: requestVoting,
+});
+
+sample({
+  clock: $activeWalletVotes,
+  source: {
+    chain: networkSelectorModel.$governanceChain,
+    identity: identityDomain.identity.$list,
+  },
+  filter: ({ chain }) => nonNullable(chain),
+  fn: ({ chain, identity }, activeVotes) => {
+    const accounts = new Set<AccountId>();
+
+    for (const voteList of Object.values(activeVotes)) {
+      for (const vote of Object.values(voteList)) {
+        if (!votingService.isDelegating(vote)) continue;
+
+        const accountId = toAccountId(vote.target);
+        if (nonNullable(identity[chain!.chainId]?.[accountId])) continue;
+
+        accounts.add(accountId);
+      }
+    }
+
+    return {
+      chainId: chain!.chainId,
+      accounts: Array.from(accounts),
+    };
+  },
+  target: identityDomain.identity.request,
 });
 
 export const votingAggregate = {

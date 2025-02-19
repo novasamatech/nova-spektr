@@ -13,7 +13,7 @@ import {
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
 import { getCurrentBlockNumber, getExpectedBlockTime, toAddress, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { useCallDataDecoder } from '@/entities/transaction';
+import { decodeCallData } from '@/entities/transaction';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
@@ -39,7 +39,6 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   }
   const { getMultisigTx, getMultisigTxs, getAccountMultisigTxs, addMultisigTx, updateMultisigTx, deleteMultisigTx } =
     transactionStorage;
-  const { decodeCallData } = useCallDataDecoder();
   const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask });
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {

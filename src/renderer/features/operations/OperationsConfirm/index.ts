@@ -1,4 +1,3 @@
-export { basketUtils } from './lib/basket-utils';
 export { createTransactionConfirmStore } from './lib/createTransactionConfirmStore';
 
 export * from './Transfer';
@@ -29,3 +28,4 @@ export * from './FellowshipSubmitEvidence';
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 
 export { ConfirmSlider } from './common/ConfirmSlider';
+export { MultisigExistsAlert } from './common/MultisigExistsAlert';

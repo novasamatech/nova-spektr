@@ -21,18 +21,14 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
-import {
-  OperationResult,
-  getMultisigSignOperationTitle,
-  isXcmTransaction,
-  transactionService,
-  validateBalance,
-} from '@/entities/transaction';
+import { OperationResult, isXcmTransaction, transactionService, validateBalance } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
+
+import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;

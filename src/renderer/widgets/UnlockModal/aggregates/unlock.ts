@@ -227,10 +227,10 @@ sample({
   },
   fn: ({ unlockData, coreTxs, txWrappers }) =>
     coreTxs!.map((coreTx) => ({
-      initiatorWallet: unlockData!.shards[0].walletId,
+      initiatorAccountId: unlockData!.shards[0].accountId,
       coreTx,
       txWrappers,
-      groupId: Date.now(),
+      createdAt: Date.now(),
     })),
   target: basketOperations.addTransactions,
 });

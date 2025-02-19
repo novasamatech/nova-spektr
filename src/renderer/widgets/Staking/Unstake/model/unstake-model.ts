@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type BasketTransaction, type Transaction } from '@/shared/core';
+import { type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -193,15 +193,12 @@ sample({
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map(
-      (coreTx) =>
-        ({
-          initiatorWallet: store!.shards[0].walletId,
-          coreTx,
-          txWrappers,
-          groupId: Date.now(),
-        }) as BasketTransaction,
-    ),
+    coreTxs!.map((coreTx) => ({
+      initiatorAccountId: store!.shards[0].accountId,
+      coreTx,
+      txWrappers,
+      createdAt: Date.now(),
+    })),
   target: basketOperations.addTransactions,
 });
 

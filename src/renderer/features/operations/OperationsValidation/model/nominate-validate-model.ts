@@ -1,17 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
-import { type Store, createEffect, createEvent, sample } from 'effector';
+import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { stakeableAmount, toAccountId } from '@/shared/lib/utils';
+import { getAssetById, stakeableAmount, toAccountId } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { NominateRules } from '../lib/nominate-rules';
 import { validationUtils } from '../lib/validation-utils';
-import { type ShardsBondBalanceStore, type ValidationResult, type ValidationStartedParams } from '../types/types';
-
-const validationStarted = createEvent<ValidationStartedParams>();
-const txValidated = createEvent<{ id: ID; result: ValidationResult }>();
+import { type ShardsBondBalanceStore, type ValidationStartedParams } from '../types/types';
 
 type ValidateParams = {
   id: ID;
@@ -23,7 +20,7 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
+const rootValidateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
   const accountId = toAccountId(transaction.address);
   const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
@@ -45,18 +42,16 @@ const validateFx = createEffect(async ({ id, chain, asset, transaction, balances
   return { id, result: validationUtils.applyValidationRules(rules) };
 });
 
-sample({
-  clock: validationStarted,
+const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
-  filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis, chains, balances }, { id, transaction, signerOptions }) => {
+  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = chain.assets[0];
+    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
 
     return {
       id,
@@ -65,22 +60,12 @@ sample({
       chain,
       asset,
       balances,
-      signerOptions,
+      feeMap,
     };
   },
-  target: validateFx,
-});
-
-sample({
-  clock: validateFx.doneData,
-  target: txValidated,
+  effect: rootValidateFx,
 });
 
 export const nominateValidateModel = {
-  events: {
-    validationStarted,
-  },
-  output: {
-    txValidated,
-  },
+  validate: validateFx,
 };

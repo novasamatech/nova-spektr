@@ -209,9 +209,10 @@ sample({
   },
   fn: ({ store, coreTx, txWrappers }) => {
     const tx = {
-      initiatorWallet: store!.account.walletId,
+      initiatorAccountId: store!.account.accountId,
       coreTx: coreTx!,
       txWrappers,
+      createdAt: Date.now(),
     };
 
     return [tx];
