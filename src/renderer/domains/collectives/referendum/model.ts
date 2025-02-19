@@ -26,8 +26,10 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
 >({
   key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
   initial: $list,
-  fn: ({ api, palletType }, callback) => {
+  async fn({ api, palletType }, callback) {
     let abortController = new AbortController();
+
+    await api.isReady;
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 200),
@@ -80,6 +82,7 @@ type ReferendumRequestParams = {
 const { request } = createDataSource<CollectivesStruct<Referendum[]>, ReferendumRequestParams, Referendum[]>({
   initial: $list,
   async fn({ api, palletType, referendums }) {
+    await api.isReady;
     const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
 
     return mapReferendums(response);
