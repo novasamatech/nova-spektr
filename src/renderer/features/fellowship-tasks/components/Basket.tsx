@@ -5,7 +5,6 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
-import { basketOperations } from '@/aggregates/basket-operations';
 import { SignOperationsModal, signOperations } from '@/features/basket-operations';
 import { fellowshipTasksFeature } from '../model/feature';
 import { tasks } from '../model/tasks';
@@ -18,8 +17,7 @@ export const Basket = memo(() => {
   if (nullable(input?.account) || !basketUtils.isBasketAvailableForAccount(input.account)) return null;
 
   const openSigning = () => {
-    basketOperations.select(transactions.map(x => x.id));
-    signOperations.events.flowStarted({ transactions, feeMap: {} });
+    signOperations.startFlow({ transactions });
   };
 
   return (

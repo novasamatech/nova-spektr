@@ -1,8 +1,17 @@
-import { type PropsWithChildren, type ReactNode, useRef, useState } from 'react';
+import { animated, useTransition } from '@react-spring/web';
+import {
+  Children,
+  type PropsWithChildren,
+  type ReactNode,
+  cloneElement,
+  isValidElement,
+  useRef,
+  useState,
+} from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui';
-import { ScrollArea } from '@/shared/ui-kit';
+import { ScrollArea, defaultEasing } from '@/shared/ui-kit';
 
 type Props = {
   footer: ReactNode;
@@ -46,7 +55,10 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
     <>
       <div className="w-[478px] overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
         <div className="flex gap-2 first:ml-4" ref={ref}>
-          {children}
+          {Children.map(children, (child, index) => {
+            // @ts-expect-error __active prop is not typed
+            return isValidElement(child) ? cloneElement(child, { __active: currentTx === index }) : null;
+          })}
         </div>
       </div>
       <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
@@ -82,11 +94,35 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   );
 };
 
-export const Item = ({ children }: PropsWithChildren) => {
+const springConfig = {
+  initial: { opacity: 1 },
+  from: { opacity: 0 },
+  enter: { opacity: 1 },
+  leave: { opacity: 0 },
+  config: {
+    duration: 500,
+    easing: defaultEasing,
+  },
+};
+
+type ItemProps = PropsWithChildren<{
+  __active?: boolean;
+}>;
+
+export const Item = ({ __active = false, children }: ItemProps) => {
+  const transitions = useTransition(__active, springConfig);
+
   return (
     <div className="flex h-[580px] flex-col last-of-type:pr-4">
       <ScrollArea>
-        <div className="flex max-h-full w-[440px] flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
+        <div className="flex max-h-full min-h-[416px] w-[440px] flex-col rounded-lg bg-white shadow-shadow-2">
+          {transitions((style, item) => {
+            if (item) {
+              return <animated.div style={style}>{children}</animated.div>;
+            }
+            return null;
+          })}
+        </div>
       </ScrollArea>
     </div>
   );
