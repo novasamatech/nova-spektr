@@ -91,7 +91,7 @@ const Item = memo(({ id, index, children }: ItemProps) => {
         position: 'absolute',
       },
       config: {
-        duration: 200,
+        duration: 300,
         easing: defaultEasing,
       },
     };
