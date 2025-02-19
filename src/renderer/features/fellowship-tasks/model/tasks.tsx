@@ -3,6 +3,7 @@ import { combine } from 'effector';
 import { nonNullable, nullable, toAccountId, toKeysRecord } from '@/shared/lib/utils';
 import {
   type OngoingReferendum,
+  evidenceService,
   memberService,
   salaryService,
   trackService,
@@ -50,6 +51,10 @@ const $basketOperationsIds = $basketOperations.map(operations => {
 
       if (salaryService.isSalaryPayoutTransaction(operation.coreTx)) {
         return 'salary_payout';
+      }
+
+      if (evidenceService.isEvidenceTransaction(operation.coreTx)) {
+        return `evidence`;
       }
 
       if (votingService.isVotingTransaction(operation.coreTx)) {

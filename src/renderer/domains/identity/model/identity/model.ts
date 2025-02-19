@@ -44,6 +44,7 @@ const {
   async fn({ api, accounts }) {
     if (accounts.length === 0) return {};
 
+    await api.isReady;
     const response = await identityPallet.storage.identityOf(api, accounts);
 
     return response.reduce<IdentityData>((acc, record) => {
