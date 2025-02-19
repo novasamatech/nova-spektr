@@ -2,7 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Accordion, CaptionText, Shimmering } from '@/shared/ui';
+import { CaptionText } from '@/shared/ui';
+import { Accordion, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
 
 import { ListItemPlaceholder } from './ListItemPlaceholder';
@@ -34,28 +35,30 @@ export const OngoingReferendums = memo(
     if (!isLoading && referendums.length === 0) return null;
 
     return (
-      <Accordion isDefaultOpen>
-        <Accordion.Button buttonClass="py-1.5 px-2 mb-2">
+      <Accordion initialOpen>
+        <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-2">
             <CaptionText className="uppercase text-text-secondary">{t('governance.referendums.ongoing')}</CaptionText>
             <CaptionText className="font-semibold text-text-tertiary">
-              {isLoading ? <Shimmering width="3ch" height="1em" /> : referendums.length.toString()}
+              {isLoading ? <Skeleton width="3ch" height="1em" /> : referendums.length.toString()}
             </CaptionText>
           </div>
-        </Accordion.Button>
-        <Accordion.Content as="ul" className="flex flex-col gap-y-2">
-          {(!isLoading || mixLoadingWithData) &&
-            referendums.map((referendum) => (
-              <li key={referendum.referendumId}>
-                <ReferendumItem
-                  api={api}
-                  referendum={referendum}
-                  isTitlesLoading={isTitlesLoading}
-                  onSelect={onSelect}
-                />
-              </li>
-            ))}
-          {(isLoading || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+        </Accordion.Trigger>
+        <Accordion.Content>
+          <ul className="mt-3 flex flex-col gap-y-2">
+            {(!isLoading || mixLoadingWithData) &&
+              referendums.map((referendum) => (
+                <li key={referendum.referendumId}>
+                  <ReferendumItem
+                    api={api}
+                    referendum={referendum}
+                    isTitlesLoading={isTitlesLoading}
+                    onSelect={onSelect}
+                  />
+                </li>
+              ))}
+            {(isLoading || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+          </ul>
         </Accordion.Content>
       </Accordion>
     );

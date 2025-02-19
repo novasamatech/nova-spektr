@@ -2,7 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, HeadlineText, Shimmering } from '@/shared/ui';
+import { FootnoteText, HeadlineText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@/entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
@@ -12,13 +13,13 @@ import { ListItem } from './ListItem';
 import { VotedBy } from './VotedBy';
 
 type Props = {
-  isTitlesLoading: boolean;
-  referendum: AggregatedReferendum;
   api: ApiPromise;
+  referendum: AggregatedReferendum;
+  isTitlesLoading: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect }: Props) => {
+export const ReferendumItem = memo(({ api, referendum, isTitlesLoading, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
@@ -31,7 +32,7 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
   const titleNode =
     referendum.title ||
     (isTitlesLoading ? (
-      <Shimmering height="1em" width="28ch" />
+      <Skeleton height="1em" width="28ch" />
     ) : (
       t('governance.referendums.referendumTitle', { index: referendumId })
     ));
@@ -39,8 +40,6 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={referendum.voting.votes.length > 0} />
-        <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
 
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
@@ -50,6 +49,7 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
         </div>
       </div>
+
       <div className="flex w-full items-start gap-x-6">
         <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
         <div className="shrink-0 basis-[200px]">
@@ -58,6 +58,9 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
           ) : null}
         </div>
       </div>
+
+      <Voted active={referendum.voting.votes.length > 0} />
+      <VotedBy delegateInfo={referendum.votedByDelegate} />
     </ListItem>
   );
 });

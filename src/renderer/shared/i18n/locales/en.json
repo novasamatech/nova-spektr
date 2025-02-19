@@ -730,7 +730,7 @@
       "yourDelegationsTitle": "Your delegations"
     },
     "delegations": {
-      "label": "Delegations",
+      "label": "Delegated voting power",
       "title": "Delegations on",
       "tracksLabel_one": "across { count } track",
       "tracksLabel_other": "across { count } tracks"
@@ -747,7 +747,7 @@
     },
     "locks": {
       "governanceLock": "Governance lock",
-      "lock": "Lock",
+      "lock": "Locked amount",
       "noLockedAmount": "No available locked token",
       "title": "Unlock on",
       "undelegatePeriod": "Undelegate period",
@@ -882,6 +882,8 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
+    "votedAyeBy": "AYE <amount/> via <delegate/>",
+    "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedBy": "Voted via",
     "votedWithAmount": "Voted:",
     "voting": {

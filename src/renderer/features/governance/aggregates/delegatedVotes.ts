@@ -40,7 +40,7 @@ sample({
 sample({
   clock: delegatedVotesModel.events.requestDelegatedVotesDone,
   fn: ({ result }) => ({
-    addresses: uniq(Object.values(result)),
+    addresses: uniq(Object.values(result).map((r) => r.delegateId)),
   }),
   target: proposerIdentityAggregate.events.requestProposers,
 });

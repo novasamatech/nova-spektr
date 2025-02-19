@@ -2,8 +2,10 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { useConfirmContext } from '@/shared/providers';
-import { FootnoteText, Icon, Plate, Shimmering, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
@@ -71,14 +73,14 @@ export const TotalDelegation = ({ onClick }: Props) => {
               <FootnoteText>{t('governance.delegations.label')}</FootnoteText>
             </div>
 
-            {!isLoading && network ? (
-              totalDelegation !== '0' ? (
-                <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
-              ) : (
-                <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
-              )
-            ) : (
-              <Shimmering width={120} height={20} />
+            {isLoading || (nullable(network) && <Skeleton width={30} height={5} />)}
+
+            {!isLoading && nonNullable(network) && totalDelegation.isZero() && (
+              <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
+            )}
+
+            {!isLoading && nonNullable(network) && !totalDelegation.isZero() && (
+              <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
             )}
           </div>
 

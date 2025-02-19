@@ -26,9 +26,11 @@ export const GET_DELEGATOR = gql`
   query DelegatorVotings($voters: [String!]) {
     delegatorVotings(filter: { delegator: { in: $voters } }) {
       nodes {
+        vote
         parent {
           referendumId
-          voter
+          standardVote
+          delegateId
         }
       }
     }
@@ -49,6 +51,19 @@ export const GET_DELEGATES_FOR_ACCOUNT = gql`
             trackId
           }
         }
+      }
+    }
+  }
+`;
+
+export const GET_CASTING_VOTINGS = gql`
+  query CastingVotings($voters: [String!]) {
+    castingVotings(filter: { voter: { in: $voters } }) {
+      nodes {
+        referendumId
+        standardVote
+        splitVote
+        splitAbstainVote
       }
     }
   }
