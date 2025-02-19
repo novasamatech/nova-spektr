@@ -12,6 +12,7 @@ import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
   isTitlesLoading: boolean;
+  pending: boolean;
   mixLoadingWithData: boolean;
   onSelect: (value: Referendum) => void;
 };
@@ -20,12 +21,13 @@ const createPlaceholders = (size: number) => {
   return Array.from({ length: size }, (_, index) => <ListItemPlaceholder key={`placeholder${index}`} />);
 };
 
-export const OngoingReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWithData, onSelect }) => {
+export const OngoingReferendums = memo<Props>(({ pending, isTitlesLoading, mixLoadingWithData, onSelect }) => {
   const { t } = useI18n();
-  const [referendums, pending] = useUnit([referendumListModel.$ongoing, referendumListModel.$pending]);
+  const referendums = useUnit(referendumListModel.$ongoing);
 
   const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
     list: referendums,
+    isLoading: pending,
   });
 
   const placeholdersCount = shouldRenderLoadingState

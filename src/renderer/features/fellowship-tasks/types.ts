@@ -5,6 +5,7 @@ export type OperationType =
   | 'salary_request'
   | 'salary_payout'
   | 'salary_induct'
+  | 'evidence'
   | `referendum_${number}`;
 
 export type TaskDescription<T extends NonNullable<unknown> = any> = {

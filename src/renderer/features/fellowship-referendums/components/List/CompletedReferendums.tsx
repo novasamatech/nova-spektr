@@ -11,6 +11,7 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
+  pending: boolean;
   isTitlesLoading: boolean;
   mixLoadingWithData: boolean;
   onSelect: (value: Referendum) => void;
@@ -20,9 +21,9 @@ const createPlaceholders = (size: number) => {
   return Array.from({ length: size }, (_, index) => <ListItemPlaceholder key={`placeholder${index}`} />);
 };
 
-export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWithData, onSelect }) => {
+export const CompletedReferendums = memo<Props>(({ pending, isTitlesLoading, mixLoadingWithData, onSelect }) => {
   const { t } = useI18n();
-  const [referendums, pending] = useUnit([referendumListModel.$completed, referendumListModel.$pending]);
+  const referendums = useUnit(referendumListModel.$completed);
 
   const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
     isLoading: pending,
@@ -34,6 +35,9 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
     : Math.max(1, 3 - referendums.length);
 
   if (!pending && referendums.length === 0) return null;
+
+  const renderList = !shouldRenderLoadingState || mixLoadingWithData;
+  const renderPlaceholders = shouldRenderLoadingState || mixLoadingWithData;
 
   return (
     <Accordion initialOpen>
@@ -47,7 +51,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
       </Accordion.Trigger>
       <Accordion.Content>
         <Box gap={2} padding={[2, 0, 0]}>
-          {(!shouldRenderLoadingState || mixLoadingWithData) &&
+          {renderList &&
             deferredReferendums.map(referendum => (
               <ReferendumItem
                 key={referendum.id}
@@ -56,7 +60,7 @@ export const CompletedReferendums = memo<Props>(({ isTitlesLoading, mixLoadingWi
                 onSelect={onSelect}
               />
             ))}
-          {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
+          {renderPlaceholders && createPlaceholders(placeholdersCount)}
         </Box>
       </Accordion.Content>
     </Accordion>
