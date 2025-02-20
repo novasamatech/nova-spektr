@@ -1,19 +1,30 @@
-import { chainsService } from '@/shared/api/network';
-import { type DecodedTransaction, type Transaction } from '@/shared/core';
-import { cnTw, getAssetById } from '@/shared/lib/utils';
+import { type ApiPromise } from '@polkadot/api';
+
+import { type Asset, type Chain, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { cnTw, getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
+  api: ApiPromise;
+  chain: Chain;
   tx: Transaction | DecodedTransaction;
   className?: string;
 };
 
-export const TransactionAmount = ({ tx, className }: Props) => {
-  const assetId = tx?.args.assetId || tx?.args.asset;
-  const asset = getAssetById(assetId, chainsService.getChainById(tx.chainId)?.assets);
+export const TransactionAmount = ({ api, chain, tx, className }: Props) => {
   const value = getTransactionAmount(tx);
+  let asset: Asset;
+  if (tx) {
+    if (tx.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, tx.args.assetId) ?? chain.assets[0];
+    } else {
+      asset = getAssetById(tx.args.asset, chain.assets) ?? chain.assets[0];
+    }
+  } else {
+    asset = chain.assets[0];
+  }
 
   if (!asset || !value) {
     return null;

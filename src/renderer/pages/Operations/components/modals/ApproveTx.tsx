@@ -8,6 +8,7 @@ import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '
 import {
   type Account,
   type Address,
+  type Asset,
   type Chain,
   type FlexibleMultisigAccount,
   type HexString,
@@ -18,12 +19,19 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount, validateCallData } from '@/shared/lib/utils';
+import {
+  TEST_ADDRESS,
+  getAssetById,
+  getAssetByTypeExtras,
+  toAddress,
+  transferableAmount,
+  validateCallData,
+} from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { multisigUtils, useMultisigEvent } from '@/entities/multisig';
+import { getTransactionFromMultisigTx, multisigUtils, useMultisigEvent } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -82,10 +90,18 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx.transaction), t, feeTx?.type, tx);
+  const transaction = getTransactionFromMultisigTx(tx);
+  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, feeTx?.type, tx);
 
   const nativeAsset = chain.assets[0];
-  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets);
+  let asset: Asset | null = null;
+  if (transaction) {
+    if (transaction.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
+    } else {
+      asset = getAssetById(transaction.args.asset, chain.assets) ?? null;
+    }
+  }
 
   const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
     if (permissionUtils.canApproveMultisigTx(wallet)) {

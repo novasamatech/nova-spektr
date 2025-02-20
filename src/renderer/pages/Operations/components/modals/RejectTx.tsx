@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
+  type Asset,
   type Chain,
   type FlexibleMultisigAccount,
   type HexString,
@@ -14,11 +15,12 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetById, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, getAssetByTypeExtras, transferableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
+import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -64,15 +66,23 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>();
 
+  const transaction = getTransactionFromMultisigTx(tx);
   const transactionTitle = getMultisigSignOperationTitle(
-    isXcmTransaction(tx.transaction),
+    isXcmTransaction(transaction),
     t,
     TransactionType.MULTISIG_CANCEL_AS_MULTI,
     tx,
   );
 
   const nativeAsset = chain.assets[0];
-  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets);
+  let asset: Asset | null = null;
+  if (transaction) {
+    if (transaction.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
+    } else {
+      asset = getAssetById(transaction.args.asset, chain.assets) ?? null;
+    }
+  }
 
   const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: walletUtils.isValidSignatory,

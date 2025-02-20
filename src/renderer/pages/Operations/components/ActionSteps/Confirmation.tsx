@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import {
   type Account,
+  type Asset,
   type Chain,
   type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
@@ -12,7 +13,7 @@ import {
   type Transaction,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
@@ -53,7 +54,16 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
   const transaction = getTransactionFromMultisigTx(tx);
-  const asset = getAssetById(transaction?.args.assetId, chain.assets) || chain.assets[0];
+  let asset: Asset;
+  if (transaction) {
+    if (transaction.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? chain.assets[0];
+    } else {
+      asset = getAssetById(transaction.args.assetId, chain.assets) ?? chain.assets[0];
+    }
+  } else {
+    asset = chain.assets[0];
+  }
 
   const xcmApi = useStoreMap({
     store: networkModel.$apis,
@@ -76,7 +86,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <TransactionAmount tx={transaction} />}
+        {transaction && <TransactionAmount api={api} chain={chain} tx={transaction} />}
       </div>
 
       <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />

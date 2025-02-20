@@ -1,8 +1,8 @@
 import { useStoreMap } from 'effector-react';
 
 import { chainsService } from '@/shared/api/network';
-import { type Asset, type MultisigTransaction, TransactionType } from '@/shared/core';
-import { getAssetById } from '@/shared/lib/utils';
+import { type Asset, type MultisigTransaction } from '@/shared/core';
+import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
@@ -30,23 +30,14 @@ export const TransferOperationTitle = ({ operation }: Props) => {
     },
   });
 
-  let asset: Asset | undefined;
+  let asset: Asset | null = null;
 
-  if (transaction?.type === TransactionType.ORML_TRANSFER && transaction.args.assetId && chain && api) {
-    asset = chain.assets.find((asset) => {
-      if (!asset.typeExtras) return;
-
-      if ('assetId' in asset.typeExtras) {
-        return asset.typeExtras.assetId === transaction.args.assetId;
-      }
-
-      const assetId = api.createType(asset.typeExtras.currencyIdType, asset.typeExtras.currencyIdScale).toJSON();
-      const currencyId = api.createType(asset.typeExtras.currencyIdType, transaction.args.assetId).toJSON();
-
-      return assetId === currencyId;
-    });
-  } else {
-    asset = transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  if (transaction) {
+    if (transaction.args.assetId && chain && api) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
+    } else {
+      asset = getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets) ?? null;
+    }
   }
 
   const amount = transaction && getTransactionAmount(transaction);
