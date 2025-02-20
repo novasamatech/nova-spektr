@@ -1,5 +1,5 @@
 import { type Wallet, WalletType } from '@/shared/core';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 
 import {
   type ExtensionAccount,
@@ -28,7 +28,7 @@ function isExtensionWallet(
 
 function isExtensionAccount(account: AnyAccount): account is ExtensionAccount {
   return (
-    accountsService.isUniversalAccount(account) && 'accountType' in account && account['accountType'] === 'extension'
+    accountService.isUniversalAccount(account) && 'accountType' in account && account['accountType'] === 'extension'
   );
 }
 

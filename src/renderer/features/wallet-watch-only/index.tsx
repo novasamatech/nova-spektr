@@ -1,5 +1,5 @@
 import { createFeature } from '@/shared/feature';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -12,14 +12,14 @@ export const walletWatchOnlyFeature = createFeature({
 });
 
 // read only obviously
-walletWatchOnlyFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+walletWatchOnlyFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
   if (accountUtils.isWatchOnlyAccount(account)) {
     return false;
   }
 });
 
 // watch-only account can be applied on all supported chains
-walletWatchOnlyFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, ({ account }) => {
+walletWatchOnlyFeature.inject(accountService.accountAvailabilityOnChainAnyOf, ({ account }) => {
   return accountUtils.isWatchOnlyAccount(account);
 });
 

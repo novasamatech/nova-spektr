@@ -4,7 +4,7 @@ import { $features } from '@/shared/config/features';
 import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -18,11 +18,11 @@ export const walletPolkadotVaultFeature = createFeature({
   enable: $features.map(f => f.polkadotVault),
 });
 
-walletPolkadotVaultFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+walletPolkadotVaultFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
   return account.signingType === SigningType.POLKADOT_VAULT;
 });
 
-walletPolkadotVaultFeature.inject(accountsService.accountCanSignMultipleAnyOf, ({ account }) => {
+walletPolkadotVaultFeature.inject(accountService.accountCanSignMultipleAnyOf, ({ account }) => {
   return (
     accountUtils.isVaultBaseAccount(account) ||
     accountUtils.isVaultChainAccount(account) ||

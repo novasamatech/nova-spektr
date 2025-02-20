@@ -4,7 +4,7 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -20,7 +20,7 @@ export const walletMultisigFeature = createFeature({
 });
 
 // All multisig accounts can perform actions
-walletMultisigFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+walletMultisigFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
   return accountUtils.isMultisigAccount(account);
 });
 

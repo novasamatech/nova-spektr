@@ -1,8 +1,9 @@
 import { CryptoType, SigningType } from '@/shared/core';
 import { createAccountId, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { accountsService } from './service';
-import { type ChainAccount, type UniversalAccount } from './types';
+import { accountService } from './service';
+import { type AnyAccount, type ChainAccount, type UniversalAccount } from './types';
 
 const chainAccount: ChainAccount = {
   id: 'chain',
@@ -29,7 +30,7 @@ const kusamaChainAccount: ChainAccount = {
 const universalAccount: UniversalAccount = {
   id: 'universal',
   type: 'universal',
-  accountId: createAccountId('2'),
+  accountId: createAccountId('3'),
   name: '',
   walletId: 0,
   signingType: SigningType.POLKADOT_VAULT,
@@ -38,14 +39,14 @@ const universalAccount: UniversalAccount = {
 
 describe('accounts service', () => {
   it('should check account types', async () => {
-    expect(accountsService.isChainAccount(chainAccount)).toEqual(true);
-    expect(accountsService.isChainAccount(universalAccount)).toEqual(false);
-    expect(accountsService.isUniversalAccount(universalAccount)).toEqual(true);
-    expect(accountsService.isUniversalAccount(chainAccount)).toEqual(false);
+    expect(accountService.isChainAccount(chainAccount)).toEqual(true);
+    expect(accountService.isChainAccount(universalAccount)).toEqual(false);
+    expect(accountService.isUniversalAccount(universalAccount)).toEqual(true);
+    expect(accountService.isUniversalAccount(chainAccount)).toEqual(false);
   });
 
   it('should filter accounts by chainId', async () => {
-    const filtered = accountsService.filterAccountOnChain(
+    const filtered = accountService.filterAccountOnChain(
       [chainAccount, kusamaChainAccount, universalAccount],
       polkadotChain,
     );
@@ -55,9 +56,9 @@ describe('accounts service', () => {
 
   it('should filter accounts by chainId', async () => {
     const spy = jest.fn().mockReturnValue(true);
-    accountsService.accountAvailabilityOnChainAnyOf.registerHandler({ body: spy, available: () => true });
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({ body: spy, available: () => true });
 
-    const filtered = accountsService.filterAccountOnChain(
+    const filtered = accountService.filterAccountOnChain(
       [kusamaChainAccount, chainAccount, universalAccount],
       polkadotChain,
     );
@@ -65,6 +66,101 @@ describe('accounts service', () => {
     expect(filtered).toEqual([chainAccount, universalAccount]);
     expect(spy).toBeCalledWith({ account: universalAccount, chain: polkadotChain });
 
-    accountsService.accountAvailabilityOnChainAnyOf.resetHandlers();
+    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+  });
+
+  it('should create graphs', async () => {
+    interface NestedAccount extends ChainAccount {
+      child: AccountId;
+    }
+
+    const isNested = (a: AnyAccount): a is NestedAccount => {
+      return 'child' in a;
+    };
+
+    const firstNestedAccount: NestedAccount = {
+      id: '',
+      type: 'chain',
+      name: 'test',
+      walletId: 0,
+      chainId: polkadotChainId,
+      accountId: createAccountId('1'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WALLET_CONNECT,
+      child: createAccountId('2'),
+    };
+
+    const secondNestedAccount: NestedAccount = {
+      id: '',
+      type: 'chain',
+      name: 'test',
+      walletId: 1,
+      chainId: polkadotChainId,
+      accountId: createAccountId('2'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WALLET_CONNECT,
+      child: createAccountId('3'),
+    };
+
+    const leafAccount: ChainAccount = {
+      id: '',
+      type: 'chain',
+      name: 'test',
+      walletId: 2,
+      chainId: polkadotChainId,
+      accountId: createAccountId('3'),
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.POLKADOT_VAULT,
+    };
+
+    const accounts = [firstNestedAccount, secondNestedAccount, leafAccount];
+
+    accountService.accountGraphCollectPipeline.registerHandler({
+      body(node, { accounts }) {
+        const account = node.account;
+        if (isNested(account)) {
+          const child = accounts.find(a => a.accountId === account.child);
+
+          if (!child) {
+            return node;
+          }
+
+          return {
+            type: 'account',
+            account,
+            children: [
+              accountService.accountGraphCollectPipeline(
+                { type: 'account', account: child, children: [] },
+                { accounts },
+              ),
+            ],
+          };
+        }
+
+        return node;
+      },
+      available: () => true,
+    });
+
+    const graphs = accountService.createAccountGraphs(accounts, polkadotChain);
+
+    const firstNestedNode = graphs.get(firstNestedAccount);
+    const secondNestedNode = graphs.get(secondNestedAccount);
+    const childNode = graphs.get(leafAccount);
+
+    assert(firstNestedNode, 'graph should include nested account');
+    assert(secondNestedNode, 'graph should include nested account');
+    assert(childNode, 'graph should include child account');
+
+    expect(firstNestedNode.children.length).toBe(1);
+    expect(secondNestedNode.children.length).toBe(1);
+    expect(childNode.children.length).toBe(0);
+
+    expect(accountService.findRoute(firstNestedAccount, leafAccount, accounts, polkadotChain)).toEqual([
+      firstNestedAccount,
+      secondNestedAccount,
+      leafAccount,
+    ]);
+    expect(accountService.findSignatories(firstNestedAccount, accounts, polkadotChain)).toEqual([leafAccount]);
   });
 });

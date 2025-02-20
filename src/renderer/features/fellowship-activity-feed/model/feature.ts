@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
@@ -22,7 +22,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
-      accounts: accountsService.filterAccountOnChain(accounts, network.chain),
+      accounts: accountService.filterAccountOnChain(accounts, network.chain),
     };
   },
 );

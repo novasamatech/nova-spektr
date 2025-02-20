@@ -4,7 +4,7 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -19,7 +19,7 @@ export const walletProxiedFeature = createFeature({
   enable: $features.map(f => f.proxy),
 });
 
-walletProxiedFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+walletProxiedFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
   return accountUtils.isProxiedAccount(account);
 });
 

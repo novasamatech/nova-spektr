@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -11,7 +11,7 @@ import { WalletIcon } from './components/WalletIcon';
 import { walletWalletConnectFeature } from './model/feature';
 import { wcWallets } from './model/wallets';
 
-walletWalletConnectFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
+walletWalletConnectFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
   return accountUtils.isWcAccount(account);
 });
 
