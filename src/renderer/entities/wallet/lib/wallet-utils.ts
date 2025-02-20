@@ -67,7 +67,7 @@ function isFlexibleMultisig(wallet?: Wallet | null): wallet is FlexibleMultisigW
   return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
 }
 
-function isRegularMultisig(wallet?: Wallet): wallet is FlexibleMultisigWallet {
+function isRegularMultisig(wallet?: Wallet): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 

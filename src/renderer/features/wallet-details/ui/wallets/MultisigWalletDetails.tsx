@@ -31,6 +31,12 @@ const {
   views: { AddPureProxied },
 } = proxyAddPureFeature;
 
+// TODO: uncomment it for flexible multisig
+// const {
+//   models: { convertToFlexibleModel },
+//   views: { ConvertMultisigToFlexible },
+// } = convertToFlexibleFeature;
+
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
   onClose: () => void;
@@ -76,11 +82,8 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }, [singleChain]);
 
   const canCreatePureProxy = useMemo(() => {
+    if (!singleChain) return false;
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
-
-    if (!singleChain) {
-      return anyProxy;
-    }
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
@@ -106,6 +109,13 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     });
   }
 
+  // if (canCreatePureProxy) {
+  //   options.push({
+  //     icon: 'addCircle' as IconNames,
+  //     title: t('walletDetails.common.convertToFlexibleAction'),
+  //     onClick: () => convertToFlexibleModel.flow.open({ wallet }),
+  //   });
+  // }
   if (canCreatePureProxy) {
     options.push({
       icon: 'addCircle' as IconNames,
@@ -349,6 +359,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
+      {/* <ConvertMultisigToFlexible /> */}
     </>
   );
 };

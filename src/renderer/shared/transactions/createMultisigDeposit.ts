@@ -15,14 +15,14 @@ type DepositParams = {
   threshold: number;
 };
 
-export const createDepositCalculator = ({ $threshold, $api }: Params) => {
+export const createMultisigDeposit = ({ $threshold, $api }: Params) => {
   const $source = combine({ threshold: $threshold, api: $api }, ({ threshold, api }) => {
     if (nullable(threshold) || nullable(api)) return null;
 
     return { threshold, api };
   });
 
-  const $deposit = createStore(BN_ZERO);
+  const $multisigDeposit = createStore(BN_ZERO);
 
   const getMultisigDepositFx = createEffect(({ api, threshold }: DepositParams): string => {
     return transactionService.getMultisigDeposit(threshold, api);
@@ -32,7 +32,7 @@ export const createDepositCalculator = ({ $threshold, $api }: Params) => {
     clock: $source,
     filter: nullable,
     fn: () => BN_ZERO,
-    target: $deposit,
+    target: $multisigDeposit,
   });
 
   sample({
@@ -44,9 +44,9 @@ export const createDepositCalculator = ({ $threshold, $api }: Params) => {
   sample({
     clock: getMultisigDepositFx.doneData,
     filter: nonNullable,
-    fn: (deposit) => new BN(deposit),
-    target: $deposit,
+    fn: (multisigDeposit) => new BN(multisigDeposit),
+    target: $multisigDeposit,
   });
 
-  return { $deposit, $pending: getMultisigDepositFx.pending };
+  return { $multisigDeposit, $pending: getMultisigDepositFx.pending };
 };
