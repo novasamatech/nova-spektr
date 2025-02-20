@@ -113,12 +113,6 @@ export type DelegateInfo = {
   conviction: Conviction;
 };
 
-export type CastingInfo = {
-  standardVote: string;
-  splitVote: string;
-  splitAbstainVote: string;
-};
-
 export interface DelegationApi {
   getDelegatesFromRegistry: (chain: Chain) => Promise<DelegateDetails[]>;
   getDelegatedVotesFromExternalSource: (chain: Chain, voter: Address[]) => Promise<Record<ReferendumId, DelegateInfo>>;
