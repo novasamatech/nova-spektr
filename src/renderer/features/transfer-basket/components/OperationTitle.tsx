@@ -33,7 +33,7 @@ export const OperationTitle = ({ coreTx }: Props) => {
       )}
 
       {isXcmTransaction(coreTx) ? (
-        <XcmChains chainIdFrom={coreTx.chainId} chainIdTo={coreTx.args.destinationChain} className="w-[114px]" />
+        <XcmChains chainIdFrom={coreTx.chainId} chainIdTo={coreTx.args.destinationChain} />
       ) : (
         <ChainTitle chainId={coreTx.chainId} />
       )}
