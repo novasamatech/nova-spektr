@@ -17,7 +17,6 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 
-
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const stepChanged = createEvent<Step>();
@@ -163,7 +162,9 @@ sample({
     signatory: $selectedSignatory,
     account: $multisigAccount,
   },
-  filter: ({ chain, account, transactions }) => nonNullable(account) && nonNullable(chain) && nonNullable(transactions),
+  filter: ({ chain, account, transactions }) => {
+    return nonNullable(account) && nonNullable(chain) && nonNullable(transactions);
+  },
   fn: ({ chain, account, signatory, transactions }) => ({
     event: {
       signingPayloads: [
@@ -191,7 +192,9 @@ sample({
     chain: $chain,
     signatory: $selectedSignatory,
   },
-  filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
+  filter: ({ transactions, account, chain }) => {
+    return nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
+  },
   fn({ transactions, account, chain, signatory }, signParams) {
     return {
       event: {
@@ -222,7 +225,9 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: $wallet,
-  filter: (wallet, results) => nonNullable(wallet) && submitUtils.isSuccessResult(results[0].result),
+  filter: (wallet, results) => {
+    return nonNullable(wallet) && submitUtils.isSuccessResult(results[0].result);
+  },
   fn: (wallet) => wallet!,
   target: multisigsModel.convertMultisigToFlexible,
 });
