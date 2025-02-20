@@ -2,6 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { Slot } from '@/shared/di';
 import { nonNullable } from '@/shared/lib/utils';
+import { Loader } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -25,6 +26,12 @@ export const SignTransactionModal = () => {
     store: validation.$validatingResults,
     keys: [transaction?.id],
     fn: (results, [id]) => (nonNullable(id) ? (results[id] ?? null) : null),
+  });
+
+  const pending = useStoreMap({
+    store: validation.$pending,
+    keys: [transaction?.id],
+    fn: (results, [id]) => (nonNullable(id) ? (results[id] ?? true) : true),
   });
 
   if (!transaction) return null;
@@ -53,6 +60,7 @@ export const SignTransactionModal = () => {
       </Modal.Content>
       {signOperationsUtils.isConfirmStep(step) && (
         <Modal.Footer>
+          {pending && <Loader color="primary" size={24} />}
           <SignButton isDefault type={wallet?.type} disabled={!canSign} onClick={signOperations.confirm} />
         </Modal.Footer>
       )}

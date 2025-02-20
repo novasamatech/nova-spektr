@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type BasketTransaction, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { HeaderTitleText } from '@/shared/ui';
+import { HeaderTitleText, Loader } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
@@ -22,14 +22,19 @@ export const SignTransactionsModal = () => {
   const transactions = useUnit(signOperations.$transactions);
   const step = useUnit(signOperations.$step);
   const isModalOpen = useUnit(signOperations.$isModalOpen);
-  const valdationResults = useUnit(validation.$validatingResults);
+  const validationResults = useUnit(validation.$validatingResults);
+  const validationPending = useUnit(validation.$pending);
 
   if (signOperationsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={() => signOperations.finishFlow()} />;
   }
 
+  const pending = transactions.some(transaction => {
+    return validationPending[transaction.id] ?? true;
+  });
+
   const canSign = transactions.every(transaction => {
-    const v = valdationResults[transaction.id];
+    const v = validationResults[transaction.id];
     return v && v.length === 0;
   });
 
@@ -43,12 +48,15 @@ export const SignTransactionsModal = () => {
           <ConfirmSlider
             count={transactions.length}
             footer={
-              <SignButton
-                isDefault
-                type={WalletType.POLKADOT_VAULT}
-                disabled={!canSign}
-                onClick={signOperations.confirm}
-              />
+              <>
+                {pending && <Loader color="primary" size={24} />}
+                <SignButton
+                  isDefault
+                  type={WalletType.POLKADOT_VAULT}
+                  disabled={!canSign}
+                  onClick={signOperations.confirm}
+                />
+              </>
             }
           >
             {transactions.map(t => (
