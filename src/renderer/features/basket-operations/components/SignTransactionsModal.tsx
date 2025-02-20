@@ -9,22 +9,29 @@ import { SignButton } from '@/entities/operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider } from '@/features/operations/OperationsConfirm';
 import { signOperations } from '../model/sign';
+import { validation } from '../model/validation';
 import { signOperationsUtils } from '../service/sign-operations-utils';
 import { Step } from '../types';
 
 export const basketTransactionConfirmTitleSlot = createSlot<{ transaction: BasketTransaction }>();
 export const basketTransactionConfirmDetailsSlot = createSlot<{ transaction: BasketTransaction }>();
 
-export const SignOperationsModal = () => {
+export const SignTransactionsModal = () => {
   const { t } = useI18n();
 
   const transactions = useUnit(signOperations.$transactions);
   const step = useUnit(signOperations.$step);
   const isModalOpen = useUnit(signOperations.$isModalOpen);
+  const valdationResults = useUnit(validation.$validatingResults);
 
   if (signOperationsUtils.isSubmitStep(step)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={() => signOperations.finishFlow()} />;
   }
+
+  const canSign = transactions.every(transaction => {
+    const v = valdationResults[transaction.id];
+    return v && v.length === 0;
+  });
 
   return (
     <Modal size="fit" isOpen={isModalOpen} onToggle={() => signOperations.finishFlow()}>
@@ -35,7 +42,14 @@ export const SignOperationsModal = () => {
         {signOperationsUtils.isConfirmStep(step) && (
           <ConfirmSlider
             count={transactions.length}
-            footer={<SignButton isDefault type={WalletType.POLKADOT_VAULT} onClick={signOperations.txsConfirmed} />}
+            footer={
+              <SignButton
+                isDefault
+                type={WalletType.POLKADOT_VAULT}
+                disabled={!canSign}
+                onClick={signOperations.confirm}
+              />
+            }
           >
             {transactions.map(t => (
               <ConfirmSlider.Item key={t.id}>

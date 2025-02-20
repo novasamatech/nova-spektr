@@ -13,8 +13,8 @@ import { validation } from '../model/validation';
 import { BasketFilter } from './BasketFilter';
 import { BasketItem } from './BasketItem';
 import { EmptyBasket } from './EmptyBasket';
-import { SignOperationModal } from './SignOperationModal';
-import { SignOperationsModal } from './SignOperationsModal';
+import { SignTransactionModal } from './SignTransactionModal';
+import { SignTransactionsModal } from './SignTransactionsModal';
 
 export const BasketList = () => {
   const { t } = useI18n();
@@ -94,7 +94,7 @@ export const BasketList = () => {
 
       {operations.length === 0 && <EmptyBasket />}
 
-      {transactionsToSign.length > 1 ? <SignOperationsModal /> : <SignOperationModal />}
+      {transactionsToSign.length > 1 ? <SignTransactionsModal /> : <SignTransactionModal />}
     </div>
   );
 };

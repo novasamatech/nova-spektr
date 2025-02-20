@@ -14,7 +14,7 @@ import { Step } from '../types';
 const startFlow = createEvent<{ transactions: BasketTransaction[] }>();
 const finishFlow = createEvent();
 const changeStep = createEvent<Step>();
-const txsConfirmed = createEvent();
+const confirm = createEvent();
 
 const $step = restore(changeStep, Step.NONE).reset(finishFlow);
 const $transactions = createStore<BasketTransaction[]>([]).reset(finishFlow);
@@ -34,7 +34,7 @@ sample({
 });
 
 sample({
-  clock: txsConfirmed,
+  clock: confirm,
   source: {
     transactions: $transactions,
     chains: networkModel.$chains,
@@ -146,6 +146,6 @@ export const signOperations = {
 
   startFlow,
   finishFlow,
-  txsConfirmed,
   changeStep,
+  confirm,
 };
