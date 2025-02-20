@@ -13,6 +13,14 @@
 .card-stack:has(.card-stack-trigger:focus-visible) {
   outline: 2px solid var(--focus-container-border);
   outline-offset: 2px;
+
+  .card-stack-sticky-gap {
+    display: none;
+  }
+
+  .card-stack-header-wrap {
+    top: 0;
+  }
 }
 
 .card-stack-content[data-state="open"] {
