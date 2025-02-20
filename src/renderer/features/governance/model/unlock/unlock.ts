@@ -112,7 +112,7 @@ sample({
     for (const claim of claimSchedule) {
       if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
 
-      total = total.iadd(claim.amount);
+      total = total.add(claim.amount);
     }
 
     return total;

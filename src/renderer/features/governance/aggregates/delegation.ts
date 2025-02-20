@@ -24,7 +24,7 @@ const $totalDelegations = votingAggregate.$activeWalletVotes.map((voting) => {
     }
 
     if (maxDelegatingVote) {
-      total = total.iadd(maxDelegatingVote.balance);
+      total = total.add(maxDelegatingVote.balance);
     }
   }
 
