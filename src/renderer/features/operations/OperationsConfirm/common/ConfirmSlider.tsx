@@ -1,4 +1,3 @@
-import { animated, useTransition } from '@react-spring/web';
 import {
   Children,
   type PropsWithChildren,
@@ -11,7 +10,7 @@ import {
 
 import { cnTw } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui';
-import { ScrollArea, defaultEasing } from '@/shared/ui-kit';
+import { Carousel, ScrollArea } from '@/shared/ui-kit';
 
 type Props = {
   footer: ReactNode;
@@ -24,19 +23,11 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
 
-  const scroll = (value: number) => {
-    setTimeout(() =>
-      // @ts-expect-error TS doesn't recognize offsetLeft
-      scrollRef.current?.scrollTo({ left: ref.current?.childNodes[value].offsetLeft - 16, behavior: 'smooth' }),
-    );
-  };
-
   const nextTx = () => {
     if (count && currentTx < count - 1) {
       const newValue = currentTx + 1;
 
       setCurrentTx(newValue);
-      scroll(newValue);
     }
   };
 
@@ -45,28 +36,30 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
       const newValue = currentTx - 1;
 
       setCurrentTx(newValue);
-      scroll(newValue);
     }
   };
 
   const currentPage = currentTx + 1;
 
   return (
-    <>
-      <div className="w-[478px] overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
-        <div className="flex gap-2 first:ml-4" ref={ref}>
-          {Children.map(children, (child, index) => {
-            // @ts-expect-error __active prop is not typed
-            return isValidElement(child) ? cloneElement(child, { __active: currentTx === index }) : null;
-          })}
+    <div className="w-[478px]">
+      <Carousel item={currentTx.toString()}>
+        <div className="overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
+          <div className="relative flex gap-2 first:ml-4" ref={ref}>
+            {Children.map(children, (child, index) => {
+              // @ts-expect-error __active prop is not typed
+              return isValidElement(child) ? cloneElement(child, { __index: index }) : null;
+            })}
+          </div>
         </div>
-      </div>
+      </Carousel>
       <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
         <div className="flex gap-2">
           <IconButton
             size={20}
             className="flex h-[42px] w-[42px] items-center justify-center border"
             name="left"
+            disabled={currentPage === 0}
             onClick={previousTx}
           />
 
@@ -84,47 +77,30 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
             size={20}
             className="flex h-[42px] w-[42px] items-center justify-center border"
             name="right"
+            disabled={currentPage === count}
             onClick={nextTx}
           />
         </div>
 
         {footer}
       </div>
-    </>
+    </div>
   );
 };
 
-const springConfig = {
-  initial: { opacity: 1 },
-  from: { opacity: 0 },
-  enter: { opacity: 1 },
-  leave: { opacity: 0 },
-  config: {
-    duration: 500,
-    easing: defaultEasing,
-  },
-};
-
 type ItemProps = PropsWithChildren<{
-  __active?: boolean;
+  __index?: number;
 }>;
 
-export const Item = ({ __active = false, children }: ItemProps) => {
-  const transitions = useTransition(__active, springConfig);
-
+export const Item = ({ __index = 0, children }: ItemProps) => {
   return (
-    <div className="flex h-[580px] flex-col last-of-type:pr-4">
-      <ScrollArea>
-        <div className="flex max-h-full min-h-[416px] w-[440px] flex-col rounded-lg bg-white shadow-shadow-2">
-          {transitions((style, item) => {
-            if (item) {
-              return <animated.div style={style}>{children}</animated.div>;
-            }
-            return null;
-          })}
-        </div>
-      </ScrollArea>
-    </div>
+    <Carousel.Item id={__index.toString()} index={__index}>
+      <div className="flex h-[580px] flex-col last-of-type:pr-4">
+        <ScrollArea>
+          <div className="flex max-h-full w-full flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
+        </ScrollArea>
+      </div>
+    </Carousel.Item>
   );
 };
 

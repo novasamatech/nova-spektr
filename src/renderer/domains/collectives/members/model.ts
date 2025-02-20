@@ -33,6 +33,7 @@ const {
       abortController.abort();
       abortController = new AbortController();
 
+      await api.isReady;
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
       if (abortController.signal.aborted) return;
 

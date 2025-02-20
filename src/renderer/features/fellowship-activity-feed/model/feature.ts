@@ -43,7 +43,7 @@ export const fellowshipActivityFeedFeature = createFeature({
 });
 
 sample({
-  clock: fellowshipNetwork.$isActive,
-  filter: fellowshipNetwork.$isActive,
+  clock: fellowshipNetwork.$isConnected,
+  filter: fellowshipNetwork.$isConnected,
   target: fellowshipActivityFeedFeature.restore,
 });

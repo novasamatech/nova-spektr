@@ -22,7 +22,7 @@ export const OperationTitle = ({ coreTx }: Props) => {
     <>
       <TransactionTitle
         className="flex-1 overflow-hidden"
-        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        title={isXcmTransaction(coreTx) ? t('operations.titles.crossChainTransfer') : t('operations.titles.transfer')}
         icon="transferConfirm"
       />
 

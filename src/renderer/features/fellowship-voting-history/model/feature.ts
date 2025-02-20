@@ -21,7 +21,7 @@ export const votingHistoryFeatureStatus = createFeature({
 });
 
 sample({
-  clock: fellowshipNetwork.$isActive,
-  filter: fellowshipNetwork.$isActive,
+  clock: fellowshipNetwork.$isConnected,
+  filter: fellowshipNetwork.$isConnected,
   target: votingHistoryFeatureStatus.restore,
 });
