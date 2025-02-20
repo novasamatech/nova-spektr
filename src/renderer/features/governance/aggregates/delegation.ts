@@ -1,4 +1,4 @@
-import { BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine } from 'effector';
 import uniq from 'lodash/uniq';
 
@@ -10,21 +10,23 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';
 
-const $totalDelegations = votingAggregate.$activeWalletVotes.map((voting) => {
+const $delegatedVotingPower = votingAggregate.$activeWalletVotes.map((voting) => {
   let total = BN_ZERO;
 
   for (const walletVotes of Object.values(voting)) {
-    let maxDelegatingVote = null;
+    let maxDelegatingPower: BN | null = null;
 
     for (const vote of Object.values(walletVotes)) {
       if (!votingService.isDelegating(vote)) continue;
-      if (!maxDelegatingVote || vote.balance.gt(maxDelegatingVote.balance)) {
-        maxDelegatingVote = vote;
+
+      const votingPower = votingService.calculateVotingPower(vote.balance, vote.conviction);
+      if (!maxDelegatingPower || votingPower.gt(maxDelegatingPower)) {
+        maxDelegatingPower = votingPower;
       }
     }
 
-    if (maxDelegatingVote) {
-      total = total.add(maxDelegatingVote.balance);
+    if (maxDelegatingPower) {
+      total = total.add(maxDelegatingPower);
     }
   }
 
@@ -108,5 +110,5 @@ export const delegationAggregate = {
   $activeWalletDelegatedTracks,
   $activeTracks,
   $hasDelegations,
-  $totalDelegations,
+  $delegatedVotingPower,
 };

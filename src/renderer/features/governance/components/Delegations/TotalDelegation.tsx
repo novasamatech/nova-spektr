@@ -20,11 +20,11 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const { t } = useI18n();
   const { confirm } = useConfirmContext();
 
-  const totalDelegation = useUnit(delegationAggregate.$totalDelegations);
   const network = useUnit(delegationAggregate.$network);
   const isLoading = useUnit(delegationAggregate.$isLoading);
   const hasAccount = useUnit(delegationAggregate.$hasAccount);
   const canDelegate = useUnit(delegationAggregate.$canDelegate);
+  const delegatedVotingPower = useUnit(delegationAggregate.$delegatedVotingPower);
 
   const activeWallet = useUnit(walletModel.$activeWallet);
 
@@ -75,12 +75,12 @@ export const TotalDelegation = ({ onClick }: Props) => {
 
             {isLoading || (nullable(network) && <Skeleton width={30} height={5} />)}
 
-            {!isLoading && nonNullable(network) && totalDelegation.isZero() && (
+            {!isLoading && nonNullable(network) && delegatedVotingPower.isZero() && (
               <SmallTitleText>{t('governance.addDelegation.actionButton')}</SmallTitleText>
             )}
 
-            {!isLoading && nonNullable(network) && !totalDelegation.isZero() && (
-              <AssetBalance className="text-small-title" value={totalDelegation} asset={network.asset} />
+            {!isLoading && nonNullable(network) && !delegatedVotingPower.isZero() && (
+              <AssetBalance className="text-small-title" value={delegatedVotingPower} asset={network.asset} />
             )}
           </div>
 
