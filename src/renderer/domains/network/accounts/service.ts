@@ -105,7 +105,6 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
 
   for (const account of chainAccounts) {
     const initialNode: AccountNode<AnyAccount> = {
-      type: 'account',
       account,
       children: [],
     };
@@ -146,6 +145,23 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
   });
 
   return result;
+}
+
+function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+  const graphs = createAccountGraphs(accounts, chain);
+  const result = new Set<AnyAccount>(accounts);
+
+  for (const node of graphs.values()) {
+    traverseGraph(node, {
+      enter(node) {
+        for (const child of node.children) {
+          result.delete(child.account);
+        }
+      },
+    });
+  }
+
+  return Array.from(result);
 }
 
 function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
@@ -195,5 +211,6 @@ export const accountService = {
 
   createAccountGraphs,
   findSignatories,
+  findInitiators,
   findRoute,
 };

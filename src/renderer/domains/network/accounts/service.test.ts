@@ -126,11 +126,13 @@ describe('accounts service', () => {
           }
 
           return {
-            type: 'account',
             account,
             children: [
               accountService.accountGraphCollectPipeline(
-                { type: 'account', account: child, children: [] },
+                {
+                  account: child,
+                  children: [],
+                },
                 { accounts },
               ),
             ],
@@ -162,5 +164,6 @@ describe('accounts service', () => {
       leafAccount,
     ]);
     expect(accountService.findSignatories(firstNestedAccount, accounts, polkadotChain)).toEqual([leafAccount]);
+    expect(accountService.findInitiators(accounts, polkadotChain)).toEqual([firstNestedAccount]);
   });
 });
