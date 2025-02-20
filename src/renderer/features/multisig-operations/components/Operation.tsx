@@ -5,12 +5,8 @@ type Props = {
   operation: MultisigTransaction;
 };
 
-type SlotProps = {
-  operation: MultisigTransaction;
-};
-
-export const operationDetailsSlot = createSlot<SlotProps>();
-export const operationTitleSlot = createSlot<SlotProps>();
+export const operationDetailsSlot = createSlot<{ operation: MultisigTransaction }>();
+export const operationTitleSlot = createSlot<{ operation: MultisigTransaction }>();
 
 // TODO: Temp solution
 export const Operation = ({ operation }: Props) => {

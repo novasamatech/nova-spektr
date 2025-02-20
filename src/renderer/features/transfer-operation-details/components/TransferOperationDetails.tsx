@@ -29,7 +29,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
 
   if (destination) {
     result.push(
-      <DetailRow label={t('operation.details.recipient')}>
+      <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
         <Account accountId={destination} variant="short" chain={chains[operation.chainId]} />
       </DetailRow>,
     );
