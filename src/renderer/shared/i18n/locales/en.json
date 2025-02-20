@@ -743,7 +743,8 @@
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
-      "vote": "Vote"
+      "vote": "Vote",
+      "voted": "Voted"
     },
     "locks": {
       "governanceLock": "Governance lock",
@@ -882,9 +883,10 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
+    "votedAye": "AYE <amount/>",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
+    "votedNay": "NAY <amount/>",
     "votedNayBy": "NAY <amount/> via <delegate/>",
-    "votedBy": "Voted via",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",

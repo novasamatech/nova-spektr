@@ -5,7 +5,7 @@ type Props = {
   active: boolean;
 };
 
-export const Voted = ({ active }: Props) => {
+export const VotedByAccount = ({ active }: Props) => {
   const { t } = useI18n();
 
   if (!active) {

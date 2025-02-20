@@ -11,7 +11,7 @@ import { networkSelectorModel } from '../model/networkSelector';
 import { votingAggregate } from './voting';
 
 const $totalDelegations = votingAggregate.$activeWalletVotes.map((voting) => {
-  const total = BN_ZERO;
+  let total = BN_ZERO;
 
   for (const walletVotes of Object.values(voting)) {
     let maxDelegatingVote = null;
@@ -24,7 +24,7 @@ const $totalDelegations = votingAggregate.$activeWalletVotes.map((voting) => {
     }
 
     if (maxDelegatingVote) {
-      total.iadd(maxDelegatingVote.balance);
+      total = total.iadd(maxDelegatingVote.balance);
     }
   }
 

@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createStore, sample } from 'effector';
+import { createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
 import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
@@ -105,13 +105,17 @@ sample({
 
 sample({
   clock: $claimSchedule.updates,
-  filter: (claimSchedule) => nonNullable(claimSchedule),
+  filter: (claimSchedule: UnlockChunk[] | null): claimSchedule is UnlockChunk[] => nonNullable(claimSchedule),
   fn: (claimSchedule) => {
-    return claimSchedule!.reduce((acc, claim) => {
-      if (claim.type !== UnlockChunkType.CLAIMABLE) return acc;
+    let total = BN_ZERO;
 
-      return acc.add(claim.amount);
-    }, BN_ZERO);
+    for (const claim of claimSchedule) {
+      if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
+
+      total = total.iadd(claim.amount);
+    }
+
+    return total;
   },
   target: $totalUnlock,
 });
@@ -120,5 +124,5 @@ export const unlockModel = {
   $isLoading,
   $totalUnlock,
   $claimSchedule,
-  $isUnlockable: combine($totalUnlock, (totalUnlock) => !totalUnlock.isZero()),
+  $isUnlockable: $totalUnlock.map((total) => !total.isZero()),
 };

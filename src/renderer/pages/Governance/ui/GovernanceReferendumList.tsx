@@ -1,6 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
+import { type ReferendumId } from '@/shared/core';
 import { Paths } from '@/shared/routes';
 import { Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
@@ -35,6 +36,10 @@ export const GovernanceReferendumList = () => {
   const shouldRenderEmptyState = !shouldShowLoadingState && isApiConnected && all.length === 0;
   const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
 
+  const navigate = (referendumId: ReferendumId) => {
+    navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_REFERENDUM, { chainId, referendumId }));
+  };
+
   return (
     <Box gap={4} grow={1}>
       <Filters />
@@ -44,34 +49,22 @@ export const GovernanceReferendumList = () => {
       {shouldRenderList && network && (
         <div className="flex flex-col gap-y-3 pb-10">
           <OngoingReferendums
+            api={network.api}
+            asset={network.asset}
             referendums={ongoing}
             isTitlesLoading={isTitlesLoading}
             isLoading={isLoading}
             mixLoadingWithData={shouldShowLoadingState}
-            api={network.api}
-            onSelect={(referendum) => {
-              navigationModel.events.navigateTo(
-                generatePath(Paths.GOVERNANCE_REFERENDUM, {
-                  chainId,
-                  referendumId: referendum.referendumId,
-                }),
-              );
-            }}
+            onSelect={({ referendumId }) => navigate(referendumId)}
           />
           <CompletedReferendums
+            api={network.api}
+            asset={network.asset}
             referendums={completed}
             isTitlesLoading={isTitlesLoading}
             isLoading={isLoading}
             mixLoadingWithData={shouldShowLoadingState}
-            api={network.api}
-            onSelect={(referendum) =>
-              navigationModel.events.navigateTo(
-                generatePath(Paths.GOVERNANCE_REFERENDUM, {
-                  chainId,
-                  referendumId: referendum.referendumId,
-                }),
-              )
-            }
+            onSelect={({ referendumId }) => navigate(referendumId)}
           />
         </div>
       )}

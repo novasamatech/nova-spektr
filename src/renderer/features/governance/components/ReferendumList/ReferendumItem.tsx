@@ -1,25 +1,28 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@/entities/governance';
+import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
-import { VotedBy } from './VotedBy';
+import { VotedByAccount } from './VotedByAccount';
+import { VotedByDelegate } from './VotedByDelegate';
 
 type Props = {
   api: ApiPromise;
+  asset: Asset;
   referendum: AggregatedReferendum;
   isTitlesLoading: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo(({ api, referendum, isTitlesLoading, onSelect }: Props) => {
+export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
@@ -59,8 +62,11 @@ export const ReferendumItem = memo(({ api, referendum, isTitlesLoading, onSelect
         </div>
       </div>
 
-      <Voted active={referendum.voting.votes.length > 0} />
-      <VotedBy delegateInfo={referendum.votedByDelegate} />
+      {referendum.voting.votes.length > 0 ? (
+        <VotedByAccount active />
+      ) : (
+        <VotedByDelegate asset={asset} delegateInfo={referendum.votedByDelegate} />
+      )}
     </ListItem>
   );
 });

@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { CaptionText } from '@/shared/ui';
@@ -11,11 +12,12 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
+  api: ApiPromise;
+  asset: Asset;
   referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
   mixLoadingWithData: boolean;
-  api: ApiPromise;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
@@ -28,7 +30,7 @@ const createPlaceholders = (size: number) => {
 };
 
 export const CompletedReferendums = memo(
-  ({ referendums, isLoading, isTitlesLoading, mixLoadingWithData, api, onSelect }: Props) => {
+  ({ api, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
     const { t } = useI18n();
 
     const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
@@ -61,6 +63,7 @@ export const CompletedReferendums = memo(
                 <li key={referendum.referendumId}>
                   <ReferendumItem
                     api={api}
+                    asset={asset}
                     referendum={referendum}
                     isTitlesLoading={isTitlesLoading}
                     onSelect={onSelect}

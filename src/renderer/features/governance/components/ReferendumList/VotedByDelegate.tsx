@@ -1,8 +1,9 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
@@ -10,16 +11,14 @@ import { Address as AccountAddress } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
-import { networkSelectorModel } from '../../model/networkSelector';
 
 type Props = {
+  asset: Asset;
   delegateInfo?: DelegateInfo | null;
 };
 
-export const VotedBy = memo(({ delegateInfo }: Props) => {
+export const VotedByDelegate = memo(({ asset, delegateInfo }: Props) => {
   const { t } = useI18n();
-
-  const network = useUnit(networkSelectorModel.$network);
 
   const voter = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
@@ -27,7 +26,7 @@ export const VotedBy = memo(({ delegateInfo }: Props) => {
     fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
   });
 
-  if (nullable(network) || nullable(delegateInfo?.delegateId)) {
+  if (nullable(delegateInfo?.delegateId)) {
     return null;
   }
 
@@ -41,7 +40,7 @@ export const VotedBy = memo(({ delegateInfo }: Props) => {
     <AssetBalance
       className="text-icon-accent"
       value={votingService.calculateVotingPower(delegateInfo.amount, delegateInfo.conviction)}
-      asset={network.asset}
+      asset={asset}
     />
   );
 

@@ -4,7 +4,6 @@ import { GraphQLClient } from 'graphql-request';
 import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
 import { dictionary, nullable, toPrecision } from '@/shared/lib/utils';
 import {
-  type CastingInfo,
   type DelegateAccount,
   type DelegateDetails,
   type DelegateInfo,
@@ -14,7 +13,7 @@ import {
   type DelegationsByAccount,
 } from '../lib/types';
 
-import { GET_CASTING_VOTINGS, GET_DELEGATES_FOR_ACCOUNT, GET_DELEGATE_LIST, GET_DELEGATOR } from './delegation/queries';
+import { GET_DELEGATES_FOR_ACCOUNT, GET_DELEGATE_LIST, GET_DELEGATOR } from './delegation/queries';
 
 const DELEGATE_REGISTRY_URL =
   'https://raw.githubusercontent.com/novasamatech/opengov-delegate-registry/master/registry';
@@ -94,30 +93,6 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
     .catch(() => ({}));
 }
 
-async function getCastingVotingsFromExternalSource(chain: Chain, voters: Address[]) {
-  const client = getGraphQLClient(chain);
-  if (!client) {
-    return {};
-  }
-
-  return client
-    .request(GET_CASTING_VOTINGS, { voters })
-    .then((data: any) => {
-      const result: Record<ReferendumId, CastingInfo> = {};
-
-      for (const node of data.castingVotings.nodes) {
-        result[node.referendumId] = {
-          standardVote: '1',
-          splitVote: '1',
-          splitAbstainVote: '1',
-        };
-      }
-
-      return result;
-    })
-    .catch(() => ({}));
-}
-
 function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateStat[]): DelegateAccount[] {
   const accountsMap = dictionary(stats, 'accountId');
 
@@ -154,7 +129,6 @@ function calculateTotalVotes(votingPower: BN, tracks: number[], chain: Chain): B
 export const delegationService: DelegationApi = {
   getDelegatesFromRegistry,
   getDelegatesFromExternalSource,
-  getCastingVotingsFromExternalSource,
   getDelegatedVotesFromExternalSource,
   getDelegatesForAccount,
   aggregateDelegateAccounts,
