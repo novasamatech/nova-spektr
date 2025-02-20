@@ -591,9 +591,11 @@
       "card": {
         "delegations": "Delegations",
         "individual": "Individual",
+        "lockedAmount": "Locked amount",
         "organization": "Organization",
         "voted": "Voted last 30 days",
-        "votes": "Delegated votes"
+        "votes": "Delegated",
+        "votingPower": "Delegated voting power"
       },
       "confirmation": {
         "target": "Delegate",
