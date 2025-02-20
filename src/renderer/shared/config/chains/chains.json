@@ -4456,6 +4456,10 @@
     ],
     "nodes": [
       {
+        "url": "wss://hydradx-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
         "url": "wss://rpc-hydra.novasama-tech.org",
         "name": "Novasama node"
       },
@@ -4470,10 +4474,6 @@
       {
         "url": "wss://hydration.dotters.network",
         "name": "IBP2 node"
-      },
-      {
-        "url": "wss://hydradx-rpc.dwellir.com",
-        "name": "Dwellir node"
       }
     ],
     "assets": [
