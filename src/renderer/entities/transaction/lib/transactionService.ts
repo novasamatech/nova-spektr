@@ -102,7 +102,7 @@ async function signAndSubmit(
       let multisigError = '';
       let extrinsicSuccess = false;
 
-      if (status.isInBlock) {
+      if (status.isInBlock || status.isFinalized) {
         for (const { event, phase } of events) {
           if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
 
