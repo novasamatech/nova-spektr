@@ -153,13 +153,10 @@ export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefine
 };
 
 export const getSender = (tx: MultisigTransaction): Address | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.real;
-  }
-
-  return tx.transaction.address;
+  return coreTx.address;
 };
 
 export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {

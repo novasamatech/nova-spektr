@@ -39,7 +39,7 @@ async function connect(chain: Chain, connection: Connection): Promise<ApiPromise
 
   if (!provider) return null;
 
-  return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true });
+  return ApiPromise.create({ provider, throwOnConnect: true, throwOnUnknown: true, noInitWarn: true });
 }
 
 function disconnect(api: ApiPromise) {
