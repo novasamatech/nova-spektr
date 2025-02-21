@@ -876,10 +876,10 @@
         "conviction": "Multiply votes by increasing locking period",
         "decision": "Vote",
         "governanceLock": "Governance lock",
-        "votingPower": "Voting power",
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
-        "tracks": "Tracks"
+        "tracks": "Tracks",
+        "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
       "timeoutReferendumError": "This referendum has already passed"
