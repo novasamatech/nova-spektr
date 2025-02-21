@@ -4,7 +4,7 @@ import { type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
-import { XcmChains } from '@/entities/chain';
+import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@/entities/transaction';
 
@@ -21,7 +21,7 @@ export const OperationTitle = ({ coreTx }: Props) => {
   return (
     <>
       <TransactionTitle
-        className="flex-1 overflow-hidden"
+        className="w-[186px]"
         title={isXcmTransaction(coreTx) ? t('operations.titles.crossChainTransfer') : t('operations.titles.transfer')}
         icon="transferConfirm"
       />
@@ -32,8 +32,10 @@ export const OperationTitle = ({ coreTx }: Props) => {
         </div>
       )}
 
-      {isXcmTransaction(coreTx) && (
-        <XcmChains chainIdFrom={coreTx.chainId} chainIdTo={coreTx.args.destinationChain} className="w-[114px]" />
+      {isXcmTransaction(coreTx) ? (
+        <XcmChains chainIdFrom={coreTx.chainId} chainIdTo={coreTx.args.destinationChain} />
+      ) : (
+        <ChainTitle chainId={coreTx.chainId} />
       )}
     </>
   );
