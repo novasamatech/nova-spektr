@@ -111,7 +111,7 @@ async function signAndSubmit(
         return;
       }
 
-      if (status.isInBlock || status.isFinalized) {
+      if (status.isInBlock) {
         for (const { event, phase } of events) {
           if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
 
