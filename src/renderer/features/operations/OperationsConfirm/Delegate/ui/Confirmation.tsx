@@ -86,22 +86,14 @@ export const Confirmation = ({
         <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
-          <LargeTitleText>
-            <Trans
-              t={t}
-              i18nKey="governance.addDelegation.votesValue"
-              components={{
-                votes: (
-                  <AssetBalance
-                    value={votesValue}
-                    asset={confirmStore.asset}
-                    className="text-large-title text-text-primary"
-                    showSymbol={false}
-                  />
-                ),
-              }}
+          <LargeTitleText as="p">
+            <AssetBalance
+              className="text-large-title text-text-primary"
+              value={votesValue}
+              asset={confirmStore.asset}
             />
           </LargeTitleText>
+
           <HeadlineText className="text-text-tertiary">
             <Trans
               t={t}

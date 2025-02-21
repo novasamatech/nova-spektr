@@ -3,10 +3,11 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { Button, DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
+import { formatAsset, toAddress } from '@/shared/lib/utils';
+import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
@@ -88,12 +89,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <div className="flex flex-col items-center gap-y-1">
-          <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
-            {t('governance.referendum.votes', {
-              votes: formatBalance(votingPower, asset.precision).formatted,
-              count: toNumberWithPrecision(votingPower, asset.precision),
-            })}
-          </span>
+          <LargeTitleText as="p">
+            <AssetBalance className="text-large-title text-text-primary" value={votingPower} asset={asset} />
+          </LargeTitleText>
+
           <HeadlineText className="text-text-tertiary">
             {t('general.actions.multiply', {
               value: formatAsset(amount, asset),
