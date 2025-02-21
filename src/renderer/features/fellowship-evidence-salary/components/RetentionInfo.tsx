@@ -2,10 +2,11 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getRelativeTimeFromApi } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, nullable } from '@/shared/lib/utils';
 import { Alert, Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -18,11 +19,15 @@ export const RetentionInfo = memo(() => {
 
   const input = useUnit(fellowshipSalaryFeature.input);
   const currentMember = useUnit(profile.$member);
+  const account = useUnit(profile.$account);
+
   const track = useUnit(evidenceInfo.$track);
   const leftToDemotion = useUnit(evidenceInfo.$leftToDemotion);
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
+
+  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account);
 
   useEffect(() => {
     if (input?.api && leftToDemotion) {
@@ -47,7 +52,7 @@ export const RetentionInfo = memo(() => {
             </SmallTitleText>
           </Box>
           <EvidencePostFlowModal wish="Retention">
-            <Button>{t('fellowship.salary.retentionSubmit')}</Button>
+            <Button disabled={disabled}>{t('fellowship.salary.retentionSubmit')}</Button>
           </EvidencePostFlowModal>
         </Box>
       )}

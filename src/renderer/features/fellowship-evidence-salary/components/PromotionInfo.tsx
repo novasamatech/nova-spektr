@@ -2,12 +2,14 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, CaptionText, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
+import { profile } from '../model/profile';
 
 import { EvidencePostFlowModal } from './EvidencePostFlowModal';
 import { TrackDescription } from './TrackDescription';
@@ -20,6 +22,9 @@ export const PromotionInfo = memo(() => {
   const nextTrack = useUnit(evidenceInfo.$nextTrack);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
   const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
+  const account = useUnit(profile.$account);
+
+  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account);
 
   useEffect(() => {
     if (input?.api && leftToPromotion) {
@@ -50,7 +55,7 @@ export const PromotionInfo = memo(() => {
           </Box>
           {timeLeft === 0 && (
             <EvidencePostFlowModal wish="Promotion">
-              <Button>{t('general.button.applyButton')}</Button>
+              <Button disabled={disabled}>{t('general.button.applyButton')}</Button>
             </EvidencePostFlowModal>
           )}
         </Box>
