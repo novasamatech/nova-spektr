@@ -74,14 +74,16 @@ const validateFeeFx = attach({
   },
 });
 
-const validateFx = createEffect(async ({ transaction, signerOptions }: ValidationParams) => {
+const validateTransactionFx = createEffect(async ({ transaction, signerOptions }: ValidationParams) => {
   return validateFeeFx({ transaction, signerOptions }).then(r => {
     return validationAsyncPipeline.apply(r, { transaction, signerOptions });
   });
 });
 
+const validateTransactionsFx = series(validateTransactionFx, { parallel: true, skipErrors: true });
+
 sample({
-  clock: validateFx,
+  clock: validateTransactionFx,
   source: $pending,
   fn(pending, { transaction }) {
     return produce(pending, draft => {
@@ -92,7 +94,7 @@ sample({
 });
 
 sample({
-  clock: validateFx.finally,
+  clock: validateTransactionFx.finally,
   source: $pending,
   fn(pending, { params }) {
     return produce(pending, draft => {
@@ -103,7 +105,7 @@ sample({
 });
 
 sample({
-  clock: validateFx.finally,
+  clock: validateTransactionFx.finally,
   source: $validatingResults,
   fn(results, res) {
     if (res.status === 'done') {
@@ -134,7 +136,7 @@ sample({
       return { transaction, signerOptions: undefined };
     });
   },
-  target: series(validateFx),
+  target: validateTransactionsFx,
 });
 
 const validateAllFx = attach({
@@ -145,7 +147,7 @@ const validateAllFx = attach({
       return { transaction, signerOptions: undefined };
     });
   },
-  effect: series(validateFx),
+  effect: validateTransactionsFx,
 });
 
 export const validation = {
@@ -153,5 +155,6 @@ export const validation = {
   $validatingResults,
   $pending,
   validateAll: validateAllFx,
-  validateTransaction: validateFx,
+  validateTransaction: validateTransactionFx,
+  validateTransactions: validateTransactionsFx,
 };

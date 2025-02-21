@@ -22,9 +22,10 @@ export const BasketList = () => {
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
   const transactionsToSign = useUnit(signOperations.$transactions);
+  const pendingValidations = useUnit(validation.$pending);
   const refreshPending = useUnit(validation.validateAll.pending);
 
-  const isSignAvailable = selected.length > 0;
+  const isSignAvailable = selected.length > 0 && selected.every(operation => !pendingValidations[operation.id]);
 
   const openSignModal = (transaction: BasketTransaction) => {
     signOperations.startFlow({ transactions: [transaction] });

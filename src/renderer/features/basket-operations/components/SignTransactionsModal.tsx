@@ -48,7 +48,7 @@ export const SignTransactionsModal = () => {
           <ConfirmSlider
             count={transactions.length}
             footer={
-              <>
+              <Box direction="row" verticalAlign="center" gap={4}>
                 {pending && <Loader color="primary" size={24} />}
                 <SignButton
                   isDefault
@@ -56,7 +56,7 @@ export const SignTransactionsModal = () => {
                   disabled={!canSign}
                   onClick={signOperations.confirm}
                 />
-              </>
+              </Box>
             }
           >
             {transactions.map(t => (
