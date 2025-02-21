@@ -28,7 +28,6 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
-import * as networkDomain from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
@@ -563,8 +562,7 @@ sample({
       return ZERO_BALANCE;
     }
 
-    const id = networkDomain.accountsService.uniqId(signatory);
-    const match = signatories[0].find(({ signer }) => networkDomain.accountsService.uniqId(signer) === id);
+    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
 
     return match?.balance || ZERO_BALANCE;
   },

@@ -24,8 +24,8 @@ import {
   type AnyAccountDraft,
   type ChainAccount,
   type UniversalAccount,
+  accountService,
   accounts,
-  accountsService,
 } from '@/domains/network';
 import { modelUtils } from '../lib/model-utils';
 
@@ -75,7 +75,7 @@ const $activeWallet = combine(
 const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
 
-  return accountsService.filterAccountsByWallet(accounts, wallet.id);
+  return accountService.filterAccountsByWallet(accounts, wallet.id);
 });
 
 // Workaround - select event recreates wallet array every time, serialized ids are more stable.

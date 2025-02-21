@@ -1,7 +1,7 @@
 import { combine } from 'effector';
 
 import { member, memberService } from '@/domains/collectives';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -12,7 +12,7 @@ const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (n
 );
 
 const $accounts = combine(fellowshipNetwork.$network, walletModel.$availableAccounts, (network, accounts) =>
-  network ? accountsService.filterAccountOnChain(accounts, network.chain) : [],
+  network ? accountService.filterAccountOnChain(accounts, network.chain) : [],
 );
 
 const $currentMember = combine(

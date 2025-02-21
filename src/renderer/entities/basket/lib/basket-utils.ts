@@ -1,5 +1,5 @@
 import { type Wallet } from '@/shared/core';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 function isBasketAvailable(wallet: Wallet): boolean {
@@ -7,7 +7,7 @@ function isBasketAvailable(wallet: Wallet): boolean {
 }
 
 function isBasketAvailableForAccount(account: AnyAccount): boolean {
-  return accountsService.canSignMultipleTransactions(account);
+  return accountService.canSignMultipleTransactions(account);
 }
 
 export const basketUtils = {

@@ -19,8 +19,7 @@ export interface Wallet {
   /**
    * @deprecated You should use accounts directly from
    *   `networkDomain.accounts.$list` or filtered in some form. Filtering by
-   *   wallet can be done by
-   *   `networkDomain.accountsService.filterAccountsByWallet(accounts,
+   *   wallet can be done by `accountService.filterAccountsByWallet(accounts,
    *   walletId)`.
    */
   accounts: (AnyAccount & Record<string, any>)[];

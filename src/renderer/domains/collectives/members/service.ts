@@ -1,6 +1,6 @@
 import { type Chain, type Transaction, TransactionType } from '@/shared/core';
 import { dictionary, toAddress } from '@/shared/lib/utils';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type CoreMember, type Member, type SetActiveTransaction } from './types';
@@ -24,7 +24,7 @@ function findMatchingAccount(accounts: AnyAccount[], member: Member, selectedWal
 
   if (found.length > 1) {
     const currentWalletAccounts = found.filter(a => a.walletId === selectedWallet);
-    const accountWithWritePermission = currentWalletAccounts.find(accountsService.hasPermissionToMakeActions);
+    const accountWithWritePermission = currentWalletAccounts.find(accountService.hasPermissionToMakeActions);
     if (accountWithWritePermission) {
       return accountWithWritePermission;
     }
