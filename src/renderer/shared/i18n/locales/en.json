@@ -597,6 +597,7 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
+      "amountMultiply": "Amount & Multiply",
       "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
