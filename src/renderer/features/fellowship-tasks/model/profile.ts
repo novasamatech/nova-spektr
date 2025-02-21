@@ -9,6 +9,7 @@ import { identity, identityDomain } from '@/domains/identity';
 import { fellowshipTasksFeature } from './feature';
 
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
+const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
 
 const $identities = combine(fellowshipTasksFeature.input, identityDomain.identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
@@ -47,6 +48,7 @@ sample({
 
 export const profile = {
   $member,
+  $account,
   $identity,
   $pending: or($pendingMember, fellowshipTasksFeature.isStarting),
 };

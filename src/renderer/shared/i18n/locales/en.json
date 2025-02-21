@@ -416,7 +416,7 @@
           "required": "Comments are required"
         },
         "evidence": {
-          "label": "Evidence (document hash, url, etc.)",
+          "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
           "required": "Evidence are required"
         },
