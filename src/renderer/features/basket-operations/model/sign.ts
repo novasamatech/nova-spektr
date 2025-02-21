@@ -11,10 +11,12 @@ import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSub
 import { signOperationsUtils } from '../service/sign-operations-utils';
 import { Step } from '../types';
 
+import { validation } from './validation';
+
 const startFlow = createEvent<{ transactions: BasketTransaction[] }>();
 const finishFlow = createEvent();
 const changeStep = createEvent<Step>();
-const txsConfirmed = createEvent();
+const confirm = createEvent();
 
 const $step = restore(changeStep, Step.NONE).reset(finishFlow);
 const $transactions = createStore<BasketTransaction[]>([]).reset(finishFlow);
@@ -34,7 +36,13 @@ sample({
 });
 
 sample({
-  clock: txsConfirmed,
+  clock: startFlow,
+  fn: ({ transactions }) => transactions.map(transaction => ({ transaction })),
+  target: validation.validateTransactions,
+});
+
+sample({
+  clock: confirm,
   source: {
     transactions: $transactions,
     chains: networkModel.$chains,
@@ -146,6 +154,6 @@ export const signOperations = {
 
   startFlow,
   finishFlow,
-  txsConfirmed,
   changeStep,
+  confirm,
 };

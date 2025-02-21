@@ -1,8 +1,8 @@
-export { SignOperationsModal } from './components/SignOperationsModal';
+export { SignTransactionsModal } from './components/SignTransactionsModal';
 export {
   basketTransactionConfirmDetailsSlot,
   basketTransactionConfirmTitleSlot,
-} from './components/SignOperationsModal';
+} from './components/SignTransactionsModal';
 export { BasketList } from './components/BasketList';
 export { operationTitleSlot } from './components/BasketItem';
 export { basketOperationsFeature } from './model/feature';

@@ -4,7 +4,6 @@ import { type BasketTransaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Checkbox } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
 import { validation } from '../model/validation';
 
 import { BasketOperationStatus } from './BasketOperationStatus';
@@ -42,7 +41,7 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
   return (
     <li
       key={transaction.id}
-      className="grid h-[52px] grid-cols-[40px,380px,153px,124px,auto] items-stretch rounded-md bg-block-background-default"
+      className="grid h-[52px] grid-cols-[40px,533px,124px,auto] items-stretch rounded-md bg-block-background-default"
     >
       <div className="flex items-center justify-center px-3">
         <Checkbox checked={selected} disabled={disabled} onClick={() => onSelect(transaction)} />
@@ -58,8 +57,6 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
       >
         <Slot id={operationTitleSlot} props={{ transaction }} />
       </div>
-
-      <ChainTitle chainId={transaction.coreTx.chainId} className="ps-2" />
 
       <div className="flex items-center justify-center px-2">
         <BasketOperationStatus
