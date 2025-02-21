@@ -140,7 +140,7 @@ const $list = combine(
         .sort((a, b) => a.priority - b.priority);
     }
 
-    return null;
+    return [];
   },
 );
 
