@@ -6,17 +6,8 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
-import {
-  Alert,
-  ButtonCard,
-  ConfirmModal,
-  DetailRow,
-  FootnoteText,
-  LabelHelpBox,
-  Shimmering,
-  SmallTitleText,
-} from '@/shared/ui';
-import { Popover } from '@/shared/ui-kit';
+import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
+import { Popover, Skeleton } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { locksPeriodsAggregate } from '@/features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
@@ -128,7 +119,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
           </DetailRow>
           <DetailRow label={t('governance.vote.field.networkFee')}>
             {isFeeLoading && fee.isZero() ? (
-              <Shimmering height={18} width={50} />
+              <Skeleton height={4.5} width={12.5} />
             ) : (
               <FootnoteText>{formatAsset(fee, asset)}</FootnoteText>
             )}

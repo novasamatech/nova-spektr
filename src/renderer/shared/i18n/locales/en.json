@@ -613,7 +613,7 @@
       "delegatedTracksTitle": "Some tracks are unavailable for delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
-      "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "formTitle": "Step 2. Select the number of votes and the multiplier",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",
@@ -788,8 +788,6 @@
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes_one": "{votes} vote",
-      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },
@@ -867,6 +865,7 @@
         "conviction": "Multiply votes by increasing locking period",
         "decision": "Vote",
         "governanceLock": "Governance lock",
+        "votingPower": "Voting power",
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
         "tracks": "Tracks"

@@ -2,9 +2,9 @@ import { type BN } from '@polkadot/util';
 
 import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
-import { FootnoteText, TitleText } from '@/shared/ui';
+import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Slider } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 
 type Props = {
@@ -45,7 +45,7 @@ export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: P
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="group flex flex-col gap-3">
       <FootnoteText className="text-text-tertiary">{t('governance.vote.field.conviction')}</FootnoteText>
       <Slider
         value={numericValue}
@@ -55,14 +55,13 @@ export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: P
         disabled={disabled}
         onChange={handleChange}
       />
-      <div className="flex justify-center">
-        <TitleText className="text-text-tertiary">
-          {t('governance.referendum.votes', {
-            votes: formatBalance(votingPower, asset.precision).formatted,
-            count: toNumberWithPrecision(votingPower, asset.precision),
-          })}
-        </TitleText>
-      </div>
+      <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.votingPower')}>
+        <AssetBalance
+          className="text-text-tertiary transition-colors group-hover:text-text-primary"
+          value={votingPower}
+          asset={asset}
+        />
+      </DetailRow>
     </div>
   );
 };
