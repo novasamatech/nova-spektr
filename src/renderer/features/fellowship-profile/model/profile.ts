@@ -11,6 +11,7 @@ import { fellowshipModel } from './fellowship';
 
 const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
+const $account = fellowshipProfileFeature.input.map(store => (store ? store.account : null));
 const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
 const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
@@ -56,6 +57,7 @@ sample({
 
 export const profile = {
   $member,
+  $account,
   $track,
   $identity,
   $isAccountExist,

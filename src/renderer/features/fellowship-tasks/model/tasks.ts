@@ -9,6 +9,7 @@ import {
   trackService,
   votingService,
 } from '@/domains/collectives';
+import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
@@ -125,12 +126,21 @@ const $referendumTasks = combine(referendumList.$notVotedReferendumns, referendu
 });
 
 const $list = combine(
-  { salaryTasks: $salaryTasks, referendumTasks: $referendumTasks, operations: $basketOperationsIds },
-  ({ salaryTasks, referendumTasks, operations }) => {
-    const operationsMap = toKeysRecord(operations);
-    return [...salaryTasks, ...referendumTasks]
-      .filter(t => !(t.id in operationsMap))
-      .sort((a, b) => a.priority - b.priority);
+  {
+    salaryTasks: $salaryTasks,
+    referendumTasks: $referendumTasks,
+    operations: $basketOperationsIds,
+    account: profile.$account,
+  },
+  ({ salaryTasks, referendumTasks, operations, account }) => {
+    if (account && accountService.hasPermissionToMakeActions(account)) {
+      const operationsMap = toKeysRecord(operations);
+      return [...salaryTasks, ...referendumTasks]
+        .filter(t => !(t.id in operationsMap))
+        .sort((a, b) => a.priority - b.priority);
+    }
+
+    return null;
   },
 );
 
