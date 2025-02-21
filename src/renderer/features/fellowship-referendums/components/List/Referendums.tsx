@@ -43,11 +43,13 @@ export const Referendums = memo<Props>(({ onSelect }) => {
         <Box gap={2} padding={[0, 0, 10]}>
           <DisconnectAlert active={shouldShowNetworkDisabledWarning} />
           <OngoingReferendums
+            pending={!fulfilled}
             isTitlesLoading={isTitlesLoading}
             mixLoadingWithData={shouldShowLoadingState}
             onSelect={onSelect}
           />
           <CompletedReferendums
+            pending={!fulfilled}
             isTitlesLoading={false}
             mixLoadingWithData={shouldShowLoadingState}
             onSelect={onSelect}

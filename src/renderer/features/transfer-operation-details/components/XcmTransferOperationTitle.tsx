@@ -1,11 +1,10 @@
-import { chainsService } from '@/shared/api/network';
 import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { XcmChains } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
+import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
   operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
@@ -14,11 +13,8 @@ type Props = {
 export const XcmTransferOperationTitle = ({ operation }: Props) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
-
-  const assetId = transaction?.args.assetId || transaction?.args.asset;
-  const asset = getAssetById(assetId, chainsService.getChainById(operation.chainId)?.assets);
-
-  const amount = transaction && getTransactionAmount(transaction);
+  const asset = useTransactionAsset(operation);
+  const amount = transaction ? getTransactionAmount(transaction) : null;
 
   return (
     <>

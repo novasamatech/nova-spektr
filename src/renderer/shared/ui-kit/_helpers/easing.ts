@@ -117,4 +117,4 @@ export function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
   };
 }
 
-export const defaultEasing = bezier(0.87, 0, 0.13, 1);
+export const defaultEasing = bezier(0.8, 0, 0.2, 1);

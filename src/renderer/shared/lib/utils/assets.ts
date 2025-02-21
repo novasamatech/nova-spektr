@@ -1,4 +1,14 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { type Asset, AssetType, type OrmlExtras, StakingType, type StatemineExtras } from '@/shared/core/types/asset';
+import { assert } from '@/shared/lib/utils';
+
+export const getNativeAsset = (assets: Asset[]) => {
+  const nativeAsset = assets.find((asset) => asset.type === AssetType.NATIVE);
+  assert(nativeAsset, 'Native assets not found');
+
+  return nativeAsset;
+};
 
 /**
  * Get ID of the asset by type
@@ -30,6 +40,26 @@ export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined =>
   if (!assets || assets.length === 0) return undefined;
 
   return assets.find((asset) => getAssetId(asset) === id) || assets[0];
+};
+
+/**
+ * Get asset by type extras
+ */
+export const getAssetByTypeExtras = (api: ApiPromise, assets: Asset[], assetId: string): Asset | null => {
+  return (
+    assets.find((asset) => {
+      if (!asset.typeExtras) return;
+
+      if ('assetId' in asset.typeExtras) {
+        return asset.typeExtras.assetId === assetId;
+      }
+
+      const id = api.createType(asset.typeExtras.currencyIdType, asset.typeExtras.currencyIdScale).toJSON();
+      const currencyId = api.createType(asset.typeExtras.currencyIdType, assetId).toJSON();
+
+      return id === currencyId;
+    }) ?? null
+  );
 };
 
 /**
