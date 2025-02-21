@@ -1,9 +1,12 @@
-import { useGate } from 'effector-react';
+import { useGate, useStoreMap } from 'effector-react';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
+import { AssetBalance } from '@/entities/asset';
 import { ChainTitle, OperationTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
@@ -77,15 +80,30 @@ basketSDK(stakingBasketFeature, {
   operationTitle({ transaction }) {
     const { t } = useI18n();
     const tx = basketOperationsService.getCoreTx(transaction);
+    const chain = useStoreMap({
+      store: networkModel.$chains,
+      keys: [tx.chainId],
+      fn: (chains, [id]) => chains[id] ?? null,
+    });
 
     const title = getOperationTitle(tx);
     const icon = getOperationIcon(tx);
 
     if (title && icon) {
+      const amount = tx.args.value;
+      const nativeAsset = getNativeAsset(chain.assets);
+
       return (
         <>
-          <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />
-          <ChainTitle chainId={transaction.coreTx.chainId} />
+          <TransactionTitle className="w-[186px]" title={t(title)} icon={icon} />
+
+          {nativeAsset && amount && (
+            <div className="w-[160px]">
+              <AssetBalance value={amount} asset={nativeAsset} showIcon />
+            </div>
+          )}
+
+          <ChainTitle chainId={tx.chainId} />
         </>
       );
     }
@@ -95,11 +113,23 @@ basketSDK(stakingBasketFeature, {
   transactionConfirmTitle({ transaction }) {
     const { t } = useI18n();
     const tx = basketOperationsService.getCoreTx(transaction);
+    const chain = useStoreMap({
+      store: networkModel.$chains,
+      keys: [tx.chainId],
+      fn: (chains, [id]) => chains[id] ?? null,
+    });
 
     const title = getModalTitle(tx);
 
     if (title) {
-      return <OperationTitle className="justify-center" title={t(title)} chainId={tx.chainId} />;
+      const nativeAsset = getNativeAsset(chain.assets);
+      return (
+        <OperationTitle
+          className="justify-center"
+          title={t(title, { asset: nativeAsset.symbol })}
+          chainId={tx.chainId}
+        />
+      );
     }
 
     return null;
@@ -109,13 +139,27 @@ basketSDK(stakingBasketFeature, {
 
     const tx = basketOperationsService.getCoreTx(transaction);
 
-    if (tx.type === TransactionType.BOND) return <BondNominateConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.STAKE_MORE) return <BondExtraConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.UNSTAKE) return <UnstakeConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.RESTAKE) return <RestakeConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.REDEEM) return <WithdrawConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.NOMINATE) return <NominateConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.DESTINATION) return <PayeeConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.BOND) {
+      return <BondNominateConfirmation id={transaction.id} hideSignButton config={{ withFormatAmount: false }} />;
+    }
+    if (tx.type === TransactionType.STAKE_MORE) {
+      return <BondExtraConfirmation id={transaction.id} hideSignButton config={{ withFormatAmount: false }} />;
+    }
+    if (tx.type === TransactionType.UNSTAKE) {
+      return <UnstakeConfirmation id={transaction.id} hideSignButton />;
+    }
+    if (tx.type === TransactionType.RESTAKE) {
+      return <RestakeConfirmation id={transaction.id} hideSignButton />;
+    }
+    if (tx.type === TransactionType.REDEEM) {
+      return <WithdrawConfirmation id={transaction.id} hideSignButton />;
+    }
+    if (tx.type === TransactionType.NOMINATE) {
+      return <NominateConfirmation id={transaction.id} hideSignButton />;
+    }
+    if (tx.type === TransactionType.DESTINATION) {
+      return <PayeeConfirmation id={transaction.id} hideSignButton />;
+    }
 
     return null;
   },
