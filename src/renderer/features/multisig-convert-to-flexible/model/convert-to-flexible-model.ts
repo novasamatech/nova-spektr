@@ -1,13 +1,16 @@
+import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
+import { proxyService } from '@/shared/api/proxy';
 import { type Wallet } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { Step, nonNullable, nullable } from '@/shared/lib/utils';
+import { Step, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { createMultisigDeposit, createTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts, accountsService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -31,9 +34,9 @@ const $wallet = flow.state.map(({ wallet }) => (wallet && walletUtils.isRegularM
 
 const $multisigAccount = combine($wallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return null;
-  const filtredAccounts = accountsService.filterAccountsByWallet(accounts, wallet.id);
+  const filteredAccounts = accountsService.filterAccountsByWallet(accounts, wallet.id);
 
-  return filtredAccounts.find(accountUtils.isRegularMultisigAccount) || null;
+  return filteredAccounts.find(accountUtils.isRegularMultisigAccount) || null;
 });
 
 const $chain = combine(networkModel.$chains, $multisigAccount, (chains, multisigAccount) => {
@@ -70,17 +73,24 @@ sample({
 const $signatories = combine(
   {
     accounts: accounts.$list,
+    wallets: walletModel.$wallets,
     chain: $chain,
     multisigAccount: $multisigAccount,
   },
-  ({ accounts, chain, multisigAccount }) => {
+  ({ accounts, chain, wallets, multisigAccount }) => {
     if (!multisigAccount || !chain) return [];
 
-    return accounts.filter(
+    const filteredAccounts = accounts.filter(
       (account) =>
         accountUtils.isChainAndCryptoMatch(account, chain) &&
         multisigAccount.signatories.some((s) => s.accountId === account.accountId),
     );
+
+    const matchWallets = wallets.filter(
+      (w) => walletUtils.isValidSignatory(w) && filteredAccounts.some((s) => s.walletId === w.id),
+    );
+
+    return filteredAccounts.filter((a) => matchWallets.some((w) => w.id === a.walletId));
   },
 );
 
@@ -150,6 +160,51 @@ const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
   $threshold: $multisigAccount.map((a) => a && a.threshold),
 });
+
+const $proxyDeposit = combine($api, (api) => api && proxyService.getProxyDeposit(api, '0', 1));
+
+type Error = {
+  errorText: string;
+  name: string;
+};
+
+const $errors = combine(
+  {
+    chain: $chain,
+    multisigAccount: $multisigAccount,
+    selectedSignatory: $selectedSignatory,
+    balances: balanceModel.$balances,
+    multisigDeposit: $multisigDeposit,
+    proxyDeposit: $proxyDeposit,
+    fee: $fee,
+  },
+  ({ chain, multisigAccount, multisigDeposit, fee, balances, proxyDeposit, selectedSignatory }) => {
+    if (!chain?.assets.at(0) || !multisigAccount || !selectedSignatory || !proxyDeposit) return [];
+
+    const errors: Error[] = [];
+    const multisigBalance = balanceUtils.getBalance(
+      balances,
+      multisigAccount.accountId,
+      chain.chainId,
+      chain.assets.at(0)!.assetId.toString(),
+    );
+    const signerBalance = balanceUtils.getBalance(
+      balances,
+      selectedSignatory.accountId,
+      chain.chainId,
+      chain.assets.at(0)!.assetId.toString(),
+    );
+
+    if (new BN(proxyDeposit).gte(withdrawableAmountBN(multisigBalance))) {
+      errors.push({ errorText: 'proxy.addProxy.balanceAlertMultisig', name: 'proxy.addProxy.balanceAlertTitle' });
+    }
+    if (multisigDeposit.add(fee).gte(withdrawableAmountBN(signerBalance))) {
+      errors.push({ errorText: 'proxy.addProxy.notEnoughMultisigTokens', name: 'proxy.addProxy.balanceAlertTitle' });
+    }
+
+    return errors;
+  },
+);
 
 // Signing
 const sign = createEvent();
@@ -265,7 +320,8 @@ export const convertToFlexibleModel = {
   $multisigAccount,
   $wallet,
 
-  $api,
+  $errors,
+  $proxyDeposit,
   $multisigDeposit,
   $fee,
   $isFeeLoading: $pendingFee,

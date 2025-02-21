@@ -1,8 +1,7 @@
 import { useUnit } from 'effector-react';
 
-import { proxyService } from '@/shared/api/proxy';
 import { useI18n } from '@/shared/i18n';
-import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Alert, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
@@ -20,7 +19,8 @@ export const ConvertToFlexibleConfirm = () => {
   const account = useUnit(convertToFlexibleModel.$multisigAccount);
   const selectedSignatory = useUnit(convertToFlexibleModel.$selectedSignatory);
 
-  const api = useUnit(convertToFlexibleModel.$api);
+  const errors = useUnit(convertToFlexibleModel.$errors);
+  const proxyDeposit = useUnit(convertToFlexibleModel.$proxyDeposit);
   const fee = useUnit(convertToFlexibleModel.$fee);
   const multisigDeposit = useUnit(convertToFlexibleModel.$multisigDeposit);
   const isFeeLoading = useUnit(convertToFlexibleModel.$isFeeLoading);
@@ -28,10 +28,9 @@ export const ConvertToFlexibleConfirm = () => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const asset = chain?.assets.at(0);
-  if (!chain || !asset || !api || !account) return null;
+  if (!chain || !asset || !account) return null;
 
   const signatoryWallet = selectedSignatory && walletUtils.getWalletById(wallets, selectedSignatory.walletId);
-  const proxyDeposit = proxyService.getProxyDeposit(api, '0', 1);
 
   return (
     <>
@@ -59,8 +58,8 @@ export const ConvertToFlexibleConfirm = () => {
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={proxyDeposit} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={asset} amount={proxyDeposit} />
+              <AssetBalance value={proxyDeposit || '0'} asset={chain.assets[0]} />
+              <AssetFiatBalance asset={asset} amount={proxyDeposit || '0'} />
             </div>
           </DetailRow>
 
@@ -101,11 +100,23 @@ export const ConvertToFlexibleConfirm = () => {
             )}
           </DetailRow>
         </TransactionDetails>
+
+        {errors.map((error) => (
+          <Alert key={error.errorText} active={!!error} variant="error" title={t(error.name)}>
+            <Alert.Item withDot={false}>{t(error.errorText)}</Alert.Item>
+          </Alert>
+        ))}
       </div>
 
       <Modal.Footer>
         <div className="flex w-full justify-end">
-          {signatoryWallet && <SignButton type={signatoryWallet.type} onClick={convertToFlexibleModel.sign} />}
+          {signatoryWallet && (
+            <SignButton
+              type={signatoryWallet.type}
+              disabled={isFeeLoading || errors.length !== 0}
+              onClick={convertToFlexibleModel.sign}
+            />
+          )}
         </div>
       </Modal.Footer>
     </>

@@ -1337,7 +1337,7 @@
     "addProxy": {
       "accountLabel": "Account",
       "accountPlaceholder": "Select account",
-      "balanceAlertMultisig": "To pay proxy deposit with selected account",
+      "balanceAlertMultisig": "To pay proxy deposit with selected multisig",
       "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
       "balanceAlertTitle": "Not enough tokens",
       "delegateLabel": "Give authority to",
