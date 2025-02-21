@@ -4,8 +4,8 @@ import { $features } from '@/shared/config/features';
 import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
@@ -18,16 +18,23 @@ export const walletPolkadotVaultFeature = createFeature({
   enable: $features.map(f => f.polkadotVault),
 });
 
-walletPolkadotVaultFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
-  return account.signingType === SigningType.POLKADOT_VAULT;
-});
-
-walletPolkadotVaultFeature.inject(accountService.accountCanSignMultipleAnyOf, ({ account }) => {
-  return (
-    accountUtils.isVaultBaseAccount(account) ||
-    accountUtils.isVaultChainAccount(account) ||
-    accountUtils.isVaultShardAccount(account)
-  );
+accountSDK(walletPolkadotVaultFeature, {
+  actionPermission({ account }) {
+    return account.signingType === SigningType.POLKADOT_VAULT;
+  },
+  availableOnChain({ account }) {
+    return accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account);
+  },
+  canSignMultipleTransactions({ account }) {
+    return (
+      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isVaultChainAccount(account) ||
+      accountUtils.isVaultShardAccount(account)
+    );
+  },
+  collectGraphNode(node) {
+    return node;
+  },
 });
 
 walletPolkadotVaultFeature.inject(walletIconSlot, ({ wallet, size }) => {

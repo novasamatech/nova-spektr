@@ -14,7 +14,7 @@ import {
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
-const accountGraphCollectPipeline = createPipeline<AccountNode<AnyAccount>, { accounts: AnyAccount[] }>();
+const accountGraphCollectPipeline = createPipeline<AccountNode, { accounts: AnyAccount[] }>();
 
 /**
  * ATTENTION! This method is the source of stable id for different types of
@@ -81,10 +81,10 @@ function canSignMultipleTransactions(account: AnyAccount) {
  * DFS traverse. Return false in enter visitor to stop traversing.
  */
 function traverseGraph(
-  node: AccountNode<AnyAccount>,
+  node: AccountNode,
   visitor: {
-    enter: (node: AccountNode<AnyAccount>) => false | void;
-    exit?: (node: AccountNode<AnyAccount>) => void;
+    enter: (node: AccountNode) => false | void;
+    exit?: (node: AccountNode) => void;
   },
 ): false | undefined {
   const result = visitor.enter(node);
@@ -99,12 +99,12 @@ function traverseGraph(
   visitor.exit?.(node);
 }
 
-function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode<AnyAccount>> {
+function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
   const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
-  const nodes = new Map<AnyAccount, AccountNode<AnyAccount>>();
+  const nodes = new Map<AnyAccount, AccountNode>();
 
   for (const account of chainAccounts) {
-    const initialNode: AccountNode<AnyAccount> = {
+    const initialNode: AccountNode = {
       account,
       children: [],
     };

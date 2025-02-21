@@ -45,7 +45,7 @@ export type AnyAccountDraft<T extends UniversalAccount | ChainAccount = Universa
 
 // Accounts graph
 
-export type AccountNode<T extends AnyAccount> = {
-  account: T;
-  children: AccountNode<AnyAccount>[];
+export type AccountNode = {
+  account: AnyAccount;
+  children: AccountNode[];
 };

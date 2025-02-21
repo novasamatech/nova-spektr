@@ -4,8 +4,10 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
@@ -19,9 +21,33 @@ export const walletMultisigFeature = createFeature({
   enable: $features.map(f => f.multisig || f.flexibleMultisig),
 });
 
-// All multisig accounts can perform actions
-walletMultisigFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
-  return accountUtils.isMultisigAccount(account);
+accountSDK(walletMultisigFeature, {
+  actionPermission({ account }) {
+    return accountUtils.isMultisigAccount(account);
+  },
+  availableOnChain({ account }) {
+    return accountUtils.isMultisigAccount(account);
+  },
+  canSignMultipleTransactions() {
+    return false;
+  },
+  collectGraphNode(node, { accounts }) {
+    const { account } = node;
+    if (accountUtils.isMultisigAccount(account)) {
+      const signatories = account.signatories
+        .map(signatory => accounts.find(a => a.accountId === signatory.accountId))
+        .filter(nonNullable);
+
+      return {
+        account,
+        children: signatories.map(signatory => {
+          return accountService.accountGraphCollectPipeline({ account: signatory, children: [] }, { accounts });
+        }),
+      };
+    }
+
+    return node;
+  },
 });
 
 walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {

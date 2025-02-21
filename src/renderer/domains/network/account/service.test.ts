@@ -113,7 +113,7 @@ describe('accounts service', () => {
       signingType: SigningType.POLKADOT_VAULT,
     };
 
-    const accounts = [firstNestedAccount, secondNestedAccount, leafAccount];
+    const accounts = [leafAccount, secondNestedAccount, firstNestedAccount];
 
     accountService.accountGraphCollectPipeline.registerHandler({
       body(node, { accounts }) {
