@@ -3,10 +3,11 @@ import { memo, useMemo, useState } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { formatAsset, formatBalance, performSearch, toAccountId } from '@/shared/lib/utils';
-import { BodyText, FootnoteText } from '@/shared/ui';
+import { formatAsset, performSearch, toAccountId } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Box, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -60,11 +61,7 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
                     <AccountExplorers accountId={toAccountId(voter)} chain={chain} />
                   </div>
                   <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
-                    <BodyText className="whitespace-nowrap">
-                      {t('governance.voteHistory.totalVotesCount', {
-                        value: formatBalance(votingPower, asset.precision).formatted,
-                      })}
-                    </BodyText>
+                    <AssetBalance value={votingPower} asset={asset} />
                     <FootnoteText className="whitespace-nowrap text-text-tertiary">
                       {t('general.actions.multiply', {
                         value: formatAsset(balance, asset),
