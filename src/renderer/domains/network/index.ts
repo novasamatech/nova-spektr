@@ -1,4 +1,4 @@
-export { accountsDomainModel as accounts } from './accounts/model';
-export { accountService } from './accounts/service';
+export { accountsDomainModel as accounts } from './account/model';
+export { accountService } from './account/service';
 
-export type { AnyAccount, AnyAccountDraft, ChainAccount, UniversalAccount } from './accounts/types';
+export type { AnyAccount, AnyAccountDraft, ChainAccount, UniversalAccount } from './account/types';
