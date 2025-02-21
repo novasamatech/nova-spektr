@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { salaryService, votingService } from '@/domains/collectives';
-import { OperationTitle } from '@/entities/chain';
+import { ChainTitle, OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
@@ -71,7 +71,12 @@ basketSDK(fellowshipBasketFeature, {
     const icon = getIcon(tx);
 
     if (title && icon) {
-      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />;
+      return (
+        <>
+          <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon={icon} />
+          <ChainTitle chainId={transaction.coreTx.chainId} />
+        </>
+      );
     }
 
     return null;

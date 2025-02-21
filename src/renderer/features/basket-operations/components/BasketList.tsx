@@ -13,8 +13,8 @@ import { validation } from '../model/validation';
 import { BasketFilter } from './BasketFilter';
 import { BasketItem } from './BasketItem';
 import { EmptyBasket } from './EmptyBasket';
-import { SignOperationModal } from './SignOperationModal';
-import { SignOperationsModal } from './SignOperationsModal';
+import { SignTransactionModal } from './SignTransactionModal';
+import { SignTransactionsModal } from './SignTransactionsModal';
 
 export const BasketList = () => {
   const { t } = useI18n();
@@ -22,9 +22,10 @@ export const BasketList = () => {
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
   const transactionsToSign = useUnit(signOperations.$transactions);
+  const pendingValidations = useUnit(validation.$pending);
   const refreshPending = useUnit(validation.validateAll.pending);
 
-  const isSignAvailable = selected.length > 0;
+  const isSignAvailable = selected.length > 0 && selected.every(operation => !pendingValidations[operation.id]);
 
   const openSignModal = (transaction: BasketTransaction) => {
     signOperations.startFlow({ transactions: [transaction] });
@@ -94,7 +95,7 @@ export const BasketList = () => {
 
       {operations.length === 0 && <EmptyBasket />}
 
-      {transactionsToSign.length > 1 ? <SignOperationsModal /> : <SignOperationModal />}
+      {transactionsToSign.length > 1 ? <SignTransactionsModal /> : <SignTransactionModal />}
     </div>
   );
 };

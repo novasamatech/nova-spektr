@@ -4,6 +4,7 @@ import { readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type BasketTransaction, type ID } from '@/shared/core';
+import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/element-types
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
@@ -80,6 +81,12 @@ sample({
 });
 
 // sync
+
+sample({
+  clock: walletSelect.$selectedAccounts,
+  source: $selectedIds,
+  target: deselect,
+});
 
 sample({
   clock: submitModel.output.formSubmitted,

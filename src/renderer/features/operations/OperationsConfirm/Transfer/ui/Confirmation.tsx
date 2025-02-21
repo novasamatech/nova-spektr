@@ -4,9 +4,9 @@ import { type ReactNode } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
-import { Tooltip } from '@/shared/ui-kit';
+import { Box, Tooltip } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -52,7 +52,15 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id],
   });
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirmStore) {
+    return (
+      <Box verticalAlign="center" horizontalAlign="center" height="200px">
+        <Loader color="primary" />
+      </Box>
+    );
+  }
+
+  if (!initiatorWallet) {
     return null;
   }
 
@@ -157,24 +165,28 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
       </TransactionDetails>
 
-      <div className="mt-3 flex w-full justify-between">
-        {onGoBack && (
-          <Button variant="text" onClick={onGoBack}>
-            {t('operation.goBackButton')}
-          </Button>
-        )}
+      {nonNullable(onGoBack) ||
+        nonNullable(secondaryActionButton) ||
+        (!hideSignButton && (
+          <div className="mt-3 flex w-full justify-between">
+            {nonNullable(onGoBack) && (
+              <Button variant="text" onClick={onGoBack}>
+                {t('operation.goBackButton')}
+              </Button>
+            )}
 
-        <div className="flex gap-4">
-          {secondaryActionButton}
-          {!hideSignButton && !isMultisigExists && (
-            <SignButton
-              isDefault={Boolean(secondaryActionButton)}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={confirmModel.events.confirmed}
-            />
-          )}
-        </div>
-      </div>
+            <div className="flex gap-4">
+              {secondaryActionButton}
+              {!hideSignButton && !isMultisigExists && (
+                <SignButton
+                  isDefault={Boolean(secondaryActionButton)}
+                  type={(signerWallet || initiatorWallet).type}
+                  onClick={confirmModel.events.confirmed}
+                />
+              )}
+            </div>
+          </div>
+        ))}
     </div>
   );
 };
