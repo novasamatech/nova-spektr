@@ -42,6 +42,7 @@ sample({
   target: requestProposersFx,
 });
 
+// TODO: use identity domain request
 sample({
   clock: requestProposers,
   source: {

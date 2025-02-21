@@ -34,7 +34,7 @@ export const Filters = () => {
           value={selectedVoteId}
           onChange={filterModel.events.selectedVoteChanged}
         >
-          <Select.Item value="voted">{t('governance.voted')}</Select.Item>
+          <Select.Item value="voted">{t('governance.filters.voted')}</Select.Item>
           <Select.Item value="notVoted">{t('governance.filters.notVoted')}</Select.Item>
         </Select>
       </div>

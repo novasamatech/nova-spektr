@@ -4,11 +4,13 @@ import { type PropsWithChildren, forwardRef, useMemo } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
-type BoxSpacing = number;
+type SpacingUnit = number;
 
 type BoxPadding =
-  | BoxSpacing
-  | [verticalTop: BoxSpacing, horizontalRight: BoxSpacing, bottom?: BoxSpacing, right?: BoxSpacing];
+  | SpacingUnit
+  | [verticalTop: SpacingUnit, horizontalRight: SpacingUnit, bottom?: SpacingUnit, right?: SpacingUnit];
+
+type BoxMargin = BoxPadding;
 
 type BoxProps = PropsWithChildren<{
   width?: CSS.Property.Width | number;
@@ -22,12 +24,13 @@ type BoxProps = PropsWithChildren<{
   hideOverflow?: boolean;
   grow?: number;
   wrap?: boolean;
-  gap?: BoxSpacing | string;
+  gap?: SpacingUnit | string;
   padding?: BoxPadding;
+  margin?: BoxMargin;
   testId?: string;
 }>;
 
-const getBoxSize = <T extends string | number | void>(size: BoxSpacing | string | void): T => {
+const getBoxSize = <T extends string | number | void>(size: SpacingUnit | string | void): T => {
   if (typeof size === 'number') {
     return `${gridSpaceConverter(size)}px` as T;
   }
@@ -60,6 +63,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       gap,
       wrap,
       padding,
+      margin,
       direction = 'column',
       shrink,
       grow,
@@ -83,6 +87,15 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       Array.isArray(padding) ? padding : [padding],
     );
 
+    const calculatedMargin = useMemo(
+      () => {
+        return Array.isArray(margin)
+          ? margin.map(getBoxSize<CSS.Property.Margin>).join(' ')
+          : getBoxSize<CSS.Property.Margin>(margin);
+      },
+      Array.isArray(margin) ? margin : [margin],
+    );
+
     const isHorizontal = direction === 'row' || direction === 'row-reverse';
 
     const style = useMemo<React.CSSProperties>(
@@ -90,13 +103,14 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         width: getBoxSize<CSS.Property.Width>(width),
         height: getBoxSize<CSS.Property.Height>(height),
         padding: calculatedPadding,
+        margin: calculatedMargin,
         alignItems: isHorizontal ? verticalAlign : horizontalAlign,
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
         flexShrink: shrink,
         gap: getBoxSize<CSS.Property.Gap>(gap),
         flexGrow: grow,
       }),
-      [isHorizontal, calculatedPadding, width, height, verticalAlign, horizontalAlign, gap],
+      [isHorizontal, calculatedPadding, calculatedMargin, width, height, verticalAlign, horizontalAlign, gap],
     );
 
     return (

@@ -222,7 +222,7 @@ const calculateAccountVotePower = (vote: AccountVote) => {
 };
 
 const calculateAccountVotesTotalBalance = (votes: AccountVote[]) => {
-  return votes.reduce((acc, vote) => acc.iadd(calculateAccountVotePower(vote)), new BN(0));
+  return votes.reduce((acc, vote) => acc.add(calculateAccountVotePower(vote)), new BN(0));
 };
 
 const getVotingAsset = (chain: Chain) => chain.assets.at(0) ?? null;

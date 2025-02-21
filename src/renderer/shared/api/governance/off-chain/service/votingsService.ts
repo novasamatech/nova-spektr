@@ -36,20 +36,23 @@ async function getVotingsForVoter(chain: Chain, voter: string): Promise<Record<R
     return {};
   }
 
-  return client.request(GET_VOTINGS_FOR_VOTER, { voter }).then((x: any) =>
-    x.castingVotings.nodes.reduce(
-      (acc: any, current: any) => ({
-        ...acc,
-        [current.referendum.id]: {
-          at: current.at,
-          standardVote: current.standardVote,
-          splitAbstainVote: current.splitAbstainVote,
-          splitVote: current.splitVote,
-        },
-      }),
-      {},
-    ),
-  );
+  return client
+    .request(GET_VOTINGS_FOR_VOTER, { voter })
+    .then((data: any) => {
+      const result: Record<ReferendumId, SubQueryVoting> = {};
+
+      for (const node of data.castingVotings.nodes) {
+        result[node.referendum.id as ReferendumId] = {
+          at: node.at,
+          standardVote: node.standardVote,
+          splitAbstainVote: node.splitAbstainVote,
+          splitVote: node.splitVote,
+        } as SubQueryVoting;
+      }
+
+      return result;
+    })
+    .catch(() => ({}));
 }
 
 export const votingsService = {
