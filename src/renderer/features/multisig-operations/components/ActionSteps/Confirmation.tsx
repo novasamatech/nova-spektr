@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import {
   type Account,
+  type Asset,
   type Chain,
   type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
@@ -11,8 +12,9 @@ import {
   type MultisigTransaction,
   type Transaction,
 } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
@@ -22,9 +24,12 @@ import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } fr
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
 import { Details } from '../Details';
-import { TransactionAmount } from '../TransactionAmount';
 
 import { getIconName } from './transactionConfirmIcon';
+
+export const confirmTransactionInfoSlot = createSlot<{
+  operation: MultisigTransaction | FlexibleMultisigTransaction;
+}>();
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
@@ -48,7 +53,14 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
   const transaction = getTransactionFromMultisigTx(tx);
-  const asset = getAssetById(transaction?.args.assetId, chain.assets) || chain.assets[0];
+  let asset: Asset | null = null;
+  if (transaction) {
+    if (transaction.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? chain.assets[0];
+    } else {
+      asset = getAssetById(transaction.args.asset, chain.assets) ?? chain.assets[0];
+    }
+  }
 
   const xcmApi = useStoreMap({
     store: networkModel.$apis,
@@ -63,7 +75,9 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   });
 
   useEffect(() => {
-    xcmTransferModel.events.xcmStarted({ chain, asset });
+    if (asset) {
+      xcmTransferModel.events.xcmStarted({ chain, asset });
+    }
   }, [chain, asset]);
 
   return (
@@ -71,7 +85,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <TransactionAmount tx={transaction} />}
+        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: tx }} />}
       </div>
 
       <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />
@@ -98,7 +112,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
         )}
       </DetailRow>
 
-      {isXcmTransaction(transaction) && xcmConfig && xcmApi && (
+      {isXcmTransaction(transaction) && xcmConfig && xcmApi && asset && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
