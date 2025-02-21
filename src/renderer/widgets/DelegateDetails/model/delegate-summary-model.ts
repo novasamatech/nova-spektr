@@ -90,51 +90,48 @@ sample({
 
 sample({
   clock: getReferendumsForVoterFx.done,
-  source: { currentReferendums: $currentReferendums, referedumsList: $referedumsList },
+  source: {
+    currentReferendums: $currentReferendums,
+    referedumsList: $referedumsList,
+  },
   filter: (_, { result }) => nonNullable(result),
   fn: ({ currentReferendums, referedumsList }, { params, result }) => {
-    const referendums = currentReferendums.reduce<VotedReferendum[]>((acc, val) => {
-      if (val.referendumId in result) {
-        const votedReferendum = result[val.referendumId];
+    const referendums: VotedReferendum[] = [];
 
-        const amount = new BN(
-          votedReferendum.splitAbstainVote?.abstainAmount ?? votedReferendum.standardVote?.vote.amount ?? '0',
-        );
+    for (const ref of currentReferendums) {
+      if (!(ref.referendumId in result)) continue;
 
-        const votingPower = votingService.calculateVotingPower(
-          amount,
-          votedReferendum.standardVote?.vote?.conviction || 'None',
-        );
+      const votedReferendum = result[ref.referendumId];
+      const amount = new BN(
+        votedReferendum.splitAbstainVote?.abstainAmount ?? votedReferendum.standardVote?.vote.amount ?? '0',
+      );
+      const votingPower = votingService.calculateVotingPower(
+        amount,
+        votedReferendum.standardVote?.vote?.conviction || 'None',
+      );
+      const splitVote = votedReferendum.splitVote
+        ? [
+            {
+              vote: 'aye',
+              value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.ayeAmount), 'None'),
+            },
+            {
+              vote: 'nay',
+              value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.nayAmount), 'None'),
+            },
+          ]
+        : null;
 
-        const splitVote = votedReferendum.splitVote
-          ? [
-              {
-                vote: 'aye',
-                value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.ayeAmount), 'None'),
-              },
-              {
-                vote: 'nay',
-                value: votingService.calculateVotingPower(new BN(votedReferendum.splitVote.nayAmount), 'None'),
-              },
-            ]
-          : null;
-
-        return [
-          ...acc,
-          {
-            ...val,
-            votedAt: votedReferendum.at,
-            voted:
-              splitVote ||
-              (votedReferendum.splitAbstainVote
-                ? [{ vote: 'abstain', value: votingPower }]
-                : [{ vote: votedReferendum.standardVote?.aye ? 'aye' : 'nay', value: votingPower }]),
-          },
-        ];
-      }
-
-      return acc;
-    }, []);
+      referendums.push({
+        ...ref,
+        votedAt: votedReferendum.at,
+        voted:
+          splitVote ||
+          (votedReferendum.splitAbstainVote
+            ? [{ vote: 'abstain', value: votingPower }]
+            : [{ vote: votedReferendum.standardVote?.aye ? 'aye' : 'nay', value: votingPower }]),
+      });
+    }
 
     return setNestedValue(referedumsList, params.chain.chainId, params.accountId, referendums);
   },

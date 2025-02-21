@@ -1,11 +1,10 @@
-import { chainsService } from '@/shared/api/network';
 import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
+import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
   operation: MultisigTransaction;
@@ -14,10 +13,8 @@ type Props = {
 export const TransferOperationTitle = ({ operation }: Props) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
-
-  const asset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
-  const amount = transaction && getTransactionAmount(transaction);
+  const asset = useTransactionAsset(operation);
+  const amount = transaction ? getTransactionAmount(transaction) : null;
 
   return (
     <>
