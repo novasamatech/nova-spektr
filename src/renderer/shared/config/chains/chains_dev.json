@@ -4054,8 +4054,8 @@
     ],
     "nodes": [
       {
-        "url": "wss://statemint-rpc.dwellir.com",
-        "name": "Dwellir node"
+        "url": "wss://rpc-assethub.novasama-tech.org",
+        "name": "Novasama node"
       },
       {
         "url": "wss://sys.ibp.network/asset-hub-polkadot",
@@ -4066,8 +4066,8 @@
         "name": "IBP2 node"
       },
       {
-        "url": "wss://rpc-assethub.novasama-tech.org",
-        "name": "Novasama node"
+        "url": "wss://statemint-rpc.dwellir.com",
+        "name": "Dwellir node"
       },
       {
         "url": "wss://statemint.api.onfinality.io/public-ws",
@@ -7081,6 +7081,9 @@
           "url": "https://subquery-collectives-polkadot-stg.novasama-tech.org"
         }
       ]
+    },
+    "additional": {
+      "identityChain": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008"
     }
   },
   {

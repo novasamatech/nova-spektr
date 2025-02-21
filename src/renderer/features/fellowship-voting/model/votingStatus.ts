@@ -52,8 +52,8 @@ const $referendumVoting = combine($accountsVotes, $referendumId, (voting, refere
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipVotingFeature, flow.open),
-  fn({ data: { referendumId }, input: { api, chainId, palletType } }) {
+  clock: attachToFeatureInput(fellowshipVotingFeature, $referendumId),
+  fn({ data: referendumId, input: { api, chainId, palletType } }) {
     return {
       api,
       chainId,

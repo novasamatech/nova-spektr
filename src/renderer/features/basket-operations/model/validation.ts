@@ -24,7 +24,7 @@ export type ValidationParams = {
 
 const validationAsyncPipeline = createAsyncPipeline<NonNullable<ValidationResult>[], ValidationParams>();
 
-const $pending = createStore<Record<ID, true>>({});
+const $pending = createStore<Record<ID, boolean>>({});
 const $validatingResults = createStore<Record<ID, NonNullable<ValidationResult>[]>>({});
 
 const validateFeeFx = attach({
@@ -96,7 +96,7 @@ sample({
   source: $pending,
   fn(pending, { params }) {
     return produce(pending, draft => {
-      delete draft[params.transaction.id];
+      draft[params.transaction.id] = false;
     });
   },
   target: $pending,

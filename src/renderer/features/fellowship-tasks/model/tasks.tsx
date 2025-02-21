@@ -3,6 +3,7 @@ import { combine } from 'effector';
 import { nonNullable, nullable, toAccountId, toKeysRecord } from '@/shared/lib/utils';
 import {
   type OngoingReferendum,
+  evidenceService,
   memberService,
   salaryService,
   trackService,
@@ -25,6 +26,7 @@ const $basketOperations = combine(basketOperations.$list, profile.$member, (oper
       nonNullable(member) &&
       toAccountId(operation.coreTx.address) === member.accountId &&
       (memberService.isSetActiveTransaction(operation.coreTx) ||
+        salaryService.isSalaryInductTransaction(operation.coreTx) ||
         salaryService.isSalaryRequestTransaction(operation.coreTx) ||
         salaryService.isSalaryPayoutTransaction(operation.coreTx) ||
         votingService.isVotingTransaction(operation.coreTx)),
@@ -49,6 +51,10 @@ const $basketOperationsIds = $basketOperations.map(operations => {
 
       if (salaryService.isSalaryPayoutTransaction(operation.coreTx)) {
         return 'salary_payout';
+      }
+
+      if (evidenceService.isEvidenceTransaction(operation.coreTx)) {
+        return `evidence`;
       }
 
       if (votingService.isVotingTransaction(operation.coreTx)) {

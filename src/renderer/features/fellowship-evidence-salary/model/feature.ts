@@ -49,7 +49,7 @@ export const fellowshipSalaryFeature = createFeature({
 });
 
 sample({
-  clock: fellowshipNetwork.$isActive,
-  filter: fellowshipNetwork.$isActive,
+  clock: fellowshipNetwork.$isConnected,
+  filter: fellowshipNetwork.$isConnected,
   target: fellowshipSalaryFeature.restore,
 });

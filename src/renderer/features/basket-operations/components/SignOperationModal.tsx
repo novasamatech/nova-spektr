@@ -22,11 +22,11 @@ export const SignOperationModal = () => {
   if (!transaction) return null;
 
   if (signOperationsUtils.isSubmitStep(step)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={signOperations.output.flowFinished} />;
+    return <OperationSubmit isOpen={isModalOpen} onClose={() => signOperations.finishFlow()} />;
   }
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={() => signOperations.output.flowFinished()}>
+    <Modal size="md" isOpen={isModalOpen} onToggle={() => signOperations.finishFlow()}>
       <Modal.Title close>
         <Slot id={basketTransactionConfirmTitleSlot} props={{ transaction }} />
       </Modal.Title>
@@ -36,13 +36,13 @@ export const SignOperationModal = () => {
             <Slot id={basketTransactionConfirmDetailsSlot} props={{ transaction }} />
 
             <Modal.Footer>
-              <SignButton isDefault type={wallet?.type} onClick={signOperations.events.txsConfirmed} />
+              <SignButton isDefault type={wallet?.type} onClick={signOperations.txsConfirmed} />
             </Modal.Footer>
           </div>
         )}
 
         {signOperationsUtils.isSignStep(step) && (
-          <OperationSign onGoBack={() => signOperations.events.stepChanged(Step.CONFIRM)} />
+          <OperationSign onGoBack={() => signOperations.changeStep(Step.CONFIRM)} />
         )}
       </Modal.Content>
     </Modal>

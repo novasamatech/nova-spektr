@@ -321,6 +321,14 @@
         "submittedRetention": "submitted evidence with a wish to retention"
       }
     },
+    "basket": {
+      "salaryInduct": "Activate salary",
+      "salaryPayout": "Withdraw salary",
+      "salaryRequest": "Request salary",
+      "setActive": "Change status",
+      "submitEvidence": "Submit evidence",
+      "vote": "Vote"
+    },
     "details": {
       "noDetails": "Details not found"
     },
@@ -448,6 +456,9 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
+        "inductSalary": "Payments activation:",
+        "inductSalaryAction": "Activate",
+        "inductSalaryCall": "Your salary: {salary}, activate it.",
         "payoutSalary": "Withdraw",
         "payoutSalaryCall": "Payout a {salary} salary within:",
         "payoutSalarySuccess": "Salary payout was completed successfully.",
