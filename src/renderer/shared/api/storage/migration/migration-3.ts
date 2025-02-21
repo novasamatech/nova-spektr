@@ -51,7 +51,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
         };
       }
 
-      // clone of networkDomain.accountsService.uniqId method.
+      // clone of accountService.uniqId method.
       const id =
         res.type === 'universal'
           ? `${res.walletId} ${res.accountId} universal`

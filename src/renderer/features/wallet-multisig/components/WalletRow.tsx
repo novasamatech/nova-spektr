@@ -3,7 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { WalletManagement } from '@/shared/ui-entities';
-import { accounts, accountsService } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -24,8 +24,8 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     store: accounts.$list,
     keys: [wallet.id],
     fn: (list, [walletId]) => {
-      const match = accountsService.filterAccountsByWallet(list, walletId).at(0);
-      return match && accountsService.isChainAccount(match) ? match : null;
+      const match = accountService.filterAccountsByWallet(list, walletId).at(0);
+      return match && accountService.isChainAccount(match) ? match : null;
     },
   });
 

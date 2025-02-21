@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
@@ -11,8 +11,20 @@ import { WalletIcon } from './components/WalletIcon';
 import { walletWalletConnectFeature } from './model/feature';
 import { wcWallets } from './model/wallets';
 
-walletWalletConnectFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
-  return accountUtils.isWcAccount(account);
+accountSDK(walletWalletConnectFeature, {
+  actionPermission({ account }) {
+    return accountUtils.isWcAccount(account);
+  },
+  availableOnChain({ account }) {
+    // wallet connect account are chain-specific
+    return accountUtils.isWcAccount(account);
+  },
+  canSignMultipleTransactions() {
+    return false;
+  },
+  collectGraphNode(node) {
+    return node;
+  },
 });
 
 walletWalletConnectFeature.inject(walletIconSlot, ({ wallet, size }) => {

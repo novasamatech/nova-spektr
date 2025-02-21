@@ -1,6 +1,6 @@
 import { createFeature } from '@/shared/feature';
-import { accountsService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WatchOnlyGroup, walletActionsSlot } from './components/WatchOnlyGroup';
@@ -11,16 +11,23 @@ export const walletWatchOnlyFeature = createFeature({
   name: 'wallet/watch-only',
 });
 
-// read only obviously
-walletWatchOnlyFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
-  if (accountUtils.isWatchOnlyAccount(account)) {
+accountSDK(walletWatchOnlyFeature, {
+  // read only, obviously
+  actionPermission({ account }) {
+    if (accountUtils.isWatchOnlyAccount(account)) {
+      return false;
+    }
+  },
+  // watch-only account can be applied on all supported chains
+  availableOnChain({ account }) {
+    return accountUtils.isWatchOnlyAccount(account);
+  },
+  canSignMultipleTransactions() {
     return false;
-  }
-});
-
-// watch-only account can be applied on all supported chains
-walletWatchOnlyFeature.inject(accountsService.accountAvailabilityOnChainAnyOf, ({ account }) => {
-  return accountUtils.isWatchOnlyAccount(account);
+  },
+  collectGraphNode(node) {
+    return node;
+  },
 });
 
 walletWatchOnlyFeature.inject(walletIconSlot, ({ wallet, size }) => {

@@ -4,7 +4,7 @@ import { once, readonly } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import { merge, nonNullable } from '@/shared/lib/utils';
 
-import { accountsService } from './service';
+import { accountService } from './service';
 import { type AnyAccount, type AnyAccountDraft } from './types';
 
 const $accounts = createStore<AnyAccount[]>([]);
@@ -18,7 +18,7 @@ const populateFx = createEffect((): Promise<AnyAccount[]> => storageService.acco
 
 const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<AnyAccount[]> => {
   return storageService.accounts2
-    .createAll(accounts.map(a => ({ ...a, id: accountsService.uniqId(a) })))
+    .createAll(accounts.map(a => ({ ...a, id: accountService.uniqId(a) })))
     .then(x => x ?? []);
 });
 
@@ -26,7 +26,7 @@ const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promi
   if (accounts.length === 0) return false;
 
   const drafts = accounts.map(a => {
-    const id = accountsService.uniqId(a);
+    const id = accountService.uniqId(a);
 
     return { ...a, id };
   });
@@ -37,7 +37,7 @@ const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promi
 const updateAccount = attach({
   source: $accounts,
   mapParams: (draft: AnyAccountDraft, accounts) => {
-    if (accounts.find(a => accountsService.uniqId(a) === accountsService.uniqId(draft))) {
+    if (accounts.find(a => accountService.uniqId(a) === accountService.uniqId(draft))) {
       return [draft];
     }
 
@@ -48,7 +48,7 @@ const updateAccount = attach({
 
 const deleteAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
   // TODO set correct id
-  await storageService.accounts2.deleteAll(accounts.map(accountsService.uniqId));
+  await storageService.accounts2.deleteAll(accounts.map(accountService.uniqId));
 
   return accounts;
 });
@@ -65,7 +65,7 @@ sample({
     merge({
       a: accounts,
       b: newAccounts,
-      mergeBy: accountsService.uniqId,
+      mergeBy: accountService.uniqId,
     }),
   target: $accounts,
 });
@@ -75,9 +75,9 @@ sample({
   source: $accounts,
   filter: (_, { result: successful }) => successful,
   fn: (accounts, { params: draft }) => {
-    const draftId = accountsService.uniqId(draft);
+    const draftId = accountService.uniqId(draft);
 
-    return accounts.map(a => (accountsService.uniqId(a) === draftId ? { ...a, ...draft } : a));
+    return accounts.map(a => (accountService.uniqId(a) === draftId ? { ...a, ...draft } : a));
   },
   target: $accounts,
 });
@@ -88,13 +88,13 @@ sample({
   filter: (_, { result: successful }) => successful,
   fn: (accounts, { params: drafts }) => {
     const draftsMap = drafts.reduce<Record<string, AnyAccountDraft>>((acc, draft) => {
-      acc[accountsService.uniqId(draft)] = draft;
+      acc[accountService.uniqId(draft)] = draft;
 
       return acc;
     }, {});
 
     return accounts.map<AnyAccount>(a =>
-      accountsService.uniqId(a) in draftsMap ? { ...a, ...draftsMap[accountsService.uniqId(a)] } : a,
+      accountService.uniqId(a) in draftsMap ? { ...a, ...draftsMap[accountService.uniqId(a)] } : a,
     );
   },
   target: $accounts,
@@ -104,9 +104,9 @@ sample({
   clock: deleteAccountsFx.done,
   source: $accounts,
   fn: (accounts, { result: deletedAccounts }) => {
-    const deletedIds = deletedAccounts.map(accountsService.uniqId);
+    const deletedIds = deletedAccounts.map(accountService.uniqId);
 
-    return accounts.filter(a => !deletedIds.includes(accountsService.uniqId(a)));
+    return accounts.filter(a => !deletedIds.includes(accountService.uniqId(a)));
   },
   target: $accounts,
 });

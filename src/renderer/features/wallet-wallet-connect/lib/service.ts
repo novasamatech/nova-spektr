@@ -15,7 +15,7 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type AnyAccountDraft, accountsService } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, accountService } from '@/domains/network';
 
 import {
   DEFAULT_POLKADOT_EVENTS,
@@ -39,7 +39,7 @@ function isWalletConnectGroup(wallet?: Wallet): wallet is NovaWalletWallet | Wal
 function isWalletConnectAccount(account: Partial<AnyAccount>): account is WcAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) &&
+    accountService.isChainAccount(account) &&
     'accountType' in account &&
     account.accountType === AccountType.WALLET_CONNECT
   );
