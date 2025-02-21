@@ -16,7 +16,10 @@ const $currentReferendums = listAggregate.$referendums.map((referendums) => {
 });
 
 const $referendumsFilteredByQuery = combine(
-  { referendums: $currentReferendums, query: filterModel.$debouncedQuery },
+  {
+    referendums: $currentReferendums,
+    query: filterModel.$debouncedQuery,
+  },
   governancePageUtils.filteredByQuery,
 );
 
@@ -45,10 +48,13 @@ const $displayedCurrentReferendums = either(
   $referendumsFilteredByStatus,
 );
 
-const $ongoing = $displayedCurrentReferendums.map((x) => x.filter(governancePageUtils.isAggregatedReferendumOngoing));
-const $completed = $displayedCurrentReferendums.map((x) =>
-  x.filter(governancePageUtils.isAggregatedReferendumCompleted),
-);
+const $ongoing = $displayedCurrentReferendums.map((referendums) => {
+  return referendums.filter(governancePageUtils.isAggregatedReferendumOngoing);
+});
+
+const $completed = $displayedCurrentReferendums.map((referendums) => {
+  return referendums.filter(governancePageUtils.isAggregatedReferendumCompleted);
+});
 
 sample({
   clock: flow.open,

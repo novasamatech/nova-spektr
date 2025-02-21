@@ -2,10 +2,11 @@ import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
 import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
-import { dictionary, toPrecision } from '@/shared/lib/utils';
+import { dictionary, nullable, toPrecision } from '@/shared/lib/utils';
 import {
   type DelegateAccount,
   type DelegateDetails,
+  type DelegateInfo,
   type DelegateStat,
   type Delegation,
   type DelegationApi,
@@ -65,10 +66,7 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
     .catch(() => []);
 }
 
-async function getDelegatedVotesFromExternalSource(
-  chain: Chain,
-  voters: Address[],
-): Promise<Record<ReferendumId, Address>> {
+async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address[]) {
   const client = getGraphQLClient(chain);
   if (!client) {
     return {};
@@ -77,16 +75,20 @@ async function getDelegatedVotesFromExternalSource(
   return client
     .request(GET_DELEGATOR, { voters })
     .then((data: any) => {
-      const list = data.delegatorVotings.nodes.map((node: { parent: any }) => node.parent) as {
-        referendumId: ReferendumId;
-        voter: Address;
-      }[];
+      const result: Record<ReferendumId, DelegateInfo> = {};
 
-      return list.reduce<Record<ReferendumId, Address>>((acc, record) => {
-        acc[record.referendumId] = record.voter;
+      for (const { vote, parent } of data.delegatorVotings.nodes) {
+        if (nullable(parent.delegateId)) continue;
 
-        return acc;
-      }, {});
+        result[parent.referendumId] = {
+          delegateId: parent.delegateId,
+          decision: parent.standardVote.aye ? 'aye' : 'nay',
+          amount: new BN(vote.amount),
+          conviction: vote.conviction,
+        };
+      }
+
+      return result;
     })
     .catch(() => ({}));
 }

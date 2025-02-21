@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
 import { getSecondsDurationToBlock } from '@/shared/lib/utils';
-import { Button, Duration, FootnoteText, Icon, Shimmering } from '@/shared/ui';
+import { Button, Duration, FootnoteText, Icon } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { permissionUtils, walletModel } from '@/entities/wallet';
@@ -19,6 +20,7 @@ export const UnlockInfo = () => {
   const pendingSchedule = useUnit(unlockAggregate.$pendingSchedule);
   const isLoading = useUnit(unlockAggregate.$isLoading);
   const totalUnlock = useUnit(unlockModel.$totalUnlock);
+  const isUnlockable = useUnit(unlockModel.$isUnlockable);
 
   if (!network) {
     return null;
@@ -29,13 +31,15 @@ export const UnlockInfo = () => {
       <Icon name="opengovVotingLock" size={60} />
       <AssetBalance className="mt-2 text-large-title" value={totalLock.toString()} asset={network.asset} />
       <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={network.asset} />
-      {isLoading && <Shimmering width={250} height={20} />}
-      {!totalUnlock.isZero() && (
+      {isLoading && <Skeleton width={60} height={5} />}
+
+      {isUnlockable && (
         <div className="mb-3 flex items-center justify-between self-stretch">
           <AssetBalance value={totalUnlock.toString()} asset={network.asset} />
           <FootnoteText className="text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
         </div>
       )}
+
       {pendingSchedule.map((lock) => (
         <div
           key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
@@ -48,6 +52,7 @@ export const UnlockInfo = () => {
           {lock.type === UnlockChunkType.PENDING_LOCK && <UnlockCountdown lock={lock} />}
         </div>
       ))}
+
       <ActionsSection />
     </div>
   );
