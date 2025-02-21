@@ -99,6 +99,10 @@ function traverseGraph(
   visitor.exit?.(node);
 }
 
+/**
+ * Creates graphs from accounts for given chain. Returns map, where key is
+ * account and value is node with all children.
+ */
 function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
   const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
   const nodes = new Map<AnyAccount, AccountNode>();
@@ -127,6 +131,9 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
   return nodes;
 }
 
+/**
+ * Find leaf accounts, that can sign transactions.
+ */
 function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   const graphs = createAccountGraphs(accounts, chain);
   const node = graphs.get(account);
@@ -138,7 +145,7 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 
   traverseGraph(node, {
     enter(node) {
-      if (node.children.length === 0) {
+      if (node.children.length === 0 && hasPermissionToMakeActions(node.account)) {
         result.push(node.account);
       }
     },
@@ -147,6 +154,9 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
   return result;
 }
 
+/**
+ * Find graphs roots.
+ */
 function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   const graphs = createAccountGraphs(accounts, chain);
   const result = new Set<AnyAccount>(accounts);
@@ -164,6 +174,10 @@ function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   return Array.from(result);
 }
 
+/**
+ * Search for route from source account to destination. If there is no
+ * connection between accounts - returns empty array.
+ */
 function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   const stack: AnyAccount[] = [];
   const graphs = createAccountGraphs(accounts, chain);
