@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
-import { SignOperationsModal, signOperations } from '@/features/basket-operations';
+import { SignTransactionsModal, signOperations } from '@/features/basket-operations';
 import { fellowshipTasksFeature } from '../model/feature';
 import { tasks } from '../model/tasks';
 
@@ -25,7 +25,7 @@ export const Basket = memo(() => {
       <Button size="sm" pallet="secondary" disabled={transactions.length === 0} onClick={openSigning}>
         {t('fellowship.tasks.reviewBasket', { count: transactions.length })}
       </Button>
-      <SignOperationsModal />
+      <SignTransactionsModal />
     </>
   );
 });
