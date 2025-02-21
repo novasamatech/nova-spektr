@@ -94,13 +94,22 @@ async function signAndSubmit(
 
   extrinsic
     .send((result) => {
-      const { status, events, txHash, txIndex, blockNumber } = result as any;
+      const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
 
       const actualTxHash = txHash.toHex();
       const extrinsicIndex = txIndex;
       let isFinalApprove = false;
       let multisigError = '';
-      let extrinsicSuccess = false;
+
+      if (internalError) {
+        callback(false, internalError.message);
+        return;
+      }
+
+      if (dispatchError) {
+        callback(false, decodeDispatchError(dispatchError, api));
+        return;
+      }
 
       if (status.isInBlock || status.isFinalized) {
         for (const { event, phase } of events) {
@@ -112,29 +121,17 @@ async function signAndSubmit(
           }
 
           if (api.events.system.ExtrinsicSuccess.is(event)) {
-            extrinsicSuccess = true;
-          }
-
-          if (api.events.system.ExtrinsicFailed.is(event)) {
-            const [dispatchError] = event.data;
-
-            const errorInfo = decodeDispatchError(dispatchError, api);
-
-            callback(false, errorInfo);
+            callback(true, {
+              timepoint: {
+                index: extrinsicIndex,
+                height: blockNumber.toNumber(),
+              },
+              extrinsicHash: actualTxHash,
+              isFinalApprove,
+              multisigError,
+            });
           }
         }
-      }
-
-      if (extrinsicSuccess) {
-        callback(true, {
-          timepoint: {
-            index: extrinsicIndex,
-            height: blockNumber.toNumber(),
-          },
-          extrinsicHash: actualTxHash,
-          isFinalApprove,
-          multisigError,
-        });
       }
     })
     .catch((error) => callback(false, (error as Error).message || 'Error'));
