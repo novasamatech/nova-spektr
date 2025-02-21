@@ -2,7 +2,7 @@ import { useGate } from 'effector-react';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { OperationTitle } from '@/entities/chain';
+import { ChainTitle, OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
@@ -54,7 +54,12 @@ basketSDK(proxyBasketFeature, {
     const title = getOperationTitle(tx);
 
     if (title) {
-      return <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon="proxyConfirm" />;
+      return (
+        <>
+          <TransactionTitle className="flex-1 overflow-hidden" title={t(title)} icon="proxyConfirm" />
+          <ChainTitle chainId={transaction.coreTx.chainId} />
+        </>
+      );
     }
 
     return null;
