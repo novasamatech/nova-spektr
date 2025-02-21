@@ -4,7 +4,7 @@ import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { cnTw } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
-import { accounts as accountsDomainModel, accountsService } from '@/domains/network';
+import { accountService, accounts as accountsDomainModel } from '@/domains/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';
 import { walletConnect } from '../model/connect';
@@ -27,7 +27,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     keys: [wallet.id, sessions],
     fn: (accounts, [walletId, sessions]) => {
       const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
-      const walletAccounts = accountsService.filterAccountsByWallet(wcAccounts, walletId);
+      const walletAccounts = accountService.filterAccountsByWallet(wcAccounts, walletId);
 
       return walletConnectService.areAccountsConnected(sessions, walletAccounts);
     },

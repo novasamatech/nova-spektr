@@ -23,7 +23,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type AnyAccountDraft, accountsService } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, accountService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
@@ -66,7 +66,7 @@ export const accountUtils = {
 function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isUniversalAccount(account) &&
+    accountService.isUniversalAccount(account) &&
     'accountType' in account &&
     account.accountType === AccountType.WATCH_ONLY
   );
@@ -75,21 +75,21 @@ function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyA
 function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.BASE
+    accountService.isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.BASE
   );
 }
 
 function isVaultChainAccount(account: Partial<AnyAccount>): account is VaultChainAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.CHAIN
+    accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.CHAIN
   );
 }
 
 function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) &&
+    accountService.isChainAccount(account) &&
     'accountType' in account &&
     account.accountType === AccountType.WALLET_CONNECT
   );
@@ -98,7 +98,7 @@ function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
 function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShardAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.SHARD
+    accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.SHARD
   );
 }
 
@@ -109,7 +109,7 @@ function isRegularMultisigAccount(account: Partial<AnyAccount>): account is Mult
 function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) &&
+    accountService.isChainAccount(account) &&
     'accountType' in account &&
     account.accountType === AccountType.FLEXIBLE_MULTISIG
   );
@@ -122,7 +122,7 @@ function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAcc
 function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
-    accountsService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.PROXIED
+    accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.PROXIED
   );
 }
 
@@ -137,7 +137,7 @@ function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accoun
 }
 
 function isChainDependant(account: AnyAccountDraft): boolean {
-  if (accountsService.isUniversalAccount(account)) return false;
+  if (accountService.isUniversalAccount(account)) return false;
 
   return !isMultisigAccount(account) || Boolean(account.chainId);
 }
