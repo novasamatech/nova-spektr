@@ -115,6 +115,10 @@ describe('accounts service', () => {
 
     const accounts = [leafAccount, secondNestedAccount, firstNestedAccount];
 
+    accountService.accountActionPermissionAnyOf.registerHandler({
+      body: () => true,
+      available: () => true,
+    });
     accountService.accountGraphCollectPipeline.registerHandler({
       body(node, { accounts }) {
         const account = node.account;
