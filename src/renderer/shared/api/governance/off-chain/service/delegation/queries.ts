@@ -26,9 +26,11 @@ export const GET_DELEGATOR = gql`
   query DelegatorVotings($voters: [String!]) {
     delegatorVotings(filter: { delegator: { in: $voters } }) {
       nodes {
+        vote
         parent {
           referendumId
-          voter
+          standardVote
+          delegateId
         }
       }
     }
