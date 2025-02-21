@@ -1,28 +1,30 @@
-import { useUnit } from 'effector-react';
-
-import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance } from '@/entities/asset';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { networkModel } from '@/entities/network';
 import {
   TransactionTitle,
   getTransactionAmount,
   isTransferTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import {
+  confirmTransactionInfoSlot,
+  logTitleSlot,
+  operationDetailsSlot,
+  operationTitleSlot,
+} from '@/features/multisig-operations';
 
+import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
 import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
+import { useTransactionAsset } from './hooks/useTransactionAsset';
+import { transferOperationDetailFeature } from './model/feature';
 
-export const transferOperationDetailFeature = createFeature({
-  name: 'transfer/operations',
-});
+export { transferOperationDetailFeature };
 
 transferOperationDetailFeature.inject(operationDetailsSlot, {
+  order: 1,
   render: ({ operation }) => {
     const transaction = getTransactionFromMultisigTx(operation);
 
@@ -32,7 +34,6 @@ transferOperationDetailFeature.inject(operationDetailsSlot, {
 
     return null;
   },
-  order: 1,
 });
 
 transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
@@ -49,15 +50,15 @@ transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   return null;
 });
 
+transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+  return <TransactionAmount operation={operation} />;
+});
+
 transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
   const transaction = getTransactionFromMultisigTx(operation);
-  const chains = useUnit(networkModel.$chains);
-
-  const assetId = transaction?.args.assetId || transaction?.args.asset;
-  const asset = getAssetById(assetId, chains[operation.chainId]?.assets);
-
-  const amount = transaction && getTransactionAmount(transaction);
+  const asset = useTransactionAsset(operation);
+  const amount = transaction ? getTransactionAmount(transaction) : null;
 
   if (isTransferTransaction(transaction)) {
     return (
