@@ -30,6 +30,7 @@ import { type AnyAccount, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
+import { type ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
@@ -81,60 +82,85 @@ async function getExtrinsicFee(
   return paymentInfo.partialFee.toBn();
 }
 
+type SummitResult =
+  | {
+      executed: true;
+      params: ExtrinsicResultParams;
+    }
+  | {
+      executed: false;
+      error: string;
+    };
+
 async function signAndSubmit(
   transaction: Transaction,
   signature: HexString,
   payload: Uint8Array,
   api: ApiPromise,
-  callback: (executed: any, params: any) => void,
-) {
+): Promise<SummitResult> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   const accountId = toAccountId(transaction.address);
   extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
-  extrinsic
-    .send((result) => {
-      const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
+  return new Promise<SummitResult>((resolve) => {
+    extrinsic
+      .send((result) => {
+        const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
 
-      const actualTxHash = txHash.toHex();
-      const extrinsicIndex = txIndex;
-      let isFinalApprove = false;
-      let multisigError = '';
+        const actualTxHash = txHash.toHex();
+        const extrinsicIndex = txIndex;
+        let isFinalApprove = false;
+        let multisigError = '';
 
-      if (internalError) {
-        callback(false, internalError.message);
-        return;
-      }
+        if (internalError) {
+          resolve({
+            executed: false,
+            error: internalError.message,
+          });
+          return;
+        }
 
-      if (dispatchError) {
-        callback(false, decodeDispatchError(dispatchError, api));
-        return;
-      }
+        if (dispatchError) {
+          resolve({
+            executed: false,
+            error: decodeDispatchError(dispatchError, api),
+          });
+          return;
+        }
 
-      if (status.isInBlock) {
-        for (const { event, phase } of events) {
-          if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
+        if (status.isInBlock) {
+          for (const { event, phase } of events) {
+            if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
 
-          if (api.events.multisig.MultisigExecuted.is(event)) {
-            isFinalApprove = true;
-            multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
-          }
+            if (api.events.multisig.MultisigExecuted.is(event)) {
+              isFinalApprove = true;
+              multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
+            }
 
-          if (api.events.system.ExtrinsicSuccess.is(event)) {
-            callback(true, {
-              timepoint: {
-                index: extrinsicIndex,
-                height: blockNumber.toNumber(),
-              },
-              extrinsicHash: actualTxHash,
-              isFinalApprove,
-              multisigError,
-            });
+            if (api.events.system.ExtrinsicSuccess.is(event)) {
+              resolve({
+                executed: true,
+                params: {
+                  timepoint: {
+                    index: extrinsicIndex,
+                    height: blockNumber.toNumber(),
+                  },
+                  extrinsicHash: actualTxHash,
+                  isFinalApprove,
+                  multisigError,
+                },
+              });
+            }
           }
         }
-      }
-    })
-    .catch((error) => callback(false, (error as Error).message || 'Error'));
+      })
+      .catch((error) => {
+        resolve({
+          executed: false,
+          error: (error as Error).message || 'Error',
+        });
+      });
+  });
 }
 
 function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
