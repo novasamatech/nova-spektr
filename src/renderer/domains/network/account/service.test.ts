@@ -1,3 +1,5 @@
+import { describe } from 'vitest';
+
 import { CryptoType, SigningType } from '@/shared/core';
 import { createAccountId, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -69,86 +71,236 @@ describe('accounts service', () => {
     accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
   });
 
-  it('should create graphs', async () => {
-    interface NestedAccount extends ChainAccount {
-      child: AccountId;
+  describe('graph', () => {
+    interface ProxyAccount extends ChainAccount {
+      proxiedAccountId: AccountId;
     }
 
-    const isNested = (a: AnyAccount): a is NestedAccount => {
-      return 'child' in a;
+    const isProxyAccount = (a: AnyAccount): a is ProxyAccount => {
+      return 'proxiedAccountId' in a;
     };
 
-    const firstNestedAccount: NestedAccount = {
-      id: '',
-      type: 'chain',
-      name: 'test',
-      walletId: 0,
-      chainId: polkadotChainId,
-      accountId: createAccountId('1'),
-      cryptoType: CryptoType.SR25519,
-      signingType: SigningType.WALLET_CONNECT,
-      child: createAccountId('2'),
-    };
+    it('should create graphs', async () => {
+      const firstProxyAccount: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 0,
+        chainId: polkadotChainId,
+        accountId: createAccountId('1'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('2'),
+      };
 
-    const secondNestedAccount: NestedAccount = {
-      id: '',
-      type: 'chain',
-      name: 'test',
-      walletId: 1,
-      chainId: polkadotChainId,
-      accountId: createAccountId('2'),
-      cryptoType: CryptoType.SR25519,
-      signingType: SigningType.WALLET_CONNECT,
-      child: createAccountId('3'),
-    };
+      const secondProxyAccount: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 1,
+        chainId: polkadotChainId,
+        accountId: createAccountId('2'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('3'),
+      };
 
-    const leafAccount: ChainAccount = {
-      id: '',
-      type: 'chain',
-      name: 'test',
-      walletId: 2,
-      chainId: polkadotChainId,
-      accountId: createAccountId('3'),
-      cryptoType: CryptoType.SR25519,
-      signingType: SigningType.POLKADOT_VAULT,
-    };
+      const leafAccount: ChainAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 2,
+        chainId: polkadotChainId,
+        accountId: createAccountId('3'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+      };
 
-    const accounts = [leafAccount, secondNestedAccount, firstNestedAccount];
+      const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
 
-    accountService.accountActionPermissionAnyOf.registerHandler({
-      body: () => true,
-      available: () => true,
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: () => true,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isProxyAccount(account)) {
+            return accounts.filter(a => a.accountId === account.proxiedAccountId);
+          }
+          return children;
+        },
+        available: () => true,
+      });
+
+      const graphs = accountService.createAccountGraphs(accounts, polkadotChain);
+
+      const firstProxyNode = graphs.get(firstProxyAccount);
+      const secondProxyNode = graphs.get(secondProxyAccount);
+      const childNode = graphs.get(leafAccount);
+
+      assert(firstProxyNode, 'graph should include first proxy account');
+      assert(secondProxyNode, 'graph should include second proxy account');
+      assert(childNode, 'graph should include child account');
+
+      expect(firstProxyNode.children.length).toBe(1);
+      expect(secondProxyNode.children.length).toBe(1);
+      expect(childNode.children.length).toBe(0);
     });
-    accountService.accountCollectChildrenPipeline.registerHandler({
-      body(children, { account, accounts }) {
-        if (isNested(account)) {
-          return accounts.filter(a => a.accountId === account.child);
-        }
-        return children;
-      },
-      available: () => true,
+
+    it('should find accounts route', async () => {
+      const firstProxyAccount: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 0,
+        chainId: polkadotChainId,
+        accountId: createAccountId('1'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('2'),
+      };
+
+      const secondProxyAccount: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 1,
+        chainId: polkadotChainId,
+        accountId: createAccountId('2'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('3'),
+      };
+
+      const leafAccount: ChainAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 2,
+        chainId: polkadotChainId,
+        accountId: createAccountId('3'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+      };
+
+      const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
+
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: () => true,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isProxyAccount(account)) {
+            return accounts.filter(a => a.accountId === account.proxiedAccountId);
+          }
+          return children;
+        },
+        available: () => true,
+      });
+
+      expect(accountService.findRoute(firstProxyAccount, leafAccount, accounts, polkadotChain)).toEqual([
+        firstProxyAccount,
+        secondProxyAccount,
+        leafAccount,
+      ]);
     });
 
-    const graphs = accountService.createAccountGraphs(accounts, polkadotChain);
+    it('should find signatories', async () => {
+      const proxy: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 1,
+        chainId: polkadotChainId,
+        accountId: createAccountId('2'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('3'),
+      };
 
-    const firstNestedNode = graphs.get(firstNestedAccount);
-    const secondNestedNode = graphs.get(secondNestedAccount);
-    const childNode = graphs.get(leafAccount);
+      const extensionAccount: ChainAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 2,
+        chainId: polkadotChainId,
+        accountId: createAccountId('3'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.EXTENSION,
+      };
 
-    assert(firstNestedNode, 'graph should include nested account');
-    assert(secondNestedNode, 'graph should include nested account');
-    assert(childNode, 'graph should include child account');
+      const wcAccount: ChainAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 2,
+        chainId: polkadotChainId,
+        accountId: createAccountId('3'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+      };
 
-    expect(firstNestedNode.children.length).toBe(1);
-    expect(secondNestedNode.children.length).toBe(1);
-    expect(childNode.children.length).toBe(0);
+      const accounts = [proxy, extensionAccount, wcAccount];
 
-    expect(accountService.findRoute(firstNestedAccount, leafAccount, accounts, polkadotChain)).toEqual([
-      firstNestedAccount,
-      secondNestedAccount,
-      leafAccount,
-    ]);
-    expect(accountService.findSignatories(firstNestedAccount, accounts, polkadotChain)).toEqual([leafAccount]);
-    expect(accountService.findInitiators(accounts, polkadotChain)).toEqual([firstNestedAccount]);
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: () => true,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isProxyAccount(account)) {
+            return accounts.filter(a => a.accountId === account.proxiedAccountId);
+          }
+          return children;
+        },
+        available: () => true,
+      });
+
+      expect(accountService.findSignatories(proxy, accounts, polkadotChain)).toEqual([extensionAccount, wcAccount]);
+    });
+
+    it('should find initiators', async () => {
+      const proxy: ProxyAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 1,
+        chainId: polkadotChainId,
+        accountId: createAccountId('2'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.WALLET_CONNECT,
+        proxiedAccountId: createAccountId('3'),
+      };
+
+      const pvAccount: ChainAccount = {
+        id: '',
+        type: 'chain',
+        name: 'test',
+        walletId: 2,
+        chainId: polkadotChainId,
+        accountId: createAccountId('3'),
+        cryptoType: CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+      };
+
+      const accounts = [proxy, pvAccount];
+
+      accountService.accountActionPermissionAnyOf.registerHandler({
+        body: () => true,
+        available: () => true,
+      });
+      accountService.accountCollectChildrenPipeline.registerHandler({
+        body(children, { account, accounts }) {
+          if (isProxyAccount(account)) {
+            return accounts.filter(a => a.accountId === account.proxiedAccountId);
+          }
+          return children;
+        },
+        available: () => true,
+      });
+
+      expect(accountService.findInitiators(accounts, polkadotChain)).toEqual([proxy]);
+    });
   });
 });
