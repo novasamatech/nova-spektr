@@ -119,31 +119,12 @@ describe('accounts service', () => {
       body: () => true,
       available: () => true,
     });
-    accountService.accountGraphCollectPipeline.registerHandler({
-      body(node, { accounts }) {
-        const account = node.account;
+    accountService.accountCollectChildrenPipeline.registerHandler({
+      body(children, { account, accounts }) {
         if (isNested(account)) {
-          const child = accounts.find(a => a.accountId === account.child);
-
-          if (!child) {
-            return node;
-          }
-
-          return {
-            account,
-            children: [
-              accountService.accountGraphCollectPipeline(
-                {
-                  account: child,
-                  children: [],
-                },
-                { accounts },
-              ),
-            ],
-          };
+          return accounts.filter(a => a.accountId === account.child);
         }
-
-        return node;
+        return children;
       },
       available: () => true,
     });

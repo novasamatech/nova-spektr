@@ -14,7 +14,7 @@ import {
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
-const accountGraphCollectPipeline = createPipeline<AccountNode, { accounts: AnyAccount[] }>();
+const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
 
 /**
  * ATTENTION! This method is the source of stable id for different types of
@@ -107,25 +107,23 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
   const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
   const nodes = new Map<AnyAccount, AccountNode>();
 
-  for (const account of chainAccounts) {
-    const initialNode: AccountNode = {
+  const createNode = (account: AnyAccount): AccountNode => {
+    const existingNode = nodes.get(account);
+    if (existingNode) return existingNode;
+
+    const children = accountCollectChildrenPipeline([], { account, accounts });
+    const node: AccountNode = {
       account,
-      children: [],
+      children: children.map(createNode),
     };
-    const accountNode = accountGraphCollectPipeline(initialNode, { accounts });
 
-    traverseGraph(accountNode, {
-      enter(accountChildNode) {
-        for (const [index, child] of accountChildNode.children.entries()) {
-          const existing = nodes.get(child.account);
-          if (existing) {
-            accountChildNode.children.splice(index, 1, existing);
-          }
-        }
+    nodes.set(account, node);
 
-        nodes.set(accountChildNode.account, accountChildNode);
-      },
-    });
+    return node;
+  };
+
+  for (const account of chainAccounts) {
+    createNode(account);
   }
 
   return nodes;
@@ -206,7 +204,7 @@ export const accountService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
-  accountGraphCollectPipeline,
+  accountCollectChildrenPipeline,
 
   uniqId,
 

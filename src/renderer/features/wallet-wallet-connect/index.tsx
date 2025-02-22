@@ -22,8 +22,8 @@ accountSDK(walletWalletConnectFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node) {
-    return node;
+  collectAccountChildren(children) {
+    return children;
   },
 });
 

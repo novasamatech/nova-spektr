@@ -4,8 +4,6 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -31,22 +29,11 @@ accountSDK(walletMultisigFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node, { accounts }) {
-    const { account } = node;
+  collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const signatories = account.signatories
-        .map(signatory => accounts.find(a => a.accountId === signatory.accountId))
-        .filter(nonNullable);
-
-      return {
-        account,
-        children: signatories.map(signatory => {
-          return accountService.accountGraphCollectPipeline({ account: signatory, children: [] }, { accounts });
-        }),
-      };
+      return account.signatories.flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId));
     }
-
-    return node;
+    return children;
   },
 });
 

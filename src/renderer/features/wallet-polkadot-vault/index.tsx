@@ -32,8 +32,8 @@ accountSDK(walletPolkadotVaultFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  collectGraphNode(node) {
-    return node;
+  collectAccountChildren(children) {
+    return children;
   },
 });
 

@@ -4,7 +4,6 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -30,20 +29,11 @@ accountSDK(walletProxiedFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node, { accounts }) {
-    const { account } = node;
+  collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isProxiedAccount(account)) {
-      const proxy = accounts.find(a => a.accountId === account.proxyAccountId);
-
-      if (proxy) {
-        return {
-          account,
-          children: [accountService.accountGraphCollectPipeline({ account: proxy, children: [] }, { accounts })],
-        };
-      }
+      return accounts.filter(a => a.accountId === account.proxyAccountId);
     }
-
-    return node;
+    return children;
   },
 });
 
