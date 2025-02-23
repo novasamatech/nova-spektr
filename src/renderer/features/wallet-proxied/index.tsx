@@ -31,7 +31,7 @@ accountSDK(walletProxiedFeature, {
   },
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isProxiedAccount(account)) {
-      return accounts.filter(a => a.accountId === account.proxyAccountId);
+      return accounts.filter(a => a.accountId === account.proxyAccountId).concat(children);
     }
     return children;
   },

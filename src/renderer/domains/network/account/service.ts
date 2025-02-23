@@ -78,31 +78,8 @@ function canSignMultipleTransactions(account: AnyAccount) {
 }
 
 /**
- * DFS traverse. Return false in enter visitor to stop traversing.
- */
-function traverseGraph(
-  node: AccountNode,
-  visitor: {
-    enter: (node: AccountNode) => false | void;
-    exit?: (node: AccountNode) => void;
-  },
-) {
-  const visitNode = (node: AccountNode) => {
-    if (visitor.enter(node) === false) return false;
-
-    for (const child of node.children) {
-      if (visitNode(child) === false) return false;
-    }
-
-    visitor.exit?.(node);
-  };
-
-  visitNode(node);
-}
-
-/**
- * Creates graphs from accounts for given chain. Returns map, where key is
- * account and value is node with all children.
+ * Create accounts graph for given chain. Returns map, where key is account and
+ * value is graph node.
  */
 function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
   const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
@@ -128,6 +105,29 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
   }
 
   return nodes;
+}
+
+/**
+ * Deep first search. Return false from enter visitor to stop traversing.
+ */
+function traverseGraph(
+  node: AccountNode,
+  visitor: {
+    enter: (node: AccountNode) => false | void;
+    exit?: (node: AccountNode) => void;
+  },
+) {
+  const visitNode = (node: AccountNode) => {
+    if (visitor.enter(node) === false) return false;
+
+    for (const child of node.children) {
+      if (visitNode(child) === false) return false;
+    }
+
+    visitor.exit?.(node);
+  };
+
+  visitNode(node);
 }
 
 /**

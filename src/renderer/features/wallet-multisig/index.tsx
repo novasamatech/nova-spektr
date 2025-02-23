@@ -31,7 +31,9 @@ accountSDK(walletMultisigFeature, {
   },
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
-      return account.signatories.flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId));
+      return account.signatories
+        .flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId))
+        .concat(children);
     }
     return children;
   },
