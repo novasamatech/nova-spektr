@@ -10,7 +10,7 @@ import {
   EXTEND_PAIRING,
 } from '../lib/constants';
 
-import { walletWalletConnectFeature } from './feature';
+import { walletConnectWalletFeature } from './feature';
 
 const $client = createStore<Client | null>(null);
 
@@ -57,7 +57,7 @@ const extendSessionsFx = createEffect(async (client: Client) => {
 });
 
 sample({
-  clock: walletWalletConnectFeature.running,
+  clock: walletConnectWalletFeature.running,
   target: createClientFx,
 });
 

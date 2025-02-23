@@ -45,8 +45,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const [isLogModalOpen, toggleLogModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
 
-  const approvals = events.filter((e) => e.status === 'SIGNED');
-  const cancellation = events.filter((e) => e.status === 'CANCELLED');
+  const approvals = events.filter(e => e.status === 'SIGNED');
+  const cancellation = events.filter(e => e.status === 'CANCELLED');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
     const signatoryWallet = signatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
@@ -58,14 +58,14 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
     return acc;
   }, []);
 
-  const walletSignatoriesIds = walletSignatories.map((a) => a.accountId);
-  const contactSignatories = signatories.filter((s) => !walletSignatoriesIds.includes(s.accountId));
+  const walletSignatoriesIds = walletSignatories.map(a => a.accountId);
+  const contactSignatories = signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
 
   useEffect(() => {
     const tempCancellation = [];
 
     if (cancellation.length) {
-      const cancelSignatories = signatories.find((s) => s.accountId === cancellation[0].accountId);
+      const cancelSignatories = signatories.find(s => s.accountId === cancellation[0].accountId);
       if (cancelSignatories) {
         tempCancellation.push(cancelSignatories);
       }
@@ -73,7 +73,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
 
     const tempApprovals = approvals
       .sort((a: MultisigEvent, b: MultisigEvent) => (a.eventBlock || 0) - (b.eventBlock || 0))
-      .map((a) => signatories.find((s) => s.accountId === a.accountId))
+      .map(a => signatories.find(s => s.accountId === a.accountId))
       .filter(nonNullable);
 
     setSignatories([...new Set<Signatory>([...tempCancellation, ...tempApprovals, ...signatories])]);
@@ -107,7 +107,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
               {t('operation.walletSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
-              {walletSignatories.map((signatory) => (
+              {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
@@ -129,7 +129,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
-              {contactSignatories.map((signatory) => (
+              {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}

@@ -40,10 +40,10 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const events = useUnit(operationsModel.$multisigEvents);
   const wallets = useUnit(walletModel.$wallets);
 
-  const approvals = events?.filter((e) => e.status === 'SIGNED') || [];
+  const approvals = events?.filter(e => e.status === 'SIGNED') || [];
 
-  const isRejectAvailable = wallets.some((wallet) => {
-    const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
+  const isRejectAvailable = wallets.some(wallet => {
+    const hasDepositor = wallet.accounts.some(account => account.accountId === tx.depositor);
 
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
@@ -116,10 +116,10 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
 
       return acc;
     }, [])
-    .sort((wallet) => (wallet.status === 'SIGNED' ? -1 : 1));
+    .sort(wallet => (wallet.status === 'SIGNED' ? -1 : 1));
 
-  const walletSignatoriesIds = walletSignatories.map((a) => a.accountId);
-  const contactSignatories = signatories.filter((s) => !walletSignatoriesIds.includes(s.accountId));
+  const walletSignatoriesIds = walletSignatories.map(a => a.accountId);
+  const contactSignatories = signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
 
   return (
     <Accordion>
@@ -128,7 +128,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
         <div className="mt-3 flex flex-col">
           {walletSignatories.length > 0 && (
             <ul className="flex flex-col gap-y-2">
-              {walletSignatories.map((signatory) => (
+              {walletSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
@@ -148,7 +148,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
                 </SignatoryCard>
               ))}
 
-              {contactSignatories.map((signatory) => (
+              {contactSignatories.map(signatory => (
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
@@ -209,7 +209,7 @@ const ConfirmReject = ({ api, tx, account, chain, children }: ConfirmRejectParam
     <Modal
       size="fit"
       isOpen={isRejectConfirmOpen}
-      onToggle={(open) => flexibleShellModel.events.toggleRejectModalConfirm(open)}
+      onToggle={open => flexibleShellModel.events.toggleRejectModalConfirm(open)}
     >
       <Modal.Title>
         <div className="text-wrap text-center text-small-title">

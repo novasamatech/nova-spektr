@@ -5,8 +5,9 @@ import { type Wallet } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { walletConnect } from '@/features/wallet-wallet-connect';
 import { ForgetStep } from '../lib/constants';
+
+import { walletConnect } from 'src/renderer/features/wallet-connect-wallet';
 
 const flow = createGate<{ accounts: AnyAccount[] }>({ defaultState: { accounts: [] } });
 

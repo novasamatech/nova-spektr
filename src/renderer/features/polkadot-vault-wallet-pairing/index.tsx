@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
@@ -10,36 +11,37 @@ import { onboardingActionsSlot } from '@/pages/Onboarding';
 
 import { PairingFormModal } from './components/PairingFormModal';
 
-export const walletPairingWatchOnlyFeature = createFeature({
-  name: 'wallet pairing/watch only',
+export const polkadotVaultWalletPairingFeature = createFeature({
+  name: 'polkadot vault/wallet pairing',
+  enable: $features.map(f => f.polkadotVault),
 });
 
-walletPairingWatchOnlyFeature.inject(onboardingActionsSlot, {
-  order: 2,
+polkadotVaultWalletPairingFeature.inject(onboardingActionsSlot, {
+  order: 0,
   render() {
     const { t } = useI18n();
 
     return (
       <PairingFormModal>
         <WalletOnboardingCard
-          title={t('onboarding.welcome.watchOnlyTitle')}
-          description={t('onboarding.welcome.watchOnlyDescription')}
-          iconName="watchOnlyOnboarding"
-          testId={TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON}
+          title={t('onboarding.welcome.polkadotVaultTitle')}
+          description={t('onboarding.welcome.polkadotVaultDescription')}
+          iconName="vaultOnboarding"
+          testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
         />
       </PairingFormModal>
     );
   },
 });
 
-walletPairingWatchOnlyFeature.inject(walletPairingDropdownOptionsSlot, {
-  order: 3,
+polkadotVaultWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
+  order: 0,
   render({ t }) {
     return (
       <PairingFormModal>
         <Dropdown.Item>
-          <WalletIcon type={WalletType.WATCH_ONLY} />
-          {t('wallets.addWatchOnly')}
+          <WalletIcon type={WalletType.POLKADOT_VAULT} />
+          {t('wallets.addPolkadotVault')}
         </Dropdown.Item>
       </PairingFormModal>
     );

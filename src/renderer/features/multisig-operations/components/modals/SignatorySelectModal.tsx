@@ -26,7 +26,7 @@ export const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, nati
       onClose={onClose}
     >
       <ul className={cnTw('mt-1', accounts.length > 7 && 'max-h-[332px] overflow-y-auto')}>
-        {accounts.map((account) => (
+        {accounts.map(account => (
           <li key={account.id}>
             <SelectableSignatory
               accountId={account.accountId}

@@ -14,12 +14,12 @@ import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
 
-export const walletMultisigFeature = createFeature({
+export const multisigWalletFeature = createFeature({
   name: 'wallet/multisig',
   enable: $features.map(f => f.multisig || f.flexibleMultisig),
 });
 
-accountSDK(walletMultisigFeature, {
+accountSDK(multisigWalletFeature, {
   actionPermission({ account }) {
     return accountUtils.isMultisigAccount(account);
   },
@@ -39,7 +39,7 @@ accountSDK(walletMultisigFeature, {
   },
 });
 
-walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
+multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
 
   const type =
@@ -50,7 +50,7 @@ walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
   return <WalletIcon type={type} size={size} />;
 });
 
-walletMultisigFeature.inject(walletGroupSlot, {
+multisigWalletFeature.inject(walletGroupSlot, {
   order: 3,
   render({ query, onSelect }) {
     const { t } = useI18n();

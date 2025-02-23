@@ -12,12 +12,12 @@ import { SelectMultisigWalletType } from './components/SelectMultisigWalletType'
  * onboarding page.
  */
 
-export const walletPairingMultisigFeature = createFeature({
-  name: 'wallet pairing/multisig',
+export const multisigWalletPairingFeature = createFeature({
+  name: 'multisig/wallet pairing',
   enable: $features.map(f => f.multisig),
 });
 
-walletPairingMultisigFeature.inject(walletPairingDropdownOptionsSlot, {
+multisigWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 1,
   render({ t }) {
     return (

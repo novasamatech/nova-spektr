@@ -45,18 +45,19 @@ import { stakingOperationDetailFeature } from '@/features/staking-operation-deta
 import { transferBasketFeature } from '@/features/transfer-basket';
 import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
 import { walletDetailsFeature } from '@/features/wallet-details';
-import { walletMultisigFeature } from '@/features/wallet-multisig';
 import { walletPairingFeature } from '@/features/wallet-pairing';
-import { walletPairingLedgerFeature } from '@/features/wallet-pairing-ledger';
-import { walletPairingMultisigFeature } from '@/features/wallet-pairing-multisig';
-import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-polkadot-vault';
-import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
-import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
-import { walletPolkadotVaultFeature } from '@/features/wallet-polkadot-vault';
-import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
-import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
+
+import { ledgerWalletPairingFeature } from 'src/renderer/features/ledger-wallet-pairing';
+import { multisigWalletFeature } from 'src/renderer/features/multisig-wallet';
+import { multisigWalletPairingFeature } from 'src/renderer/features/multisig-wallet-pairing';
+import { polkadotVaultWalletFeature } from 'src/renderer/features/polkadot-vault-wallet';
+import { polkadotVaultWalletPairingFeature } from 'src/renderer/features/polkadot-vault-wallet-pairing';
+import { proxiedWalletFeature } from 'src/renderer/features/proxied-wallet';
+import { walletConnectWalletFeature } from 'src/renderer/features/wallet-connect-wallet';
+import { walletConnectWalletPairingFeature } from 'src/renderer/features/wallet-connect-wallet-pairing';
+import { watchOnlyWalletFeature } from 'src/renderer/features/watch-only-wallet';
+import { watchOnlyWalletPairingFeature } from 'src/renderer/features/watch-only-wallet-pairing';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -119,18 +120,24 @@ export const bootstrap = () => {
     walletDetailsFeature,
 
     walletPairingFeature,
-    walletPairingMultisigFeature,
-    walletPairingPolkadotVaultFeature,
-    walletPairingWalletConnectFeature,
-    walletPairingWatchOnlyFeature,
-    walletPairingLedgerFeature,
 
-    walletMultisigFeature,
-    walletProxiedFeature,
-    walletPolkadotVaultFeature,
-    walletWalletConnectFeature,
-    walletWatchOnlyFeature,
+    multisigWalletFeature,
+    multisigWalletPairingFeature,
+
+    polkadotVaultWalletFeature,
+    polkadotVaultWalletPairingFeature,
+
+    walletConnectWalletFeature,
+    walletConnectWalletPairingFeature,
+
+    watchOnlyWalletFeature,
+    watchOnlyWalletPairingFeature,
+
     extensionWalletFeature,
+
+    ledgerWalletPairingFeature,
+
+    proxiedWalletFeature,
 
     basketNavigationFeature,
     basketOperationsFeature,

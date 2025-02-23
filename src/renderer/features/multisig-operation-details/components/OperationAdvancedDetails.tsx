@@ -36,7 +36,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
 
-  const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
+  const depositorSignatory = account?.signatories.find(s => s.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   const valueClass = 'text-text-secondary';

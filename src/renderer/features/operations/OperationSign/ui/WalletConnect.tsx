@@ -11,10 +11,11 @@ import { Button, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@/
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { WalletConnectQrCode } from '@/features/wallet-pairing-wallet-connect';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
+
+import { WalletConnectQrCode } from 'src/renderer/features/wallet-connect-wallet-pairing';
 
 export const WalletConnect = ({
   apis,

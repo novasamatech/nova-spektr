@@ -13,12 +13,12 @@ import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
 
-export const walletPolkadotVaultFeature = createFeature({
+export const polkadotVaultWalletFeature = createFeature({
   name: 'wallet/polkadot vault',
   enable: $features.map(f => f.polkadotVault),
 });
 
-accountSDK(walletPolkadotVaultFeature, {
+accountSDK(polkadotVaultWalletFeature, {
   actionPermission({ account }) {
     return account.signingType === SigningType.POLKADOT_VAULT;
   },
@@ -37,13 +37,13 @@ accountSDK(walletPolkadotVaultFeature, {
   },
 });
 
-walletPolkadotVaultFeature.inject(walletIconSlot, ({ wallet, size }) => {
+polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
 
   return <WalletIcon type={wallet.type} size={size} />;
 });
 
-walletPolkadotVaultFeature.inject(walletGroupSlot, {
+polkadotVaultWalletFeature.inject(walletGroupSlot, {
   order: 0,
   render({ query, onSelect }) {
     const { t } = useI18n();
