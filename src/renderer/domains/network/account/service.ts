@@ -86,17 +86,18 @@ function traverseGraph(
     enter: (node: AccountNode) => false | void;
     exit?: (node: AccountNode) => void;
   },
-): false | undefined {
-  const result = visitor.enter(node);
+) {
+  const visitNode = (node: AccountNode) => {
+    if (visitor.enter(node) === false) return false;
 
-  if (result === false) return false;
+    for (const child of node.children) {
+      if (visitNode(child) === false) return false;
+    }
 
-  for (const child of node.children) {
-    const continueTraverse = traverseGraph(child, visitor);
-    if (continueTraverse === false) return false;
-  }
+    visitor.exit?.(node);
+  };
 
-  visitor.exit?.(node);
+  visitNode(node);
 }
 
 /**
