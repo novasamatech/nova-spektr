@@ -38,13 +38,11 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { proxiesModel } from '@/features/proxies';
-import { walletPairingModel } from '@/features/wallet-pairing';
 import { type AddMultisigStore, type FormSubmitEvent } from '../lib/types';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
-import { walletProviderModel } from './wallet-provider-model';
 
 const createWalletFx = attach({ effect: walletModel.createWallet });
 
@@ -269,7 +267,7 @@ sample({
 sample({
   clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
-  target: [walletProviderModel.events.completed, walletSelect.select],
+  target: walletSelect.select,
 });
 
 sample({
@@ -453,17 +451,7 @@ sample({
 
 sample({
   clock: walletModel.events.walletRestoredSuccess,
-  target: walletProviderModel.events.completed,
-});
-
-sample({
-  clock: walletModel.events.walletRestoredSuccess,
   target: flow.close,
-});
-
-sample({
-  clock: flow.close,
-  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({

@@ -3,7 +3,7 @@ import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { Dropdown } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
-import { walletPairingDropdownOptionsSlot, walletPairingModel } from '@/features/wallet-pairing';
+import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 
 import { SelectMultisigWalletType } from './components/SelectMultisigWalletType';
 
@@ -22,7 +22,7 @@ multisigWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
   render({ t }) {
     return (
       <SelectMultisigWalletType>
-        <Dropdown.Item onSelect={() => walletPairingModel.events.walletTypeSet(WalletType.MULTISIG)}>
+        <Dropdown.Item>
           <WalletIcon type={WalletType.MULTISIG} />
           {t('wallets.addMultisig')}
         </Dropdown.Item>
