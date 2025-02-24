@@ -27,7 +27,7 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
         value={deferred ? id : ''}
         onValueChange={value => setOpen(value === id)}
       >
-        <RadixAccordion.Item value={id} className="group/stack card-stack">
+        <RadixAccordion.Item value={id} className="group/stack card-stack rounded-md">
           {children}
         </RadixAccordion.Item>
       </RadixAccordion.Root>
@@ -44,14 +44,14 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 
   return (
     <RadixAccordion.Header asChild>
-      <div className={cnTw('relative z-10 block w-full', sticky && open && 'sticky top-2 z-10')}>
+      <div className={cnTw('card-stack-header-wrap relative z-10 block w-full', sticky && open && 'sticky top-2 z-10')}>
         {sticky && open && (
-          <div className="absolute -top-2 left-0 right-0 -z-10 h-4 w-full bg-top-nav-bar-background" />
+          <div className="card-stack-sticky-gap absolute -top-2 left-0 right-0 -z-10 h-4 w-full bg-top-nav-bar-background" />
         )}
         <RadixAccordion.Trigger
           className={cnTw(
-            'group flex w-full items-center gap-x-2 bg-row-background py-1 pl-3 pr-2',
-            'shadow-stack hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
+            'card-stack-trigger group flex w-full items-center gap-x-2 bg-row-background py-1 pl-3 pr-2',
+            'shadow-stack !outline-none hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
             'transition-all duration-300',
             'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
             'border-b border-transparent data-[state=open]:border-divider',
