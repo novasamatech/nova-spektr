@@ -10,9 +10,8 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesModel } from '@/features/proxies';
+import { walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
 import { Step } from '../lib/constants';
-
-import { walletConnect, walletConnectService } from 'src/renderer/features/wallet-connect-wallet';
 
 const reset = createEvent();
 const createWallet = createEvent<{ name: string }>();

@@ -10,10 +10,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
+import { WalletConnectQrCode } from '@/features/wallet-connect-wallet-pairing';
 import { wcDetailsUtils } from '../../lib/utils';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
-
-import { WalletConnectQrCode } from 'src/renderer/features/wallet-connect-wallet-pairing';
 
 type AccountItem = [chain: Chain, accountId: AccountId];
 

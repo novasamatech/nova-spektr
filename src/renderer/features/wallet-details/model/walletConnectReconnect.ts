@@ -6,9 +6,8 @@ import { type WcAccount } from '@/shared/core';
 import { assert } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
 import { ReconnectStep } from '../lib/constants';
-
-import { walletConnect, walletConnectService } from 'src/renderer/features/wallet-connect-wallet';
 
 const flow = createGate<{ accounts: AnyAccount[] }>({ defaultState: { accounts: [] } });
 const $accounts = flow.state.map(({ accounts }) => accounts);

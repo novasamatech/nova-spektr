@@ -9,13 +9,8 @@ import { series, waitFor } from '@/shared/effector';
 import { assert, createTxMetadata, nonNullable, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
 import { type SigningPayload } from '../lib/types';
-
-import {
-  DEFAULT_POLKADOT_METHODS,
-  walletConnect,
-  walletConnectService,
-} from 'src/renderer/features/wallet-connect-wallet';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
