@@ -47,18 +47,26 @@ export const PairingModal = memo(({ variant, children }: Props) => {
     }
   };
 
+  const closeStatusModal = () => {
+    pairingForm.reset();
+    pairingForm.flow.close(null);
+  };
+
   const header = variant === 'novawallet' ? t('onboarding.novaWallet.title') : t('onboarding.walletConnect.title');
   const scanTitle =
     variant === 'novawallet' ? t('onboarding.novaWallet.scanTitle') : t('onboarding.walletConnect.scanTitle');
 
   if (step === Step.REJECT) {
     return (
-      <StatusModal
-        isOpen={open}
-        content={<Animation variant="error" />}
-        title={t('onboarding.walletConnect.rejected')}
-        onClose={() => toggleModal(false)}
-      />
+      <>
+        <StatusModal
+          isOpen={open}
+          content={<Animation variant="error" />}
+          title={t('onboarding.walletConnect.rejected')}
+          onClose={() => closeStatusModal()}
+        />
+        {children}
+      </>
     );
   }
 

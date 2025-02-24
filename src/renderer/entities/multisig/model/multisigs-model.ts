@@ -324,7 +324,7 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
-const readyforProxies = waitFor({
+const readyForProxies = waitFor({
   clock: proxiesModel.findAllProxies.pending,
   source: createWallets.doneData,
   filter: (val): val is boolean => !val,
@@ -332,7 +332,7 @@ const readyforProxies = waitFor({
 });
 
 sample({
-  clock: readyforProxies,
+  clock: readyForProxies,
   target: proxiesModel.findAllProxies,
 });
 
@@ -403,8 +403,21 @@ sample({
   target: accounts.updateAccount,
 });
 
+// Convert regular multisig to flexible
+const convertRegularToFlexible = createEvent<MultisigWallet | null>();
+
+sample({
+  clock: convertRegularToFlexible,
+  filter: nonNullable,
+  fn: (wallet) => {
+    return { ...wallet!, activated: false, type: WalletType.FLEXIBLE_MULTISIG };
+  },
+  target: walletModel.events.updateWalletWithDB,
+});
+
 export const multisigsModel = {
   subscribe,
   request,
   convertFlexibleToRegular,
+  convertRegularToFlexible,
 };

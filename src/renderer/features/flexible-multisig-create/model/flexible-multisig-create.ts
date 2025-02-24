@@ -32,7 +32,7 @@ import {
   toAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createDepositCalculator, createFeeCalculator } from '@/shared/transactions';
+import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -177,7 +177,7 @@ const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
   $transaction: $fakeTx,
 });
 
-const { $deposit: $multisigDeposit, $pending: $pendingDeposit } = createDepositCalculator({
+const { $multisigDeposit, $pending: $pendingDeposit } = createMultisigDeposit({
   $api: $api,
   $threshold: formModel.$createMultisigForm.fields.threshold.$value,
 });

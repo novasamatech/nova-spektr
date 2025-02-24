@@ -13,6 +13,8 @@ import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { flexibleMultisigFeature } from '@/features/flexible-multisig-create';
+import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -30,6 +32,11 @@ const {
   models: { addPureProxied },
   views: { AddPureProxied },
 } = proxyAddPureFeature;
+
+const {
+  models: { convertToFlexibleModel },
+  views: { ConvertRegularToFlexible },
+} = convertToFlexibleFeature;
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
@@ -76,11 +83,8 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }, [singleChain]);
 
   const canCreatePureProxy = useMemo(() => {
+    if (!singleChain) return false;
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
-
-    if (!singleChain) {
-      return anyProxy;
-    }
 
     return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
   }, [singleChain]);
@@ -106,12 +110,19 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     });
   }
 
+  // TODO: remove it when flexible multisig is supported
   if (canCreatePureProxy) {
-    options.push({
-      icon: 'addCircle' as IconNames,
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
-    });
+    flexibleMultisigFeature.isRunning
+      ? options.push({
+          icon: 'addCircle' as IconNames,
+          title: t('walletDetails.common.convertToFlexibleAction'),
+          onClick: () => convertToFlexibleModel.flow.open({ wallet }),
+        })
+      : options.push({
+          icon: 'addCircle' as IconNames,
+          title: t('walletDetails.common.addPureProxiedAction'),
+          onClick: addPureProxied.events.flowStarted,
+        });
   }
 
   const ActionButton = (
@@ -349,6 +360,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
+      <ConvertRegularToFlexible />
     </>
   );
 };
