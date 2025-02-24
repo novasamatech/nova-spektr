@@ -9,7 +9,7 @@ import { series } from '@/shared/effector';
 import { Step, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { createMultisigDeposit, createTxStore } from '@/shared/transactions';
-import { type AnyAccount, accounts, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
@@ -34,7 +34,7 @@ const $wallet = flow.state.map(({ wallet }) => (wallet && walletUtils.isRegularM
 
 const $multisigAccount = combine($wallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return null;
-  const filteredAccounts = accountsService.filterAccountsByWallet(accounts, wallet.id);
+  const filteredAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
 
   return filteredAccounts.find(accountUtils.isRegularMultisigAccount) || null;
 });
