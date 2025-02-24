@@ -17,7 +17,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { buildMultisigTx, useMultisigEvent, useMultisigTx } from '@/entities/multisig';
-import { type ExtrinsicResultParams, isProxyTypeTransaction, transactionService } from '@/entities/transaction';
+import { isProxyTypeTransaction, transactionService } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
 import { operationsContextModel } from '../../model/context';
 import { flexibleShellModel } from '../../model/flexible-shell-model';
@@ -55,77 +55,73 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
-    transactionService.signAndSubmit(tx, signature, txPayload, api, async (executed, params) => {
-      if (executed) {
-        const typedParams = params as ExtrinsicResultParams;
+    const result = await transactionService.signAndSubmit(tx, signature, txPayload, api);
 
-        if (multisigTx && tx && account?.accountId) {
-          const isReject =
-            tx.type === TransactionType.BATCH_ALL
-              ? tx.args.transactions.some((tx: Transaction) => tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI)
-              : tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
+    if (result.executed) {
+      const { params } = result;
 
-          const updatedTx: MultisigTransaction = { ...multisigTx };
+      if (multisigTx && tx && account?.accountId) {
+        const isReject =
+          tx.type === TransactionType.BATCH_ALL
+            ? tx.args.transactions.some((tx: Transaction) => tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI)
+            : tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
 
-          if (typedParams.isFinalApprove) {
-            updatedTx.status = typedParams.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
-          }
+        const updatedTx: MultisigTransaction = { ...multisigTx };
 
-          if (typedParams.isFinalApprove && typedParams.multisigError) {
-            flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
-          }
-
-          if (
-            typedParams.isFinalApprove &&
-            !typedParams.multisigError &&
-            isProxyTypeTransaction(multisigTx.transaction)
-          ) {
-            proxiesModel.findAllProxies();
-          }
-
-          if (isReject) {
-            flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
-
-            if (tx.type === TransactionType.BATCH_ALL && wrappedTx && wrappedTx.multisigTx && multisigAccount) {
-              const multisigData = buildMultisigTx(wrappedTx.coreTx, wrappedTx.multisigTx, params, multisigAccount);
-
-              await addEventWithQueue(multisigData.event);
-              await addMultisigTx(multisigData.transaction);
-            }
-
-            updatedTx.status = MultisigTxFinalStatus.CANCELLED;
-          }
-
-          await updateMultisigTx(updatedTx);
-
-          const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
-          const event: MultisigEvent = {
-            txAccountId: multisigTx.accountId,
-            txChainId: multisigTx.chainId,
-            txCallHash: multisigTx.callHash,
-            txBlock: multisigTx.blockCreated,
-            txIndex: multisigTx.indexCreated,
-            status: eventStatus,
-            accountId: account.accountId,
-            extrinsicHash: typedParams.extrinsicHash,
-            eventBlock: typedParams.timepoint.height,
-            eventIndex: typedParams.timepoint.index,
-            dateCreated: Date.now(),
-          };
-
-          await addEventWithQueue(event);
+        if (params.isFinalApprove) {
+          updatedTx.status = params.multisigError ? MultisigTxFinalStatus.ERROR : MultisigTxFinalStatus.EXECUTED;
         }
 
-        toggleSuccessMessage();
-        setTimeout(() => {
-          toggleSuccessMessage();
-          onClose();
-        }, 2000);
-      } else {
-        setErrorMessage(params as string);
+        if (params.isFinalApprove && params.multisigError) {
+          flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+        }
+
+        if (params.isFinalApprove && !params.multisigError && isProxyTypeTransaction(multisigTx.transaction)) {
+          proxiesModel.findAllProxies();
+        }
+
+        if (isReject) {
+          flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+
+          if (tx.type === TransactionType.BATCH_ALL && wrappedTx && wrappedTx.multisigTx && multisigAccount) {
+            const multisigData = buildMultisigTx(wrappedTx.coreTx, wrappedTx.multisigTx, params, multisigAccount);
+
+            await addEventWithQueue(multisigData.event);
+            await addMultisigTx(multisigData.transaction);
+          }
+
+          updatedTx.status = MultisigTxFinalStatus.CANCELLED;
+        }
+
+        await updateMultisigTx(updatedTx);
+
+        const eventStatus: SigningStatus = isReject ? 'CANCELLED' : 'SIGNED';
+        const event: MultisigEvent = {
+          txAccountId: multisigTx.accountId,
+          txChainId: multisigTx.chainId,
+          txCallHash: multisigTx.callHash,
+          txBlock: multisigTx.blockCreated,
+          txIndex: multisigTx.indexCreated,
+          status: eventStatus,
+          accountId: account.accountId,
+          extrinsicHash: params.extrinsicHash,
+          eventBlock: params.timepoint.height,
+          eventIndex: params.timepoint.index,
+          dateCreated: Date.now(),
+        };
+
+        await addEventWithQueue(event);
       }
-      toggleInProgress();
-    });
+
+      toggleSuccessMessage();
+      setTimeout(() => {
+        toggleSuccessMessage();
+        onClose();
+      }, 2000);
+    } else {
+      setErrorMessage(result.error);
+    }
+    toggleInProgress();
   };
 
   const getResultProps = (): ResultProps => {

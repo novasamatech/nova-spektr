@@ -53,7 +53,7 @@ export const SignTransactionsModal = () => {
                 <SignButton
                   isDefault
                   type={WalletType.POLKADOT_VAULT}
-                  disabled={!canSign}
+                  disabled={!canSign || pending}
                   onClick={signOperations.confirm}
                 />
               </Box>
