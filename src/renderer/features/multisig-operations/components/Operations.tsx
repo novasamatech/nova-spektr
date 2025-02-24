@@ -58,7 +58,8 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  if (incompleteFlexibleMultisigTx && account && accountUtils.isFlexibleMultisigAccount(account)) {
+  // TODO remove multisig accounts type
+  if (incompleteFlexibleMultisigTx && account && accountUtils.isRegularMultisigAccount(account)) {
     return (
       <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx as FlexibleMultisigTransactionDS} account={account} />
     );
