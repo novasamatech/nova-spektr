@@ -789,6 +789,8 @@
       "advanced": "Advanced",
       "aye": "Aye",
       "ayes": "Ayes",
+      "delegatingHint": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
+      "multishardHint": "Part of the accounts from the shared account is delegated, you can vote with the available accounts, ask your delegate to vote or remove delegation to be able to vote directly.",
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
@@ -914,8 +916,7 @@
       "listColumnAccount": "Account",
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
-      "title": "My votes",
-      "totalVotesCount": "{value} votes"
+      "title": "My votes"
     }
   },
   "importDB": {
