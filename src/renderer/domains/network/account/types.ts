@@ -42,3 +42,10 @@ export type AnyAccount = UniversalAccount | ChainAccount;
  */
 export type AnyAccountDraft<T extends UniversalAccount | ChainAccount = UniversalAccount | ChainAccount> =
   T extends UniversalAccount ? Omit<T, 'id'> : Omit<T, 'id'>;
+
+// Accounts graph
+
+export type AccountNode = {
+  account: AnyAccount;
+  children: AccountNode[];
+};

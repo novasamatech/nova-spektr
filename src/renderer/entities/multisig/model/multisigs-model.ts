@@ -24,7 +24,7 @@ import {
 import { waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { type AnyAccount, accounts, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -154,7 +154,7 @@ const filterMultisigFx = createEffect(
         multisigAccounts.find(
           (a) =>
             a.accountId === multisigResult.accountId &&
-            (accountsService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId),
+            (accountService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId),
         ),
       ),
     );

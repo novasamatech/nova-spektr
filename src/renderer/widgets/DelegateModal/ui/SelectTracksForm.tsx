@@ -8,7 +8,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
-import * as networkDomain from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {
@@ -281,7 +281,7 @@ const AccountsSelector = () => {
               <AssetBalance value={groupValue} asset={chain.assets[0]} className="text-footnote text-inherit" />
             ),
             list: shards.map((account) => ({
-              id: networkDomain.accountsService.uniqId(account),
+              id: accountService.uniqId(account),
               value: account,
               element: (
                 <Address
@@ -301,7 +301,7 @@ const AccountsSelector = () => {
       const address = toAddress(shards.accountId, { prefix: chain.addressPrefix });
 
       return {
-        id: networkDomain.accountsService.uniqId(shards),
+        id: accountService.uniqId(shards),
         value: shards,
         element: <Address title={shards.name} address={address} variant="short" canCopy={false} showIcon />,
 
@@ -317,7 +317,7 @@ const AccountsSelector = () => {
             label={t('governance.addDelegation.accountLabel')}
             placeholder={t('governance.addDelegation.accountPlaceholder')}
             multiPlaceholder={t('governance.addDelegation.manyAccountsPlaceholder')}
-            selectedIds={accounts.map(networkDomain.accountsService.uniqId)}
+            selectedIds={accounts.map(accountService.uniqId)}
             options={options}
             onChange={(values) => selectTracksModel.events.accountsChanged(values.map(({ value }) => value))}
           />

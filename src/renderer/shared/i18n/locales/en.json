@@ -416,7 +416,7 @@
           "required": "Comments are required"
         },
         "evidence": {
-          "label": "Evidence (document hash, url, etc.)",
+          "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
           "required": "Evidence are required"
         },
@@ -597,6 +597,7 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
+      "amountMultiply": "Amount & Multiply",
       "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
@@ -624,7 +625,7 @@
       "delegatedTracksTitle": "Some tracks are unavailable for delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
-      "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "formTitle": "Step 2. Select the number of votes and the multiplier",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",
@@ -799,8 +800,6 @@
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes_one": "{votes} vote",
-      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },
@@ -880,7 +879,8 @@
         "governanceLock": "Governance lock",
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
-        "tracks": "Tracks"
+        "tracks": "Tracks",
+        "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
       "timeoutReferendumError": "This referendum has already passed"

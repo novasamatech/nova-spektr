@@ -165,28 +165,24 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
       </TransactionDetails>
 
-      {nonNullable(onGoBack) ||
-        nonNullable(secondaryActionButton) ||
-        (!hideSignButton && (
-          <div className="mt-3 flex w-full justify-between">
-            {nonNullable(onGoBack) && (
-              <Button variant="text" onClick={onGoBack}>
-                {t('operation.goBackButton')}
-              </Button>
-            )}
+      <div className="mt-3 flex w-full justify-between">
+        {nonNullable(onGoBack) && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
 
-            <div className="flex gap-4">
-              {secondaryActionButton}
-              {!hideSignButton && !isMultisigExists && (
-                <SignButton
-                  isDefault={Boolean(secondaryActionButton)}
-                  type={(signerWallet || initiatorWallet).type}
-                  onClick={confirmModel.events.confirmed}
-                />
-              )}
-            </div>
-          </div>
-        ))}
+        <div className="flex gap-4">
+          {secondaryActionButton}
+          {!hideSignButton && !isMultisigExists && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              type={(signerWallet || initiatorWallet).type}
+              onClick={confirmModel.events.confirmed}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { DetailRow, FootnoteText, HeaderTitleText, Identicon, Separator, Switch 
 import { Account, CollectiveRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService, salaryService } from '@/domains/collectives';
+import { accountService } from '@/domains/network';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 import { memberSalary } from '../model/salary';
@@ -21,11 +22,16 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const featureInput = useUnit(fellowshipProfileFeature.input);
   const member = useUnit(profile.$member);
+  const account = useUnit(profile.$account);
   const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
   const salary = useUnit(memberSalary.$memberSalary);
 
-  const disabled = nullable(member) || nullable(featureInput);
+  const disabled =
+    nullable(member) ||
+    nullable(featureInput) ||
+    nullable(account) ||
+    !accountService.hasPermissionToMakeActions(account);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment

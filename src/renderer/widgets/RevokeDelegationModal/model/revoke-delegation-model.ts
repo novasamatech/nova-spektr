@@ -12,7 +12,7 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -426,9 +426,7 @@ sample({
     return nonNullable(walletData.wallet) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
-    const accounts = walletData.chain
-      ? accountsService.filterAccountOnChain(walletData.accounts, walletData.chain)
-      : [];
+    const accounts = walletData.chain ? accountService.filterAccountOnChain(walletData.accounts, walletData.chain) : [];
     const account = accounts.at(0);
     if (!account) throw new Error('Account not found');
 

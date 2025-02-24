@@ -4,8 +4,9 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
@@ -19,8 +20,31 @@ export const walletProxiedFeature = createFeature({
   enable: $features.map(f => f.proxy),
 });
 
-walletProxiedFeature.inject(accountsService.accountActionPermissionAnyOf, ({ account }) => {
-  return accountUtils.isProxiedAccount(account);
+accountSDK(walletProxiedFeature, {
+  actionPermission({ account }) {
+    return accountUtils.isProxiedAccount(account);
+  },
+  availableOnChain({ account }) {
+    return accountUtils.isProxiedAccount(account);
+  },
+  canSignMultipleTransactions() {
+    return false;
+  },
+  collectGraphNode(node, { accounts }) {
+    const { account } = node;
+    if (accountUtils.isProxiedAccount(account)) {
+      const proxy = accounts.find(a => a.accountId === account.proxyAccountId);
+
+      if (proxy) {
+        return {
+          account,
+          children: [accountService.accountGraphCollectPipeline({ account: proxy, children: [] }, { accounts })],
+        };
+      }
+    }
+
+    return node;
+  },
 });
 
 walletProxiedFeature.inject(walletIconSlot, ({ wallet, size }) => {
