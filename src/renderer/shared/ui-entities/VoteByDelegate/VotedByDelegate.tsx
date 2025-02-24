@@ -1,37 +1,25 @@
-import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { Address as AccountAddress } from '@/shared/ui-entities';
 import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
-import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
+import { Address as AccountAddress } from '../Address/Address';
 
 type Props = {
   asset: Asset;
-  delegateInfo?: DelegateInfo | null;
+  voterName?: string;
+  delegateInfo: DelegateInfo;
 };
 
-export const VotedByDelegate = memo(({ asset, delegateInfo }: Props) => {
+export const VotedByDelegate = memo(({ asset, voterName, delegateInfo }: Props) => {
   const { t } = useI18n();
 
-  const voter = useStoreMap({
-    store: proposerIdentityAggregate.$proposers,
-    keys: [delegateInfo?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
-  });
-
-  if (nullable(delegateInfo?.delegateId)) {
-    return null;
-  }
-
-  const delegate = voter?.parent.name ? (
-    <span>{voter.parent.name}</span>
+  const delegate = voterName ? (
+    <span>{voterName}</span>
   ) : (
     <AccountAddress showIcon={false} variant="short" address={delegateInfo.delegateId} />
   );

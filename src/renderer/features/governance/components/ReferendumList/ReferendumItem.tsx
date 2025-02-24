@@ -1,18 +1,20 @@
 import { type ApiPromise } from '@polkadot/api';
+import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
+import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
-import { VotedByAccount } from './VotedByAccount';
-import { VotedByDelegate } from './VotedByDelegate';
 
 type Props = {
   api: ApiPromise;
@@ -26,6 +28,12 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
+
+  const voter = useStoreMap({
+    store: proposerIdentityAggregate.$proposers,
+    keys: [referendum.votedByDelegate?.delegateId],
+    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+  });
 
   const voteFractions =
     referendumService.isOngoing(referendum) && approvalThreshold
@@ -62,10 +70,10 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         </div>
       </div>
 
-      {referendum.voting.votes.length > 0 ? (
-        <VotedByAccount active />
-      ) : (
-        <VotedByDelegate asset={asset} delegateInfo={referendum.votedByDelegate} />
+      {referendum.voting.votes.length > 0 && <VotedByAccount active />}
+
+      {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
+        <VotedByDelegate asset={asset} voterName={voter?.parent.name} delegateInfo={referendum.votedByDelegate} />
       )}
     </ListItem>
   );

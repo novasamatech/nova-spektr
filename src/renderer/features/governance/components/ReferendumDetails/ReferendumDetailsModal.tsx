@@ -1,15 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN_ZERO } from '@polkadot/util';
-import { useGate, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { Button, Plate } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
-import { referendumService, votingService } from '@/entities/governance';
+import { nonNullable } from '@/shared/lib/utils';
+import { Button, IconButton, Plate } from '@/shared/ui';
+import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
+import { Box, Modal } from '@/shared/ui-kit';
+import { referendumService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
+import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
@@ -19,7 +21,6 @@ import { MyVotesModal } from './MyVotesModal';
 import { ProposalDescription } from './ProposalDescription';
 import { ReferendumAdditional } from './ReferendumAdditional';
 import { Timeline } from './Timeline';
-import { VotingBalance } from './VotingBalance';
 import { VotingStatus } from './VotingStatus';
 import { VotingSummary } from './VotingSummary';
 
@@ -46,24 +47,24 @@ export const ReferendumDetailsModal = ({
   onRevoteRequest,
   onRemoveVoteRequest,
 }: Props) => {
-  useGate(detailsAggregate.gates.flow, { chain, referendum });
-
-  const [showWalletVotes, toggleShowWalletVotes] = useToggle();
-  const [showVoteHistory, toggleShowVoteHistory] = useToggle();
-  const [showAdvanced, toggleShowAdvanced] = useToggle();
-
   const { t } = useI18n();
+
+  useGate(detailsAggregate.gates.flow, { chain, referendum });
 
   const canVote = useUnit(detailsAggregate.$canVote);
   const hasAccount = useUnit(detailsAggregate.$hasAccount);
   const wallet = useUnit(walletModel.$activeWallet);
 
+  const [showWalletVotes, toggleShowWalletVotes] = useToggle();
+  const [showVoteHistory, toggleShowVoteHistory] = useToggle();
+  const [showAdvanced, toggleShowAdvanced] = useToggle();
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
-  const votingBalance = referendum.voting.votes.reduce(
-    (acc, vote) => acc.add(votingService.calculateAccountVotePower(vote.vote)),
-    BN_ZERO,
-  );
+  const voter = useStoreMap({
+    store: proposerIdentityAggregate.$proposers,
+    keys: [referendum.votedByDelegate?.delegateId],
+    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+  });
 
   return (
     <Modal isOpen={isModalOpen} size="xl" onToggle={closeModal}>
@@ -82,7 +83,23 @@ export const ReferendumDetailsModal = ({
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
               {referendum.voting.votes.length > 0 && (
                 <DetailsCard>
-                  <VotingBalance votes={votingBalance} asset={asset} onInfoClick={toggleShowWalletVotes} />
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <VotedByAccount active />
+                    <IconButton name="info" onClick={toggleShowWalletVotes} />
+                  </Box>
+                </DetailsCard>
+              )}
+
+              {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
+                <DetailsCard>
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <VotedByDelegate
+                      asset={asset}
+                      voterName={voter?.parent.name}
+                      delegateInfo={referendum.votedByDelegate}
+                    />
+                    <IconButton name="info" onClick={toggleShowWalletVotes} />
+                  </Box>
                 </DetailsCard>
               )}
 

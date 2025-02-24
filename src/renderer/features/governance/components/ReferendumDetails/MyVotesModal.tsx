@@ -1,21 +1,23 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type Asset, type Chain, type Referendum } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { formatAsset, formatBalance, toAccountId } from '@/shared/lib/utils';
+import { formatAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Account } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
+import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
-import { SignatoryCard } from '@/entities/signatory';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
+import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { votingListService } from '../../lib/votingListService';
+import { type AggregatedReferendum } from '../../types/structs';
 
 type Props = {
-  referendum: Referendum;
+  referendum: AggregatedReferendum;
   asset: Asset;
   chain: Chain;
   onClose: VoidFunction;
@@ -23,7 +25,9 @@ type Props = {
 
 export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
   const { t } = useI18n();
+
   const [isOpen, closeModal] = useModalClose(true, onClose);
+
   const activeWallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
@@ -32,15 +36,19 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
     fn: (votes, [referendumId]) => votingService.getReferendumVoting(referendumId, votes),
   });
 
-  const votesList = useMemo(
-    () =>
-      Object.entries(votes).flatMap(([address, vote]) => {
-        return votingListService
-          .getDecoupledVotesFromVote(referendum.referendumId, vote)
-          .map((vote) => ({ address, vote }));
-      }),
-    [votes, referendum],
-  );
+  const voter = useStoreMap({
+    store: proposerIdentityAggregate.$proposers,
+    keys: [referendum.votedByDelegate?.delegateId],
+    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+  });
+
+  const votesList = useMemo(() => {
+    return Object.entries(votes).flatMap(([address, vote]) => {
+      return votingListService
+        .getDecoupledVotesFromVote(referendum.referendumId, vote)
+        .map((vote) => ({ address, vote }));
+    });
+  }, [votes, referendum]);
 
   if (!activeWallet) return null;
 
@@ -49,7 +57,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
       <Modal.Title close>{t('governance.walletVotes.title')}</Modal.Title>
       <Modal.Content>
         <div className="grid grid-cols-12 items-center px-5 pb-4">
-          <FootnoteText className="col-span-5 px-2 pb-1 text-text-tertiary">
+          <FootnoteText className="col-span-5 pb-1 pr-2 text-text-tertiary">
             {t('governance.walletVotes.listColumnAccount')}
           </FootnoteText>
           <FootnoteText className="col-span-2 basis-16 px-2 pb-1 text-text-tertiary">
@@ -66,21 +74,17 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
 
             return (
               <>
-                <div className="col-span-5">
-                  <SignatoryCard
-                    key={address}
-                    className="min-h-11"
-                    accountId={toAccountId(address)}
-                    addressPrefix={chain.addressPrefix}
-                  >
-                    <Address
-                      title={account?.name || ''}
-                      address={address}
-                      variant="truncate"
-                      canCopy={false}
-                      showIcon
+                <div className="col-span-5" key={address}>
+                  <BodyText className="text-text-secondary">
+                    <Account
+                      hideAddress
+                      iconSize={16}
+                      title={account?.name}
+                      variant="short"
+                      accountId={toAccountId(address)}
+                      chain={chain}
                     />
-                  </SignatoryCard>
+                  </BodyText>
                 </div>
                 <BodyText key={`decision-${address}`} className="col-span-2 px-2">
                   {t(`governance.referendum.${vote.decision}`)}
@@ -90,9 +94,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                   className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2"
                 >
                   <BodyText className="whitespace-nowrap">
-                    {t('governance.walletVotes.totalVotesCount', {
-                      value: formatBalance(vote.votingPower, asset.precision).formatted,
-                    })}
+                    <AssetBalance value={vote.votingPower} asset={asset} />
                   </BodyText>
                   <FootnoteText className="whitespace-nowrap text-text-tertiary">
                     {t('general.actions.multiply', {
@@ -104,6 +106,44 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
               </>
             );
           })}
+
+          {/* Delegation */}
+          {nonNullable(referendum.votedByDelegate) && (
+            <>
+              <div className="col-span-5">
+                <BodyText className="text-text-secondary">
+                  <Account
+                    hideAddress
+                    iconSize={16}
+                    title={voter?.parent.name}
+                    variant="short"
+                    accountId={toAccountId(referendum.votedByDelegate.delegateId)}
+                    chain={chain}
+                  />
+                </BodyText>
+              </div>
+              <BodyText className="col-span-2 px-2">
+                {t(`governance.referendum.${referendum.votedByDelegate.decision}`)}
+              </BodyText>
+              <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
+                <BodyText className="whitespace-nowrap">
+                  <AssetBalance
+                    value={votingService.calculateVotingPower(
+                      referendum.votedByDelegate.amount,
+                      referendum.votedByDelegate.conviction,
+                    )}
+                    asset={asset}
+                  />
+                </BodyText>
+                <FootnoteText className="whitespace-nowrap text-text-tertiary">
+                  {t('general.actions.multiply', {
+                    value: formatAsset(referendum.votedByDelegate.amount, asset),
+                    multiplier: votingService.getConvictionMultiplier(referendum.votedByDelegate.conviction),
+                  })}
+                </FootnoteText>
+              </div>
+            </>
+          )}
         </div>
       </Modal.Content>
     </Modal>
