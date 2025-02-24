@@ -76,7 +76,7 @@ const MultisigSignatorySelectModal = ({ isOpen, onCancel }: SignatoryParams) => 
       chain={chain}
       nativeAsset={chain.assets.at(0)!}
       onClose={handleSelectSignatoryClose}
-      onSelect={(a) => {
+      onSelect={a => {
         convertToFlexibleModel.selectSigner(a);
         setIsSelectSignatoryOpen(false);
       }}

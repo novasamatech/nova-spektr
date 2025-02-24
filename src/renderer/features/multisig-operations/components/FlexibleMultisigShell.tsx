@@ -42,7 +42,7 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
     keys: [tx],
     fn: (events, [operation]) => {
       return events.filter(
-        (e) =>
+        e =>
           e.txAccountId === operation.accountId &&
           e.txChainId === operation.chainId &&
           e.txCallHash === operation.callHash &&
@@ -54,13 +54,13 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
 
   const wallets = useUnit(walletModel.$wallets);
 
-  const isRejectAvailable = wallets.some((wallet) => {
-    const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
+  const isRejectAvailable = wallets.some(wallet => {
+    const hasDepositor = wallet.accounts.some(account => account.accountId === tx.depositor);
 
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
 
-  const approvals = events.filter((e) => e.status === 'SIGNED');
+  const approvals = events.filter(e => e.status === 'SIGNED');
 
   return (
     <div className="relative flex h-full flex-col items-center overflow-y-auto">
