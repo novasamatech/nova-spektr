@@ -14,7 +14,7 @@ import {
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
-const accountGraphCollectPipeline = createPipeline<AccountNode, { accounts: AnyAccount[] }>();
+const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
 
 /**
  * ATTENTION! This method is the source of stable id for different types of
@@ -78,7 +78,37 @@ function canSignMultipleTransactions(account: AnyAccount) {
 }
 
 /**
- * DFS traverse. Return false in enter visitor to stop traversing.
+ * Create accounts graph for given chain. Returns map, where key is account and
+ * value is graph node.
+ */
+function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
+  const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
+  const nodes = new Map<AnyAccount, AccountNode>();
+
+  const createNode = (account: AnyAccount): AccountNode => {
+    const existingNode = nodes.get(account);
+    if (existingNode) return existingNode;
+
+    const children = accountCollectChildrenPipeline([], { account, accounts });
+    const node: AccountNode = {
+      account,
+      children: children.map(createNode),
+    };
+
+    nodes.set(account, node);
+
+    return node;
+  };
+
+  for (const account of chainAccounts) {
+    createNode(account);
+  }
+
+  return nodes;
+}
+
+/**
+ * Deep first search. Return false from enter visitor to stop traversing.
  */
 function traverseGraph(
   node: AccountNode,
@@ -86,49 +116,18 @@ function traverseGraph(
     enter: (node: AccountNode) => false | void;
     exit?: (node: AccountNode) => void;
   },
-): false | undefined {
-  const result = visitor.enter(node);
+) {
+  const visitNode = (node: AccountNode) => {
+    if (visitor.enter(node) === false) return false;
 
-  if (result === false) return false;
+    for (const child of node.children) {
+      if (visitNode(child) === false) return false;
+    }
 
-  for (const child of node.children) {
-    const continueTraverse = traverseGraph(child, visitor);
-    if (continueTraverse === false) return false;
-  }
+    visitor.exit?.(node);
+  };
 
-  visitor.exit?.(node);
-}
-
-/**
- * Creates graphs from accounts for given chain. Returns map, where key is
- * account and value is node with all children.
- */
-function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccount, AccountNode> {
-  const chainAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
-  const nodes = new Map<AnyAccount, AccountNode>();
-
-  for (const account of chainAccounts) {
-    const initialNode: AccountNode = {
-      account,
-      children: [],
-    };
-    const accountNode = accountGraphCollectPipeline(initialNode, { accounts });
-
-    traverseGraph(accountNode, {
-      enter(accountChildNode) {
-        for (const [index, child] of accountChildNode.children.entries()) {
-          const existing = nodes.get(child.account);
-          if (existing) {
-            accountChildNode.children.splice(index, 1, existing);
-          }
-        }
-
-        nodes.set(accountChildNode.account, accountChildNode);
-      },
-    });
-  }
-
-  return nodes;
+  visitNode(node);
 }
 
 /**
@@ -206,7 +205,7 @@ export const accountService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
-  accountGraphCollectPipeline,
+  accountCollectChildrenPipeline,
 
   uniqId,
 

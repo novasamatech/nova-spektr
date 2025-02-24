@@ -8,10 +8,10 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
 import { WalletIcon } from './components/WalletIcon';
-import { walletWalletConnectFeature } from './model/feature';
+import { walletConnectWalletFeature } from './model/feature';
 import { wcWallets } from './model/wallets';
 
-accountSDK(walletWalletConnectFeature, {
+accountSDK(walletConnectWalletFeature, {
   actionPermission({ account }) {
     return accountUtils.isWcAccount(account);
   },
@@ -22,18 +22,18 @@ accountSDK(walletWalletConnectFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node) {
-    return node;
+  collectAccountChildren(children) {
+    return children;
   },
 });
 
-walletWalletConnectFeature.inject(walletIconSlot, ({ wallet, size }) => {
+walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
   return <WalletIcon wallet={wallet} size={size} />;
 });
 
-walletWalletConnectFeature.inject(walletGroupSlot, {
+walletConnectWalletFeature.inject(walletGroupSlot, {
   order: 1,
   render({ query, onSelect }) {
     const { t } = useI18n();
@@ -61,7 +61,7 @@ walletWalletConnectFeature.inject(walletGroupSlot, {
   },
 });
 
-export { walletWalletConnectFeature } from './model/feature';
+export { walletConnectWalletFeature } from './model/feature';
 export { WalletGroup } from './components/WalletGroup';
 export { walletActionsSlot } from './components/WalletRow';
 export { type InitConnectParams, type InitReconnectParams } from './lib/types';

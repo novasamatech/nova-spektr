@@ -7,11 +7,11 @@ import { WatchOnlyGroup, walletActionsSlot } from './components/WatchOnlyGroup';
 
 export { walletActionsSlot };
 
-export const walletWatchOnlyFeature = createFeature({
+export const watchOnlyWalletFeature = createFeature({
   name: 'wallet/watch-only',
 });
 
-accountSDK(walletWatchOnlyFeature, {
+accountSDK(watchOnlyWalletFeature, {
   // read only, obviously
   actionPermission({ account }) {
     if (accountUtils.isWatchOnlyAccount(account)) {
@@ -25,18 +25,18 @@ accountSDK(walletWatchOnlyFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node) {
-    return node;
+  collectAccountChildren(children) {
+    return children;
   },
 });
 
-walletWatchOnlyFeature.inject(walletIconSlot, ({ wallet, size }) => {
+watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWatchOnly(wallet)) return null;
 
   return <WalletIcon type={wallet.type} size={size} />;
 });
 
-walletWatchOnlyFeature.inject(walletGroupSlot, {
+watchOnlyWalletFeature.inject(walletGroupSlot, {
   order: 4,
   render: ({ query, onSelect }) => <WatchOnlyGroup query={query} onSelect={onSelect} />,
 });

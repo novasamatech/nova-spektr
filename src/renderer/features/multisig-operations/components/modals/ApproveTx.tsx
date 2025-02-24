@@ -243,7 +243,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
       getTransactionFee: transactionService.getTransactionFee,
     });
 
-  const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
+  const thresholdReached = events.filter(e => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;
@@ -289,7 +289,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
 
         {activeStep === Step.SIGNING && approveTx && api && signAccount && (
           <SigningSwitch
-            signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
+            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             apis={apis}
             signingPayloads={[
               {

@@ -101,7 +101,7 @@ export const ConvertToFlexibleConfirm = () => {
           </DetailRow>
         </TransactionDetails>
 
-        {errors.map((error) => (
+        {errors.map(error => (
           <Alert key={error.errorText} active={!!error} variant="error" title={t(error.name)}>
             <Alert.Item withDot={false}>{t(error.errorText)}</Alert.Item>
           </Alert>
