@@ -77,8 +77,6 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     const { derivations, root } = parsed;
     const rootAccountId = root.startsWith('0x') ? root : toAccountId(root);
 
-    console.log({ rootAccountId, existingDerivations });
-
     if (rootAccountId !== existingDerivations.root) {
       throw new DerivationImportError(ValidationError.INVALID_ROOT);
     }
