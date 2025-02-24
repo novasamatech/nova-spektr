@@ -52,7 +52,11 @@ const Root = ({
 };
 
 const Trigger = ({ children }: PropsWithChildren) => {
-  return <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>;
+  return (
+    <RadixTooltip.Trigger asChild onClick={e => e.preventDefault()}>
+      {children}
+    </RadixTooltip.Trigger>
+  );
 };
 
 const Content = ({ children }: PropsWithChildren) => {
@@ -70,6 +74,7 @@ const Content = ({ children }: PropsWithChildren) => {
         alignOffset={alignOffset && gridSpaceConverter(alignOffset)}
         sideOffset={sideOffset && gridSpaceConverter(sideOffset)}
         data-testid={testId}
+        onPointerDownOutside={e => e.preventDefault()}
       >
         {children}
         <RadixTooltip.Arrow
