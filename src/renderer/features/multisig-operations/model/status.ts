@@ -17,8 +17,8 @@ sample({
   source: networkModel.$chains,
   fn: (chains, apis) => {
     const multisigChains = Object.values(chains)
-      .filter((chain) => apis[chain.chainId] && networkUtils.isMultisigSupported(chain.options))
-      .map((c) => c.chainId);
+      .filter(chain => apis[chain.chainId] && networkUtils.isMultisigSupported(chain.options))
+      .map(c => c.chainId);
 
     return multisigChains.join(',');
   },
@@ -53,7 +53,7 @@ const $input = combine(
           });
         }
       } else {
-        const multisigChains = Object.values(chains).filter((chain) => networkUtils.isMultisigSupported(chain.options));
+        const multisigChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
 
         for (const chain of multisigChains) {
           const api = apis[chain.chainId];

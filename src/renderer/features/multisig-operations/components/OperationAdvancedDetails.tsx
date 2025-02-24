@@ -29,7 +29,7 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
     blockCreated,
     chain.explorers,
   );
-  const depositorSignatory = signatories.find((s) => s.accountId === depositor);
+  const depositorSignatory = signatories.find(s => s.accountId === depositor);
   const depositorWallet =
     depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 

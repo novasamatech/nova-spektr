@@ -81,16 +81,16 @@ const $signatories = combine(
     if (!multisigAccount || !chain) return [];
 
     const filteredAccounts = accounts.filter(
-      (account) =>
+      account =>
         accountUtils.isChainAndCryptoMatch(account, chain) &&
-        multisigAccount.signatories.some((s) => s.accountId === account.accountId),
+        multisigAccount.signatories.some(s => s.accountId === account.accountId),
     );
 
     const matchWallets = wallets.filter(
-      (w) => walletUtils.isValidSignatory(w) && filteredAccounts.some((s) => s.walletId === w.id),
+      w => walletUtils.isValidSignatory(w) && filteredAccounts.some(s => s.walletId === w.id),
     );
 
-    return filteredAccounts.filter((a) => matchWallets.some((w) => w.id === a.walletId));
+    return filteredAccounts.filter(a => matchWallets.some(w => w.id === a.walletId));
   },
 );
 
@@ -105,7 +105,7 @@ const $signatoriesWallets = combine(
     if (!multisigAccount || !chain) return [];
 
     const matchWallets = wallets.filter(
-      (w) => walletUtils.isValidSignatory(w) && signatories.some((s) => s.walletId === w.id),
+      w => walletUtils.isValidSignatory(w) && signatories.some(s => s.walletId === w.id),
     );
     return matchWallets;
   },
@@ -118,8 +118,8 @@ sample({
 
 sample({
   clock: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0)!,
+  filter: signatories => signatories.length === 1,
+  fn: signatories => signatories.at(0)!,
   target: $selectedSignatory,
 });
 
@@ -158,10 +158,10 @@ const { $fee, $wrappedTx, $pendingFee } = createTxStore({
 
 const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
-  $threshold: $multisigAccount.map((a) => a && a.threshold),
+  $threshold: $multisigAccount.map(a => a && a.threshold),
 });
 
-const $proxyDeposit = combine($api, (api) => api && proxyService.getProxyDeposit(api, '0', 1));
+const $proxyDeposit = combine($api, api => api && proxyService.getProxyDeposit(api, '0', 1));
 
 type Error = {
   errorText: string;
@@ -272,7 +272,7 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  filter: results => submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -283,7 +283,7 @@ sample({
   filter: (wallet, results) => {
     return nonNullable(wallet) && submitUtils.isSuccessResult(results[0].result);
   },
-  fn: (wallet) => wallet!,
+  fn: wallet => wallet!,
   target: multisigsModel.convertRegularToFlexible,
 });
 

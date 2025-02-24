@@ -40,7 +40,6 @@ import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { walletPairingModel } from '@/features/wallet-pairing';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -513,11 +512,6 @@ sample({
 sample({
   clock: flexibleMultisigFeature.stopped,
   target: signatoryModel.$signatories.reinit,
-});
-
-sample({
-  clock: flow.close,
-  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({

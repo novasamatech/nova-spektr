@@ -16,12 +16,12 @@ export { WalletConnectQrCode } from './components/WalletConnectQrCode';
 
 // TODO implement
 
-export const walletPairingWalletConnectFeature = createFeature({
-  name: 'wallet pairing/wallet connect',
+export const walletConnectWalletPairingFeature = createFeature({
+  name: 'wallet connect/wallet pairing',
   enable: $features.map(f => f.walletConnect),
 });
 
-walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
+walletConnectWalletPairingFeature.inject(onboardingActionsSlot, {
   order: 1,
   render() {
     const { t } = useI18n();
@@ -51,7 +51,7 @@ walletPairingWalletConnectFeature.inject(onboardingActionsSlot, {
   },
 });
 
-walletPairingWalletConnectFeature.inject(walletPairingDropdownOptionsSlot, {
+walletConnectWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 1,
   render({ t }) {
     // nova wallet pairing is basically the same, let's keep it here for now

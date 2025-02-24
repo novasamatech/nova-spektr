@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep, nullable } from '@/shared/lib/utils';
+import { Step, getNativeAsset, isStep, nullable } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { SignatorySelectModal } from '@/features/multisig-operations';
@@ -62,7 +62,9 @@ const MultisigSignatorySelectModal = ({ isOpen, onCancel }: SignatoryParams) => 
     setIsSelectSignatoryOpen(shouldPickSignatory);
   }, [isOpen]);
 
-  if (!chain || !signatories || !chain.assets.at(0)) return null;
+  if (!chain || signatories.length === 0) return null;
+  const nativeAsset = getNativeAsset(chain.assets);
+  if (!nativeAsset) return null;
 
   const handleSelectSignatoryClose = () => {
     setIsSelectSignatoryOpen(false);
@@ -74,9 +76,9 @@ const MultisigSignatorySelectModal = ({ isOpen, onCancel }: SignatoryParams) => 
       isOpen={isSelectSignatoryOpen}
       accounts={signatories}
       chain={chain}
-      nativeAsset={chain.assets.at(0)!}
+      nativeAsset={nativeAsset}
       onClose={handleSelectSignatoryClose}
-      onSelect={(a) => {
+      onSelect={a => {
         convertToFlexibleModel.selectSigner(a);
         setIsSelectSignatoryOpen(false);
       }}

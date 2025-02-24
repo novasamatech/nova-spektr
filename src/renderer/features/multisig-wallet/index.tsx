@@ -4,8 +4,6 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { accountService } from '@/domains/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -16,12 +14,12 @@ import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
 
-export const walletMultisigFeature = createFeature({
+export const multisigWalletFeature = createFeature({
   name: 'wallet/multisig',
   enable: $features.map(f => f.multisig || f.flexibleMultisig),
 });
 
-accountSDK(walletMultisigFeature, {
+accountSDK(multisigWalletFeature, {
   actionPermission({ account }) {
     return accountUtils.isMultisigAccount(account);
   },
@@ -31,26 +29,17 @@ accountSDK(walletMultisigFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectGraphNode(node, { accounts }) {
-    const { account } = node;
+  collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const signatories = account.signatories
-        .map(signatory => accounts.find(a => a.accountId === signatory.accountId))
-        .filter(nonNullable);
-
-      return {
-        account,
-        children: signatories.map(signatory => {
-          return accountService.accountGraphCollectPipeline({ account: signatory, children: [] }, { accounts });
-        }),
-      };
+      return account.signatories
+        .flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId))
+        .concat(children);
     }
-
-    return node;
+    return children;
   },
 });
 
-walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
+multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
 
   const type =
@@ -61,7 +50,7 @@ walletMultisigFeature.inject(walletIconSlot, ({ wallet, size }) => {
   return <WalletIcon type={type} size={size} />;
 });
 
-walletMultisigFeature.inject(walletGroupSlot, {
+multisigWalletFeature.inject(walletGroupSlot, {
   order: 3,
   render({ query, onSelect }) {
     const { t } = useI18n();

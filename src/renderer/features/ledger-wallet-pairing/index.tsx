@@ -10,12 +10,12 @@ import { onboardingActionsSlot } from '@/pages/Onboarding';
  * onboarding page.
  */
 
-export const walletPairingLedgerFeature = createFeature({
-  name: 'wallet pairing/ledger',
+export const ledgerWalletPairingFeature = createFeature({
+  name: 'ledger/wallet pairing',
   enable: $features.map(f => f.multisig),
 });
 
-walletPairingLedgerFeature.inject(onboardingActionsSlot, {
+ledgerWalletPairingFeature.inject(onboardingActionsSlot, {
   order: 6,
   render() {
     const { t } = useI18n();

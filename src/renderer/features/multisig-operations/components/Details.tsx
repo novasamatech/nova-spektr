@@ -87,7 +87,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
-  const signatoryWallet = wallets.find((w) => w.id === signatory?.walletId);
+  const signatoryWallet = wallets.find(w => w.id === signatory?.walletId);
 
   useEffect(() => {
     if (isUndelegateTransaction(transaction)) {
@@ -127,7 +127,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
+    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: AccountType } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {
@@ -141,7 +141,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
           return acc;
         }
 
-        const account = wallet.accounts.find((account) => account.accountId === proxiedAccountId);
+        const account = wallet.accounts.find(account => account.accountId === proxiedAccountId);
 
         return { wallet, account };
       },
