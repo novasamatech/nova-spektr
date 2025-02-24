@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import { debug, once } from 'patronum';
+import { once } from 'patronum';
 
 import {
   type Chain,
@@ -84,20 +84,17 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
-      const result = await transactionService.signAndSubmit(
-        transaction,
-        signatures[index],
-        txPayloads[index],
-        apis[transaction.chainId],
-      );
+      transactionService
+        .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
+        .then((result) => {
+          console.log(result);
 
-      console.log(result);
-
-      if (result.executed) {
-        boundExtrinsicSucceeded({ id: index, params: result.params });
-      } else {
-        boundExtrinsicFailed({ id: index, params: result.error });
-      }
+          if (result.executed) {
+            boundExtrinsicSucceeded({ id: index, params: result.params });
+          } else {
+            boundExtrinsicFailed({ id: index, params: result.error });
+          }
+        });
     }
   },
 );
@@ -145,8 +142,6 @@ sample({
   fn: (params) => params?.txPayloads.map((_, index) => index) || [],
   target: $submittingTxs,
 });
-
-debug($submittingTxs);
 
 sample({
   clock: submitStarted,

@@ -6,7 +6,7 @@ import { storageService } from '@/shared/api/storage';
 import { type BasketTransaction, type ID } from '@/shared/core';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/element-types
-import { submitModel } from '@/features/operations/OperationSubmit';
+import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 
 // list
 
@@ -89,10 +89,12 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.extrinsicSucceeded,
+  clock: submitModel.output.formSubmitted,
   source: $list,
-  fn: (transactions, { id }) => {
-    return transactions.filter(tx => tx.id !== id);
+  fn: (transactions, results) => {
+    return transactions.filter(tx =>
+      results.some(result => result.id === tx.id && result.result === ExtrinsicResult.SUCCESS),
+    );
   },
   target: removeTransactionsFx,
 });

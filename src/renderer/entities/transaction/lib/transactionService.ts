@@ -82,7 +82,7 @@ async function getExtrinsicFee(
   return paymentInfo.partialFee.toBn();
 }
 
-type SummitResult =
+type SubmitResult =
   | {
       executed: true;
       params: ExtrinsicResultParams;
@@ -97,12 +97,14 @@ async function signAndSubmit(
   signature: HexString,
   payload: Uint8Array,
   api: ApiPromise,
-): Promise<SummitResult> {
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const accountId = toAccountId(transaction.address);
-  extrinsic.addSignature(accountId, hexToU8a(signature), payload);
+): Promise<SubmitResult> {
+  return new Promise<SubmitResult>((resolve) => {
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+    const accountId = toAccountId(transaction.address);
+    extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
-  return new Promise<SummitResult>((resolve) => {
+    let unsubscribe: VoidFunction;
+
     try {
       extrinsic
         .send((result) => {
@@ -114,6 +116,9 @@ async function signAndSubmit(
           let multisigError = '';
 
           if (internalError) {
+            if (unsubscribe) {
+              unsubscribe();
+            }
             resolve({
               executed: false,
               error: internalError.message,
@@ -122,6 +127,9 @@ async function signAndSubmit(
           }
 
           if (dispatchError) {
+            if (unsubscribe) {
+              unsubscribe();
+            }
             resolve({
               executed: false,
               error: decodeDispatchError(dispatchError, api),
@@ -139,6 +147,9 @@ async function signAndSubmit(
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
+                if (unsubscribe) {
+                  unsubscribe();
+                }
                 resolve({
                   executed: true,
                   params: {
@@ -155,7 +166,13 @@ async function signAndSubmit(
             }
           }
         })
+        .then((fn) => {
+          unsubscribe = fn;
+        })
         .catch((error) => {
+          if (unsubscribe) {
+            unsubscribe();
+          }
           resolve({
             executed: false,
             error: (error as Error).message || 'Error',
