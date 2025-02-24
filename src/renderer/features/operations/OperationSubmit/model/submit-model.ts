@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import { once } from 'patronum';
+import { debug, once } from 'patronum';
 
 import {
   type Chain,
@@ -91,6 +91,8 @@ const signAndSubmitExtrinsicsFx = createEffect(
         apis[transaction.chainId],
       );
 
+      console.log(result);
+
       if (result.executed) {
         boundExtrinsicSucceeded({ id: index, params: result.params });
       } else {
@@ -143,6 +145,8 @@ sample({
   fn: (params) => params?.txPayloads.map((_, index) => index) || [],
   target: $submittingTxs,
 });
+
+debug($submittingTxs);
 
 sample({
   clock: submitStarted,
@@ -263,5 +267,7 @@ export const submitModel = {
   },
   output: {
     formSubmitted,
+    extrinsicSucceeded,
+    extrinsicFailed,
   },
 };
