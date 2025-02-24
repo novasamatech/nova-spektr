@@ -477,6 +477,8 @@
       "cardTitle": "Actions Required",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
+      "noAccountDescription": "Account not found. Please add or create account to the Polkadot Collectives network.",
+      "noAccountTitle": "List tasks is empty",
       "reviewBasket_one": "Confirm {count} decision",
       "reviewBasket_other": "Confirm {count} decisions",
       "skip": "Skip for now",
