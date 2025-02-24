@@ -73,7 +73,16 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
       {referendum.voting.votes.length > 0 && <VotedByAccount active />}
 
       {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
-        <VotedByDelegate asset={asset} voterName={voter?.parent.name} delegateInfo={referendum.votedByDelegate} />
+        <VotedByDelegate
+          asset={asset}
+          address={referendum.votedByDelegate.delegateId}
+          voterName={voter?.parent.name}
+          decision={referendum.votedByDelegate.decision}
+          votingPower={votingService.calculateVotingPower(
+            referendum.votedByDelegate.amount,
+            referendum.votedByDelegate.conviction,
+          )}
+        />
       )}
     </ListItem>
   );

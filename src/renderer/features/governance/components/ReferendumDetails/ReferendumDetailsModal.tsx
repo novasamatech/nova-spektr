@@ -8,7 +8,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { Button, IconButton, Plate } from '@/shared/ui';
 import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { referendumService } from '@/entities/governance';
+import { referendumService, votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
@@ -95,8 +95,13 @@ export const ReferendumDetailsModal = ({
                   <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
                     <VotedByDelegate
                       asset={asset}
+                      address={referendum.votedByDelegate.delegateId}
+                      decision={referendum.votedByDelegate.decision}
                       voterName={voter?.parent.name}
-                      delegateInfo={referendum.votedByDelegate}
+                      votingPower={votingService.calculateVotingPower(
+                        referendum.votedByDelegate.amount,
+                        referendum.votedByDelegate.conviction,
+                      )}
                     />
                     <IconButton name="info" onClick={toggleShowWalletVotes} />
                   </Box>

@@ -1,36 +1,31 @@
+import { type BN } from '@polkadot/util';
 import { memo } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type DelegateInfo } from '@/shared/api/governance';
-import { type Asset } from '@/shared/core';
+import { type Address, type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/entities/asset';
-import { votingService } from '@/entities/governance';
 import { Address as AccountAddress } from '../Address/Address';
 
 type Props = {
   asset: Asset;
+  address: Address;
   voterName?: string;
-  delegateInfo: DelegateInfo;
+  votingPower: BN;
+  decision: 'aye' | 'nay';
 };
 
-export const VotedByDelegate = memo(({ asset, voterName, delegateInfo }: Props) => {
+export const VotedByDelegate = memo(({ asset, address, voterName, votingPower, decision }: Props) => {
   const { t } = useI18n();
 
   const delegate = voterName ? (
     <span>{voterName}</span>
   ) : (
-    <AccountAddress showIcon={false} variant="short" address={delegateInfo.delegateId} />
+    <AccountAddress showIcon={false} variant="short" address={address} />
   );
 
-  const amount = (
-    <AssetBalance
-      className="text-icon-accent"
-      value={votingService.calculateVotingPower(delegateInfo.amount, delegateInfo.conviction)}
-      asset={asset}
-    />
-  );
+  const amount = <AssetBalance className="text-icon-accent" value={votingPower} asset={asset} />;
 
   return (
     <div className="flex items-center gap-x-1">
@@ -38,7 +33,7 @@ export const VotedByDelegate = memo(({ asset, voterName, delegateInfo }: Props) 
       <FootnoteText className="flex max-w-56 items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
         <Trans
           t={t}
-          i18nKey={`governance.${delegateInfo.decision === 'aye' ? 'votedAyeBy' : 'votedNayBy'}`}
+          i18nKey={`governance.${decision === 'aye' ? 'votedAyeBy' : 'votedNayBy'}`}
           components={{ amount, delegate }}
         />
       </FootnoteText>
