@@ -62,7 +62,7 @@ const MultisigSignatorySelectModal = ({ isOpen, onCancel }: SignatoryParams) => 
     setIsSelectSignatoryOpen(shouldPickSignatory);
   }, [isOpen]);
 
-  if (!chain || !signatories) return null;
+  if (!chain || signatories.length === 0) return null;
   const nativeAsset = getNativeAsset(chain.assets);
   if (!nativeAsset) return null;
 
