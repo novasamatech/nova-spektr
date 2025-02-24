@@ -61,7 +61,7 @@ export const SignTransactionModal = () => {
       {signOperationsUtils.isConfirmStep(step) && (
         <Modal.Footer>
           {pending && <Loader color="primary" size={24} />}
-          <SignButton isDefault type={wallet?.type} disabled={!canSign} onClick={signOperations.confirm} />
+          <SignButton isDefault type={wallet?.type} disabled={!canSign || pending} onClick={signOperations.confirm} />
         </Modal.Footer>
       )}
     </Modal>

@@ -21,13 +21,13 @@ export const OperationTitle = ({ coreTx }: Props) => {
   return (
     <>
       <TransactionTitle
-        className="w-[186px]"
+        className="w-[186px] shrink-0"
         title={isXcmTransaction(coreTx) ? t('operations.titles.crossChainTransfer') : t('operations.titles.transfer')}
         icon="transferConfirm"
       />
 
       {asset && amount && (
-        <div className="w-[160px]">
+        <div className="w-[160px] shrink-0">
           <AssetBalance value={amount} asset={asset} showIcon />
         </div>
       )}
