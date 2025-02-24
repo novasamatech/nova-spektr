@@ -284,7 +284,7 @@ sample({
     return nonNullable(wallet) && submitUtils.isSuccessResult(results[0].result);
   },
   fn: (wallet) => wallet!,
-  target: multisigsModel.convertMultisigToFlexible,
+  target: multisigsModel.convertRegularToFlexible,
 });
 
 sample({

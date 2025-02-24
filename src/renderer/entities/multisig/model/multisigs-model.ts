@@ -404,10 +404,10 @@ sample({
 });
 
 // Convert regular multisig to flexible
-const convertMultisigToFlexible = createEvent<MultisigWallet | null>();
+const convertRegularToFlexible = createEvent<MultisigWallet | null>();
 
 sample({
-  clock: convertMultisigToFlexible,
+  clock: convertRegularToFlexible,
   filter: nonNullable,
   fn: (wallet) => {
     return { ...wallet!, activated: false, type: WalletType.FLEXIBLE_MULTISIG };
@@ -419,5 +419,5 @@ export const multisigsModel = {
   subscribe,
   request,
   convertFlexibleToRegular,
-  convertMultisigToFlexible,
+  convertRegularToFlexible,
 };

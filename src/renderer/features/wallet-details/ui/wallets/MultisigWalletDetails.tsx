@@ -35,7 +35,7 @@ const {
 
 const {
   models: { convertToFlexibleModel },
-  views: { ConvertMultisigToFlexible },
+  views: { ConvertRegularToFlexible },
 } = convertToFlexibleFeature;
 
 type Props = {
@@ -360,7 +360,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
-      <ConvertMultisigToFlexible />
+      <ConvertRegularToFlexible />
     </>
   );
 };

@@ -12,7 +12,7 @@ import { convertToFlexibleModel } from '../model/convert-to-flexible-model';
 
 import { ConvertToFlexibleConfirm } from './ConvertToFlexibleConfirm';
 
-export const ConvertMultisigToFlexible = () => {
+export const ConvertRegularToFlexible = () => {
   const { t } = useI18n();
 
   const step = useUnit(convertToFlexibleModel.$step);
