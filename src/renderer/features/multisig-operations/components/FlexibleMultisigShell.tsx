@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Chain,
-  type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
+  type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
   type Signatory,
@@ -30,23 +30,37 @@ import RejectTxModal from './modals/RejectTx';
 
 type Props = {
   tx: FlexibleMultisigTransactionDS;
-  account: FlexibleMultisigAccount;
+  account: MultisigAccount;
 };
 
 export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const { t } = useI18n();
   const { connection, chain, api, extendedChain } = useNetworkData(tx.chainId);
 
-  const events = useUnit(operationsModel.$multisigEvents);
+  const events = useStoreMap({
+    store: operationsModel.$multisigEvents,
+    keys: [tx],
+    fn: (events, [operation]) => {
+      return events.filter(
+        (e) =>
+          e.txAccountId === operation.accountId &&
+          e.txChainId === operation.chainId &&
+          e.txCallHash === operation.callHash &&
+          e.txBlock === operation.blockCreated &&
+          e.txIndex === operation.indexCreated,
+      );
+    },
+  });
+
   const wallets = useUnit(walletModel.$wallets);
 
-  const approvals = events?.filter(e => e.status === 'SIGNED') || [];
-
-  const isRejectAvailable = wallets.some(wallet => {
-    const hasDepositor = wallet.accounts.some(account => account.accountId === tx.depositor);
+  const isRejectAvailable = wallets.some((wallet) => {
+    const hasDepositor = wallet.accounts.some((account) => account.accountId === tx.depositor);
 
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });
+
+  const approvals = events.filter((e) => e.status === 'SIGNED');
 
   return (
     <div className="relative flex h-full flex-col items-center overflow-y-auto">
@@ -196,7 +210,7 @@ const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTran
 type ConfirmRejectParams = {
   api: ApiPromise;
   tx: MultisigTransaction;
-  account: FlexibleMultisigAccount;
+  account: MultisigAccount;
   chain: Chain;
   children: React.ReactNode;
 };
