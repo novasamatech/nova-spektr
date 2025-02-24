@@ -21,6 +21,12 @@ import { memberSalary } from './memberSalary';
 import { profile } from './profile';
 import { referendumList } from './referendums';
 
+const $hasPermission = profile.$account.map(account => {
+  return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
+});
+
+const $hasAccount = profile.$account.map(nonNullable);
+
 const $basketOperations = combine(basketOperations.$list, profile.$member, (operations, member) => {
   return operations.filter(
     operation =>
@@ -130,10 +136,10 @@ const $list = combine(
     salaryTasks: $salaryTasks,
     referendumTasks: $referendumTasks,
     operations: $basketOperationsIds,
-    account: profile.$account,
+    hasPermission: $hasPermission,
   },
-  ({ salaryTasks, referendumTasks, operations, account }) => {
-    if (account && accountService.hasPermissionToMakeActions(account)) {
+  ({ salaryTasks, referendumTasks, operations, hasPermission }) => {
+    if (hasPermission) {
       const operationsMap = toKeysRecord(operations);
       return [...salaryTasks, ...referendumTasks]
         .filter(t => !(t.id in operationsMap))
@@ -144,7 +150,16 @@ const $list = combine(
   },
 );
 
+const $showReadyToSignScreen = combine(
+  $basketOperations,
+  $list,
+  (operations, list) => operations.length > 0 && list.length === 0,
+);
+
 export const tasks = {
+  $showReadyToSignScreen,
+  $hasPermission,
+  $hasAccount,
   $basketOperations,
   $list,
 };
