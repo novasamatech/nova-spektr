@@ -210,11 +210,11 @@ sample({
   filter: ({ apis }, multisigs) => multisigs.length > 0 && multisigs.some((m) => apis[m.chain.chainId]),
   fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
     const accounts = indexedMultisigs.filter((multisigResult) => {
-      return multisigAccounts.some((a) => {
+      return multisigAccounts.every((a) => {
         const isSameAccountId = a.accountId === multisigResult.accountId;
         const isUniversal = accountService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
 
-        return isSameAccountId && isUniversal;
+        return !isSameAccountId && !isUniversal;
       });
     });
 
@@ -454,4 +454,8 @@ export const multisigsModel = {
   request,
   convertFlexibleToRegular,
   convertRegularToFlexible,
+
+  __test: {
+    requestIdentitiesFx,
+  },
 };

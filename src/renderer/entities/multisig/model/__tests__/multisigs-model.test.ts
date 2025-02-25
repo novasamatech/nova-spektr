@@ -62,7 +62,8 @@ describe('multisigs model', () => {
         .set(networkModel.$apis, { '0x01': {} }),
       handlers: new Map()
         .set(walletModel.createWallets, spySaveMultisig)
-        .set(notificationModel.events.notificationsAdded, () => {}),
+        .set(notificationModel.events.notificationsAdded, () => {})
+        .set(multisigsModel.__test.requestIdentitiesFx, () => []),
     });
 
     allSettled(multisigsModel.subscribe, { scope });
