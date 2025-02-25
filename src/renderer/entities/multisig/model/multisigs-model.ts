@@ -145,25 +145,12 @@ sample({
 });
 
 type FilteredMultisigParams = {
-  multisigAccounts: AnyAccount[];
-  indexedMultisigs: MultisigResult[];
   apis: Record<ChainId, ApiPromise>;
+  accounts: MultisigResult[];
 };
 const enrichIndexedMultisigsFx = createEffect(
-  async ({ multisigAccounts, indexedMultisigs }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
-    // filter out existing multisigs
-    const filteredMultisigs = indexedMultisigs.filter((multisigResult) => {
-      const match = multisigAccounts.find((a) => {
-        const isSameAccountId = a.accountId === multisigResult.accountId;
-        const isUniversal = accountsService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
-
-        return isSameAccountId && isUniversal;
-      });
-
-      return nullable(match);
-    });
-
-    if (filteredMultisigs.length === 0) return [];
+  async ({ accounts }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
+    if (accounts.length === 0) return [];
 
     // TODO: uncomment when flexible multisigs will be supported
     // const { regularMultisigs, flexibleMultisigs } = await multisigService.findFlexibleMultisigs(
@@ -204,13 +191,13 @@ const enrichIndexedMultisigsFx = createEffect(
 
     // return [...buildRegular, ...buildFlex];
 
-    return filteredMultisigs.map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
-      return {
+    return accounts.map(
+      ({ threshold, accountId, signatories, chain }): GetMultisigResponse => ({
         type: 'multisig',
         account: multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain }),
         chain,
-      };
-    });
+      }),
+    );
   },
 );
 
@@ -221,7 +208,18 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ apis }, multisigs) => multisigs.length > 0 && multisigs.some((m) => apis[m.chain.chainId]),
-  fn: ({ multisigAccounts, apis }, indexedMultisigs) => ({ multisigAccounts, apis, indexedMultisigs }),
+  fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
+    const accounts = indexedMultisigs.filter((multisigResult) => {
+      return multisigAccounts.some((a) => {
+        const isSameAccountId = a.accountId === multisigResult.accountId;
+        const isUniversal = accountsService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
+
+        return isSameAccountId && isUniversal;
+      });
+    });
+
+    return { apis, accounts };
+  },
   target: enrichIndexedMultisigsFx,
 });
 
@@ -285,7 +283,7 @@ sample({
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity?.name ?? address,
+        name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : address,
         type: WalletType.MULTISIG,
         signingType: SigningType.MULTISIG,
       };
@@ -310,7 +308,7 @@ sample({
 
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity?.name ?? address,
+        name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : address,
         type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
         activated: activated ?? false,

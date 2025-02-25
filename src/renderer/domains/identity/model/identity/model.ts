@@ -54,12 +54,10 @@ const {
       const parent = parentIdentities[index];
       if (nullable(parent?.identity)) continue;
 
-      const subIdentityName = subIdentities[index]?.identity?.[1] ?? '';
-      const identityName = parent.identity[0].info.display;
-
       result[parent.account] = {
         accountId: parent.account,
-        name: subIdentityName ? `${identityName}/${subIdentityName}` : identityName,
+        name: parent.identity[0].info.display,
+        subName: subIdentities[index]?.identity?.[1],
         email: parent.identity[0].info.email,
         image: parent.identity[0].info.image,
       };
