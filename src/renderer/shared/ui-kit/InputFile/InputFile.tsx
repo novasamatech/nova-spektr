@@ -25,7 +25,7 @@ export const InputFile = forwardRef<HTMLInputElement, Props>(
       const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);
       const acceptedFormats = props.accept?.split(',');
 
-      if (acceptedFormats && !(acceptedFormats.includes(file.type) || acceptedFormats.includes(fileFormat))) return;
+      if (acceptedFormats && !acceptedFormats.includes(file.type) && !acceptedFormats.includes(fileFormat)) return;
 
       onChange?.(file);
       setFileName(file.name);

@@ -23,13 +23,14 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
@@ -56,7 +57,8 @@ const txsConfirmed = createEvent();
 const $step = restore(stepChanged, Step.NONE);
 
 const $walletData = combine({
-  wallet: walletModel.$activeWallet,
+  wallet: walletSelect.$selectedWallet,
+  accounts: walletSelect.$selectedAccounts,
   chain: networkSelectorModel.$governanceChain,
 });
 
@@ -548,11 +550,15 @@ sample({
     return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
+    const accounts = walletData.chain ? accountService.filterAccountOnChain(walletData.accounts, walletData.chain) : [];
+    const account = accounts.at(0);
+    if (!account) throw new Error('Account not found');
+
     return coreTxs!.map((coreTx) => ({
-      initiatorWallet: walletData.wallet!.id,
+      initiatorAccountId: account.accountId,
       coreTx,
       txWrappers,
-      groupId: Date.now(),
+      createdAt: Date.now(),
     }));
   },
   target: basketOperations.addTransactions,

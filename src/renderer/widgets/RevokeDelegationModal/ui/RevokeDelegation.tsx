@@ -5,16 +5,13 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
+import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import {
-  ConfirmSlider,
-  RevokeDelegationConfirmation as Confirmation,
-  basketUtils,
-} from '@/features/operations/OperationsConfirm';
+import { ConfirmSlider, RevokeDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { revokeDelegationModel } from '../model/revoke-delegation-model';
 
 export const RevokeDelegation = () => {

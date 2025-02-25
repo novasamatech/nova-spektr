@@ -13,16 +13,14 @@ export const networkService = {
   createApi,
 };
 
-function createApi(chainId: ChainId, provider: ProviderInterface): Promise<ApiPromise> {
-  const api = new ApiPromise({
+function createApi(chainId: ChainId, provider: ProviderInterface) {
+  return new ApiPromise({
     provider,
     noInitWarn: true,
     throwOnConnect: true,
     throwOnUnknown: true,
     ...EXTENSIONS[chainId]?.provider,
   });
-
-  return api.isReady;
 }
 
 type ProviderParams = {
@@ -73,5 +71,5 @@ function createSubstrateProvider(chainId: ChainId, metadata?: ChainMetadata): Pr
 function createWebsocketProvider({ nodes, metadata }: ProviderParams): ProviderWithMetadata {
   const CachedWsProvider = createCachedProvider(WsProvider, metadata);
 
-  return new CachedWsProvider(nodes, 2000);
+  return new CachedWsProvider(nodes, 5000);
 }

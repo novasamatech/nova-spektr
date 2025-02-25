@@ -26,7 +26,7 @@ import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identityDomain } from '@/domains/identity';
-import { type AnyAccount, accounts, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -212,7 +212,7 @@ sample({
     const accounts = indexedMultisigs.filter((multisigResult) => {
       return multisigAccounts.some((a) => {
         const isSameAccountId = a.accountId === multisigResult.accountId;
-        const isUniversal = accountsService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
+        const isUniversal = accountService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
 
         return isSameAccountId && isUniversal;
       });
@@ -437,8 +437,21 @@ sample({
   target: accounts.updateAccount,
 });
 
+// Convert regular multisig to flexible
+const convertRegularToFlexible = createEvent<MultisigWallet | null>();
+
+sample({
+  clock: convertRegularToFlexible,
+  filter: nonNullable,
+  fn: (wallet) => {
+    return { ...wallet!, activated: false, type: WalletType.FLEXIBLE_MULTISIG };
+  },
+  target: walletModel.events.updateWalletWithDB,
+});
+
 export const multisigsModel = {
   subscribe,
   request,
   convertFlexibleToRegular,
+  convertRegularToFlexible,
 };

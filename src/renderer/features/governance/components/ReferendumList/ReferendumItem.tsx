@@ -1,27 +1,39 @@
 import { type ApiPromise } from '@polkadot/api';
+import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, HeadlineText, Shimmering } from '@/shared/ui';
-import { ReferendumVoteChart, TrackInfo, Voted, referendumService, votingService } from '@/entities/governance';
+import { nonNullable } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText } from '@/shared/ui';
+import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
+import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
-import { VotedBy } from './VotedBy';
 
 type Props = {
-  isTitlesLoading: boolean;
-  referendum: AggregatedReferendum;
   api: ApiPromise;
+  asset: Asset;
+  referendum: AggregatedReferendum;
+  isTitlesLoading: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect }: Props) => {
+export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
+
+  const voter = useStoreMap({
+    store: proposerIdentityAggregate.$proposers,
+    keys: [referendum.votedByDelegate?.delegateId],
+    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+  });
 
   const voteFractions =
     referendumService.isOngoing(referendum) && approvalThreshold
@@ -31,7 +43,7 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
   const titleNode =
     referendum.title ||
     (isTitlesLoading ? (
-      <Shimmering height="1em" width="28ch" />
+      <Skeleton height="1em" width="28ch" />
     ) : (
       t('governance.referendums.referendumTitle', { index: referendumId })
     ));
@@ -39,8 +51,6 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
-        <Voted active={referendum.voting.votes.length > 0} />
-        <VotedBy address={referendum.votedByDelegate} />
         <VotingStatusBadge referendum={referendum} />
 
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
@@ -50,6 +60,7 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
         </div>
       </div>
+
       <div className="flex w-full items-start gap-x-6">
         <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
         <div className="shrink-0 basis-[200px]">
@@ -58,6 +69,21 @@ export const ReferendumItem = memo(({ referendum, isTitlesLoading, api, onSelect
           ) : null}
         </div>
       </div>
+
+      {referendum.voting.votes.length > 0 && <VotedByAccount active />}
+
+      {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
+        <VotedByDelegate
+          asset={asset}
+          address={referendum.votedByDelegate.delegateId}
+          voterName={voter?.parent.name}
+          decision={referendum.votedByDelegate.decision}
+          votingPower={votingService.calculateVotingPower(
+            referendum.votedByDelegate.amount,
+            referendum.votedByDelegate.conviction,
+          )}
+        />
+      )}
     </ListItem>
   );
 });

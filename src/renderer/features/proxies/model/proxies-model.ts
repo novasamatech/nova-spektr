@@ -25,7 +25,7 @@ import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type IdentityMap, identityDomain } from '@/domains/identity';
-import { type AnyAccount, accountsService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
@@ -168,7 +168,7 @@ const findAllProxiesFx = attach({
       .filter(proxiesUtils.chainSupportProxy)
       .map((chain) => ({
         chain,
-        accounts: accountsService.filterAccountOnChain(accounts, chain),
+        accounts: accountService.filterAccountOnChain(accounts, chain),
       }));
   },
   effect: series(findProxiesFx, { parallel: true, skipErrors: true }),

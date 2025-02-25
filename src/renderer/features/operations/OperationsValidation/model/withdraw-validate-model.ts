@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
-import { type Store, createEffect, createEvent, restore, sample, scopeBind } from 'effector';
+import { type Store, attach, createEffect, createEvent, restore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
 import {
@@ -38,10 +38,8 @@ type StakingParams = {
   api: ApiPromise;
   addresses: Address[];
 };
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
-  const boundStakingSet = scopeBind(stakingSet, { safe: true });
-
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
+const fetchStakingFx = createEffect(({ chainId, api, addresses }: StakingParams) => {
+  return useStakingData().fetchLedger(chainId, api, addresses);
 });
 
 type ValidateParams = {
@@ -56,7 +54,7 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(
+const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, staking, era, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
@@ -94,24 +92,6 @@ const validateFx = createEffect(
 );
 
 sample({
-  clock: validationStarted,
-  source: {
-    apis: networkModel.$apis,
-  },
-  filter: ({ apis }, { transaction }) => Boolean(apis[transaction.chainId]),
-  fn: ({ apis }, { transaction }) => {
-    const api = apis[transaction.chainId];
-
-    return {
-      api,
-      addresses: [transaction.address],
-      chainId: transaction.chainId,
-    };
-  },
-  target: [subscribeStakingFx, getEraFx],
-});
-
-sample({
   clock: combineEvents({
     events: { validation: validationStarted, staking: $staking.updates, era: getEraFx.doneData },
     reset: txValidated,
@@ -142,19 +122,39 @@ sample({
       signerOptions,
     };
   },
-  target: validateFx,
+  target: rootValidateFx,
 });
 
-sample({
-  clock: validateFx.doneData,
-  target: txValidated,
+const validateFx = attach({
+  source: {
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+    balances: balanceModel.$balances,
+  },
+  async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
+    const chain = chains[transaction.chainId];
+    const api = apis[transaction.chainId];
+    const asset = chain.assets[0];
+    const era = await getEraFx({ api });
+    const staking = await fetchStakingFx({
+      api,
+      addresses: [transaction.address],
+      chainId: transaction.chainId,
+    });
+
+    return rootValidateFx({
+      id,
+      api,
+      transaction,
+      chain,
+      asset,
+      balances,
+      era,
+      staking,
+    });
+  },
 });
 
 export const withdrawValidateModel = {
-  events: {
-    validationStarted,
-  },
-  output: {
-    txValidated,
-  },
+  validate: validateFx,
 };

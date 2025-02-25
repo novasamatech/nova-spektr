@@ -2,8 +2,10 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
 import { Box, SearchInput, Select } from '@/shared/ui-kit';
+import { networkSelectorModel } from '@/features/governance';
 import { SortType } from '../common/constants';
 import { delegationModel } from '../model/delegation-model';
 
@@ -23,14 +25,21 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   const delegationList = useUnit(delegationModel.$delegateList);
   const isListLoading = useUnit(delegationModel.$isListLoading);
   const sortType = useUnit(delegationModel.$sortType);
+  const network = useUnit(networkSelectorModel.$network);
+
+  if (nullable(network)) {
+    return null;
+  }
 
   return (
     <div className="flex h-full flex-col bg-main-app-background py-4">
-      {isListLoading ? (
+      {isListLoading && (
         <div className="flex h-full items-center justify-center">
           <Loader color="primary" size={25} />
         </div>
-      ) : (
+      )}
+
+      {!isListLoading && (
         <>
           <div className="mx-5 mb-4 grid grid-cols-[1fr,auto] items-center gap-x-4">
             <SearchInput
@@ -64,15 +73,19 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
             )}
           </div>
 
-          <AddToRegistry className="mx-5 mb-6 w-auto" />
+          <AddToRegistry className="mx-5 mb-5 w-auto" />
 
-          <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto">
+          <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto pt-0.5">
             <ul className="flex w-[400px] flex-col gap-y-2">
-              {delegationList.map((delegate) => (
-                <button key={delegate.accountId} onClick={() => onClick(delegate)}>
-                  <DelegationCard key={delegate.accountId} delegate={delegate} />
-                </button>
-              ))}
+              {delegationList.map((delegate) => {
+                const accountId = toAccountId(delegate.address ?? delegate.accountId);
+
+                return (
+                  <li key={accountId}>
+                    <DelegationCard asset={network.asset} delegate={delegate} onClick={() => onClick(delegate)} />
+                  </li>
+                );
+              })}
             </ul>
 
             {delegationList.length === 0 && <EmptyState />}

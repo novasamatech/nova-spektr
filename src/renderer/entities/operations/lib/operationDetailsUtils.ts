@@ -21,7 +21,7 @@ import {
 import { dictionary, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -93,7 +93,7 @@ export const getSignatoryAccounts = (
       result.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountUtils.isChainDependant(a) && accountsService.isChainAccount(a) && a.chainId === chainId,
+        (a) => accountUtils.isChainDependant(a) && accountService.isChainAccount(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
         result.push(legacySignatoryAccount);
@@ -153,13 +153,10 @@ export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefine
 };
 
 export const getSender = (tx: MultisigTransaction): Address | undefined => {
-  if (!tx.transaction) return undefined;
+  const coreTx = getCoreTx(tx);
+  if (!coreTx) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction.real;
-  }
-
-  return tx.transaction.address;
+  return coreTx.address;
 };
 
 export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {

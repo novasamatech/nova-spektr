@@ -7,7 +7,6 @@ export { approveThresholdModel } from './model/approveThreshold';
 export { supportThresholdModel } from './model/supportThreshold';
 export { proposerIdentityModel } from './model/proposerIdentity';
 
-export { Voted } from './ui/Voted/Voted';
 export { TrackInfo } from './ui/TrackInfo';
 export { ReferendumVoteChart } from './ui/VoteCharts';
 export { ReferendumTimer } from './ui/ReferendumTimer/ReferendumTimer';

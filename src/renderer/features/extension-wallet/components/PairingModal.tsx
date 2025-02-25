@@ -7,7 +7,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, IconButton, Identicon, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Carousel, Field, Input, Modal, Select } from '@/shared/ui-kit';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { pairingForm } from '../model/pairingForm';
 import { type ExtensionType } from '../types';
@@ -39,7 +39,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
   const list = useMemo(() => {
     if (!account || step === 'idle') return [];
 
-    const filteredChains = Object.values(chains).filter((c) => accountsService.isAccountAvailableOnChain(account, c));
+    const filteredChains = Object.values(chains).filter((c) => accountService.isAccountAvailableOnChain(account, c));
 
     return filteredChains.map((chain) => [chain, account.accountId] as const);
   }, [chains, account, step]);

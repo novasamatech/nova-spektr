@@ -34,7 +34,7 @@ const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chain
   chainId ? (apis[chainId] ?? null) : null,
 );
 
-const $network = combine($fellowshipChain, $fellowshipChainApi, (chain, api) => {
+const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, ({ chain, api }) => {
   if (nullable(chain) || nullable(api)) return null;
 
   const asset = chain.assets.at(0);

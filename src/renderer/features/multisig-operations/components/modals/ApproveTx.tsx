@@ -8,6 +8,7 @@ import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '
 import {
   type Account,
   type Address,
+  type Asset,
   type Chain,
   type FlexibleMultisigAccount,
   type HexString,
@@ -18,19 +19,26 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { TEST_ADDRESS, getAssetById, toAddress, transferableAmount, validateCallData } from '@/shared/lib/utils';
+import {
+  TEST_ADDRESS,
+  getAssetById,
+  getAssetByTypeExtras,
+  getNativeAsset,
+  toAddress,
+  transferableAmount,
+  validateCallData,
+} from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { multisigUtils, useMultisigEvent } from '@/entities/multisig';
+import { getTransactionFromMultisigTx, multisigUtils, useMultisigEvent } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
   OperationResult,
-  getMultisigSignOperationTitle,
   getTxFromCallData,
   isXcmTransaction,
   transactionService,
@@ -42,6 +50,7 @@ import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
 import { SignatorySelectModal } from './SignatorySelectModal';
+import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
   tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
@@ -81,10 +90,18 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
+  const transaction = getTransactionFromMultisigTx(tx);
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx.transaction), t, feeTx?.type, tx);
 
-  const nativeAsset = chain.assets[0];
-  const asset = getAssetById(tx.transaction?.args.assetId, chain.assets);
+  const nativeAsset = getNativeAsset(chain.assets);
+  let asset: Asset | null = null;
+  if (transaction) {
+    if (transaction.args.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
+    } else {
+      asset = getAssetById(transaction.args.asset, chain.assets) ?? null;
+    }
+  }
 
   const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
     if (permissionUtils.canApproveMultisigTx(wallet)) {
@@ -226,7 +243,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
       getTransactionFee: transactionService.getTransactionFee,
     });
 
-  const thresholdReached = events.filter((e) => e.status === 'SIGNED').length === account.threshold - 1;
+  const thresholdReached = events.filter(e => e.status === 'SIGNED').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'SIGNING' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;
@@ -272,7 +289,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
 
         {activeStep === Step.SIGNING && approveTx && api && signAccount && (
           <SigningSwitch
-            signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
+            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             apis={apis}
             signingPayloads={[
               {

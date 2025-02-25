@@ -1,10 +1,10 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { delegationService } from '@/shared/api/governance';
+import { type DelegateInfo, delegationService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId, type ReferendumId } from '@/shared/core';
 
-const $delegatedVotes = createStore<Record<ChainId, Record<ReferendumId, Address>>>({});
+const $delegatedVotes = createStore<Record<ChainId, Record<ReferendumId, DelegateInfo>>>({});
 
 type RequestParams = {
   addresses: Address[];

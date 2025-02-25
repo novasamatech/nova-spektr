@@ -23,7 +23,7 @@ export const $defaultFeatures = createStore({
   settings: true,
 
   multisig: true,
-  flexibleMultisig: true,
+  flexibleMultisig: isDev(),
   proxy: true,
   polkadotVault: true,
   walletConnect: true,

@@ -1,3 +1,3 @@
 export { createFeeCalculator } from './createFeeCalculator';
-export { createDepositCalculator } from './createDepositCalculator';
+export { createMultisigDeposit } from './createMultisigDeposit';
 export { createTxStore } from './createTxStore';

@@ -5,7 +5,7 @@ import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { referendum, referendumService, trackService, voting } from '@/domains/collectives';
-import { accountsService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 
 import { fellowshipVotingFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -38,7 +38,7 @@ const $hasRequiredRank = combine(
   },
 );
 
-const $canVote = $votingAccount.map(a => nonNullable(a) && accountsService.hasPermissionToMakeActions(a));
+const $canVote = $votingAccount.map(a => nonNullable(a) && accountService.hasPermissionToMakeActions(a));
 
 const $accountsVotes = restore(
   attachToFeatureInput(fellowshipVotingFeature, $voting).map(({ input: { account }, data: voting }) => {
@@ -52,8 +52,8 @@ const $referendumVoting = combine($accountsVotes, $referendumId, (voting, refere
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipVotingFeature, flow.open),
-  fn({ data: { referendumId }, input: { api, chainId, palletType } }) {
+  clock: attachToFeatureInput(fellowshipVotingFeature, $referendumId),
+  fn({ data: referendumId, input: { api, chainId, palletType } }) {
     return {
       api,
       chainId,

@@ -353,13 +353,17 @@ sample({
   filter: ({ store, coreTxs, txWrappers }) => {
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorWallet: store!.wallet.id,
+  fn: ({ store, coreTxs, txWrappers }) => {
+    const account = store!.shards.at(0);
+    if (!account) throw new Error('Account not found');
+
+    return coreTxs!.map((coreTx) => ({
+      initiatorAccountId: account.accountId,
       coreTx,
       txWrappers,
-      groupId: Date.now(),
-    })),
+      createdAt: Date.now(),
+    }));
+  },
   target: basketOperations.addTransactions,
 });
 

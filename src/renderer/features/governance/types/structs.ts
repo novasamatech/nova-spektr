@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type ClaimAction } from '@/shared/api/governance';
+import { type ClaimAction, type DelegateInfo } from '@/shared/api/governance';
 import {
   type Account,
   type AccountVote,
@@ -19,7 +19,7 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
-  votedByDelegate?: Address | null;
+  votedByDelegate: DelegateInfo | null;
   voting: {
     of: number;
     votes: { voter: Address; vote: AccountVote }[];

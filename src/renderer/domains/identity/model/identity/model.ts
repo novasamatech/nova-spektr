@@ -44,6 +44,7 @@ const {
   async fn({ api, accounts }) {
     if (accounts.length === 0) return {};
 
+    await api.isReady;
     const subIdentities = await identityPallet.storage.superOf(api, accounts);
     const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
     const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);

@@ -124,7 +124,7 @@ const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean 
 const Footer = ({ children, align = 'end' }: PropsWithChildren<{ align?: 'start' | 'end' }>) => {
   return (
     <footer
-      className={cnTw('flex h-fit gap-2 px-5 pb-4 pt-3', {
+      className={cnTw('flex h-fit items-center gap-2 px-5 pb-4 pt-3', {
         'justify-end': align === 'end',
         'justify-start': align === 'start',
       })}

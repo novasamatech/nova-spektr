@@ -1,8 +1,8 @@
-import { BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine } from 'effector';
 import uniq from 'lodash/uniq';
 
-import { type DelegatingVoting, type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
+import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { permissionUtils, walletModel } from '@/entities/wallet';
@@ -10,26 +10,28 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';
 
-const $totalDelegations = combine(
-  {
-    voting: votingAggregate.$activeWalletVotes,
-  },
-  ({ voting }): string => {
-    return Object.values(voting)
-      .reduce((acc, value) => {
-        const voting = Object.values(value).reduce<DelegatingVoting | undefined>((acc, vote) => {
-          if (votingService.isDelegating(vote)) {
-            return acc?.balance.gt(vote.balance) ? acc : vote;
-          }
+const $delegatedVotingPower = votingAggregate.$activeWalletVotes.map((voting) => {
+  let total = BN_ZERO;
 
-          return acc;
-        }, undefined);
+  for (const walletVotes of Object.values(voting)) {
+    let maxDelegatingPower: BN | null = null;
 
-        return voting ? acc.iadd(voting.balance) : acc;
-      }, new BN(0))
-      .toString();
-  },
-);
+    for (const vote of Object.values(walletVotes)) {
+      if (!votingService.isDelegating(vote)) continue;
+
+      const votingPower = votingService.calculateVotingPower(vote.balance, vote.conviction);
+      if (!maxDelegatingPower || votingPower.gt(maxDelegatingPower)) {
+        maxDelegatingPower = votingPower;
+      }
+    }
+
+    if (maxDelegatingPower) {
+      total = total.add(maxDelegatingPower);
+    }
+  }
+
+  return total;
+});
 
 const $activeDelegations = combine(
   {
@@ -108,5 +110,5 @@ export const delegationAggregate = {
   $activeWalletDelegatedTracks,
   $activeTracks,
   $hasDelegations,
-  $totalDelegations,
+  $delegatedVotingPower,
 };

@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { createEffect, createEvent, sample } from 'effector';
+import { attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { governanceService, referendumService, votingService } from '@/entities/governance';
+import { governanceService, referendumService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import {
@@ -15,8 +15,6 @@ import {
   type ValidationStartedParams,
   validationUtils,
 } from '@/features/operations/OperationsValidation';
-
-const validationStarted = createEvent<ValidationStartedParams>();
 
 type ValidateParams = {
   id: ID;
@@ -28,7 +26,7 @@ type ValidateParams = {
   signerOptions?: Partial<SignerOptions>;
 };
 
-const validateFx = createEffect(
+const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
     const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
@@ -75,37 +73,30 @@ const validateFx = createEffect(
   },
 );
 
-sample({
-  clock: validationStarted,
+const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
-  filter: ({ apis }, { transaction }) => transaction.chainId in apis,
-  fn: ({ apis, chains, balances }, { id, transaction, signerOptions }) => {
+  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = votingService.getVotingAsset(chain);
+    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
 
     return {
       id,
       api,
       transaction,
       chain,
-      asset: asset!,
+      asset,
       balances,
-      signerOptions,
+      feeMap,
     };
   },
-  target: validateFx,
+  effect: rootValidateFx,
 });
 
 export const voteValidateModel = {
-  events: {
-    validationStarted,
-  },
-  output: {
-    txValidated: validateFx.doneData,
-  },
+  validate: validateFx,
 };

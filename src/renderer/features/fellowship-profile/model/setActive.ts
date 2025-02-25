@@ -131,7 +131,7 @@ sample({
 
     // @ts-expect-error TODO fix id field
     const tx: BasketTransaction = {
-      initiatorWallet: account.walletId,
+      initiatorAccountId: account.accountId,
       coreTx: transactions.coreTx,
       txWrappers,
     };

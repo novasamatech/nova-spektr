@@ -1,4 +1,5 @@
 import { type HexString, TransactionType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { basketOperationsService } from './service';
 
@@ -13,9 +14,10 @@ describe('basketOperationsService', () => {
 
     const basketTx = {
       id: 0,
-      initiatorWallet: 1,
+      initiatorAccountId: '0x00' as AccountId,
       coreTx: neededCoreTx,
       txWrappers: [],
+      createdAt: Date.now(),
     };
 
     const coreTx = basketOperationsService.getCoreTx(basketTx);

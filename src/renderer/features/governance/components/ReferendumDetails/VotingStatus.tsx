@@ -45,6 +45,7 @@ export const VotingStatus = ({
     referendumService.isOngoing(referendum) && approvalThreshold
       ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
       : null;
+
   const votedCount =
     referendumService.isOngoing(referendum) && supportThreshold
       ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
@@ -59,6 +60,7 @@ export const VotingStatus = ({
 
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
       </div>
+
       {votedFractions && (
         <ReferendumVoteChart
           descriptionPosition="bottom"

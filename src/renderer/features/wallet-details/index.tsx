@@ -4,11 +4,11 @@ import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { IconButton } from '@/shared/ui';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
-import { walletActionsSlot as multisigActionsSlot } from '@/features/wallet-multisig';
-import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/wallet-polkadot-vault';
-import { walletActionsSlot as proxiedActionsSlot } from '@/features/wallet-proxied';
-import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet-wallet-connect';
-import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/wallet-watch-only';
+import { walletActionsSlot as multisigActionsSlot } from '@/features/multisig-wallet';
+import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/polkadot-vault-wallet';
+import { walletActionsSlot as proxiedActionsSlot } from '@/features/proxied-wallet';
+import { walletActionsSlot as walletConnectActionsSlot } from '@/features/wallet-connect-wallet';
+import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only-wallet';
 
 import { WalletDetails } from './ui/components';
 

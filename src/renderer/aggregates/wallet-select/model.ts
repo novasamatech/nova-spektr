@@ -2,7 +2,7 @@ import { attach, combine, sample } from 'effector';
 
 import { type ID } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { accounts, accountsService } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 
 const $selectedWallet = walletModel.$wallets.map(wallets => {
@@ -14,7 +14,7 @@ const $selectedWalletId = $selectedWallet.map(w => w?.id ?? null);
 const $selectedAccounts = combine($selectedWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
 
-  return accountsService.filterAccountsByWallet(accounts, wallet.id);
+  return accountService.filterAccountsByWallet(accounts, wallet.id);
 });
 
 const selectWalletFx = attach({

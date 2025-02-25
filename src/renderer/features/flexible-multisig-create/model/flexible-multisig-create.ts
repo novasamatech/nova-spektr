@@ -32,7 +32,7 @@ import {
   toAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createDepositCalculator, createFeeCalculator } from '@/shared/transactions';
+import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -40,7 +40,6 @@ import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { walletPairingModel } from '@/features/wallet-pairing';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -178,7 +177,7 @@ const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
   $transaction: $fakeTx,
 });
 
-const { $deposit: $multisigDeposit, $pending: $pendingDeposit } = createDepositCalculator({
+const { $multisigDeposit, $pending: $pendingDeposit } = createMultisigDeposit({
   $api: $api,
   $threshold: formModel.$createMultisigForm.fields.threshold.$value,
 });
@@ -513,11 +512,6 @@ sample({
 sample({
   clock: flexibleMultisigFeature.stopped,
   target: signatoryModel.$signatories.reinit,
-});
-
-sample({
-  clock: flow.close,
-  target: walletPairingModel.events.walletTypeCleared,
 });
 
 sample({

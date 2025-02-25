@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
-import { Modal, SearchInput } from '@/shared/ui-kit';
+import { Box, Modal, SearchInput } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { delegateDetailsModel } from '@/widgets/DelegateDetails';
@@ -14,47 +15,56 @@ import { DelegationCard } from './DelegationCard';
 export const CurrentDelegationModal = () => {
   const { t } = useI18n();
 
-  const isOpen = useUnit(currentDelegationModel.$isOpen);
-  const delegationList = useUnit(currentDelegationModel.$delegateList);
   const activeDelegations = useUnit(delegationAggregate.$activeDelegations);
-  const activeTracks = useUnit(delegationAggregate.$activeTracks);
+  const delegationList = useUnit(currentDelegationModel.$delegateList);
+  const isOpen = useUnit(currentDelegationModel.$isOpen);
   const isListLoading = useUnit(currentDelegationModel.$isListLoading);
   const query = useUnit(currentDelegationModel.$query);
-  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const network = useUnit(networkSelectorModel.$network);
+
+  if (nullable(network)) {
+    return null;
+  }
 
   return (
     <Modal isOpen={isOpen} size="md" height="lg" onToggle={() => currentDelegationModel.output.flowFinished()}>
       <Modal.Title close>
-        {chain && <OperationTitle title={t('governance.delegations.title')} chainId={chain.chainId} />}
+        <OperationTitle title={t('governance.delegations.title')} chainId={network.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
         <div className="flex h-full flex-col bg-main-app-background py-4">
-          {isListLoading ? (
+          {isListLoading && (
             <div className="flex h-full items-center justify-center">
               <Loader color="primary" size={25} />
             </div>
-          ) : (
+          )}
+
+          {!isListLoading && (
             <>
-              <div className="mx-5 mb-4">
+              <Box margin={[4, 5, 4, 5]}>
                 <SearchInput
                   value={query}
                   placeholder={t('general.input.searchPlaceholder')}
                   onChange={currentDelegationModel.events.queryChanged}
                 />
-              </div>
+              </Box>
 
               <div className="scrollbar-stable flex flex-1 flex-col items-center overflow-y-auto">
-                <ul className="flex w-[400px] flex-col gap-y-2">
-                  {delegationList.map((delegate) => (
-                    <button key={delegate.accountId} onClick={() => delegateDetailsModel.events.flowStarted(delegate)}>
-                      <DelegationCard
-                        key={delegate.accountId}
-                        delegate={delegate}
-                        votes={Object.values(activeDelegations[delegate.accountId] || {})}
-                        tracks={[...new Set(Object.values(activeTracks[delegate.accountId] || {}).flat())]}
-                      />
-                    </button>
-                  ))}
+                <ul className="flex w-[400px] flex-col gap-y-2 pt-0.5">
+                  {delegationList.map((delegate) => {
+                    const accountId = toAccountId(delegate.address ?? delegate.accountId);
+
+                    return (
+                      <li key={accountId}>
+                        <DelegationCard
+                          asset={network.asset}
+                          delegate={delegate}
+                          votes={Object.values(activeDelegations[delegate.accountId] || {})}
+                          onClick={() => delegateDetailsModel.events.flowStarted(delegate)}
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </>

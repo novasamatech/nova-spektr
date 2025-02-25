@@ -1,4 +1,4 @@
-import { type Store, combine, createEvent, restore as effectorRestore } from 'effector';
+import { type Store, combine, createEvent, createStore, restore as effectorRestore } from 'effector';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 
@@ -32,9 +32,10 @@ export const createStatus = <Input, const Reasons extends string>({
   const fail = createEvent<FailedStateParams>({ name: `${name}/fail` });
   const restore = createEvent({ name: `${name}/restore` });
   const $failed = effectorRestore(fail, null).reset(restore);
+  const $forceUpdate = createStore(0).on(restore, a => a + 1);
 
   const $state = combine(
-    { flag: $flag, enable, data: input, failed: $failed },
+    { flag: $flag, enable, data: input, failed: $failed, $counter: $forceUpdate },
     ({ flag, enable, data, failed }): State<Input> => {
       if (!enable) {
         return { status: 'idle' };

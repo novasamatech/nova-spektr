@@ -321,6 +321,14 @@
         "submittedRetention": "submitted evidence with a wish to retention"
       }
     },
+    "basket": {
+      "salaryInduct": "Activate salary",
+      "salaryPayout": "Withdraw salary",
+      "salaryRequest": "Request salary",
+      "setActive": "Change status",
+      "submitEvidence": "Submit evidence",
+      "vote": "Vote"
+    },
     "details": {
       "noDetails": "Details not found"
     },
@@ -408,7 +416,7 @@
           "required": "Comments are required"
         },
         "evidence": {
-          "label": "Evidence (document hash, url, etc.)",
+          "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
           "required": "Evidence are required"
         },
@@ -448,6 +456,9 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
+        "inductSalary": "Payments activation:",
+        "inductSalaryAction": "Activate",
+        "inductSalaryCall": "Your salary: {salary}, activate it.",
         "payoutSalary": "Withdraw",
         "payoutSalaryCall": "Payout a {salary} salary within:",
         "payoutSalarySuccess": "Salary payout was completed successfully.",
@@ -466,6 +477,8 @@
       "cardTitle": "Actions Required",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
+      "noAccountDescription": "Account not found. Please add or create account to the Polkadot Collectives network.",
+      "noAccountTitle": "List tasks is empty",
       "reviewBasket_one": "Confirm {count} decision",
       "reviewBasket_other": "Confirm {count} decisions",
       "skip": "Skip for now",
@@ -586,14 +599,17 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
+      "amountMultiply": "Amount & Multiply",
       "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
         "individual": "Individual",
+        "lockedAmount": "Locked amount",
         "organization": "Organization",
         "voted": "Voted last 30 days",
-        "votes": "Delegated votes"
+        "votes": "Delegated",
+        "votingPower": "Delegated voting power"
       },
       "confirmation": {
         "target": "Delegate",
@@ -611,7 +627,7 @@
       "delegatedTracksTitle": "Some tracks are unavailable for delegation",
       "emptyDescription": "Update the search or cancel filtering",
       "emptyTitle": "Nothing was found",
-      "formTitle": "Step 2. Select the number of votes and the multiplier.",
+      "formTitle": "Step 2. Select the number of votes and the multiplier",
       "group": {
         "admin": "Admin",
         "fellowship": "Fellowship",
@@ -730,7 +746,7 @@
       "yourDelegationsTitle": "Your delegations"
     },
     "delegations": {
-      "label": "Delegations",
+      "label": "Delegated voting power",
       "title": "Delegations on",
       "tracksLabel_one": "across { count } track",
       "tracksLabel_other": "across { count } tracks"
@@ -743,11 +759,12 @@
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
-      "vote": "Vote"
+      "vote": "Vote",
+      "voted": "Voted"
     },
     "locks": {
       "governanceLock": "Governance lock",
-      "lock": "Lock",
+      "lock": "Locked amount",
       "noLockedAmount": "No available locked token",
       "title": "Unlock on",
       "undelegatePeriod": "Undelegate period",
@@ -774,6 +791,8 @@
       "advanced": "Advanced",
       "aye": "Aye",
       "ayes": "Ayes",
+      "delegatingHint": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
+      "multishardHint": "Part of the accounts from the shared account is delegated, you can vote with the available accounts, ask your delegate to vote or remove delegation to be able to vote directly.",
       "nay": "Nay",
       "nays": "Nays",
       "proposer": "Proposer:",
@@ -785,8 +804,6 @@
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes_one": "{votes} vote",
-      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },
@@ -866,7 +883,8 @@
         "governanceLock": "Governance lock",
         "lockingPeriod": "Locking period",
         "networkFee": "Network fee",
-        "tracks": "Tracks"
+        "tracks": "Tracks",
+        "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
       "timeoutReferendumError": "This referendum has already passed"
@@ -882,7 +900,10 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
-    "votedBy": "Voted via",
+    "votedAye": "AYE <amount/>",
+    "votedAyeBy": "AYE <amount/> via <delegate/>",
+    "votedNay": "NAY <amount/>",
+    "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
@@ -897,8 +918,7 @@
       "listColumnAccount": "Account",
       "listColumnVote": "Vote",
       "listColumnVotingPower": "Voting power",
-      "title": "My votes",
-      "totalVotesCount": "{value} votes"
+      "title": "My votes"
     }
   },
   "importDB": {
@@ -1253,6 +1273,7 @@
       "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
       "approveMultisig": "Approve multisig operation",
+      "convertToFlexible": "Convert to flexible multisig on",
       "createPureProxy": "Add delegated authority (pure proxy)",
       "delegateOn": "Delegate on",
       "destinationOn": "Set reward destination on",
@@ -1325,7 +1346,7 @@
     "addProxy": {
       "accountLabel": "Account",
       "accountPlaceholder": "Select account",
-      "balanceAlertMultisig": "To pay proxy deposit with selected account",
+      "balanceAlertMultisig": "To pay proxy deposit with selected multisig",
       "balanceAlertRegular": "To pay proxy deposit and network fee with selected account",
       "balanceAlertTitle": "Not enough tokens",
       "delegateLabel": "Give authority to",
@@ -1846,6 +1867,7 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "convertToFlexibleAction": "Convert to flexible multisig",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
