@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 
 import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
@@ -38,7 +37,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   if (isXcmTransaction(transaction) && sender) {
     result.push(
       <DetailRow label={t('operation.details.sender')} className="text-text-secondary">
-        <Account accountId={toAccountId(sender)} variant="short" chain={chains[operation.chainId]} />
+        <Account accountId={sender} variant="short" chain={chains[operation.chainId]} />
       </DetailRow>,
     );
   }

@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
-  type Account,
-  type Address,
   type Asset,
   type Chain,
   type HexString,
@@ -23,12 +21,14 @@ import {
   getAssetById,
   getAssetByTypeExtras,
   getNativeAsset,
-  toAddress,
+  toAccountId,
   transferableAmount,
   validateCallData,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx, multisigUtils, useMultisigEvent } from '@/entities/multisig';
@@ -80,7 +80,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
   const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
-  const [signAccount, setSignAccount] = useState<Account>();
+  const [signAccount, setSignAccount] = useState<AnyAccount>();
 
   const [feeTx, setFeeTx] = useState<Transaction>();
   const [approveTx, setApproveTx] = useState<Transaction>();
@@ -102,7 +102,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
     }
   }
 
-  const availableAccounts = wallets.reduce<Account[]>((acc, wallet) => {
+  const availableAccounts = wallets.reduce<AnyAccount[]>((acc, wallet) => {
     if (permissionUtils.canApproveMultisigTx(wallet)) {
       acc.push(...wallet.accounts);
     }
@@ -123,7 +123,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   }, []);
 
   useEffect(() => {
-    setFeeTx(getMultisigTx(TEST_ADDRESS));
+    setFeeTx(getMultisigTx(toAccountId(TEST_ADDRESS)));
 
     if (!signAccount?.accountId) return;
 
@@ -167,14 +167,13 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
     setActiveStep(Step.CONFIRMATION);
   };
 
-  const getMultisigTx = (signer: Address): Transaction => {
-    const signerAddress = toAddress(signer, { prefix: chain?.addressPrefix });
+  const getMultisigTx = (signer: AccountId): Transaction => {
     const otherSignatories = multisigUtils.getOtherSignatories(account, signer, chain.addressPrefix);
     const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
 
     return {
       chainId: tx.chainId,
-      address: signerAddress,
+      accountId: signer,
       type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
         threshold: account.threshold,
@@ -190,7 +189,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
     };
   };
 
-  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: AnyAccount): Promise<boolean> => {
     if (!api || !feeTx || !signAccount.accountId || !nativeAsset) {
       return false;
     }
@@ -210,7 +209,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
     return new BN(fee).lte(new BN(transferableAmount(balance)));
   };
 
-  const selectSignerAccount = async (account: Account) => {
+  const selectSignerAccount = async (account: AnyAccount) => {
     setSignAccount(account);
     toggleSelectAccountModal();
 

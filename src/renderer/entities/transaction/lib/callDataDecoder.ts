@@ -6,6 +6,7 @@ import { type HexString } from '@polkadot/util/types';
 
 import { xcmService } from '@/shared/api/xcm';
 import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
 
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
@@ -137,7 +138,7 @@ const getDecodedTransaction = (
     console.log(`Unknown transaction type with section ${section} and method ${method}`);
 
     return {
-      address,
+      accountId: toAccountId(address),
       method,
       section,
       chainId: genesisHash,
@@ -168,7 +169,7 @@ const getDecodedTransaction = (
   }
 
   return {
-    address,
+    accountId: toAccountId(address),
     method,
     section,
     chainId: genesisHash,

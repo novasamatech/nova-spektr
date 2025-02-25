@@ -3,10 +3,10 @@ import { allSettled, fork } from 'effector';
 import { CryptoType, SigningType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 
-import { accountsDomainModel } from './model';
+import { accounts } from './model';
 import { type AnyAccount, type AnyAccountDraft } from './types';
 
-const accounts: AnyAccount[] = [
+const testAccounts: AnyAccount[] = [
   {
     id: 'test',
     type: 'chain',
@@ -31,31 +31,31 @@ const accounts: AnyAccount[] = [
 describe('accounts model', () => {
   it('should populate accounts', async () => {
     const scope = fork({
-      handlers: [[accountsDomainModel.populate, () => accounts]],
+      handlers: [[accounts.populate, () => testAccounts]],
     });
 
-    expect(scope.getState(accountsDomainModel.$populated)).toEqual(false);
+    expect(scope.getState(accounts.$populated)).toEqual(false);
 
-    await allSettled(accountsDomainModel.populate, { scope });
+    await allSettled(accounts.populate, { scope });
 
-    expect(scope.getState(accountsDomainModel.$list)).toEqual(accounts);
-    expect(scope.getState(accountsDomainModel.$populated)).toEqual(true);
+    expect(scope.getState(accounts.$list)).toEqual(testAccounts);
+    expect(scope.getState(accounts.$populated)).toEqual(true);
   });
 
   it('should create new accounts', async () => {
     const scope = fork({
-      handlers: [[accountsDomainModel.createAccounts, (accounts: AnyAccount[]) => accounts]],
+      handlers: [[accounts.createAccounts, (accounts: AnyAccount[]) => accounts]],
     });
 
-    await allSettled(accountsDomainModel.createAccounts, { scope, params: accounts });
+    await allSettled(accounts.createAccounts, { scope, params: testAccounts });
 
-    expect(scope.getState(accountsDomainModel.$list)).toEqual(accounts);
+    expect(scope.getState(accounts.$list)).toEqual(testAccounts);
   });
 
   it('should successfully update account', async () => {
     const scope = fork({
-      values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.updateAccount, () => true]],
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.updateAccount, () => true]],
     });
 
     const draft: AnyAccountDraft = {
@@ -68,18 +68,18 @@ describe('accounts model', () => {
       signingType: SigningType.WATCH_ONLY,
     };
 
-    await allSettled(accountsDomainModel.updateAccount, {
+    await allSettled(accounts.updateAccount, {
       scope,
       params: draft,
     });
 
-    expect(scope.getState(accountsDomainModel.$list)).toEqual([{ ...accounts[0], ...draft }, accounts[1]]);
+    expect(scope.getState(accounts.$list)).toEqual([{ ...testAccounts[0], ...draft }, testAccounts[1]]);
   });
 
   it('should skip update if account is not defined', async () => {
     const scope = fork({
-      values: [[accountsDomainModel.__test.$list, accounts]],
-      handlers: [[accountsDomainModel.updateAccounts, () => false]],
+      values: [[accounts.__test.$list, testAccounts]],
+      handlers: [[accounts.updateAccounts, () => false]],
     });
 
     const draft: AnyAccountDraft = {
@@ -92,25 +92,25 @@ describe('accounts model', () => {
       signingType: SigningType.WATCH_ONLY,
     };
 
-    await allSettled(accountsDomainModel.updateAccount, {
+    await allSettled(accounts.updateAccount, {
       scope,
       params: draft,
     });
 
-    expect(scope.getState(accountsDomainModel.$list)).toEqual(accounts);
+    expect(scope.getState(accounts.$list)).toEqual(testAccounts);
   });
 
   it('should create delete accounts', async () => {
     const scope = fork({
       handlers: [
-        [accountsDomainModel.populate, () => accounts],
-        [accountsDomainModel.deleteAccounts, (accounts: AnyAccount[]) => accounts],
+        [accounts.populate, () => testAccounts],
+        [accounts.deleteAccounts, (accounts: AnyAccount[]) => accounts],
       ],
     });
 
-    await allSettled(accountsDomainModel.populate, { scope });
-    await allSettled(accountsDomainModel.deleteAccounts, { scope, params: accounts.slice(0, 1) });
+    await allSettled(accounts.populate, { scope });
+    await allSettled(accounts.deleteAccounts, { scope, params: testAccounts.slice(0, 1) });
 
-    expect(scope.getState(accountsDomainModel.$list)).toEqual(accounts.slice(1, 2));
+    expect(scope.getState(accounts.$list)).toEqual(testAccounts.slice(1, 2));
   });
 });

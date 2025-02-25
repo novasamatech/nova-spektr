@@ -37,6 +37,10 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
+  wrapTransaction(transaction) {
+    // TODO implement
+    return transaction;
+  },
 });
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

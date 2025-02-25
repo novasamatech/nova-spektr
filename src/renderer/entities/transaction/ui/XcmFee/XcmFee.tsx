@@ -44,7 +44,7 @@ export const XcmFee = memo(
       };
 
       setIsLoading(true);
-      if (!transaction?.address) {
+      if (!transaction?.accountId) {
         handleFee('0');
 
         return;

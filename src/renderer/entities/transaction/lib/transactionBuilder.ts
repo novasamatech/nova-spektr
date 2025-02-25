@@ -94,7 +94,7 @@ function buildTransfer({
 
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: transactionType,
     args: {
       palletName,
@@ -120,7 +120,7 @@ function buildBondNominate({
 
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.BATCH_ALL,
     args: { transactions: [bondTx, nominateTx] },
   };
@@ -138,7 +138,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
 
   return {
     chainId: chain.chainId,
-    address: controller,
+    accountId: accountId,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
@@ -151,7 +151,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
 function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'destination'>): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.STAKE_MORE,
     args: {
       maxAdditional: formatAmount(amount, asset.precision),
@@ -167,7 +167,7 @@ type NominateParams = {
 function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.NOMINATE,
     args: { targets: nominators },
   };
@@ -180,7 +180,7 @@ type WithdrawParams = {
 function buildWithdraw({ chain, accountId }: WithdrawParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.REDEEM,
     args: {
       numSlashingSpans: 1,
@@ -196,11 +196,9 @@ type UnstakeParams = {
   withChill?: boolean;
 };
 function buildUnstake({ chain, accountId, asset, amount, withChill }: UnstakeParams): Transaction {
-  const address = toAddress(accountId, { prefix: chain.addressPrefix });
-
   const unstakeTx: Transaction = {
     chainId: chain.chainId,
-    address,
+    accountId: accountId,
     type: TransactionType.UNSTAKE,
     args: {
       value: formatAmount(amount, asset.precision),
@@ -225,7 +223,7 @@ type RestakeParams = {
 function buildRestake({ chain, accountId, asset, amount }: RestakeParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.RESTAKE,
     args: {
       value: formatAmount(amount, asset.precision),
@@ -241,7 +239,7 @@ type SetPayeeParams = {
 function buildSetPayee({ chain, accountId, destination }: SetPayeeParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.DESTINATION,
     args: {
       payee: destination === '' ? 'Staked' : { Account: destination },
@@ -256,7 +254,7 @@ type ChillParams = {
 function buildChill({ chain, accountId }: ChillParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.CHILL,
     args: {},
   };
@@ -270,7 +268,7 @@ type BatchParams = {
 function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.BATCH_ALL,
     args: { transactions },
   };
@@ -285,9 +283,7 @@ async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): 
 
   const splittedTxs = await transactionService.splitTxsByWeight(api, transaction.args.transactions);
 
-  return splittedTxs.map((transactions) =>
-    buildBatchAll({ chain, accountId: toAccountId(transaction.address), transactions }),
-  );
+  return splittedTxs.map((transactions) => buildBatchAll({ chain, accountId: transaction.accountId, transactions }));
 }
 
 type DelegateParams = {
@@ -302,7 +298,7 @@ type DelegateParams = {
 function buildDelegate({ chain, accountId, tracks, target, conviction, balance }: DelegateParams): Transaction {
   const delegateTxs = tracks.map((track) => ({
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.DELEGATE,
     args: {
       track,
@@ -326,7 +322,7 @@ type UndelegateParams = {
 function buildUndelegate({ chain, accountId, tracks }: UndelegateParams): Transaction {
   const undelegateTxs = tracks.map((track) => ({
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.UNDELEGATE,
     args: {
       track,
@@ -361,7 +357,7 @@ function buildEditDelegation({
 }: EditDelegationParams): Transaction {
   const undelegateTxs = undelegateTracks.map((track) => ({
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.UNDELEGATE,
     args: {
       track,
@@ -370,7 +366,7 @@ function buildEditDelegation({
 
   const delegateTxs = tracks.map((track) => ({
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.DELEGATE,
     args: {
       track,
@@ -395,7 +391,7 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
   const unlockTxs = actions.map((action) => {
     const transaction = {
       chainId: chain.chainId,
-      address: toAddress(accountId, { prefix: chain.addressPrefix }),
+      accountId: accountId,
     };
 
     if (action.type === 'remove_vote') {
@@ -437,7 +433,7 @@ type VoteParams = {
 function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams): VoteTransaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.VOTE,
     args: {
       track: trackId,
@@ -458,7 +454,7 @@ type RevoteParams = {
 function buildRevote({ chain, accountId, referendumId, trackId, vote }: RevoteParams): RevoteTransaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.REVOTE,
     args: {
       track: trackId,
@@ -478,7 +474,7 @@ type RemoveVoteParams = {
 function buildRemoveVote({ chain, accountId, track, referendum }: RemoveVoteParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.REMOVE_VOTE,
     args: { track, referendum },
   };
@@ -524,11 +520,9 @@ function buildRejectMultisigTx({
   otherSignatories,
   tx,
 }: RejectTxParams): Transaction {
-  const signerAddress = toAddress(signerAccountId, { prefix: chain.addressPrefix });
-
   return {
     chainId: chain.chainId,
-    address: signerAddress,
+    accountId: signerAccountId,
     type: TransactionType.MULTISIG_CANCEL_AS_MULTI,
     args: {
       threshold: threshold,
@@ -581,7 +575,7 @@ type CreateProxyPureParams = {
 function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Transaction {
   return {
     chainId: chain.chainId,
-    address: toAddress(accountId, { prefix: chain.addressPrefix }),
+    accountId: accountId,
     type: TransactionType.CREATE_PURE_PROXY,
     args: { proxyType: 'Any', delay: 0, index: 0 },
   };
@@ -633,7 +627,7 @@ function buildCreateFlexibleMultisig({
 
   const transferTransaction = {
     chainId: chain.chainId,
-    address: toAddress(signer.accountId, { prefix: chain.addressPrefix }),
+    accountId: signer.accountId,
     type: TransactionType.TRANSFER,
     args: {
       dest: toAddress(multisigAccountId, { prefix: chain.addressPrefix }),

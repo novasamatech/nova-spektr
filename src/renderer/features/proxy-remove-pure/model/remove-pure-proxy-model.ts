@@ -333,7 +333,7 @@ sample({
 
     const transaction: Transaction = {
       chainId: chain.chainId,
-      address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+      accountId: account.accountId,
       type,
       args,
     };

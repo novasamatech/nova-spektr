@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -24,7 +24,7 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 

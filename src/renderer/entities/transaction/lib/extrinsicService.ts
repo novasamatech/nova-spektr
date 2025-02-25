@@ -769,7 +769,7 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
 
   return {
     chainId: transaction.chainId,
-    address: toAddress(txWrapper.signer.accountId, { prefix: addressPrefix }),
+    accountId: txWrapper.signer.accountId,
     type: TransactionType.MULTISIG_AS_MULTI,
     args: {
       threshold: txWrapper.multisigAccount.threshold,
@@ -789,7 +789,7 @@ type WrapAsProxyParams = {
 export const wrapAsProxy = ({ addressPrefix, transaction, txWrapper }: WrapAsProxyParams): Transaction => {
   return {
     chainId: transaction.chainId,
-    address: toAddress(txWrapper.proxyAccount.accountId, { prefix: addressPrefix }),
+    accountId: txWrapper.proxyAccount.accountId,
     type: TransactionType.PROXY,
     args: {
       real: toAddress(txWrapper.proxiedAccount.accountId, { prefix: addressPrefix }),

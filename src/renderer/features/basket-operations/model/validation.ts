@@ -8,7 +8,7 @@ import { type BasketTransaction, type ID } from '@/shared/core';
 import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable, toAccountId, transferableAmountBN } from '@/shared/lib/utils';
+import { nonNullable, nullable, transferableAmountBN } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -53,7 +53,7 @@ const validateFeeFx = attach({
     const transactions = uniq([wrapped.coreTx, wrapped.multisigTx, wrapped.wrappedTx].filter(nonNullable));
 
     const validations = transactions.map<Promise<ValidationResult>>(async transaction => {
-      const accountId = toAccountId(transaction.address);
+      const accountId = transaction.accountId;
       const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
       const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 

@@ -262,7 +262,7 @@ const $fakeTx = combine(
 
     return {
       chainId: network.chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
+      accountId: TEST_ACCOUNTS[0],
       type: transactionType,
       args: {
         palletName,

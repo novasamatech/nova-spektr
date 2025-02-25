@@ -2,14 +2,15 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, type TrackId, type VotingMap } from '@/shared/core';
+import { type TrackId, type VotingMap } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { governanceSubscribeService } from '../lib/governanceSubscribeService';
 import { createSubscriber } from '../utils/createSubscriber';
 
 type VotingParams = {
   api: ApiPromise;
   tracks: TrackId[];
-  addresses: Address[];
+  accounts: AccountId[];
 };
 
 const subscribeVoting = createEvent<VotingParams>();
@@ -18,8 +19,8 @@ const {
   subscribe: subscribe,
   received: receiveVoting,
   unsubscribe: unsubscribeVoting,
-} = createSubscriber<VotingParams, VotingMap>(({ api, tracks, addresses }, cb) => {
-  return governanceSubscribeService.subscribeVotingFor(api, tracks, addresses, cb);
+} = createSubscriber<VotingParams, VotingMap>(({ api, tracks, accounts }, cb) => {
+  return governanceSubscribeService.subscribeVotingFor(api, tracks, accounts, cb);
 });
 
 const $voting = createStore<VotingMap>({});
@@ -27,7 +28,7 @@ const $isLoading = createStore(true);
 
 sample({
   clock: subscribeVoting,
-  filter: ({ addresses }) => addresses.length > 0,
+  filter: ({ accounts }) => accounts.length > 0,
   target: subscribe,
 });
 

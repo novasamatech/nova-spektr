@@ -13,7 +13,6 @@ import {
 import { XcmTransferType } from '@/shared/api/xcm';
 import { EXTENSIONS } from '@/shared/config/extensions';
 import {
-  type Address,
   type BlockHeight,
   type CallData,
   type CallHash,
@@ -21,7 +20,9 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
+import { toAddress } from './address';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
@@ -37,14 +38,15 @@ const UNUSED_LABEL = 'unused';
  *
  * @substrate/txwrapper-polkadot signing
  */
-export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
+export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
+  const prefix = api.consts.system.ss58Prefix.toNumber();
   const chainId = api.genesisHash.toHex();
   const metadataRpc = api.runtimeMetadata.toHex();
 
   const [header, blockHash, nonce] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
-    api.rpc.system.accountNextIndex(address),
+    api.rpc.system.accountNextIndex(accountId),
   ]);
 
   const registry = getRegistry({
@@ -56,7 +58,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
   });
 
   const info: BaseTxInfo = {
-    address,
+    address: toAddress(accountId, { prefix }),
     blockHash: blockHash.toString(),
     blockNumber: header.number.toNumber(),
     genesisHash: chainId,

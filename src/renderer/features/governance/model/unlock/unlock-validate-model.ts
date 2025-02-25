@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -29,11 +29,11 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const totalLock = await governanceService.getTrackLocks(api, [transaction.address]).then((data) => {
-      const lock = data[transaction.address];
+    const totalLock = await governanceService.getTrackLocks(api, [transaction.accountId]).then((data) => {
+      const lock = data[transaction.accountId];
       const totalLock = Object.values(lock).reduce<BN>((acc, lock) => BN.max(lock, acc), BN_ZERO);
 
       return totalLock;

@@ -22,7 +22,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable, toAccountId } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -67,7 +67,7 @@ async function getTransactionFee(
   options?: Partial<SignerOptions>,
 ): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
+  const paymentInfo = await extrinsic.paymentInfo(transaction.accountId, options);
 
   return paymentInfo.partialFee.toString();
 }
@@ -100,7 +100,7 @@ async function signAndSubmit(
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>((resolve) => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
     let unsubscribe: VoidFunction;
@@ -351,7 +351,7 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 }
 
 async function createPayload(transaction: Transaction, api: ApiPromise) {
-  const metadata = await createTxMetadata(transaction.address, api);
+  const metadata = await createTxMetadata(transaction.accountId, api);
 
   return createPayloadWithMetadata(transaction, api, metadata);
 }
