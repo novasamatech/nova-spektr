@@ -39,6 +39,7 @@ function isSameProxy(oldProxy: ProxyAccount, newProxy: ProxyAccount): boolean {
     oldProxy.delay === newProxy.delay
   );
 }
+
 function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
   const typeOrder = [
     'Any',
@@ -64,10 +65,7 @@ function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>
 
 // TODO: Add i18n for wallet name
 function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAccount, addressPrefix?: number): string {
-  const address = toAddress(accountId, {
-    prefix: addressPrefix,
-    chunk: 6,
-  });
+  const address = toAddress(accountId, { chunk: 6, prefix: addressPrefix });
   const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
 
   return `${proxyType} ${proxyVariantLabel} ${address}`;
@@ -104,6 +102,7 @@ type CreateProxyGroupResult = {
   toUpdate: NoID<ProxyGroup>[];
   toRemove: ProxyGroup[];
 };
+
 function createProxyGroups(wallets: Wallet[], groups: ProxyGroup[], deposits: ProxyDeposits): CreateProxyGroupResult {
   const proxyGroups = getProxyGroups(wallets, deposits);
 

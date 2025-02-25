@@ -14,7 +14,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
@@ -43,7 +43,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [operation.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
@@ -53,7 +53,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
     if (accounts.length === 0) return;
 
-    identityDomain.identity.request({ chainId: operation.chainId, accounts });
+    identity.request({ chainId: operation.chainId, accounts });
   }, [validatorsMap]);
 
   const allValidators = Object.values(validatorsMap);

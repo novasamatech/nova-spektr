@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach } from 'effector';
+import { isEmpty } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
@@ -8,10 +9,9 @@ import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
-import { type AccountIdentity } from './types';
+import { type AccountIdentity, type IdentityMap } from './types';
 
 type IdentityData = Record<AccountId, AccountIdentity>;
-type IdentityStore = Record<ChainId, IdentityData>;
 type RequestParams = {
   accounts: AccountId[];
   chainId: ChainId;
@@ -29,7 +29,7 @@ const {
   fulfilled,
   pending,
   fail,
-} = createDataSource<IdentityStore, InnerRequestParams, IdentityData>({
+} = createDataSource<IdentityMap, InnerRequestParams, IdentityData>({
   initial: {},
   mutateParams(params, store) {
     const chainIdentities = store[params.chainId] ?? {};
@@ -45,39 +45,43 @@ const {
     if (accounts.length === 0) return {};
 
     await api.isReady;
-    const response = await identityPallet.storage.identityOf(api, accounts);
+    const subIdentities = await identityPallet.storage.superOf(api, accounts);
+    const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
+    const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
 
-    return response.reduce<IdentityData>((acc, record) => {
-      if (record.identity) {
-        acc[record.account] = {
-          accountId: record.account,
-          name: record.identity[0].info.display,
-          email: record.identity[0].info.email,
-          image: record.identity[0].info.image,
-        };
-      }
+    const result: IdentityData = {};
 
-      return acc;
-    }, {});
+    for (let index = 0; index < parentIdentities.length; index++) {
+      const parent = parentIdentities[index];
+      if (nullable(parent?.identity)) continue;
+
+      result[parent.account] = {
+        accountId: parent.account,
+        name: parent.identity[0].info.display,
+        subName: subIdentities[index]?.identity?.[1],
+        email: parent.identity[0].info.email,
+        image: parent.identity[0].info.image,
+      };
+    }
+
+    return result;
   },
   map(store, { params, result }) {
-    const previousData = store[params.chainId] ?? {};
+    if (isEmpty(result)) return store;
 
     return {
       ...store,
-      [params.chainId]: {
-        ...previousData,
-        ...result,
-      },
+      [params.chainId]: { ...store[params.chainId], ...result },
     };
   },
 });
 
-const { $apis, $chains } = networkModel;
-
 const request = attach({
   effect: requestIdentity,
-  source: { apis: $apis, chains: $chains },
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+  },
   mapParams: ({ chainId, accounts }: RequestParams, { apis, chains }) => {
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
 
@@ -86,11 +90,7 @@ const request = attach({
       throw new Error(`ApiPromise for chain ${identityChainId} not found`);
     }
 
-    return {
-      accounts,
-      chainId,
-      api,
-    };
+    return { accounts, chainId, api };
   },
 });
 

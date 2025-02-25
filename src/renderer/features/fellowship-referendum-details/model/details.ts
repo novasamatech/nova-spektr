@@ -6,7 +6,7 @@ import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { evidence, evidenceService, referendum, referendumMeta, referendumService } from '@/domains/collectives';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowshipModel } from './fellowship';
@@ -28,15 +28,11 @@ const $referendum = combine($referendums, $referendumId, (referendums, referendu
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
 
-const $identities = combine(
-  identityDomain.identity.$list,
-  fellowshipReferendumsDetailsFeature.input,
-  (identities, input) => {
-    if (nullable(input)) return {};
+const $identities = combine(identity.$list, fellowshipReferendumsDetailsFeature.input, (identities, input) => {
+  if (nullable(input)) return {};
 
-    return identities[input.chainId] ?? {};
-  },
-);
+  return identities[input.chainId] ?? {};
+});
 
 const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
   if (referendumId === null) return null;
@@ -95,7 +91,7 @@ export const referendumDetails = {
   $referendumMeta,
 
   $pendingEvidence: requestEvidence.pending,
-  $pendingProposer: identityDomain.identity.pending,
+  $pendingProposer: identity.pending,
   $pendingMeta: or($pendingReferendumMeta, fellowshipReferendumsDetailsFeature.isStarting),
   $pending: or($pendingReferendum, fellowshipReferendumsDetailsFeature.isStarting),
   $fulfilled: and(referendum.fulfilled, fellowshipReferendumsDetailsFeature.isRunning),
