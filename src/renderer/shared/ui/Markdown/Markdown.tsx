@@ -102,7 +102,7 @@ const components: Components = {
         </Button>
       </span>
     ) : (
-      <img className={cnTw('max-w-full', className)} {...props} onError={() => setShowError(true)} />
+      <img className={cnTw('max-w-full rounded-md', className)} {...props} onError={() => setShowError(true)} />
     );
   },
   code: ({ node: _, className, ...props }) => {

@@ -13,6 +13,7 @@ const IDENTIFIERS_SUFFIXES = {
   createPipeline: 'Pipeline',
   createAsyncPipeline: 'AsyncPipeline',
   createAnyOf: 'AnyOf',
+  createCombine: 'Combine',
 };
 
 const DEFAULT_IMPORT_SOURCES = [/@\/shared\/di/];
@@ -69,7 +70,7 @@ module.exports = {
         if (
           !isIdentifier(variableNameNode) ||
           !isCallExpression(callExpression) ||
-          !(isIdentifier(callExpression.callee) || isMemberExpression(callExpression.callee))
+          (!isIdentifier(callExpression.callee) && !isMemberExpression(callExpression.callee))
         ) {
           return;
         }
