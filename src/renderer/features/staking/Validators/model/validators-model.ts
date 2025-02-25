@@ -5,7 +5,7 @@ import { pending, spread } from 'patronum';
 import { type Asset, type Chain, type EraIndex, type Validator } from '@/shared/core';
 import { includesMultiple, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type ValidatorMap, eraService, validatorsService } from '@/entities/staking';
 
@@ -60,7 +60,7 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $identity = combine(identityDomain.identity.$list, $chain, (list, chain) => {
+const $identity = combine(identity.$list, $chain, (list, chain) => {
   if (!chain) return {};
 
   return list[chain.chainId] ?? {};
@@ -167,7 +167,7 @@ sample({
 
     return { accounts, chainId: chain!.chainId };
   },
-  target: identityDomain.identity.request,
+  target: identity.request,
 });
 
 sample({

@@ -10,7 +10,7 @@ import { Account } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { fellowshipActivityFeedFeature } from '../model/feature';
-import { identity } from '../model/identity';
+import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
 function getMessage(t: TFunction, record: FeedRecord) {
@@ -60,7 +60,7 @@ export const ActivityList = memo(() => {
   const { t } = useI18n();
   const feed = useUnit(activityFeed.$activityFeed);
   const input = useUnit(fellowshipActivityFeedFeature.input);
-  const identities = useUnit(identity.$list);
+  const identities = useUnit(identityModel.$list);
 
   const { list, isLoading } = useDeferredList({ list: feed, isLoading: feed.length === 0 });
 

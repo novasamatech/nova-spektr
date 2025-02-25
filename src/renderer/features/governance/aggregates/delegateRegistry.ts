@@ -7,7 +7,7 @@ import { type DelegateAccount, delegationService } from '@/shared/api/governance
 import { type Chain } from '@/shared/core';
 import { MONTH, getBlockTimeAgo, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { networkSelectorModel } from '../model/networkSelector';
 
 const requestDelegateRegistry = createEvent();
@@ -69,7 +69,7 @@ sample({
   clock: $delegateRegistry,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    identity: identityDomain.identity.$list,
+    identity: identity.$list,
   },
   filter: ({ chain }) => nonNullable(chain),
   fn: ({ chain, identity }, delegates) => {
@@ -89,7 +89,7 @@ sample({
       accounts: Array.from(accounts),
     };
   },
-  target: identityDomain.identity.request,
+  target: identity.request,
 });
 
 export const delegateRegistryAggregate = {

@@ -4,7 +4,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon } from '@/shared/ui';
 import { Hash } from '@/shared/ui-entities';
 // eslint-disable-next-line boundaries/element-types
-import { type AccountIdentity } from '@/domains/identity';
+import { type AccountIdentity } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { ExplorersPopover } from '@/entities/wallet';

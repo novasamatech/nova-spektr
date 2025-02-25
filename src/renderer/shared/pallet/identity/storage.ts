@@ -111,8 +111,13 @@ export const storage = {
    * within that context. If the account is not some other account's
    * sub-identity, then just `None`.
    */
-  superOf() {
-    throw new Error('identityPallet.storage.superOf method not implemented yet.');
+  superOf(api: ApiPromise, accounts: AccountId[]) {
+    const schema = pjsSchema.vec(pjsSchema.optional(z.tuple([pjsSchema.accountId, pjsSchema.dataString])));
+
+    return substrateRpcPool
+      .call(() => getQuery(api, 'superOf').multi(accounts))
+      .then(schema.parse)
+      .then(response => zipWith(accounts, response, (account, identity) => ({ account, identity })));
   },
 
   /**

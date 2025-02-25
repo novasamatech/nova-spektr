@@ -1,5 +1,4 @@
 import { type HexString } from '@/shared/core';
-import { type Identity } from '@/shared/core/types/identity';
 
 /**
  * Validate Polkadot Vault QR format
@@ -59,19 +58,6 @@ export const copyToClipboard = async (text = ''): Promise<void> => {
  */
 export const isStringsMatchQuery = (query: string, args: string[]): boolean => {
   return args.reduce((acc, word) => acc.concat(word.toLowerCase()), '').includes(query.toLowerCase());
-};
-
-/**
- * Get full identity or just part of it
- *
- * @param identity Validator's identity
- *
- * @returns {String}
- */
-export const getComposedIdentity = (identity?: Identity): string => {
-  if (!identity) return '';
-
-  return identity.subName ? `${identity.parent.name}/${identity.subName}` : identity.parent.name;
 };
 
 export const includes = (value?: string, searchString = ''): boolean => {

@@ -22,7 +22,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
@@ -82,7 +82,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const vote = operationDetailsUtils.getVote(tx);
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [tx.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
@@ -118,7 +118,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
     if (accounts.length === 0) return;
 
-    identityDomain.identity.request({ chainId: tx.chainId, accounts });
+    identity.request({ chainId: tx.chainId, accounts });
   }, [validatorsMap]);
 
   const startStakingValidators: Address[] =

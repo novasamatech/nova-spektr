@@ -6,7 +6,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { AssetBalance } from '@/entities/asset';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
@@ -45,7 +45,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   });
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
