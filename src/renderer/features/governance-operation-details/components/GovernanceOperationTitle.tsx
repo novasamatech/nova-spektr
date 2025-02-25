@@ -3,8 +3,8 @@ import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
@@ -32,8 +32,9 @@ export const GovernanceOperationTitle = ({ operation, title, icon }: Props) => {
       />
 
       {asset && amount && (
-        <Box width="160px">
-          <AssetBalance value={amount} asset={asset} showIcon />
+        <Box width="160px" direction="row" gap={2} verticalAlign="center">
+          <AssetIcon asset={asset} size={32} />
+          <AssetBalance value={amount} asset={asset} />
         </Box>
       )}
 

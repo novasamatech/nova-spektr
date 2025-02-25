@@ -4,7 +4,7 @@ import { memo, useEffect, useState } from 'react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset } from '@/shared/core';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 

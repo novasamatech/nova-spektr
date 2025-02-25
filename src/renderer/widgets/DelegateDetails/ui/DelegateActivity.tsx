@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 import { delegateSummaryModel } from '../model/delegate-summary-model';
 

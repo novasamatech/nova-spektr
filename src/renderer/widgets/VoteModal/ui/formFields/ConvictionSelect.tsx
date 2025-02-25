@@ -3,8 +3,8 @@ import { type BN } from '@polkadot/util';
 import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Slider } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 
 type Props = {
