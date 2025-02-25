@@ -4,10 +4,9 @@ import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
-import { AssetBalance } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
 
 type Props = {

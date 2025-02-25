@@ -3,7 +3,7 @@ import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { DelegateName } from '@/features/governance';
 
 type Props = {

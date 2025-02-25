@@ -5,8 +5,8 @@ import { Trans } from 'react-i18next';
 import { type AssetByChains, type AssetBalance as Balance } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, totalAmount, transferableAmount } from '@/shared/lib/utils';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 
 type Props = PropsWithChildren & {

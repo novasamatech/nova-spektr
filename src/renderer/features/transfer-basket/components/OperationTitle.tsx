@@ -3,7 +3,8 @@ import { useUnit } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { ChainTitle, XcmChains } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle, getTransactionAmount, isXcmTransaction } from '@/entities/transaction';
@@ -27,9 +28,10 @@ export const OperationTitle = ({ coreTx }: Props) => {
       />
 
       {asset && amount && (
-        <div className="w-[160px] shrink-0">
-          <AssetBalance value={amount} asset={asset} showIcon />
-        </div>
+        <Box width="160px" direction="row" gap={2} verticalAlign="center">
+          <AssetIcon asset={asset} size={32} />
+          <AssetBalance value={amount} asset={asset} />
+        </Box>
       )}
 
       {isXcmTransaction(coreTx) ? (

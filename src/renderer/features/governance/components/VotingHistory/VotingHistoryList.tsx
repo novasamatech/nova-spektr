@@ -5,9 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, performSearch, toAccountId } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, ScrollArea, SearchInput } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';

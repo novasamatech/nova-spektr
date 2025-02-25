@@ -5,9 +5,9 @@ import { type Address, type Asset, type Chain, type Explorer } from '@/shared/co
 import { type VaultShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
-import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';

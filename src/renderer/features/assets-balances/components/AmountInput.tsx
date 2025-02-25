@@ -17,7 +17,7 @@ import {
   validateSymbols,
 } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, IconButton, TitleText } from '@/shared/ui';
-import { AssetBalance, AssetIcon } from '@/entities/asset';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { currencyModel, useCurrencyRate } from '@/entities/price';
 
 type Props = {
@@ -115,14 +115,7 @@ export const AmountInput = ({
     }
 
     if (typeof balance === 'string') {
-      return (
-        <AssetBalance
-          className="inline text-footnote text-text-primary"
-          value={balance}
-          asset={asset}
-          showIcon={false}
-        />
-      );
+      return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
     }
 
     return balance;

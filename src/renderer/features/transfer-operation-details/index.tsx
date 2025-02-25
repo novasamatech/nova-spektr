@@ -1,5 +1,5 @@
 import { useI18n } from '@/shared/i18n';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import {
   TransactionTitle,
