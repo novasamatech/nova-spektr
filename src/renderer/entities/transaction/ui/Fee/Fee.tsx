@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { type Asset, type Transaction } from '@/shared/core';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { transactionService } from '../../lib';
 import { FeeLoader } from '../FeeLoader/FeeLoader';

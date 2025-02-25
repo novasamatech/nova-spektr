@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon, Plate } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { locksModel } from '../../model/locks';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { unlockModel } from '../../model/unlock/unlock';

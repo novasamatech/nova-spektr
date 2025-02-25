@@ -23,7 +23,7 @@ vi.mock('../../lib', () => ({
   },
 }));
 
-vi.mock('@/entities/asset', () => ({
+vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 

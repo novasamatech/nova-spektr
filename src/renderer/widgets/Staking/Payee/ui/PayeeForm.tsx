@@ -17,8 +17,8 @@ import {
   RadioGroup,
 } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';

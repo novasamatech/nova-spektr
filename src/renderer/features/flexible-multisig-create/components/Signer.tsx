@@ -4,8 +4,7 @@ import { type FormEvent } from 'react';
 import { type Account, type Chain, type Wallet } from '@/shared/core';
 import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
-import { AssetBalance } from '@/entities/asset';
+import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { useBalance } from '@/entities/balance';
 import { WalletIcon } from '@/entities/wallet';
 

@@ -6,7 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
 import { BodyText, Shimmering } from '@/shared/ui';
-import { AssetBalance, AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
+import { AssetDetails, AssetIcon, AssetLinks } from '@/entities/asset';
 import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/price';
 
 type Props = {

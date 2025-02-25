@@ -6,9 +6,8 @@ import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { OperationTitle } from '@/entities/chain';
 import {
   getGovernanceTrackDescription,

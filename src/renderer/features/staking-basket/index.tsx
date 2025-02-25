@@ -4,7 +4,8 @@ import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { ChainTitle, OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle } from '@/entities/transaction';
@@ -98,9 +99,10 @@ basketSDK(stakingBasketFeature, {
           <TransactionTitle className="w-[186px]" title={t(title)} icon={icon} />
 
           {nativeAsset && amount && (
-            <div className="w-[160px]">
-              <AssetBalance value={amount} asset={nativeAsset} showIcon />
-            </div>
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={nativeAsset} size={32} />
+              <AssetBalance value={amount} asset={nativeAsset} />
+            </Box>
           )}
 
           <ChainTitle chainId={tx.chainId} />

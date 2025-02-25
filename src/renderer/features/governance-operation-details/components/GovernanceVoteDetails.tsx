@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';

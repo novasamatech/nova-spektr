@@ -2,7 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 
 import { DiffValue } from './DiffValue';
 

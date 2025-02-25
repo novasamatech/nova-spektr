@@ -5,8 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -103,7 +103,6 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
                       <AssetBalance
                         value={totalDeposit.replaceAll(',', '')}
                         asset={chains[chainId].assets[0]}
-                        showIcon={false}
                         className="text-help-text"
                       />
                     </HelpText>

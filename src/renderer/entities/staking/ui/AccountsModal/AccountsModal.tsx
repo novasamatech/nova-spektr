@@ -3,10 +3,9 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, stakeableAmount, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText, Identicon } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { AssetBalance, Hash } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
-import { AssetBalance } from '@/entities/asset';
 import { useAssetBalances } from '@/entities/balance';
 
 type Props = {

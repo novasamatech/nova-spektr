@@ -6,7 +6,7 @@ import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { votingService } from '@/entities/governance';
 import { DelegateName } from '@/features/governance';
 

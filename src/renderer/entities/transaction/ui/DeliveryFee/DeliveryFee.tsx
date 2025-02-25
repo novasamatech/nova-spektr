@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
