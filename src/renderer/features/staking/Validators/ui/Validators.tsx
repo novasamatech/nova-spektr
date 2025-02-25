@@ -7,7 +7,7 @@ import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Button, Loader, Shimmering, SmallTitleText } from '@/shared/ui';
 import { Checkbox, Graphics, SearchInput } from '@/shared/ui-kit';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { ValidatorsTable } from '@/entities/staking';
 import { validatorsModel } from '../model/validators-model';
 
@@ -120,8 +120,8 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
   const chain = useUnit(validatorsModel.$chain);
   const asset = useUnit(validatorsModel.$asset);
 
-  const identity = useStoreMap({
-    store: identityDomain.identity.$list,
+  const validatorIdentity = useStoreMap({
+    store: identity.$list,
     keys: [chain?.chainId, validator],
     fn: (value, [chainId, validator]) => {
       if (nullable(chainId) || nullable(value[chainId])) return undefined;
@@ -140,7 +140,7 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
         <div className={cnTw(rowStyle, 'flex-1 pl-0 hover:bg-transparent')}>
           <ValidatorsTable.Row
             validator={validator}
-            identity={identity}
+            identity={validatorIdentity}
             asset={asset || undefined}
             explorers={chain?.explorers}
           />

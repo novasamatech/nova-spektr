@@ -25,7 +25,7 @@ import { series, waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identityDomain } from '@/domains/identity';
+import { identity, identityService } from '@/domains/network';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -223,7 +223,7 @@ sample({
   target: enrichIndexedMultisigsFx,
 });
 
-const requestIdentitiesFx = series(identityDomain.identity.request, { parallel: true, skipErrors: true });
+const requestIdentitiesFx = series(identity.request, { parallel: true, skipErrors: true });
 
 sample({
   clock: enrichIndexedMultisigsFx.doneData,
@@ -283,7 +283,7 @@ sample({
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : address,
+        name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
         type: WalletType.MULTISIG,
         signingType: SigningType.MULTISIG,
       };
@@ -308,7 +308,7 @@ sample({
 
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : address,
+        name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
         type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
         activated: activated ?? false,

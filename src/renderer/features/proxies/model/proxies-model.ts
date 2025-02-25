@@ -24,8 +24,7 @@ import {
 import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type IdentityMap, identityDomain } from '@/domains/identity';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, type IdentityMap, accountService, identity, identityService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
@@ -198,7 +197,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
 
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
-    name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : proxyBasedName,
+    name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,
     isHidden,
@@ -210,7 +209,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
     {
       ...proxiedAccount,
       type: 'chain',
-      name: walletIdentity ? identityDomain.service.getFullIdentityName(walletIdentity) : proxyBasedName,
+      name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : proxyBasedName,
       accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
@@ -224,7 +223,7 @@ const createProxiesWalletsFx = attach({
   source: {
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
-    identity: identityDomain.identity.$list,
+    identity: identity.$list,
   },
   mapParams(proxiedAccounts: PartialProxiedAccount[], { chains, wallets, identity }) {
     return proxiedAccounts.map((proxiedAccount) => ({ identity, proxiedAccount, chains, wallets }));
@@ -233,7 +232,7 @@ const createProxiesWalletsFx = attach({
 });
 
 const requestIdentityFx = attach({
-  effect: identityDomain.identity.request,
+  effect: identity.request,
 });
 
 sample({

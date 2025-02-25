@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 // eslint-disable-next-line boundaries/element-types
-import { type AccountIdentity } from '@/domains/identity';
+import { type AccountIdentity } from '@/domains/network';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {

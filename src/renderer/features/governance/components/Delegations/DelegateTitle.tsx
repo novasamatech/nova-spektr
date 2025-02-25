@@ -4,7 +4,7 @@ import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
 import { HeadlineText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { networkSelectorModel } from '../../model/networkSelector';
 
 type Props = {
@@ -16,7 +16,7 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
   const chain = useUnit(networkSelectorModel.$governanceChain);
 
   const delegateName = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [chain?.chainId, delegate.accountId, delegate.address],
     fn: (identity, [chainId, accountId, address]) => {
       if (nullable(chainId)) return null;
