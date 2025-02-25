@@ -155,7 +155,7 @@ sample({
   },
   filter: (transferData) => {
     return (
-      isStep(transferData.step, Step.SUBMIT) &&
+      isStep(transferData.step, Step.SIGN) &&
       Boolean(transferData.transferStore) &&
       Boolean(transferData.wrappedTx) &&
       Boolean(transferData.coreTx) &&
