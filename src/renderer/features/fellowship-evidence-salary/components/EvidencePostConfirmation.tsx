@@ -4,7 +4,7 @@ import { type Asset, type Chain, type HexString, type Wallet } from '@/shared/co
 import { useI18n } from '@/shared/i18n';
 import { formatAsset } from '@/shared/lib/utils';
 import { ButtonWebLink, DetailRow, Separator } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { Hash, TransactionDetails } from '@/shared/ui-entities';
 import { evidenceService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
@@ -27,8 +27,8 @@ export const EvidencePostConfirmation = ({ fee, account, wallets, chain, asset, 
     <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.wish')}>{wish}</DetailRow>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>
-        <ButtonWebLink variant="text" href={ipfsUrl.toString()}>
-          {evidence}
+        <ButtonWebLink size="sm" variant="text" href={ipfsUrl.toString()} className="w-full overflow-hidden text-right">
+          <Hash variant="truncate" value={evidence} />
         </ButtonWebLink>
       </DetailRow>
       <Separator />
