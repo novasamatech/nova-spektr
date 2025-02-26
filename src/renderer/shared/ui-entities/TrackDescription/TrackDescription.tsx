@@ -2,9 +2,10 @@ import { memo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
+import { toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, InfoLink, LabelHelpBox } from '@/shared/ui';
-import { toRomanNumeral } from '@/shared/ui-entities';
 import { Box, Popover } from '@/shared/ui-kit';
+// eslint-disable-next-line boundaries/element-types
 import { type Track } from '@/domains/collectives';
 
 type Props = {

@@ -6,6 +6,8 @@ import { basketUtils } from '@/entities/basket';
 import { additionalProfileCardInfoSlot, profileInfoSlot } from '@/features/fellowship-profile';
 import {
   payoutSalaryActionSlot,
+  requestPromotionActionSlot,
+  requestRetentionActionSlot,
   requestSalaryActionSlot,
   requestSalaryInductActionSlot,
 } from '@/features/fellowship-tasks';
@@ -13,6 +15,7 @@ import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { DotIndicator } from './components/DotIndicator';
 import { EntrypointCard } from './components/EntrypointCard';
+import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
 import { PromotionInfo } from './components/PromotionInfo';
 import { SalaryInductModal } from './components/SalaryInductModal';
 import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation';
@@ -86,6 +89,24 @@ fellowshipSalaryFeature.inject(payoutSalaryActionSlot, () => {
       </SalaryRegisterModal>
     );
   }
+});
+
+fellowshipSalaryFeature.inject(requestPromotionActionSlot, () => {
+  const { t } = useI18n();
+  return (
+    <EvidencePostFlowModal wish="Promotion">
+      <Button>{t('fellowship.tasks.task.promotion.request')}</Button>
+    </EvidencePostFlowModal>
+  );
+});
+
+fellowshipSalaryFeature.inject(requestRetentionActionSlot, () => {
+  const { t } = useI18n();
+  return (
+    <EvidencePostFlowModal wish="Retention">
+      <Button>{t('fellowship.tasks.task.retention.request')}</Button>
+    </EvidencePostFlowModal>
+  );
 });
 
 fellowshipSalaryFeature.inject(profileInfoSlot, () => {

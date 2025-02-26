@@ -477,7 +477,7 @@
       "cardTitle": "Actions Required",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
-      "noAccountDescription": "Account not found. Please add or create account to the Polkadot Collectives network.",
+      "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
       "reviewBasket_one": "Confirm {count} decision",
       "reviewBasket_other": "Confirm {count} decisions",
@@ -486,6 +486,11 @@
         "anyReferendum": {
           "title": "Review referendum",
           "viewEvidence": "View <a>the full evidence</a>"
+        },
+        "promotion": {
+          "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
+          "request": "Submit",
+          "title": "Feel ready for a promotion?"
         },
         "promotionVoting": {
           "title": "Review promotion evidence"
@@ -506,6 +511,11 @@
           "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
           "request": "Activate payments",
           "title": "Activate your payments"
+        },
+        "retention": {
+          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months. Your submission will be reviewed by other members, who will determine if you qualify to retain this Rank. Please ensure your evidence is submitted by 29.11.2024.",
+          "request": "Submit",
+          "title": "Submit your retention evidence"
         },
         "retentionVoting": {
           "title": "Review retention evidence"
