@@ -5,8 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, copyToClipboard, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
-import { AssetBalance } from '@/entities/asset';
+import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
@@ -36,7 +35,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
 
-  const depositorSignatory = account?.signatories.find((s) => s.accountId === depositor);
+  const depositorSignatory = account?.signatories.find(s => s.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   const valueClass = 'text-text-secondary';
@@ -114,7 +113,6 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
               <AssetBalance
                 value={deposit}
                 asset={defaultAsset}
-                showIcon={false}
                 className="py-[3px] text-footnote text-text-secondary"
               />
             </DetailRow>

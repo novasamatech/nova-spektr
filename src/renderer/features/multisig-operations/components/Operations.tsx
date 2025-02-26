@@ -28,7 +28,7 @@ export const Operations = () => {
   const filteredTxs = useUnit(operationsModel.$filteredTxs);
 
   const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
-    return events.filter((e) => {
+    return events.filter(e => {
       return (
         e.txAccountId === tx.accountId &&
         e.txChainId === tx.chainId &&
@@ -39,7 +39,7 @@ export const Operations = () => {
     });
   };
 
-  const groupedTxs = groupBy(filteredTxs, (tx) => {
+  const groupedTxs = groupBy(filteredTxs, tx => {
     let date = tx.dateCreated;
 
     if (nullable(date)) {
@@ -58,7 +58,8 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  if (incompleteFlexibleMultisigTx && account && accountUtils.isFlexibleMultisigAccount(account)) {
+  // TODO remove multisig accounts type
+  if (incompleteFlexibleMultisigTx && account && accountUtils.isRegularMultisigAccount(account)) {
     return (
       <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx as FlexibleMultisigTransactionDS} account={account} />
     );
@@ -82,7 +83,7 @@ export const Operations = () => {
                 <ul className="flex w-[736px] flex-col gap-y-1.5">
                   {txs
                     .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
-                    .map((tx) => (
+                    .map(tx => (
                       <li key={tx.dateCreated}>
                         <Operation tx={tx} account={account} />
                       </li>

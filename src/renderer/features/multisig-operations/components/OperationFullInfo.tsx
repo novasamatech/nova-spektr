@@ -40,7 +40,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     store: operationsModel.$multisigEvents,
     keys: [tx],
     fn: (events, [tx]) => {
-      return events.filter((e) => {
+      return events.filter(e => {
         return (
           e.txAccountId === tx.accountId &&
           e.txChainId === tx.chainId &&
@@ -71,8 +71,8 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
     updateCallData(api, tx, callData as CallData);
   };
 
-  const isRejectAvailable = wallets.some((wallet) => {
-    const hasDepositor = wallet.accounts?.some((account) => account.accountId === tx.depositor);
+  const isRejectAvailable = wallets.some(wallet => {
+    const hasDepositor = wallet.accounts?.some(account => account.accountId === tx.depositor);
 
     return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
   });

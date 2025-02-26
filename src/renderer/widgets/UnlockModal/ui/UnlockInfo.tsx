@@ -5,8 +5,8 @@ import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/gove
 import { useI18n } from '@/shared/i18n';
 import { getSecondsDurationToBlock } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { AssetFiatBalance } from '@/entities/price';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';

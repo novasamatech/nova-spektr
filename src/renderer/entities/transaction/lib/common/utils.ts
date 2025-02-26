@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type DispatchError } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
@@ -14,7 +15,7 @@ import {
   XcmTypes,
 } from './constants';
 
-export const decodeDispatchError = (error: SpRuntimeDispatchError, api: ApiPromise): string => {
+export const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, api: ApiPromise): string => {
   let errorInfo = error.toString();
 
   if (error.isModule) {

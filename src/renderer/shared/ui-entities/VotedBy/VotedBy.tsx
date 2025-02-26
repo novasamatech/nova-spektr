@@ -6,9 +6,9 @@ import { type AccountVote, type Address, type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
 import { votingService } from '@/entities/governance';
 import { Address as AccountAddress } from '../Address/Address';
+import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   asset: Asset;

@@ -2,10 +2,9 @@ import { type Asset, type Explorer, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton, Identicon } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { AssetBalance, Hash } from '@/shared/ui-entities';
 // eslint-disable-next-line boundaries/element-types
-import { type AccountIdentity } from '@/domains/identity';
-import { AssetBalance } from '@/entities/asset';
+import { type AccountIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { ExplorersPopover } from '@/entities/wallet';
 

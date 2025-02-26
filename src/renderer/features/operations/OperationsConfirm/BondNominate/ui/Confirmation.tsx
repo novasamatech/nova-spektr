@@ -5,10 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, TransactionDetails } from '@/shared/ui-entities';
+import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { identityDomain } from '@/domains/identity';
-import { AssetBalance } from '@/entities/asset';
+import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { AccountsModal, SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
@@ -67,7 +66,7 @@ export const Confirmation = ({
   });
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });

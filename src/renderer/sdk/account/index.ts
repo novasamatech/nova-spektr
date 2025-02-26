@@ -5,5 +5,5 @@ export const accountSDK = createSDK({
   actionPermission: accountService.accountActionPermissionAnyOf,
   availableOnChain: accountService.accountAvailabilityOnChainAnyOf,
   canSignMultipleTransactions: accountService.accountCanSignMultipleAnyOf,
-  collectGraphNode: accountService.accountGraphCollectPipeline,
+  collectAccountChildren: accountService.accountCollectChildrenPipeline,
 });

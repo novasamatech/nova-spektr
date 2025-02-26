@@ -82,7 +82,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
 
   const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: walletUtils.isValidSignatory,
-    accountFn: (account) => account.accountId === tx.depositor,
+    accountFn: account => account.accountId === tx.depositor,
   })?.accounts[0];
 
   useEffect(() => {
@@ -190,7 +190,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
         )}
         {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
           <SigningSwitch
-            signerWallet={wallets.find((w) => w.id === signAccount.walletId)}
+            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             apis={apis}
             signingPayloads={[
               {

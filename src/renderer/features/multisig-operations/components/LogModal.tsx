@@ -77,7 +77,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
   const events = getLiveTxEvents(tx.accountId, tx.chainId, tx.callHash, tx.blockCreated, tx.indexCreated);
 
   const { status } = tx;
-  const approvals = events.filter((e) => e.status === 'SIGNED');
+  const approvals = events.filter(e => e.status === 'SIGNED');
 
   const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
 
@@ -122,7 +122,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
                 <ul className="flex flex-col gap-y-4">
                   {events
                     .sort((a, b) => (a.dateCreated || 0) - (b.dateCreated || 0))
-                    .map((event) => {
+                    .map(event => {
                       const account = filteredAccountMap[event.accountId];
                       const wallet = filteredWalletsMap[account?.walletId];
 
@@ -148,7 +148,7 @@ const LogModal = ({ isOpen, onClose, tx, account, connection, contacts }: Props)
                                 <ContextMenu button={<IconButton name="info" size={16} />}>
                                   <ContextMenu.Group>
                                     <ul className="flex flex-col gap-y-2">
-                                      {connection.explorers.map((explorer) => (
+                                      {connection.explorers.map(explorer => (
                                         <li key={explorer.name}>
                                           <ExplorerLink
                                             name={explorer.name}

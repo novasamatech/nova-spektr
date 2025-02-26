@@ -2,6 +2,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
+import { isStep } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -145,6 +146,7 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
+    step: $step,
     transferStore: $transferStore,
     networkStore: $networkStore,
     multisigTx: $multisigTx,
@@ -153,6 +155,7 @@ sample({
   },
   filter: (transferData) => {
     return (
+      isStep(transferData.step, Step.SIGN) &&
       Boolean(transferData.transferStore) &&
       Boolean(transferData.wrappedTx) &&
       Boolean(transferData.coreTx) &&

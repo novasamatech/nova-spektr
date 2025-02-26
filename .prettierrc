@@ -33,8 +33,15 @@
         "./src/renderer/features/fellowship-*/**/*.{ts,tsx}",
         "./src/renderer/features/basket-*/**/*.{ts,tsx}",
         "./src/renderer/features/wallet-*/**/*.{ts,tsx}",
+        "./src/renderer/features/multisig-*/**/*.{ts,tsx}",
+        "./src/renderer/features/ledger-*/**/*.{ts,tsx}",
+        "./src/renderer/features/wallet-connect-*/**/*.{ts,tsx}",
+        "./src/renderer/features/polkadot-vault-*/**/*.{ts,tsx}",
+        "./src/renderer/features/watch-only-*/**/*.{ts,tsx}",
+        "./src/renderer/features/proxied-*/**/*.{ts,tsx}",
         "./src/renderer/shared/ui-kit/**/*.{ts,tsx}",
-        "./src/renderer/shared/ui-entities/**/*.{ts,tsx}"
+        "./src/renderer/shared/ui-entities/**/*.{ts,tsx}",
+        "./src/renderer/shared/di/**/*.{ts,tsx}"
       ],
       "options": {
         "arrowParens": "avoid"

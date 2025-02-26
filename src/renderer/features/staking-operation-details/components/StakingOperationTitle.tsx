@@ -3,7 +3,8 @@ import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
@@ -27,9 +28,10 @@ export const StakingOperationTitle = ({ operation, title, icon }: Props) => {
       <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} icon={icon} />
 
       {asset && amount && (
-        <div className="w-[160px]">
-          <AssetBalance value={amount} asset={asset} showIcon />
-        </div>
+        <Box width="160px" direction="row" gap={2} verticalAlign="center">
+          <AssetIcon asset={asset} size={32} />
+          <AssetBalance value={amount} asset={asset} />
+        </Box>
       )}
 
       <ChainTitle chainId={operation.chainId} className="w-[114px]" />

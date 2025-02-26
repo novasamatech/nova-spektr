@@ -6,11 +6,6 @@ import { useToggle } from '@/shared/lib/hooks';
 import { Button, Icon } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 
-/**
- * TODO feature shouldn't know wallet type,
- * `walletPairingModel.events.walletTypeSet(walletType)` should be replaced with
- * internal flow implementation.
- */
 export const walletPairingDropdownOptionsSlot = createSlot<{ t: TFunction }>();
 
 export const WalletPairingSelect = () => {

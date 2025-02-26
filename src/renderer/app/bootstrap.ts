@@ -32,9 +32,15 @@ import { governanceBasketFeature } from '@/features/governance-basket';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
 import { importDBFeature } from '@/features/import-db';
+import { ledgerWalletPairingFeature } from '@/features/ledger-wallet-pairing';
 import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
+import { multisigWalletFeature } from '@/features/multisig-wallet';
+import { multisigWalletPairingFeature } from '@/features/multisig-wallet-pairing';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
+import { polkadotVaultWalletFeature } from '@/features/polkadot-vault-wallet';
+import { polkadotVaultWalletPairingFeature } from '@/features/polkadot-vault-wallet-pairing';
+import { proxiedWalletFeature } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { proxyBasketFeature } from '@/features/proxy-basket';
 import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
@@ -44,19 +50,13 @@ import { stakingNavigationFeature } from '@/features/staking-navigation';
 import { stakingOperationDetailFeature } from '@/features/staking-operation-details';
 import { transferBasketFeature } from '@/features/transfer-basket';
 import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
+import { walletConnectWalletFeature } from '@/features/wallet-connect-wallet';
+import { walletConnectWalletPairingFeature } from '@/features/wallet-connect-wallet-pairing';
 import { walletDetailsFeature } from '@/features/wallet-details';
-import { walletMultisigFeature } from '@/features/wallet-multisig';
 import { walletPairingFeature } from '@/features/wallet-pairing';
-import { walletPairingLedgerFeature } from '@/features/wallet-pairing-ledger';
-import { walletPairingMultisigFeature } from '@/features/wallet-pairing-multisig';
-import { walletPairingPolkadotVaultFeature } from '@/features/wallet-pairing-polkadot-vault';
-import { walletPairingWalletConnectFeature } from '@/features/wallet-pairing-wallet-connect';
-import { walletPairingWatchOnlyFeature } from '@/features/wallet-pairing-watch-only';
-import { walletPolkadotVaultFeature } from '@/features/wallet-polkadot-vault';
-import { walletProxiedFeature } from '@/features/wallet-proxied';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { walletWalletConnectFeature } from '@/features/wallet-wallet-connect';
-import { walletWatchOnlyFeature } from '@/features/wallet-watch-only';
+import { watchOnlyWalletFeature } from '@/features/watch-only-wallet';
+import { watchOnlyWalletPairingFeature } from '@/features/watch-only-wallet-pairing';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -119,18 +119,24 @@ export const bootstrap = () => {
     walletDetailsFeature,
 
     walletPairingFeature,
-    walletPairingMultisigFeature,
-    walletPairingPolkadotVaultFeature,
-    walletPairingWalletConnectFeature,
-    walletPairingWatchOnlyFeature,
-    walletPairingLedgerFeature,
 
-    walletMultisigFeature,
-    walletProxiedFeature,
-    walletPolkadotVaultFeature,
-    walletWalletConnectFeature,
-    walletWatchOnlyFeature,
+    multisigWalletFeature,
+    multisigWalletPairingFeature,
+
+    polkadotVaultWalletFeature,
+    polkadotVaultWalletPairingFeature,
+
+    walletConnectWalletFeature,
+    walletConnectWalletPairingFeature,
+
+    watchOnlyWalletFeature,
+    watchOnlyWalletPairingFeature,
+
     extensionWalletFeature,
+
+    ledgerWalletPairingFeature,
+
+    proxiedWalletFeature,
 
     basketNavigationFeature,
     basketOperationsFeature,

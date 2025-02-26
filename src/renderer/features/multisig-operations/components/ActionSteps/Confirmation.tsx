@@ -48,7 +48,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   const wallets = useUnit(walletModel.$wallets);
   const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: walletUtils.isValidSignatory,
-    accountFn: (acc) => signAccount?.accountId === acc.accountId,
+    accountFn: acc => signAccount?.accountId === acc.accountId,
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
@@ -105,7 +105,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
             api={api}
             asset={chain.assets[0]}
             transaction={feeTx}
-            onFeeChange={(fee) => setIsFeeLoaded(Boolean(fee))}
+            onFeeChange={fee => setIsFeeLoaded(Boolean(fee))}
           />
         ) : (
           <FeeLoader fiatFlag={!!fiatFlag} />

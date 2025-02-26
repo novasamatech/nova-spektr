@@ -35,8 +35,8 @@ export const SalaryInfo = memo(() => {
   }, [input?.api, currentPeriod]);
 
   const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account);
-  const canInteractWithSalary = nonNullable(claimStatus) && !salaryService.canInductSalary(claimStatus);
-  const canInductSalary = nonNullable(claimStatus) && salaryService.canInductSalary(claimStatus);
+  const canInteractWithSalary = nonNullable(claimStatus) && salaryService.isInducted(claimStatus);
+  const canInductSalary = nonNullable(claimStatus) && !salaryService.isInducted(claimStatus);
   const canRequestSalary =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&

@@ -4,7 +4,7 @@ import { and, or } from 'patronum';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { member, track } from '@/domains/collectives';
-import { identity, identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
 import { fellowshipModel } from './fellowship';
@@ -14,7 +14,7 @@ const $member = fellowshipProfileFeature.input.map(store => (store ? store.membe
 const $account = fellowshipProfileFeature.input.map(store => (store ? store.account : null));
 const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
-const $identities = combine(fellowshipProfileFeature.input, identityDomain.identity.$list, (featureInput, list) => {
+const $identities = combine(fellowshipProfileFeature.input, identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
@@ -52,7 +52,7 @@ sample({
     chainId,
     accounts: member ? [member.accountId] : [],
   }),
-  target: identityDomain.identity.request,
+  target: identity.request,
 });
 
 export const profile = {

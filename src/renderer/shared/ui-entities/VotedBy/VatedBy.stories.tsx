@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react';
 
 import { type Asset, type SplitAbstainVote, type SplitVote, type StandardVote } from '@/shared/core';
@@ -55,16 +55,16 @@ export const AccountSplit: Story = {
   },
 };
 
-export const AccountSplitAbstain: Story = {
+export const AccountAbstain: Story = {
   args: {
     castingVotes: [
       {
         voter: TEST_ADDRESS,
         vote: {
           type: 'SplitAbstain',
-          aye: new BN(78000),
-          nay: new BN(25000),
-          abstain: new BN(44000),
+          aye: BN_ZERO,
+          nay: BN_ZERO,
+          abstain: new BN(74000),
         } as SplitAbstainVote,
       },
     ],

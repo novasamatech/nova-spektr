@@ -84,19 +84,17 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
-      transactionService.signAndSubmit(
-        transaction,
-        signatures[index],
-        txPayloads[index],
-        apis[transaction.chainId],
-        (executed, params) => {
-          if (executed) {
-            boundExtrinsicSucceeded({ id: index, params: params as ExtrinsicResultParams });
+      transactionService
+        .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
+        .then((result) => {
+          console.log(result);
+
+          if (result.executed) {
+            boundExtrinsicSucceeded({ id: index, params: result.params });
           } else {
-            boundExtrinsicFailed({ id: index, params: params as string });
+            boundExtrinsicFailed({ id: index, params: result.error });
           }
-        },
-      );
+        });
     }
   },
 );
@@ -264,5 +262,7 @@ export const submitModel = {
   },
   output: {
     formSubmitted,
+    extrinsicSucceeded,
+    extrinsicFailed,
   },
 };

@@ -98,7 +98,7 @@ type CreateProviderParams = {
   DEBUG_NETWORKS?: boolean;
 };
 const createProviderFx = createEffect(
-  async ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
+  ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
     const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });

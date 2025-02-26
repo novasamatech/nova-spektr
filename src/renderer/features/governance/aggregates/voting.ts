@@ -3,7 +3,7 @@ import { combine, createEvent, sample } from 'effector';
 import { type Address, type TrackId, type VotingMap } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { votingModel, votingService } from '@/entities/governance';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -95,7 +95,7 @@ sample({
   clock: $activeWalletVotes,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    identity: identityDomain.identity.$list,
+    identity: identity.$list,
   },
   filter: ({ chain }) => nonNullable(chain),
   fn: ({ chain, identity }, activeVotes) => {
@@ -117,7 +117,7 @@ sample({
       accounts: Array.from(accounts),
     };
   },
-  target: identityDomain.identity.request,
+  target: identity.request,
 });
 
 export const votingAggregate = {

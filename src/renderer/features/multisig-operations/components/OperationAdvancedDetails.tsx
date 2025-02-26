@@ -2,9 +2,8 @@ import { type Chain, type FlexibleMultisigTransaction, type MultisigTransaction,
 import { useI18n } from '@/shared/i18n';
 import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers } from '@/shared/ui-entities';
+import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { WalletIcon } from '@/entities/wallet';
@@ -29,7 +28,7 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
     blockCreated,
     chain.explorers,
   );
-  const depositorSignatory = signatories.find((s) => s.accountId === depositor);
+  const depositorSignatory = signatories.find(s => s.accountId === depositor);
   const depositorWallet =
     depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
 
@@ -92,12 +91,7 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
 
       {deposit && defaultAsset && (
         <DetailRow label={t('operation.details.deposit')} className={valueClass}>
-          <AssetBalance
-            value={deposit}
-            asset={defaultAsset}
-            showIcon={false}
-            className="py-[3px] text-footnote text-text-secondary"
-          />
+          <AssetBalance value={deposit} asset={defaultAsset} className="py-[3px] text-footnote text-text-secondary" />
         </DetailRow>
       )}
 
