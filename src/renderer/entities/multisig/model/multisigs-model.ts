@@ -35,14 +35,9 @@ import { multisigUtils } from '../lib/mulitisigs-utils';
 
 const MULTISIG_DISCOVERY_TIMEOUT = 30000;
 
-// Bond flexible multisig with proxy
-const $flexibleWithProxy = createStore<FlexibleMultisigWallet | null>(null);
-
 const subscribe = createEvent();
 const stop = createEvent();
 const request = createEvent<AnyAccount[]>();
-
-const populateWallets = createEvent<GetMultisigResponse[]>();
 
 const createWallets = attach({ effect: walletModel.createWallets });
 
@@ -254,6 +249,8 @@ sample({
   target: requestIdentitiesFx,
 });
 
+const populateWallets = createEvent<GetMultisigResponse[]>();
+
 sample({
   clock: enrichIndexedMultisigsFx.doneData,
   filter: (response) => response.length > 0,
@@ -388,16 +385,19 @@ sample({
   target: proxiesModel.findAllProxies,
 });
 
+// Bond flexible multisig with proxy
+const $flexibleWithProxy = createStore<FlexibleMultisigWallet | null>(null);
+
 sample({
   clock: walletModel.events.walletCreatedDone,
   source: walletModel.$wallets,
   filter: (_, { accounts }) => {
-    const account = accounts.find((a) => accountUtils.isProxiedAccount(a));
+    const account = accounts.find(accountUtils.isProxiedAccount);
 
     return nonNullable(account) && account.proxyType === 'Any';
   },
   fn: (wallets, { accounts }) => {
-    const account = accounts.at(0)! as ProxiedAccount;
+    const account = accounts.find(accountUtils.isProxiedAccount)!;
 
     const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: walletUtils.isFlexibleMultisig,
