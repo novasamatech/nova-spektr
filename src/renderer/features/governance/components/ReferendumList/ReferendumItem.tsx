@@ -4,9 +4,8 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
+import { VotedBy } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
@@ -48,6 +47,10 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
       t('governance.referendums.referendumTitle', { index: referendumId })
     ));
 
+  if (referendum.voting.votes.length > 1) {
+    console.log('=== referendum', referendum);
+  }
+
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
@@ -70,20 +73,12 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         </div>
       </div>
 
-      {referendum.voting.votes.length > 0 && <VotedByAccount active />}
-
-      {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
-        <VotedByDelegate
-          asset={asset}
-          address={referendum.votedByDelegate.delegateId}
-          voterName={voter?.parent.name}
-          decision={referendum.votedByDelegate.decision}
-          votingPower={votingService.calculateVotingPower(
-            referendum.votedByDelegate.amount,
-            referendum.votedByDelegate.conviction,
-          )}
-        />
-      )}
+      <VotedBy
+        asset={asset}
+        voterName={voter?.parent.name}
+        delegate={referendum.votedByDelegate}
+        castingVotes={referendum.voting.votes}
+      />
     </ListItem>
   );
 });
