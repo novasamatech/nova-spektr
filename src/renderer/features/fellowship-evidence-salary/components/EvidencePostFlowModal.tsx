@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
+import { nonNullable } from '@/shared/lib/utils';
 import { evidenceForm } from '../model/evidenceForm';
 
 import { EvidenceFormModal } from './EvidenceFormModal';
@@ -12,19 +13,23 @@ type Props = PropsWithChildren<{
 
 export const EvidencePostFlowModal = ({ wish, children }: Props) => {
   const step = useUnit(evidenceForm.$step);
+  const evidence = useUnit(evidenceForm.$evidence);
 
   return (
     <>
       <EvidenceFormModal wish={wish}>{children}</EvidenceFormModal>
-      <EvidencePostModal
-        wish={wish}
-        isOpen={step === 'submit'}
-        onToggle={open => {
-          if (!open) {
-            evidenceForm.setStep('form');
-          }
-        }}
-      />
+      {nonNullable(evidence) ? (
+        <EvidencePostModal
+          wish={wish}
+          evidence={evidence}
+          isOpen={step === 'submit'}
+          onToggle={open => {
+            if (!open) {
+              evidenceForm.setStep('form');
+            }
+          }}
+        />
+      ) : null}
     </>
   );
 };
