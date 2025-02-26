@@ -1,10 +1,12 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { delay, or } from 'patronum';
 
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
+import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';
 
 const fileUploaded = createEvent<File>();
@@ -25,6 +27,10 @@ const parseFileContentFx = createEffect(async (file: File) => {
 
 const updateDBFx = createEffect(async (file: File) => {
   importDb(file);
+});
+
+const populateWalletsFx = attach({
+  effect: walletModel.populate,
 });
 
 const $file = restore(parseFileContentFx.doneData, null).reset(resetValues);
@@ -54,10 +60,16 @@ sample({
 
 sample({
   clock: delay(updateDBFx.doneData, 1000),
-  target: [walletModel.populate, accounts.populate],
+  target: [populateWalletsFx, accounts.populate],
 });
 
-export const importDbModel = {
+sample({
+  clock: populateWalletsFx.done,
+  fn: () => Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
+});
+
+export const insert = {
   $validationError,
   $file,
   $isDisabled: or(

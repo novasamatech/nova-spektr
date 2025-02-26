@@ -27,7 +27,13 @@ export const EvidencePostConfirmation = ({ fee, account, wallets, chain, asset, 
     <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.wish')}>{wish}</DetailRow>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>
-        <ButtonWebLink size="sm" variant="text" href={ipfsUrl.toString()} className="w-full overflow-hidden text-right">
+        <ButtonWebLink
+          size="sm"
+          variant="text"
+          target="_blank"
+          href={ipfsUrl.toString()}
+          className="w-full overflow-hidden text-right"
+        >
           <Hash variant="truncate" value={evidence} />
         </ButtonWebLink>
       </DetailRow>

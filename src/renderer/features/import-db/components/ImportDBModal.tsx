@@ -5,16 +5,16 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
-import { importDbModel } from '../model/import-db-model';
+import { insert } from '../model/insert';
 
 export const ImportDBModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
-  const validationError = useUnit(importDbModel.$validationError);
-  const isDisabled = useUnit(importDbModel.$isDisabled);
+  const validationError = useUnit(insert.$validationError);
+  const isDisabled = useUnit(insert.$isDisabled);
 
   return (
-    <Modal size="sm" onToggle={() => importDbModel.events.resetValues()}>
+    <Modal size="sm" onToggle={() => insert.events.resetValues()}>
       <Modal.Title close>{t('importDB.importTitle')}</Modal.Title>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Content>
@@ -25,7 +25,7 @@ export const ImportDBModal = ({ children }: PropsWithChildren) => {
                 accept=".json"
                 placeholder={t('importDB.fileInputPlaceholder')}
                 invalid={nonNullable(validationError)}
-                onChange={(file) => importDbModel.events.fileUploaded(file)}
+                onChange={(file) => insert.events.fileUploaded(file)}
               />
             </div>
 
@@ -36,7 +36,7 @@ export const ImportDBModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.Content>
       <Modal.Footer>
-        <Button disabled={isDisabled} onClick={() => importDbModel.events.importDatabase()}>
+        <Button disabled={isDisabled} onClick={() => insert.events.importDatabase()}>
           {t('importDB.continueButton')}
         </Button>
       </Modal.Footer>
