@@ -6,17 +6,17 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { evidence, referendumService, track, trackService } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowship } from './fellowship';
 import { profile } from './profile';
 
 const requestEvidence = createEvent<AccountId>();
 const requestEvidenceFx = attach({ effect: evidence.request });
 
-const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
-const $voting = fellowshipModel.$store.map(store => store?.voting ?? []);
-const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
-const $evidences = fellowshipModel.$store.map(store => store?.evidence ?? []);
-const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
+const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
+const $voting = fellowship.$store.map(store => store?.voting ?? []);
+const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+const $evidences = fellowship.$store.map(store => store?.evidence ?? []);
+const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 
 const $memberVoting = combine(profile.$member, $voting, (member, voting) => {

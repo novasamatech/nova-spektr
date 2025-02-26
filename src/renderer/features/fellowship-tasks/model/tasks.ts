@@ -13,13 +13,20 @@ import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
+import { RequestPromotion } from '../components/tasks/RequestPromotion';
+import { RequestRetention } from '../components/tasks/RequestRetention';
 import { RequestSalary } from '../components/tasks/RequestSalary';
 import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
 import { type OperationType, type TaskDescription } from '../types';
 
+import { evidenceInfo } from './evidence';
+import { fellowshipTasksFeature } from './feature';
 import { memberSalary } from './memberSalary';
 import { profile } from './profile';
 import { referendumList } from './referendums';
+
+const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
+const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
 const $hasPermission = profile.$account.map(account => {
   return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
@@ -116,6 +123,40 @@ const $salaryTasks = combine(
   },
 );
 
+const $evidenceTasks = combine(
+  {
+    leftToPromotion: evidenceInfo.$leftToPromotion,
+    leftToDemotion: evidenceInfo.$leftToDemotion,
+    hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
+    hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
+  },
+  ({ leftToPromotion, hasPromotionEvidence, leftToDemotion, hasRetentionEvidence }): TaskDescription[] => {
+    if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
+      return [
+        {
+          id: 'evidence',
+          priority: 0,
+          body: RequestRetention,
+          meta: {},
+        },
+      ];
+    }
+
+    if (nonNullable(leftToPromotion) && leftToPromotion === 0 && hasPromotionEvidence === false) {
+      return [
+        {
+          id: 'evidence',
+          priority: 2,
+          body: RequestPromotion,
+          meta: {},
+        },
+      ];
+    }
+
+    return [];
+  },
+);
+
 const $referendumTasks = combine(referendumList.$notVotedReferendumns, referendums => {
   return referendums
     .filter(referendum => {
@@ -135,13 +176,14 @@ const $list = combine(
   {
     salaryTasks: $salaryTasks,
     referendumTasks: $referendumTasks,
+    evidenceTasks: $evidenceTasks,
     operations: $basketOperationsIds,
     hasPermission: $hasPermission,
   },
-  ({ salaryTasks, referendumTasks, operations, hasPermission }) => {
+  ({ salaryTasks, referendumTasks, evidenceTasks, operations, hasPermission }) => {
     if (hasPermission) {
       const operationsMap = toKeysRecord(operations);
-      return [...salaryTasks, ...referendumTasks]
+      return [...salaryTasks, ...referendumTasks, ...evidenceTasks]
         .filter(t => !(t.id in operationsMap))
         .sort((a, b) => a.priority - b.priority);
     }
@@ -160,6 +202,7 @@ export const tasks = {
   $showReadyToSignScreen,
   $hasPermission,
   $hasAccount,
+  $chainName,
   $basketOperations,
   $list,
 };
