@@ -40,7 +40,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
 
   const address = toAddress(member.accountId, { prefix: featureInput.chain.addressPrefix });
   const active = memberService.isCoreMember(member) && member.isActive;
-  const setActiveDisabled = !memberService.isCoreMember(member);
+  const setActiveDisabled = !memberService.canChangeActiveState(member);
 
   return (
     <Modal size="md" height="fit">

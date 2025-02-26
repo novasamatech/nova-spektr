@@ -108,7 +108,7 @@ const $salaryTasks = combine(
       ];
     }
 
-    if (salaryService.canInductSalary(claimStatus)) {
+    if (!salaryService.isInducted(claimStatus)) {
       return [
         {
           id: 'salary_induct',

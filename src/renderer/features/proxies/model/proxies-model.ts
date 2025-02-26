@@ -197,7 +197,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
 
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
-    name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : proxyBasedName,
+    name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,
     isHidden,
@@ -209,7 +209,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
     {
       ...proxiedAccount,
       type: 'chain',
-      name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : proxyBasedName,
+      name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
       accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,

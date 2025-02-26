@@ -9,6 +9,7 @@ import { Duration, FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
+import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
@@ -78,7 +79,7 @@ export const ActivityList = memo(() => {
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
                   <Account
-                    title={identity?.name}
+                    title={identity ? identityService.getFullName(identity) : undefined}
                     hideAddress
                     iconSize={20}
                     variant="short"

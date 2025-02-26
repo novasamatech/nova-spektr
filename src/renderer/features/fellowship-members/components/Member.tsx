@@ -3,6 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { type Chain } from '@/shared/core';
 import { RankedAccount } from '@/shared/ui-entities';
 import { type CoreMember } from '@/domains/collectives';
+import { identityService } from '@/domains/network';
 import { identityModel } from '../model/identity';
 
 type Props = {
@@ -22,7 +23,7 @@ export const Member = ({ item, chain }: Props) => {
       <RankedAccount
         chain={chain}
         rank={item.rank}
-        name={identity?.name}
+        name={identity ? identityService.getFullName(identity) : undefined}
         isActive={item.isActive}
         accountId={item.accountId}
       />
