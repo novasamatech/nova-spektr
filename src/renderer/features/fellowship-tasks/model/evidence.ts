@@ -1,5 +1,6 @@
-import { combine, sample } from 'effector';
+import { attach, combine, sample } from 'effector';
 
+import { populated } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
 
@@ -10,7 +11,10 @@ import { profile } from './profile';
 
 // evidences
 
+const requestEvidenceFx = attach({ effect: evidence.request });
+
 const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
+const $evidencePopulated = populated(requestEvidenceFx);
 
 const $memberEvidence = combine(profile.$member, $evidences, (member, evidences) => {
   return member ? (evidences.find(e => e.accountId === member.accountId) ?? null) : null;
@@ -84,11 +88,13 @@ const evendenceRequested = fellowshipTasksFeature.running.filterMap(({ api, pall
 
 sample({
   clock: evendenceRequested,
-  target: [evidence.request, evidence.requestPeriods],
+  target: [requestEvidenceFx, evidence.requestPeriods],
 });
 
 export const evidenceInfo = {
   $currentBlock: block.$currentBlock,
+  $evidences,
+  $evidencePopulated,
   $track,
   $nextTrack,
   $periods,

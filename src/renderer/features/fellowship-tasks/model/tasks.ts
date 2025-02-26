@@ -23,7 +23,7 @@ import { evidenceInfo } from './evidence';
 import { fellowshipTasksFeature } from './feature';
 import { memberSalary } from './memberSalary';
 import { profile } from './profile';
-import { referendumList } from './referendums';
+import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
@@ -130,13 +130,21 @@ const $salaryTasks = combine(
 const $evidenceTasks = combine(
   {
     member: profile.$member,
+    evidencePopulated: evidenceInfo.$evidencePopulated,
     leftToPromotion: evidenceInfo.$leftToPromotion,
     leftToDemotion: evidenceInfo.$leftToDemotion,
     hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
     hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
   },
-  ({ member, leftToPromotion, hasPromotionEvidence, leftToDemotion, hasRetentionEvidence }): TaskDescription[] => {
-    if (nullable(member) || !memberService.isCoreMember(member)) return [];
+  ({
+    member,
+    evidencePopulated,
+    leftToPromotion,
+    hasPromotionEvidence,
+    leftToDemotion,
+    hasRetentionEvidence,
+  }): TaskDescription[] => {
+    if (!evidencePopulated || nullable(member) || !memberService.isCoreMember(member)) return [];
 
     if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
       return [
@@ -164,7 +172,7 @@ const $evidenceTasks = combine(
   },
 );
 
-const $referendumTasks = combine(referendumList.$notVotedReferendumns, referendums => {
+const $referendumTasks = combine(referendums.$notVotedReferendumns, referendums => {
   return referendums
     .filter(referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track);
