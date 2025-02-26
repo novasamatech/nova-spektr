@@ -8,6 +8,7 @@ import { FootnoteText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
+import { identityService } from '@/domains/network';
 import { ERROR } from '../constants';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -74,7 +75,7 @@ export const ProfileCard = memo(() => {
                 <Address
                   showIcon
                   iconSize={18}
-                  title={identity?.name}
+                  title={identity ? identityService.getFullName(identity) : undefined}
                   address={toAddress(member.accountId, { prefix: input?.chain.addressPrefix })}
                   hideAddress
                   variant="truncate"

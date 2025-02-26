@@ -43,7 +43,7 @@ export const SignTransactionsModal = () => {
       <Modal.Title close>
         <HeaderTitleText>{t('basket.signOperations.title', { transactions: transactions?.length })}</HeaderTitleText>
       </Modal.Title>
-      <Modal.Content>
+      <Modal.Content disableScroll>
         {signOperationsUtils.isConfirmStep(step) && (
           <ConfirmSlider
             count={transactions.length}

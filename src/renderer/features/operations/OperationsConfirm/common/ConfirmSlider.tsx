@@ -42,18 +42,20 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
   const currentPage = currentTx + 1;
 
   return (
-    <div className="w-[478px]">
-      <Carousel item={currentTx.toString()}>
-        <div className="overflow-x-hidden bg-background-default py-4" ref={scrollRef}>
-          <div className="relative flex gap-2 first:ml-4" ref={ref}>
-            {Children.map(children, (child, index) => {
-              // @ts-expect-error __active prop is not typed
-              return isValidElement(child) ? cloneElement(child, { __index: index }) : null;
-            })}
+    <div className="flex w-[478px] flex-col overflow-hidden">
+      <ScrollArea>
+        <Carousel item={currentTx.toString()}>
+          <div className="bg-background-default py-4" ref={scrollRef}>
+            <div className="relative flex gap-2 first:ml-4" ref={ref}>
+              {Children.map(children, (child, index) => {
+                // @ts-expect-error __active prop is not typed
+                return isValidElement(child) ? cloneElement(child, { __index: index }) : null;
+              })}
+            </div>
           </div>
-        </div>
-      </Carousel>
-      <div className="flex justify-between rounded-lg bg-white px-5 pb-4 pt-3">
+        </Carousel>
+      </ScrollArea>
+      <div className="flex shrink-0 justify-between bg-white px-5 pb-4 pt-3">
         <div className="flex gap-2">
           <IconButton
             size={20}
@@ -95,10 +97,8 @@ type ItemProps = PropsWithChildren<{
 export const Item = ({ __index = 0, children }: ItemProps) => {
   return (
     <Carousel.Item id={__index.toString()} index={__index}>
-      <div className="flex h-[580px] flex-col last-of-type:pr-4">
-        <ScrollArea>
-          <div className="flex max-h-full w-full flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
-        </ScrollArea>
+      <div className="flex h-[580px] shrink-0 flex-col last-of-type:pr-4">
+        <div className="flex max-h-full w-full flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
       </div>
     </Carousel.Item>
   );
