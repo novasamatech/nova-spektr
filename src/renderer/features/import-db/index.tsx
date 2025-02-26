@@ -1,20 +1,21 @@
-import { sample } from 'effector';
-
 import { $features } from '@/shared/config/features';
-import { attachToFeatureInput, createFeature } from '@/shared/feature';
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon } from '@/shared/ui';
-import { walletModel } from '@/entities/wallet';
-import { navigationModel } from '@/features/navigation';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
+import { generalActionsSlot } from '@/pages/Settings/Overview/components/GeneralActions/GeneralActions';
 
-import { ImportDBModal } from './components/importDBModal';
+import { ImportDBModal } from './components/ImportDBModal';
+import { ImportDBSetting } from './components/ImportDBSetting';
 
 export const importDBFeature = createFeature({
   name: 'import/db',
   enable: $features.map(({ importDB }) => importDB),
+});
+
+importDBFeature.inject(generalActionsSlot, {
+  order: 0,
+  render: () => <ImportDBSetting />,
 });
 
 importDBFeature.inject(onboardingActionsSlot, {
@@ -35,11 +36,4 @@ importDBFeature.inject(onboardingActionsSlot, {
       </ImportDBModal>
     );
   },
-});
-
-sample({
-  clock: attachToFeatureInput(importDBFeature, walletModel.$activeWallet),
-  filter: ({ data }) => nonNullable(data),
-  fn: () => Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
 });

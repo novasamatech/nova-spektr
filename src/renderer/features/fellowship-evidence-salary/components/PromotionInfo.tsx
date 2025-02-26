@@ -6,7 +6,7 @@ import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/util
 import { Button, CaptionText, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { salaryService } from '@/domains/collectives';
+import { memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
@@ -24,10 +24,13 @@ export const PromotionInfo = memo(() => {
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
   const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
   const claimStatus = useUnit(memberSalary.$memberClaimStatus);
+  const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
 
+  const isCoreMember = nonNullable(currentMember) && memberService.isCoreMember(currentMember);
   const isInducted = nonNullable(claimStatus) && salaryService.isInducted(claimStatus);
-  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isInducted;
+  const disabled =
+    nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isCoreMember || !isInducted;
 
   useEffect(() => {
     if (input?.api && leftToPromotion) {

@@ -81,9 +81,13 @@ const $basketOperationsIds = $basketOperations.map(operations => {
 });
 
 const $salaryTasks = combine(
-  memberSalary.$currentPeriod,
-  memberSalary.$memberClaimStatus,
-  (period, claimStatus): TaskDescription[] => {
+  {
+    member: profile.$member,
+    period: memberSalary.$currentPeriod,
+    claimStatus: memberSalary.$memberClaimStatus,
+  },
+  ({ member, period, claimStatus }): TaskDescription[] => {
+    if (nullable(member) || !memberService.isCoreMember(member)) return [];
     if (nullable(period) || nullable(claimStatus)) return [];
 
     if (salaryService.canRequestSalary(claimStatus, period)) {
@@ -125,12 +129,15 @@ const $salaryTasks = combine(
 
 const $evidenceTasks = combine(
   {
+    member: profile.$member,
     leftToPromotion: evidenceInfo.$leftToPromotion,
     leftToDemotion: evidenceInfo.$leftToDemotion,
     hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
     hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
   },
-  ({ leftToPromotion, hasPromotionEvidence, leftToDemotion, hasRetentionEvidence }): TaskDescription[] => {
+  ({ member, leftToPromotion, hasPromotionEvidence, leftToDemotion, hasRetentionEvidence }): TaskDescription[] => {
+    if (nullable(member) || !memberService.isCoreMember(member)) return [];
+
     if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
       return [
         {
