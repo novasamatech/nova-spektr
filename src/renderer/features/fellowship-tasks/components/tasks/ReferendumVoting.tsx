@@ -8,8 +8,9 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, Markdown, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, evidenceService, trackService } from '@/domains/collectives';
+import { evidenceInfo } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
-import { referendumList } from '../../model/referendums';
+import { referendums } from '../../model/referendums';
 
 export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
 export const taskVotingDetailsActionSlot = createSlot<{ referendumId: ReferendumId }>();
@@ -24,9 +25,9 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
-  const tracks = useUnit(referendumList.$tracks);
-  const evidences = useUnit(referendumList.$evidences);
-  const evidencePending = useUnit(referendumList.$evidencePending);
+  const tracks = useUnit(referendums.$tracks);
+  const evidencePending = useUnit(referendums.$evidencePending);
+  const evidences = useUnit(evidenceInfo.$evidences);
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
@@ -39,7 +40,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   useEffect(() => {
     if (proposer) {
-      referendumList.requestEvidence(proposer);
+      referendums.requestEvidence(proposer);
     }
   }, [proposer]);
 
