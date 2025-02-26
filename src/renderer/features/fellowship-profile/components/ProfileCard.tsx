@@ -75,7 +75,7 @@ export const ProfileCard = memo(() => {
                 <Address
                   showIcon
                   iconSize={18}
-                  title={identity ? identityService.getFullIdentityName(identity) : undefined}
+                  title={identity ? identityService.getFullName(identity) : undefined}
                   address={toAddress(member.accountId, { prefix: input?.chain.addressPrefix })}
                   hideAddress
                   variant="truncate"

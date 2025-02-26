@@ -23,7 +23,7 @@ export const Member = ({ item, chain }: Props) => {
       <RankedAccount
         chain={chain}
         rank={item.rank}
-        name={identity ? identityService.getFullIdentityName(identity) : undefined}
+        name={identity ? identityService.getFullName(identity) : undefined}
         isActive={item.isActive}
         accountId={item.accountId}
       />

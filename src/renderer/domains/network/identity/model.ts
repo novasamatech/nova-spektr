@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach } from 'effector';
-import { isEmpty } from 'lodash';
+import { isEmpty, zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
@@ -48,17 +48,17 @@ const {
     const subIdentities = await identityPallet.storage.superOf(api, accounts);
     const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
     const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
+    const identities = zipWith(subIdentities, parentIdentities, (sub, parent) => ({ sub, parent }));
 
     const result: IdentityData = {};
 
-    for (let index = 0; index < parentIdentities.length; index++) {
-      const parent = parentIdentities[index];
+    for (const { sub, parent } of identities) {
       if (nullable(parent?.identity)) continue;
 
-      result[parent.account] = {
-        accountId: parent.account,
+      result[sub.account] = {
+        accountId: sub.account,
         name: parent.identity[0].info.display,
-        subName: subIdentities[index]?.identity?.[1],
+        subName: sub?.identity?.[1],
         email: parent.identity[0].info.email,
         image: parent.identity[0].info.image,
       };
@@ -94,7 +94,7 @@ const request = attach({
   },
 });
 
-export const identityDomainModel = {
+export const identity = {
   $list,
   $fulfilled: fulfilled,
   request,

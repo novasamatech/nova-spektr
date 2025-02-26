@@ -79,7 +79,7 @@ export const ActivityList = memo(() => {
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
                   <Account
-                    title={identity ? identityService.getFullIdentityName(identity) : undefined}
+                    title={identity ? identityService.getFullName(identity) : undefined}
                     hideAddress
                     iconSize={20}
                     variant="short"

@@ -283,7 +283,7 @@ sample({
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
+        name: walletIdentity ? identityService.getFullName(walletIdentity) : address,
         type: WalletType.MULTISIG,
         signingType: SigningType.MULTISIG,
       };
@@ -308,7 +308,7 @@ sample({
 
       const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
-        name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
+        name: walletIdentity ? identityService.getFullName(walletIdentity) : address,
         type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
         activated: activated ?? false,

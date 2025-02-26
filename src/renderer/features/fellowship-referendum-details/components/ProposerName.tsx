@@ -27,7 +27,7 @@ export const ProposerName = () => {
   const proposerName = !shouldRenderPending ? (
     <Address
       showIcon
-      title={identity ? identityService.getFullIdentityName(identity) : undefined}
+      title={identity ? identityService.getFullName(identity) : undefined}
       address={address}
       hideAddress
       variant="truncate"
