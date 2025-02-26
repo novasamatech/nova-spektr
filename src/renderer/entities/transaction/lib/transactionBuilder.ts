@@ -298,7 +298,7 @@ type DelegateParams = {
 function buildDelegate({ chain, accountId, tracks, target, conviction, balance }: DelegateParams): Transaction {
   const delegateTxs = tracks.map((track) => ({
     chainId: chain.chainId,
-    accountId: accountId,
+    accountId,
     type: TransactionType.DELEGATE,
     args: {
       track,
