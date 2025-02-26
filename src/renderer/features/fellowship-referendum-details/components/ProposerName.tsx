@@ -2,9 +2,9 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable, toAddress } from '@/shared/lib/utils';
-import { Identicon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
+import { identityService } from '@/domains/network';
 import { referendumDetails } from '../model/details';
 import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 
@@ -13,7 +13,7 @@ export const ProposerName = () => {
 
   const input = useUnit(fellowshipReferendumsDetailsFeature.input);
   const proposer = useUnit(referendumDetails.$proposer);
-  const proposerIdentity = useUnit(referendumDetails.$proposerIdentity);
+  const identity = useUnit(referendumDetails.$proposerIdentity);
   const isProposerLoading = useUnit(referendumDetails.$pendingProposer);
 
   if (nullable(proposer) || nullable(input)) {
@@ -22,13 +22,16 @@ export const ProposerName = () => {
 
   const address = toAddress(proposer, { prefix: input.chain.addressPrefix });
 
-  const shouldRenderPending = isProposerLoading && !proposerIdentity;
+  const shouldRenderPending = isProposerLoading && !identity;
 
   const proposerName = !shouldRenderPending ? (
-    <>
-      <Identicon size={16} address={address} canCopy background={false} />
-      {proposerIdentity ? <span>{proposerIdentity.name}</span> : <Address address={address} variant="truncate" />}
-    </>
+    <Address
+      showIcon
+      title={identity ? identityService.getFullIdentityName(identity) : undefined}
+      address={address}
+      hideAddress
+      variant="truncate"
+    />
   ) : null;
 
   const proposerLoader = shouldRenderPending ? <Skeleton height="1lh" width="20ch" /> : null;
