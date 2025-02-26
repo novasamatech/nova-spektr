@@ -151,8 +151,8 @@ function isClaimantRequestedSalaryPayout(claimStatus: ClaimStatus, period: Salar
   return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'payout';
 }
 
-function canInductSalary(claimStatus: ClaimStatus) {
-  return claimStatus.type === 'none';
+function isInducted(claimStatus: ClaimStatus) {
+  return claimStatus.type !== 'none';
 }
 
 function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
@@ -183,8 +183,8 @@ export const salaryService = {
   isClaimantActiveInCurrentCycle,
   isClaimantRequestedSalary,
   isClaimantRequestedSalaryPayout,
+  isInducted,
 
-  canInductSalary,
   canRequestSalary,
   canRequestSalaryPayout,
 

@@ -2,13 +2,15 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getRelativeTimeFromApi, nullable } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipSalaryFeature } from '../model/feature';
+import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
 import { EvidencePostFlowModal } from './EvidencePostFlowModal';
@@ -26,8 +28,10 @@ export const RetentionInfo = memo(() => {
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
+  const claimStatus = useUnit(memberSalary.$memberClaimStatus);
 
-  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account);
+  const isInducted = nonNullable(claimStatus) && salaryService.isInducted(claimStatus);
+  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isInducted;
 
   useEffect(() => {
     if (input?.api && leftToDemotion) {
