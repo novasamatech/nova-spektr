@@ -224,6 +224,10 @@ export const Staking = () => {
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
+        if (walletUtils.isFlexibleMultisig(activeWallet) && accountUtils.isMultisigAccount(account)) {
+          return acc;
+        }
+
         const address = toAddress(account.accountId, { prefix: addressPrefix });
         acc.push(getInfo(address, account));
       }

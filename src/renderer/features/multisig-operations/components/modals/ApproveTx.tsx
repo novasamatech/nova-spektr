@@ -4,13 +4,12 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
   type Asset,
   type Chain,
-  type FlexibleMultisigAccount,
   type HexString,
   type MultisigAccount,
   type Timepoint,
@@ -53,8 +52,8 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account: MultisigAccount | FlexibleMultisigAccount;
+  tx: MultisigTransactionDS;
+  account: MultisigAccount;
   chain: Chain;
   api: ApiPromise;
   children: React.ReactNode;

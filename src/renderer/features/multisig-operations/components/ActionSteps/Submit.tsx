@@ -73,7 +73,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
         }
 
         if (params.isFinalApprove && params.multisigError) {
-          flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+          flexibleShellModel.events.rejectMultisig();
         }
 
         if (params.isFinalApprove && !params.multisigError && isProxyTypeTransaction(multisigTx.transaction)) {
@@ -81,7 +81,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
         }
 
         if (isReject) {
-          flexibleShellModel.events.rejectMultisig({ accountId: multisigTx.accountId, chainId: multisigTx.chainId });
+          flexibleShellModel.events.rejectMultisig();
 
           if (tx.type === TransactionType.BATCH_ALL && wrappedTx && wrappedTx.multisigTx && multisigAccount) {
             const multisigData = buildMultisigTx(wrappedTx.coreTx, wrappedTx.multisigTx, params, multisigAccount);

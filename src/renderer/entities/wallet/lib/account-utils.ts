@@ -6,7 +6,6 @@ import keyBy from 'lodash/keyBy';
 import {
   type Chain,
   type ChainId,
-  type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type MultisigThreshold,
@@ -33,8 +32,6 @@ export const accountUtils = {
   isVaultBaseAccount,
   isVaultChainAccount,
   isVaultShardAccount,
-  isRegularMultisigAccount,
-  isFlexibleMultisigAccount,
   isMultisigAccount,
   isWcAccount,
   isProxiedAccount,
@@ -102,21 +99,8 @@ function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShar
   );
 }
 
-function isRegularMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
+function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
   return 'accountType' in account && account.accountType === AccountType.MULTISIG;
-}
-
-function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
-  return (
-    // @ts-expect-error Partial type breaks required type field usage
-    accountService.isChainAccount(account) &&
-    'accountType' in account &&
-    account.accountType === AccountType.FLEXIBLE_MULTISIG
-  );
-}
-
-function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
-  return isFlexibleMultisigAccount(account) || isRegularMultisigAccount(account);
 }
 
 function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {

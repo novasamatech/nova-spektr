@@ -7,7 +7,6 @@ import {
   type Account as AccountType,
   type Address,
   type Chain,
-  type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigTransaction,
@@ -44,7 +43,7 @@ import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  account?: MultisigAccount;
   signatory?: AccountType;
   chain: Chain;
   api: ApiPromise;
