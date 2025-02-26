@@ -230,15 +230,18 @@ const requestIdentitiesFx = series(identity.request, { parallel: true, skipError
 
 sample({
   clock: enrichIndexedMultisigsFx.doneData,
+  filter: (multisigs) => multisigs.length > 0,
   fn: (multisigs) => {
     const grouped: Record<ChainId, AccountId[]> = {};
 
     for (const { chain, accounts } of multisigs) {
       const account = accounts.find(accountUtils.isProxiedAccount) || accounts.at(0);
+      if (!account) continue;
+
       if (nullable(grouped[chain.chainId])) {
-        grouped[chain.chainId] = [account?.accountId];
+        grouped[chain.chainId] = [account.accountId];
       } else {
-        grouped[chain.chainId].push(account?.accountId);
+        grouped[chain.chainId].push(account.accountId);
       }
     }
 
@@ -279,13 +282,15 @@ sample({
       identity: requestIdentitiesFx.done,
     },
   }),
+  filter: ({ multisigs }) => multisigs.every((m) => m.accounts.find(accountUtils.isMultisigAccount)),
   fn: ({ multisigs, identity }) => {
     return multisigs.map(({ chain, accounts }) => {
-      const account = accounts.find(accountUtils.isMultisigAccount);
-      const index = (identity.params as { chainId: ChainId }[]).findIndex(({ chainId }) => chainId === chain.chainId);
-      const walletIdentity = identity.result.at(index)?.[account?.accountId];
+      const account = accounts.find(accountUtils.isMultisigAccount)!;
 
-      const address = toAddress(account?.accountId, { chunk: 5, prefix: chain.addressPrefix });
+      const index = (identity.params as { chainId: ChainId }[]).findIndex(({ chainId }) => chainId === chain.chainId);
+      const walletIdentity = identity.result.at(index)?.[account.accountId];
+
+      const address = toAddress(account.accountId, { chunk: 5, prefix: chain.addressPrefix });
 
       const wallet: NoID<Omit<MultisigWallet, 'accounts' | 'isActive'>> = {
         name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
@@ -306,13 +311,14 @@ sample({
       identity: requestIdentitiesFx.done,
     },
   }),
+  filter: ({ multisigs }) => multisigs.every((m) => m.accounts.find(accountUtils.isProxiedAccount) || m.accounts.at(0)),
   fn: ({ multisigs, identity }) => {
     return multisigs.map(({ chain, accounts, activated }) => {
       const account = accounts.find(accountUtils.isProxiedAccount) || accounts.at(0);
       const index = (identity.params as { chainId: ChainId }[]).findIndex(({ chainId }) => chainId === chain.chainId);
-      const walletIdentity = identity.result.at(index)?.[account?.accountId];
+      const walletIdentity = identity.result.at(index)?.[account!.accountId];
 
-      const address = toAddress(account?.accountId, { chunk: 5, prefix: chain.addressPrefix });
+      const address = toAddress(account!.accountId, { chunk: 5, prefix: chain.addressPrefix });
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
         name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : address,
         type: WalletType.FLEXIBLE_MULTISIG,
