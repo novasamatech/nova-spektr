@@ -42,7 +42,7 @@ function isCoreMember(member: Member | CoreMember): member is CoreMember {
 }
 
 function canChangeActiveState(member: Member | CoreMember) {
-  return isCoreMember(member) && member.rank >= 3;
+  return isCoreMember(member) && member.rank > 0;
 }
 
 type SetActiveTransactionParams = {
