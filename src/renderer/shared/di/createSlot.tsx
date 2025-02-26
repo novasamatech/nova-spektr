@@ -30,7 +30,7 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
   const identifier = createAbstractIdentifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>>({
     type: 'slot',
     name: config?.name ?? 'unknownSlot',
-    processHandler: (handler) => ({
+    processHandler: handler => ({
       key: handler.key,
       available: handler.available,
       body: normalizeSlotHandler(handler.body),

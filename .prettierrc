@@ -40,7 +40,8 @@
         "./src/renderer/features/watch-only-*/**/*.{ts,tsx}",
         "./src/renderer/features/proxied-*/**/*.{ts,tsx}",
         "./src/renderer/shared/ui-kit/**/*.{ts,tsx}",
-        "./src/renderer/shared/ui-entities/**/*.{ts,tsx}"
+        "./src/renderer/shared/ui-entities/**/*.{ts,tsx}",
+        "./src/renderer/shared/di/**/*.{ts,tsx}"
       ],
       "options": {
         "arrowParens": "avoid"

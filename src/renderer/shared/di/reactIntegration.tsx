@@ -10,7 +10,7 @@ type IsVoid<T> = T extends void | undefined ? true : false;
 const useForceUpdate = () => {
   const [index, setState] = useState(0);
 
-  return [index, () => setState((x) => (x >= Number.MAX_SAFE_INTEGER ? 0 : x + 1))] as const;
+  return [index, () => setState(x => (x >= Number.MAX_SAFE_INTEGER ? 0 : x + 1))] as const;
 };
 
 type SlotOptions<Props extends SlotProps> = IsVoid<Props> extends true ? { props?: void } : { props: Props };

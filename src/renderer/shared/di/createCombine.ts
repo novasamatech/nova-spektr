@@ -21,7 +21,7 @@ export const createCombine = <State, const Result>(config: {
   const identifier = createAbstractIdentifier<Result, State, Store<State>, Store<State>>({
     type: 'combine',
     name,
-    processHandler: (handler) => ({
+    processHandler: handler => ({
       key: handler.key,
       available: handler.available,
       body: handler.body,
@@ -29,12 +29,13 @@ export const createCombine = <State, const Result>(config: {
   });
 
   const $store = createStore<State[]>([], { name: `${name}/store` });
-  let domain = createDomain({ name: `${name}/bindingDomain` });
+  let domain = createDomain({ name: `${name}/binding` });
 
   const bindFx = createEffect((handlers: Handler<Store<State>>[]) => {
-    clearNode(domain);
-    domain = createDomain({ name: config.name });
-    const stores = handlers.filter((h) => h.available()).map((h) => h.body);
+    clearNode(domain, { deep: false });
+    domain = createDomain({ name: `${name}/binding` });
+
+    const stores = handlers.map(h => h.body);
 
     withRegion(domain, () => {
       sample({
@@ -42,12 +43,11 @@ export const createCombine = <State, const Result>(config: {
         fn: (...states) => states as State[],
         target: $store,
       });
-
-      // eslint-disable-next-line effector/no-getState
-      const states = stores.map((s) => s.getState());
-
-      launch($store, states);
     });
+
+    // eslint-disable-next-line effector/no-getState
+    const states = stores.map(s => s.getState());
+    launch($store, states);
   });
 
   sample({
