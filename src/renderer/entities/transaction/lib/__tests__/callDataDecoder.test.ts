@@ -2,10 +2,12 @@ import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
-import { TEST_ADDRESS } from '@/shared/lib/utils';
+import { TEST_ADDRESS, toAccountId } from '@/shared/lib/utils';
 import { decodeCallData } from '../callDataDecoder';
 
 import { metadata } from './metadata';
+
+const TEST_ACCOUNT_ID = toAccountId(TEST_ADDRESS);
 
 /**
  * ATTENTION! This tests may fail on node version >= 22 because of
@@ -41,7 +43,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         delay: '0',
         delegate: 'DqEGbAJBJGuDAMN2feH4GsufAYvmYJhNAkiPxs9S4StwJ7j',
@@ -62,13 +64,13 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         call: '0x1f0102000468161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a2420004030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e802e8030000',
         forceProxyType: '',
         real: 'Hjdw9g44uAL4XKucHTdxRmXQJBx7t8j4Anox9NitS7z7HAL',
         transaction: {
-          address: '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ',
+          accountId: TEST_ACCOUNT_ID,
           args: {
             call: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
             maxWeight: {
@@ -100,7 +102,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         dest: 'Evo4vR5tHsTVvNqYZNo4GVQc2xHcB5J8i7gKv4cwXKRynK3',
         value: '1000000000000',
@@ -120,7 +122,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         call: '0x00000400',
         maxWeight: {
@@ -146,7 +148,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         payee: {
           Account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E',
@@ -164,7 +166,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(api, TEST_ADDRESS, '0x0602070010a5d4e8');
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         value: '1000000000000',
       },
@@ -183,7 +185,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         targets: ['Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E'],
       },
@@ -198,7 +200,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(api, TEST_ADDRESS, '0x060301000000');
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {},
       chainId: '0x1234000000000000000000000000000000000000000000000000000000000000',
       method: 'withdrawUnbonded',
@@ -211,7 +213,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(api, TEST_ADDRESS, '0x0613070010a5d4e8');
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         value: '1000000000000',
       },
@@ -226,7 +228,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(api, TEST_ADDRESS, '0x0601070010a5d4e8');
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         maxAdditional: '1000000000000',
       },
@@ -245,7 +247,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     );
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         payee: { Account: 'Cn1mVjBBvLJUWE8GQoeR7JduGt2GxhUXrx191ob3Si6HA9E' },
       },
@@ -260,7 +262,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     const transaction = decodeCallData(api, TEST_ADDRESS, '0x060700');
 
     expect(transaction).toEqual({
-      address: TEST_ADDRESS,
+      accountId: TEST_ACCOUNT_ID,
       args: {
         payee: 'Staked',
       },
