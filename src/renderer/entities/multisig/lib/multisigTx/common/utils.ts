@@ -6,7 +6,6 @@ import {
   type Address,
   type ChainId,
   type DecodedTransaction,
-  type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigEvent,
   type MultisigTransaction,
@@ -157,7 +156,7 @@ export const buildMultisigTx = (
   tx: Transaction,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
-  account: MultisigAccount | FlexibleMultisigAccount,
+  account: MultisigAccount,
 ): MultisigTxResult => {
   const transaction: MultisigTransaction = {
     transaction: tx,

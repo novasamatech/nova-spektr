@@ -34,9 +34,10 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     const accounts = wallet?.accounts.reduce<DropdownOption[]>((acc, account, index) => {
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+      const isFlexibleMultisig = walletUtils.isFlexibleMultisig(wallet) && accountUtils.isMultisigAccount(account);
       const isChainMatch = accountUtils.isChainIdMatch(account, chain.chainId);
 
-      if (isPolkadotVault && isBaseAccount) {
+      if ((isPolkadotVault && isBaseAccount) || isFlexibleMultisig) {
         return acc;
       }
 

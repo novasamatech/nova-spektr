@@ -1,8 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { useMultisigChainContext } from '@/app/providers';
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
-import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type CallData, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -19,12 +19,12 @@ import CallDataModal from './modals/CallDataModal';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account: MultisigAccount | FlexibleMultisigAccount | null;
+  tx: MultisigTransactionDS;
+  account: MultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransactionDS;
 };
 
 export const operationDetailsSlot = createSlot<SlotProps>();
@@ -79,7 +79,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
 
   if (!walletUtils.isMultisig(activeWallet)) return null;
 
-  const isFinalSigning = events.length === activeWallet.accounts[0].threshold - 1;
+  const isFinalSigning = account && events.length === account.threshold - 1;
   const isApproveAvailable = !isFinalSigning || (tx.callData && validateCallData(tx.callData, tx.callHash));
 
   return (

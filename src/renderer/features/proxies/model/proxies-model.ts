@@ -24,7 +24,14 @@ import {
 import { series } from '@/shared/effector';
 import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type IdentityMap, accountService, identity, identityService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type IdentityMap,
+  accountService,
+  accounts,
+  identity,
+  identityService,
+} from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
@@ -138,7 +145,7 @@ const fetchProxiesFx = createEffect(
 
 const findProxiesFx = attach({
   source: {
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     connections: networkModel.$connections,
     proxies: proxyModel.$proxies,
   },
@@ -159,7 +166,7 @@ const findProxiesFx = attach({
 
 const findAllProxiesFx = attach({
   source: {
-    accounts: walletModel.$availableAccounts,
+    accounts: accounts.$list,
     chains: networkModel.$chains,
   },
   mapParams(_: void, { chains, accounts }) {
@@ -194,13 +201,11 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
       accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
   });
 
-  const isHidden = walletUtils.isFlexibleMultisig(proxyWallet);
-
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
     name: walletIdentity ? identityService.getFullIdentityName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,
-    isHidden,
+    isHidden: !!proxyWallet,
   };
 
   const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);

@@ -12,7 +12,8 @@ import { type AnyAccount } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -88,8 +89,9 @@ const AccountSelector = () => {
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || accounts.length <= 1) {
+  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 

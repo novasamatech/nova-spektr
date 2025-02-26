@@ -48,6 +48,7 @@ sample({
   clock: walletModel.$activeWallet,
   filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
   fn: (wallet) => {
+    if (walletUtils.isFlexibleMultisig(wallet)) return wallet.accounts.filter(accountUtils.isProxiedAccount);
     if (!walletUtils.isPolkadotVault(wallet)) return wallet.accounts;
 
     return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
