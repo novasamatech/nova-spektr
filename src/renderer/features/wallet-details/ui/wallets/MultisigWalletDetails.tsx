@@ -10,6 +10,7 @@ import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { accountService, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -50,12 +51,14 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
+  const accountList = useUnit(accounts.$list);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
   const [tab, setTab] = useState('1');
 
-  const multisigAccount = wallet.accounts.find(accountUtils.isMultisigAccount);
+  const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+  const multisigAccount = walletAccounts.find(accountUtils.isMultisigAccount);
   assert(multisigAccount, 'Multisig account not found.');
 
   // Check for deprecated multichain multisig accounts

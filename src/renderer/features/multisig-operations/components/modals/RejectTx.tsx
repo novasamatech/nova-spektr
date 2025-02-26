@@ -3,15 +3,8 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
-import {
-  type Account,
-  type Asset,
-  type Chain,
-  type FlexibleMultisigAccount,
-  type HexString,
-  type MultisigAccount,
-} from '@/shared/core';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type Account, type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -33,8 +26,8 @@ import { Submit } from '../ActionSteps/Submit';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account: MultisigAccount | FlexibleMultisigAccount;
+  tx: MultisigTransactionDS;
+  account: MultisigAccount;
   chain: Chain;
   api: ApiPromise;
   children: React.ReactNode;

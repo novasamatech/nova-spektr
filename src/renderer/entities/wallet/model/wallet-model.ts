@@ -4,7 +4,6 @@ import { not, or, readonly } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 import {
   type Account,
-  type FlexibleMultisigAccount,
   type ID,
   type MultisigAccount,
   type NoID,
@@ -40,7 +39,7 @@ const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
 const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
-const flexibleMultisigCreated = createEvent<CreateParams<FlexibleMultisigAccount>>();
+const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 

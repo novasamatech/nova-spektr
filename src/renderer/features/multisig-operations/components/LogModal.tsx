@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Contact,
-  type FlexibleMultisigAccount,
   type MultisigAccount,
   type MultisigEvent,
   type SigningStatus,
@@ -24,8 +23,8 @@ import { Status, operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  tx: MultisigTransactionDS;
+  account?: MultisigAccount;
   connection?: ExtendedChain;
   contacts: Contact[];
   isOpen: boolean;
@@ -61,7 +60,7 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransactionDS;
 };
 
 export const logTitleSlot = createSlot<SlotProps>();

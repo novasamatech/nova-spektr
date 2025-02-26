@@ -6,7 +6,6 @@ import {
   type Account,
   type Asset,
   type Chain,
-  type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigTransaction,
@@ -33,7 +32,7 @@ export const confirmTransactionInfoSlot = createSlot<{
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
-  account: MultisigAccount | FlexibleMultisigAccount;
+  account: MultisigAccount;
   signAccount?: Account;
   chain: Chain;
   api: ApiPromise;

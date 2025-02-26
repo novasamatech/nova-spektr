@@ -10,7 +10,8 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -79,8 +80,9 @@ const AccountsSelector = () => {
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || accounts.length <= 1) {
+  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 

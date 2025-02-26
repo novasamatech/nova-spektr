@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Chain,
   type FlexibleMultisigTransaction,
@@ -29,7 +29,7 @@ import ApproveTxModal from './modals/ApproveTx';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: FlexibleMultisigTransactionDS;
+  tx: MultisigTransactionDS;
   account: MultisigAccount;
 };
 
