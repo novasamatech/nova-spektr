@@ -4,7 +4,7 @@ import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { Modal } from '@/shared/ui-kit';
-import { type AccountIdentity } from '@/domains/identity';
+import { type AccountIdentity } from '@/domains/network';
 import { ValidatorsTable } from '../ValidatorsTable/ValidatorsTable';
 
 type Props = {

@@ -32,7 +32,6 @@ export type {
   VaultBaseAccount,
   VaultChainAccount,
   MultisigAccount,
-  FlexibleMultisigAccount,
   WcAccount,
   ProxiedAccount,
   VaultShardAccount,

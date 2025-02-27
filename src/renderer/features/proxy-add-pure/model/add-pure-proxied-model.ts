@@ -1,3 +1,4 @@
+/* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
@@ -284,18 +285,18 @@ sample({
     return nonNullable(addProxyStore);
   },
   fn: ({ chain, account }, { accountId, blockNumber, extrinsicIndex }) => {
-    const proxiedAccount: PartialProxiedAccount = {
-      accountId,
-      chainId: chain.chainId,
-      proxyAccountId: account.accountId,
-      delay: 0,
-      proxyType: 'Any',
-      proxyVariant: ProxyVariant.PURE,
-      blockNumber,
-      extrinsicIndex,
-    };
-
-    return [proxiedAccount];
+    return [
+      {
+        accountId,
+        chainId: chain.chainId,
+        proxyAccountId: account.accountId,
+        delay: 0,
+        proxyType: 'Any',
+        proxyVariant: ProxyVariant.PURE,
+        blockNumber,
+        extrinsicIndex,
+      },
+    ] as PartialProxiedAccount[];
   },
   target: proxiesModel.createProxiesWallets,
 });

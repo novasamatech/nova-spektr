@@ -6,11 +6,11 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
-import { AssetBalance } from '@/entities/asset';
+import { Address, AssetBalance } from '@/shared/ui-entities';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert } from '@/entities/wallet';
+import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
 import { unlockFormAggregate } from '../aggregates/unlockForm';
@@ -81,8 +81,9 @@ const AccountsSelector = () => {
   const accounts = useUnit(unlockFormAggregate.$accounts);
   const network = useUnit(networkSelectorModel.$network);
   const chain = useUnit(networkSelectorModel.$governanceChain);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || !chain || accounts.length <= 1) {
+  if (!network || !chain || walletUtils.isFlexibleMultisig(wallet) || accounts.length <= 0) {
     return null;
   }
 

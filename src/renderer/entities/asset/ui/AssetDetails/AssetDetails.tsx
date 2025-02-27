@@ -4,8 +4,8 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { HelpText, Shimmering } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance } from '@/entities/price';
-import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   asset: Asset;

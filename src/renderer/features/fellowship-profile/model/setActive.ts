@@ -92,11 +92,14 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
+    open: flow.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  filter: ({ transactions, account, chain }) => nonNullable(chain) && nonNullable(transactions) && nonNullable(account),
+  filter: ({ open, transactions, account, chain }) => {
+    return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
+  },
   fn({ transactions, account, chain }, signParams) {
     return {
       signatures: signParams.signatures,

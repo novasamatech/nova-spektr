@@ -6,7 +6,7 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, Select } from '@/shared/ui';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { PureProxyPopover } from '@/entities/proxy';

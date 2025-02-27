@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
+import { type HexString } from '@/shared/core';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -22,9 +23,10 @@ type Props = PropsWithChildren<{
   isOpen: boolean;
   onToggle: (open: boolean) => unknown;
   wish: 'Promotion' | 'Retention';
+  evidence: HexString;
 }>;
 
-export const EvidencePostModal = ({ isOpen, onToggle, wish, children }: Props) => {
+export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }: Props) => {
   useFlow(evidencePost.flow, null);
 
   const { t } = useI18n();
@@ -92,6 +94,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, wish, children }: Props) =
             <Box padding={[4, 5]}>
               <EvidencePostConfirmation
                 wish={wish}
+                evidence={evidence}
                 asset={input.asset}
                 chain={input.chain}
                 wallets={input.wallets}

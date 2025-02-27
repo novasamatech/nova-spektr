@@ -5,12 +5,13 @@ import { type FormEvent } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -77,8 +78,9 @@ const AccountsSelector = () => {
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || accounts.length <= 1) {
+  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 

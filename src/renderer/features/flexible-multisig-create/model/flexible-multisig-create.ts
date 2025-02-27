@@ -14,7 +14,6 @@ import {
   type Chain,
   type Contact,
   CryptoType,
-  type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
   SigningType,
@@ -451,7 +450,7 @@ sample({
     );
 
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
-    const account: Omit<NoID<FlexibleMultisigAccount>, 'walletId'> = {
+    const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       chainId: chain!.chainId,
       name: name.trim(),
@@ -459,7 +458,7 @@ sample({
       threshold: threshold,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
-      accountType: AccountType.FLEXIBLE_MULTISIG,
+      accountType: AccountType.MULTISIG,
       type: 'chain',
     };
 

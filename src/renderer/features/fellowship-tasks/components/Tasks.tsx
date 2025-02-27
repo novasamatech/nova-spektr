@@ -16,6 +16,7 @@ export const Tasks = memo(() => {
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
   const hasPermission = useUnit(tasks.$hasPermission);
+  const hasAccount = useUnit(tasks.$hasAccount);
   const [active, setActive] = useState(0);
 
   if (nullable(input)) {
@@ -44,13 +45,13 @@ export const Tasks = memo(() => {
         </Box>
         <Basket />
       </Box>
-      {activeTasks.length ? (
+      {hasAccount && hasPermission && activeTasks.length ? (
         <Box padding={[0, 5, 4]} grow={1}>
           <Stack active={active} cards={cards} />
         </Box>
       ) : null}
-      {hasPermission && !activeTasks.length ? <AllDone /> : null}
-      {!hasPermission && !activeTasks.length ? <AccountNotFound /> : null}
+      {hasAccount && hasPermission && !activeTasks.length ? <AllDone /> : null}
+      {!hasAccount ? <AccountNotFound /> : null}
     </div>
   );
 });
@@ -71,6 +72,7 @@ const AllDone = memo(() => {
 
 const AccountNotFound = memo(() => {
   const { t } = useI18n();
+  const chainName = useUnit(tasks.$chainName);
 
   return (
     <Box verticalAlign="center" horizontalAlign="center" grow={1} gap={6}>
@@ -78,7 +80,7 @@ const AccountNotFound = memo(() => {
       <Box gap={2} horizontalAlign="center" width="340px">
         <SmallTitleText className="text-center">{t('fellowship.tasks.noAccountTitle')}</SmallTitleText>
         <FootnoteText className="text-center text-text-tertiary">
-          {t('fellowship.tasks.noAccountDescription')}
+          {t('fellowship.tasks.noAccountDescription', { chain: chainName })}
         </FootnoteText>
       </Box>
     </Box>

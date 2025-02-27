@@ -5,7 +5,7 @@ import { type CollectivePalletsType } from '../_lib/types';
 export type Evidence = {
   wish: 'Promotion' | 'Retention';
   accountId: AccountId;
-  hash: string;
+  hash: HexString;
   cid: string;
   content: string;
   summary: string;

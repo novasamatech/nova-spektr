@@ -18,13 +18,14 @@ export const identityLegacyIdentityInfo = pjsSchema.object({
   display: pjsSchema.dataString,
   legal: pjsSchema.dataString,
   web: pjsSchema.dataString,
-  matrix: pjsSchema.dataString,
+  matrix: pjsSchema.dataString.optional(),
+  riot: pjsSchema.dataString.optional(),
   email: pjsSchema.dataString,
   pgpFingerprint: pjsSchema.optional(z.unknown()),
   image: pjsSchema.dataString,
   twitter: pjsSchema.dataString,
-  github: pjsSchema.dataString,
-  discord: pjsSchema.dataString,
+  github: pjsSchema.dataString.optional(),
+  discord: pjsSchema.dataString.optional(),
 });
 
 export type IdentityRegistration = z.infer<typeof identityRegistration>;

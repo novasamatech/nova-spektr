@@ -41,6 +41,10 @@ function isCoreMember(member: Member | CoreMember): member is CoreMember {
   return hasActive && hasPromotion && hasProof;
 }
 
+function canChangeActiveState(member: Member | CoreMember) {
+  return isCoreMember(member) && member.rank > 0;
+}
+
 type SetActiveTransactionParams = {
   pallet: CollectivePalletsType;
   account: AnyAccount;
@@ -70,6 +74,7 @@ export const memberService = {
   findMatchingMember,
   findMatchingAccount,
   isCoreMember,
+  canChangeActiveState,
 
   createSetActiveTransaction,
   isSetActiveTransaction,

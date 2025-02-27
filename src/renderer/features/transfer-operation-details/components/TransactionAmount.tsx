@@ -1,13 +1,13 @@
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { cnTw } from '@/shared/lib/utils';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { AssetFiatBalance } from '@/entities/price';
 import { getTransactionAmount } from '@/entities/transaction';
 import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransactionDS;
   className?: string;
 };
 

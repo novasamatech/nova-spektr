@@ -4,14 +4,14 @@ import { and, or } from 'patronum';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { member } from '@/domains/collectives';
-import { identity, identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 
 import { fellowshipTasksFeature } from './feature';
 
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
 
-const $identities = combine(fellowshipTasksFeature.input, identityDomain.identity.$list, (featureInput, list) => {
+const $identities = combine(fellowshipTasksFeature.input, identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
 
   return list[featureInput.chainId] ?? {};
@@ -43,7 +43,7 @@ sample({
     chainId,
     accounts: member ? [member.accountId] : [],
   }),
-  target: identityDomain.identity.request,
+  target: identity.request,
 });
 
 export const profile = {

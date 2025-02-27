@@ -7,7 +7,6 @@ import {
   type Account as AccountType,
   type Address,
   type Chain,
-  type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigTransaction,
@@ -20,10 +19,9 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers } from '@/shared/ui-entities';
+import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { identityDomain } from '@/domains/identity';
-import { AssetBalance } from '@/entities/asset';
+import { identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
@@ -45,7 +43,7 @@ import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
-  account?: MultisigAccount | FlexibleMultisigAccount;
+  account?: MultisigAccount;
   signatory?: AccountType;
   chain: Chain;
   api: ApiPromise;
@@ -82,7 +80,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const vote = operationDetailsUtils.getVote(tx);
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [tx.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
@@ -118,7 +116,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
     if (accounts.length === 0) return;
 
-    identityDomain.identity.request({ chainId: tx.chainId, accounts });
+    identity.request({ chainId: tx.chainId, accounts });
   }, [validatorsMap]);
 
   const startStakingValidators: Address[] =

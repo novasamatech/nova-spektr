@@ -13,13 +13,20 @@ import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
+import { RequestPromotion } from '../components/tasks/RequestPromotion';
+import { RequestRetention } from '../components/tasks/RequestRetention';
 import { RequestSalary } from '../components/tasks/RequestSalary';
 import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
 import { type OperationType, type TaskDescription } from '../types';
 
+import { evidenceInfo } from './evidence';
+import { fellowshipTasksFeature } from './feature';
 import { memberSalary } from './memberSalary';
 import { profile } from './profile';
-import { referendumList } from './referendums';
+import { referendums } from './referendums';
+
+const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
+const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
 const $hasPermission = profile.$account.map(account => {
   return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
@@ -74,9 +81,13 @@ const $basketOperationsIds = $basketOperations.map(operations => {
 });
 
 const $salaryTasks = combine(
-  memberSalary.$currentPeriod,
-  memberSalary.$memberClaimStatus,
-  (period, claimStatus): TaskDescription[] => {
+  {
+    member: profile.$member,
+    period: memberSalary.$currentPeriod,
+    claimStatus: memberSalary.$memberClaimStatus,
+  },
+  ({ member, period, claimStatus }): TaskDescription[] => {
+    if (nullable(member) || !memberService.isCoreMember(member)) return [];
     if (nullable(period) || nullable(claimStatus)) return [];
 
     if (salaryService.canRequestSalary(claimStatus, period)) {
@@ -101,7 +112,7 @@ const $salaryTasks = combine(
       ];
     }
 
-    if (salaryService.canInductSalary(claimStatus)) {
+    if (!salaryService.isInducted(claimStatus)) {
       return [
         {
           id: 'salary_induct',
@@ -116,7 +127,52 @@ const $salaryTasks = combine(
   },
 );
 
-const $referendumTasks = combine(referendumList.$notVotedReferendumns, referendums => {
+const $evidenceTasks = combine(
+  {
+    member: profile.$member,
+    evidencePopulated: evidenceInfo.$evidencePopulated,
+    leftToPromotion: evidenceInfo.$leftToPromotion,
+    leftToDemotion: evidenceInfo.$leftToDemotion,
+    hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
+    hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
+  },
+  ({
+    member,
+    evidencePopulated,
+    leftToPromotion,
+    hasPromotionEvidence,
+    leftToDemotion,
+    hasRetentionEvidence,
+  }): TaskDescription[] => {
+    if (!evidencePopulated || nullable(member) || !memberService.isCoreMember(member)) return [];
+
+    if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
+      return [
+        {
+          id: 'evidence',
+          priority: 0,
+          body: RequestRetention,
+          meta: {},
+        },
+      ];
+    }
+
+    if (nonNullable(leftToPromotion) && leftToPromotion === 0 && hasPromotionEvidence === false) {
+      return [
+        {
+          id: 'evidence',
+          priority: 2,
+          body: RequestPromotion,
+          meta: {},
+        },
+      ];
+    }
+
+    return [];
+  },
+);
+
+const $referendumTasks = combine(referendums.$notVotedReferendumns, referendums => {
   return referendums
     .filter(referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track);
@@ -135,13 +191,14 @@ const $list = combine(
   {
     salaryTasks: $salaryTasks,
     referendumTasks: $referendumTasks,
+    evidenceTasks: $evidenceTasks,
     operations: $basketOperationsIds,
     hasPermission: $hasPermission,
   },
-  ({ salaryTasks, referendumTasks, operations, hasPermission }) => {
+  ({ salaryTasks, referendumTasks, evidenceTasks, operations, hasPermission }) => {
     if (hasPermission) {
       const operationsMap = toKeysRecord(operations);
-      return [...salaryTasks, ...referendumTasks]
+      return [...salaryTasks, ...referendumTasks, ...evidenceTasks]
         .filter(t => !(t.id in operationsMap))
         .sort((a, b) => a.priority - b.priority);
     }
@@ -160,6 +217,7 @@ export const tasks = {
   $showReadyToSignScreen,
   $hasPermission,
   $hasAccount,
+  $chainName,
   $basketOperations,
   $list,
 };

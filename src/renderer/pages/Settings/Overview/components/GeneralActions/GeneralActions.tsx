@@ -3,14 +3,15 @@ import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { deleteDb, exportDb } from '@/shared/api/storage';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, isDev } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { BodyText, Button, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
+import { BodyText, FootnoteText, HelpText, Icon, Plate, Switch } from '@/shared/ui';
 import { governanceModel } from '@/entities/governance';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { downloadFiles } from '@/features/wallets/ExportKeys';
+
+export const generalActionsSlot = createSlot();
 
 // TODO: Language switcher temporary removed
 export const GeneralActions = () => {
@@ -54,16 +55,6 @@ export const GeneralActions = () => {
   //     console.warn(error);
   //   }
   // };
-
-  const exportDatabase = () => {
-    exportDb().then((data) => {
-      downloadFiles([data]);
-    });
-  };
-  const deleteDatabase = () => {
-    deleteDb();
-    window.location.reload();
-  };
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -123,29 +114,7 @@ export const GeneralActions = () => {
         </Link>
       </Plate>
 
-      {isDev() && (
-        <Plate className="flex flex-col gap-2">
-          <BodyText className="flex items-center justify-center gap-1 text-alert">
-            <Icon name="warn" size={12} className="text-inherit" />
-            {/* eslint-disable i18next/no-literal-string */}
-            <span>DEV MODE</span>
-          </BodyText>
-          <Button
-            pallet="secondary"
-            className="w-full border border-alert bg-alert-background-warning"
-            onClick={exportDatabase}
-          >
-            {t('importDB.exportButton')}
-          </Button>
-          <Button
-            pallet="secondary"
-            className="w-full border border-negative-action-background bg-alert-background-negative"
-            onClick={deleteDatabase}
-          >
-            {t('importDB.deleteButton')}
-          </Button>
-        </Plate>
-      )}
+      <Slot id={generalActionsSlot} />
 
       {isAutoUpdateSupported && (
         <Plate className="p-0">

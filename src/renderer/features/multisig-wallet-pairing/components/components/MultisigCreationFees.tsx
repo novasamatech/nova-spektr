@@ -6,8 +6,8 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { type Asset, type MultisigThreshold, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { AssetBalance } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
 import { FeeLoader, transactionService } from '@/entities/transaction';
 

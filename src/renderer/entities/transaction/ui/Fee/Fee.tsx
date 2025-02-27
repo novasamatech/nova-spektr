@@ -4,7 +4,7 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { type Asset, type Transaction } from '@/shared/core';
-import { AssetBalance } from '@/entities/asset';
+import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { transactionService } from '../../lib';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
@@ -27,7 +27,6 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   const updateFee = (fee: string) => {
     const totalFee = new BN(fee).muln(multiply).toString();
-
     setFee(totalFee);
     onFeeChange?.(totalFee);
   };
@@ -38,22 +37,24 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   useEffect(() => {
     setIsLoading(true);
+    if (!api || !transaction?.address) return;
+    let mounted = true;
 
-    if (!api) return;
+    api.isReady
+      .then(() => transactionService.getTransactionFee(transaction, api))
+      .then((fee) => {
+        if (mounted) {
+          updateFee(fee);
+          setIsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.info('Error getting fee - ', error);
+      });
 
-    if (!transaction?.address) {
-      updateFee('0');
-      setIsLoading(false);
-    } else {
-      transactionService
-        .getTransactionFee(transaction, api)
-        .then(updateFee)
-        .catch((error) => {
-          updateFee('0');
-          console.info('Error getting fee - ', error);
-        })
-        .finally(() => setIsLoading(false));
-    }
+    return () => {
+      mounted = false;
+    };
   }, [transaction, api]);
 
   if (isLoading) {

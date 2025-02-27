@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import {
-  type FlexibleMultisigAccount,
   type FlexibleMultisigTransaction,
   type MultisigAccount,
   type MultisigEvent,
@@ -29,7 +28,7 @@ type WalletSignatory = Signatory & { wallet: Wallet };
 type Props = {
   tx: MultisigTransaction | FlexibleMultisigTransaction;
   connection: ExtendedChain;
-  account: MultisigAccount | FlexibleMultisigAccount;
+  account: MultisigAccount;
 };
 
 export const OperationSignatories = ({ tx, connection, account }: Props) => {

@@ -6,14 +6,15 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
-import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
-import { AccountAddress, accountUtils } from '@/entities/wallet';
+import { AccountAddress, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -95,8 +96,9 @@ const AccountSelector = () => {
   } = useForm(formModel.$proxyForm);
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (proxiedAccounts.length <= 1) {
+  if (proxiedAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 

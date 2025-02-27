@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { render, screen } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+import { act, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 
 import { type Asset, type Transaction } from '@/shared/core';
@@ -23,7 +22,7 @@ vi.mock('../../lib', () => ({
   },
 }));
 
-vi.mock('@/entities/asset', () => ({
+vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
@@ -31,9 +30,10 @@ describe('entities/transaction/ui/Fee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = { address: '0x123', args: {} } as Transaction;
+    const api = { isReady: Promise.resolve().then(() => api) } as ApiPromise;
 
     await act(async () => {
-      render(<Fee api={{} as ApiPromise} asset={asset} transaction={tx} />);
+      render(<Fee api={api} asset={asset} transaction={tx} />);
     });
 
     const value = screen.getByText('12');

@@ -10,7 +10,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { identityDomain } from '@/domains/identity';
+import { identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -63,7 +63,7 @@ export const Staking = () => {
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const identities = useStoreMap({
-    store: identityDomain.identity.$list,
+    store: identity.$list,
     keys: [chainId],
     fn: (list, [chainId]) => (chainId ? list[chainId] : {}),
   });
@@ -164,7 +164,7 @@ export const Staking = () => {
 
     if (!chainId || accounts.length === 0) return;
 
-    identityDomain.identity.request({ chainId, accounts });
+    identity.request({ chainId, accounts });
   }, [validators]);
 
   useEffect(() => {
@@ -224,6 +224,10 @@ export const Staking = () => {
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
+        if (walletUtils.isFlexibleMultisig(activeWallet) && accountUtils.isMultisigAccount(account)) {
+          return acc;
+        }
+
         const address = toAddress(account.accountId, { prefix: addressPrefix });
         acc.push(getInfo(address, account));
       }

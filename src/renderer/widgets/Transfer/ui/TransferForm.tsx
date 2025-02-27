@@ -6,14 +6,14 @@ import { type ChainId, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Address as AccountAddress } from '@/shared/ui-entities';
+import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
-import { AssetBalance } from '@/entities/asset';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -89,8 +89,9 @@ const AccountSelector = () => {
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || accounts.length <= 1) {
+  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 
