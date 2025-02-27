@@ -1,11 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
-import { u32 } from '@polkadot/types';
+import { GenericSignerPayload, u32 } from '@polkadot/types';
 import { type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import { construct } from '@substrate/txwrapper-polkadot';
 
 import {
   type Account,
@@ -32,7 +31,7 @@ import { walletUtils } from '@/entities/wallet';
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { type ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError } from './common/utils';
-import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
   isMultisig,
@@ -356,18 +355,35 @@ async function createPayload(transaction: Transaction, api: ApiPromise) {
   return createPayloadWithMetadata(transaction, api, metadata);
 }
 
-function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { info, options, registry }: TxMetadata) {
-  const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
-  if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
-    unsigned.assetId = undefined;
+function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { info }: TxMetadata) {
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+  if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
+    info.assetId = undefined;
   }
 
-  const signingPayloadHex = construct.signingPayload(unsigned, { registry });
+  const signingPayload = new GenericSignerPayload(api.registry, {
+    ...info,
+    method: extrinsic.method.toHex(),
+    version: extrinsic.version,
+    era: extrinsic.era.toHex(),
+    // imortal operation requires genesisHash instead of blockHash
+    blockHash: extrinsic.era.toNumber() === 0 ? info.genesisHash : info.blockHash,
+    runtimeVersion: {
+      specVersion: info.specVersion,
+      transactionVersion: info.transactionVersion,
+    },
+  }).toPayload();
+
+  const extrinsicPayload = api.registry.createType('ExtrinsicPayload', signingPayload, {
+    version: signingPayload.version,
+  });
+
+  const signingPayloadHex = extrinsicPayload.toHex();
 
   return {
     type: transaction.type,
     args: transaction.args,
-    unsigned,
+    unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
     info,

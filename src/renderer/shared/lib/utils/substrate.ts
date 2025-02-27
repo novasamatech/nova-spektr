@@ -1,18 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
+import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import {
-  type BaseTxInfo,
-  type GetRegistryOpts,
-  type OptionsWithMeta,
-  type TypeRegistry,
-  getRegistry,
-} from '@substrate/txwrapper-polkadot';
 
 import { XcmTransferType } from '@/shared/api/xcm';
-import { EXTENSIONS } from '@/shared/config/extensions';
 import {
+  type Address,
   type BlockHeight,
   type CallData,
   type CallHash,
@@ -20,12 +14,12 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { toAddress } from './address';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
-export type TxMetadata = { registry: TypeRegistry; options: OptionsWithMeta; info: BaseTxInfo };
+export type TxMetadata = {
+  info: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
+};
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
@@ -38,46 +32,28 @@ const UNUSED_LABEL = 'unused';
  *
  * @substrate/txwrapper-polkadot signing
  */
-export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
-  const prefix = api.consts.system.ss58Prefix.toNumber();
+export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-  const metadataRpc = api.runtimeMetadata.toHex();
 
   const [header, blockHash, nonce] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
-    api.rpc.system.accountNextIndex(accountId),
+    api.rpc.system.accountNextIndex(address),
   ]);
 
-  const registry = getRegistry({
-    chainName: api.runtimeVersion.specName.toString(),
-    specName: api.runtimeVersion.specName.toString() as GetRegistryOpts['specName'],
-    specVersion: api.runtimeVersion.specVersion.toNumber(),
-    metadataRpc,
-    ...EXTENSIONS[chainId]?.txwrapper,
-  });
-
-  const info: BaseTxInfo = {
-    address: toAddress(accountId, { prefix }),
-    blockHash: blockHash.toString(),
-    blockNumber: header.number.toNumber(),
+  const info: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
+    address,
+    blockHash: blockHash.toHex(),
+    blockNumber: header.number.toHex(),
     genesisHash: chainId,
-    metadataRpc,
-    nonce: nonce.toNumber(),
-    specVersion: api.runtimeVersion.specVersion.toNumber(),
-    transactionVersion: api.runtimeVersion.transactionVersion.toNumber(),
-    eraPeriod: 64,
-    tip: 0,
+    nonce: nonce.toHex(),
+    specVersion: api.runtimeVersion.specVersion.toHex(),
+    transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
+    tip: numberToScaleEncoded(0),
+    signedExtensions: api.registry.signedExtensions,
   };
 
-  const options: OptionsWithMeta = {
-    registry,
-    metadataRpc,
-    signedExtensions: registry.signedExtensions,
-    userExtensions: EXTENSIONS[chainId]?.txwrapper?.userExtensions,
-  };
-
-  return { options, info, registry };
+  return { info };
 };
 
 /**
@@ -242,7 +218,7 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
     ...metadata,
     info: {
       ...metadata.info,
-      nonce: Number(metadata.info.nonce) + Number(index),
+      nonce: numberToScaleEncoded(scaleEncodedToNumber(metadata.info.nonce) + index),
     },
   };
 };

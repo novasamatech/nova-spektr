@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type SignerPayloadJSON } from '@substrate/txwrapper-polkadot';
+import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
@@ -179,10 +179,10 @@ sample({
   source: walletConnect.$client,
   filter: nonNullable,
   fn(client, { trigger: transactions, event: session }) {
-    return transactions.map<SignParams>(({ info, unsigned: { metadataRpc: _, ...unsigned } }) => ({
+    return transactions.map<SignParams>(({ info, unsigned }) => ({
       client: client!,
       session,
-      chainId: info.genesisHash as ChainId,
+      chainId: info.genesisHash,
       address: info.address,
       payload: unsigned,
     }));
