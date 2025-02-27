@@ -24,7 +24,6 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   const [fee, setFee] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [apiReady, setApiReady] = useState(false);
 
   const updateFee = (fee: string) => {
     const totalFee = new BN(fee).muln(multiply).toString();
@@ -37,38 +36,26 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
   }, [isLoading]);
 
   useEffect(() => {
-    if (!api) {
-      setApiReady(false);
-      return;
-    }
+    setIsLoading(true);
+    if (!api || !transaction?.address) return;
+    let mounted = true;
 
     api.isReady
-      .then(() => {
-        setApiReady(true);
-      })
-      .catch((error: Error) => {
-        console.error('Error waiting for API to be ready:', error);
-        setApiReady(false);
-      });
-
-    return () => {};
-  }, [api]);
-
-  useEffect(() => {
-    setIsLoading(true);
-
-    if (!apiReady || !api || !transaction?.address) return;
-
-    transactionService
-      .getTransactionFee(transaction, api)
+      .then(() => transactionService.getTransactionFee(transaction, api))
       .then((fee) => {
-        updateFee(fee);
-        setIsLoading(false);
+        if (mounted) {
+          updateFee(fee);
+          setIsLoading(false);
+        }
       })
       .catch((error) => {
         console.info('Error getting fee - ', error);
       });
-  }, [transaction, api, apiReady]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [transaction, api]);
 
   if (isLoading) {
     return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
