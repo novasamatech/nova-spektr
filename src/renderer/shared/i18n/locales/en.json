@@ -912,6 +912,7 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
+    "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
     "votedNay": "NAY <amount/>",

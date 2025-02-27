@@ -1,14 +1,21 @@
 import { BN_ZERO } from '@polkadot/util';
+import { capitalize } from 'lodash';
 import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
-import { type AccountVote, type Address, type Asset } from '@/shared/core';
+import {
+  type AccountVote,
+  type Address,
+  type Asset,
+  type SplitAbstainVote,
+  type StandardVote,
+  type XOR,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
+import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { votingService } from '@/entities/governance';
-import { Address as AccountAddress } from '../Address/Address';
-import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   asset: Asset;
@@ -73,29 +80,67 @@ type CombinedProps = Omit<Props, 'voterName'>;
 const VotedCombined = ({ asset, castingVotes, delegate }: CombinedProps) => {
   const { t } = useI18n();
 
-  const allAye = castingVotes.every(({ vote }) => votingService.isStandardVote(vote) && vote.vote.aye);
-  const allNay = castingVotes.every(({ vote }) => votingService.isStandardVote(vote) && !vote.vote.aye);
+  const accountsVotes = castingVotes.map(({ vote }) => vote);
+  const splitAbstainVotes = accountsVotes.filter(votingService.isSplitAbstainVote);
 
-  const isDelegateAye = delegate?.decision === 'aye';
-  const isDelegateNay = delegate?.decision === 'nay';
-
-  const isCombinedAye = delegate ? isDelegateAye && allAye : allAye;
-  const isCombinedNay = delegate ? isDelegateNay && allNay : allNay;
-
-  if (!isCombinedAye && !isCombinedNay) {
-    return (
-      <div className="flex items-center gap-x-1">
-        <Icon name="voted" size={16} className="text-icon-accent" />
-        <FootnoteText className="text-icon-accent">{t('governance.voted')}</FootnoteText>
-      </div>
-    );
+  if (splitAbstainVotes.length === castingVotes.length && nullable(delegate)) {
+    return <Voted asset={asset} type="abstain" votes={splitAbstainVotes} />;
   }
 
-  const amount = castingVotes.reduce(
-    (acc, { vote }) => {
-      if (!votingService.isStandardVote(vote)) return acc;
+  const ayeVotes = accountsVotes.filter((vote): vote is StandardVote => {
+    return votingService.isStandardVote(vote) && vote.vote.aye;
+  });
 
-      return acc.add(votingService.calculateVotingPower(vote.balance, vote.vote.conviction));
+  const isAllAye = ayeVotes.length === accountsVotes.length;
+  const isDelegateAye = delegate?.decision === 'aye';
+  const isCombinedAye = delegate ? isDelegateAye && isAllAye : isAllAye;
+
+  if (isCombinedAye) {
+    return <Voted asset={asset} type="aye" votes={ayeVotes} delegate={delegate} />;
+  }
+
+  const nayVotes = accountsVotes.filter((vote): vote is StandardVote => {
+    return votingService.isStandardVote(vote) && !vote.vote.aye;
+  });
+
+  const isAllNay = nayVotes.length === accountsVotes.length;
+  const isDelegateNay = delegate?.decision === 'nay';
+  const isCombinedNay = delegate ? isDelegateNay && isAllNay : isAllNay;
+
+  if (isCombinedNay) {
+    return <Voted asset={asset} type="nay" votes={nayVotes} delegate={delegate} />;
+  }
+
+  return (
+    <div className="flex items-center gap-x-1">
+      <Icon name="voted" size={16} className="text-icon-accent" />
+      <FootnoteText className="text-icon-accent">{t('governance.voted')}</FootnoteText>
+    </div>
+  );
+};
+
+type VotedProps = Pick<Props, 'asset'> &
+  XOR<
+    Pick<Props, 'delegate'> & {
+      type: 'aye' | 'nay';
+      votes: StandardVote[];
+    },
+    {
+      type: 'abstain';
+      votes: SplitAbstainVote[];
+    }
+  >;
+const Voted = ({ asset, type, votes, delegate }: VotedProps) => {
+  const { t } = useI18n();
+
+  const amount = votes.reduce(
+    (acc, vote) => {
+      const isStandardVote = votingService.isStandardVote(vote);
+
+      const balance = isStandardVote ? vote.balance : vote.abstain;
+      const conviction = isStandardVote ? vote.vote.conviction : 'None';
+
+      return acc.add(votingService.calculateVotingPower(balance, conviction));
     },
     delegate ? votingService.calculateVotingPower(delegate.amount, delegate.conviction) : BN_ZERO,
   );
@@ -106,7 +151,7 @@ const VotedCombined = ({ asset, castingVotes, delegate }: CombinedProps) => {
       <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
         <Trans
           t={t}
-          i18nKey={`governance.${allAye ? 'votedAye' : 'votedNay'}`}
+          i18nKey={`governance.voted${capitalize(type)}`}
           components={{ amount: <AssetBalance className="text-icon-accent" asset={asset} value={amount} /> }}
         />
       </FootnoteText>

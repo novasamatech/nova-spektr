@@ -5,12 +5,12 @@ import { memo } from 'react';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { VotedBy } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
+import { VotedBy } from '../VotedBy';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -46,10 +46,6 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
     ) : (
       t('governance.referendums.referendumTitle', { index: referendumId })
     ));
-
-  if (referendum.voting.votes.length > 1) {
-    console.log('=== referendum', referendum);
-  }
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>

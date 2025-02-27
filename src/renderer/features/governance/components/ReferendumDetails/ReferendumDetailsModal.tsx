@@ -6,13 +6,13 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { Button, IconButton, Plate } from '@/shared/ui';
-import { VotedBy } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
+import { VotedBy } from '../VotedBy';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
 import { AdvancedModal } from './AdvancedModal';
