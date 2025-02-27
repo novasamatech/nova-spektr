@@ -65,7 +65,10 @@ export const ReferendumDetailsModal = ({
     fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
   });
 
-  const closeModal = (open: boolean) => !open && onClose();
+  const closeModal = (open: boolean) => {
+    if (open) return;
+    onClose();
+  };
 
   return (
     <Modal isOpen size="xl" onToggle={closeModal}>
