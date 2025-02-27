@@ -1,5 +1,5 @@
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Accordion } from '@/shared/ui';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
@@ -7,12 +7,12 @@ import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations'
 import { OperationFullInfo } from './OperationFullInfo';
 
 type Props = {
-  tx: MultisigTransactionDS | FlexibleMultisigTransactionDS;
-  account: MultisigAccount | FlexibleMultisigAccount | null;
+  tx: MultisigTransactionDS;
+  account: MultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS | FlexibleMultisigTransactionDS;
+  operation: MultisigTransactionDS;
 };
 
 export const operationTitleSlot = createSlot<SlotProps>();

@@ -3,6 +3,7 @@ import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { walletDetailsUtils } from '../../lib/utils';
+import { FlexibleWalletDetails } from '../wallets/FlexibleWalletDetails';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
 import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
@@ -34,9 +35,12 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return <MultishardWalletDetails wallet={wallet} accounts={multiShardAccounts} onClose={onClose} />;
   }
 
-  // TODO: Separate wallet details for regular and flexible multisig
-  if (walletUtils.isMultisig(wallet)) {
+  if (walletUtils.isRegularMultisig(wallet)) {
     return <MultisigWalletDetails wallet={wallet} onClose={onClose} />;
+  }
+
+  if (walletUtils.isFlexibleMultisig(wallet)) {
+    return <FlexibleWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isWalletConnect(wallet) || walletUtils.isNovaWallet(wallet)) {

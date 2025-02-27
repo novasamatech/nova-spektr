@@ -35,13 +35,6 @@ export interface MultisigAccount extends ChainAccount {
   threshold: number;
 }
 
-export interface FlexibleMultisigAccount extends ChainAccount {
-  accountType: AccountType.FLEXIBLE_MULTISIG;
-  signatories: Signatory[];
-  threshold: number;
-  proxyAccount?: ProxiedAccount; // we have account only after proxy is created
-}
-
 export interface WcAccount extends ChainAccount {
   accountType: AccountType.WALLET_CONNECT;
   signingExtras: {

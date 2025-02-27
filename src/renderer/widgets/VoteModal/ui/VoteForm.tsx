@@ -11,6 +11,8 @@ import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox,
 import { AssetBalance } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { locksPeriodsAggregate } from '@/features/governance';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
@@ -39,6 +41,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const isMultisig = useUnit(voteModalAggregate.transaction.$isMultisig);
   const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
   const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const lockPeriods = useStoreMap({
     store: voteModalAggregate.$lockPeriods,
@@ -83,7 +86,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
           </Popover>
         </div>
         <div className="flex flex-col gap-4">
-          {accounts.length > 1 && (
+          {accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet) && (
             <AccountsSelector
               value={account.value}
               asset={asset}

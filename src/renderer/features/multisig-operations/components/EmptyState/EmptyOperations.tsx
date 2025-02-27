@@ -1,10 +1,10 @@
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
 import { Graphics } from '@/shared/ui-kit';
 
 type Props = {
-  multisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
+  multisigAccount: MultisigAccount | null;
   isEmptyFromFilters: boolean;
 };
 

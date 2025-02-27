@@ -36,7 +36,7 @@ const $multisigAccount = combine($wallet, accounts.$list, (wallet, accounts) => 
   if (nullable(wallet)) return null;
   const filteredAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
 
-  return filteredAccounts.find(accountUtils.isRegularMultisigAccount) || null;
+  return filteredAccounts.find(accountUtils.isMultisigAccount) || null;
 });
 
 const $chain = combine(networkModel.$chains, $multisigAccount, (chains, multisigAccount) => {

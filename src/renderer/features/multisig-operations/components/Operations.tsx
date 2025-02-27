@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect } from 'react';
 
-import { type FlexibleMultisigTransactionDS } from '@/shared/api/storage';
 import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
@@ -10,7 +9,6 @@ import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText } from '@/shared/ui';
 import { operationsModel } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import { accountUtils } from '@/entities/wallet';
 import { OperationsFilter } from '@/features/operations';
 import { operationsContextModel } from '../model/context';
 
@@ -58,11 +56,8 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  // TODO remove multisig accounts type
-  if (incompleteFlexibleMultisigTx && account && accountUtils.isRegularMultisigAccount(account)) {
-    return (
-      <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx as FlexibleMultisigTransactionDS} account={account} />
-    );
+  if (incompleteFlexibleMultisigTx && account) {
+    return <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx} account={account} />;
   }
 
   return (

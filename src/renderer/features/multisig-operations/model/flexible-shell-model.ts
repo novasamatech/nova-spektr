@@ -1,35 +1,22 @@
 import { createEvent, restore, sample } from 'effector';
 
-import { type ChainId, type FlexibleMultisigAccount } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accounts } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
-import { accountUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
+import { operationsContextModel } from './context';
 import { rejectModel } from './reject-model';
 
-const rejectMultisig = createEvent<{ accountId: AccountId; chainId: ChainId }>();
+const rejectMultisig = createEvent();
 const toggleRejectModalConfirm = createEvent<boolean>();
 
 const $isRejectConfirmOpen = restore(toggleRejectModalConfirm, false);
 
 sample({
   clock: rejectMultisig,
-  source: accounts.$list,
-  fn: (accounts, { accountId, chainId }) => {
-    // TODO: this should be triggered only for the flexible shell state
-    const account = accounts.find(
-      (acc) =>
-        acc.accountId === accountId &&
-        accountUtils.isFlexibleMultisigAccount(acc) &&
-        accountUtils.isChainIdMatch(acc, chainId),
-    );
-
-    if (nullable(account)) return null;
-
-    return account as FlexibleMultisigAccount;
-  },
+  source: { account: operationsContextModel.$account, wallet: walletSelect.$selectedWallet },
+  filter: ({ wallet }) => walletUtils.isFlexibleMultisig(wallet) && !wallet.activated,
+  fn: ({ account }) => account,
   target: multisigsModel.convertFlexibleToRegular,
 });
 

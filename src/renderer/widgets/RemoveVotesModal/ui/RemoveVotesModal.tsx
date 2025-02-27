@@ -20,6 +20,8 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider, RemoveVoteConfirmation, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
@@ -202,7 +204,9 @@ const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) =
 
   const account = useUnit(removeVotesModalAggregate.$pickedAccount);
   const accounts = useUnit(removeVotesModalAggregate.$availableAccounts);
-  const shouldPickAccount = nullable(account) && accounts.length > 1;
+  const wallet = useUnit(walletSelect.$selectedWallet);
+
+  const shouldPickAccount = nullable(account) && accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet);
   const [isSelectAccountOpen, setIsSelectAccountOpen] = useState(shouldPickAccount);
   const [isSelectAccountClosed, setIsSelectAccountClosed] = useState(false);
 

@@ -1,11 +1,11 @@
 import { useStoreMap } from 'effector-react';
 
-import { type FlexibleMultisigTransactionDS, type MultisigTransactionDS } from '@/shared/api/storage';
+import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 
-export const useTransactionAsset = (operation: MultisigTransactionDS | FlexibleMultisigTransactionDS) => {
+export const useTransactionAsset = (operation: MultisigTransactionDS) => {
   const transaction = getTransactionFromMultisigTx(operation);
   const chain = useStoreMap({
     store: networkModel.$chains,
