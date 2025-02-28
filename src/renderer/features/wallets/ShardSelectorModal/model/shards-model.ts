@@ -100,10 +100,10 @@ const $initSelectedStructure = combine(
     const filteredAccounts = shardsUtils.getFilteredAccounts(wallet.accounts, chains);
 
     if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getVaultChainsCounter(chains, filteredAccounts);
+      return shardsUtils.getVaultChainsCounter(wallet.rootAccountId, chains, filteredAccounts);
     }
     if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getMultishardtChainsCounter(chains, filteredAccounts);
+      return shardsUtils.getMultishardChainsCounter(wallet.rootAccountId, chains, filteredAccounts);
     }
 
     return {};

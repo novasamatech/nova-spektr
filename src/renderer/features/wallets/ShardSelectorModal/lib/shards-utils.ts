@@ -20,7 +20,7 @@ export const shardsUtils = {
   getStructForVault,
   getStructForMultishard,
   getVaultChainsCounter,
-  getMultishardtChainsCounter,
+  getMultishardChainsCounter,
   getSelectedShards,
 };
 
@@ -28,15 +28,16 @@ function getFilteredAccounts(
   accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[],
   chains: Record<ChainId, Chain>,
   query = '',
-): Account[] {
-  return accounts.filter((account) => {
-    if (accountUtils.isVaultBaseAccount(account)) return true;
-    if (!chains[account.chainId]) return false;
+): (VaultChainAccount | VaultShardAccount)[] {
+  return accounts
+    .filter((a) => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a))
+    .filter((account) => {
+      if (!chains[account.chainId]) return false;
 
-    const address = toAddress(account.accountId, { prefix: chains[account.chainId].addressPrefix });
+      const address = toAddress(account.accountId, { prefix: chains[account.chainId].addressPrefix });
 
-    return isStringsMatchQuery(query, [account.name, address]);
-  });
+      return isStringsMatchQuery(query, [account.name, address]);
+    });
 }
 
 function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
@@ -47,43 +48,29 @@ function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
   }, {});
 }
 
-function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
-  const { baseAccountId, root, shards } = accounts.reduce<{
-    baseAccountId: AccountId;
-    root: SelectedStruct;
-    shards: (VaultChainAccount | VaultShardAccount)[];
-  }>(
-    (acc, account) => {
-      if (accountUtils.isVaultBaseAccount(account)) {
-        const nonBaseAccounts = accounts.filter((acc) => !accountUtils.isVaultBaseAccount(acc));
-
-        acc.baseAccountId = account.accountId;
-        acc.root[account.accountId] = getChainCounter(chains);
-        acc.root[account.accountId].checked = nonBaseAccounts.length;
-        acc.root[account.accountId].total = nonBaseAccounts.length;
-      } else {
-        acc.shards.push(account as VaultChainAccount | VaultShardAccount);
-      }
-
-      return acc;
-    },
-    { baseAccountId: '' as AccountId, root: {}, shards: [] },
-  );
+function getVaultChainsCounter(
+  rootAccountId: AccountId,
+  chains: Record<ChainId, Chain>,
+  shards: (VaultChainAccount | VaultShardAccount)[],
+): SelectedStruct {
+  const root: SelectedStruct = {
+    [rootAccountId]: getChainCounter(chains),
+  };
 
   for (const shard of shards) {
-    root[baseAccountId][shard.chainId].checked += 1;
-    root[baseAccountId][shard.chainId].total += 1;
-    root[baseAccountId][shard.chainId].accounts[shard.accountId] = true;
+    root[rootAccountId][shard.chainId].checked += 1;
+    root[rootAccountId][shard.chainId].total += 1;
+    root[rootAccountId][shard.chainId].accounts[shard.accountId] = true;
 
     if (accountUtils.isVaultShardAccount(shard)) {
-      const existingGroup = root[baseAccountId][shard.chainId].sharded[shard.groupId];
+      const existingGroup = root[rootAccountId][shard.chainId].sharded[shard.groupId];
       if (existingGroup) {
         existingGroup.checked += 1;
         existingGroup.total += 1;
         existingGroup[shard.accountId] = true;
       } else {
-        root[baseAccountId][shard.chainId].sharded[shard.groupId] = { checked: 1, total: 1 };
-        root[baseAccountId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
+        root[rootAccountId][shard.chainId].sharded[shard.groupId] = { checked: 1, total: 1 };
+        root[rootAccountId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
       }
     }
   }
@@ -91,24 +78,16 @@ function getVaultChainsCounter(chains: Record<ChainId, Chain>, accounts: Account
   return root;
 }
 
-function getMultishardtChainsCounter(chains: Record<ChainId, Chain>, accounts: Account[]): SelectedStruct {
-  const { roots, shards } = accounts.reduce<{
-    roots: SelectedStruct;
-    shards: VaultChainAccount[];
-  }>(
-    (acc, account) => {
-      if (accountUtils.isVaultBaseAccount(account)) {
-        acc.roots[account.accountId] = getChainCounter(chains);
-        acc.roots[account.accountId].checked = 0;
-        acc.roots[account.accountId].total = 0;
-      } else {
-        acc.shards.push(account as VaultChainAccount);
-      }
+function getMultishardChainsCounter(
+  rootAccountId: AccountId,
+  chains: Record<ChainId, Chain>,
+  shards: (VaultChainAccount | VaultShardAccount)[],
+): SelectedStruct {
+  const roots: SelectedStruct = {
+    [rootAccountId]: getChainCounter(chains),
+  };
 
-      return acc;
-    },
-    { roots: {}, shards: [] },
-  );
+  roots[rootAccountId] = getChainCounter(chains);
 
   for (const shard of shards) {
     const root = roots[shard.accountId];
