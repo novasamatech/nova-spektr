@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
-import { type Header } from '@polkadot/types/interfaces';
 import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
@@ -16,10 +15,10 @@ import {
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
+import { toAddress } from './address';
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = {
-  header: Header;
   signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
 };
 
@@ -39,7 +38,7 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
   ]);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
-    address: accountId,
+    address: toAddress(accountId, { prefix: api.registry.chainSS58 }),
     blockHash: blockHash.toHex(),
     blockNumber: header.number.toHex(),
     genesisHash: chainId,
@@ -50,7 +49,7 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
     signedExtensions: api.registry.signedExtensions,
   };
 
-  return { header, signerPayloadBase };
+  return { signerPayloadBase };
 };
 
 /**

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { GenericSignerPayload, u32 } from '@polkadot/types';
-import { type ExtrinsicEra, type Header, type Weight } from '@polkadot/types/interfaces';
+import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
@@ -355,16 +355,12 @@ async function createPayload(transaction: Transaction, api: ApiPromise) {
   return createPayloadWithMetadata(transaction, api, metadata);
 }
 
-function createEra(api: ApiPromise, header: Header) {
+function createEra(api: ApiPromise, blockNumber: HexString) {
   const mortalLength = 64;
-  return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: header, period: mortalLength }]);
+  return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: blockNumber, period: mortalLength }]);
 }
 
-function createPayloadWithMetadata(
-  transaction: Transaction,
-  api: ApiPromise,
-  { header, signerPayloadBase }: TxMetadata,
-) {
+function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
   // TODO we should get extrinsic from arguments, not construct it inside
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
@@ -373,7 +369,7 @@ function createPayloadWithMetadata(
   }
 
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
-  const era = createEra(api, header);
+  const era = createEra(api, signerPayloadBase.blockNumber);
 
   const signingPayload = new GenericSignerPayload(api.registry, {
     ...signerPayloadBase,
