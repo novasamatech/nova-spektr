@@ -145,6 +145,7 @@ const multishardAccounts = [
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,
   isActive: true,
+  rootAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
   name: 'My Vault wallet',
   signingType: SigningType.POLKADOT_VAULT,
   type: WalletType.POLKADOT_VAULT,
@@ -154,6 +155,7 @@ const vaultWallet: PolkadotVaultWallet = {
 const multishardWallet: MultiShardWallet = {
   id: 2,
   isActive: true,
+  rootAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
   name: 'My Multishard wallet',
   signingType: SigningType.POLKADOT_VAULT,
   type: WalletType.MULTISHARD_PARITY_SIGNER,

@@ -22,7 +22,7 @@ import {
   type WcAccount,
 } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 const testKeyring = createTestKeyring();
 
@@ -158,10 +158,12 @@ export const createProxiedAccount = (id = createRandomId(), walletId = 0): Proxi
 
 export const createPolkadotWallet = (
   id: number,
+  rootAccountId: AccountId,
   accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[],
 ): PolkadotVaultWallet => ({
   id,
   accounts,
+  rootAccountId,
   type: WalletType.POLKADOT_VAULT,
   isActive: true,
   name: `Polkadot vault wallet ${id}`,

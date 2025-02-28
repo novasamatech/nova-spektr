@@ -18,7 +18,7 @@ import {
   type TProxyGroup,
   type TWallet,
 } from '../lib/types';
-import { migrateAccounts, migrateEvents, migrateMultisigAccounts, migrateWallets } from '../migration';
+import { migrateAccounts, migrateEvents, migratePVAccounts, migrateMultisigAccounts, migrateWallets } from '../migration';
 
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { useTransactionStorage } from './transactionStorage';
@@ -107,6 +107,8 @@ class DexieStorage extends Dexie {
         wallets: '++id',
       })
       .upgrade(migrateMultisigAccounts);
+
+    this.version(28).upgrade(migratePVAccounts);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

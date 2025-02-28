@@ -12,7 +12,7 @@ import {
 import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, nullable, toAddress } from '@/shared/lib/utils';
+import { copyToClipboard, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon, IconButton, StatusModal } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Hash } from '@/shared/ui-entities';
@@ -54,7 +54,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
-  const root = accountUtils.getBaseAccount(wallet.accounts);
   const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
@@ -78,7 +77,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     setChains(filteredChains);
   }, []);
 
-  if (nullable(root) || isEmpty(accountsMap)) {
+  if (isEmpty(accountsMap)) {
     return <StatusModal isOpen={isModalOpen} title={t('walletDetails.vault.noAccounts')} onClose={closeModal} />;
   }
 
@@ -114,7 +113,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     vaultDetailsModel.events.accountsCreated({
       walletId: wallet.id,
-      rootAccountId: root.accountId,
+      rootAccountId: wallet.rootAccountId,
       accounts,
     });
     toggleScanModal();
@@ -139,7 +138,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     {
       icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
-      onClick: () => walletDetailsUtils.exportVaultWallet(wallet, root, accountsMap),
+      onClick: () => walletDetailsUtils.exportVaultWallet(wallet, wallet.rootAccountId, accountsMap),
     },
     {
       icon: 'forget' as IconNames,
@@ -201,7 +200,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             </Box>
             <Tabs.Content value="accounts">
               <ScrollArea>
-                <RootAccountLg name={wallet.name} accountId={root.accountId} className="mt-3 px-5">
+                <RootAccountLg name={wallet.name} accountId={wallet.rootAccountId} className="mt-3 px-5">
                   <Popover side="bottom" align="end">
                     <Popover.Trigger>
                       <IconButton name="details" />
@@ -213,12 +212,12 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                         </FootnoteText>
                         <Box direction="row" verticalAlign="center" gap={3}>
                           <HelpText className="text-text-secondary">
-                            <Hash value={toAddress(root.accountId, { prefix: 1 })} variant="full" />
+                            <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                           </HelpText>
                           <IconButton
                             className="shrink-0 text-icon-default"
                             name="copy"
-                            onClick={() => copyToClipboard(root.accountId)}
+                            onClick={() => copyToClipboard(wallet.rootAccountId)}
                           />
                         </Box>
                       </Box>
@@ -263,14 +262,14 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
       />
       <ImportKeysModal
         isOpen={isImportModalOpen}
-        rootAccountId={root.accountId}
+        rootAccountId={wallet.rootAccountId}
         existingKeys={Object.values(accountsMap).flat(2)}
         onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
       />
       <DerivationsAddressModal
         isOpen={isScanModalOpen}
-        rootAccountId={root.accountId}
+        rootAccountId={wallet.rootAccountId}
         keys={keysToAdd}
         onClose={toggleScanModal}
         onComplete={handleVaultKeys}

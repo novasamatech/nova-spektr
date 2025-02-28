@@ -12,7 +12,7 @@ import { Checkbox } from '@/shared/ui-kit';
 import { ExplorersPopover, accountUtils, walletUtils } from '@/entities/wallet';
 
 type Props = {
-  wallet?: Wallet;
+  wallet?: Wallet | null;
   account: VaultBaseAccount | VaultChainAccount | VaultShardAccount;
   addressPrefix?: number;
   explorers?: Explorer[];
@@ -42,7 +42,7 @@ export const SelectableShard = ({
   const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-  const theme = isBase && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : undefined;
+  const theme = isBase && wallet && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : undefined;
 
   const content = (
     <div className="flex items-center gap-x-2">

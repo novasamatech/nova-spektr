@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
 import {
+  createAccountId,
   createBaseAccount,
   createPolkadotWallet,
   createProxiedAccount,
@@ -14,6 +15,7 @@ import { Box } from '@/shared/ui-kit';
 
 import { TransactionDetails } from './TransactionDetails';
 
+const rootAccountId = createAccountId('rootAccountId');
 const initiatorAccount = createBaseAccount('1');
 const secondAccount = createBaseAccount('2');
 const proxyAccount = createProxiedAccount('1');
@@ -40,21 +42,24 @@ type Story = StoryObj<typeof TransactionDetails>;
 
 export const Default: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount]), createProxiedWallet(1, [proxyAccount])],
+    wallets: [createPolkadotWallet(1, rootAccountId, [initiatorAccount]), createProxiedWallet(1, [proxyAccount])],
     initiator: [initiatorAccount],
   },
 };
 
 export const Multishard: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount, secondAccount])],
+    wallets: [createPolkadotWallet(1, rootAccountId, [initiatorAccount, secondAccount])],
     initiator: [initiatorAccount, secondAccount],
   },
 };
 
 export const Proxied: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount, secondAccount]), createProxiedWallet(2, [proxyAccount])],
+    wallets: [
+      createPolkadotWallet(1, rootAccountId, [initiatorAccount, secondAccount]),
+      createProxiedWallet(2, [proxyAccount]),
+    ],
     initiator: [initiatorAccount],
     proxied: proxyAccount,
   },
@@ -62,7 +67,7 @@ export const Proxied: Story = {
 
 export const Signatory: Story = {
   args: {
-    wallets: [createPolkadotWallet(1, [initiatorAccount]), createWcWallet(2, [signatoryAccount])],
+    wallets: [createPolkadotWallet(1, rootAccountId, [initiatorAccount]), createWcWallet(2, [signatoryAccount])],
     initiator: [initiatorAccount],
     signatory: signatoryAccount,
   },
@@ -71,7 +76,7 @@ export const Signatory: Story = {
 export const ProxiedAndSignatory: Story = {
   args: {
     wallets: [
-      createPolkadotWallet(1, [initiatorAccount]),
+      createPolkadotWallet(1, rootAccountId, [initiatorAccount]),
       createProxiedWallet(2, [proxyAccount]),
       createWcWallet(2, [signatoryAccount]),
     ],
@@ -84,7 +89,7 @@ export const ProxiedAndSignatory: Story = {
 export const AdditionalContent: Story = {
   args: {
     wallets: [
-      createPolkadotWallet(1, [initiatorAccount]),
+      createPolkadotWallet(1, rootAccountId, [initiatorAccount]),
       createWcWallet(3, [signatoryAccount]),
       createProxiedWallet(2, [proxyAccount]),
     ],

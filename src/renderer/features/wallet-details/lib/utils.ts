@@ -8,6 +8,7 @@ import {
   type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 import { downloadFiles, exportKeysUtils } from '@/features/wallets/ExportKeys';
 
@@ -110,9 +111,9 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   downloadFiles(downloadData);
 }
 
-function exportVaultWallet(wallet: Wallet, root: VaultBaseAccount, accounts: VaultMap) {
+function exportVaultWallet(wallet: Wallet, rootAccountId: AccountId, accounts: VaultMap) {
   const accountsFlat = Object.values(accounts).flat();
-  const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+  const exportStructure = exportKeysUtils.getExportStructure(rootAccountId, accountsFlat);
 
   downloadFiles([
     {

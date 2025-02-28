@@ -8,7 +8,8 @@ import { Accordion, FootnoteText } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsModel } from '../model/shards-model';
 
@@ -18,7 +19,7 @@ import { ShardedGroup } from './ShardedGroup';
 export const ShardsStructure = () => {
   const { t } = useI18n();
 
-  const wallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
   const shardsStructure = useUnit(shardsModel.$shardsStructure);
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
@@ -35,7 +36,7 @@ export const ShardsStructure = () => {
 
   return (
     <ul className="max-h-[470px] overflow-y-scroll pr-3">
-      {walletUtils.isMultiShard(wallet) && (
+      {wallet && walletUtils.isMultiShard(wallet) && (
         <li key="all" className="p-2">
           <Checkbox
             checked={isAllChecked}

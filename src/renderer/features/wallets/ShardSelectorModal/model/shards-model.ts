@@ -5,6 +5,7 @@ import { type Account, type Wallet } from '@/shared/core';
 import { keys } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsUtils } from '../lib/shards-utils';
 import {
@@ -66,7 +67,7 @@ const $filteredAccounts = combine(
 const $shardsStructure = combine(
   {
     proceed: $canGetStructure,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     accounts: $filteredAccounts,
     chains: networkModel.$chains,
   },
