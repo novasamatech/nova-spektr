@@ -1,11 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { Slot, createSlot, useSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { groupBy } from '@/shared/lib/utils';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
@@ -19,27 +21,24 @@ export const walletGroupSlot = createSlot<{
   onSelect: (wallet: Wallet) => void;
 }>();
 export const walletSelectActionsSlot = createSlot();
-export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
+export const walletIconSlot = createSlot<{ wallet: Wallet; accounts: AnyAccount[]; size: number }>();
 
 export const WalletSelect = () => {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
+  const allAccounts = useUnit(accounts.$list);
   const filterQuery = useUnit(walletList.$query);
-
-  const walletGroups = useSlot(walletGroupSlot, {
-    props: {
-      query: filterQuery,
-      onSelect: w => {
-        walletSelect.select(w.id);
-        setOpen(false);
-      },
-    },
-  });
 
   if (!selectedWallet) {
     return <Skeleton width={52} height={16} />;
   }
+
+  const groupedAccounts = useMemo(() => {
+    return groupBy(allAccounts, account => account.walletId);
+  }, [allAccounts]);
+
+  const walletAccounts = groupedAccounts[selectedWallet.id] ?? [];
 
   return (
     <Popover align="start" sideOffset={2} open={open} onToggle={setOpen}>
@@ -51,7 +50,14 @@ export const WalletSelect = () => {
           <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
             <div className="flex h-8 w-full min-w-0 items-center gap-x-2">
               <div className="relative">
-                <Slot id={walletIconSlot} props={{ wallet: selectedWallet, size: 32 }} />
+                <Slot
+                  id={walletIconSlot}
+                  props={{
+                    wallet: selectedWallet,
+                    accounts: walletAccounts,
+                    size: 32,
+                  }}
+                />
               </div>
               <div className="flex min-w-0 flex-col">
                 <BodyText className="truncate text-text-primary">{selectedWallet.name}</BodyText>
@@ -81,7 +87,18 @@ export const WalletSelect = () => {
           </div>
 
           <ScrollArea>
-            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">{walletGroups}</div>
+            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
+              <Slot
+                id={walletGroupSlot}
+                props={{
+                  query: filterQuery,
+                  onSelect: w => {
+                    walletSelect.select(w.id);
+                    setOpen(false);
+                  },
+                }}
+              />
+            </div>
             <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
               <Graphics name="emptyList" size={64} />
               <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
