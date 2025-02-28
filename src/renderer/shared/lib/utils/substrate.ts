@@ -213,9 +213,9 @@ export const getPalletAndCallByXcmTransferType = (
 export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata => {
   return {
     ...metadata,
-    info: {
-      ...metadata.info,
-      nonce: numberToScaleEncoded(scaleEncodedToNumber(metadata.info.nonce) + index),
+    signerPayloadBase: {
+      ...metadata.signerPayloadBase,
+      nonce: numberToScaleEncoded(scaleEncodedToNumber(metadata.signerPayloadBase.nonce) + index),
     },
   };
 };

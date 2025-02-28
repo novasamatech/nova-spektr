@@ -21,7 +21,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable, scaleEncodedToNumber } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -485,26 +485,28 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 }
 
 function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
-  console.groupCollapsed('transaction log');
-  for (const log of info) {
-    console.info('operation type:', log.type);
+  console.groupCollapsed('Transactions');
+  for (const [index, log] of info.entries()) {
+    console.groupCollapsed(`Operation ${index}: ${log.type}`);
 
     console.table({
-      address: log.info.address,
-      chain: log.info.genesisHash,
-      nonce: log.info.nonce,
+      address: log.unsigned.address,
+      chain: log.unsigned.genesisHash,
+      nonce: `${log.unsigned.nonce} (${scaleEncodedToNumber(log.unsigned.nonce)})`,
     });
 
     console.group('args');
     console.table(log.args);
     console.groupEnd();
 
-    console.groupCollapsed('unsigned');
+    console.groupCollapsed('signer payload');
     console.info(log.unsigned);
     console.groupEnd();
 
-    console.groupCollapsed('signed');
+    console.groupCollapsed('unsigned payload');
     console.info(log.hexPayload);
+    console.groupEnd();
+
     console.groupEnd();
   }
   console.groupEnd();
