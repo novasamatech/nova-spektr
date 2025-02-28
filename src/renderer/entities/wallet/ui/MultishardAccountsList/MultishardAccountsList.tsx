@@ -25,11 +25,11 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
       {accountList.map(([rootAccountId, chainMap]) => (
-        <div key={rootAccountId} className="flex flex-col pl-5">
+        <div key={rootAccountId} className="flex flex-col px-5">
           <ExplorersPopover
             address={rootAccountId}
             explorers={RootExplorers}
-            button={<ContactItem className="bg-white py-4 pr-2" iconSize={28} address={rootAccountId} />}
+            button={<ContactItem className="bg-white py-4 pr-2" iconSize={28} name="Root" address={rootAccountId} />}
           />
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
