@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { GenericSignerPayload, u32 } from '@polkadot/types';
-import { type Weight } from '@polkadot/types/interfaces';
+import { type ExtrinsicEra, type Header, type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
@@ -355,30 +355,42 @@ async function createPayload(transaction: Transaction, api: ApiPromise) {
   return createPayloadWithMetadata(transaction, api, metadata);
 }
 
-function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { info }: TxMetadata) {
+function createEra(api: ApiPromise, header: Header) {
+  const mortalLength = 64;
+  return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: header, period: mortalLength }]);
+}
+
+function createPayloadWithMetadata(
+  transaction: Transaction,
+  api: ApiPromise,
+  { header, signerPayloadBase }: TxMetadata,
+) {
+  // TODO we should get extrinsic from arguments, not construct it inside
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
-    info.assetId = undefined;
+    signerPayloadBase.assetId = undefined;
   }
 
+  // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
+  const era = createEra(api, header);
+
   const signingPayload = new GenericSignerPayload(api.registry, {
-    ...info,
+    ...signerPayloadBase,
     method: extrinsic.method.toHex(),
     version: extrinsic.version,
-    era: extrinsic.era.toHex(),
-    // imortal operation requires genesisHash instead of blockHash
-    blockHash: extrinsic.era.toNumber() === 0 ? info.genesisHash : info.blockHash,
+    era: era.toHex(),
+    // Immortal transaction requires genesisHash instead of blockHash
+    blockHash: era.toNumber() === 0 ? signerPayloadBase.genesisHash : signerPayloadBase.blockHash,
     runtimeVersion: {
-      specVersion: info.specVersion,
-      transactionVersion: info.transactionVersion,
+      specVersion: signerPayloadBase.specVersion,
+      transactionVersion: signerPayloadBase.transactionVersion,
     },
   }).toPayload();
 
-  const extrinsicPayload = api.registry.createType('ExtrinsicPayload', signingPayload, {
-    version: signingPayload.version,
-  });
-
-  const signingPayloadHex = extrinsicPayload.toHex();
+  const signingPayloadHex = api.registry
+    .createType('ExtrinsicPayload', signingPayload, { version: signingPayload.version })
+    .toHex();
 
   return {
     type: transaction.type,
@@ -386,7 +398,6 @@ function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { 
     unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
-    info,
   };
 }
 

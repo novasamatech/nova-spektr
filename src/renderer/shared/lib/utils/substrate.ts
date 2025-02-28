@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type u32 } from '@polkadot/types';
+import { type Header } from '@polkadot/types/interfaces';
 import { type SignerPayloadJSON } from '@polkadot/types/types/extrinsic';
 import { type BN, BN_TWO, bnMin, hexToU8a, isHex, numberToU8a, u8aToHex, u8aToNumber } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 
 import { XcmTransferType } from '@/shared/api/xcm';
 import {
-  type Address,
   type BlockHeight,
   type CallData,
   type CallHash,
@@ -14,35 +14,32 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = {
-  info: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
+  header: Header;
+  signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
 };
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
 const UNUSED_LABEL = 'unused';
 
 /**
- * Compose and return all the data needed for
- *
- * @param address Account address
- * @param api Polkadot connector
- *
- * @substrate/txwrapper-polkadot signing
+ * Compose part of SignerPayloadJSON for
  */
-export const createTxMetadata = async (address: Address, api: ApiPromise): Promise<TxMetadata> => {
+export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
 
   const [header, blockHash, nonce] = await Promise.all([
     api.rpc.chain.getHeader(),
     api.rpc.chain.getBlockHash(),
-    api.rpc.system.accountNextIndex(address),
+    api.rpc.system.accountNextIndex(accountId),
   ]);
 
-  const info: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
-    address,
+  const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
+    address: accountId,
     blockHash: blockHash.toHex(),
     blockNumber: header.number.toHex(),
     genesisHash: chainId,
@@ -53,7 +50,7 @@ export const createTxMetadata = async (address: Address, api: ApiPromise): Promi
     signedExtensions: api.registry.signedExtensions,
   };
 
-  return { info };
+  return { header, signerPayloadBase };
 };
 
 /**
