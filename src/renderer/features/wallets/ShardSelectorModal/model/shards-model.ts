@@ -1,8 +1,9 @@
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import cloneDeep from 'lodash/cloneDeep';
 
-import { type Account, type Wallet } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { keys, nonNullable } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -19,7 +20,7 @@ import {
 } from '../lib/types';
 
 export type Callbacks = {
-  onConfirm: (shards: Account[]) => void;
+  onConfirm: (shards: AnyAccount[]) => void;
 };
 
 const $callbacks = createStore<Callbacks | null>(null);
@@ -47,7 +48,7 @@ const $selectedStructure = createStore<SelectedStruct>({});
 sample({ clock: queryChanged, target: $query });
 
 const $isAccessDenied = combine(walletSelect.$selectedWallet, (wallet): boolean => {
-  return nonNullable(wallet) && (!walletUtils.isPolkadotVault(wallet) || !walletUtils.isMultiShard(wallet));
+  return nonNullable(wallet) && !walletUtils.isPolkadotVault(wallet) && !walletUtils.isMultiShard(wallet);
 });
 
 const $filteredAccounts = combine(
@@ -56,7 +57,7 @@ const $filteredAccounts = combine(
     wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
   },
-  ({ query, wallet, chains }): Account[] => {
+  ({ query, wallet, chains }): AnyAccount[] => {
     if (!wallet) return [];
     if (!walletUtils.isMultiShard(wallet) && !walletUtils.isPolkadotVault(wallet)) return [];
 
@@ -74,13 +75,13 @@ const $shardsStructure = combine(
   ({ proceed, wallet, accounts, chains }): RootTuple[] => {
     if (!proceed || !wallet) return [];
 
-    const chainsMap = shardsUtils.getChainsMap(chains);
+    const chainsMap = shardsUtils.getChainsMap<AnyAccount>(chains);
 
     if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getStructForVault(accounts, chainsMap);
+      return shardsUtils.getStructForVault(wallet.rootAccountId, accounts, chainsMap);
     }
     if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getStructForMultishard(accounts, chainsMap);
+      return shardsUtils.getStructForMultishard(wallet.rootAccountId, accounts, chainsMap);
     }
 
     return [];
