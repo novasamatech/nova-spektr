@@ -38,7 +38,7 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
   ]);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
-    address: toAddress(accountId, { prefix: api.registry.chainSS58 }),
+    address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
     blockHash: blockHash.toHex(),
     blockNumber: header.number.toHex(),
     genesisHash: chainId,
