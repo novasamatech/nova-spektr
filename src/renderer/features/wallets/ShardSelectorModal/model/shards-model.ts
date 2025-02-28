@@ -2,9 +2,9 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import cloneDeep from 'lodash/cloneDeep';
 
 import { type Account, type Wallet } from '@/shared/core';
-import { keys } from '@/shared/lib/utils';
+import { keys, nonNullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsUtils } from '../lib/shards-utils';
@@ -46,14 +46,14 @@ const $selectedStructure = createStore<SelectedStruct>({});
 
 sample({ clock: queryChanged, target: $query });
 
-const $isAccessDenied = combine(walletModel.$activeWallet, (wallet): boolean => {
-  return !walletUtils.isPolkadotVault(wallet) && !walletUtils.isMultiShard(wallet);
+const $isAccessDenied = combine(walletSelect.$selectedWallet, (wallet): boolean => {
+  return nonNullable(wallet) && (!walletUtils.isPolkadotVault(wallet) || !walletUtils.isMultiShard(wallet));
 });
 
 const $filteredAccounts = combine(
   {
     query: $query,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
   },
   ({ query, wallet, chains }): Account[] => {
@@ -90,7 +90,7 @@ const $shardsStructure = combine(
 const $initSelectedStructure = combine(
   {
     proceed: $canGetStructure,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
   },
   ({ proceed, wallet, chains }): SelectedStruct => {
@@ -153,13 +153,13 @@ sample({
 
 type ConfirmParams = {
   struct: SelectedStruct;
-  wallet?: Wallet;
+  wallet: Wallet | null;
 };
 sample({
   clock: shardsConfirmed,
   source: {
     struct: $selectedStructure,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ wallet }) => Boolean(wallet),
   target: attach({
