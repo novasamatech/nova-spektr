@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createStore } from 'effector';
 
 import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -74,8 +74,14 @@ export const createMultipleTxStore = ({
     },
   );
 
-  const $isMultisig = $txWrappers.map((wrappers) => wrappers[0] && transactionService.hasMultisig(wrappers[0]));
-  const $isProxy = $txWrappers.map((wrappers) => wrappers[0] && transactionService.hasProxy(wrappers[0]));
+  const $isMultisig = $txWrappers.map((wrappers) => {
+    const wrapper = wrappers.at(0);
+    return nonNullable(wrapper) && transactionService.hasMultisig(wrapper);
+  });
+  const $isProxy = $txWrappers.map((wrappers) => {
+    const wrapper = wrappers.at(0);
+    return nonNullable(wrapper) && transactionService.hasProxy(wrapper);
+  });
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     $api: $api,

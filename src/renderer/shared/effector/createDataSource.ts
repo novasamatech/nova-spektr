@@ -2,7 +2,6 @@ import {
   type Store,
   type StoreWritable,
   type UnitTargetable,
-  attach,
   createEffect,
   createEvent,
   createStore,
@@ -12,6 +11,8 @@ import {
 import { readonly } from 'patronum';
 
 import { type XOR } from '@/shared/core';
+
+import { createQueuedEffect } from './createQueuedEffect';
 
 type Units<Source, Target> = XOR<
   {
@@ -28,6 +29,11 @@ type FactoryParams<Params, Source, Response, Target> = Units<Source, Target> & {
   map(source: Source, params: { params: Params; result: Response }): Target;
   mutateParams?(params: Params, store: Source): Params;
   cache?(params: Params, store: Source): Response | false;
+};
+
+type RequestResult<V> = {
+  value: Awaited<V>;
+  cacheHit: boolean;
 };
 
 export const createDataSource = <Source, Params, Response = Source, Target = Source>({
@@ -57,36 +63,40 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   const $fulfilled = createStore(false);
   const $lastParams = createStore<Params | symbol>(empty);
   const retry = createEvent();
-  const fx = createEffect(({ params, source }: { params: Params; source: Source }) => fn(params, source));
 
-  const request = attach({
-    source: $source,
-    effect: (source: Source, params: Params) => {
-      const mutatedParams = mutateParams(params, source);
-      const cached = cache(mutatedParams, source);
+  const fx = createEffect(async (params: Params): Promise<RequestResult<Response>> => {
+    // eslint-disable-next-line effector/no-getState
+    const source = $source.getState();
+    const mutatedParams = mutateParams(params, source);
+    const cached = cache(mutatedParams, source);
 
-      if (cached) {
-        return fx({ params: mutatedParams, source });
-      }
+    if (cached !== false) {
+      return { value: cached, cacheHit: true };
+    }
 
-      return fx({ params: mutatedParams, source });
-    },
+    const value = await fn(mutatedParams, source);
+
+    return { value: value, cacheHit: false };
+  });
+
+  const request = createQueuedEffect((params: Params) => {
+    return fx(params).then(({ value }) => value);
   });
 
   sample({
-    clock: fx.fail,
-    fn: ({ params }) => params.params,
+    clock: request.fail,
+    fn: ({ params }) => params,
     target: $lastParams,
   });
 
   sample({
-    clock: fx,
+    clock: request,
     fn: () => empty,
     target: $lastParams,
   });
 
   sample({
-    clock: fx.done,
+    clock: request.done,
     fn: () => true,
     target: $fulfilled,
   });
@@ -94,7 +104,8 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   sample({
     clock: fx.done,
     source: $source,
-    fn: (source, { params, result }) => map(source, { params: params.params, result }),
+    filter: (_, { result }) => !result.cacheHit,
+    fn: (source, { params, result }) => map(source, { params, result: result.value }),
     target: targetUnit,
   });
 
@@ -114,11 +125,11 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
     request,
     retry,
 
-    pending: fx.pending,
-    done: fx.done,
-    doneData: fx.doneData,
-    fail: fx.fail,
-    failData: fx.failData,
-    finally: fx.finally,
+    pending: request.pending,
+    done: request.done,
+    doneData: request.doneData,
+    fail: request.fail,
+    failData: request.failData,
+    finally: request.finally,
   };
 };

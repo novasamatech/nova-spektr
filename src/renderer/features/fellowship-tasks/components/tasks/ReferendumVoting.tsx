@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, Markdown, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
@@ -31,10 +31,11 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   const api = input?.api;
   const track = tracks.find(t => t.id === referendum.track);
-  if (nullable(track) || nullable(api)) return null;
 
   const proposer =
-    referendum.proposal.type === 'Inline' ? evidenceService.getProposalAccount(api, referendum.proposal.data) : null;
+    nonNullable(api) && referendum.proposal.type === 'Inline'
+      ? evidenceService.getProposalAccount(api, referendum.proposal.data)
+      : null;
 
   const evidence = evidences.find(e => e.accountId === proposer);
 
@@ -43,6 +44,8 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
       referendums.requestEvidence(proposer);
     }
   }, [proposer]);
+
+  if (nullable(track) || nullable(api)) return null;
 
   const isRetentionTrack = trackService.isRetentionTrack(track.id);
   const isPromotionTrack = trackService.isPromotionTrack(track.id);
