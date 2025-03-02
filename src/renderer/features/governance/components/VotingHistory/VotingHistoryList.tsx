@@ -19,8 +19,6 @@ type Props = {
 };
 
 export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) => {
-  items.length = 0;
-
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
 
