@@ -1,8 +1,10 @@
 import { type TFunction } from 'i18next';
 
-import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { findCoreBatchAll, isEditDelegationTransaction } from '@/entities/transaction';
+import { type MultisigOperation, type OperationData } from '@/domains/multisig';
+import { operationDetailsUtils } from '@/entities/operations';
+import { findCoreBatchAll, getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -63,14 +65,15 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => 'fellowship.salary.promotionTitle',
 };
 
-export const getModalTransactionTitle = (
-  crossChain: boolean,
-  t: TFunction,
-  transaction?: Transaction | DecodedTransaction,
-): string => {
+export const getModalTransactionTitle = (crossChain: boolean, t: TFunction, transaction?: OperationData): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
-  if (!transaction.type) {
+  const coreTx = operationDetailsUtils.getOperationData(transaction);
+  if (!coreTx) return TRANSACTION_UNKNOWN;
+
+  const transactionType = getTransactionType(coreTx.method, coreTx.section);
+
+  if (!transactionType && transaction.section && transaction.method) {
     return formatSectionAndMethod(transaction.section, transaction.method);
   }
 
@@ -78,17 +81,13 @@ export const getModalTransactionTitle = (
     return t('operations.modalTitles.editDelegationOn');
   }
 
-  if (transaction.type === TransactionType.BATCH_ALL) {
+  if (transactionType === TransactionType.BATCH_ALL) {
     const txMatch = findCoreBatchAll(transaction);
 
     return getModalTransactionTitle(crossChain, t, txMatch);
   }
 
-  if (transaction.type === TransactionType.PROXY) {
-    return getModalTransactionTitle(crossChain, t, transaction.args?.transaction);
-  }
-
-  return TransactionTitlesModal[transaction.type](crossChain);
+  return transactionType ? TransactionTitlesModal[transactionType](crossChain) : '';
 };
 
 // TODO remove
@@ -96,9 +95,12 @@ export const getMultisigSignOperationTitle = (
   crossChain: boolean,
   t: TFunction,
   type?: TransactionType,
-  transaction?: MultisigTransaction,
+  transaction?: MultisigOperation,
 ) => {
-  const innerTxTitle = getModalTransactionTitle(crossChain, t, transaction?.transaction);
+  if (!transaction) return;
+
+  const coreTx = operationDetailsUtils.getOperationData(transaction);
+  const innerTxTitle = getModalTransactionTitle(crossChain, t, coreTx);
 
   if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
     return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;

@@ -1,22 +1,17 @@
 import { combine } from 'effector';
 
 import { nonNullable } from '@/shared/lib/utils';
-import { networkModel } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
-import { isCreatePureProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
-const $availableTransaction = combine(operationsModel.$multisigTransactions, networkModel.$chains, (txs, chains) => {
-  return txs.filter(tx => tx.chainId in chains);
-});
+import { multisigOperations } from './model';
 
 const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isMultisigAccount) ?? null);
 
 const $incompleteFlexibleMultisigTx = combine(
-  { account: $account, wallet: walletSelect.$selectedWallet, txs: $availableTransaction },
+  { account: $account, wallet: walletSelect.$selectedWallet, txs: multisigOperations.$all },
   ({ account, wallet, txs }) => {
-    const signingTransactions = txs.filter(tx => tx.status === 'SIGNING' && tx.chainId === account?.chainId);
+    const signingTransactions = txs.filter(tx => tx.status === 'pending' && tx.chainId === account?.chainId);
 
     if (
       nonNullable(account) &&
@@ -24,7 +19,8 @@ const $incompleteFlexibleMultisigTx = combine(
       !wallet.activated &&
       signingTransactions.length === 1
     ) {
-      return signingTransactions.find(tx => isCreatePureProxyTransaction(tx.transaction)) ?? null;
+      // return signingTransactions.find(tx => isCreatePureProxyTransaction(tx.transaction)) ?? null;
+      return null;
     }
 
     return null;
@@ -34,5 +30,4 @@ const $incompleteFlexibleMultisigTx = combine(
 export const operationsContextModel = {
   $account,
   $incompleteFlexibleMultisigTx,
-  $availableTransaction,
 };

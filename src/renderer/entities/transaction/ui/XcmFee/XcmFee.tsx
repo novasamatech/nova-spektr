@@ -4,9 +4,10 @@ import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { type XcmConfig, xcmService } from '@/shared/api/xcm';
-import { type Asset, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { type Asset } from '@/shared/core';
 import { toLocalChainId } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
+import { type OperationData } from '@/domains/multisig';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -15,7 +16,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: Transaction | DecodedTransaction | null;
+  transaction?: OperationData | null;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
@@ -44,14 +45,14 @@ export const XcmFee = memo(
       };
 
       setIsLoading(true);
-      if (!transaction?.address) {
+      if (!transaction) {
         handleFee('0');
 
         return;
       }
 
-      const originChainId = toLocalChainId(transaction.chainId);
-      const destinationChainId = toLocalChainId(transaction.args.destinationChain);
+      const originChainId = toLocalChainId(api.genesisHash.toHex());
+      const destinationChainId = toLocalChainId(transaction.args?.destinationChain);
       const configChain = config.chains.find((c) => c.chainId === originChainId);
       const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
       const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
@@ -64,8 +65,8 @@ export const XcmFee = memo(
             config.assetsLocation[configAsset.assetLocation],
             originChainId,
             configXcmTransfer,
-            transaction.args.xcmAsset,
-            transaction.args.xcmDest,
+            transaction.args?.asset || transaction.args?.assets,
+            transaction.args?.dest,
           )
           .then((fee) => fee.toString())
           .then(handleFee);

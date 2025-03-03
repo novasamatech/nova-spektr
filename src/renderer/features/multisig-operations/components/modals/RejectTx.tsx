@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Account, type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,10 +10,11 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/multisig';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import { OperationResult, isXcmTransaction, transactionService, validateBalance } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -26,7 +26,7 @@ import { Submit } from '../ActionSteps/Submit';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
   account: MultisigAccount;
   chain: Chain;
   api: ApiPromise;
@@ -55,7 +55,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operationDetailsUtils.getOperationData(tx);
   const transactionTitle = getMultisigSignOperationTitle(
     isXcmTransaction(transaction),
     t,
@@ -66,10 +66,10 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
   const nativeAsset = getNativeAsset(chain.assets);
   let asset: Asset | null = null;
   if (transaction && chain) {
-    if (transaction.args.assetId && api) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
+    if (transaction.args?.assetId && api) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args?.assetId);
     } else {
-      asset = getAssetById(transaction.args.asset, chain?.assets) ?? null;
+      asset = getAssetById(transaction.args?.asset, chain?.assets) ?? null;
     }
   }
 
@@ -167,7 +167,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
     <Modal size="md" onToggle={toggleModal}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
+        <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={tx.chainId} />
       </Modal.Title>
       <Modal.Content>
         {activeStep === Step.CONFIRMATION && (

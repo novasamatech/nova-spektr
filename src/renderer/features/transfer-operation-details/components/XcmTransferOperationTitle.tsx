@@ -1,19 +1,19 @@
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/multisig';
 import { XcmChains } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
 };
 
 export const XcmTransferOperationTitle = ({ operation }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
   const asset = useTransactionAsset(operation);
   const amount = transaction ? getTransactionAmount(transaction) : null;
 
@@ -32,7 +32,11 @@ export const XcmTransferOperationTitle = ({ operation }: Props) => {
         </Box>
       )}
 
-      <XcmChains chainIdFrom={operation.chainId} chainIdTo={transaction?.args.destinationChain} className="w-[114px]" />
+      <XcmChains
+        chainIdFrom={operation.chainId}
+        chainIdTo={transaction?.args?.destinationChain}
+        className="w-[114px]"
+      />
     </>
   );
 };

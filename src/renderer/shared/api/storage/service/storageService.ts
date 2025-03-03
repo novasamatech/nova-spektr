@@ -143,4 +143,5 @@ export const storageService = {
   metadata: new StorageService(dexieStorage.metadata),
   balances: new StorageService(dexieStorage.balances),
   basketTransactions: new StorageService(dexieStorage.basketTransactions),
+  multisigOperations: new StorageService(dexieStorage.multisigOperations),
 };

@@ -1,25 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import {
-  type Chain,
-  type FlexibleMultisigTransaction,
-  type MultisigAccount,
-  type MultisigEvent,
-  type MultisigTransaction,
-  type Signatory,
-  type SigningStatus,
-  type Wallet,
-} from '@/shared/core';
+import { type Chain, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, FootnoteText, Header, Plate, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Accordion, Box, Modal, Progress } from '@/shared/ui-kit';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain, useNetworkData } from '@/entities/network';
-import { Status, operationDetailsUtils, operationsModel } from '@/entities/operations';
+import { Status, operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, permissionUtils, walletModel } from '@/entities/wallet';
 import { flexibleShellModel } from '../model/flexible-shell-model';
@@ -29,7 +20,7 @@ import ApproveTxModal from './modals/ApproveTx';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
   account: MultisigAccount;
 };
 
@@ -37,30 +28,17 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
   const { t } = useI18n();
   const { connection, chain, api, extendedChain } = useNetworkData(tx.chainId);
 
-  const events = useStoreMap({
-    store: operationsModel.$multisigEvents,
-    keys: [tx],
-    fn: (events, [operation]) => {
-      return events.filter(
-        e =>
-          e.txAccountId === operation.accountId &&
-          e.txChainId === operation.chainId &&
-          e.txCallHash === operation.callHash &&
-          e.txBlock === operation.blockCreated &&
-          e.txIndex === operation.indexCreated,
-      );
-    },
-  });
+  const events = tx.events;
 
   const wallets = useUnit(walletModel.$wallets);
-
+  const signatories = account.signatories;
   const isRejectAvailable = wallets.some(wallet => {
     const hasDepositor = wallet.accounts.some(account => account.accountId === tx.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'pending';
   });
 
-  const approvals = events.filter(e => e.status === 'SIGNED');
+  const approvals = events.filter(e => e.status === 'approve');
 
   return (
     <div className="relative flex h-full flex-col items-center overflow-y-auto">
@@ -95,7 +73,7 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
             </ApproveTxModal>
           )}
         </div>
-        <Signatories signatories={tx.signatories} connection={extendedChain} events={events} />
+        <Signatories signatories={signatories} connection={extendedChain} events={events} />
 
         <Details tx={tx} chain={extendedChain} />
       </Plate>
@@ -110,7 +88,7 @@ type SignatoriesParams = {
 };
 type WalletSignatory = Signatory & {
   wallet: Wallet;
-  status: SigningStatus | null;
+  status: MultisigEvent['status'] | null;
 };
 
 const Signatories = memo(({ signatories, connection, events }: SignatoriesParams) => {
@@ -130,7 +108,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
 
       return acc;
     }, [])
-    .sort(wallet => (wallet.status === 'SIGNED' ? -1 : 1));
+    .sort(wallet => (wallet.status === 'approve' ? -1 : 1));
 
   const walletSignatoriesIds = walletSignatories.map(a => a.accountId);
   const contactSignatories = signatories.filter(s => !walletSignatoriesIds.includes(s.accountId));
@@ -191,7 +169,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
   );
 });
 
-const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTransaction; chain: Chain }) => {
+const Details = ({ tx, chain }: { tx: MultisigOperation; chain: Chain }) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
 
@@ -209,7 +187,7 @@ const Details = ({ tx, chain }: { tx: MultisigTransaction | FlexibleMultisigTran
 
 type ConfirmRejectParams = {
   api: ApiPromise;
-  tx: MultisigTransaction;
+  tx: MultisigOperation;
   account: MultisigAccount;
   chain: Chain;
   children: React.ReactNode;

@@ -1,4 +1,5 @@
-import { isEthereumAccountId, isSubstrateAccountId } from '@/shared/lib/utils';
+import { type HexString } from '@/shared/core';
+import { isEthereumAccountId, isHex, isSubstrateAccountId } from '@/shared/lib/utils';
 
 import {
   type AccountId,
@@ -70,6 +71,13 @@ export const pjsSchema = {
   vec: vecSchema,
 
   helpers: {
+    toHex: (value: string) => {
+      if (isHex(value)) {
+        return value as HexString;
+      }
+
+      throw new TypeError(`${value} is not hex string`);
+    },
     toAccountId: (value: string) => {
       if (isSubstrateAccountId(value as AccountId) || isEthereumAccountId(value as AccountId)) {
         return value as AccountId;

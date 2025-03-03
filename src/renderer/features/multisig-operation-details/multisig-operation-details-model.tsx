@@ -1,8 +1,9 @@
 import { createFeature } from '@/shared/feature';
+import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { TransactionTitle } from '@/entities/transaction';
+import { operationDetailsUtils } from '@/entities/operations';
+import { TransactionTitle, getTransactionType } from '@/entities/transaction';
 import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { OperationAdvancedDetails } from './components/OperationAdvancedDetails';
@@ -18,15 +19,21 @@ multisigOperationDetailsFeature.inject(operationDetailsSlot, {
 });
 
 multisigOperationDetailsFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const { t } = useI18n();
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+  if (transactionType) return null;
 
-  if (transaction && transaction.type) return null;
-
-  const title = transaction && formatSectionAndMethod(transaction.section, transaction.method);
+  const title =
+    operation && operation.section && operation.method && formatSectionAndMethod(operation.section, operation.method);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" title={title || ''} icon="unknownMst" />
+      <TransactionTitle
+        className="flex-1 overflow-hidden"
+        title={title || t('operations.titles.unknown')}
+        icon="unknownMst"
+      />
 
       <ChainTitle chainId={operation.chainId} className="w-[114px]" />
     </>
@@ -39,11 +46,16 @@ multisigOperationDetailsFeature.inject(operationDetailsSlot, {
 });
 
 multisigOperationDetailsFeature.inject(logTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const { t } = useI18n();
 
-  if (transaction && transaction.type) return null;
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+  if (transactionType) return null;
 
-  const title = transaction && formatSectionAndMethod(transaction.section, transaction.method);
+  const title =
+    operation && operation.section && operation.method && formatSectionAndMethod(operation.section, operation.method);
 
-  return <TransactionTitle className="overflow-hidden" title={title || ''} icon="unknownMst" />;
+  return (
+    <TransactionTitle className="overflow-hidden" title={title || t('operations.titles.unknown')} icon="unknownMst" />
+  );
 });

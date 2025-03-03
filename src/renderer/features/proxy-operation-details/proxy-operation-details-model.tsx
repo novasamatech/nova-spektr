@@ -6,12 +6,12 @@ import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
+  getTransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
@@ -39,7 +39,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 proxyOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
     const { t } = useI18n();
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operationDetailsUtils.getOperationData(operation);
     const chains = useUnit(networkModel.$chains);
     const chain = chains[operation.chainId];
 
@@ -87,9 +87,10 @@ proxyOperationDetailFeature.inject(operationDetailsSlot, {
 });
 
 proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transaction?.type && getOperationTitle(transaction.type);
+  const title = transactionType && getOperationTitle(transactionType);
 
   if (title) {
     return <ProxyOperationTitle operation={operation} title={title} />;
@@ -100,9 +101,10 @@ proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
 
 proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transaction?.type && getOperationTitle(transaction.type);
+  const title = transactionType && getOperationTitle(transactionType);
 
   if (title) {
     return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;

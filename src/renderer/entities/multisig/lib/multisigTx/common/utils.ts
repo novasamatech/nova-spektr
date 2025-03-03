@@ -5,24 +5,18 @@ import { type AccountId32 } from '@polkadot/types/interfaces';
 import {
   type Address,
   type ChainId,
-  type DecodedTransaction,
   type MultisigAccount,
-  type MultisigEvent,
   type MultisigTransaction,
-  type ProxyTransaction,
+  type MultisigEvent as OldMultisigEvent,
   type Transaction,
 } from '@/shared/core';
-import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
+import { MultisigTxInitStatus } from '@/shared/core';
 import { getCreatedDate, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type ExtrinsicResultParams, findCoreBatchAll } from '@/entities/transaction';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type MultisigEvent, type MultisigOperation, type OperationData } from '@/domains/multisig';
+import { type ExtrinsicResultParams } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
-
-type MultisigTxResult = {
-  transaction: MultisigTransaction;
-  event: MultisigEvent;
-};
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
@@ -42,7 +36,7 @@ export const getPendingMultisigTxs = async (
     }, []);
 };
 
-export const updateOldEventsPayload = (events: MultisigEvent[], approvals: Vec<AccountId32>): MultisigEvent[] => {
+export const updateOldEventsPayload = (events: OldMultisigEvent[], approvals: Vec<AccountId32>): OldMultisigEvent[] => {
   return events.map((e) => {
     const isPendingSigned = e.status === 'PENDING_SIGNED';
     const hasApproval = approvals.find((a) => a.toHex() === e.accountId);
@@ -54,11 +48,11 @@ export const updateOldEventsPayload = (events: MultisigEvent[], approvals: Vec<A
 };
 
 export const createNewEventsPayload = (
-  events: MultisigEvent[],
+  events: OldMultisigEvent[],
   tx: MultisigTransaction,
   approvals: Vec<AccountId32>,
-): MultisigEvent[] => {
-  return approvals.reduce<MultisigEvent[]>((acc, a) => {
+): OldMultisigEvent[] => {
+  return approvals.reduce<OldMultisigEvent[]>((acc, a) => {
     const hasApprovalEvent = events.some((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
 
     if (!hasApprovalEvent) {
@@ -110,7 +104,7 @@ export const createEventsPayload = (
   account: MultisigAccount,
   currentBlock: number,
   blockTime: number,
-): MultisigEvent[] => {
+): OldMultisigEvent[] => {
   const { when, approvals, depositor } = pendingTransaction.params;
 
   const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
@@ -153,56 +147,49 @@ export const createTransactionPayload = (
 };
 
 export const buildMultisigTx = (
-  tx: Transaction,
+  tx: OperationData,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
   account: MultisigAccount,
-): MultisigTxResult => {
-  const transaction: MultisigTransaction = {
-    transaction: tx,
-    accountId: account.accountId,
-    chainId: multisigTx.chainId,
-    signatories: account.signatories,
-    callData: multisigTx.args.callData,
-    callHash: multisigTx.args.callHash,
-    status: MultisigTxInitStatus.SIGNING,
-    blockCreated: params.timepoint.height,
-    indexCreated: params.timepoint.index,
-    dateCreated: Date.now(),
-  };
+): MultisigOperation => {
+  const operationId = generateOperationId(
+    multisigTx.args.callHash,
+    account.accountId,
+    params.timepoint.height,
+    params.timepoint.index,
+  );
+  const eventId = generateEventId(operationId, toAccountId(multisigTx.address), 'approve');
 
   const event: MultisigEvent = {
-    txAccountId: transaction.accountId,
-    txChainId: transaction.chainId,
-    txCallHash: transaction.callHash,
-    txBlock: transaction.blockCreated,
-    txIndex: transaction.indexCreated,
+    id: eventId,
     accountId: toAccountId(multisigTx.address),
     extrinsicHash: params.extrinsicHash,
-    eventBlock: params.timepoint.height,
-    eventIndex: params.timepoint.index,
-    dateCreated: Date.now(),
-    status: 'SIGNED',
+    blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
+    indexCreated: params.timepoint.index,
+    timestamp: Date.now(),
+    status: 'approve',
   };
 
-  return { event, transaction };
+  const transaction: MultisigOperation = {
+    id: operationId,
+    accountId: account.accountId,
+    depositor: toAccountId(multisigTx.address),
+    chainId: multisigTx.chainId,
+    callData: multisigTx.args.callData,
+    callHash: multisigTx.args.callHash,
+    status: 'pending',
+    blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
+    indexCreated: params.timepoint.index,
+    timestamp: Date.now(),
+    events: [event],
+    ...tx,
+  };
+
+  return transaction;
 };
 
-export const getTransactionFromMultisigTx = (
-  tx: MultisigTransaction | ProxyTransaction,
-): Transaction | DecodedTransaction | undefined => {
-  const NestedTransactionTypes = [TransactionType.BATCH_ALL, TransactionType.PROXY];
+export const generateOperationId = (callHash: string, address: string, block: number, index: number): string =>
+  `${callHash}-${address}-${block}-${index}`;
 
-  // @ts-expect-error TODO fix
-  if (!tx.transaction || !NestedTransactionTypes.includes(tx.transaction.type)) {
-    return tx.transaction;
-  }
-
-  const transactionMatch = findCoreBatchAll(tx.transaction);
-
-  return (
-    transactionMatch ||
-    tx.transaction.args.transactions?.[0] ||
-    getTransactionFromMultisigTx(tx.transaction.args as ProxyTransaction)
-  );
-};
+export const generateEventId = (operationId: string, signer: string, status: 'approve' | 'reject'): string =>
+  `${operationId}-${signer}-${status}`;

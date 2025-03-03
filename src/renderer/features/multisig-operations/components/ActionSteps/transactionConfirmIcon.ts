@@ -1,6 +1,7 @@
-import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { isEditDelegationTransaction } from '@/entities/transaction';
+import { type OperationData } from '@/domains/multisig';
+import { getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -56,20 +57,22 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 // TODO remove
-export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
-  if (!transaction?.type) return 'unknownConfirm';
+export const getIconName = (transaction?: OperationData): IconNames => {
+  const operationType = getTransactionType(transaction?.method, transaction?.section);
+
+  if (!operationType) return 'unknownConfirm';
 
   if (isEditDelegationTransaction(transaction)) {
     return 'editDelegationConfirm';
   }
 
-  if (transaction.type === TransactionType.BATCH_ALL) {
+  if (operationType === TransactionType.BATCH_ALL) {
     return getIconName(transaction?.args?.transactions?.[0]);
   }
 
-  if (transaction.type === TransactionType.PROXY) {
+  if (operationType === TransactionType.PROXY) {
     return getIconName(transaction?.args?.transaction);
   }
 
-  return TransactionIcons[transaction.type];
+  return TransactionIcons[operationType];
 };

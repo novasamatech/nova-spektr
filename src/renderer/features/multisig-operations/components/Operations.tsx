@@ -2,15 +2,13 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect } from 'react';
 
-import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
-import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText } from '@/shared/ui';
-import { operationsModel } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import { OperationsFilter } from '@/features/operations';
 import { operationsContextModel } from '../model/context';
+import { multisigOperations } from '../model/model';
 
 import EmptyOperations from './EmptyState/EmptyOperations';
 import { FlexibleMultisigShell } from './FlexibleMultisigShell';
@@ -19,37 +17,15 @@ import Operation from './Operation';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const events = useUnit(operationsModel.$multisigEvents);
   const account = useUnit(operationsContextModel.$account);
-  const txs = useUnit(operationsContextModel.$availableTransaction);
+  const txs = useUnit(multisigOperations.$all);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
-  const filteredTxs = useUnit(operationsModel.$filteredTxs);
-
-  const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
-    return events.filter(e => {
-      return (
-        e.txAccountId === tx.accountId &&
-        e.txChainId === tx.chainId &&
-        e.txCallHash === tx.callHash &&
-        e.txBlock === tx.blockCreated &&
-        e.txIndex === tx.indexCreated
-      );
-    });
-  };
+  const filteredTxs = useUnit(multisigOperations.$filteredTxs);
 
   const groupedTxs = groupBy(filteredTxs, tx => {
-    let date = tx.dateCreated;
+    const timestamp = tx.timestamp || Date.now();
 
-    if (nullable(date)) {
-      const events = getEventsByTransaction(tx);
-      date = events.at(0)?.dateCreated;
-    }
-
-    if (nullable(date)) {
-      date = Date.now();
-    }
-
-    return formatDate(new Date(date), 'PP');
+    return formatDate(timestamp, 'PP');
   });
 
   useEffect(() => {
@@ -77,9 +53,9 @@ export const Operations = () => {
                 <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                 <ul className="flex w-[736px] flex-col gap-y-1.5">
                   {txs
-                    .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
+                    .sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0))
                     .map(tx => (
-                      <li key={tx.dateCreated}>
+                      <li key={tx.timestamp}>
                         <Operation tx={tx} account={account} />
                       </li>
                     ))}

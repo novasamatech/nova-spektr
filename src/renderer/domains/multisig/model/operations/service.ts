@@ -21,7 +21,7 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
   merge({
     a: oldEvents,
     b: events,
-    mergeBy: a => [a.callHash, a.blockCreated, a.indexCreated, a.chainId, a.accountId],
+    mergeBy: a => [a.blockCreated, a.indexCreated, a.accountId, a.status],
     filter: (a, b) => !isSameEvent(a, b),
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
@@ -37,21 +37,10 @@ const mergeMultisigOperations = (
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-const getOperationEvents = (operation: MultisigOperation, events: MultisigEvent[]) => {
-  return events.filter(
-    event =>
-      event.accountId === operation.accountId &&
-      event.chainId === operation.chainId &&
-      event.callHash === operation.callHash,
-  );
-};
-
 export const operationsService = {
   isSameMultisig,
   isSameEvent,
 
   mergeEvents,
   mergeMultisigOperations,
-
-  getOperationEvents,
 };

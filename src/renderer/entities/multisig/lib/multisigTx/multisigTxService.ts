@@ -1,22 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useLiveQuery } from 'dexie-react-hooks';
 
-import { chainsService } from '@/shared/api/network';
-import { type MultisigTransactionDS, storage } from '@/shared/api/storage';
-import {
-  type CallData,
-  type MultisigAccount,
-  type MultisigTransaction,
-  MultisigTxFinalStatus,
-  MultisigTxInitStatus,
-} from '@/shared/core';
+import { storage } from '@/shared/api/storage';
+import { type MultisigAccount, MultisigTxFinalStatus, MultisigTxInitStatus } from '@/shared/core';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
-import { getCurrentBlockNumber, getExpectedBlockTime, toAddress, validateCallData } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { decodeCallData } from '@/entities/transaction';
+import { getCurrentBlockNumber, getExpectedBlockTime } from '@/shared/lib/utils';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
 
-import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, QUERY_INTERVAL } from './common/consts';
+import { QUERY_INTERVAL } from './common/consts';
 import { type IMultisigTxService } from './common/types';
 import {
   createEventsPayload,
@@ -184,82 +174,13 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
     return () => clearTimeout(timeoutId);
   };
 
-  const getLiveMultisigTxs = <T extends MultisigTransaction>(where?: Partial<T>): MultisigTransactionDS[] => {
-    const query = () => {
-      try {
-        return getMultisigTxs(where);
-      } catch {
-        console.warn('Error trying to get multisig transactions');
-
-        return Promise.resolve([]);
-      }
-    };
-
-    return useLiveQuery(query, [where], []);
-  };
-
-  const getLiveAccountMultisigTxs = (accountIds: AccountId[]): MultisigTransactionDS[] => {
-    const query = () => {
-      try {
-        return getAccountMultisigTxs(accountIds);
-      } catch {
-        console.warn('Error trying to get multisig transactions');
-
-        return Promise.resolve([]);
-      }
-    };
-
-    return useLiveQuery(query, [accountIds.length, accountIds.length > 0 && accountIds[0]], []);
-  };
-
-  const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
-    try {
-      const chain = chainsService.getChainById(tx.chainId);
-
-      const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
-
-      await updateMultisigTx({ ...tx, callData, transaction });
-    } catch (e) {
-      console.log('Error during update callData: ', e);
-    }
-  };
-
-  const updateCallDataFromChain = async (
-    api: ApiPromise,
-    tx: MultisigTransaction,
-    blockHeight: number,
-    extrinsicIndex: number,
-  ) => {
-    try {
-      const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
-      if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return;
-
-      const { block } = await api.rpc.chain.getBlock(blockHash);
-      const extrinsic = block.extrinsics[extrinsicIndex];
-
-      if (!extrinsic.argsDef.call) return;
-
-      const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
-
-      if (!validateCallData(callData, tx.callHash)) return;
-
-      updateCallData(api, tx, callData);
-    } catch (e) {
-      console.log('Error during update call data from chain', e);
-    }
-  };
-
   return {
     subscribeMultisigAccount,
     getMultisigTx,
     getMultisigTxs,
     getAccountMultisigTxs,
-    getLiveMultisigTxs,
-    getLiveAccountMultisigTxs,
     addMultisigTx,
     updateMultisigTx,
     deleteMultisigTx,
-    updateCallData,
-    updateCallDataFromChain,
   };
 };

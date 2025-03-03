@@ -1,14 +1,13 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { MultisigTxInitStatus } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
-import { useMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
+import { multisigOperations } from '@/features/multisig-operations';
 
 export const operationsNavigationFeature = createFeature({
   name: 'operations/navigation',
@@ -16,13 +15,13 @@ export const operationsNavigationFeature = createFeature({
 });
 
 operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
-  const wallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
-  const { getLiveAccountMultisigTxs } = useMultisigTx({});
+  const operations = useUnit(multisigOperations.$all);
 
-  const txs = getLiveAccountMultisigTxs(walletUtils.isMultisig(wallet) ? [wallet.accounts[0].accountId] : []).filter(
-    (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
-  );
+  if (!wallet) return items;
+
+  const txs = operations.filter((tx) => tx.status === 'pending' && chains[tx.chainId]);
 
   return items.concat({
     order: 4,

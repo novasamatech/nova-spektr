@@ -18,7 +18,7 @@ import {
   XCM_SECTIONS,
 } from './common/constants';
 
-const getDataFromCallData = (
+export const getDataFromCallData = (
   api: ApiPromise,
   callData: CallData,
 ): {
@@ -477,7 +477,9 @@ const isProxyExtrinsic = (method: string, section: string): boolean => {
   return section === 'proxy' && method === 'proxy';
 };
 
-const getTransactionType = (method: string, section: string): TransactionType | undefined => {
+export const getTransactionType = (method?: string | null, section?: string | null): TransactionType | undefined => {
+  if (!method || !section) return;
+
   const transferType = getTransferTxType(method, section);
   const stakingType = getStakingTxType(method, section);
   const xcmType = getXcmTxType(method, section);

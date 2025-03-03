@@ -1,21 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import {
-  type FlexibleMultisigTransaction,
-  type MultisigAccount,
-  type MultisigEvent,
-  type MultisigTransaction,
-  type Signatory,
-  type Wallet,
-} from '@/shared/core';
+import { type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { type FlexibleMultisigOperation, type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
 import { contactModel } from '@/entities/contact';
-import { useMultisigEvent } from '@/entities/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
@@ -26,17 +19,16 @@ import LogModal from './LogModal';
 type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  tx: MultisigOperation | FlexibleMultisigOperation;
   connection: ExtendedChain;
   account: MultisigAccount;
 };
 
 export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const { t } = useI18n();
-  const { getLiveTxEvents } = useMultisigEvent({});
 
-  const { signatories, accountId, chainId, callHash, blockCreated, indexCreated } = tx;
-  const events = getLiveTxEvents(accountId, chainId, callHash, blockCreated, indexCreated);
+  const { signatories } = account;
+  const { events } = tx;
 
   const wallets = useUnit(walletModel.$wallets);
   const contacts = useUnit(contactModel.$contacts);
@@ -44,8 +36,8 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
   const [isLogModalOpen, toggleLogModal] = useToggle();
   const [signatoriesList, setSignatories] = useState<Signatory[]>([]);
 
-  const approvals = events.filter(e => e.status === 'SIGNED');
-  const cancellation = events.filter(e => e.status === 'CANCELLED');
+  const approvals = events.filter(e => e.status === 'approve');
+  const cancellation = events.filter(e => e.status === 'reject');
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
     const signatoryWallet = signatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
@@ -71,7 +63,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
     }
 
     const tempApprovals = approvals
-      .sort((a: MultisigEvent, b: MultisigEvent) => (a.eventBlock || 0) - (b.eventBlock || 0))
+      .sort((a: MultisigEvent, b: MultisigEvent) => (a.blockCreated || 0) - (b.blockCreated || 0))
       .map(a => signatories.find(s => s.accountId === a.accountId))
       .filter(nonNullable);
 

@@ -1,11 +1,11 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Chain, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
+import { type MultisigOperation } from '@/domains/multisig';
 import { type AnyAccount } from '@/domains/network';
 import { multisigUtils } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
@@ -18,7 +18,7 @@ import { operationsContextModel } from './context';
 type GetMultisigType = {
   signerAccountId: AccountId;
   chain: Chain;
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
 };
 
 const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>({

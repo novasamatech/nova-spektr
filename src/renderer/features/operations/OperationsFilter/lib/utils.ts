@@ -1,32 +1,27 @@
 import { type TFunction } from 'i18next';
 
-import { MultisigTxFinalStatus, MultisigTxInitStatus, TransactionType } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 
 export const getStatusOptions = (t: TFunction) => {
   return [
     {
-      id: MultisigTxInitStatus.SIGNING,
-      value: MultisigTxInitStatus.SIGNING,
+      id: 'pending',
+      value: 'pending',
       element: t('operation.status.signing'),
     },
     {
-      id: MultisigTxFinalStatus.CANCELLED,
-      value: MultisigTxFinalStatus.CANCELLED,
+      id: 'cancelled',
+      value: 'cancelled',
       element: t('operation.status.cancelled'),
     },
     {
-      id: MultisigTxFinalStatus.ERROR,
-      value: MultisigTxFinalStatus.ERROR,
+      id: 'error',
+      value: 'error',
       element: t('operation.status.error'),
     },
     {
-      id: MultisigTxFinalStatus.ESTABLISHED,
-      value: MultisigTxFinalStatus.ESTABLISHED,
-      element: t('operation.status.established'),
-    },
-    {
-      id: MultisigTxFinalStatus.EXECUTED,
-      value: MultisigTxFinalStatus.EXECUTED,
+      id: 'executed',
+      value: 'executed',
       element: t('operation.status.executed'),
     },
   ];

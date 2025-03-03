@@ -3,7 +3,6 @@ import { type BN, isBn } from '@polkadot/util';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
@@ -20,6 +19,7 @@ import {
 } from '@/shared/core';
 import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type MultisigOperation } from '@/domains/multisig';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
@@ -513,7 +513,7 @@ type RejectTxParams = {
   signerAccountId: AccountId;
   threshold: number;
   otherSignatories: Address[];
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
 };
 
 function buildRejectMultisigTx({

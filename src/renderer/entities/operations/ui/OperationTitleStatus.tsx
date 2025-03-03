@@ -1,32 +1,18 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
-import { type MultisigTransaction } from '@/shared/core';
+import { type MultisigOperation } from '@/domains/multisig';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { operationsModel } from '../model/operations-model';
 
 import { Status } from './Status';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const OperationTitleStatus = ({ operation }: Props) => {
-  const events = useStoreMap({
-    store: operationsModel.$multisigEvents,
-    keys: [operation],
-    fn: (events, [operation]) => {
-      return events.filter(
-        (e) =>
-          e.txAccountId === operation.accountId &&
-          e.txChainId === operation.chainId &&
-          e.txCallHash === operation.callHash &&
-          e.txBlock === operation.blockCreated &&
-          e.txIndex === operation.indexCreated,
-      );
-    },
-  });
+  const { events } = operation;
 
-  const approvals = events.filter((e) => e.status === 'SIGNED');
+  const approvals = events.filter((e) => e.status === 'approve');
   const activeWallet = useUnit(walletModel.$activeWallet);
   const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
 

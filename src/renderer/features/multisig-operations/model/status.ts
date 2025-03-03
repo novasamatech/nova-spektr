@@ -4,10 +4,11 @@ import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -45,10 +46,12 @@ const $input = combine(
     for (const account of wallet.accounts) {
       if (account.chainId) {
         const api = apis[account.chainId];
+        const chain = chains[account.chainId];
 
         if (api) {
           input.push({
             api,
+            chain,
             accountId: account.accountId as AccountId,
           });
         }
@@ -61,6 +64,7 @@ const $input = combine(
           if (api) {
             input.push({
               api,
+              chain,
               accountId: account.accountId as AccountId,
             });
           }
@@ -80,7 +84,7 @@ export const multisigOperationsFeatureStatus = createFeature({
 multisigOperationsFeatureStatus.start();
 
 sample({
-  clock: walletModel.$activeWallet,
-  filter: walletUtils.isMultisig,
+  clock: walletSelect.$selectedWallet,
+  filter: wallet => nonNullable(wallet) && walletUtils.isMultisig(wallet),
   target: multisigOperationsFeatureStatus.restore,
 });

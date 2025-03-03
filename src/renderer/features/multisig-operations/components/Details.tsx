@@ -7,9 +7,7 @@ import {
   type Account as AccountType,
   type Address,
   type Chain,
-  type FlexibleMultisigTransaction,
   type MultisigAccount,
-  type MultisigTransaction,
   type Transaction,
   type Validator,
   type Wallet,
@@ -21,15 +19,16 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/multisig';
 import { identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import {
+  getTransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isProxyTransaction,
@@ -42,7 +41,7 @@ import {
 import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  tx: MultisigOperation;
   account?: MultisigAccount;
   signatory?: AccountType;
   chain: Chain;
@@ -109,7 +108,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
   const allValidators = Object.values(validatorsMap);
 
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operationDetailsUtils.getOperationData(tx);
 
   useEffect(() => {
     const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
@@ -120,19 +119,19 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   }, [validatorsMap]);
 
   const startStakingValidators: Address[] =
-    (transaction?.type === 'batchAll' &&
-      transaction.args.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
+    (getTransactionType(transaction?.method, transaction?.section) === 'batchAll' &&
+      transaction?.args?.transactions.find((tx: Transaction) => tx.type === 'nominate')?.args?.targets) ||
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
+    allValidators.filter(v => (transaction?.args?.targets || startStakingValidators).includes(v.address)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: AccountType } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {
       return undefined;
     }
 
-    const proxiedAccountId = toAccountId(transaction.args.real);
+    const proxiedAccountId = toAccountId(transaction.args?.real);
     const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AccountType }>(
       (acc, wallet) => {
         if (acc.wallet) {
@@ -156,7 +155,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const hasSender = isXcmTransaction(transaction) || isTransferTransaction(transaction);
 
   const isDividerVisible =
-    (isXcmTransaction(transaction) && transaction?.args.destinationChain) ||
+    (isXcmTransaction(transaction) && transaction?.args?.destinationChain) ||
     isManageProxyTransaction(transaction) ||
     destination ||
     selectedValidators.length !== 0;

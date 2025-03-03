@@ -12,6 +12,7 @@ import {
   type TContact,
   type TMetadata,
   type TMultisigEvent,
+  type TMultisigOperations,
   type TMultisigTransaction,
   type TNotification,
   type TProxy,
@@ -35,6 +36,7 @@ class DexieStorage extends Dexie {
   accounts2: TAccount2;
   contacts: TContact;
   multisigTransactions: TMultisigTransaction;
+  multisigOperations: TMultisigOperations;
   multisigEvents: TMultisigEvent;
   notifications: TNotification;
   metadata: TMetadata;
@@ -101,6 +103,10 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateAccounts);
 
+    this.version(27).stores({
+      multisigOperations: 'id',
+    });
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
@@ -108,6 +114,7 @@ class DexieStorage extends Dexie {
     this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
     this.multisigTransactions = this.table('multisigTransactions');
+    this.multisigOperations = this.table('multisigOperations');
     this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
@@ -169,4 +176,5 @@ export const dexieStorage = {
   metadata: dexie.metadata,
   balances: dexie.balances,
   basketTransactions: dexie.basketTransactions,
+  multisigOperations: dexie.multisigOperations,
 };

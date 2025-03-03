@@ -3,8 +3,8 @@ import { createEvent } from 'effector';
 
 import { type AccountVote, type Asset } from '@/shared/core';
 import { networkModel } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { multisigOperations } from '@/features/multisig-operations';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import {
   type ConfirmInfo,
@@ -22,7 +22,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<VoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operationsModel.$multisigTransactions,
+  $multisigTransactions: multisigOperations.$all,
 });
 
 export const confirmModel = {

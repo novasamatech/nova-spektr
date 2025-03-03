@@ -2,22 +2,14 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import {
-  type Account,
-  type Asset,
-  type Chain,
-  type FlexibleMultisigTransaction,
-  type MultisigAccount,
-  type MultisigTransaction,
-  type Transaction,
-} from '@/shared/core';
+import { type Account, type Asset, type Chain, type MultisigAccount, type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type FlexibleMultisigOperation, type MultisigOperation } from '@/domains/multisig';
 import { networkModel } from '@/entities/network';
-import { SignButton } from '@/entities/operations';
+import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -27,11 +19,11 @@ import { Details } from '../Details';
 import { getIconName } from './transactionConfirmIcon';
 
 export const confirmTransactionInfoSlot = createSlot<{
-  operation: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation | FlexibleMultisigOperation;
 }>();
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  tx: MultisigOperation | FlexibleMultisigOperation;
   account: MultisigAccount;
   signAccount?: Account;
   chain: Chain;
@@ -51,13 +43,14 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operationDetailsUtils.getOperationData(tx);
+
   let asset: Asset | null = null;
   if (transaction) {
-    if (transaction.args.assetId) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? chain.assets[0];
+    if (transaction.args?.assetId) {
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args?.assetId) ?? chain.assets[0];
     } else {
-      asset = getAssetById(transaction.args.asset, chain.assets) ?? chain.assets[0];
+      asset = getAssetById(transaction.args?.asset, chain.assets) ?? chain.assets[0];
     }
   }
 
@@ -66,7 +59,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
     keys: [transaction],
     fn: (apis, [transaction]) => {
       if (transaction && isXcmTransaction(transaction)) {
-        return apis[transaction.args.destinationChain] ?? null;
+        return apis[transaction.args?.destinationChain] ?? null;
       }
 
       return null;

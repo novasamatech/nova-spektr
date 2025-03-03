@@ -1,16 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 
-import {
-  type Account,
-  type Chain,
-  type ChainId,
-  type ID,
-  type MultisigTransaction,
-  type ProxiedAccount,
-  type Wallet,
-} from '@/shared/core';
+import { type Account, type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { type MultisigOperation } from '@/domains/multisig';
 import { type AnyAccount } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
@@ -41,7 +34,7 @@ export type ConfirmItem<Input extends ConfirmInfo = ConfirmInfo> = {
 type Params = {
   $wallets: Store<Wallet[]>;
   $apis: Store<Record<ChainId, ApiPromise> | null>;
-  $multisigTransactions: Store<MultisigTransaction[]>;
+  $multisigTransactions: Store<MultisigOperation[]>;
 };
 
 export const createTransactionConfirmStore = <Input extends ConfirmInfo>({

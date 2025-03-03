@@ -1,19 +1,19 @@
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/multisig';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const TransferOperationTitle = ({ operation }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
   const asset = useTransactionAsset(operation);
   const amount = transaction ? getTransactionAmount(transaction) : null;
 

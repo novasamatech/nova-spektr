@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type ChainId, type MultisigTransaction, TransactionType } from '@/shared/core';
+import { type ChainId, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
-import { operationsModel } from '@/entities/operations';
-import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { type MultisigOperation } from '@/domains/multisig';
+import { TransferTypes, XcmTypes, getTransactionType } from '@/entities/transaction';
+import { multisigOperations } from '@/features/multisig-operations';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';
@@ -30,7 +30,7 @@ const EmptySelected: SelectedFilters = {
 const mapValues = (result: DropdownResult) => result.value;
 
 type Props = {
-  txs: MultisigTransactionDS[];
+  txs: MultisigOperation[];
 };
 
 export const OperationsFilter = ({ txs }: Props) => {
@@ -56,35 +56,42 @@ export const OperationsFilter = ({ txs }: Props) => {
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
-    operationsModel.events.changeFilteredTxs(txs);
+    multisigOperations.changeFilteredTxs(txs);
   }, [txs, availableChains]);
 
-  const getFilterableTxType = (tx: MultisigTransaction): TransactionType | 'UNKNOWN_TYPE' => {
-    if (!tx.transaction?.type) {
+  const getFilterableTxType = (tx: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
+    if (!tx.method || !tx.section) {
       return 'UNKNOWN_TYPE';
     }
 
-    if (TransferTypes.includes(tx.transaction.type)) {
+    const transactionType = getTransactionType(tx.method, tx.section);
+
+    if (!transactionType) {
+      return 'UNKNOWN_TYPE';
+    }
+
+    if (TransferTypes.includes(transactionType)) {
       return TransactionType.TRANSFER;
     }
-    if (XcmTypes.includes(tx.transaction.type)) {
+    if (XcmTypes.includes(transactionType)) {
       return TransactionType.XCM_LIMITED_TRANSFER;
     }
 
-    if (tx.transaction.type === TransactionType.BATCH_ALL) {
-      const txMatch = findCoreBatchAll(tx.transaction);
+    // TODO: Fix batch all
+    // if (transactionType === TransactionType.BATCH_ALL) {
+    //   const txMatch = findCoreBatchAll(tx.transaction);
 
-      return txMatch?.type || 'UNKNOWN_TYPE';
-    }
+    //   return txMatch?.type || 'UNKNOWN_TYPE';
+    // }
 
-    return tx.transaction.type;
+    return transactionType;
   };
 
-  const getAvailableFiltersOptions = (transactions: MultisigTransaction[]) => {
+  const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
     return transactions.reduce(
       (acc, tx) => {
         const txType = getFilterableTxType(tx);
-        const xcmDestination = tx.transaction?.args.destinationChain;
+        const xcmDestination = tx.args?.destinationChain;
 
         const statusOption = StatusOptions.find((s) => s.value === tx.status);
         const originNetworkOption = NetworkOptions.find((s) => s.value === tx.chainId);
@@ -114,8 +121,8 @@ export const OperationsFilter = ({ txs }: Props) => {
     );
   };
 
-  const filterTx = (tx: MultisigTransaction, filters: SelectedFilters) => {
-    const xcmDestination = tx.transaction?.args.destinationChain;
+  const filterTx = (tx: MultisigOperation, filters: SelectedFilters) => {
+    const xcmDestination = tx.args?.destinationChain;
 
     const hasStatus = !filters.status.length || filters.status.map(mapValues).includes(tx.status);
     const hasOrigin = !filters.network.length || filters.network.map(mapValues).includes(tx.chainId);
@@ -130,12 +137,12 @@ export const OperationsFilter = ({ txs }: Props) => {
     setSelectedOptions(newSelectedOptions);
 
     const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
-    operationsModel.events.changeFilteredTxs(filteredTxs);
+    multisigOperations.changeFilteredTxs(filteredTxs);
   };
 
   const clearFilters = () => {
     setSelectedOptions(EmptySelected);
-    operationsModel.events.changeFilteredTxs(txs);
+    multisigOperations.changeFilteredTxs(txs);
   };
 
   const filtersSelected =

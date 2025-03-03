@@ -15,8 +15,9 @@ import {
 } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-import { operationsModel, operationsUtils } from '@/entities/operations';
+import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { multisigOperations } from '@/features/multisig-operations';
 
 export type Input = {
   id?: number;
@@ -158,7 +159,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: operationsModel.$multisigTransactions,
+    transactions: multisigOperations.$all,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

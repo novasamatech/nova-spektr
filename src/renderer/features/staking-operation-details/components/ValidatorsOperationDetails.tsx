@@ -2,25 +2,21 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
 import { chainsService } from '@/shared/api/network';
-import {
-  type Address,
-  type MultisigTransaction,
-  type Transaction,
-  TransactionType,
-  type Validator,
-} from '@/shared/core';
+import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { type MultisigOperation } from '@/domains/multisig';
 import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
+import { getTransactionType } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const ValidatorsOperationDetails = ({ operation }: Props) => {
@@ -39,7 +35,8 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
   const result = [];
 
-  const transaction = operationDetailsUtils.getCoreTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const identities = useStoreMap({
@@ -59,16 +56,16 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   const allValidators = Object.values(validatorsMap);
 
   const startStakingValidators: Address[] =
-    (transaction?.type === TransactionType.BATCH_ALL &&
-      transaction.args.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args?.targets) ||
+    (transactionType === TransactionType.BATCH_ALL &&
+      transaction?.args?.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args?.targets) ||
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
+    allValidators.filter((v) => (transaction?.args?.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
   const validatorsAsset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+    transaction && getAssetById(transaction.args?.asset, chainsService.getChainById(operation.chainId)?.assets);
 
   if (Boolean(selectedValidators?.length) && defaultAsset) {
     result.push(

@@ -5,9 +5,10 @@ import { type Wallet } from '@/shared/core';
 import { nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { operationsModel, operationsUtils } from '@/entities/operations';
+import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type UnlockFormData } from '@/features/governance/types/structs';
+import { multisigOperations } from '@/features/multisig-operations';
 
 const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();
@@ -140,7 +141,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: operationsModel.$multisigTransactions,
+    transactions: multisigOperations.$all,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

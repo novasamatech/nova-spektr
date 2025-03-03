@@ -21,6 +21,8 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO don't know what to do here, looks like it's impossible to decouple storage service because of version migration code.
 // eslint-disable-next-line boundaries/element-types
+import { type MultisigOperation } from '@/domains/multisig';
+// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
 // =====================================================
@@ -87,6 +89,7 @@ export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
 export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigTransaction = Table<MultisigTransaction, ID[]>;
+export type TMultisigOperations = Table<MultisigOperation, MultisigOperation['id']>;
 export type TMultisigEvent = Table<MultisigEvent, ID>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;

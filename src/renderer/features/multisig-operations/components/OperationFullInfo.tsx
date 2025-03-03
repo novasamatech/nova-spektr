@@ -1,17 +1,16 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
-import { useMultisigChainContext } from '@/app/providers';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { useMultisigTx } from '@/entities/multisig';
+import { type MultisigOperation } from '@/domains/multisig';
 import { useNetworkData } from '@/entities/network';
-import { operationDetailsUtils, operationsModel } from '@/entities/operations';
+import { operationDetailsUtils } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { multisigOperations } from '../model/model';
 
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
@@ -19,12 +18,12 @@ import CallDataModal from './modals/CallDataModal';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
   account: MultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
 };
 
 export const operationDetailsSlot = createSlot<SlotProps>();
@@ -36,25 +35,7 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const activeWallet = useUnit(walletModel.$activeWallet);
 
-  const events = useStoreMap({
-    store: operationsModel.$multisigEvents,
-    keys: [tx],
-    fn: (events, [tx]) => {
-      return events.filter(e => {
-        return (
-          e.txAccountId === tx.accountId &&
-          e.txChainId === tx.chainId &&
-          e.txCallHash === tx.callHash &&
-          e.txBlock === tx.blockCreated &&
-          e.txIndex === tx.indexCreated &&
-          e.status === 'SIGNED'
-        );
-      });
-    },
-  });
-
-  const { addTask } = useMultisigChainContext();
-  const { updateCallData } = useMultisigTx({ addTask });
+  const events = tx.events;
 
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
@@ -68,13 +49,13 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
   const setupCallData = async (callData: CallData) => {
     if (!api || !tx) return;
 
-    updateCallData(api, tx, callData as CallData);
+    multisigOperations.updateCallData({ api, tx, callData });
   };
 
   const isRejectAvailable = wallets.some(wallet => {
     const hasDepositor = wallet.accounts?.some(account => account.accountId === tx.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'pending';
   });
 
   if (!walletUtils.isMultisig(activeWallet)) return null;

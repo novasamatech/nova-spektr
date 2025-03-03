@@ -1,24 +1,24 @@
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/multisig';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
   title: string;
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const ProxyOperationTitle = ({ operation, title }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
 
   const asset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+    transaction && getAssetById(transaction.args?.asset, chainsService.getChainById(operation.chainId)?.assets);
   const amount = transaction && getTransactionAmount(transaction);
 
   return (

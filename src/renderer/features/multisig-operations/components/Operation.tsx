@@ -1,18 +1,18 @@
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Accordion } from '@/shared/ui';
+import { type MultisigOperation } from '@/domains/multisig';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 
 import { OperationFullInfo } from './OperationFullInfo';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
   account: MultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
 };
 
 export const operationTitleSlot = createSlot<SlotProps>();

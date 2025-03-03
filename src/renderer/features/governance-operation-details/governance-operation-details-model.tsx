@@ -2,8 +2,8 @@ import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { TransactionTitle } from '@/entities/transaction';
+import { operationDetailsUtils } from '@/entities/operations';
+import { TransactionTitle, getTransactionType } from '@/entities/transaction';
 import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
@@ -44,12 +44,13 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 
 governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operationDetailsUtils.getOperationData(operation);
+    const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
     if (
-      transaction?.type &&
+      transactionType &&
       [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
-        transaction.type,
+        transactionType,
       )
     ) {
       return <GovernanceVoteDetails operation={operation} />;
@@ -62,11 +63,12 @@ governanceOperationDetailFeature.inject(operationDetailsSlot, {
 
 governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operationDetailsUtils.getOperationData(operation);
+    const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
     if (
-      transaction?.type &&
-      [TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transaction.type)
+      transactionType &&
+      [TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transactionType)
     ) {
       return <GovernanceDelegateDetails operation={operation} />;
     }
@@ -77,10 +79,11 @@ governanceOperationDetailFeature.inject(operationDetailsSlot, {
 });
 
 governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transaction?.type && getOperationTitle(transaction.type);
-  const icon = transaction?.type && getOperationIcon(transaction.type);
+  const title = transactionType && getOperationTitle(transactionType);
+  const icon = transactionType && getOperationIcon(transactionType);
 
   if (title) {
     return <GovernanceOperationTitle operation={operation} title={title} icon={icon} />;
@@ -91,10 +94,11 @@ governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
 
 governanceOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transaction?.type && getOperationTitle(transaction.type);
-  const icon = transaction?.type && getOperationIcon(transaction.type);
+  const title = transactionType && getOperationTitle(transactionType);
+  const icon = transactionType && getOperationIcon(transactionType);
 
   if (title) {
     return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon={icon} />;

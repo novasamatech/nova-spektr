@@ -13,10 +13,17 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
+import { type OperationData } from '@/domains/multisig';
 import { type AnyAccount } from '@/domains/network';
 import { buildMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
-import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
+import {
+  type ExtrinsicResultParams,
+  getTxFromCallData,
+  transactionBuilder,
+  transactionService,
+} from '@/entities/transaction';
+import { multisigOperations } from '@/features/multisig-operations';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
@@ -100,38 +107,33 @@ const signAndSubmitExtrinsicsFx = createEffect(
 );
 
 type SaveMultisigParams = {
-  transactions: Transaction[];
+  api: ApiPromise | null;
   multisigTxs: Transaction[];
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
   hooks: Callbacks;
 };
 
-type SaveMultisigResult = {
-  transactions: MultisigTransaction[];
-  events: MultisigEvent[];
-};
-const saveMultisigTxFx = createEffect(
-  ({ transactions, multisigTxs, multisigAccount, params, hooks }: SaveMultisigParams): SaveMultisigResult => {
-    const { txs, events } = transactions.reduce<{ txs: MultisigTransaction[]; events: MultisigEvent[] }>(
-      (acc, transaction, index) => {
-        const multisigData = buildMultisigTx(transaction, multisigTxs[index], params, multisigAccount);
+const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, api }: SaveMultisigParams) => {
+  const result = [];
 
-        hooks.addEventWithQueue(multisigData.event);
-        hooks.addMultisigTx(multisigData.transaction);
-        acc.txs.push(multisigData.transaction);
-        acc.events.push(multisigData.event);
+  for (const multisigTx of multisigTxs) {
+    if (!api) continue;
 
-        console.log(`New transaction was created with call hash ${multisigData.transaction.callHash}`);
+    const transaction = getTxFromCallData(api, multisigTx.args.callData);
+    const tx = {
+      ...(transaction.method.toHuman() as OperationData),
+      callData: transaction.toHex(),
+    };
 
-        return acc;
-      },
-      { txs: [], events: [] },
-    );
+    const multisigOperation = buildMultisigTx(tx, multisigTx, params, multisigAccount);
+    result.push(multisigOperation);
 
-    return { transactions: txs, events };
-  },
-);
+    console.log(`New transaction was created with call hash ${multisigOperation.callHash}`);
+  }
+
+  return result;
+});
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
@@ -203,18 +205,24 @@ sample({
 sample({
   clock: extrinsicSucceeded,
   source: {
+    apis: networkModel.$apis,
     submitStore: $submitStore,
     hooks: $hooks,
   },
   filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, hooks }, { params }) => ({
+  fn: ({ submitStore, hooks, apis }, { params }) => ({
+    api: submitStore && apis[submitStore.chain.chainId],
     params,
     hooks: hooks!,
-    transactions: submitStore!.coreTxs,
     multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
   }),
   target: saveMultisigTxFx,
+});
+
+sample({
+  clock: saveMultisigTxFx.doneData,
+  target: multisigOperations.addTransactions,
 });
 
 sample({

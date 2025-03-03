@@ -25,7 +25,7 @@ export const main = {
   },
 };
 
-const rendererUrl = new URL('https://localhost:3000');
+const rendererUrl = new URL('https://localhost:4000');
 
 export const renderer = {
   server: {

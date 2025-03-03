@@ -2,28 +2,24 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
 import {
-  type Account,
   type Address,
   type Chain,
   type ChainId,
   type Contact,
-  type DecodedTransaction,
   type Explorer,
   type HexString,
-  type MultisigEvent,
-  type MultisigTransaction,
   type ProxyType,
   type Signatory,
-  type Transaction,
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, toAddress } from '@/shared/lib/utils';
+import { dictionary, toAccountId, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountService } from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation, type OperationData } from '@/domains/multisig';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
-import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
+import { getTransactionType } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export const getMultisigExtrinsicLink = (
@@ -67,12 +63,12 @@ export const getSignatoryName = (
 };
 
 export const getSignatoryAccounts = (
-  accounts: Account[],
+  accounts: AnyAccount[],
   wallets: Wallet[],
   events: MultisigEvent[],
   signatories: Signatory[],
   chainId: ChainId,
-): Account[] => {
+): AnyAccount[] => {
   const walletsMap = dictionary(wallets, 'id');
 
   const result = [];
@@ -105,84 +101,89 @@ export const getSignatoryAccounts = (
 };
 
 export const getDestination = (
-  tx: MultisigTransaction,
+  tx: MultisigOperation,
   chains: Record<ChainId, Chain>,
   destinationChain?: ChainId,
 ): Address | undefined => {
-  if (!tx.transaction) return undefined;
+  const transaction = getOperationData(tx);
+  if (!transaction?.args) return undefined;
 
-  const chain = destinationChain ? chains[destinationChain] : chains[tx.transaction.chainId];
+  const chain = destinationChain ? chains[destinationChain] : chains[tx.chainId];
 
-  if (isProxyTransaction(tx.transaction)) {
-    return toAddress(tx.transaction.args.transaction.args.dest, { prefix: chain.addressPrefix });
+  return toAddress(toAccountId(transaction?.args?.dest.Id), { prefix: chain.addressPrefix });
+};
+
+export const getDestinationAccountId = (tx: MultisigOperation): AccountId | undefined => {
+  const coreTx = getOperationData(tx);
+  if (!coreTx) return undefined;
+
+  return toAccountId(coreTx.args?.dest.Id);
+};
+
+export const getPayee = (tx: MultisigOperation): { Account: Address } | string | undefined => {
+  const coreTx = getOperationData(tx);
+  if (!coreTx || !coreTx.method || !coreTx.section) return undefined;
+
+  const transactionType = getTransactionType(coreTx.method, coreTx.section);
+
+  if (transactionType === TransactionType.BATCH_ALL) {
+    return coreTx.args?.calls.at(0).args.payee;
   }
 
-  return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
+  return coreTx.args?.payee;
 };
 
-export const getDestinationAccountId = (tx: MultisigTransaction): AccountId | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getDelegate = (tx: MultisigOperation): Address | undefined => {
+  const coreTx = getOperationData(tx);
   if (!coreTx) return undefined;
 
-  return coreTx.args.dest;
+  return coreTx.args?.delegate;
 };
 
-export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getDestinationChain = (tx: MultisigOperation): ChainId | undefined => {
+  const coreTx = getOperationData(tx);
   if (!coreTx) return undefined;
 
-  if (coreTx.type === TransactionType.BATCH_ALL) {
-    return coreTx.args.transactions.at(0).args.payee;
-  }
-
-  return coreTx.args.payee;
+  return coreTx.args?.destinationChain;
 };
 
-export const getDelegate = (tx: MultisigTransaction): Address | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getSender = (tx: MultisigOperation): Address | undefined => {
+  const coreTx = getOperationData(tx);
   if (!coreTx) return undefined;
 
-  return coreTx.args.delegate;
+  return tx.accountId;
 };
 
-export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getSpawner = (tx: MultisigOperation): AccountId | undefined => {
+  const coreTx = getOperationData(tx);
   if (!coreTx) return undefined;
 
-  return coreTx.args.destinationChain;
+  return coreTx.args?.spawner;
 };
 
-export const getSender = (tx: MultisigTransaction): Address | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getProxyType = (tx: MultisigOperation): ProxyType | undefined => {
+  const coreTx = getOperationData(tx);
   if (!coreTx) return undefined;
 
-  return coreTx.address;
+  return coreTx.args?.proxyType;
 };
 
-export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {
-  const coreTx = getCoreTx(tx);
-  if (!coreTx) return undefined;
+export const getDelegationVotes = (tx: MultisigOperation): string | undefined => {
+  const txData = getOperationData(tx);
+  if (!txData || !txData.method || !txData.section) return undefined;
 
-  return coreTx.args.spawner;
-};
-
-export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => {
-  const coreTx = getCoreTx(tx);
-  if (!coreTx) return undefined;
-
-  return coreTx.args.proxyType;
-};
-
-export const getDelegationVotes = (tx: MultisigTransaction): string | undefined => {
-  const coreTxDelegate = getCoreTx(tx);
-  if (!coreTxDelegate) return undefined;
-
+  const transactionType = getTransactionType(txData.method, txData.section);
   let coreTx;
 
-  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
-    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-  } else if (isDelegateTransaction(coreTxDelegate)) {
-    coreTx = coreTxDelegate;
+  if (transactionType === TransactionType.BATCH_ALL) {
+    coreTx = txData.args?.calls?.find(
+      (operationData: OperationData) =>
+        operationData.method &&
+        operationData.section &&
+        getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
+    );
+  } else if (transactionType === TransactionType.DELEGATE) {
+    coreTx = txData;
   }
 
   if (!coreTx) return;
@@ -193,59 +194,71 @@ export const getDelegationVotes = (tx: MultisigTransaction): string | undefined 
   return balance.mul(conviction).toString();
 };
 
-export const getDelegationTarget = (tx: MultisigTransaction): string | undefined => {
-  const coreTxDelegate = getCoreTx(tx);
-  if (!coreTxDelegate) return undefined;
+export const getDelegationTarget = (tx: MultisigOperation): string | undefined => {
+  const txData = getOperationData(tx);
+  if (!txData || !txData.method || !txData.section) return undefined;
+
+  const transactionType = getTransactionType(txData.method, txData.section);
 
   let coreTx;
 
-  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
-    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
-  } else if (isDelegateTransaction(coreTxDelegate)) {
-    coreTx = coreTxDelegate;
+  if (transactionType === TransactionType.BATCH_ALL) {
+    coreTx = txData.args?.calls?.find(
+      (operationData: OperationData) =>
+        getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
+    );
+  } else if (transactionType === TransactionType.DELEGATE) {
+    coreTx = txData;
   }
 
   return coreTx?.args.target;
 };
 
-export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefined => {
-  const coreTxDelegate = getCoreTx(tx);
+export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined => {
+  const coreTxDelegate = getOperationData(tx);
   if (!coreTxDelegate) return undefined;
 
   let coreTxs;
+  const transactionType = getTransactionType(coreTxDelegate.method, coreTxDelegate.section);
 
-  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
-    const delegateTxs = coreTxDelegate.args.transactions?.filter(
-      (tx: Transaction) => TransactionType.DELEGATE === tx.type,
+  if (transactionType === TransactionType.BATCH_ALL) {
+    const delegateTxs = coreTxDelegate.args?.calls?.filter(
+      (operationData: OperationData) =>
+        TransactionType.DELEGATE === getTransactionType(operationData.method, operationData.section),
     );
-    const undelegateTxs = coreTxDelegate.args.transactions?.filter(
-      (tx: Transaction) => TransactionType.UNDELEGATE === tx.type,
+    const undelegateTxs = coreTxDelegate.args?.calls?.filter(
+      (operationData: OperationData) =>
+        TransactionType.UNDELEGATE === getTransactionType(operationData.method, operationData.section),
     );
 
     coreTxs = delegateTxs?.length > 0 ? delegateTxs : undelegateTxs;
-  } else if (isDelegateTransaction(coreTxDelegate) || isUndelegateTransaction(coreTxDelegate)) {
+  } else if (transactionType && [TransactionType.DELEGATE, TransactionType.UNDELEGATE].includes(transactionType)) {
     coreTxs = [coreTxDelegate];
   }
 
   if (!coreTxs || coreTxs.length === 0) return;
 
-  return coreTxs.map((tx: Transaction) => tx.args.track?.toString());
+  return coreTxs.map((tx: OperationData) => tx.args?.track?.toString());
 };
 
 export const getUndelegationData = async (
   api: ApiPromise,
-  tx: MultisigTransaction,
+  tx: MultisigOperation,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
-  const coreTxDelegate = getCoreTx(tx);
+  const txData = getOperationData(tx);
+  if (!txData || !txData.method || !txData.section) return { votes: undefined, target: undefined };
 
-  if (!coreTxDelegate || !api) return { votes: undefined, target: undefined };
+  const transactionType = getTransactionType(txData.method, txData.section);
 
   let coreTx;
 
-  if (coreTxDelegate.type === TransactionType.BATCH_ALL) {
-    coreTx = coreTxDelegate.args.transactions?.find((tx: Transaction) => tx.type === TransactionType.UNDELEGATE);
-  } else if (isUndelegateTransaction(coreTxDelegate)) {
-    coreTx = coreTxDelegate;
+  if (transactionType === TransactionType.BATCH_ALL) {
+    coreTx = txData.args?.calls?.find(
+      (operationData: OperationData) =>
+        getTransactionType(operationData.method, operationData.section) === TransactionType.UNDELEGATE,
+    );
+  } else if (transactionType === TransactionType.UNDELEGATE) {
+    coreTx = txData;
   }
 
   if (!coreTx) return { votes: undefined, target: undefined };
@@ -261,35 +274,37 @@ export const getUndelegationData = async (
   };
 };
 
-export const getReferendumId = (tx: MultisigTransaction): string | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getReferendumId = (tx: MultisigOperation): string | undefined => {
+  const coreTx = getOperationData(tx);
 
-  return coreTx?.args.referendum;
+  return coreTx?.args?.referendum;
 };
 
-export const getVote = (tx: MultisigTransaction): TransactionVote | undefined => {
-  const coreTx = getCoreTx(tx);
+export const getVote = (tx: MultisigOperation): TransactionVote | undefined => {
+  const coreTx = getOperationData(tx);
 
-  return coreTx?.args.vote;
+  return coreTx?.args?.vote;
 };
 
-export const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
-  if (!tx.transaction) return undefined;
+export const getOperationData = (tx: OperationData): OperationData | undefined => {
+  if (!tx.args || !tx.method || !tx.section) return undefined;
 
-  if (isProxyTransaction(tx.transaction)) {
-    return tx.transaction.args.transaction;
+  const transactionType = getTransactionType(tx.method, tx.section);
+
+  if (transactionType === TransactionType.PROXY) {
+    return getOperationData(tx.args.call);
   }
 
-  return tx.transaction;
+  return tx;
 };
 
 export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId) => {
-  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  const cancelEvent = events.find((e) => e.status === 'reject' && e.accountId === signatory);
   if (cancelEvent) {
     return cancelEvent.status;
   }
 
-  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+  const signedEvent = events.find((e) => e.status === 'approve' && e.accountId === signatory);
   if (signedEvent) {
     return signedEvent.status;
   }

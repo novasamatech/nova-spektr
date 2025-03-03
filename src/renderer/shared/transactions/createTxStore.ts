@@ -65,6 +65,8 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
     },
   );
 
+  console.log('xcm', transactionService);
+
   const $isMultisig = $txWrappers.map(transactionService.hasMultisig);
   const $isProxy = $txWrappers.map(transactionService.hasProxy);
 
