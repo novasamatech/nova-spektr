@@ -7,6 +7,7 @@ import { Paths } from '@/shared/routes';
 import { accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
+import { multisigsModel } from '../../../entities/multisig';
 import { isFileValid } from '../utils/utils';
 
 const fileUploaded = createEvent<File>();
@@ -67,6 +68,11 @@ sample({
   clock: populateWalletsFx.done,
   fn: () => Paths.ASSETS,
   target: navigationModel.events.navigateTo,
+});
+
+sample({
+  clock: accounts.populate.doneData,
+  target: [multisigsModel.request],
 });
 
 export const insert = {

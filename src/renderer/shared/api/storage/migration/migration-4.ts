@@ -50,7 +50,7 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
 
       const id = `${walletAccount.walletId} ${walletAccount.accountId} universal`;
 
-      existingAccounts.add(id);
+      existingAccounts.add(name);
 
       const newAccount: MultisigAccount = {
         ...walletAccount,
