@@ -58,6 +58,7 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
       delete newAccount['chainId'];
 
       accountsToAdd.push(newAccount);
+      accountsToDelete.push(walletAccount);
     }
   }
 
