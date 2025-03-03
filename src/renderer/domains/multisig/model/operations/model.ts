@@ -24,6 +24,7 @@ const $events = createStore<Record<ChainId, MultisigEvent[]>>({});
 const { request: requestOperations } = createDataSource({
   source: combine({ operations: $operations, events: $events }),
   target: spread({ operations: $operations, events: $events }),
+  pool: (params: RequestParams) => params.api.genesisHash.toString(),
   async fn({ api, accountId }: RequestParams) {
     const operations: MultisigOperation[] = [];
     let events: MultisigEvent[] = [];
