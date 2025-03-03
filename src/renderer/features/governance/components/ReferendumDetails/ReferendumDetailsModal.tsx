@@ -5,7 +5,6 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { nullable } from '@/shared/lib/utils';
 import { Button, IconButton, Plate } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
@@ -64,11 +63,7 @@ export const ReferendumDetailsModal = ({
   const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
     keys: [referendum.votedByDelegates],
-    fn: (proposers, [delegates]) => {
-      if (nullable(delegates)) return {};
-
-      return listService.getMappedIdentity(proposers, delegates);
-    },
+    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
   });
 
   const closeModal = (open: boolean) => {

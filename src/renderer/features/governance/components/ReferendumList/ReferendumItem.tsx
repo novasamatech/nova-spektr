@@ -4,7 +4,6 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
@@ -40,11 +39,7 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
   const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
     keys: [referendum.votedByDelegates],
-    fn: (proposers, [delegates]) => {
-      if (nullable(delegates)) return {};
-
-      return listService.getMappedIdentity(proposers, delegates);
-    },
+    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
   });
 
   const voteFractions =
