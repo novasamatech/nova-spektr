@@ -49,7 +49,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
         of: isVoted ? 1 : 0,
         votes: isVoted ? [{ voter: '', vote: someVote }] : [],
       },
-      votedByDelegates: isVotedByDelegate ? { '0x123': {} } : {},
+      votedByDelegates: isVotedByDelegate ? [{}] : [],
       type: 'Ongoing',
       track: '1',
     } as AggregatedReferendum<OngoingReferendum>;
