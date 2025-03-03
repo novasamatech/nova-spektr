@@ -19,7 +19,7 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
   title: string | null;
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
-  votedByDelegate: DelegateInfo | null;
+  votedByDelegates: Record<Address, DelegateInfo>;
   voting: {
     of: number;
     votes: { voter: Address; vote: AccountVote }[];

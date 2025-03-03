@@ -1,6 +1,6 @@
 import { combine, sample } from 'effector';
-import uniq from 'lodash/uniq';
 
+import { type Address } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { referendumModel } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
@@ -38,9 +38,17 @@ sample({
 
 sample({
   clock: delegatedVotesModel.events.requestDelegatedVotesDone,
-  fn: ({ result }) => ({
-    addresses: uniq(Object.values(result).map((r) => r.delegateId)),
-  }),
+  fn: ({ result }) => {
+    const uniqDelegates = new Set<Address>();
+
+    for (const referendumId of Object.keys(result)) {
+      for (const delegator of Object.keys(result[referendumId])) {
+        uniqDelegates.add(result[referendumId][delegator].delegateId);
+      }
+    }
+
+    return { addresses: Array.from(uniqDelegates) };
+  },
   target: proposerIdentityAggregate.events.requestProposers,
 });
 

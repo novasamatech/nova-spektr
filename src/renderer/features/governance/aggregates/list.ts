@@ -115,11 +115,11 @@ const $referendums = combine(
         title: titles[referendum.referendumId] ?? null,
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
+        votedByDelegates: delegatedVotes[referendum.referendumId] ?? {},
         voting: {
           of: accounts.length,
           votes,
         },
-        votedByDelegate: delegatedVotes[referendum.referendumId] ?? null,
       };
     });
   },

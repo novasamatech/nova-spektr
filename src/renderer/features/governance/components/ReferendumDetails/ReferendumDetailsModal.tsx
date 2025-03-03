@@ -5,12 +5,14 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
+import { nullable } from '@/shared/lib/utils';
 import { Button, IconButton, Plate } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
+import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotedBy } from '../VotedBy';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
@@ -60,10 +62,14 @@ export const ReferendumDetailsModal = ({
   const [showAdvanced, toggleShowAdvanced] = useToggle();
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
-  const voter = useStoreMap({
+  const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegate?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+    keys: [referendum.votedByDelegates],
+    fn: (proposers, [delegates]) => {
+      if (nullable(delegates)) return {};
+
+      return listService.getMappedIdentity(proposers, delegates);
+    },
   });
 
   return (
@@ -85,8 +91,8 @@ export const ReferendumDetailsModal = ({
                 <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
                   <VotedBy
                     asset={asset}
-                    voterName={voter?.parent.name}
-                    delegate={referendum.votedByDelegate}
+                    identity={identity}
+                    delegates={Object.values(referendum.votedByDelegates)}
                     castingVotes={referendum.voting.votes}
                   />
                   <IconButton name="info" onClick={toggleShowWalletVotes} />

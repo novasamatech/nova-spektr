@@ -4,7 +4,7 @@ import { readonly } from 'patronum';
 import { type DelegateInfo, delegationService } from '@/shared/api/governance';
 import { type Address, type Chain, type ChainId, type ReferendumId } from '@/shared/core';
 
-const $delegatedVotes = createStore<Record<ChainId, Record<ReferendumId, DelegateInfo>>>({});
+const $delegatedVotes = createStore<Record<ChainId, Record<ReferendumId, Record<Address, DelegateInfo>>>>({});
 
 type RequestParams = {
   addresses: Address[];

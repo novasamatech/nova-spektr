@@ -1,10 +1,14 @@
 import orderBy from 'lodash/orderBy';
 
+import { type DelegateInfo } from '@/shared/api/governance';
+import { type Address, type Identity } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { type AggregatedReferendum } from '../types/structs';
 
 export const listService = {
   sortReferendums,
   sortReferendumsByOngoing,
+  getMappedIdentity,
 };
 
 // TODO: use block number to make an appropriate sorting
@@ -22,4 +26,16 @@ function sortReferendumsByOngoing(referendums: AggregatedReferendum[]) {
     [(referendum) => referendum.type === 'Ongoing', (referendum) => parseInt(referendum.referendumId)],
     ['desc', 'desc'],
   );
+}
+
+function getMappedIdentity(proposers: Record<Address, Identity>, delegates: Record<string, DelegateInfo>) {
+  const identity: Record<Address, Identity> = {};
+
+  for (const { delegateId } of Object.values(delegates)) {
+    if (nullable(proposers[delegateId])) continue;
+
+    identity[delegateId] = proposers[delegateId];
+  }
+
+  return identity;
 }
