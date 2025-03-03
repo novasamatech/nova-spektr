@@ -33,7 +33,10 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
     }
 
     for (const walletAccount of walletAccounts) {
-      const name = `${walletAccount.threshold}-${[...walletAccount.signatories].sort().join(',')}`;
+      const name = `${walletAccount.threshold}-${walletAccount.signatories
+        .map((s) => s.accountId)
+        .sort()
+        .join(',')}`;
 
       if (existingAccounts.has(name)) {
         walletsToDelete.push(wallet);
