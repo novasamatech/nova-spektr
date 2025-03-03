@@ -342,7 +342,7 @@ sample({
   },
   fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, multisigAccountId, signatories }, signParams) => {
     const isEthereumChain = networkUtils.isEthereumBased(addMultisigStore!.chain.options);
-    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address), address: s.address }));
+    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address) }));
 
     return {
       event: {

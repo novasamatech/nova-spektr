@@ -52,10 +52,14 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
 
       existingAccounts.add(name);
 
+      // @ts-expect-error no address in types
+      const signatories = walletAccount.signatories.map(({ address: _, ...rest }) => rest);
+
       const newAccount: MultisigAccount = {
         ...walletAccount,
         id,
         type: 'universal',
+        signatories,
       };
 
       // @ts-expect-error to chainId in type

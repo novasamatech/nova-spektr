@@ -13,6 +13,7 @@ import {
   type Conviction,
   type MultisigAccount,
   type ReferendumId,
+  type Signatory,
   type TrackId,
   type Transaction,
   TransactionType,
@@ -593,10 +594,7 @@ type CreateFlexibleMultisigParams = {
   multisigAccountId: AccountId;
   threshold: number;
   proxyDeposit: string;
-  signatories: {
-    accountId: AccountId;
-    address: Address;
-  }[];
+  signatories: Signatory[];
 };
 
 function buildCreateFlexibleMultisig({
@@ -626,7 +624,7 @@ function buildCreateFlexibleMultisig({
           threshold,
         } as MultisigAccount,
         signatories: signatories.map((s) => ({
-          accountId: toAccountId(s.address),
+          accountId: s.accountId,
         })) as Account[],
         signer,
       },
