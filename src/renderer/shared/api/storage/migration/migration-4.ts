@@ -38,10 +38,6 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
         .sort()
         .join(',')}`;
 
-      if (wallet.name.startsWith('14KLy')) {
-        debugger;
-      }
-
       if (existingAccounts.has(name)) {
         walletsToDelete.push(wallet);
         accountsToDelete.push(walletAccount);
