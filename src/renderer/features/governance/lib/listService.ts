@@ -28,10 +28,10 @@ function sortReferendumsByOngoing(referendums: AggregatedReferendum[]) {
   );
 }
 
-function getMappedIdentity(proposers: Record<Address, Identity>, delegates: Record<string, DelegateInfo>) {
+function getMappedIdentity(proposers: Record<Address, Identity>, delegates: DelegateInfo[]) {
   const identity: Record<Address, Identity> = {};
 
-  for (const { delegateId } of Object.values(delegates)) {
+  for (const { delegateId } of delegates) {
     if (nullable(proposers[delegateId])) continue;
 
     identity[delegateId] = proposers[delegateId];

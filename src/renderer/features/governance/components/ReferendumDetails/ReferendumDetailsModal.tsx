@@ -92,7 +92,7 @@ export const ReferendumDetailsModal = ({
                   <VotedBy
                     asset={asset}
                     identity={identity}
-                    delegates={Object.values(referendum.votedByDelegates)}
+                    delegates={referendum.votedByDelegates}
                     castingVotes={referendum.voting.votes}
                   />
                   <IconButton name="info" onClick={toggleShowWalletVotes} />

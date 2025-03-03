@@ -1,5 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize } from 'lodash';
 import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
@@ -32,7 +32,7 @@ export const VotedCombined = ({ asset, castingVotes, delegates }: Props) => {
   const accountsVotes = castingVotes.map(({ vote }) => vote);
   const splitAbstainVotes = accountsVotes.filter(votingService.isSplitAbstainVote);
 
-  if (splitAbstainVotes.length === castingVotes.length && isEmpty(delegates)) {
+  if (splitAbstainVotes.length === castingVotes.length && !hasDelegates) {
     return <Voted asset={asset} type="abstain" votes={splitAbstainVotes} />;
   }
 

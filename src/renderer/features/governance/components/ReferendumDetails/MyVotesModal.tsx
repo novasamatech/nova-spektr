@@ -94,14 +94,14 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
             );
           })}
 
-          {Object.entries(referendum.votedByDelegates).map(([delegator, delegate]) => {
+          {referendum.votedByDelegates.map((delegate) => {
             const account = walletUtils.getAccountBy(
               [activeWallet],
-              (account) => account.accountId === toAccountId(delegator),
+              (account) => account.accountId === toAccountId(delegate.delegator),
             );
 
             return (
-              <Fragment key={delegator}>
+              <Fragment key={delegate.delegator}>
                 <div className="col-span-5">
                   <BodyText className="text-text-secondary">
                     {/* TODO: display delegated identity in subtitle */}
@@ -110,7 +110,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                       variant="short"
                       iconSize={16}
                       title={account?.name}
-                      accountId={toAccountId(delegator)}
+                      accountId={toAccountId(delegate.delegator)}
                       chain={chain}
                     />
                   </BodyText>
