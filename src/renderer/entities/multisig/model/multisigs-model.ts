@@ -97,6 +97,7 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) =
 
     const multisigs = await multisigService.filterMultisigsAccounts(client, accountIds, chain);
     try {
+      // Identity request with drop after 5 seconds
       const identities = await Promise.race([
         bindedRequestIdentities({
           accounts: multisigs.map((x) => x.accountId),
@@ -113,15 +114,18 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) =
         };
       });
     } catch {
+      // A lot of chains don't have identity pallet
       return multisigs;
     }
   });
 
+  // Skip all failed requests - maybe next time they'll be fulfilled
   return Promise.allSettled(requests)
     .then((res) => res.filter((r) => r.status === 'fulfilled').map((r) => r.value))
     .then((res) => res.flat());
 });
 
+// Discovery might take some time, so we drop previous request and start a new one.
 const getLastMultisigsFx = takeLast({
   fn: getMultisigsFx,
   key: (params) => JSON.stringify(params),
