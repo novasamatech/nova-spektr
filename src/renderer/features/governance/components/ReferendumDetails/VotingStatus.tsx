@@ -16,8 +16,8 @@ type Props = {
   api: ApiPromise;
   referendum: AggregatedReferendum;
   asset: Asset;
-  canVote: boolean;
   wallet?: Wallet;
+  canVote: boolean;
   hasAccount: boolean;
   onVoteRequest: () => unknown;
   onRevoteRequest: () => unknown;
@@ -28,8 +28,8 @@ export const VotingStatus = ({
   api,
   referendum,
   asset,
-  canVote,
   wallet,
+  canVote,
   hasAccount,
   onVoteRequest,
   onRevoteRequest,
@@ -51,7 +51,9 @@ export const VotingStatus = ({
       ? votingService.getVotedCount(referendum.tally, supportThreshold.value)
       : null;
 
-  const shouldShowVotingButtons = canVote && referendumService.isOngoing(referendum) && nonNullable(asset);
+  const shouldShowVotingButtons = canVote && nonNullable(asset) && referendumService.isOngoing(referendum);
+
+  const fullDelegation = referendum.votedByDelegates.length > 0 && referendum.votedByDelegates.length === voting.of;
 
   return (
     <div className="flex flex-col items-start gap-6">
@@ -73,7 +75,7 @@ export const VotingStatus = ({
 
       {shouldShowVotingButtons && voting.votes.length < voting.of && (
         <div className="flex w-full flex-col gap-4">
-          <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onVoteRequest}>
+          <Button className="w-full" disabled={!hasAccount || !canVote || fullDelegation} onClick={onVoteRequest}>
             {t('governance.referendum.vote')}
           </Button>
 
@@ -93,7 +95,7 @@ export const VotingStatus = ({
 
       {shouldShowVotingButtons && voting.votes.length > 0 && (
         <div className="flex w-full flex-col justify-stretch gap-4">
-          <Button className="w-full" disabled={!hasAccount || !canVote} onClick={onRevoteRequest}>
+          <Button className="w-full" disabled={!hasAccount || !canVote || fullDelegation} onClick={onRevoteRequest}>
             {t('governance.referendum.revote')}
           </Button>
 
@@ -102,6 +104,20 @@ export const VotingStatus = ({
           </Button>
         </div>
       )}
+
+      {shouldShowVotingButtons && fullDelegation && (
+        <div className="-mt-2">
+          <FootnoteText align="center">{t('governance.referendum.delegatingHint')}</FootnoteText>
+        </div>
+      )}
+
+      {shouldShowVotingButtons &&
+        referendum.votedByDelegates.length > 0 &&
+        referendum.votedByDelegates.length < voting.of && (
+          <div className="-mt-2">
+            <FootnoteText align="center">{t('governance.referendum.multishardHint')}</FootnoteText>
+          </div>
+        )}
     </div>
   );
 };

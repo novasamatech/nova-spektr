@@ -87,17 +87,19 @@ export const ReferendumDetailsModal = ({
             </Plate>
 
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-              <DetailsCard>
-                <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                  <VotedBy
-                    asset={asset}
-                    identity={identity}
-                    delegates={referendum.votedByDelegates}
-                    castingVotes={referendum.voting.votes}
-                  />
-                  <IconButton name="info" onClick={toggleShowWalletVotes} />
-                </Box>
-              </DetailsCard>
+              {(referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0) && (
+                <DetailsCard>
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <VotedBy
+                      asset={asset}
+                      identity={identity}
+                      delegates={referendum.votedByDelegates}
+                      castingVotes={referendum.voting.votes}
+                    />
+                    <IconButton name="info" onClick={toggleShowWalletVotes} />
+                  </Box>
+                </DetailsCard>
+              )}
 
               <DetailsCard title={t('governance.referendum.votingStatus')}>
                 <VotingStatus
