@@ -1,4 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
@@ -141,7 +140,6 @@ type FlexibleMultisigResponse = {
 type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 type FilteredMultisigParams = {
-  apis: Record<ChainId, ApiPromise>;
   accounts: MultisigResult[];
 };
 const enrichIndexedMultisigsFx = createEffect(
@@ -190,11 +188,11 @@ const enrichIndexedMultisigsFx = createEffect(
 
     // return [...buildRegular, ...buildFlex];
 
-    return accounts.map(
+    return multisigService.getUniqMultisigs(accounts).map(
       ({ threshold, accountId, signatories, chain }): GetMultisigResponse => ({
         type: 'multisig',
         // TODO pass name here
-        accounts: [multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, name: 'mutisig' })],
+        accounts: [multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, name: 'multisig' })],
         chain,
       }),
     );
@@ -209,17 +207,16 @@ sample({
   }),
   source: {
     multisigAccounts: $multisigAccounts,
-    apis: networkModel.$apis,
   },
-  filter: ({ apis }, { multisigs }) => multisigs.length > 0 && multisigs.some((m) => apis[m.chain.chainId]),
-  fn: ({ multisigAccounts, apis }, { multisigs: indexedMultisigs }) => {
+  filter: (_, { multisigs }) => multisigs.length > 0,
+  fn: ({ multisigAccounts }, { multisigs: indexedMultisigs }) => {
     const accounts = indexedMultisigs.filter((multisigResult) => {
       return multisigAccounts.every((a) => {
         return a.accountId !== multisigResult.accountId;
       });
     });
 
-    return { apis, accounts };
+    return { accounts };
   },
   target: enrichIndexedMultisigsFx,
 });
