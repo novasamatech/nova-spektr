@@ -4,7 +4,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useModalClose, useToggle } from '@/shared/lib/hooks';
+import { useToggle } from '@/shared/lib/hooks';
 import { Button, IconButton, Plate } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
@@ -58,7 +58,6 @@ export const ReferendumDetailsModal = ({
   const [showWalletVotes, toggleShowWalletVotes] = useToggle();
   const [showVoteHistory, toggleShowVoteHistory] = useToggle();
   const [showAdvanced, toggleShowAdvanced] = useToggle();
-  const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const voter = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
@@ -66,8 +65,13 @@ export const ReferendumDetailsModal = ({
     fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
   });
 
+  const closeModal = (open: boolean) => {
+    if (open) return;
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isModalOpen} size="xl" onToggle={closeModal}>
+    <Modal isOpen size="xl" onToggle={closeModal}>
       <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
       <Modal.Content>
         <section className="flex h-full w-modal-xl flex-col bg-main-app-background">

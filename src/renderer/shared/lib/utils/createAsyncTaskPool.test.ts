@@ -1,6 +1,8 @@
-import { createAsyncTaskPool } from './asyncTaskPool';
+import { setTimeout } from 'node:timers/promises';
 
-const delay = (ms: number = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+import { createAsyncTaskPool } from './createAsyncTaskPool';
+
+const delay = (ttl: number = 0) => setTimeout(ttl);
 
 describe('asyncTaskPool', () => {
   afterEach(() => {
@@ -114,4 +116,27 @@ describe('asyncTaskPool', () => {
     expect(spy).toHaveBeenCalledTimes(2);
     expect(spy.mock.calls).toEqual([[0], [1]]);
   });
+
+  it('should create multiple pools', async () => {
+    const spy = vi.fn();
+    const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: 0 });
+    const tasks = [
+      { delay: 600, value: 1, pool: '1' },
+      { delay: 400, value: 2, pool: '2' },
+      { delay: 100, value: 3, pool: '1' },
+      { delay: 0, value: 4, pool: '2' },
+    ];
+
+    const result: Promise<unknown>[] = [];
+
+    for (const task of tasks) {
+      const call = pool.call(() => delay(task.delay).then(() => spy(task.value)), { pool: task.pool });
+      result.push(call);
+    }
+
+    await Promise.all(result);
+
+    expect(spy).toHaveBeenCalledTimes(4);
+    expect(spy.mock.calls).toEqual([[2], [4], [1], [3]]);
+  }, 10000);
 });

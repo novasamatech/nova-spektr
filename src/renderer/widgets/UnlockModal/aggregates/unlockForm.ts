@@ -345,7 +345,7 @@ const $api = combine(
     chainId: networkSelectorModel.$governanceChainId,
   },
   ({ apis, chainId }) => {
-    return chainId ? apis[chainId] : null;
+    return chainId ? (apis[chainId] ?? null) : null;
   },
 );
 

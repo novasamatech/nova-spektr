@@ -137,6 +137,7 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
   let currentAbortController = new AbortController();
 
   const fetchPages = async (abort: AbortController) => {
+    await api.isReady;
     for await (const page of referendaPallet.storage.referendumInfoForPaged('governance', api, 500)) {
       if (abort.signal.aborted) {
         break;

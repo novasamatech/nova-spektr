@@ -6,3 +6,4 @@ export { waitFor } from './waitFor';
 export { populated } from './populated';
 export { createBuffer } from './createBuffer';
 export { createFlow, useFlow } from './createFlow';
+export { createQueuedEffect } from './createQueuedEffect';
