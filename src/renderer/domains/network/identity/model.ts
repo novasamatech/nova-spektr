@@ -31,6 +31,7 @@ const {
   fail,
 } = createDataSource<IdentityMap, InnerRequestParams, IdentityData>({
   initial: {},
+  pool: params => params.chainId,
   mutateParams(params, store) {
     const chainIdentities = store[params.chainId] ?? {};
     const accounts = params.accounts.filter(account => !(account in chainIdentities));

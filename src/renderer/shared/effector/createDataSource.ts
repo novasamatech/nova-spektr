@@ -29,6 +29,7 @@ type FactoryParams<Params, Source, Response, Target> = Units<Source, Target> & {
   map(source: Source, params: { params: Params; result: Response }): Target;
   mutateParams?(params: Params, store: Source): Params;
   cache?(params: Params, store: Source): Response | false;
+  pool?(params: Params): string | undefined;
 };
 
 type RequestResult<V> = {
@@ -43,6 +44,7 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
   fn,
   map,
   cache = () => false,
+  pool = () => undefined,
   mutateParams = params => params,
 }: FactoryParams<Params, Source, Awaited<Response>, Target>) => {
   const empty = Symbol();
@@ -79,9 +81,12 @@ export const createDataSource = <Source, Params, Response = Source, Target = Sou
     return { value: value, cacheHit: false };
   });
 
-  const request = createQueuedEffect((params: Params) => {
-    return fx(params).then(({ value }) => value);
-  });
+  const request = createQueuedEffect(
+    (params: Params) => {
+      return fx(params).then(({ value }) => value);
+    },
+    { pool },
+  );
 
   sample({
     clock: request.fail,

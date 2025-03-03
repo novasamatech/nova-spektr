@@ -2,19 +2,42 @@ import { createEffect } from 'effector';
 
 import { createAsyncTaskPool } from '@/shared/lib/utils';
 
-type Config = Partial<{
+type Config<P> = Partial<{
+  pool(params: P): string | undefined;
   retryCount: number;
   retryDelay: number;
 }>;
 
-export const createQueuedEffect = <P, R>(fn: (params: P) => R | Promise<R>, config?: Config) => {
+/**
+ * Effector's effect with queueing. Pass pool as second argument to split queues
+ * by arguments.
+ *
+ * @example
+ *   Simple effect with queue
+ *   ```ts
+ *   const fx = createQueuedEffect<Params, Result>((params) => { ... });
+ *   ```
+ *
+ * @example
+ *   Multiple queues. For each chain there is a separated request pool.
+ *   ```ts
+ *   const fx = createQueuedEffect(
+ *   (params: { chainId: string }) => { ... },
+ *   { pool: (params) => params.chainId }
+ *   )
+ *   ```
+ */
+export const createQueuedEffect = <Params, Result, Fail = Error>(
+  fn: (params: Params) => Result | Promise<Result>,
+  config?: Config<NoInfer<Params>>,
+) => {
   const queue = createAsyncTaskPool({
     poolSize: 1,
     retryCount: config?.retryCount ?? 0,
     retryDelay: config?.retryDelay ?? 0,
   });
 
-  return createEffect<P, R>(params => {
-    return queue.call(() => fn(params));
+  return createEffect<Params, Result, Fail>(params => {
+    return queue.call(() => fn(params), { pool: config?.pool?.(params) });
   });
 };
