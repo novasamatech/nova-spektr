@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
+import { Alert, Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -26,6 +26,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const wallets = useUnit(walletModel.$wallets);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
+  const error = useUnit(confirmModel.$error);
 
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
@@ -163,6 +164,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </DetailRow>
         )}
       </TransactionDetails>
+
+      <Alert title={t('operation.status.error')} variant="error" active={nonNullable(error)}>
+        <Alert.Item withDot={false}>{error ? t(error.message) : null}</Alert.Item>
+      </Alert>
 
       <div className="mt-3 flex w-full justify-between">
         {nonNullable(onGoBack) && (
