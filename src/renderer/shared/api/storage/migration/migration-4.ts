@@ -23,37 +23,39 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
   const existingAccounts: Set<string> = new Set();
 
   for (const wallet of multisigWallets) {
-    const walletAccount = accounts
+    const walletAccounts = accounts
       .filter((a): a is MultisigAccount => 'accountType' in a && a.accountType === 'multisig')
-      .find((a) => a.walletId === wallet.id);
+      .filter((a) => a.walletId === wallet.id);
 
-    if (!walletAccount) {
+    if (!walletAccounts.length) {
       walletsToDelete.push(wallet);
       continue;
     }
 
-    const name = `${walletAccount.threshold}-${[...walletAccount.signatories].sort().join(',')}`;
+    for (const walletAccount of walletAccounts) {
+      const name = `${walletAccount.threshold}-${[...walletAccount.signatories].sort().join(',')}`;
 
-    if (existingAccounts.has(name)) {
-      walletsToDelete.push(wallet);
-      accountsToDelete.push(walletAccount);
-      continue;
+      if (existingAccounts.has(name)) {
+        walletsToDelete.push(wallet);
+        accountsToDelete.push(walletAccount);
+        continue;
+      }
+
+      const id = `${walletAccount.walletId} ${walletAccount.accountId} universal`;
+
+      existingAccounts.add(id);
+
+      const newAccount: MultisigAccount = {
+        ...walletAccount,
+        id,
+        type: 'universal',
+      };
+
+      // @ts-expect-error to chainId in type
+      delete newAccount['chainId'];
+
+      accountsToAdd.push(newAccount);
     }
-
-    const id = `${walletAccount.walletId} ${walletAccount.accountId} universal`;
-
-    existingAccounts.add(id);
-
-    const newAccount: MultisigAccount = {
-      ...walletAccount,
-      id,
-      type: 'universal',
-    };
-
-    // @ts-expect-error to chainId in type
-    delete newAccount['chainId'];
-
-    accountsToAdd.push(newAccount);
   }
 
   await t.table('accounts2').bulkPut(accountsToAdd);
