@@ -9,7 +9,7 @@ import { assert, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
-import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -258,9 +258,9 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             </Box>
             {TabItems.map(({ id, panel }) => (
               <Tabs.Content key={id} value={id}>
-                <ScrollArea>
-                  <Box padding={[4, 0]}>{panel}</Box>
-                </ScrollArea>
+                <Box padding={[4, 0, 0]} fitContainer>
+                  {panel}
+                </Box>
               </Tabs.Content>
             ))}
           </Tabs>
