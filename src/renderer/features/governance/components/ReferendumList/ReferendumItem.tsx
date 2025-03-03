@@ -4,15 +4,14 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
+import { VotedBy } from '../VotedBy';
 import { VotingStatusBadge } from '../VotingStatusBadge';
 
 import { ListItem } from './ListItem';
@@ -77,20 +76,12 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         </div>
       </div>
 
-      {referendum.voting.votes.length > 0 && <VotedByAccount active />}
-
-      {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
-        <VotedByDelegate
-          asset={asset}
-          address={referendum.votedByDelegate.delegateId}
-          voterName={voter?.parent.name}
-          decision={referendum.votedByDelegate.decision}
-          votingPower={votingService.calculateVotingPower(
-            referendum.votedByDelegate.amount,
-            referendum.votedByDelegate.conviction,
-          )}
-        />
-      )}
+      <VotedBy
+        asset={asset}
+        voterName={voter?.parent.name}
+        delegate={referendum.votedByDelegate}
+        castingVotes={referendum.voting.votes}
+      />
     </ListItem>
   );
 });
