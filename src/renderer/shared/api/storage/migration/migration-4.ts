@@ -71,7 +71,7 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
     walletsToDelete.map((w) => w.id),
   );
 
-  await t.table('accounts2').bulkDelete(accountsToDelete.map((a) => a.accountId));
+  await t.table('accounts2').bulkDelete(accountsToDelete.map((a) => a.id));
   await t.table('accounts2').bulkPut(accountsToAdd);
   await t.table('wallets').bulkDelete(walletsToDelete.map((w) => w.id));
 }
