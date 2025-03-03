@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
+import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -7,6 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatBalance, toNumberWithPrecision } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon } from '@/shared/ui';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { listAggregate } from '../../aggregates/list';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotingStatusBadge } from '../VotingStatusBadge';
@@ -25,12 +27,18 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
 
   const { referendumId, approvalThreshold } = referendum;
 
+  const title = useStoreMap({
+    store: listAggregate.$titles,
+    keys: [referendum.referendumId],
+    fn: (titles, [id]) => titles[id] ?? null,
+  });
+
   const voteFractions =
     referendumService.isOngoing(referendum) && approvalThreshold
       ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
       : null;
 
-  const titleNode = referendum.title || t('governance.referendums.referendumTitle', { index: referendumId });
+  const titleNode = title || t('governance.referendums.referendumTitle', { index: referendumId });
 
   return (
     <ListItem onClick={() => onSelect(referendum)}>

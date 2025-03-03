@@ -1,6 +1,4 @@
-import { createAsyncTaskPool } from './asyncTaskPool';
-
-export { createAsyncTaskPool };
+import { createAsyncTaskPool } from '@/shared/lib/utils';
 
 export const substrateRpcPool = createAsyncTaskPool({
   /**

@@ -1,4 +1,4 @@
-import { createAsyncTaskPool } from '../../substrate-helpers';
+import { createAsyncTaskPool } from '@/shared/lib/utils';
 import {
   type SubsquareFullReferendum,
   type SubsquareReferendumListResponse,

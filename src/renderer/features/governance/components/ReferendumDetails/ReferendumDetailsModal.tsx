@@ -1,18 +1,18 @@
+/* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { nonNullable } from '@/shared/lib/utils';
 import { Button, IconButton, Plate } from '@/shared/ui';
-import { VotedByAccount, VotedByDelegate } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { referendumService, votingService } from '@/entities/governance';
+import { referendumService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { type AggregatedReferendum } from '../../types/structs';
+import { VotedBy } from '../VotedBy';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
 
 import { AdvancedModal } from './AdvancedModal';
@@ -85,32 +85,17 @@ export const ReferendumDetailsModal = ({
             </Plate>
 
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-              {referendum.voting.votes.length > 0 && (
-                <DetailsCard>
-                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                    <VotedByAccount active />
-                    <IconButton name="info" onClick={toggleShowWalletVotes} />
-                  </Box>
-                </DetailsCard>
-              )}
-
-              {referendum.voting.votes.length === 0 && nonNullable(referendum.votedByDelegate) && (
-                <DetailsCard>
-                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                    <VotedByDelegate
-                      asset={asset}
-                      address={referendum.votedByDelegate.delegateId}
-                      decision={referendum.votedByDelegate.decision}
-                      voterName={voter?.parent.name}
-                      votingPower={votingService.calculateVotingPower(
-                        referendum.votedByDelegate.amount,
-                        referendum.votedByDelegate.conviction,
-                      )}
-                    />
-                    <IconButton name="info" onClick={toggleShowWalletVotes} />
-                  </Box>
-                </DetailsCard>
-              )}
+              <DetailsCard>
+                <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                  <VotedBy
+                    asset={asset}
+                    voterName={voter?.parent.name}
+                    delegate={referendum.votedByDelegate}
+                    castingVotes={referendum.voting.votes}
+                  />
+                  <IconButton name="info" onClick={toggleShowWalletVotes} />
+                </Box>
+              </DetailsCard>
 
               <DetailsCard title={t('governance.referendum.votingStatus')}>
                 <VotingStatus

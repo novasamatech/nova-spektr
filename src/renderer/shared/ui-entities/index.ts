@@ -13,6 +13,4 @@ export { RankedAccount } from './RankedAccount/RankedAccount';
 export { WalletOnboardingCard } from './WalletOnboardingCard/WalletOnboardingCard';
 export { ChainAccountsList } from './ChainAccountsList/ChainAccountsList';
 export { CollectiveRank } from './CollectiveRank/CollectiveRank';
-export { VotedByDelegate } from './VoteByDelegate/VotedByDelegate';
-export { VotedByAccount } from './VotedByAccount/VotedByAccount';
 export { TrackDescription } from './TrackDescription/TrackDescription';
