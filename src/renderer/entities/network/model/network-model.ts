@@ -160,7 +160,7 @@ type CreateApiParams = {
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
   if (nonNullable(existingApi)) return existingApi;
 
-  return networkService.createApi(chainId, provider);
+  return networkService.createApi(chainId, provider).isReady;
 });
 
 type DisconnectParams = {

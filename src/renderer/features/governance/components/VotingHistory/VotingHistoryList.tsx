@@ -4,12 +4,11 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, performSearch, toAccountId } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { EmptyList, FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
-import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
 import { VotingHistoryListPlaceholder } from './VotingHistoryListPlaceholder';
 
 type Props = {
@@ -39,18 +38,27 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
 
   return (
     <Box fitContainer>
-      <Box padding={[6, 5]} shrink={0}>
-        <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
-      </Box>
+      {items.length > 0 && (
+        <>
+          <Box padding={[6, 5]} shrink={0}>
+            <SearchInput placeholder={t('governance.searchPlaceholder')} value={query} onChange={setQuery} />
+          </Box>
 
-      <Box direction="row" horizontalAlign="space-between" padding={[0, 5, 2]} shrink={0}>
-        <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
-        <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnVotingPower')}</FootnoteText>
-      </Box>
+          <Box direction="row" horizontalAlign="space-between" padding={[0, 5, 2]} shrink={0}>
+            <FootnoteText className="text-text-tertiary">{t('governance.voteHistory.listColumnAccount')}</FootnoteText>
+            <FootnoteText className="text-text-tertiary">
+              {t('governance.voteHistory.listColumnVotingPower')}
+            </FootnoteText>
+          </Box>
+        </>
+      )}
+
       <ScrollArea>
         <Box gap={1} padding={[0, 3, 2]}>
           {shouldRenderLoader && <VotingHistoryListPlaceholder />}
-          {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
+
+          {shouldRenderEmptyState && <EmptyList message={t('governance.voteHistory.listEmptyState')} />}
+
           {shouldRenderList &&
             deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
               return (

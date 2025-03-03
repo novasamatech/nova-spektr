@@ -8,6 +8,7 @@ import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -30,6 +31,12 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
 
   const { referendumId, approvalThreshold } = referendum;
 
+  const title = useStoreMap({
+    store: listAggregate.$titles,
+    keys: [referendum.referendumId],
+    fn: (titles, [id]) => titles[id] ?? null,
+  });
+
   const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
     keys: [referendum.votedByDelegates],
@@ -46,7 +53,7 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
       : null;
 
   const titleNode =
-    referendum.title ||
+    title ||
     (isTitlesLoading ? (
       <Skeleton height="1em" width="28ch" />
     ) : (

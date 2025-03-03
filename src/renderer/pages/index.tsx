@@ -11,27 +11,37 @@ import { Currency, Networks, ReferendumData, Overview as Settings } from './Sett
 
 // features with lower priority - can be loaded later
 
-const Notifications = lazy(() => import('./Notifications/Notifications').then((m) => ({ default: m.Notifications })));
-const Operations = lazy(() => import('./Operations/Operations').then((m) => ({ default: m.Operations })));
-const Basket = lazy(() => import('./Basket').then((m) => ({ default: m.Basket })));
-const Governance = lazy(() => import('./Governance').then((m) => ({ default: m.Governance })));
+const Notifications = lazy(() =>
+  import('./Notifications/Notifications').then(({ Notifications }) => ({ default: Notifications })),
+);
+const Operations = lazy(() => import('./Operations/Operations').then(({ Operations }) => ({ default: Operations })));
+const Basket = lazy(() => import('./Basket').then(({ Basket }) => ({ default: Basket })));
+const Governance = lazy(() => import('./Governance').then(({ Governance }) => ({ default: Governance })));
 const GovernanceReferendumDetails = lazy(() =>
-  import('./Governance/ui/GovernanceReferendumDetails').then((m) => ({ default: m.GovernanceReferendumDetails })),
+  import('./Governance/ui/GovernanceReferendumDetails').then(({ GovernanceReferendumDetails }) => ({
+    default: GovernanceReferendumDetails,
+  })),
 );
 const GovernanceReferendumList = lazy(() =>
-  import('./Governance/ui/GovernanceReferendumList').then((m) => ({ default: m.GovernanceReferendumList })),
+  import('./Governance/ui/GovernanceReferendumList').then(({ GovernanceReferendumList }) => ({
+    default: GovernanceReferendumList,
+  })),
 );
 
-const Staking = lazy(() => import('./Staking').then((m) => ({ default: m.Staking })));
-const Contacts = lazy(() => import('./AddressBook').then((m) => ({ default: m.Contacts })));
-const CreateContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.CreateContact })));
-const EditContact = lazy(() => import('./AddressBook').then((m) => ({ default: m.EditContact })));
-const Fellowship = lazy(() => import('./Fellowship/ui/Fellowship').then((m) => ({ default: m.Fellowship })));
+const Staking = lazy(() => import('./Staking').then(({ Staking }) => ({ default: Staking })));
+const Contacts = lazy(() => import('./AddressBook').then(({ Contacts }) => ({ default: Contacts })));
+const CreateContact = lazy(() => import('./AddressBook').then(({ CreateContact }) => ({ default: CreateContact })));
+const EditContact = lazy(() => import('./AddressBook').then(({ EditContact }) => ({ default: EditContact })));
+const Fellowship = lazy(() => import('./Fellowship/ui/Fellowship').then(({ Fellowship }) => ({ default: Fellowship })));
 const FellowshipReferendumDetails = lazy(() =>
-  import('./Fellowship/ui/FellowshipReferendumDetails').then((m) => ({ default: m.FellowshipReferendumDetails })),
+  import('./Fellowship/ui/FellowshipReferendumDetails').then(({ FellowshipReferendumDetails }) => ({
+    default: FellowshipReferendumDetails,
+  })),
 );
 const FellowshipReferendumList = lazy(() =>
-  import('./Fellowship/ui/FellowshipReferendumList').then((m) => ({ default: m.FellowshipReferendumList })),
+  import('./Fellowship/ui/FellowshipReferendumList').then(({ FellowshipReferendumList }) => ({
+    default: FellowshipReferendumList,
+  })),
 );
 
 // React routes v6 hint:
