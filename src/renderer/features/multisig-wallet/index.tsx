@@ -4,6 +4,7 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -23,8 +24,8 @@ accountSDK(multisigWalletFeature, {
   actionPermission({ account }) {
     return accountUtils.isMultisigAccount(account);
   },
-  availableOnChain({ account }) {
-    return accountUtils.isMultisigAccount(account);
+  availableOnChain({ account, chain }) {
+    return accountUtils.isMultisigAccount(account) && networkUtils.isMultisigSupported(chain.options);
   },
   canSignMultipleTransactions() {
     return false;

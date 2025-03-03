@@ -25,7 +25,7 @@ import { takeLast } from '@/shared/effector/takeLast';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity, identityService } from '@/domains/network';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -39,7 +39,8 @@ const subscribe = createEvent();
 const stop = createEvent();
 const request = createEvent<AnyAccount[]>();
 
-const createWallets = attach({ effect: walletModel.createWallets });
+const createWalletsFx = attach({ effect: walletModel.createWallets });
+const requestIdentitiesFx = series(identity.request, { parallel: true, skipErrors: true });
 
 const $multisigAccounts = accounts.$list.map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
 
@@ -192,7 +193,8 @@ const enrichIndexedMultisigsFx = createEffect(
     return accounts.map(
       ({ threshold, accountId, signatories, chain }): GetMultisigResponse => ({
         type: 'multisig',
-        accounts: [multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain })],
+        // TODO pass name here
+        accounts: [multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, name: 'mutisig' })],
         chain,
       }),
     );
@@ -200,19 +202,20 @@ const enrichIndexedMultisigsFx = createEffect(
 );
 
 sample({
-  clock: getLastMultisigsFx.doneData,
+  clock: combineEvents({
+    events: {
+      multisigs: getLastMultisigsFx.doneData,
+    },
+  }),
   source: {
     multisigAccounts: $multisigAccounts,
     apis: networkModel.$apis,
   },
-  filter: ({ apis }, multisigs) => multisigs.length > 0 && multisigs.some((m) => apis[m.chain.chainId]),
-  fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
+  filter: ({ apis }, { multisigs }) => multisigs.length > 0 && multisigs.some((m) => apis[m.chain.chainId]),
+  fn: ({ multisigAccounts, apis }, { multisigs: indexedMultisigs }) => {
     const accounts = indexedMultisigs.filter((multisigResult) => {
       return multisigAccounts.every((a) => {
-        const isSameAccountId = a.accountId === multisigResult.accountId;
-        const isUniversal = accountService.isUniversalAccount(a) || a.chainId === multisigResult.chain.chainId;
-
-        return !isSameAccountId && !isUniversal;
+        return a.accountId !== multisigResult.accountId;
       });
     });
 
@@ -220,8 +223,6 @@ sample({
   },
   target: enrichIndexedMultisigsFx,
 });
-
-const requestIdentitiesFx = series(identity.request, { parallel: true, skipErrors: true });
 
 sample({
   clock: enrichIndexedMultisigsFx.doneData,
@@ -298,7 +299,7 @@ sample({
       return { wallet, accounts };
     });
   },
-  target: createWallets,
+  target: createWalletsFx,
 });
 
 sample({
@@ -329,11 +330,11 @@ sample({
       };
     });
   },
-  target: createWallets,
+  target: createWalletsFx,
 });
 
 sample({
-  clock: createWallets.doneData,
+  clock: createWalletsFx.doneData,
   fn: (drafts) => {
     const notifications = drafts.flatMap(({ wallet, accounts }) => {
       return accounts.map((account) => {
@@ -344,7 +345,6 @@ sample({
             dateCreated: Date.now(),
             multisigAccountId: account.accountId,
             multisigAccountName: account.name,
-            chainId: account.chainId,
             signatories: account.signatories.map((signatory) => signatory.accountId),
             threshold: account.threshold,
           } satisfies NoID<MultisigCreated>;
@@ -358,7 +358,6 @@ sample({
             dateCreated: Date.now(),
             multisigAccountId: account.accountId,
             multisigAccountName: account.name,
-            chainId: account.chainId,
             signatories: account.signatories.map((signatory) => signatory.accountId),
             threshold: account.threshold,
           } satisfies NoID<FlexibleMultisigCreated>;
@@ -375,9 +374,9 @@ sample({
 
 const readyForProxies = waitFor({
   clock: proxiesModel.findAllProxies.pending,
-  source: createWallets.doneData,
+  source: createWalletsFx.doneData,
   filter: (val): val is boolean => !val,
-  reset: createWallets.done,
+  reset: createWalletsFx.done,
 });
 
 sample({

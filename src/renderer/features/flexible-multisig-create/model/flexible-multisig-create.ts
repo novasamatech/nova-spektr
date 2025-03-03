@@ -350,14 +350,13 @@ sample({
         chain: addMultisigStore!.chain,
         account: {
           signatories: signatoriesWrapped,
-          chainId: addMultisigStore!.chain.chainId,
           name: addMultisigStore!.name,
           accountId: multisigAccountId!,
           threshold: addMultisigStore!.threshold,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           signingType: SigningType.MULTISIG,
           accountType: AccountType.MULTISIG,
-          type: 'chain',
+          type: 'universal',
         } as MultisigAccount,
         coreTxs: [coreTx!],
         wrappedTxs: [wrappedTx!],
@@ -452,14 +451,13 @@ sample({
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
-      chainId: chain!.chainId,
       name: name.trim(),
       accountId: multisigAccoutId!,
       threshold: threshold,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
-      type: 'chain',
+      type: 'universal',
     };
 
     return {

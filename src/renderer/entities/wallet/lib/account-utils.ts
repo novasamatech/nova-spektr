@@ -121,9 +121,7 @@ function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accoun
 }
 
 function isChainDependant(account: AnyAccountDraft): boolean {
-  if (accountService.isUniversalAccount(account)) return false;
-
-  return !isMultisigAccount(account) || Boolean(account.chainId);
+  return accountService.isChainAccount(account);
 }
 
 function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
@@ -133,9 +131,8 @@ function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   const shardAccountMatch = isVaultShardAccount(account) && account.chainId === chainId;
   const wcAccountMatch = isWcAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
-  const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch;
+  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch;
 }
 
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
