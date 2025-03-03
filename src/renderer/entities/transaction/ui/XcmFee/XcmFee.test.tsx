@@ -23,6 +23,14 @@ vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: any) => <div>{value}</div>,
 }));
 
+const mockApi = {
+  genesisHash: {
+    toHex: () => {
+      return '0x00';
+    },
+  },
+} as unknown as ApiPromise;
+
 describe('entities/transaction/ui/XcmFee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
@@ -37,12 +45,7 @@ describe('entities/transaction/ui/XcmFee', () => {
 
     await act(async () => {
       render(
-        <XcmFee
-          api={{} as ApiPromise}
-          config={{ chains: [] as ChainXCM[] } as XcmConfig}
-          asset={asset}
-          transaction={tx}
-        />,
+        <XcmFee api={mockApi} config={{ chains: [] as ChainXCM[] } as XcmConfig} asset={asset} transaction={tx} />,
       );
     });
 
