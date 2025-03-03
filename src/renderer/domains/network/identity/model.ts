@@ -31,15 +31,30 @@ const {
   fail,
 } = createDataSource<IdentityMap, InnerRequestParams, IdentityData>({
   initial: {},
+  pool: params => params.chainId,
   mutateParams(params, store) {
     const chainIdentities = store[params.chainId] ?? {};
     const accounts = params.accounts.filter(account => !(account in chainIdentities));
-
     return {
       chainId: params.chainId,
       api: params.api,
       accounts,
     };
+  },
+  cache({ chainId, accounts }, store) {
+    const chainIdentitites = store[chainId];
+    if (nullable(chainIdentitites)) return false;
+
+    const cachedData: IdentityData = {};
+    for (const account of accounts) {
+      const identity = chainIdentitites[account];
+      if (!identity) {
+        return false;
+      }
+      cachedData[account] = identity;
+    }
+
+    return cachedData;
   },
   async fn({ api, accounts }) {
     if (accounts.length === 0) return {};
@@ -54,14 +69,25 @@ const {
 
     for (const { sub, parent } of identities) {
       if (nullable(parent?.identity)) continue;
+      const parentIdentity = Array.isArray(parent.identity) ? parent.identity[0] : parent.identity;
 
       result[sub.account] = {
         accountId: sub.account,
-        name: parent.identity[0].info.display,
-        subName: sub?.identity?.[1],
-        email: parent.identity[0].info.email,
-        image: parent.identity[0].info.image,
+        subName: sub.identity?.[1],
+        name: parentIdentity.info.display,
+        email: parentIdentity.info.email,
+        image: parentIdentity.info.image,
       };
+
+      if (sub.account !== parent.account) {
+        result[parent.account] = {
+          accountId: parent.account,
+          subName: sub.identity?.[1],
+          name: parentIdentity.info.display,
+          email: parentIdentity.info.email,
+          image: parentIdentity.info.image,
+        };
+      }
     }
 
     return result;
