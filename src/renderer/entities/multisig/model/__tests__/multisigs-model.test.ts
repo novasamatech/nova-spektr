@@ -63,7 +63,11 @@ describe('multisigs model', () => {
       handlers: new Map()
         .set(walletModel.createWallets, spySaveMultisig)
         .set(notificationModel.events.notificationsAdded, () => {})
-        .set(multisigsModel.__test.requestIdentitiesFx, () => []),
+        .set(multisigsModel.__test.requestIdentitiesFx, () => ({
+          '0x03': {
+            name: 'test',
+          },
+        })),
     });
 
     allSettled(multisigsModel.subscribe, { scope });

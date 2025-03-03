@@ -24,6 +24,7 @@ export const multisigService = {
 
 export type MultisigResult = {
   accountId: AccountId;
+  name?: string;
   threshold: number;
   signatories: AccountId[];
   chain: Chain;
