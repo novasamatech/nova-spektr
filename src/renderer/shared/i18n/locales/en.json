@@ -89,6 +89,7 @@
       "valid": "Valid"
     },
     "noOperationsDescription": "There are no operations in the basket yet",
+    "noOperationsDescriptionFiltered": "Nothing was found.<br />Update the search or cancel filtering.",
     "noOperationsLabel": "No operations",
     "refreshButton": "Refresh list",
     "removeConfirm": {
