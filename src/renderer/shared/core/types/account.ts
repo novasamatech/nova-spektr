@@ -29,7 +29,7 @@ export interface VaultShardAccount extends ChainAccount {
   derivationPath: string;
 }
 
-export interface MultisigAccount extends ChainAccount {
+export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
