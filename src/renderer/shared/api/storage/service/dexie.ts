@@ -18,7 +18,13 @@ import {
   type TProxyGroup,
   type TWallet,
 } from '../lib/types';
-import { migrateAccounts, migrateEvents, migratePVAccounts, migrateMultisigAccounts, migrateWallets } from '../migration';
+import {
+  migrateAccounts,
+  migrateEvents,
+  migrateMultisigAccounts,
+  migratePVAccounts,
+  migrateWallets,
+} from '../migration';
 
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { useTransactionStorage } from './transactionStorage';
