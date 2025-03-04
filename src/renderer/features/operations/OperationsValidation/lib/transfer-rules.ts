@@ -32,9 +32,9 @@ export const TransferRules = {
       errorText: 'transfer.noSignatoryError',
       source,
       validator: (signatory: Account | null, _: any, isMultisig: boolean) => {
-        if (!signatory || !isMultisig) return true;
+        if (!isMultisig) return true;
 
-        return Object.keys(signatory).length > 0;
+        return signatory !== null && Object.keys(signatory).length > 0;
       },
     }),
     notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
