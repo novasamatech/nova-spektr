@@ -5800,7 +5800,7 @@
     ],
     "assets": [
       {
-        "name": "Should be included in scripts/data/assetsNameMap",
+        "name": "Heima",
         "assetId": 0,
         "symbol": "HEI",
         "precision": 18,
