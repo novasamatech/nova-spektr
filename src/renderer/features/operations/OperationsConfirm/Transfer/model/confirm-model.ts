@@ -106,7 +106,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.signatory.accountId,
               store.chain.chainId,
-              store.xcmAsset?.assetId.toFixed() ?? store.asset.assetId.toFixed(),
+              store.chain.assets[0].assetId.toFixed(),
             ),
           ),
       } as TransferSignatoryFeeStore,
