@@ -1,7 +1,7 @@
 import { createStore } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { type Asset, AssetType, type Chain } from '@/shared/core';
+import { type Account, type Asset, AssetType, type Chain, ChainOptions } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
 import { TransferRules } from '@/features/operations/OperationsValidation/lib/transfer-rules';
 import {
@@ -18,7 +18,7 @@ const createTestAsset = (): Asset => ({
   type: AssetType.NATIVE,
 });
 
-const createTestChain = (): Chain => ({
+const createTestChain = (ethChain: boolean = false): Chain => ({
   chainId: '0x0000000000000000000000000000000000000000000000000000000000000000',
   specName: 'polkadot',
   name: 'Polkadot',
@@ -26,9 +26,12 @@ const createTestChain = (): Chain => ({
   nodes: [],
   icon: '',
   addressPrefix: 0,
+  options: ethChain ? [ChainOptions.ETHEREUM_BASED] : [],
 });
 
 describe('Transfer Validation Rules', () => {
+  const defaultConfig = { withFormatAmount: false };
+
   describe('Account Validation', () => {
     it('should pass when proxy has enough native balance for fee', () => {
       const transferAccountStore: TransferAccountStore = {
@@ -77,13 +80,13 @@ describe('Transfer Validation Rules', () => {
     it('should pass when signatory is selected for multisig', () => {
       const store = createStore(true);
       const rule = TransferRules.signatory.noSignatorySelected(store);
-      expect(rule.validator(null, {}, true)).toBe(true);
+      expect(rule.validator({ address: 'some-address' } as unknown as Account, {}, true)).toBe(true);
     });
 
     it('should fail when no signatory is selected for multisig', () => {
       const store = createStore(true);
       const rule = TransferRules.signatory.noSignatorySelected(store);
-      expect(rule.validator(null, {}, false)).toBe(false);
+      expect(rule.validator(null, {}, true)).toBe(false);
     });
 
     it('should pass when signatory has enough balance for fee and deposit', () => {
@@ -99,11 +102,24 @@ describe('Transfer Validation Rules', () => {
       expect(rule.validator(null, {}, transferSignatoryFeeStore)).toBe(true);
     });
 
-    it('should fail when signatory has insufficient balance for fee and deposit', () => {
+    it('should fail when signatory has insufficient balance for deposit', () => {
       const transferSignatoryFeeStore: TransferSignatoryFeeStore = {
-        fee: '1000000000',
+        fee: '0',
         isMultisig: true,
-        multisigDeposit: '1000000000',
+        multisigDeposit: '2000000000',
+        balance: '1000000000',
+      };
+      const store = createStore<TransferSignatoryFeeStore>(transferSignatoryFeeStore);
+
+      const rule = TransferRules.signatory.notEnoughTokens(store);
+      expect(rule.validator(null, {}, transferSignatoryFeeStore)).toBe(false);
+    });
+
+    it('should fail when signatory has insufficient balance for fee', () => {
+      const transferSignatoryFeeStore: TransferSignatoryFeeStore = {
+        fee: '2000000000',
+        isMultisig: true,
+        multisigDeposit: '0',
         balance: '1000000000',
       };
       const store = createStore<TransferSignatoryFeeStore>(transferSignatoryFeeStore);
@@ -116,23 +132,62 @@ describe('Transfer Validation Rules', () => {
   describe('Destination Validation', () => {
     it('should pass when destination is provided', () => {
       const rule = TransferRules.destination.required;
-      expect(rule.validator('5Hjdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjh')).toBe(true);
+      expect(rule.validator('13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq')).toBe(true);
     });
 
     it('should fail when destination is empty', () => {
       const rule = TransferRules.destination.required;
-      expect(rule.validator('')).toBe(false);
+      expect(rule.validator(undefined)).toBe(false);
     });
 
-    it('should pass when destination address is valid for chain', () => {
+    it('should pass when destination address is valid for Substrate chain', () => {
       const chain = createTestChain();
       const store = createStore(chain);
       const rule = TransferRules.destination.incorrectRecipient(store);
 
-      expect(rule.validator('5Hjdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjhdsfkjh', {}, chain)).toBe(true);
+      expect(rule.validator('13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq', {}, chain)).toBe(true);
     });
 
-    it('should fail when destination address is invalid for chain', () => {
+    it('should fail when destination address is invalid for Substrate chain', () => {
+      const chain = createTestChain();
+      const store = createStore(chain);
+      const rule = TransferRules.destination.incorrectRecipient(store);
+
+      expect(rule.validator('invalid-address', {}, chain)).toBe(false);
+    });
+    it('should pass when destination address is valid for ETH chain - no checksum', () => {
+      const chain = createTestChain(true);
+      const store = createStore(chain);
+      const rule = TransferRules.destination.incorrectRecipient(store);
+
+      expect(rule.validator('0xc4d9aa77d94c36d737c5a25f5cdd0fcc7baef963', {}, chain)).toBe(true);
+    });
+
+    it('should pass when destination address is valid for ETH chain - checksum', () => {
+      const chain = createTestChain(true);
+      const store = createStore(chain);
+      const rule = TransferRules.destination.incorrectRecipient(store);
+
+      expect(rule.validator('0xC4d9Aa77d94c36D737c5A25F5CdD0FCC7BAEf963', {}, chain)).toBe(true);
+    });
+
+    it('should fail when destination address is eth for substrate', () => {
+      const chain = createTestChain();
+      const store = createStore(chain);
+      const rule = TransferRules.destination.incorrectRecipient(store);
+
+      expect(rule.validator('0xC4d9Aa77d94c36D737c5A25F5CdD0FCC7BAEf963', {}, chain)).toBe(false);
+    });
+
+    it('should fail when destination address is substrate for eth', () => {
+      const chain = createTestChain(true);
+      const store = createStore(chain);
+      const rule = TransferRules.destination.incorrectRecipient(store);
+
+      expect(rule.validator('13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq', {}, chain)).toBe(false);
+    });
+
+    it('should fail when destination address is invalid', () => {
       const chain = createTestChain();
       const store = createStore(chain);
       const rule = TransferRules.destination.incorrectRecipient(store);
@@ -172,7 +227,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.notEnoughBalance(store);
+      const rule = TransferRules.amount.notEnoughBalance(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(true);
     });
 
@@ -186,7 +241,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.notEnoughBalance(store);
+      const rule = TransferRules.amount.notEnoughBalance(store, defaultConfig);
       expect(rule.validator('2000000000', {}, storeState)).toBe(false);
     });
 
@@ -207,7 +262,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(true);
     });
 
@@ -228,7 +283,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(false);
     });
 
@@ -249,7 +304,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForXcmFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForXcmFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(true);
     });
 
@@ -270,7 +325,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForXcmFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForXcmFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(false);
     });
 
@@ -291,7 +346,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForDeliveryFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForDeliveryFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(true);
     });
 
@@ -312,7 +367,7 @@ describe('Transfer Validation Rules', () => {
       };
       const store = createStore(storeState);
 
-      const rule = TransferRules.amount.insufficientBalanceForDeliveryFee(store);
+      const rule = TransferRules.amount.insufficientBalanceForDeliveryFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(false);
     });
   });
