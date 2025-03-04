@@ -1,6 +1,6 @@
 const IMPORT_FILE_VERSION = 1;
 const IMPORT_FORMAT_NAME = 'dexie';
-const IMPORT_TABLES = [
+const REQUIRED_TABLES = [
   'wallets',
   'accounts',
   'accounts2',
@@ -9,6 +9,8 @@ const IMPORT_TABLES = [
   'multisigTransactions',
   'multisigEvents',
 ];
+const OPTIONAL_TABLES = ['connections'];
+const IMPORT_TABLES = [...REQUIRED_TABLES, ...OPTIONAL_TABLES];
 
 export function isFileValid(fileContent: string): boolean {
   if (!fileContent) return false;
@@ -20,8 +22,12 @@ export function isFileValid(fileContent: string): boolean {
     return IMPORT_TABLES.includes(table.name);
   });
 
+  const hasRequiredTables = REQUIRED_TABLES.every((requiredTable) =>
+    tables.some((table: { name: string }) => table.name === requiredTable),
+  );
+
   return (
-    tables.length === IMPORT_TABLES.length &&
+    hasRequiredTables &&
     isTablesValid &&
     jsonData.formatVersion === IMPORT_FILE_VERSION &&
     jsonData.formatName === IMPORT_FORMAT_NAME
