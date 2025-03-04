@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
 import {
@@ -7,8 +7,6 @@ import {
   type ChainId,
   type HexString,
   type MultisigAccount,
-  type MultisigEvent,
-  type MultisigTransaction,
   type Transaction,
   TransactionType,
 } from '@/shared/core';
@@ -52,15 +50,6 @@ const $submitStore = restore<Input>(formInitiated, null);
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
 const $results = createStore<Result[]>([]).reset(formInitiated);
-
-type Callbacks = {
-  addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
-  addEventWithQueue: (event: MultisigEvent) => void;
-};
-const $hooks = createStore<Callbacks | null>(null);
-const $hooksApi = createApi($hooks, {
-  hooksChanged: (state, { addMultisigTx, addEventWithQueue }) => ({ ...state, addMultisigTx, addEventWithQueue }),
-});
 
 type SignAndSubmitExtrinsicParams = {
   apis: Record<ChainId, ApiPromise>;
@@ -109,7 +98,6 @@ type SaveMultisigParams = {
   multisigTxs: Transaction[];
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
-  hooks: Callbacks;
 };
 
 const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, api }: SaveMultisigParams) => {
@@ -205,13 +193,11 @@ sample({
   source: {
     apis: networkModel.$apis,
     submitStore: $submitStore,
-    hooks: $hooks,
   },
   filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, hooks, apis }, { params }) => ({
+  fn: ({ submitStore, apis }, { params }) => ({
     api: submitStore && apis[submitStore.chain.chainId],
     params,
-    hooks: hooks!,
     multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
   }),
@@ -264,7 +250,6 @@ export const submitModel = {
   events: {
     formInitiated,
     submitStarted,
-    hooksApiChanged: $hooksApi.hooksChanged,
   },
   output: {
     formSubmitted,

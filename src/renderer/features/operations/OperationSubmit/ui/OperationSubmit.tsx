@@ -2,9 +2,7 @@ import { useUnit } from 'effector-react';
 import { type ComponentProps, useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useTaskQueue } from '@/shared/lib/hooks';
 import { Button } from '@/shared/ui';
-import { useMultisigEvent, useMultisigTx } from '@/entities/multisig';
 import { OperationResult } from '@/entities/transaction';
 import { submitUtils } from '../lib/submit-utils';
 import { type SubmitStep } from '../lib/types';
@@ -27,14 +25,6 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
   const submitStore = useUnit(submitModel.$submitStore);
   const failedTxs = useUnit(submitModel.$failedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
-
-  const { addTask } = useTaskQueue();
-  const { addMultisigTx } = useMultisigTx({ addTask });
-  const { addEventWithQueue } = useMultisigEvent({ addTask });
-
-  useEffect(() => {
-    submitModel.events.hooksApiChanged({ addMultisigTx, addEventWithQueue });
-  }, [addMultisigTx, addEventWithQueue]);
 
   useEffect(() => {
     submitModel.events.submitStarted();
