@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type Asset, AssetType, type Chain } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
-import { TransferRules } from '@/features/operations/OperationsValidation';
+import { TransferRules } from '@/features/operations/OperationsValidation/lib/transfer-rules';
 import {
   type TransferAccountStore,
   type TransferSignatoryFeeStore,
