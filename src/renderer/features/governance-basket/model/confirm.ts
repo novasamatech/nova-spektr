@@ -240,7 +240,6 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
@@ -269,7 +268,6 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),

@@ -340,7 +340,6 @@ sample({
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction,
       txWrappers,
     });

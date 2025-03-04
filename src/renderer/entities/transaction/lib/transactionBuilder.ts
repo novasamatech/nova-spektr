@@ -606,7 +606,6 @@ function buildCreateFlexibleMultisig({
 
   const wrappedTransaction = transactionService.getWrappedTransaction({
     api: api,
-    addressPrefix: chain.addressPrefix,
     transaction: proxyTransaction,
     txWrappers: [
       {

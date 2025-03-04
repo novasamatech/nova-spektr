@@ -368,7 +368,6 @@ const $transactions = combine(
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
         api: apis[networkStore.chain.chainId],
-        addressPrefix: networkStore.chain.addressPrefix,
         transaction: tx,
         txWrappers,
       }),

@@ -309,7 +309,6 @@ function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappers
 
 type WrapperParams = {
   api: ApiPromise;
-  addressPrefix: number;
   transaction: Transaction;
   txWrappers: TxWrapper[];
 };
@@ -319,13 +318,12 @@ export type WrappedTransactions = {
   multisigTx?: Transaction;
 };
 
-function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
+function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
       if (isMultisig(txWrapper)) {
         const multisigTx = wrapAsMulti({
           api,
-          addressPrefix,
           transaction: acc.wrappedTx,
           txWrapper: txWrapper,
         });
@@ -337,7 +335,6 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 
       if (isProxy(txWrapper)) {
         acc.wrappedTx = wrapAsProxy({
-          addressPrefix,
           transaction: acc.wrappedTx,
           txWrapper: txWrapper,
         });

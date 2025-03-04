@@ -44,7 +44,6 @@ const validateFeeFx = attach({
 
     const wrapped = transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     });

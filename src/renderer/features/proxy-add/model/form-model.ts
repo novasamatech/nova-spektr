@@ -450,11 +450,10 @@ const $transaction = combine(
     txWrappers: $txWrappers,
   },
   ({ apis, chain, pureTx, txWrappers }) => {
-    if (!chain || !pureTx) return undefined;
+    if (!pureTx) return undefined;
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction: pureTx,
       txWrappers,
     });

@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { multisigUtils } from '@/entities/multisig';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
@@ -179,13 +178,11 @@ export const getExtrinsic: Record<
 
 type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;
-  addressPrefix: number;
   transaction: T;
   txWrapper: MultisigTxWrapper;
 };
 export const wrapAsMulti = <T extends Transaction = Transaction>({
   api,
-  addressPrefix,
   transaction,
   txWrapper,
 }: WrapAsMultiParams<T>): Transaction => {
@@ -199,11 +196,7 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = multisigUtils.getOtherSignatories(
-    txWrapper.multisigAccount,
-    txWrapper.signer.accountId,
-    addressPrefix,
-  );
+  const otherSignatories = multisigUtils.getOtherSignatories(txWrapper.multisigAccount, txWrapper.signer.accountId);
 
   return {
     chainId: transaction.chainId,
@@ -220,17 +213,16 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
 };
 
 type WrapAsProxyParams = {
-  addressPrefix: number;
   transaction: Transaction;
   txWrapper: ProxyTxWrapper;
 };
-export const wrapAsProxy = ({ addressPrefix, transaction, txWrapper }: WrapAsProxyParams): Transaction => {
+export const wrapAsProxy = ({ transaction, txWrapper }: WrapAsProxyParams): Transaction => {
   return {
     chainId: transaction.chainId,
     accountId: txWrapper.proxyAccount.accountId,
     type: TransactionType.PROXY,
     args: {
-      real: toAddress(txWrapper.proxiedAccount.accountId, { prefix: addressPrefix }),
+      real: txWrapper.proxiedAccount.accountId,
       forceProxyType: txWrapper.proxiedAccount.proxyType,
       transaction,
     },

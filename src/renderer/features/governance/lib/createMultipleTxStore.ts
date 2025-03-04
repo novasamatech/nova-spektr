@@ -59,14 +59,13 @@ export const createMultipleTxStore = ({
   );
 
   const $wrappedTxs = combine(
-    { api: $api, chain: $chain, coreTxs: $coreTxs, txWrappers: $txWrappers },
-    ({ api, chain, coreTxs, txWrappers }) => {
-      if (nullable(api) || nullable(chain) || nullable(coreTxs)) return null;
+    { api: $api, coreTxs: $coreTxs, txWrappers: $txWrappers },
+    ({ api, coreTxs, txWrappers }) => {
+      if (nullable(api) || nullable(coreTxs)) return null;
 
       return coreTxs.map((coreTx, index) =>
         transactionService.getWrappedTransaction({
           api,
-          addressPrefix: chain.addressPrefix,
           transaction: coreTx,
           txWrappers: txWrappers[index],
         }),

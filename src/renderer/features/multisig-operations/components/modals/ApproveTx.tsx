@@ -168,7 +168,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   };
 
   const getMultisigTx = (signer: AccountId): Transaction => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account, signer, chain.addressPrefix);
+    const otherSignatories = multisigUtils.getOtherSignatories(account, signer);
     const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
 
     return {
