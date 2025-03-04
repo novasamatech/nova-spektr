@@ -20,7 +20,7 @@ export async function migrateMultisigAccounts(t: Transaction): Promise<void> {
   const accountsToAdd: AnyAccount[] = [];
   const accountsToDelete: AnyAccount[] = [];
 
-  const existingAccounts: Set<string> = new Set();
+  const existingAccounts = new Set<string>();
 
   for (const wallet of multisigWallets) {
     const walletAccounts = accounts
