@@ -3,6 +3,7 @@ import { capitalize } from 'lodash';
 import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
+import { TEST_IDS } from '@/shared/constants';
 import {
   type AccountVote,
   type Address,
@@ -63,7 +64,7 @@ const VotedByDelegate = ({ asset, voterName, delegate }: ByDelegateProps) => {
   );
 
   return (
-    <div className="flex items-center gap-x-1">
+    <div className="flex items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
       <Icon name="voted" size={16} className="text-icon-accent" />
       <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
         <Trans
@@ -112,7 +113,7 @@ const VotedCombined = ({ asset, castingVotes, delegate }: CombinedProps) => {
   }
 
   return (
-    <div className="flex items-center gap-x-1">
+    <div className="flex items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
       <Icon name="voted" size={16} className="text-icon-accent" />
       <FootnoteText className="text-icon-accent">{t('governance.voted')}</FootnoteText>
     </div>

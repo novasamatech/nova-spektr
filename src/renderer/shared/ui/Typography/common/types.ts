@@ -22,6 +22,7 @@ type Props = {
   as: Tags;
   align: Align;
   className?: string;
+  testId?: string;
 };
 
 export type TypographyProps = PropsWithChildren<Partial<Props>>;

@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
@@ -62,7 +63,11 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
 
         <div className="ml-auto flex text-text-secondary">
-          {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
+          {referendumId && (
+            <FootnoteText className="text-inherit" testId={TEST_IDS.GOVERNANCE.PROPOSAL_ID}>
+              #{referendumId}
+            </FootnoteText>
+          )}
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
         </div>
       </div>
