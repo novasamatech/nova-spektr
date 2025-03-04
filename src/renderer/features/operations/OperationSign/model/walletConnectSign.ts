@@ -34,6 +34,7 @@ type SetupParams = {
 };
 
 const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) => {
+  console.log('[WalletConnectSign] Starting setupTransactionFx', { payloadCount: payloads.length });
   const payload = payloads.at(0);
   assert(payload, "Can't prepare empty payload");
 
@@ -50,6 +51,7 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
     metadata = upgradeNonce(metadata, 1);
   }
 
+  console.log('[WalletConnectSign] Finished setupTransactionFx', { resultCount: result.length });
   transactionService.logPayload(result);
 
   return result;
@@ -67,6 +69,13 @@ type SignParams = {
 const signFx = attach({
   source: walletConnect.$client,
   async effect(client, { chainId, address, payload, session }: SignParams) {
+    console.log('[WalletConnectSign] Signing transaction', {
+      chainId,
+      address,
+      hasPayload: !!payload,
+      sessionTopic: session?.topic,
+    });
+
     assert(client, 'Wallet Connect client not found.');
 
     const response = await walletConnect.request({
@@ -82,6 +91,12 @@ const signFx = attach({
       },
     });
 
+    console.log('[WalletConnectSign] Transaction signed', {
+      chainId,
+      address,
+      hasResponse: !!response,
+    });
+
     return response as SignResponse;
   },
 });
@@ -92,6 +107,14 @@ const signAllFx = series(signFx);
 
 sample({
   clock: getSessionFx.doneData,
+  fn: (session) => {
+    console.log('[WalletConnectSign] Session restored', {
+      hasSession: !!session,
+      topic: session?.topic,
+      pairingTopic: session?.pairingTopic,
+    });
+    return session;
+  },
   target: $session,
 });
 
@@ -179,6 +202,11 @@ sample({
   source: walletConnect.$client,
   filter: nonNullable,
   fn(client, { trigger: transactions, event: session }) {
+    console.log('[WalletConnectSign] Starting signing process', {
+      transactionCount: transactions.length,
+      hasSession: !!session,
+      sessionTopic: session?.topic,
+    });
     return transactions.map<SignParams>(({ unsigned }) => ({
       client: client!,
       session,
