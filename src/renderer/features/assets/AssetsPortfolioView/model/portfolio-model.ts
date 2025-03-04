@@ -69,9 +69,6 @@ const $activeTokens = combine(
     if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
 
     const isMultisigWallet = walletUtils.isMultisig(wallet);
-    const hasAccounts = wallet.accounts.length > 0;
-    const multisigChainToInclude = isMultisigWallet && hasAccounts ? wallet.accounts.at(0)?.chainId : undefined;
-
     const activeTokens: AssetByChains[] = [];
 
     for (const token of tokens) {
@@ -83,7 +80,7 @@ const $activeTokens = combine(
         if (nullable(chains[c.chainId])) return false;
         if (!isMultisigWallet) return true;
 
-        return networkUtils.isMultisigSupported(chains[c.chainId].options) || multisigChainToInclude === c.chainId;
+        return networkUtils.isMultisigSupported(chains[c.chainId].options);
       });
 
       if (filteredChains.length === 0) continue;

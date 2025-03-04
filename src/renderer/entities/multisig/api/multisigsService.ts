@@ -19,10 +19,12 @@ import { FILTER_MULTISIG_ACCOUNT_IDS } from './graphql/queries/multisigs';
 export const multisigService = {
   filterMultisigsAccounts,
   findFlexibleMultisigs,
+  getUniqMultisigs,
 };
 
 export type MultisigResult = {
   accountId: AccountId;
+  name?: string;
   threshold: number;
   signatories: AccountId[];
   chain: Chain;
@@ -49,6 +51,21 @@ async function filterMultisigsAccounts(
   }));
 
   return filteredMultisigs || [];
+}
+
+function getUniqMultisigs(results: MultisigResult[]): MultisigResult[] {
+  const existing = new Set<AccountId>();
+  const filtered: MultisigResult[] = [];
+
+  for (const multisig of results) {
+    if (existing.has(multisig.accountId)) {
+      continue;
+    }
+    existing.add(multisig.accountId);
+    filtered.push(multisig);
+  }
+
+  return filtered;
 }
 
 // TODO: can be deleted after a new indexer will be added
