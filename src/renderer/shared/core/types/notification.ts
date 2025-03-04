@@ -31,7 +31,6 @@ export type MultisigCreated = MultisigBaseNotification & {
   signatories: AccountId[];
   threshold: number;
   multisigAccountName: string;
-  chainId: ChainId;
 };
 
 export type FlexibleMultisigCreated = MultisigBaseNotification & {
@@ -39,7 +38,6 @@ export type FlexibleMultisigCreated = MultisigBaseNotification & {
   signatories: AccountId[];
   threshold: number;
   multisigAccountName: string;
-  chainId: ChainId;
 };
 
 export type MultisigOperation = MultisigBaseNotification & {

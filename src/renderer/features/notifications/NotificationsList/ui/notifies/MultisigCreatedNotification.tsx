@@ -4,7 +4,6 @@ import { type MultisigCreated } from '@/shared/core';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
-import { ChainTitle } from '@/entities/chain';
 import { WalletIcon } from '@/entities/wallet';
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
 };
 
 export const MultisigCreatedNotification = ({
-  notification: { threshold, signatories, multisigAccountName, chainId },
+  notification: { threshold, signatories, multisigAccountName },
 }: Props) => {
   const { t } = useI18n();
 
@@ -33,9 +32,6 @@ export const MultisigCreatedNotification = ({
               threshold,
               signatoriesLength: signatories.length,
               name: multisigAccountName,
-            }}
-            components={{
-              chain: <ChainTitle chainId={chainId} fontClass="text-text-primary text-body" />,
             }}
           />
         </BodyText>

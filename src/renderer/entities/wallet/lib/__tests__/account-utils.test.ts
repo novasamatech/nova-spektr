@@ -206,8 +206,6 @@ describe('entities/wallet/lib/account-utils#isChainDependant', () => {
     [{ type: 'universal', accountType: AccountType.BASE }, false], // BaseAccount
     [{ type: 'chain', accountType: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount
     [{ type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x00' }, true], // WalletConnectAccount
-    [{ type: 'chain', accountType: AccountType.MULTISIG, chainId: undefined }, false], // MultisigAccount milti_chain
-    [{ type: 'chain', accountType: AccountType.MULTISIG, chainId: '0x00' }, true], // MultisigAccount single_chain
     [{ type: 'chain', accountType: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
   ])('%s should be chain dependant or not', (account, expected) => {
     expect(accountUtils.isChainDependant(account as never as AnyAccount)).toEqual(expected);
