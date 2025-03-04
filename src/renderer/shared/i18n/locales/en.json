@@ -1921,6 +1921,7 @@
       "changeSignatories": "Change signatories/threshold",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
+      "otherSignatories": "Other signatories { count }",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
