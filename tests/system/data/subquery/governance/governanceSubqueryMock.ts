@@ -36,7 +36,33 @@ export const mockDelegatorVotingsX2 = {
           parent: {
             referendumId: '1300',
             standardVote: {
-              aye: true,
+              aye: false,
+              vote: {
+                amount: '50000000000000',
+                conviction: 'Locked1x',
+              },
+            },
+            delegateId: '127zarPDhVzmCXVQ7Kfr1yyaa9wsMuJ74GJW9Q7ezHfQEgh6',
+          },
+        },
+      ],
+    },
+  },
+};
+
+export const mockMultipleDelegatorVotings = {
+  data: {
+    delegatorVotings: {
+      nodes: [
+        {
+          vote: {
+            amount: '20000000000000',
+            conviction: 'Locked2x',
+          },
+          parent: {
+            referendumId: '1300',
+            standardVote: {
+              aye: false,
               vote: {
                 amount: '50000000000000',
                 conviction: 'Locked1x',
