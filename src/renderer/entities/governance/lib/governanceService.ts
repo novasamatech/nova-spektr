@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 
-import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingCurve } from '@/shared/core';
+import { type Referendum, type TrackId, type TrackInfo, type VotingCurve } from '@/shared/core';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
   type ReferendaCurve,
@@ -9,6 +9,7 @@ import {
   type ReferendumId,
   referendaPallet,
 } from '@/shared/pallet/referenda';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const governanceService = {
   getReferendums,
@@ -73,9 +74,9 @@ async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Re
   return result;
 }
 
-async function getTrackLocks(api: ApiPromise, addresses: Address[]): Promise<Record<Address, Record<TrackId, BN>>> {
-  const tuples = await convictionVotingPallet.storage.classLocksFor(api, addresses);
-  const result: Record<Address, Record<TrackId, BN>> = {};
+async function getTrackLocks(api: ApiPromise, accounts: AccountId[]): Promise<Record<AccountId, Record<TrackId, BN>>> {
+  const tuples = await convictionVotingPallet.storage.classLocksFor(api, accounts);
+  const result: Record<AccountId, Record<TrackId, BN>> = {};
 
   for (const [index, locks] of tuples.entries()) {
     const lockData = locks.reduce<Record<TrackId, BN>>((acc, lock) => {
@@ -84,7 +85,7 @@ async function getTrackLocks(api: ApiPromise, addresses: Address[]): Promise<Rec
       return acc;
     }, {});
 
-    result[addresses[index]] = lockData;
+    result[accounts[index]] = lockData;
   }
 
   return result;

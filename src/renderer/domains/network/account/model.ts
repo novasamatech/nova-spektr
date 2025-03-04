@@ -111,7 +111,7 @@ sample({
   target: $accounts,
 });
 
-export const accountsDomainModel = {
+export const accounts = {
   $list: readonly($accounts),
   $populated: readonly($populated),
 

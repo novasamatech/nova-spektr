@@ -1,13 +1,12 @@
 import {
-  type ChainId,
   KeyType,
   type MultiShardWallet,
   type PolkadotVaultWallet,
-  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 import { downloadFiles, exportKeysUtils } from '@/features/wallets/ExportKeys';
 
@@ -72,15 +71,13 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
   }, {});
 }
 
-function getMultishardMap(accounts: MultiShardWallet['accounts']): MultishardMap {
-  return accounts.reduce<Map<VaultBaseAccount, Record<ChainId, VaultChainAccount[]>>>((acc, account) => {
-    if (accountUtils.isVaultBaseAccount(account)) {
-      acc.set(account, {});
-    }
+function getMultishardMap(rootAcountId: AccountId, accounts: MultiShardWallet['accounts']): MultishardMap {
+  const map: MultishardMap = new Map([[rootAcountId, {}]]);
 
-    if (accountUtils.isVaultChainAccount(account)) {
-      for (const [baseAccount, chainMap] of acc.entries()) {
-        if (baseAccount.accountId !== account.baseAccountId) continue;
+  return accounts.reduce<MultishardMap>((acc, account) => {
+    if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+      for (const [rootAcountId, chainMap] of acc.entries()) {
+        if (rootAcountId !== account.baseAccountId) continue;
 
         if (chainMap[account.chainId]) {
           chainMap[account.chainId].push(account);
@@ -92,14 +89,14 @@ function getMultishardMap(accounts: MultiShardWallet['accounts']): MultishardMap
     }
 
     return acc;
-  }, new Map());
+  }, map);
 }
 
 function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   const rootsAndAccounts = Array.from(accounts, ([root, accounts]) => ({ root, accounts }));
   const downloadData = rootsAndAccounts.map(({ root, accounts }, index) => {
     const accountsFlat = Object.values(accounts).flat();
-    const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+    const exportStructure = exportKeysUtils.getExportStructure(root, accountsFlat);
 
     return {
       blob: new Blob([exportStructure], { type: 'text/plain' }),
@@ -110,9 +107,9 @@ function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
   downloadFiles(downloadData);
 }
 
-function exportVaultWallet(wallet: Wallet, root: VaultBaseAccount, accounts: VaultMap) {
+function exportVaultWallet(wallet: Wallet, rootAccountId: AccountId, accounts: VaultMap) {
   const accountsFlat = Object.values(accounts).flat();
-  const exportStructure = exportKeysUtils.getExportStructure(root.accountId, accountsFlat);
+  const exportStructure = exportKeysUtils.getExportStructure(rootAccountId, accountsFlat);
 
   downloadFiles([
     {

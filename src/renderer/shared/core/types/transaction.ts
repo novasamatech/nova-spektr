@@ -3,7 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import { type MultisigAccount, type ProxiedAccount } from './account';
-import { type Address, type CallData, type CallHash, type ChainId, type HexString } from './general';
+import { type CallData, type CallHash, type ChainId, type HexString } from './general';
 import { type Signatory } from './signatory';
 import { type PartialBy } from './utility';
 
@@ -83,7 +83,7 @@ export type MultisigTxStatus = MultisigTxInitStatus | MultisigTxFinalStatus;
 // TODO: use it for send transaction
 export type Transaction<Args extends NonNullable<unknown> = Record<string, any>> = {
   chainId: ChainId;
-  address: Address;
+  accountId: AccountId;
   type: TransactionType;
   args: Args;
 };

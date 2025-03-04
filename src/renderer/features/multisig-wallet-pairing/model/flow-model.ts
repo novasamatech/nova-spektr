@@ -18,14 +18,12 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import {
-  SS58_DEFAULT_PREFIX,
   Step,
   TEST_ACCOUNTS,
   ZERO_BALANCE,
   isStep,
   nonNullable,
   toAccountId,
-  toAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
@@ -88,17 +86,16 @@ const $isChainConnected = combine(
 
 const $remarkTx = combine(
   {
-    chains: networkModel.$chains,
     form: formModel.$createMultisigForm.$values,
     account: $signer,
     isConnected: $isChainConnected,
   },
-  ({ chains, form, account, isConnected }): Transaction | undefined => {
+  ({ form, account, isConnected }): Transaction | undefined => {
     if (!isConnected || !account || !form.threshold) return undefined;
 
     return {
       chainId: form.chainId,
-      address: toAddress(account.accountId, { prefix: chains[form.chainId].addressPrefix }),
+      accountId: account.accountId,
       type: TransactionType.REMARK,
       args: {
         remark: 'Multisig created with Nova Spektr',
@@ -129,7 +126,6 @@ const $transaction = combine(
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction: remarkTx,
       txWrappers: [
         {
@@ -192,7 +188,7 @@ const $fakeTx = combine(
 
     return {
       chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         remark: 'Multisig created with Nova Spektr',

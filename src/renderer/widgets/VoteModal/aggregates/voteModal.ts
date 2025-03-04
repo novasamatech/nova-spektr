@@ -247,13 +247,12 @@ sample({
   source: {
     status: flow.status,
     wallet: walletModel.$activeWallet,
-    chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain, status, wallet }) => status && nonNullable(chain) && nonNullable(wallet),
-  fn: ({ wallet, chain }) => {
-    const addresses = wallet!.accounts.map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  filter: ({ status, wallet }) => status && nonNullable(wallet),
+  fn: ({ wallet }) => {
+    const accountIds = wallet!.accounts.map((a) => a.accountId);
 
-    return { addresses };
+    return { accounts: accountIds };
   },
   target: votingAggregate.events.requestVoting,
 });

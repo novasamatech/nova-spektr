@@ -30,6 +30,7 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -430,7 +431,7 @@ const $pureTx = combine(
 
     return {
       chainId: form.chain.chainId,
-      address: toAddress(account.accountId, { prefix: form.chain.addressPrefix }),
+      accountId: account.accountId,
       type: TransactionType.ADD_PROXY,
       args: {
         delegate: toAddress(form.delegate, { prefix: form.chain.addressPrefix }),
@@ -450,11 +451,10 @@ const $transaction = combine(
     txWrappers: $txWrappers,
   },
   ({ apis, chain, pureTx, txWrappers }) => {
-    if (!chain || !pureTx) return undefined;
+    if (!pureTx) return undefined;
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction: pureTx,
       txWrappers,
     });
@@ -472,7 +472,7 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.ADD_PROXY,
       args: {
         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
@@ -506,10 +506,10 @@ const $multisigAlreadyExists = combine(
 
 type ProxyParams = {
   api: ApiPromise;
-  address: Address;
+  accountId: AccountId;
 };
-const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ProxyAccounts> => {
-  return proxyService.getProxiesForAccount(api, address);
+const getAccountProxiesFx = createEffect(({ api, accountId }: ProxyParams): Promise<ProxyAccounts> => {
+  return proxyService.getProxiesForAccount(api, accountId);
 });
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
@@ -622,7 +622,7 @@ sample({
   filter: ({ isChainConnected, account }) => isChainConnected && Boolean(account),
   fn: ({ apis, account }, chain) => ({
     api: apis[chain.chainId],
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
   }),
   target: getAccountProxiesFx,
 });

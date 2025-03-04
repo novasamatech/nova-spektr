@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Account, type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { type MultisigOperation } from '@/domains/multisig';
 import { type AnyAccount } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
@@ -55,9 +54,8 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
     if (!wallets.length) return {};
 
     return store.reduce<ConfirmMap>((acc, meta, index) => {
-      const { wrappedTransactions, chain, account } = meta;
+      const { wrappedTransactions, account } = meta;
       const { wrappedTx, coreTx } = wrappedTransactions;
-      const { addressPrefix } = chain;
 
       const isProxyTx = isProxyTransaction(wrappedTx) || isProxyTransaction(coreTx);
       const initiatorAccount = walletUtils.getAccountBy(wallets, (acc) => {
@@ -65,7 +63,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
           return acc.accountId == account.proxyAccountId;
         }
 
-        const isSameAccount = coreTx.address === toAddress(acc.accountId, { prefix: addressPrefix });
+        const isSameAccount = coreTx.accountId === acc.accountId;
 
         return isSameAccount;
       });

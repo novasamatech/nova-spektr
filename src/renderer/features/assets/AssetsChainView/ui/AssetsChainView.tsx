@@ -50,6 +50,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
       for (const account of activeWallet.accounts) {
         if (
+          !activeShards.find((a) => a.accountId === account.accountId) ||
           !accountUtils.isNonBaseVaultAccount(account, activeWallet) ||
           !accountUtils.isChainAndCryptoMatch(account, chain)
         )

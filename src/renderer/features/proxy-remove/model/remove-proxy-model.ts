@@ -302,7 +302,7 @@ sample({
 
     const transaction: Transaction = {
       chainId: chain.chainId,
-      address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+      accountId: account.accountId,
       type: TransactionType.REMOVE_PROXY,
       args: {
         delegate: data!.delegate,
@@ -313,7 +313,6 @@ sample({
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction,
       txWrappers,
     });

@@ -5,7 +5,8 @@ import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
 import { xcmService } from '@/shared/api/xcm';
-import { type Address, type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
   BOND_WITH_CONTROLLER_ARGS_AMOUNT,
@@ -50,24 +51,24 @@ export const getTxFromCallData = (api: ApiPromise, callData: CallData): Submitta
   return getDataFromCallData(api, callData).decoded;
 };
 
-export const decodeCallData = (api: ApiPromise, address: Address, callData: CallData): DecodedTransaction => {
+export const decodeCallData = (api: ApiPromise, accountId: AccountId, callData: CallData): DecodedTransaction => {
   const { decoded, method, section } = getDataFromCallData(api, callData);
 
   if (isBatchExtrinsic(method, section)) {
-    return parseBatch(method, section, address, decoded, api);
+    return parseBatch(method, section, accountId, decoded, api);
   }
 
   if (isProxyExtrinsic(method, section)) {
-    return parseProxy(method, section, address, decoded, api);
+    return parseProxy(method, section, accountId, decoded, api);
   }
 
-  return parseSingle(method, section, address, decoded, api.genesisHash.toHex());
+  return parseSingle(method, section, accountId, decoded, api.genesisHash.toHex());
 };
 
 const parseBatch = (
   method: string,
   section: string,
-  address: Address,
+  accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
 ): DecodedTransaction => {
@@ -77,7 +78,7 @@ const parseBatch = (
   }
 
   const batchTransaction = getDecodedTransaction(
-    address,
+    accountId,
     decoded,
     method,
     section,
@@ -85,7 +86,7 @@ const parseBatch = (
     transactionType,
   );
   const calls = api.createType('Vec<Call>', batchTransaction.args.calls);
-  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, address, call.toHex()));
+  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex()));
 
   return batchTransaction;
 };
@@ -93,12 +94,12 @@ const parseBatch = (
 const parseProxy = (
   method: string,
   section: string,
-  address: Address,
+  accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
 ): DecodedTransaction => {
   const proxyTransaction = getDecodedTransaction(
-    address,
+    accountId,
     decoded,
     method,
     section,
@@ -106,7 +107,7 @@ const parseProxy = (
     TransactionType.PROXY,
   );
   const call = api.createType('Call', proxyTransaction.args.call);
-  proxyTransaction.args.transaction = decodeCallData(api, address, call.toHex());
+  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex());
 
   return proxyTransaction;
 };
@@ -114,7 +115,7 @@ const parseProxy = (
 const parseSingle = (
   method: string,
   section: string,
-  address: Address,
+  accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   genesisHash: HexString,
 ): DecodedTransaction => {
@@ -122,11 +123,11 @@ const parseSingle = (
 
   const transactionType = getTransactionType(method, section);
 
-  return getDecodedTransaction(address, decoded, method, section, genesisHash, transactionType);
+  return getDecodedTransaction(accountId, decoded, method, section, genesisHash, transactionType);
 };
 
 const getDecodedTransaction = (
-  address: Address,
+  accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   method: string,
   section: string,
@@ -137,7 +138,7 @@ const getDecodedTransaction = (
     console.log(`Unknown transaction type with section ${section} and method ${method}`);
 
     return {
-      address,
+      accountId,
       method,
       section,
       chainId: genesisHash,
@@ -168,7 +169,7 @@ const getDecodedTransaction = (
   }
 
   return {
-    address,
+    accountId,
     method,
     section,
     chainId: genesisHash,

@@ -23,7 +23,11 @@ accountSDK(polkadotVaultWalletFeature, {
     return account.signingType === SigningType.POLKADOT_VAULT;
   },
   availableOnChain({ account }) {
-    return accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account);
+    return (
+      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isVaultChainAccount(account) ||
+      accountUtils.isVaultShardAccount(account)
+    );
   },
   canSignMultipleTransactions({ account }) {
     return (
@@ -34,6 +38,9 @@ accountSDK(polkadotVaultWalletFeature, {
   },
   collectAccountChildren(children) {
     return children;
+  },
+  wrapTransaction(transaction) {
+    return transaction;
   },
 });
 

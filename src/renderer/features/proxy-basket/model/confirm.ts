@@ -40,7 +40,7 @@ const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chain
     accounts,
   );
 
-  const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.address);
+  const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.accountId);
   const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], proxy.deposit, proxy.accounts.length + 1);
 
   return {

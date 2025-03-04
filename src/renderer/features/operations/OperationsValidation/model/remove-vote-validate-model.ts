@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -24,10 +24,10 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const votes = await convictionVotingPallet.storage.votingFor(api, [[transaction.address, transaction.args.track]]);
+    const votes = await convictionVotingPallet.storage.votingFor(api, [[accountId, transaction.args.track]]);
     const voting = votes.find((vote) => vote.type === 'Casting');
     const isVoteExist = voting?.data.votes.find((vote) => vote.referendum === +transaction.args.referendum);
 

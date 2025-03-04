@@ -368,7 +368,7 @@ const $pureTx = combine(
 
     return {
       chainId: form.chain.chainId,
-      address: toAddress(account.accountId, { prefix: form.chain.addressPrefix }),
+      accountId: account.accountId,
       type: TransactionType.CREATE_PURE_PROXY,
       args: { proxyType: 'Any', delay: 0, index: 0 },
     };
@@ -388,7 +388,6 @@ const $transaction = combine(
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
-      addressPrefix: chain.addressPrefix,
       transaction: pureTx,
       txWrappers,
     });
@@ -406,7 +405,7 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.CREATE_PURE_PROXY,
       args: { proxyType: 'Any', delay: 0, index: 0 },
     };

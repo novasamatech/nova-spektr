@@ -15,7 +15,7 @@ const $wallet = flow.state.map(({ wallet }) => wallet);
 const $multiShardAccounts = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultiShard(wallet)) return new Map();
 
-  return walletDetailsUtils.getMultishardMap(wallet.accounts);
+  return walletDetailsUtils.getMultishardMap(wallet.rootAccountId, wallet.accounts);
 });
 
 const $canCreateProxy = $wallet.map(wallet => {

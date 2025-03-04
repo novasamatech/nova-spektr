@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { type Address, type HexString } from '@/shared/core';
+import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, nullable, toAddress } from '@/shared/lib/utils';
@@ -26,6 +26,7 @@ export const PolkadotVault = ({
 
   const isScanStep = !txPayloads.length;
   const isMultiframe = signingPayloads.length > 1;
+  const chain = signingPayloads[0].chain;
 
   useEffect(() => {
     if (countdown === 0) {
@@ -72,14 +73,14 @@ export const PolkadotVault = ({
     }
   };
 
-  const getSignerAddress = (): Address => {
+  const getSignerAccountId = () => {
     if (!walletUtils.isPolkadotVault(signerWallet)) {
-      return signingPayloads[0].transaction.address;
+      return signingPayloads[0].transaction.accountId;
     }
 
     const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
 
-    return root ? toAddress(root.accountId, { prefix: 1 }) : signingPayloads[0].transaction.address;
+    return root ? root.accountId : signingPayloads[0].transaction.accountId;
   };
 
   const scanAgain = () => {
@@ -115,9 +116,9 @@ export const PolkadotVault = ({
             />
           ) : (
             <ScanSingleframeQr
-              chainId={signingPayloads[0].chain.chainId}
-              api={apis[signingPayloads[0].chain.chainId]}
-              address={getSignerAddress()}
+              chain={chain}
+              api={apis[chain.chainId]}
+              address={toAddress(getSignerAccountId(), { prefix: chain.addressPrefix })}
               countdown={countdown}
               account={signingPayloads[0].signatory || signingPayloads[0].account}
               transaction={signingPayloads[0].transaction}

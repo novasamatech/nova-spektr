@@ -85,7 +85,7 @@ sample({
   },
   filter: ({ account }) => nonNullable(account),
   fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, tx }) => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId, chain.addressPrefix);
+    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId);
 
     if (walletUtils.isFlexibleMultisig(wallet) && !wallet.activated && wrappedTx) {
       return transactionBuilder.buildRejectFlexibleMultisigTx({

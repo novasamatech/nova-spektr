@@ -83,17 +83,15 @@ const $api = combine(
 const $transactions = combine(
   {
     api: $api,
-    walletData: $walletData,
     pureTxs: $pureTxs,
     txWrappers: $txWrappers,
   },
-  ({ api, walletData, pureTxs, txWrappers }) => {
-    if (!api || !walletData) return undefined;
+  ({ api, pureTxs, txWrappers }) => {
+    if (!api) return undefined;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
         api,
-        addressPrefix: walletData.chain.addressPrefix,
         transaction: tx,
         txWrappers,
       }),
