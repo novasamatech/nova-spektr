@@ -50,8 +50,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const proxiedAccount = walletAccounts.find(accountUtils.isProxiedAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
+  assert(proxiedAccount, 'Proxied account not found.');
 
-  const chain = chains[multisigAccount.chainId];
+  const chain = chains[proxiedAccount.chainId];
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);

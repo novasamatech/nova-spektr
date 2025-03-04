@@ -236,14 +236,13 @@ sample({
 
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
-      chainId: chain!.chainId,
       name: name.trim(),
       accountId: accountId,
       threshold: threshold,
       cryptoType,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
-      type: 'chain',
+      type: 'universal',
     };
 
     return {

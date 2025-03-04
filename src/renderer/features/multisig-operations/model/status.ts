@@ -7,7 +7,7 @@ import { createFeature } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel, networkUtils } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const $trigger = createStore<string>('');
@@ -44,7 +44,7 @@ const $input = combine(
     const input = [];
 
     for (const account of wallet.accounts) {
-      if (account.chainId) {
+      if (accountUtils.isProxiedAccount(account)) {
         const api = apis[account.chainId];
         const chain = chains[account.chainId];
 

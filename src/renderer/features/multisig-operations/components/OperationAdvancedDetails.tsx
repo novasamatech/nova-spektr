@@ -27,7 +27,7 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
   const valueClass = 'text-text-secondary';
-  const multisigAccount = accounts.find(a => accountUtils.isMultisigAccount(a) && a.chainId === chain.chainId);
+  const multisigAccount = accounts.find(a => accountUtils.isMultisigAccount(a));
   const signatories = (multisigAccount as MultisigAccount).signatories;
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(

@@ -11,7 +11,7 @@ const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isM
 const $incompleteFlexibleMultisigTx = combine(
   { account: $account, wallet: walletSelect.$selectedWallet, txs: multisigOperations.$all },
   ({ account, wallet, txs }) => {
-    const signingTransactions = txs.filter(tx => tx.status === 'pending' && tx.chainId === account?.chainId);
+    const signingTransactions = txs.filter(tx => tx.status === 'pending');
 
     if (
       nonNullable(account) &&

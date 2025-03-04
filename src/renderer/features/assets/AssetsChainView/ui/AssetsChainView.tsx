@@ -40,7 +40,6 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
-    const multisigChainToInclude = isMultisig ? activeWallet.accounts[0].chainId : undefined;
 
     const filteredChains = [];
     for (const chain of Object.values(chains)) {
@@ -56,11 +55,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
         )
           continue;
 
-        if (
-          !isMultisig ||
-          networkUtils.isMultisigSupported(chain.options) ||
-          multisigChainToInclude === chain.chainId
-        ) {
+        if (!isMultisig || networkUtils.isMultisigSupported(chain.options)) {
           filteredChains.push(chain);
           break;
         }

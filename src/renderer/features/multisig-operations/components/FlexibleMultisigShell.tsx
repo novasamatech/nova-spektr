@@ -4,6 +4,7 @@ import { memo } from 'react';
 
 import { type Chain, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Header, Plate, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Accordion, Box, Modal, Progress } from '@/shared/ui-kit';
@@ -73,7 +74,7 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
             </ApproveTxModal>
           )}
         </div>
-        <Signatories signatories={signatories} connection={extendedChain} events={events} />
+        <Signatories signatories={signatories} connection={extendedChain} events={events} chain={extendedChain} />
 
         <Details tx={tx} chain={extendedChain} />
       </Plate>
@@ -85,13 +86,14 @@ type SignatoriesParams = {
   signatories: Signatory[];
   connection: ExtendedChain;
   events: MultisigEvent[];
+  chain: Chain;
 };
 type WalletSignatory = Signatory & {
   wallet: Wallet;
   status: MultisigEvent['status'] | null;
 };
 
-const Signatories = memo(({ signatories, connection, events }: SignatoriesParams) => {
+const Signatories = memo(({ signatories, connection, events, chain }: SignatoriesParams) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -132,7 +134,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
                     <WalletIcon type={signatory.wallet.type} size={20} />
                     <Address
                       title={signatory.wallet.name}
-                      address={signatory.address}
+                      address={toAddress(signatory.accountId)}
                       showIcon={false}
                       variant="truncate"
                     />
@@ -157,7 +159,7 @@ const Signatories = memo(({ signatories, connection, events }: SignatoriesParams
                       connection.addressPrefix,
                     )}
                     variant="short"
-                    address={signatory.address}
+                    address={toAddress(signatory.accountId, { prefix: chain.addressPrefix })}
                   />
                 </SignatoryCard>
               ))}
