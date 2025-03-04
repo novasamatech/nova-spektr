@@ -15,7 +15,9 @@ import { truncate } from './strings';
 
 /**
  * Format address or accountId with prefix and chunk size Example: chunk = 6,
- * would produce address like 1ChFWe...X7iTVZ
+ * would produce address like 1ChFWe...X7iTVZ.
+ *
+ * Use it only for ui formatting.
  *
  * @param value Account address or accountId
  * @param params Chunk and prefix (default is 42)

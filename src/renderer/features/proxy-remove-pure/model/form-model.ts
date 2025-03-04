@@ -25,6 +25,7 @@ import {
   transferableAmount,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -223,7 +224,7 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.REMOVE_PURE_PROXY,
       args: {
         spawner: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
@@ -249,10 +250,10 @@ const $canSubmit = combine(
 
 type ProxyParams = {
   api: ApiPromise;
-  address: Address;
+  accountId: AccountId;
 };
-const getAccountProxiesFx = createEffect(({ api, address }: ProxyParams): Promise<ProxyAccounts> => {
-  return proxyService.getProxiesForAccount(api, address);
+const getAccountProxiesFx = createEffect(({ api, accountId }: ProxyParams): Promise<ProxyAccounts> => {
+  return proxyService.getProxiesForAccount(api, accountId);
 });
 
 // Fields connections
@@ -310,7 +311,7 @@ sample({
   filter: ({ isChainConnected, account }, chain) => isChainConnected && Boolean(account) && Boolean(chain),
   fn: ({ apis, account }, chain) => ({
     api: apis[chain!.chainId],
-    address: toAddress(account!.accountId, { prefix: chain!.addressPrefix }),
+    accountId: account!.accountId,
   }),
   target: getAccountProxiesFx,
 });

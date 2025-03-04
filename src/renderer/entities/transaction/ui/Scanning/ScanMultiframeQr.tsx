@@ -50,15 +50,15 @@ export const ScanMultiframeQr = ({
     const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
 
     for (const signingPayload of signingPayloads) {
-      const address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+      const accountId = signingPayload.account.accountId;
 
-      if (!metadataMap[address]) {
-        metadataMap[address] = {};
+      if (!metadataMap[accountId]) {
+        metadataMap[accountId] = {};
       }
 
-      if (!metadataMap[address][signingPayload.chain.chainId]) {
-        metadataMap[address][signingPayload.chain.chainId] = await createTxMetadata(
-          address,
+      if (!metadataMap[accountId][signingPayload.chain.chainId]) {
+        metadataMap[accountId][signingPayload.chain.chainId] = await createTxMetadata(
+          signingPayload.account.accountId,
           apis[signingPayload.chain.chainId],
         );
       }
@@ -67,15 +67,15 @@ export const ScanMultiframeQr = ({
     const transactionPromises = signingPayloads.map((signingPayload) => {
       const chainId = signingPayload.chain.chainId;
       const api = apis[chainId];
-      const txAddress = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+      const accountId = signingPayload.account.accountId;
 
       const info = transactionService.createPayloadWithMetadata(
         signingPayload.transaction,
         api,
-        metadataMap[txAddress][chainId],
+        metadataMap[accountId][chainId],
       );
 
-      metadataMap[txAddress][chainId] = upgradeNonce(metadataMap[txAddress][chainId], 1);
+      metadataMap[accountId][chainId] = upgradeNonce(metadataMap[accountId][chainId], 1);
 
       let address = '';
 

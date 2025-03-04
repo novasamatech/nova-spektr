@@ -2,7 +2,6 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -52,7 +51,7 @@ sample({
   fn: ({ transactions, wallets, chains }) => {
     const signingPayloads = transactions.map((tx: BasketTransaction) => {
       const accounts = walletUtils.getAccountsBy(wallets, account => {
-        return account.accountId === tx.initiatorAccountId && account.accountId === toAccountId(tx.coreTx.address);
+        return account.accountId === tx.initiatorAccountId && account.accountId === tx.coreTx.accountId;
       });
 
       return {
@@ -88,7 +87,7 @@ sample({
     const account = walletUtils.getAccountsBy(wallets, account => {
       return (
         account.accountId === transactions[0].initiatorAccountId &&
-        account.accountId === toAccountId(transactions[0].coreTx.address)
+        account.accountId === transactions[0].coreTx.accountId
       );
     });
 

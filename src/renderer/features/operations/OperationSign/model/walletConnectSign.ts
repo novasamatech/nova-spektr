@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type SignerPayloadJSON } from '@substrate/txwrapper-polkadot';
+import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Address, type ChainId, type HexString } from '@/shared/core';
 import { series, waitFor } from '@/shared/effector';
-import { assert, createTxMetadata, nonNullable, toAddress, upgradeNonce } from '@/shared/lib/utils';
+import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
@@ -40,8 +40,7 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
   const account = payload.signatory || payload.account;
   const api = apis[payload.chain.chainId];
 
-  const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
-  let metadata = await createTxMetadata(address, api);
+  let metadata = await createTxMetadata(account.accountId, api);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
@@ -180,11 +179,11 @@ sample({
   source: walletConnect.$client,
   filter: nonNullable,
   fn(client, { trigger: transactions, event: session }) {
-    return transactions.map<SignParams>(({ info, unsigned: { metadataRpc: _, ...unsigned } }) => ({
+    return transactions.map<SignParams>(({ unsigned }) => ({
       client: client!,
       session,
-      chainId: info.genesisHash as ChainId,
-      address: info.address,
+      chainId: unsigned.genesisHash,
+      address: unsigned.address,
       payload: unsigned,
     }));
   },

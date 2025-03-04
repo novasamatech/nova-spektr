@@ -1,7 +1,7 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 
 import { type Chain, type Transaction, TransactionType } from '@/shared/core';
-import { formatBalance, toAddress } from '@/shared/lib/utils';
+import { formatBalance } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -80,7 +80,7 @@ function createSalaryRequestTransaction({
   chain,
 }: SalaryRequestTransactionParams): SalaryRequestTransaction {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_SALARY_REQUEST,
     args: { pallet },
@@ -105,7 +105,7 @@ function createSalaryPayoutTransaction({
   chain,
 }: SalaryPayoutTransactionParams): SalaryPayoutTransaction {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_SALARY_PAYOUT,
     args: { pallet, beneficiary },
@@ -128,7 +128,7 @@ function createSalaryInductTransaction({
   chain,
 }: SalaryInductTransactionParams): SalaryInductTransaction {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_SALARY_INDUCT,
     args: { pallet },

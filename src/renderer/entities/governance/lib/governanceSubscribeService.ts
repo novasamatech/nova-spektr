@@ -15,6 +15,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { governanceService } from './governanceService';
 
@@ -26,10 +27,10 @@ export const governanceSubscribeService = {
 
 function subscribeTrackLocks(
   api: ApiPromise,
-  addresses: Address[],
+  accounts: AccountId[],
   callback: (res?: Record<Address, Record<TrackId, BN>>) => void,
 ): () => void {
-  const unsubscribe = api.query.convictionVoting.classLocksFor.multi(addresses, (tuples) => {
+  const unsubscribe = api.query.convictionVoting.classLocksFor.multi(accounts, (tuples) => {
     const result: Record<Address, Record<TrackId, BN>> = {};
 
     for (const [index, locks] of tuples.entries()) {
@@ -39,7 +40,7 @@ function subscribeTrackLocks(
         return acc;
       }, {});
 
-      result[addresses[index]] = lockData;
+      result[accounts[index]] = lockData;
     }
     callback(result);
   });
@@ -52,13 +53,13 @@ function subscribeTrackLocks(
 function subscribeVotingFor(
   api: ApiPromise,
   tracksIds: TrackId[],
-  addresses: Address[],
+  accounts: AccountId[],
   callback: (voting: VotingMap) => void,
 ) {
-  const tuples = addresses.flatMap((address) => tracksIds.map((trackId) => [address, trackId] as const));
+  const tuples = accounts.flatMap((accounts) => tracksIds.map((trackId) => [accounts, trackId] as const));
 
   return convictionVotingPallet.storage.subscribeVotingFor(api, tuples, (votings) => {
-    const result = addresses.reduce<Record<Address, Record<TrackId, Voting>>>((acc, address) => {
+    const result = accounts.reduce<Record<AccountId, Record<TrackId, Voting>>>((acc, address) => {
       acc[address] = {};
 
       return acc;

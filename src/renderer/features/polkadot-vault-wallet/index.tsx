@@ -35,6 +35,9 @@ accountSDK(polkadotVaultWalletFeature, {
   collectAccountChildren(children) {
     return children;
   },
+  wrapTransaction(transaction) {
+    return transaction;
+  },
 });
 
 polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
