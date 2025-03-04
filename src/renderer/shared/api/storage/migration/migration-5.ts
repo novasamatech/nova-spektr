@@ -52,5 +52,5 @@ export async function migratePVAccounts(t: Transaction): Promise<void> {
 
   await t.table('accounts2').bulkDelete(accountsToDelete.map((a) => a.id));
   await t.table('accounts2').bulkPut(accountsToUpdate);
-  await t.table('wallet').bulkPut(walletsToUpdate);
+  await t.table('wallets').bulkPut(walletsToUpdate);
 }
