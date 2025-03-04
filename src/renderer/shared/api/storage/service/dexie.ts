@@ -156,7 +156,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions', 'connections'],
+    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions'],
   });
 
   return { blob, fileName: 'spektr-database.json' };
