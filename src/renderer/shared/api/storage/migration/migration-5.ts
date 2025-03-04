@@ -4,12 +4,8 @@ import { type Wallet } from '@/shared/core';
 import { groupBy } from '@/shared/lib/utils';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
-// to remove cyclic deps
-// eslint-disable-next-line boundaries/entry-point
-import { accountUtils } from '@/entities/wallet/lib/account-utils';
-// to remove cyclic deps
-// eslint-disable-next-line boundaries/entry-point
-import { walletUtils } from '@/entities/wallet/lib/wallet-utils';
+
+const PV_WALLETS = ['wallet_pv', 'wallet_mps', 'wallet_sps'];
 
 export async function migratePVAccounts(t: Transaction): Promise<void> {
   const accounts = await t.db.table<AnyAccount>('accounts2').toArray();
@@ -28,9 +24,9 @@ export async function migratePVAccounts(t: Transaction): Promise<void> {
       continue;
     }
 
-    if (!walletUtils.isPolkadotVaultGroup(wallet)) continue;
+    if (!PV_WALLETS.includes(wallet.type)) continue;
 
-    const baseAccount = group.find(accountUtils.isVaultBaseAccount);
+    const baseAccount = group.find((a) => 'accountType' in a && a.accountType === 'base');
 
     // delete base account if wallet has other accounts
     if (group.length > 1 && baseAccount) {
