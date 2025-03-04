@@ -1,12 +1,14 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { walletUtils } from '@/entities/wallet';
@@ -57,6 +59,14 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
 
   const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
+
+  const abstainVotingPower = (
+    <AssetBalance
+      className="text-footnote text-text-tertiary"
+      asset={asset}
+      value={votingService.calculateVotingPower(amount.value || BN_ZERO, 'None')}
+    />
+  );
 
   return (
     <>
@@ -171,7 +181,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
       {showAbstainConfirm && (
         <ConfirmModal
           isOpen
-          panelClass="w-60"
+          panelClass="w-[260px]"
           cancelText={t('general.button.cancelButton')}
           confirmText={t('general.button.continueButton')}
           onClose={toggleAbstainConfirm}
@@ -187,7 +197,11 @@ export const VoteForm = ({ chain, asset }: Props) => {
               {t('governance.vote.abstainConvictionWarningTitle')}
             </SmallTitleText>
             <FootnoteText className="text-center text-text-tertiary">
-              {t('governance.vote.abstainConvictionWarningDescription')}
+              <Trans
+                t={t}
+                i18nKey="governance.vote.abstainConvictionWarningDescription"
+                components={{ amount: abstainVotingPower }}
+              />
             </FootnoteText>
           </div>
         </ConfirmModal>

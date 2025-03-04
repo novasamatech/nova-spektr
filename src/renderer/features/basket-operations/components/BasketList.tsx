@@ -19,6 +19,7 @@ import { SignTransactionsModal } from './SignTransactionsModal';
 export const BasketList = () => {
   const { t } = useI18n();
 
+  const allOperations = useUnit(list.$all);
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
   const transactionsToSign = useUnit(signOperations.$transactions);
@@ -93,7 +94,13 @@ export const BasketList = () => {
         </div>
       )}
 
-      {operations.length === 0 && <EmptyBasket />}
+      {operations.length === 0 && (
+        <EmptyBasket
+          text={
+            allOperations.length === 0 ? 'basket.noOperationsDescription' : 'basket.noOperationsDescriptionFiltered'
+          }
+        />
+      )}
 
       {transactionsToSign.length > 1 ? <SignTransactionsModal /> : <SignTransactionModal />}
     </div>

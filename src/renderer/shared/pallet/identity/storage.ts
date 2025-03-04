@@ -51,9 +51,11 @@ export const storage = {
    * TWOX-NOTE: OK ― `AccountId` is a secure hash.
    */
   identityOf(api: ApiPromise, accounts: AccountId[]) {
-    const schema = pjsSchema.vec(
-      pjsSchema.optional(z.tuple([identityRegistration, pjsSchema.optional(pjsSchema.bytes)])),
-    );
+    const identitySchema = z.union([
+      identityRegistration,
+      z.tuple([identityRegistration, pjsSchema.optional(pjsSchema.bytes)]),
+    ]);
+    const schema = pjsSchema.vec(pjsSchema.optional(identitySchema));
 
     return substrateRpcPool
       .call(() => getQuery(api, 'identityOf').multi(accounts))

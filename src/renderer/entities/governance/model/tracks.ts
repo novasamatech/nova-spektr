@@ -14,7 +14,8 @@ const $tracks = createStore<Record<TrackId, TrackInfo>>({});
 
 const requestTracks = createEvent<RequestTracksParams>();
 
-const requestTracksFx = createEffect(({ api }: RequestTracksParams): Record<TrackId, TrackInfo> => {
+const requestTracksFx = createEffect(async ({ api }: RequestTracksParams) => {
+  await api.isReady;
   return governanceService.getTracks(api);
 });
 

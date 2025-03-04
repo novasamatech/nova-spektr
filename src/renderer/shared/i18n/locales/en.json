@@ -89,6 +89,7 @@
       "valid": "Valid"
     },
     "noOperationsDescription": "There are no operations in the basket yet",
+    "noOperationsDescriptionFiltered": "Nothing was found.<br />Update the search or cancel filtering.",
     "noOperationsLabel": "No operations",
     "refreshButton": "Refresh list",
     "removeConfirm": {
@@ -878,7 +879,7 @@
     },
     "title": "Governance",
     "vote": {
-      "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction. You will vote with 1 vote.",
+      "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction.<br />Your voting power will be <amount/>.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
       "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
       "delegationErrorTitle": "Already delegating votes",
@@ -912,6 +913,7 @@
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
+    "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
     "votedNay": "NAY <amount/>",

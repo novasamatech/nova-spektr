@@ -1,3 +1,5 @@
+import { type BN } from '@polkadot/util';
+
 import { type CallHash, type ChainId, type HexString, type ProxiedAccount } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
@@ -24,7 +26,7 @@ export type MultisigOperation = {
   accountId: AccountId;
   callHash: CallHash;
   depositor: AccountId;
-  deposit?: string;
+  deposit?: BN;
   blockCreated: BlockHeight;
   indexCreated: number;
   callData: HexString | null;

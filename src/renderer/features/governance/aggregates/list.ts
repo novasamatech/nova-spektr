@@ -1,7 +1,9 @@
-import { combine, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { nullable } from '@/shared/lib/utils';
+import { referendaPallet } from '@/shared/pallet/referenda';
 import {
   approveThresholdModel,
   referendumModel,
@@ -16,6 +18,18 @@ import { type AggregatedReferendum } from '../types/structs';
 import { delegatedVotesAggregate } from './delegatedVotes';
 import { tracksAggregate } from './tracks';
 import { votingAggregate } from './voting';
+
+const $undecidingTimeout = createStore<number>(0);
+
+const fetchUndecidingTimeoutFx = createEffect(async ({ api }: { api: ApiPromise }) => {
+  await api.isReady;
+  return referendaPallet.consts.undecidingTimeout('governance', api);
+});
+
+sample({
+  clock: fetchUndecidingTimeoutFx.doneData,
+  target: $undecidingTimeout,
+});
 
 const $chainReferendums = combine(
   {
@@ -69,7 +83,6 @@ const $referendums = combine(
   {
     referendums: $chainReferendums,
     delegatedVotes: delegatedVotesAggregate.$delegatedVotesInChain,
-    titles: $chainTitles,
     approvalThresholds: $approvalThresholds,
     supportThresholds: $supportThresholds,
     chainId: networkSelectorModel.$governanceChainId,
@@ -77,11 +90,11 @@ const $referendums = combine(
     tracks: tracksAggregate.$tracks,
     api: networkSelectorModel.$governanceChainApi,
     accounts: votingAggregate.$possibleAccountsForVoting,
+    undecidingTimeout: $undecidingTimeout,
   },
   ({
     referendums,
     chainId,
-    titles,
     approvalThresholds,
     supportThresholds,
     voting,
@@ -89,12 +102,11 @@ const $referendums = combine(
     tracks,
     api,
     accounts,
+    undecidingTimeout,
   }): AggregatedReferendum[] => {
     if (!chainId || !api) {
       return [];
     }
-
-    const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
 
     return referendums.map((referendum) => {
       const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
@@ -104,15 +116,17 @@ const $referendums = combine(
       let status = null;
 
       if (referendumService.isOngoing(referendum)) {
-        end = referendumService.getReferendumEndTime(referendum, tracks[referendum.track], undecidingTimeout);
-        status = referendumService.getReferendumStatus(referendum);
+        const track = tracks[referendum.track];
+        if (track) {
+          end = referendumService.getReferendumEndTime(referendum, track, undecidingTimeout);
+          status = referendumService.getReferendumStatus(referendum);
+        }
       }
 
       return {
         ...referendum,
         end,
         status,
-        title: titles[referendum.referendumId] ?? null,
         approvalThreshold: approvalThresholds[referendum.referendumId] ?? null,
         supportThreshold: supportThresholds[referendum.referendumId] ?? null,
         voting: {
@@ -139,11 +153,12 @@ const $isTitlesLoading = combine(
 
 sample({
   clock: networkSelectorModel.events.networkSelected,
-  target: referendumModel.events.subscribeReferendums,
+  target: [referendumModel.events.subscribeReferendums, fetchUndecidingTimeoutFx],
 });
 
 export const listAggregate = {
   $referendums: readonly($referendums),
+  $titles: $chainTitles,
   $isLoading: referendumModel.$isLoading,
   $isTitlesLoading,
 };

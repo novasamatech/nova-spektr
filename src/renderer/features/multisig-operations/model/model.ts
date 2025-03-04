@@ -93,7 +93,7 @@ sample({
 });
 
 sample({
-  clock: operations.$list,
+  clock: operations.$operations,
   source: $list,
   fn(list, updatedList) {
     const toUpdate = [];
@@ -119,7 +119,7 @@ sample({
 });
 
 sample({
-  clock: operations.$list,
+  clock: operations.$operations,
   source: $list,
   fn(list, updatedList) {
     return merge({

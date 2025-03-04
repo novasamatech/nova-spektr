@@ -1,4 +1,4 @@
-import { type Store, combine, createEffect, createEvent, restore, sample } from 'effector';
+import { type Store, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import {
   type Account,
@@ -49,6 +49,7 @@ const formInitiated = createEvent<Input[]>();
 const formConfirmed = createEvent();
 const confirmed = createEvent();
 
+const $error = createStore<Error | null>(null);
 const $confirmStore = restore(formInitiated, null);
 
 const $storeMap = combine($confirmStore, (store) => {
@@ -106,7 +107,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.signatory.accountId,
               store.chain.chainId,
-              store.asset.assetId.toFixed(),
+              store.xcmAsset?.assetId.toFixed() ?? store.asset.assetId.toFixed(),
             ),
           ),
       } as TransferSignatoryFeeStore,
@@ -359,6 +360,17 @@ sample({
   target: formConfirmed,
 });
 
+sample({
+  clock: validateFx.failData,
+  target: $error,
+});
+
+sample({
+  clock: formInitiated,
+  fn: () => null,
+  target: $error,
+});
+
 const $isMultisigExists = combine(
   {
     apis: networkModel.$apis,
@@ -378,6 +390,7 @@ export const confirmModel = {
   $proxiedWallets,
   $signerWallets,
   $isMultisigExists,
+  $error,
 
   $isXcm,
   events: {
