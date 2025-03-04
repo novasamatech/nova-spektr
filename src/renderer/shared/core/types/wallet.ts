@@ -1,3 +1,4 @@
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
@@ -33,16 +34,19 @@ export interface Wallet {
 
 export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;
+  rootAccountId: AccountId;
   accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[];
 }
 
 export interface SingleShardWallet extends Wallet {
   type: WalletType.SINGLE_PARITY_SIGNER;
+  rootAccountId: AccountId;
   accounts: VaultBaseAccount[];
 }
 
 export interface MultiShardWallet extends Wallet {
   type: WalletType.MULTISHARD_PARITY_SIGNER;
+  rootAccountId: AccountId;
   accounts: (VaultBaseAccount | VaultChainAccount)[];
 }
 

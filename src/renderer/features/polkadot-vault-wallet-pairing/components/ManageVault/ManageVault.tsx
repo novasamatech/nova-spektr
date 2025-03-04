@@ -107,18 +107,22 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     manageVaultModel.events.vaultCreated({
       wallet: {
         name: walletName.trim(),
+        rootAccountId: publicKey,
         type: WalletType.POLKADOT_VAULT,
         signingType: SigningType.POLKADOT_VAULT,
       },
-      root: {
-        name: '',
-        accountId: publicKey,
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.BASE,
-        type: 'universal',
-      },
-      accounts,
+      accounts: accounts.length
+        ? accounts
+        : [
+            {
+              name: walletName.trim(),
+              accountId: publicKey,
+              cryptoType: CryptoType.SR25519,
+              signingType: SigningType.POLKADOT_VAULT,
+              accountType: AccountType.BASE,
+              type: 'universal',
+            },
+          ],
     });
     toggleIsAddressModalOpen();
 
