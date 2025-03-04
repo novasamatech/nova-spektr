@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, isBn } from '@polkadot/util';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -19,7 +18,7 @@ import {
   TransactionType,
   WrapperKind,
 } from '@/shared/core';
-import { TEST_ACCOUNTS, formatAmount, getAssetId, toAccountId, toAddress } from '@/shared/lib/utils';
+import { formatAmount, getAssetId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
@@ -57,7 +56,7 @@ type TransferParams = {
   asset: Asset;
   accountId: AccountId;
   destination: string;
-  amount: string | BN;
+  amount: string;
   transferAll?: boolean;
   xcmData?: {
     args: {
@@ -98,8 +97,8 @@ function buildTransfer({
     type: transactionType,
     args: {
       palletName,
-      dest: toAddress(destination || TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-      value: isBn(amount) ? amount.toString() : formatAmount(amount, asset.precision) || '1',
+      dest: destination,
+      value: formatAmount(amount, asset.precision),
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
