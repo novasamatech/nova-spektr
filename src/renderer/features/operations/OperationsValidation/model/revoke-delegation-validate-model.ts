@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -29,14 +29,14 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, feeMap }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
 
     const fee =
       feeMap?.[chain.chainId]?.[transaction.type] || (await transactionService.getTransactionFee(transaction, api));
 
     const rules = [
       {
-        value: transaction.address,
+        value: accountId,
         form: {},
         ...DelegateRules.account.noProxyFee({} as Store<TransferAccountStore>),
         source: {

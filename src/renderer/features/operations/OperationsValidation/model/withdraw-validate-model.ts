@@ -12,7 +12,7 @@ import {
   type ID,
   type Transaction,
 } from '@/shared/core';
-import { redeemableAmount, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { redeemableAmount, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
@@ -56,7 +56,8 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, staking, era, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
+    const address = toAddress(accountId, { prefix: chain.addressPrefix });
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
@@ -82,7 +83,7 @@ const rootValidateFx = createEffect(
         },
         ...WithdrawRules.amount.noRedeemBalance({} as Store<AmountFeeStore>),
         source: {
-          accountsBalances: [redeemableAmount(staking?.[transaction.address]?.unlocking, era || 0)],
+          accountsBalances: [redeemableAmount(staking?.[address]?.unlocking, era || 0)],
         } as AmountFeeStore,
       },
     ];
@@ -138,7 +139,7 @@ const validateFx = attach({
     const era = await getEraFx({ api });
     const staking = await fetchStakingFx({
       api,
-      addresses: [transaction.address],
+      addresses: [toAddress(transaction.accountId, { prefix: chain.addressPrefix })],
       chainId: transaction.chainId,
     });
 

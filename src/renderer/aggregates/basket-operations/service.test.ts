@@ -7,7 +7,7 @@ describe('basketOperationsService', () => {
   test('should get core tx from basket operation', () => {
     const neededCoreTx = {
       chainId: '0x00' as HexString,
-      address: '0x00',
+      accountId: '0x00' as AccountId,
       type: TransactionType.TRANSFER,
       args: {},
     };

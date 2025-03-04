@@ -47,7 +47,7 @@ sample({
   fn: ({ apis, wallet }, { chain }) => ({
     api: apis[chain!.chainId],
     chain: chain!,
-    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
+    accounts: accountUtils.getAccountsIdsForWallet(wallet!, chain!),
   }),
   target: locksModel.events.requestLocks,
 });

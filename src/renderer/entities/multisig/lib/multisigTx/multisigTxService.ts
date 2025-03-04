@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useLiveQuery } from 'dexie-react-hooks';
 
-import { chainsService } from '@/shared/api/network';
 import { type MultisigTransactionDS, storage } from '@/shared/api/storage';
 import {
   type CallData,
@@ -11,7 +10,7 @@ import {
   MultisigTxInitStatus,
 } from '@/shared/core';
 import { type Task } from '@/shared/lib/hooks/useTaskQueue';
-import { getCurrentBlockNumber, getExpectedBlockTime, toAddress, validateCallData } from '@/shared/lib/utils';
+import { getCurrentBlockNumber, getExpectedBlockTime, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { decodeCallData } from '@/entities/transaction';
 import { useMultisigEvent } from '../multisigEvent/multisigEventService';
@@ -214,9 +213,7 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
 
   const updateCallData = async (api: ApiPromise, tx: MultisigTransaction, callData: CallData) => {
     try {
-      const chain = chainsService.getChainById(tx.chainId);
-
-      const transaction = decodeCallData(api, toAddress(tx.accountId, { prefix: chain?.addressPrefix }), callData);
+      const transaction = decodeCallData(api, tx.accountId, callData);
 
       await updateMultisigTx({ ...tx, callData, transaction });
     } catch (e) {

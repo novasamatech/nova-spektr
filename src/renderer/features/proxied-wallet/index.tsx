@@ -36,6 +36,10 @@ accountSDK(proxiedWalletFeature, {
     }
     return children;
   },
+  wrapTransaction(transaction) {
+    // TODO implement
+    return transaction;
+  },
 });
 
 proxiedWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

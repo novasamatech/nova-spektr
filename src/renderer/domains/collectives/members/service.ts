@@ -1,5 +1,5 @@
 import { type Chain, type Transaction, TransactionType } from '@/shared/core';
-import { dictionary, toAddress } from '@/shared/lib/utils';
+import { dictionary } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
@@ -59,7 +59,7 @@ function createSetActiveTransaction({
   isActive,
 }: SetActiveTransactionParams): SetActiveTransaction {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_SET_ACTIVE,
     args: { pallet, isActive },

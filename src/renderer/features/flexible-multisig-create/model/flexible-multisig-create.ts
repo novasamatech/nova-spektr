@@ -21,16 +21,7 @@ import {
   TransactionType,
   WalletType,
 } from '@/shared/core';
-import {
-  SS58_DEFAULT_PREFIX,
-  Step,
-  TEST_ACCOUNTS,
-  isStep,
-  nonNullable,
-  toAccountId,
-  toAddress,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -159,7 +150,7 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         threshold: 2,

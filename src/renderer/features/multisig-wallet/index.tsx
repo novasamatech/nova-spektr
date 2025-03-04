@@ -37,6 +37,25 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
+  wrapTransaction(transaction) {
+    // if (accountUtils.isMultisigAccount(account)) {
+    //   const otherSignatories = multisigUtils.getOtherSignatories(account, transaction.accountId, chain.addressPrefix);
+    //
+    //   return {
+    //     chainId: transaction.chainId,
+    //     accountId: account.accountId,
+    //     type: TransactionType.MULTISIG_AS_MULTI,
+    //     args: {
+    //       threshold: account.threshold,
+    //       otherSignatories,
+    //       maybeTimepoint: null,
+    //       callData,
+    //       callHash,
+    //     },
+    //   };
+    // }
+    return transaction;
+  },
 });
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
 import { type Address, type ProxyType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const proxyService = {
   getMaxProxies,
@@ -17,7 +18,7 @@ type ProxyAccounts = {
   accounts: { address: Address; proxyType: ProxyType }[];
   deposit: string;
 };
-async function getProxiesForAccount(api: ApiPromise, account: Address): Promise<ProxyAccounts> {
+async function getProxiesForAccount(api: ApiPromise, account: AccountId): Promise<ProxyAccounts> {
   const proxies = await api.query.proxy.proxies(account);
 
   const accounts = proxies[0].map((value) => ({

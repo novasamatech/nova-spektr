@@ -46,6 +46,7 @@ export const accountUtils = {
   isCryptoTypeMatch,
 
   getAddressesForWallet,
+  getAccountsIdsForWallet,
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
@@ -233,10 +234,14 @@ function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
 }
 
-function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {
   const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
     return accountUtils.isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
   });
 
-  return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));
+  return matchedAccounts.map((a) => a.accountId);
+}
+
+function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+  return getAccountsIdsForWallet(wallet, chain).map((id) => toAddress(id, { prefix: chain.addressPrefix }));
 }

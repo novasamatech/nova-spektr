@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, referendumService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -28,7 +28,7 @@ type ValidateParams = {
 
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
     const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
     const isOngoing = referendumService.isOngoing(referendum[0]);
