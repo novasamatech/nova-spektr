@@ -59,6 +59,8 @@ function isAccountAvailableOnChain(account: Pick<AnyAccount, 'type' | 'cryptoTyp
   if (isUniversalAccount(account)) {
     return accountAvailabilityOnChainAnyOf.check({ account, chain });
   }
+
+  return false;
 }
 
 function filterAccountOnChain(accounts: AnyAccount[], chain: Chain) {

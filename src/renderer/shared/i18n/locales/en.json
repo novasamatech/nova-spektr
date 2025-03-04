@@ -978,7 +978,7 @@
   "notifications": {
     "details": {
       "flexibleMultisigWalletSignAction": "Sign operation",
-      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength } available on  <chain />",
+      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
@@ -1890,6 +1890,7 @@
       "openInfoAction": "Open info",
       "proxiedAddressTitle": "Delegated from",
       "proxiesTabTitle": "Delegated authorities (proxies)",
+      "proxiesTabTitleShort": "Delegated",
       "proxyDeposit": "Total proxy deposit",
       "proxyToControl": "to control",
       "proxyTooltipWhatIsProxy": "A delegated authority is a type of account that acts as an intermediary or delegate for another account. Delegated authorities add an additional layer of control for your assets, allowing other accounts to control various operations for your account in a customizable way depending upon the access type.",
@@ -1916,12 +1917,12 @@
       "accountTab": "Account and signatories",
       "accountsGroup": "Your accounts",
       "addressInProgress": "In progress...",
+      "chainTitle": "with threshold { threshold } out of { signatories } signatories",
       "changeSignatories": "Change signatories/threshold",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
-      "singleChainTitle": "on <chain /> with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },

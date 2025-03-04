@@ -39,10 +39,9 @@ const $multisigAccount = combine($wallet, accounts.$list, (wallet, accounts) => 
   return filteredAccounts.find(accountUtils.isMultisigAccount) || null;
 });
 
-const $chain = combine(networkModel.$chains, $multisigAccount, (chains, multisigAccount) => {
-  if (!multisigAccount) return null;
-
-  return chains[multisigAccount.chainId];
+// TODO pass chain for outside
+const $chain = combine(networkModel.$chains, chains => {
+  return Object.values(chains).at(0) ?? null;
 });
 
 const $api = combine(

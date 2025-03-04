@@ -18,11 +18,7 @@ export const multisigUtils = {
   getOtherSignatories,
 };
 
-function getOtherSignatories(
-  account: MultisigAccount,
-  signer: AccountId | Address,
-  addressPrefix: number,
-) {
+function getOtherSignatories(account: MultisigAccount, signer: AccountId | Address, addressPrefix: number) {
   const signerAddress = toAddress(signer, { prefix: addressPrefix });
 
   return (
@@ -61,10 +57,10 @@ type BuildMultisigParams = {
   threshold: number;
   accountId: AccountId;
   signatories: AccountId[];
-  chain: Chain;
+  name: string;
 };
 
-function buildMultisigAccount({ threshold, accountId, signatories, chain }: BuildMultisigParams) {
+function buildMultisigAccount({ threshold, accountId, signatories, name }: BuildMultisigParams) {
   const account: NoID<Omit<MultisigAccount, 'walletId'>> = {
     threshold: threshold,
     accountId: accountId,
@@ -72,12 +68,11 @@ function buildMultisigAccount({ threshold, accountId, signatories, chain }: Buil
       accountId: signatory,
       address: toAddress(signatory),
     })),
-    name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-    chainId: chain.chainId,
+    name: name,
     cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
-    type: 'chain',
+    type: 'universal',
   };
 
   return account;

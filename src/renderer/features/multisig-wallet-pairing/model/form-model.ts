@@ -66,18 +66,13 @@ const $multisigAlreadyExists = combine(
   {
     wallets: walletModel.$wallets,
     multisigAccountId: $multisigAccountId,
-    formValues: $createMultisigForm.$values,
   },
-  ({ multisigAccountId, wallets, formValues: { chainId } }) => {
+  ({ multisigAccountId, wallets }) => {
     const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: walletUtils.isMultisig,
       accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-
-        const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
-
-        return isSameAccountId && isSameChainId;
+        return multisigAccount.accountId === multisigAccountId;
       },
     });
 
@@ -89,18 +84,13 @@ const $hiddenMultisig = combine(
   {
     hiddenWallets: walletModel.$hiddenWallets,
     multisigAccountId: $multisigAccountId,
-    formValues: $createMultisigForm.$values,
   },
-  ({ multisigAccountId, hiddenWallets, formValues: { chainId } }) => {
+  ({ multisigAccountId, hiddenWallets }) => {
     return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
       walletFn: walletUtils.isMultisig,
       accountFn: multisigAccount => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-
-        const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
-
-        return isSameAccountId && isSameChainId;
+        return multisigAccount.accountId === multisigAccountId;
       },
     });
   },

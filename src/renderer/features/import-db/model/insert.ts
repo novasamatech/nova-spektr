@@ -5,6 +5,7 @@ import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { accounts } from '@/domains/network';
+import { multisigsModel } from '@/entities/multisig';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';
@@ -67,6 +68,11 @@ sample({
   clock: populateWalletsFx.done,
   fn: () => Paths.ASSETS,
   target: navigationModel.events.navigateTo,
+});
+
+sample({
+  clock: accounts.populate.doneData,
+  target: [multisigsModel.request],
 });
 
 export const insert = {

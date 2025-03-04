@@ -3,6 +3,7 @@ import { createForm } from 'effector-forms';
 
 import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
@@ -71,18 +72,13 @@ const $multisigAlreadyExists = combine(
   {
     wallets: walletModel.$wallets,
     multisigAccountId: $multisigAccountId,
-    formValues: $createMultisigForm.$values,
   },
-  ({ multisigAccountId, wallets, formValues: { chainId } }) => {
+  ({ multisigAccountId, wallets }) => {
     const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: walletUtils.isMultisig,
       accountFn: (multisigAccount) => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-
-        const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
-
-        return isSameAccountId && isSameChainId;
+        return multisigAccount.accountId === multisigAccountId;
       },
     });
 
@@ -94,18 +90,13 @@ const $hiddenMultisig = combine(
   {
     hiddenWallets: walletModel.$hiddenWallets,
     multisigAccountId: $multisigAccountId,
-    formValues: $createMultisigForm.$values,
   },
-  ({ multisigAccountId, hiddenWallets, formValues: { chainId } }) => {
+  ({ multisigAccountId, hiddenWallets }) => {
     return walletUtils.getWalletFilteredAccounts(hiddenWallets, {
       walletFn: walletUtils.isMultisig,
       accountFn: (multisigAccount) => {
         if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-
-        const isSameAccountId = multisigAccount.accountId === multisigAccountId;
-        const isSameChainId = !multisigAccount.chainId || multisigAccount.chainId === chainId;
-
-        return isSameAccountId && isSameChainId;
+        return multisigAccount.accountId === multisigAccountId;
       },
     });
   },
@@ -121,7 +112,7 @@ const $availableAccounts = combine(
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
       const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w);
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chain);
+      const isChainMatch = accountService.isAccountAvailableOnChain(a, chain);
 
       return isValidWallet && isChainMatch;
     });
