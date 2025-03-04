@@ -1,3 +1,6 @@
+import { join } from 'path';
+import { cwd } from 'process';
+
 import { baseTestConfig } from '../../BaseTestConfig';
 import {
   vaultDPPolkadotTestAccount,
@@ -60,6 +63,20 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
 
   public async createVaultEthWallet(): Promise<VaultAssetsPage> {
     return this.injectWalletInDatabase(vaultAndEthereumWallet, vaultAndEthereumAccount);
+  }
+
+  public async importDatabase(dbFileName: string): Promise<VaultAssetsPage> {
+    await this.gotoOnboarding();
+    await this.click(this.pageElements.importDatabaseButton);
+
+    const projectRoot = cwd();
+    const dbFilePath = join(projectRoot, 'tests/system/data/db/', dbFileName);
+
+    const fileInput = this.page.locator('input[type="file"]');
+    await fileInput.setInputFiles(dbFilePath);
+    await this.click('Button');
+
+    return new VaultAssetsPage(this.page, new AssetsPageElements());
   }
 
   private async injectWalletInDatabase(
