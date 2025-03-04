@@ -9,8 +9,7 @@ import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
-import { WalletGroup } from './components/WalletGroup';
-import { walletActionsSlot } from './components/WalletRow';
+import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };

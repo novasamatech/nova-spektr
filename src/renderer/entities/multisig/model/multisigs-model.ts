@@ -20,7 +20,7 @@ import {
 } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
-import { delay, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { delay, isFulfilled, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -121,7 +121,7 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) =
 
   // Skip all failed requests - maybe next time they'll be fulfilled
   return Promise.allSettled(requests)
-    .then((res) => res.filter((r) => r.status === 'fulfilled').map((r) => r.value))
+    .then((res) => res.filter(isFulfilled).map((r) => r.value))
     .then((res) => res.flat());
 });
 
