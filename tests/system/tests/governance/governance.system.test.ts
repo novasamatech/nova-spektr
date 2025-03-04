@@ -31,7 +31,7 @@ test.describe('Governance votes for completed referenda', { tag: ['@governance']
   [
     { name: 'AYE X1', testData: mockMultipleDelegatorVotingsAyes, expected: 'AYE 4,000 DOT via 🌌 Novasama 🌌' },
     { name: 'NAY X1', testData: mockMultipleDelegatorVotingsNays, expected: 'NAY 4,000 DOT via 🌌 Novasama 🌌' },
-    { name: 'AYE X1 NAY X1', testData: mockMultipleDelegatorVotingsAyesNays, expected: '0 DOT via 🌌 Novasama 🌌' },
+    { name: 'AYE X1 NAY X1', testData: mockMultipleDelegatorVotingsAyesNays, expected: 'Voted' },
   ].forEach(({ name, testData, expected }) => {
     test(`Polkadot Vault, DD wallet, should display delegated votes for ${name}`, async ({ page, loginPage }) => {
       await interceptGovernanceSubquery(page, testData);
