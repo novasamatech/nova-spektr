@@ -370,5 +370,33 @@ describe('Transfer Validation Rules', () => {
       const rule = TransferRules.amount.insufficientBalanceForDeliveryFee(store, defaultConfig);
       expect(rule.validator('1000000000', {}, storeState)).toBe(false);
     });
+
+    it('should pass when amount is valid with format amount and asset precision', () => {
+      const storeState = {
+        network: {
+          chain: createTestChain(),
+          asset: { ...createTestAsset(), precision: 10 },
+        },
+        balance: { balance: '15000000000', native: '15000000000' },
+      };
+      const store = createStore(storeState);
+
+      const rule = TransferRules.amount.notEnoughBalance(store, { withFormatAmount: true });
+      expect(rule.validator('1.5', {}, storeState)).toBe(true);
+    });
+
+    it('should fail when amount exceeds balance with format amount and asset precision', () => {
+      const storeState = {
+        network: {
+          chain: createTestChain(),
+          asset: { ...createTestAsset(), precision: 10 },
+        },
+        balance: { balance: '1000000000', native: '1000000000' },
+      };
+      const store = createStore(storeState);
+
+      const rule = TransferRules.amount.notEnoughBalance(store, { withFormatAmount: true });
+      expect(rule.validator('2.5', {}, storeState)).toBe(false);
+    });
   });
 });
