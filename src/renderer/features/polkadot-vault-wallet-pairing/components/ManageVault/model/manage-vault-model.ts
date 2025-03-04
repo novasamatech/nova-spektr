@@ -4,17 +4,17 @@ import { createForm } from 'effector-forms';
 import {
   type DraftAccount,
   type NoID,
+  type PolkadotVaultGroup,
   SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
-  type Wallet,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
-import { KEY_NAMES, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -23,9 +23,12 @@ export type Callbacks = {
 };
 
 type VaultCreateParams = {
-  root: Omit<NoID<VaultBaseAccount>, 'walletId'>;
-  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-  accounts: (Omit<NoID<VaultChainAccount>, 'walletId'> | Omit<NoID<VaultShardAccount>, 'walletId'>)[];
+  wallet: Omit<NoID<PolkadotVaultGroup>, 'isActive' | 'accounts'>;
+  accounts: (
+    | Omit<NoID<VaultBaseAccount>, 'walletId'>
+    | Omit<NoID<VaultChainAccount>, 'walletId'>
+    | Omit<NoID<VaultShardAccount>, 'walletId'>
+  )[];
 };
 
 const formInitiated = createEvent<SeedInfo[]>();
@@ -33,6 +36,8 @@ const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<
 const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
+
+const createWalletsFx = attach({ effect: walletModel.createWallets });
 
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
@@ -126,18 +131,14 @@ sample({ clock: derivationsImported, target: $keys });
 
 sample({
   clock: vaultCreated,
-  fn: ({ wallet, root, accounts }) => {
-    return {
-      wallet,
-      accounts: [root, ...accounts],
-    };
+  fn(params) {
+    return [params];
   },
-  target: walletModel.events.multishardCreated,
+  target: createWalletsFx,
 });
 
 sample({
-  clock: walletModel.events.walletCreatedDone,
-  filter: ({ wallet }) => walletUtils.isPolkadotVault(wallet as Wallet),
+  clock: createWalletsFx,
   target: attach({
     source: $callbacks,
     effect: state => state?.onSubmit(),

@@ -1,4 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { type MultiShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -31,10 +32,9 @@ const {
 
 type Props = {
   wallet: MultiShardWallet;
-  accounts: MultishardMap;
   onClose: () => void;
 };
-export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) => {
+export const MultishardWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
@@ -46,6 +46,11 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
+  const accountsMap: MultishardMap = useMemo(
+    () => walletDetailsUtils.getMultishardMap(wallet.rootAccountId, wallet.accounts),
+    [wallet],
+  );
+
   const options: { icon: IconNames; title: string; onClick: VoidFunction }[] = [
     {
       icon: 'rename',
@@ -55,7 +60,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       icon: 'export',
       title: t('walletDetails.vault.export'),
-      onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accounts),
+      onClick: () => walletDetailsUtils.exportMultishardWallet(wallet, accountsMap),
     },
     {
       icon: 'forget',
@@ -100,7 +105,7 @@ export const MultishardWalletDetails = ({ wallet, accounts, onClose }: Props) =>
     {
       id: 'accounts',
       title: t('walletDetails.common.accountTabTitle'),
-      panel: <MultishardAccountsList accounts={accounts} chains={Object.values(chains)} className="h-[387px]" />,
+      panel: <MultishardAccountsList accounts={accountsMap} chains={Object.values(chains)} className="h-[387px]" />,
     },
     {
       id: 'proxies',
