@@ -4,10 +4,10 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionType } from '@/entities/transaction';
-import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot } from '@/features/multisig-operations';
 
 // import { PayeeOperationDetails } from './components/PayeeOperationDetails';
-import { StakingOperationTitle } from './components/StakingOperationTitle';
+// import { StakingOperationTitle } from './components/StakingOperationTitle';
 // import { ValidatorsOperationDetails } from './components/ValidatorsOperationDetails';
 
 export const stakingOperationDetailFeature = createFeature({
@@ -79,19 +79,19 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 //   order: 2,
 // });
 
-stakingOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// stakingOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
+//   const transaction = operationDetailsUtils.getOperationData(operation);
+//   const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transactionType && getOperationTitle(transactionType);
-  const icon = transactionType && getOperationIcon(transactionType);
+//   const title = transactionType && getOperationTitle(transactionType);
+//   const icon = transactionType && getOperationIcon(transactionType);
 
-  if (title) {
-    return <StakingOperationTitle operation={operation} title={title} icon={icon} />;
-  }
+//   if (title) {
+//     return <StakingOperationTitle operation={operation} title={title} icon={icon} />;
+//   }
 
-  return null;
-});
+//   return null;
+// });
 
 stakingOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();

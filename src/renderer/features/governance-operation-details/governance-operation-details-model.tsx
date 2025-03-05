@@ -4,10 +4,10 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionType } from '@/entities/transaction';
-import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot } from '@/features/multisig-operations';
 
 // import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
-import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
+// import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
 // import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';
 
 export const governanceOperationDetailFeature = createFeature({
@@ -78,19 +78,19 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 //   order: 2,
 // });
 
-governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
+//   const transaction = operationDetailsUtils.getOperationData(operation);
+//   const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transactionType && getOperationTitle(transactionType);
-  const icon = transactionType && getOperationIcon(transactionType);
+//   const title = transactionType && getOperationTitle(transactionType);
+//   const icon = transactionType && getOperationIcon(transactionType);
 
-  if (title) {
-    return <GovernanceOperationTitle operation={operation} title={title} icon={icon} />;
-  }
+//   if (title) {
+//     return <GovernanceOperationTitle operation={operation} title={title} icon={icon} />;
+//   }
 
-  return null;
-});
+//   return null;
+// });
 
 governanceOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();

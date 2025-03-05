@@ -17,9 +17,9 @@ import {
   // isRemoveProxyTransaction,
   // isRemovePureProxyTransaction,
 } from '@/entities/transaction';
-import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot } from '@/features/multisig-operations';
 
-import { ProxyOperationTitle } from './components/ProxyOperationTitle';
+// import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -86,18 +86,18 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 //   order: 1,
 // });
 
-proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
+//   const transaction = operationDetailsUtils.getOperationData(operation);
+//   const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transactionType && getOperationTitle(transactionType);
+//   const title = transactionType && getOperationTitle(transactionType);
 
-  if (title) {
-    return <ProxyOperationTitle operation={operation} title={title} />;
-  }
+//   if (title) {
+//     return <ProxyOperationTitle operation={operation} title={title} />;
+//   }
 
-  return null;
-});
+//   return null;
+// });
 
 proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
