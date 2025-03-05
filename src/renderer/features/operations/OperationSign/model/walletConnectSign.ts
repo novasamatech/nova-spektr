@@ -183,7 +183,7 @@ sample({
     assert(client, 'WC client not found');
 
     return transactions.map<SignParams>(({ unsigned }) => ({
-      client: client!,
+      client,
       session,
       payload: unsigned,
     }));
