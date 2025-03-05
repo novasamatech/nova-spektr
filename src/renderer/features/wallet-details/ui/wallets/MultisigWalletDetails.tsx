@@ -9,7 +9,7 @@ import { assert, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
-import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -148,59 +148,79 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     id: '2',
     title: t('walletDetails.multisig.signatoriesTab'),
     panel: (
-      <div className="flex flex-col">
-        <FootnoteText className="px-5 text-text-tertiary">
-          {t('walletDetails.multisig.thresholdLabel', {
-            min: multisigAccount.threshold,
-            max: multisigAccount.signatories.length,
-          })}
-        </FootnoteText>
+      <ScrollArea>
+        <div className="flex flex-col gap-2">
+          <FootnoteText className="px-5 text-text-tertiary">
+            {t('walletDetails.multisig.thresholdLabel', {
+              min: multisigAccount.threshold,
+              max: multisigAccount.signatories.length,
+            })}
+          </FootnoteText>
 
-        <div>
-          {signatories.wallets.length > 0 && (
-            <div className="flex flex-col gap-y-2">
-              <FootnoteText className="px-5 text-text-tertiary">
-                {t('walletDetails.multisig.walletsGroup')} {signatories.wallets.length}
-              </FootnoteText>
+          <div className="flex flex-col gap-2">
+            {signatories.wallets.length > 0 && (
+              <div className="flex flex-col gap-y-2">
+                <FootnoteText className="px-5 text-text-tertiary">
+                  {t('walletDetails.multisig.walletsGroup')} {signatories.wallets.length}
+                </FootnoteText>
 
-              <ul className="flex flex-col gap-y-2 px-5">
-                {signatories.wallets.map(([wallet, accountId]) => (
-                  <li key={accountId} className="-mx-2">
-                    <WalletCardMd
-                      wallet={wallet}
-                      description={
-                        <div className="text-help-text text-text-tertiary">
-                          <Address address={toAddress(accountId)} />
-                        </div>
-                      }
-                    >
-                      <RootExplorers accountId={accountId} />
-                    </WalletCardMd>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                <ul className="flex flex-col gap-y-2 px-5">
+                  {signatories.wallets.map(([wallet, accountId]) => (
+                    <li key={accountId} className="-mx-2">
+                      <WalletCardMd
+                        wallet={wallet}
+                        description={
+                          <div className="text-help-text text-text-tertiary">
+                            <Address address={toAddress(accountId)} />
+                          </div>
+                        }
+                      >
+                        <RootExplorers accountId={accountId} />
+                      </WalletCardMd>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          {signatories.contacts.length > 0 && (
-            <div>
-              <FootnoteText className="text-text-tertiary">
-                {t('walletDetails.multisig.contactsGroup')} {signatories.contacts.length}
-              </FootnoteText>
+            {signatories.contacts.length > 0 && (
+              <div>
+                <FootnoteText className="text-text-tertiary">
+                  {t('walletDetails.multisig.contactsGroup')} {signatories.contacts.length}
+                </FootnoteText>
 
-              <ul className="flex flex-col gap-y-2">
-                {signatories.contacts.map(signatory => (
-                  <li key={signatory.accountId} className="-mx-2">
-                    <ContactItem name={signatory.name} address={signatory.accountId}>
-                      <RootExplorers accountId={signatory.accountId} />
-                    </ContactItem>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                <ul className="flex flex-col gap-y-2">
+                  {signatories.contacts.map(signatory => (
+                    <li key={signatory.accountId} className="-mx-2">
+                      <ContactItem name={signatory.name} address={signatory.accountId}>
+                        <RootExplorers accountId={signatory.accountId} />
+                      </ContactItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {signatories.people.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <FootnoteText className="px-5 text-text-tertiary">
+                  {t('walletDetails.multisig.otherSignatories', { amount: signatories.people.length })}
+                </FootnoteText>
+
+                <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">
+                  {signatories.people.map(accountId => (
+                    <li key={accountId} className="px-3">
+                      <ContactItem address={accountId}>
+                        <RootExplorers accountId={accountId} />
+                      </ContactItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </ScrollArea>
     ),
   };
 
