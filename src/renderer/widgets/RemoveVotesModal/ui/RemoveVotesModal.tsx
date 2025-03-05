@@ -22,7 +22,8 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { SignatorySelectModal } from '@/features/multisig-operations';
+// eslint-disable-next-line boundaries/entry-point
+import { SignatorySelectModal } from '@/features/multisig-operations/components/modals/SignatorySelectModal';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider, RemoveVoteConfirmation, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { removeVotesModalAggregate } from '../aggregates/removeVotesModal';

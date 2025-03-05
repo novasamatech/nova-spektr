@@ -4,4 +4,4 @@
 // export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmation';
 export { Operations } from './components/Operations';
 export { multisigOperations } from './model/model';
-export { SignatorySelectModal } from './components/modals/SignatorySelectModal';
+// export { SignatorySelectModal } from './components/modals/SignatorySelectModal';
