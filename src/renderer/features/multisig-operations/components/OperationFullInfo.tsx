@@ -1,4 +1,5 @@
 import { useStoreMap, useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { useMultisigChainContext } from '@/app/providers';
 import { type MultisigTransactionDS } from '@/shared/api/storage';
@@ -29,7 +30,7 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = ({ tx, account }: Props) => {
+export const OperationFullInfo = memo(({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
@@ -130,4 +131,4 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
     </div>
   );
-};
+});
