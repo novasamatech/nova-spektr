@@ -11,7 +11,6 @@ type Props = {
 };
 
 export const Hash = memo(({ value, variant, testId = 'Hash' }: Props) => {
-  console.log('xcm', value, variant);
   const handleCopy = (e: ClipboardEvent) => {
     e.clipboardData.setData('text', value);
     e.preventDefault();
