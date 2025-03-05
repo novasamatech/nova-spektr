@@ -27,6 +27,7 @@ export const GET_DELEGATOR = gql`
     delegatorVotings(filter: { delegator: { in: $voters } }) {
       nodes {
         vote
+        delegator
         parent {
           referendumId
           standardVote

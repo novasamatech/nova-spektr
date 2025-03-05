@@ -1,5 +1,5 @@
 import { type CompletedReferendum, type OngoingReferendum } from '@/shared/core';
-import { nonNullable, nullable, performSearch } from '@/shared/lib/utils';
+import { performSearch } from '@/shared/lib/utils';
 import { referendumService } from '@/entities/governance';
 import { type AggregatedReferendum } from '@/features/governance';
 
@@ -41,10 +41,10 @@ function isReferendumVoted({ selectedVoteId, referendum }: FilterByVoteParams) {
   }
 
   if (selectedVoteId === 'voted') {
-    return referendum.voting.votes.length > 0 || nonNullable(referendum.votedByDelegate);
+    return referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0;
   }
 
-  return referendum.voting.votes.length === 0 && nullable(referendum.votedByDelegate);
+  return referendum.voting.votes.length === 0 && referendum.votedByDelegates.length === 0;
 }
 
 function isReferendumInTrack(selectedTrackIds: string[], referendum: AggregatedReferendum) {

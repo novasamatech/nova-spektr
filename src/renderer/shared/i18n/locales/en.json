@@ -881,7 +881,7 @@
     "vote": {
       "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction.<br />Your voting power will be <amount/>.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
-      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
+      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
       "delegationErrorTitle": "Already delegating votes",
       "errors": {
         "noAccountError": "Please select your account",
@@ -916,8 +916,11 @@
     "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
+    "votedAyeByDelegates": "AYE <amount/> via delegates",
+    "votedByDelegates": "Voted via delegates",
     "votedNay": "NAY <amount/>",
     "votedNayBy": "NAY <amount/> via <delegate/>",
+    "votedNayByDelegates": "NAY <amount/> via delegates",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
