@@ -6,8 +6,7 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, getNativeAsset, isStep, nullable } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
-// eslint-disable-next-line boundaries/entry-point
-import { SignatorySelectModal } from '@/features/multisig-operations/components/modals/SignatorySelectModal';
+import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { convertToFlexibleModel } from '../model/convert-to-flexible-model';
 

@@ -9,8 +9,7 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
-// eslint-disable-next-line boundaries/entry-point
-import { SignatorySelectModal } from '@/features/multisig-operations/components/modals/SignatorySelectModal';
+import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider, RevokeDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { revokeDelegationModel } from '../model/revoke-delegation-model';
