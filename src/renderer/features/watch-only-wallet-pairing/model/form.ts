@@ -4,6 +4,7 @@ import { createGate } from 'effector-react';
 
 import {
   AccountType,
+  type Address,
   CryptoType,
   SigningType,
   WalletType,
@@ -12,14 +13,18 @@ import {
 } from '@/shared/core';
 import { isEthereumAccountId, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
+import { IDENTITY_CHAIN } from '../lib/constants';
+
+const flow = createGate();
 
 type FormValues = {
   walletName: string;
-  address: string;
+  address: Address;
 };
 
 const form = createForm<FormValues>({
@@ -53,9 +58,8 @@ const form = createForm<FormValues>({
   validateOn: ['submit', 'change'],
 });
 
-const flow = createGate();
-
 const createWalletFx = attach({ effect: walletModel.createWallet });
+const requestIdentityFx = attach({ effect: identity.request });
 
 const $walletDraft = form.fields.walletName.$value.map(
   (walletName): Pick<WatchOnlyWallet, 'name' | 'type' | 'signingType'> => {
@@ -75,9 +79,9 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
     name: walletName.trim(),
     accountId,
     cryptoType,
+    type: 'universal',
     signingType: SigningType.WATCH_ONLY,
     accountType: AccountType.WATCH_ONLY,
-    type: 'universal',
   };
 });
 
@@ -96,8 +100,21 @@ const $chains = combine($accountDraft, networkModel.$chains, (account, chains) =
 });
 
 sample({
+  clock: form.fields.address.onChange,
+  filter: validateAddress,
+  fn: address => ({
+    chainId: IDENTITY_CHAIN,
+    accounts: [toAccountId(address)],
+  }),
+  target: requestIdentityFx,
+});
+
+sample({
   clock: form.formValidated,
-  source: { accountDraft: $accountDraft, walletDraft: $walletDraft },
+  source: {
+    accountDraft: $accountDraft,
+    walletDraft: $walletDraft,
+  },
   fn: ({ accountDraft, walletDraft }) => ({
     wallet: walletDraft,
     accounts: [accountDraft],
@@ -125,8 +142,9 @@ sample({
 // TODO move wallet select here
 
 export const pairingFormModel = {
-  form,
   flow,
+
+  form,
   $accountDraft,
   $chains,
 };
