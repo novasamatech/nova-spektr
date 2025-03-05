@@ -81,13 +81,19 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
               </Tabs.List>
             </Box>
             <Tabs.Content value="aye">
-              <VotingHistoryList chain={chain} asset={votingAsset} items={ayes} loading={isLoading} />
+              <VotingHistoryList chain={chain} asset={votingAsset} items={ayes} listName="Aye" loading={isLoading} />
             </Tabs.Content>
             <Tabs.Content value="nay">
-              <VotingHistoryList chain={chain} asset={votingAsset} items={nays} loading={isLoading} />
+              <VotingHistoryList chain={chain} asset={votingAsset} items={nays} listName="Nay" loading={isLoading} />
             </Tabs.Content>
             <Tabs.Content value="abstain">
-              <VotingHistoryList chain={chain} asset={votingAsset} items={abstain} loading={isLoading} />
+              <VotingHistoryList
+                chain={chain}
+                asset={votingAsset}
+                items={abstain}
+                listName="Abstain"
+                loading={isLoading}
+              />
             </Tabs.Content>
           </Tabs>
         )}
