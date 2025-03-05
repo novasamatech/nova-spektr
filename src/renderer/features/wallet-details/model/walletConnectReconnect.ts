@@ -54,8 +54,9 @@ sample({
   fn: ({ accounts, chains }, { result: session }) => {
     const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
     const accountsFromSession = walletConnectService.getAccountsFromSession(session, Object.values(chains));
-    const create: AnyAccountDraft<WcAccount>[] = [];
-    const update: WcAccount[] = [];
+    const accountsToCreate = new Set<AnyAccountDraft<WcAccount>>();
+    const accountsToUpdate = new Set<WcAccount>();
+    const accountsToDelete = new Set(wcAccounts);
 
     const name = wcAccounts.map(a => a.name).at(0) ?? 'unknown';
     const walletId = wcAccounts.map(a => a.walletId).at(0);
@@ -66,9 +67,9 @@ sample({
       const account = wcAccounts.find(a => a.accountId === accountId && a.chainId === chain.chainId);
 
       if (account) {
-        update.push(walletConnectService.updateAccount(account, session));
+        accountsToUpdate.add(walletConnectService.updateAccount(account, session));
       } else {
-        create.push(
+        accountsToCreate.add(
           walletConnectService.createAccount({
             walletId,
             name,
@@ -78,13 +79,25 @@ sample({
           }),
         );
       }
+
+      for (const accountToDelete of accountsToDelete) {
+        if (accountToDelete.accountId === accountId) {
+          accountsToDelete.delete(accountToDelete);
+          break;
+        }
+      }
     }
 
-    return { create, update };
+    return {
+      create: Array.from(accountsToCreate),
+      update: Array.from(accountsToUpdate),
+      delete: Array.from(accountsToDelete),
+    };
   },
   target: spread({
     create: accounts.createAccounts,
     update: accounts.updateAccounts,
+    delete: accounts.deleteAccounts,
   }),
 });
 
