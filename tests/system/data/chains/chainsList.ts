@@ -10,7 +10,6 @@ export const substrateChains = [
   { name: 'Basilisk' },
   { name: 'Altair' },
   { name: 'Parallel Heiko' },
-  { name: 'Khala' },
   { name: 'KILT' },
   { name: 'QUARTZ' },
   { name: 'Acala' },
@@ -32,7 +31,6 @@ export const substrateChains = [
   { name: 'Litentry' },
   { name: 'Mangata X' },
   { name: 'Imbue' },
-  { name: 'Tinkernet' },
   { name: 'Amplitude' },
   { name: 'Pendulum' },
   { name: 'Bittensor' },
@@ -45,4 +43,4 @@ export const substrateChains = [
   { name: 'Westend' },
 ];
 
-export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }];
+export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }, { name: 'Mythos' }];

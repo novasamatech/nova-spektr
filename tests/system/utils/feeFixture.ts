@@ -10,8 +10,8 @@ export const test = base.extend<FeeFixture>({
   vaultWallet: async ({ loginPage }, use, testInfo) => {
     await loginPage.gotoOnboarding();
     const vaultWallet = testInfo.tags.includes('@eth-test')
-      ? await loginPage.createVaultEthWallet()
-      : await loginPage.createVaultSubstrateWallet();
+      ? await loginPage.importDatabase('polkadotVaultWallet/pv-root-eth.json')
+      : await loginPage.importDatabase('polkadotVaultWallet/pv-root.json');
     await use(vaultWallet);
   },
 });

@@ -4,9 +4,11 @@ import { readConfig } from '../../utils/readConfig';
 import { BasePage } from '../BasePage';
 import { type AssetsPageElements } from '../_elements/AssetsPageElements';
 import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalElements';
+import { GovernancePageElements } from '../_elements/GovernancePageElements';
 import { SettingsPageElements } from '../_elements/SettingsPageElements';
 import { TransferModalElements } from '../_elements/TransferModalElements';
 import { WalletModalElements } from '../_elements/WalletModalElements';
+import { GovernancePage } from '../governancePage/GovernancePage';
 import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
 import { TransferModalWindow } from '../modals/TransferModalWindow';
 import { WalletModalWindow } from '../modals/WalletModalWindow';
@@ -15,6 +17,10 @@ import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   public async goToSettingsPage(): Promise<BaseSettingsPage> {
     return new BaseSettingsPage(this.page, new SettingsPageElements()).gotoMain();
+  }
+
+  public async goToGovernancePage(): Promise<GovernancePage> {
+    return new GovernancePage(this.page, new GovernancePageElements()).gotoMain();
   }
 
   public async openWalletManagement(): Promise<WalletModalWindow> {
