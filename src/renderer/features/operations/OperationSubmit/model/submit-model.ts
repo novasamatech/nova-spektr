@@ -21,7 +21,6 @@ import {
   transactionBuilder,
   transactionService,
 } from '@/entities/transaction';
-import { multisigOperations } from '@/features/multisig-operations';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 type Input = {
@@ -205,11 +204,6 @@ sample({
 });
 
 sample({
-  clock: saveMultisigTxFx.doneData,
-  target: multisigOperations.addTransactions,
-});
-
-sample({
   clock: $submittingTxs,
   filter: (txs) => txs.length === 0,
   target: txsExecuted,
@@ -255,5 +249,6 @@ export const submitModel = {
     formSubmitted,
     extrinsicSucceeded,
     extrinsicFailed,
+    saveMultisigTx: saveMultisigTxFx.doneData,
   },
 };
