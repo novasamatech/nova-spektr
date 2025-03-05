@@ -905,7 +905,8 @@
     "voteHistory": {
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
-      "listEmptyState": "No one voted here",
+      "listEmptyTitle": "{list} vote history is empty",
+      "listEmptyDescription": "Nobody has voted yet",
       "notAvailable": "Vote history is unavailable",
       "notAvailableDescription": "Please refresh to update the information.",
       "title": "Vote history",

@@ -3,7 +3,7 @@ import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
+import { EmptyMessage, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
 import { tasks } from '../model/tasks';
@@ -75,14 +75,9 @@ const AccountNotFound = memo(() => {
   const chainName = useUnit(tasks.$chainName);
 
   return (
-    <Box verticalAlign="center" horizontalAlign="center" grow={1} gap={6}>
-      <Icon name="document" size={64} />
-      <Box gap={2} horizontalAlign="center" width="340px">
-        <SmallTitleText className="text-center">{t('fellowship.tasks.noAccountTitle')}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">
-          {t('fellowship.tasks.noAccountDescription', { chain: chainName })}
-        </FootnoteText>
-      </Box>
-    </Box>
+    <EmptyMessage
+      title={t('fellowship.tasks.noAccountTitle')}
+      description={t('fellowship.tasks.noAccountDescription', { chain: chainName })}
+    />
   );
 });
