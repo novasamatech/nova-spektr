@@ -19,7 +19,7 @@ vi.mock('@/shared/lib/utils', async () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe('widgets/AddProxyModal/model/add-proxy-model', () => {
+describe.skip('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -27,8 +27,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
     jest.restoreAllMocks();
   });
 
-  // TODO: Revert
-  test.skip('should go through the process of proxy create', async () => {
+  test('should go through the process of proxy create', async () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);

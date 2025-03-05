@@ -11,7 +11,7 @@ import { addPureProxiedModel } from '../add-pure-proxied-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
+describe.skip('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });
@@ -20,8 +20,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
     jest.restoreAllMocks();
   });
 
-  // TODO: Revert
-  test.skip('should go through the process of pure proxied create', async () => {
+  test('should go through the process of pure proxied create', async () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);

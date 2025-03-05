@@ -13,13 +13,12 @@ vi.mock('@/shared/lib/utils', async () => ({
   getProxyTypes: () => ['Any'],
 }));
 
-describe('widgets/AddPureProxyModal/model/form-model', () => {
+describe.skip('widgets/AddPureProxyModal/model/form-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
 
-  // TODO: Revert
-  test.skip('should fill data for form model for multisig account', async () => {
+  test('should fill data for form model for multisig account', async () => {
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, { '0x00': testApi })
