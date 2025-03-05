@@ -1,12 +1,15 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Button, Icon, IconButton, Identicon, InputHint, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
+import { identity as identityDomain, identityService } from '@/domains/network';
+import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/form';
 
 import { EmptyState } from './EmptyState';
@@ -15,10 +18,22 @@ type Props = PropsWithChildren;
 
 export const PairingFormModal = ({ children }: Props) => {
   const { t } = useI18n();
+
   const open = useUnit(pairingFormModel.flow.status);
-  const { fields, eachValid, submit } = useForm(pairingFormModel.form);
-  const accountDraft = useUnit(pairingFormModel.$accountDraft);
   const chains = useUnit(pairingFormModel.$chains);
+  const accountDraft = useUnit(pairingFormModel.$accountDraft);
+
+  const { fields, eachValid, submit } = useForm(pairingFormModel.form);
+
+  const identityName = useStoreMap({
+    store: identityDomain.$list,
+    keys: [fields.address.value],
+    fn: (identity, [address]) => {
+      const accountIdentity = identity[IDENTITY_CHAIN]?.[toAccountId(address)];
+
+      return accountIdentity ? identityService.getFullName(accountIdentity) : null;
+    },
+  });
 
   const toggleModal = (open: boolean) => {
     if (open) {
@@ -46,23 +61,6 @@ export const PairingFormModal = ({ children }: Props) => {
             >
               <SmallTitleText className="mb-2">{t('onboarding.watchOnly.manageTitle')}</SmallTitleText>
 
-              <Field text={t('onboarding.walletNameLabel')}>
-                <Input
-                  placeholder={t('onboarding.walletNamePlaceholder')}
-                  invalid={fields.walletName.hasError()}
-                  value={fields.walletName.value}
-                  testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
-                  onChange={fields.walletName.onChange}
-                />
-                {fields.walletName.errors.map(({ errorText, rule }) => {
-                  return (
-                    <InputHint key={rule} variant="error" active>
-                      {t(errorText ?? '')}
-                    </InputHint>
-                  );
-                })}
-              </Field>
-
               <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
                   invalid={fields.address.hasError()}
@@ -78,13 +76,37 @@ export const PairingFormModal = ({ children }: Props) => {
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={fields.address.onChange}
                 />
-                {fields.address.errors.map(({ errorText, rule }) => {
-                  return (
-                    <InputHint key={rule} variant="error" active>
-                      {t(errorText ?? '')}
-                    </InputHint>
-                  );
-                })}
+                {fields.address.errors.map(({ errorText, rule }) => (
+                  <InputHint key={rule} variant="error" active>
+                    {t(errorText ?? '')}
+                  </InputHint>
+                ))}
+              </Field>
+
+              <Field text={t('onboarding.walletNameLabel')}>
+                <Input
+                  placeholder={t('onboarding.walletNamePlaceholder')}
+                  invalid={fields.walletName.hasError()}
+                  value={fields.walletName.value}
+                  testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
+                  onChange={fields.walletName.onChange}
+                />
+                {/* TODO: use real UI from Figma */}
+                {nonNullable(identityName) && (
+                  <div className="flex gap-x-2">
+                    {/* eslint-disable-next-line i18next/no-literal-string */}
+                    <span>Use your on-chain identity - </span>
+                    <button type="button" onClick={() => fields.walletName.onChange(identityName)}>
+                      {identityName}
+                    </button>
+                  </div>
+                )}
+
+                {fields.walletName.errors.map(({ errorText, rule }) => (
+                  <InputHint key={rule} variant="error" active>
+                    {t(errorText ?? '')}
+                  </InputHint>
+                ))}
               </Field>
 
               <div className="flex flex-1 items-end justify-between">
