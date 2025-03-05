@@ -2,14 +2,14 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type BasketTransaction, type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
-import { isEditDelegationTransaction, oldFindCoreBatchAll, transactionService } from '@/entities/transaction';
+import { findCoreBatchAll, isEditDelegationTransaction, transactionService } from '@/entities/transaction';
 
 const getCoreTx = (tx: BasketTransaction): Transaction => {
   if (isEditDelegationTransaction(tx.coreTx)) {
     return tx.coreTx;
   }
 
-  return tx.coreTx.type === TransactionType.BATCH_ALL ? oldFindCoreBatchAll(tx.coreTx) : tx.coreTx;
+  return tx.coreTx.type === TransactionType.BATCH_ALL ? findCoreBatchAll(tx.coreTx) : tx.coreTx;
 };
 
 async function getTransactionData(
