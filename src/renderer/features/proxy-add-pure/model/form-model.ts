@@ -28,9 +28,11 @@ import {
 } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { operationsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { multisigOperations } from '@/features/multisig-operations';
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 import { proxiesUtils } from '@/features/proxies';
 
 type FormParams = {
@@ -429,8 +431,7 @@ const $multisigAlreadyExists = combine(
     coreTxs: $pureTx.map((tx) => (tx ? [tx] : [])),
     transactions: multisigOperations.$all,
   },
-  // ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
-  () => false,
+  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );
 
 // Fields connections
