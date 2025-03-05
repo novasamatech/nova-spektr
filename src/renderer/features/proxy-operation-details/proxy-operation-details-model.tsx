@@ -1,23 +1,23 @@
 // import { useUnit } from 'effector-react';
 
-import { TransactionType } from '@/shared/core';
+// import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { useI18n } from '@/shared/i18n';
+// import { useI18n } from '@/shared/i18n';
 // import { toAccountId } from '@/shared/lib/utils';
 // import { DetailRow, FootnoteText } from '@/shared/ui';
 // import { Account } from '@/shared/ui-entities';
 // import { networkModel } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
+// import { operationDetailsUtils } from '@/entities/operations';
 // import { proxyUtils } from '@/entities/proxy';
-import {
-  TransactionTitle,
-  getTransactionType,
-  // isAddProxyTransaction,
-  // isManageProxyTransaction,
-  // isRemoveProxyTransaction,
-  // isRemovePureProxyTransaction,
-} from '@/entities/transaction';
-import { logTitleSlot } from '@/features/multisig-operations';
+// import {
+//   TransactionTitle,
+//   getTransactionType,
+// isAddProxyTransaction,
+// isManageProxyTransaction,
+// isRemoveProxyTransaction,
+// isRemovePureProxyTransaction,
+// } from '@/entities/transaction';
+// import { logTitleSlot } from '@/features/multisig-operations';
 
 // import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
@@ -25,16 +25,16 @@ export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
 });
 
-const getOperationTitle = (transactionType: TransactionType): string | undefined => {
-  const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
-    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
-  };
+// const getOperationTitle = (transactionType: TransactionType): string | undefined => {
+//   const Title: { [key in TransactionType]?: string } = {
+//     [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
+//     [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
+//     [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
+//     [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
+//   };
 
-  return Title[transactionType];
-};
+//   return Title[transactionType];
+// };
 
 // proxyOperationDetailFeature.inject(operationDetailsSlot, {
 //   render: ({ operation }) => {
@@ -99,16 +99,16 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 //   return null;
 // });
 
-proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
-  const { t } = useI18n();
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
+//   const { t } = useI18n();
+//   const transaction = operationDetailsUtils.getOperationData(operation);
+//   const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-  const title = transactionType && getOperationTitle(transactionType);
+//   const title = transactionType && getOperationTitle(transactionType);
 
-  if (title) {
-    return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;
-  }
+//   if (title) {
+//     return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;
+//   }
 
-  return null;
-});
+//   return null;
+// });
