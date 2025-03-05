@@ -6,7 +6,7 @@ import { TransactionType } from '@/shared/core';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { decodeCallData } from '@/entities/transaction';
+import { getDataFromCallData, getTransactionType } from '@/entities/transaction';
 import {
   DEFAULT_BLOCK_HASH,
   MULTISIG_EXTRINSIC_CALL_INDEX,
@@ -74,15 +74,8 @@ type GetCallDataParams = {
   callHash: CallHash;
   blockHeight: number;
   extrinsicIndex: number;
-  accountId: AccountId;
 };
-const getTransactionFromChain = async ({
-  api,
-  callHash,
-  blockHeight,
-  extrinsicIndex,
-  accountId,
-}: GetCallDataParams) => {
+const getTransactionFromChain = async ({ api, callHash, blockHeight, extrinsicIndex }: GetCallDataParams) => {
   try {
     const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
     if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return null;
@@ -96,7 +89,7 @@ const getTransactionFromChain = async ({
 
     if (!validateCallData(callData, callHash)) return null;
 
-    return decodeCallData(api, accountId, callData);
+    return getDataFromCallData(api, callData);
   } catch (e) {
     console.warn('Error during update call data from chain', e);
 
@@ -104,20 +97,17 @@ const getTransactionFromChain = async ({
   }
 };
 
-async function isCreateProxyTransaction(
-  api: ApiPromise,
-  tx: PendingMultisigTransaction,
-  accountId: AccountId,
-): Promise<boolean> {
+async function isCreateProxyTransaction(api: ApiPromise, tx: PendingMultisigTransaction): Promise<boolean> {
   const transaction = await getTransactionFromChain({
     api,
     callHash: tx.callHash.toHex(),
     blockHeight: tx.params.when.height.toNumber(),
     extrinsicIndex: tx.params.when.index.toNumber(),
-    accountId,
   });
 
-  return transaction?.type === TransactionType.CREATE_PURE_PROXY;
+  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+
+  return transactionType === TransactionType.CREATE_PURE_PROXY;
 }
 
 async function categorizeMultisigs(
@@ -147,7 +137,7 @@ async function categorizeMultisigs(
 
         return;
       } else if (txs.length === 1) {
-        const isProxyTx = await isCreateProxyTransaction(api, txs[0], mult.accountId);
+        const isProxyTx = await isCreateProxyTransaction(api, txs[0]);
         if (isProxyTx) {
           shellFlexibleMultisigs.set(id, mult);
           apiMap.set(mult.chain.chainId, api);
