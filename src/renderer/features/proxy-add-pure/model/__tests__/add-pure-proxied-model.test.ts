@@ -11,7 +11,7 @@ import { addPureProxiedModel } from '../add-pure-proxied-model';
 
 import { initiatorWallet, signerWallet, testApi, testChain } from './mock';
 
-describe.skip('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
+describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });

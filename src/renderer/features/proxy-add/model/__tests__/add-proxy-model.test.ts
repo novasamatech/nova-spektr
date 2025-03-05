@@ -19,7 +19,7 @@ vi.mock('@/shared/lib/utils', async () => ({
   getProxyTypes: jest.fn().mockReturnValue(['Any', 'Staking']),
 }));
 
-describe.skip('widgets/AddProxyModal/model/add-proxy-model', () => {
+describe('widgets/AddProxyModal/model/add-proxy-model', () => {
   beforeAll(() => {
     jest.useFakeTimers();
   });

@@ -13,7 +13,7 @@ vi.mock('@/shared/lib/utils', async () => ({
   getProxyTypes: () => ['Any'],
 }));
 
-describe.skip('widgets/AddPureProxyModal/model/form-model', () => {
+describe('widgets/AddPureProxyModal/model/form-model', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
