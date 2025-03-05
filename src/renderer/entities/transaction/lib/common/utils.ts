@@ -217,19 +217,19 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction | Oper
       TransactionType.UNLOCK,
     ].includes(txType)
   ) {
-    return tx.args?.value;
+    return tx.args?.value.replaceAll(',', '');
   }
 
   if (txType === TransactionType.STAKE_MORE) {
-    return tx.args?.maxAdditional || tx.args?.max_additional;
+    return tx.args?.maxAdditional.replaceAll(',', '') || tx.args?.max_additional.replaceAll(',', '');
   }
 
   if (txType === TransactionType.DELEGATE) {
-    return tx.args?.balance;
+    return tx.args?.balance.replaceAll(',', '');
   }
 
   if (isEditDelegationTransaction(tx)) {
-    const transactions = tx.args?.transactions;
+    const transactions = tx.args?.transactions || tx.args?.calls;
     if (!transactions) return null;
 
     const txMatch = transactions.find((tx: Transaction) => tx.type === TransactionType.DELEGATE);
@@ -242,14 +242,14 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction | Oper
     // unstake - chill, unbond
     // start staking - bond, nominate
     // unlock - unlock, remove_vote
-    if (!tx.args?.transactions) return null;
+    if (!tx.args?.transactions && !tx.args?.calls) return null;
     const txMatch = findCoreBatchAll(tx);
 
     return getTransactionAmount(txMatch);
   }
 
   if (txType === TransactionType.PROXY) {
-    const transaction = tx.args?.transaction;
+    const transaction = tx.args?.transaction || tx.args?.call;
     if (!transaction) return null;
 
     return getTransactionAmount(transaction);
