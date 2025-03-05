@@ -4,19 +4,19 @@ import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { ChainTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionType } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
 
-import { OperationAdvancedDetails } from './components/OperationAdvancedDetails';
-import { OperationDetails } from './components/OperationDetails';
+// import { OperationAdvancedDetails } from './components/OperationAdvancedDetails';
+// import { OperationDetails } from './components/OperationDetails';
 
 export const multisigOperationDetailsFeature = createFeature({
   name: 'multisig/operation details',
 });
 
-multisigOperationDetailsFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => <OperationDetails operation={operation} />,
-  order: 0,
-});
+// multisigOperationDetailsFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => <OperationDetails operation={operation} />,
+//   order: 0,
+// });
 
 multisigOperationDetailsFeature.inject(operationTitleSlot, ({ operation }) => {
   const { t } = useI18n();
@@ -40,10 +40,10 @@ multisigOperationDetailsFeature.inject(operationTitleSlot, ({ operation }) => {
   );
 });
 
-multisigOperationDetailsFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => <OperationAdvancedDetails operation={operation} />,
-  order: 999,
-});
+// multisigOperationDetailsFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => <OperationAdvancedDetails operation={operation} />,
+//   order: 999,
+// });
 
 multisigOperationDetailsFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();

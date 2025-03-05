@@ -4,11 +4,11 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionType } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
 
-import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
+// import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
 import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
-import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';
+// import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';
 
 export const governanceOperationDetailFeature = createFeature({
   name: 'governance/operation-details',
@@ -42,41 +42,41 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   return Title[transactionType];
 };
 
-governanceOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
-    const transaction = operationDetailsUtils.getOperationData(operation);
-    const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// governanceOperationDetailFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => {
+//     const transaction = operationDetailsUtils.getOperationData(operation);
+//     const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-    if (
-      transactionType &&
-      [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
-        transactionType,
-      )
-    ) {
-      return <GovernanceVoteDetails operation={operation} />;
-    }
+//     if (
+//       transactionType &&
+//       [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
+//         transactionType,
+//       )
+//     ) {
+//       return <GovernanceVoteDetails operation={operation} />;
+//     }
 
-    return null;
-  },
-  order: 1,
-});
+//     return null;
+//   },
+//   order: 1,
+// });
 
-governanceOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
-    const transaction = operationDetailsUtils.getOperationData(operation);
-    const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// governanceOperationDetailFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => {
+//     const transaction = operationDetailsUtils.getOperationData(operation);
+//     const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-    if (
-      transactionType &&
-      [TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transactionType)
-    ) {
-      return <GovernanceDelegateDetails operation={operation} />;
-    }
+//     if (
+//       transactionType &&
+//       [TransactionType.DELEGATE, TransactionType.UNDELEGATE, TransactionType.EDIT_DELEGATION].includes(transactionType)
+//     ) {
+//       return <GovernanceDelegateDetails operation={operation} />;
+//     }
 
-    return null;
-  },
-  order: 2,
-});
+//     return null;
+//   },
+//   order: 2,
+// });
 
 governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = operationDetailsUtils.getOperationData(operation);

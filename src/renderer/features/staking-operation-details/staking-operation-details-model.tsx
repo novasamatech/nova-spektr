@@ -4,11 +4,11 @@ import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionType } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { logTitleSlot, operationTitleSlot } from '@/features/multisig-operations';
 
-import { PayeeOperationDetails } from './components/PayeeOperationDetails';
+// import { PayeeOperationDetails } from './components/PayeeOperationDetails';
 import { StakingOperationTitle } from './components/StakingOperationTitle';
-import { ValidatorsOperationDetails } from './components/ValidatorsOperationDetails';
+// import { ValidatorsOperationDetails } from './components/ValidatorsOperationDetails';
 
 export const stakingOperationDetailFeature = createFeature({
   name: 'staking/operation-details',
@@ -42,42 +42,42 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   return Icon[transactionType];
 };
 
-stakingOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
-    const transaction = operationDetailsUtils.getOperationData(operation);
-    const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// stakingOperationDetailFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => {
+//     const transaction = operationDetailsUtils.getOperationData(operation);
+//     const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-    if (
-      transactionType &&
-      [
-        TransactionType.BOND,
-        TransactionType.STAKE_MORE,
-        TransactionType.UNSTAKE,
-        TransactionType.RESTAKE,
-        TransactionType.REDEEM,
-      ].includes(transactionType)
-    ) {
-      return <PayeeOperationDetails operation={operation} />;
-    }
+//     if (
+//       transactionType &&
+//       [
+//         TransactionType.BOND,
+//         TransactionType.STAKE_MORE,
+//         TransactionType.UNSTAKE,
+//         TransactionType.RESTAKE,
+//         TransactionType.REDEEM,
+//       ].includes(transactionType)
+//     ) {
+//       return <PayeeOperationDetails operation={operation} />;
+//     }
 
-    return null;
-  },
-  order: 1,
-});
+//     return null;
+//   },
+//   order: 1,
+// });
 
-stakingOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
-    const transaction = operationDetailsUtils.getOperationData(operation);
-    const transactionType = getTransactionType(transaction?.method, transaction?.section);
+// stakingOperationDetailFeature.inject(operationDetailsSlot, {
+//   render: ({ operation }) => {
+//     const transaction = operationDetailsUtils.getOperationData(operation);
+//     const transactionType = getTransactionType(transaction?.method, transaction?.section);
 
-    if (transactionType && [TransactionType.BOND, TransactionType.NOMINATE].includes(transactionType)) {
-      return <ValidatorsOperationDetails operation={operation} />;
-    }
+//     if (transactionType && [TransactionType.BOND, TransactionType.NOMINATE].includes(transactionType)) {
+//       return <ValidatorsOperationDetails operation={operation} />;
+//     }
 
-    return null;
-  },
-  order: 2,
-});
+//     return null;
+//   },
+//   order: 2,
+// });
 
 stakingOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   const transaction = operationDetailsUtils.getOperationData(operation);
