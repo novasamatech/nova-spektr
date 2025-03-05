@@ -60,17 +60,12 @@ const $filteredTxs = restore<MultisigOperation[]>(changeFilteredTxs, []).reset($
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: operations.subscribe,
+  target: [operations.requestOperations, operations.subscribe, populateFx],
 });
 
 sample({
   clock: multisigOperationsFeatureStatus.stopped,
   target: operations.unsubscribe,
-});
-
-sample({
-  clock: multisigOperationsFeatureStatus.running,
-  target: populateFx,
 });
 
 sample({
