@@ -8,13 +8,13 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import {
-  confirmTransactionInfoSlot,
+  // confirmTransactionInfoSlot,
   logTitleSlot,
   operationDetailsSlot,
   operationTitleSlot,
 } from '@/features/multisig-operations';
 
-import { TransactionAmount } from './components/TransactionAmount';
+// import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
 import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
@@ -50,9 +50,9 @@ transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
   return null;
 });
 
-transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
-  return <TransactionAmount operation={operation} />;
-});
+// transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+//   return <TransactionAmount operation={operation} />;
+// });
 
 transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
