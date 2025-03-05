@@ -11,6 +11,7 @@ import { referendumService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
+import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
 import { VotedBy } from '../VotedBy';
 import { VotingHistoryDialog } from '../VotingHistory/VotingHistoryDialog';
@@ -59,10 +60,10 @@ export const ReferendumDetailsModal = ({
   const [showVoteHistory, toggleShowVoteHistory] = useToggle();
   const [showAdvanced, toggleShowAdvanced] = useToggle();
 
-  const voter = useStoreMap({
+  const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegate?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+    keys: [referendum.votedByDelegates],
+    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
   });
 
   const closeModal = (open: boolean) => {
@@ -85,17 +86,19 @@ export const ReferendumDetailsModal = ({
             </Plate>
 
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
-              <DetailsCard>
-                <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                  <VotedBy
-                    asset={asset}
-                    voterName={voter?.parent.name}
-                    delegate={referendum.votedByDelegate}
-                    castingVotes={referendum.voting.votes}
-                  />
-                  <IconButton name="info" onClick={toggleShowWalletVotes} />
-                </Box>
-              </DetailsCard>
+              {(referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0) && (
+                <DetailsCard>
+                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                    <VotedBy
+                      asset={asset}
+                      identity={identity}
+                      delegates={referendum.votedByDelegates}
+                      castingVotes={referendum.voting.votes}
+                    />
+                    <IconButton name="info" onClick={toggleShowWalletVotes} />
+                  </Box>
+                </DetailsCard>
+              )}
 
               <DetailsCard title={t('governance.referendum.votingStatus')}>
                 <VotingStatus
