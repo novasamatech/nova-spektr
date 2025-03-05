@@ -10,7 +10,7 @@ import { type MultisigOperation, type OperationData, operations } from '@/domain
 import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
 import { walletSelect } from '@/aggregates/wallet-select';
-// import { submitModel } from '@/features/operations/OperationSubmit';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { multisigOperationsFeatureStatus } from './status';
 
@@ -150,10 +150,10 @@ sample({
   target: updateTransactionsFx,
 });
 
-// sample({
-//   clock: submitModel.output.saveMultisigTx,
-//   target: addTransactionsFx,
-// });
+sample({
+  clock: submitModel.output.saveMultisigTx,
+  target: addTransactionsFx,
+});
 
 export const multisigOperations = {
   $list: readonly($list),
