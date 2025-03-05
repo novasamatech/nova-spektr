@@ -10,6 +10,7 @@ import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
+import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotedBy } from '../VotedBy';
@@ -36,10 +37,10 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
     fn: (titles, [id]) => titles[id] ?? null,
   });
 
-  const voter = useStoreMap({
+  const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegate?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+    keys: [referendum.votedByDelegates],
+    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
   });
 
   const voteFractions =
@@ -83,8 +84,8 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
 
       <VotedBy
         asset={asset}
-        voterName={voter?.parent.name}
-        delegate={referendum.votedByDelegate}
+        identity={identity}
+        delegates={referendum.votedByDelegates}
         castingVotes={referendum.voting.votes}
       />
     </ListItem>

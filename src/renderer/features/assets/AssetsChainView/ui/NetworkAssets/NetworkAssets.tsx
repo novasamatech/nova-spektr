@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, Icon } from '@/shared/ui';
-import { Accordion, Tooltip } from '@/shared/ui-kit';
+import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -93,42 +93,44 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <Accordion initialOpen>
-      <Accordion.Trigger sticky>
-        <div className="flex w-full items-center justify-between gap-x-2">
-          <div className="flex items-center gap-x-2">
-            <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
+    <Box width="736px">
+      <Accordion initialOpen>
+        <Accordion.Trigger sticky>
+          <div className="flex w-full items-center justify-between gap-x-2">
+            <div className="flex items-center gap-x-2">
+              <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
-            {hasFailedVerification && (
-              <div className="flex items-center gap-x-2 text-text-warning">
-                {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                <Tooltip>
-                  <Tooltip.Trigger>
-                    <div tabIndex={0}>
-                      <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
-                </Tooltip>
-                <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-              </div>
-            )}
+              {hasFailedVerification && (
+                <div className="flex items-center gap-x-2 text-text-warning">
+                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
+                  <Tooltip>
+                    <Tooltip.Trigger>
+                      <div tabIndex={0}>
+                        <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
+                  </Tooltip>
+                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                </div>
+              )}
+            </div>
+            <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>
-          <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
-        </div>
-      </Accordion.Trigger>
-      <Accordion.Content>
-        <ul className="mt-1 flex flex-col gap-y-1.5">
-          {filteredAssets.map((asset) => (
-            <AssetCard
-              key={asset.assetId}
-              chainId={chain.chainId}
-              asset={asset}
-              balance={balancesObject[asset.assetId.toString()]}
-            />
-          ))}
-        </ul>
-      </Accordion.Content>
-    </Accordion>
+        </Accordion.Trigger>
+        <Accordion.Content>
+          <ul className="mt-1 flex flex-col gap-y-1.5">
+            {filteredAssets.map((asset) => (
+              <AssetCard
+                key={asset.assetId}
+                chainId={chain.chainId}
+                asset={asset}
+                balance={balancesObject[asset.assetId.toString()]}
+              />
+            ))}
+          </ul>
+        </Accordion.Content>
+      </Accordion>
+    </Box>
   );
 });

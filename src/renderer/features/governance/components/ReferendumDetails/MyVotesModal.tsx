@@ -1,17 +1,17 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { formatAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { formatAsset, nullable, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
-import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { votingListService } from '../../lib/votingListService';
 import { type AggregatedReferendum } from '../../types/structs';
 
@@ -35,12 +35,6 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
     fn: (votes, [referendumId]) => votingService.getReferendumVoting(referendumId, votes),
   });
 
-  const voter = useStoreMap({
-    store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegate?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
-  });
-
   const votesList = useMemo(() => {
     return Object.entries(votes).flatMap(([address, vote]) => {
       return votingListService
@@ -48,6 +42,30 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
         .map((vote) => ({ address, vote }));
     });
   }, [votes, referendum]);
+
+  const accountsNames = useMemo(() => {
+    if (nullable(activeWallet)) return {};
+
+    const addressMap: Record<AccountId, string> = {};
+    for (const account of activeWallet.accounts) {
+      addressMap[account.accountId] = account.name;
+    }
+
+    const addresses = [
+      ...votesList.map((vote) => vote.address),
+      ...referendum.votedByDelegates.map((delegate) => delegate.delegator),
+    ];
+
+    const votedAccounts: Record<AccountId, string> = {};
+    for (const address of addresses) {
+      const accountId = toAccountId(address);
+      if (nullable(addressMap[accountId])) continue;
+
+      votedAccounts[accountId] = addressMap[accountId];
+    }
+
+    return votedAccounts;
+  }, [activeWallet, votesList, referendum]);
 
   if (!activeWallet) return null;
 
@@ -65,84 +83,67 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
           <FootnoteText className="col-span-5 px-2 pb-1 text-end text-text-tertiary">
             {t('governance.walletVotes.listColumnVotingPower')}
           </FootnoteText>
-          {votesList.map(({ address, vote }) => {
-            const account = walletUtils.getAccountBy(
-              [activeWallet],
-              (account) => account.accountId === toAccountId(address),
-            );
-
-            return (
-              <>
-                <div className="col-span-5" key={address}>
-                  <BodyText className="text-text-secondary">
-                    <Account
-                      hideAddress
-                      iconSize={16}
-                      title={account?.name}
-                      variant="short"
-                      accountId={toAccountId(address)}
-                      chain={chain}
-                    />
-                  </BodyText>
-                </div>
-                <BodyText key={`decision-${address}`} className="col-span-2 px-2">
-                  {t(`governance.referendum.${vote.decision}`)}
-                </BodyText>
-                <div
-                  key={`votingPower-${address}`}
-                  className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2"
-                >
-                  <BodyText className="whitespace-nowrap">
-                    <AssetBalance value={vote.votingPower} asset={asset} />
-                  </BodyText>
-                  <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                    {t('general.actions.multiply', {
-                      value: formatAsset(vote.balance, asset),
-                      multiplier: vote.conviction,
-                    })}
-                  </FootnoteText>
-                </div>
-              </>
-            );
-          })}
-
-          {/* Delegation */}
-          {nonNullable(referendum.votedByDelegate) && (
-            <>
+          {votesList.map(({ address, vote }) => (
+            <Fragment key={address}>
               <div className="col-span-5">
                 <BodyText className="text-text-secondary">
                   <Account
                     hideAddress
-                    iconSize={16}
-                    title={voter?.parent.name}
                     variant="short"
-                    accountId={toAccountId(referendum.votedByDelegate.delegateId)}
+                    iconSize={16}
+                    title={accountsNames[toAccountId(address)]}
+                    accountId={toAccountId(address)}
                     chain={chain}
                   />
                 </BodyText>
               </div>
-              <BodyText className="col-span-2 px-2">
-                {t(`governance.referendum.${referendum.votedByDelegate.decision}`)}
-              </BodyText>
+              <BodyText className="col-span-2 px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
+              <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
+                <BodyText className="whitespace-nowrap">
+                  <AssetBalance value={vote.votingPower} asset={asset} />
+                </BodyText>
+                <FootnoteText className="whitespace-nowrap text-text-tertiary">
+                  {t('general.actions.multiply', {
+                    value: formatAsset(vote.balance, asset),
+                    multiplier: vote.conviction,
+                  })}
+                </FootnoteText>
+              </div>
+            </Fragment>
+          ))}
+
+          {referendum.votedByDelegates.map((delegate) => (
+            <Fragment key={delegate.delegator}>
+              <div className="col-span-5">
+                <BodyText className="text-text-secondary">
+                  {/* TODO: display delegated identity in subtitle */}
+                  <Account
+                    hideAddress
+                    variant="short"
+                    iconSize={16}
+                    title={accountsNames[toAccountId(delegate.delegator)]}
+                    accountId={toAccountId(delegate.delegator)}
+                    chain={chain}
+                  />
+                </BodyText>
+              </div>
+              <BodyText className="col-span-2 px-2">{t(`governance.referendum.${delegate.decision}`)}</BodyText>
               <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
                 <BodyText className="whitespace-nowrap">
                   <AssetBalance
-                    value={votingService.calculateVotingPower(
-                      referendum.votedByDelegate.amount,
-                      referendum.votedByDelegate.conviction,
-                    )}
                     asset={asset}
+                    value={votingService.calculateVotingPower(delegate.amount, delegate.conviction)}
                   />
                 </BodyText>
                 <FootnoteText className="whitespace-nowrap text-text-tertiary">
                   {t('general.actions.multiply', {
-                    value: formatAsset(referendum.votedByDelegate.amount, asset),
-                    multiplier: votingService.getConvictionMultiplier(referendum.votedByDelegate.conviction),
+                    value: formatAsset(delegate.amount, asset),
+                    multiplier: votingService.getConvictionMultiplier(delegate.conviction),
                   })}
                 </FootnoteText>
               </div>
-            </>
-          )}
+            </Fragment>
+          ))}
         </div>
       </Modal.Content>
     </Modal>
