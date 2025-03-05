@@ -10,6 +10,7 @@ export const TEST_IDS = {
     SUBWALLET_BUTTON: 'onboarding-subwallet-extension-button',
     WALLET_NAME_INPUT: 'onboarding-wallet-name-input',
     WALLET_ADDRESS_INPUT: 'onboarding-wallet-address-input',
+    IMPORT_DATABASE_BUTTON: 'onboarding-import-database-button',
   },
   ASSETS: {
     SETTINGS_WIDGET: 'assets-settings-widget',
@@ -23,5 +24,14 @@ export const TEST_IDS = {
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
     ESTIMATE_FEE: 'operations-estimate-fee',
+  },
+  GOVERNANCE: {
+    FILTER_BUTTON: 'governance-filter-button',
+    FILTER_VOTED_OPTION: 'governance-filter-voted-option',
+    FILTER_NOT_VOTED_OPTION: 'governance-filter-not-voted-option',
+    SEARCH_INPUT: 'governance-search-input',
+    PROPOSAL_ITEM: 'governance-proposal-item',
+    PROPOSAL_ID: 'governance-proposal-id',
+    PROPOSAL_VOTE_DETAILS: 'governance-proposal-vote-details',
   },
 } as const;

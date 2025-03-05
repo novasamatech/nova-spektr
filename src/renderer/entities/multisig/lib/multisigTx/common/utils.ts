@@ -13,7 +13,7 @@ import {
   type Transaction,
 } from '@/shared/core';
 import { MultisigTxInitStatus, TransactionType } from '@/shared/core';
-import { getCreatedDate, toAccountId } from '@/shared/lib/utils';
+import { getCreatedDate } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ExtrinsicResultParams, findCoreBatchAll } from '@/entities/transaction';
 
@@ -177,7 +177,7 @@ export const buildMultisigTx = (
     txCallHash: transaction.callHash,
     txBlock: transaction.blockCreated,
     txIndex: transaction.indexCreated,
-    accountId: toAccountId(multisigTx.address),
+    accountId: multisigTx.accountId,
     extrinsicHash: params.extrinsicHash,
     eventBlock: params.timepoint.height,
     eventIndex: params.timepoint.index,

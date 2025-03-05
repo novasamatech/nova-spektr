@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
 import { type Balance, type ChainId, type PartialBy, type Transaction } from '@/shared/core';
-import { ValidationErrors, toAccountId, transferableAmount } from '@/shared/lib/utils';
+import { ValidationErrors, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas/primitives';
 
 import { OperationError, type OperationErrorType } from './common/errors';
@@ -34,13 +34,13 @@ export const validateBalance = async (
 };
 
 const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props): Balance | undefined => {
-  return getBalance(toAccountId(transaction.address), chainId, assetId.toString());
+  return getBalance(transaction.accountId, chainId, assetId.toString());
 };
 
 const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props): Balance | undefined => {
   if (assetId === '0') return undefined;
 
-  return getBalance(toAccountId(transaction.address), chainId, '0');
+  return getBalance(transaction.accountId, chainId, '0');
 };
 
 const validateBalanceForAmount = ({ transaction, ...props }: Props): boolean => {

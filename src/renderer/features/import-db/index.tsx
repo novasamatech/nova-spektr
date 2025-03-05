@@ -1,4 +1,5 @@
 import { $features } from '@/shared/config/features';
+import { TEST_IDS } from '@/shared/constants';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, Icon } from '@/shared/ui';
@@ -31,7 +32,9 @@ importDBFeature.inject(onboardingActionsSlot, {
             {/* eslint-disable i18next/no-literal-string */}
             <span>DEV MODE</span>
           </BodyText>
-          <Button className="w-full">{t('importDB.importTitle')}</Button>
+          <Button className="w-full" testId={TEST_IDS.ONBOARDING.IMPORT_DATABASE_BUTTON}>
+            {t('importDB.importTitle')}
+          </Button>
         </div>
       </ImportDBModal>
     );

@@ -18,7 +18,13 @@ import {
   type TProxyGroup,
   type TWallet,
 } from '../lib/types';
-import { migrateAccounts, migrateEvents, migrateMultisigAccounts, migrateWallets } from '../migration';
+import {
+  migrateAccounts,
+  migrateEvents,
+  migrateMultisigAccounts,
+  migratePVAccounts,
+  migrateWallets,
+} from '../migration';
 
 import { useMultisigEventStorage } from './multisigEventStorage';
 import { useTransactionStorage } from './transactionStorage';
@@ -108,6 +114,8 @@ class DexieStorage extends Dexie {
       })
       .upgrade(migrateMultisigAccounts);
 
+    this.version(28).upgrade(migratePVAccounts);
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
@@ -148,7 +156,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions', 'connections'],
+    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions'],
   });
 
   return { blob, fileName: 'spektr-database.json' };

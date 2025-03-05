@@ -51,19 +51,15 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
     },
   );
 
-  const $wrappedTx = combine(
-    { api: $api, chain: $chain, coreTx: $coreTx, txWrappers: $txWrappers },
-    ({ api, chain, coreTx, txWrappers }) => {
-      if (nullable(api) || nullable(chain) || nullable(coreTx)) return null;
+  const $wrappedTx = combine({ api: $api, coreTx: $coreTx, txWrappers: $txWrappers }, ({ api, coreTx, txWrappers }) => {
+    if (nullable(api) || nullable(coreTx)) return null;
 
-      return transactionService.getWrappedTransaction({
-        api,
-        addressPrefix: chain.addressPrefix,
-        transaction: coreTx,
-        txWrappers,
-      });
-    },
-  );
+    return transactionService.getWrappedTransaction({
+      api,
+      transaction: coreTx,
+      txWrappers,
+    });
+  });
 
   const $isMultisig = $txWrappers.map(transactionService.hasMultisig);
   const $isProxy = $txWrappers.map(transactionService.hasProxy);

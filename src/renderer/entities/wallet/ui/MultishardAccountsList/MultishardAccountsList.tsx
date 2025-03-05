@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 
-import { type Chain, type ChainId, type VaultBaseAccount, type VaultChainAccount } from '@/shared/core';
+import { type Chain, type ChainId, type VaultChainAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { RootExplorers, cnTw } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, FootnoteText, HelpText } from '@/shared/ui';
 import { ChainTitle } from '@/entities/chain';
 import { ContactItem } from '../ContactItem/ContactItem';
@@ -10,7 +11,7 @@ import { ExplorersPopover } from '../ExplorersPopover/ExplorersPopover';
 
 type Props = {
   chains: Chain[];
-  accounts: Map<VaultBaseAccount, Record<ChainId, VaultChainAccount[]>>;
+  accounts: Map<AccountId, Record<ChainId, VaultChainAccount[]>>;
   className?: string;
 };
 
@@ -23,19 +24,12 @@ export const MultishardAccountsList = ({ chains, accounts, className }: Props) =
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      {accountList.map(([baseAccount, chainMap]) => (
-        <div key={baseAccount.id} className="flex flex-col pl-5">
+      {accountList.map(([rootAccountId, chainMap]) => (
+        <div key={rootAccountId} className="flex flex-col px-5">
           <ExplorersPopover
-            address={baseAccount.accountId}
+            address={rootAccountId}
             explorers={RootExplorers}
-            button={
-              <ContactItem
-                className="bg-white py-4 pr-2"
-                iconSize={28}
-                name={baseAccount.name}
-                address={baseAccount.accountId}
-              />
-            }
+            button={<ContactItem className="bg-white py-4 pr-2" iconSize={28} name="Root" address={rootAccountId} />}
           />
 
           <FootnoteText className="pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>

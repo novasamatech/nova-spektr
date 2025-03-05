@@ -21,7 +21,7 @@ import {
 import { waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
 import { delay, isFulfilled, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { identity } from '@/domains/network';
+import { identity, identityService } from '@/domains/network';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -97,20 +97,20 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) =
 
     const multisigs = await multisigService.filterMultisigsAccounts(client, accountIds, chain);
     try {
-      // Identity request with drop after 5 seconds
+      // Identity request with drop after 15 seconds
       const identities = await Promise.race([
         bindedRequestIdentities({
           accounts: multisigs.map((x) => x.accountId),
           chainId: chain.chainId,
         }),
-        delay(5000),
+        delay(15000),
       ]);
 
       return multisigs.map<MultisigResult>((multisig) => {
         const identity = identities?.[multisig.accountId];
         return {
           ...multisig,
-          name: identity?.name,
+          name: identity ? identityService.getFullName(identity) : undefined,
         };
       });
     } catch {

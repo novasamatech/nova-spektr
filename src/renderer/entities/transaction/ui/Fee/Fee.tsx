@@ -37,7 +37,7 @@ export const Fee = memo(({ api, multiply = 1, asset, transaction, className, onF
 
   useEffect(() => {
     setIsLoading(true);
-    if (!api || !transaction?.address) return;
+    if (!api || !transaction?.accountId) return;
     let mounted = true;
 
     api.isReady

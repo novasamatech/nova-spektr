@@ -167,15 +167,6 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
     const accountsToSave = accounts.reduce<
       (Omit<NoID<VaultBaseAccount>, 'walletId'> | Omit<NoID<VaultChainAccount>, 'walletId'>)[]
     >((acc, account, index) => {
-      acc.push({
-        name: accountNames[getAccountId(index)],
-        accountId: toAccountId(account.address),
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.BASE,
-        type: 'universal',
-      });
-
       const derivedAccounts = Object.entries(account.derivedKeys)
         .map(([chainId, chainDerivedKeys]) => {
           return createDerivedAccounts(chainDerivedKeys, chainId as ChainId, index);
@@ -184,12 +175,29 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
 
       acc.push(...derivedAccounts);
 
+      if (Object.entries(account.derivedKeys).length === 0) {
+        acc.push({
+          name: accountNames[getAccountId(index)],
+          accountId: toAccountId(account.address),
+          cryptoType: CryptoType.SR25519,
+          signingType: SigningType.POLKADOT_VAULT,
+          accountType: AccountType.BASE,
+          type: 'universal',
+        });
+      }
+
       return acc;
     }, []);
+
+    const baseAccount = accounts.at(0);
+    if (!baseAccount) {
+      return;
+    }
 
     walletModel.events.multishardCreated({
       wallet: {
         name: walletName.trim(),
+        rootAccountId: toAccountId(baseAccount.address),
         type: WalletType.MULTISHARD_PARITY_SIGNER,
         signingType: SigningType.PARITY_SIGNER,
       },

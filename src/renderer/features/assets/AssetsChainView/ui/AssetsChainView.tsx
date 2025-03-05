@@ -50,6 +50,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
       for (const account of activeWallet.accounts) {
         if (
+          !activeShards.find((a) => a.accountId === account.accountId) ||
           !accountUtils.isNonBaseVaultAccount(account, activeWallet) ||
           !accountUtils.isChainAndCryptoMatch(account, chain)
         )
@@ -115,7 +116,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 overflow-y-scroll">
-      <ul className="flex min-h-full w-full flex-col items-center gap-y-4 py-4">
+      <div className="flex min-h-full w-full flex-col items-center gap-y-4 py-4">
         {isLoading && (
           <Box fillContainer verticalAlign="center" horizontalAlign="center">
             <Loader color="primary" size={32} />
@@ -123,12 +124,16 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
         )}
 
         {list.map((chain) => (
-          <li className="w-[736px]" key={chain.chainId}>
-            <NetworkAssets chain={chain} accounts={activeShards} hideZeroBalances={hideZeroBalances} query={query} />
-          </li>
+          <NetworkAssets
+            key={chain.chainId}
+            chain={chain}
+            accounts={activeShards}
+            hideZeroBalances={hideZeroBalances}
+            query={query}
+          />
         ))}
         <EmptyAssetsState />
-      </ul>
+      </div>
     </div>
   );
 };

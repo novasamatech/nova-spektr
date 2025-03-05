@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type Header, type Index, type Weight } from '@polkadot/types/interfaces';
 import { type AnyJson } from '@polkadot/types/types';
-import { type Args } from '@substrate/txwrapper-polkadot';
 
 import {
   type Address,
@@ -52,7 +51,7 @@ export type ExtrinsicResultParams = {
 
 export type XcmPallet = 'xcmPallet' | 'polkadotXcm';
 
-export interface XcmPalletTransferArgs extends Args {
+export interface XcmPalletTransferArgs extends Record<string, AnyJson> {
   dest: AnyJson;
   beneficiary: AnyJson;
   assets: AnyJson;
@@ -60,7 +59,7 @@ export interface XcmPalletTransferArgs extends Args {
   weightLimit: AnyJson;
 }
 
-export interface XTokenPalletTransferArgs extends Args {
+export interface XTokenPalletTransferArgs extends Record<string, AnyJson> {
   asset: AnyJson;
   dest: AnyJson;
   destWeightLimit?: AnyJson;

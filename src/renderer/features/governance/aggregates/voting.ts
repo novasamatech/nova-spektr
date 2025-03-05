@@ -1,6 +1,6 @@
 import { combine, createEvent, sample } from 'effector';
 
-import { type Address, type TrackId, type VotingMap } from '@/shared/core';
+import { type TrackId, type VotingMap } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
@@ -10,7 +10,7 @@ import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
 
-const requestVoting = createEvent<{ addresses: Address[]; tracks?: TrackId[] }>();
+const requestVoting = createEvent<{ accounts: AccountId[]; tracks?: TrackId[] }>();
 
 const $activeWalletVotes = combine(
   {
@@ -70,10 +70,10 @@ sample({
     tracks: tracksAggregate.$tracks,
   },
   filter: ({ network }) => nonNullable(network),
-  fn: ({ network, tracks: allTracks }, { addresses, tracks }) => ({
+  fn: ({ network, tracks: allTracks }, { accounts, tracks }) => ({
     api: network!.api,
     tracks: tracks || Object.keys(allTracks),
-    addresses,
+    accounts,
   }),
   target: votingModel.events.subscribeVoting,
 });
@@ -86,7 +86,7 @@ sample({
   },
   filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),
   fn: ({ wallet, chain }) => ({
-    addresses: accountUtils.getAddressesForWallet(wallet!, chain!),
+    accounts: accountUtils.getAccountsIdsForWallet(wallet!, chain!),
   }),
   target: requestVoting,
 });

@@ -3,7 +3,7 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, stakeableAmount, toAccountId } from '@/shared/lib/utils';
+import { getAssetById, stakeableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { PayeeRules } from '../lib/payee-rules';
@@ -21,7 +21,7 @@ type ValidateParams = {
 };
 
 const rootValidateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
-  const accountId = toAccountId(transaction.address);
+  const accountId = transaction.accountId;
   const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
   const rules = [

@@ -3,6 +3,7 @@ import { act, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 
 import { type Asset, type Transaction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { Fee } from './Fee';
 
@@ -29,7 +30,7 @@ vi.mock('@/shared/ui-entities', () => ({
 describe('entities/transaction/ui/Fee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
-    const tx = { address: '0x123', args: {} } as Transaction;
+    const tx = { accountId: '0x123' as AccountId, args: {} } as Transaction;
     const api = { isReady: Promise.resolve().then(() => api) } as ApiPromise;
 
     await act(async () => {

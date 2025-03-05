@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
-import { type Address, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Chain, type Transaction } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
@@ -13,7 +13,7 @@ import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGenerator
 
 type Props = {
   api: ApiPromise;
-  chainId: ChainId;
+  chain: Chain;
   address: Address;
   transaction: Transaction;
   account: AnyAccount;
@@ -25,7 +25,7 @@ type Props = {
 
 export const ScanSingleframeQr = ({
   api,
-  chainId,
+  chain,
   transaction,
   address,
   account,
@@ -65,12 +65,12 @@ export const ScanSingleframeQr = ({
 
   return (
     <>
-      <QrGeneratorContainer countdown={countdown} chainId={chainId} onQrReset={setupTransaction}>
+      <QrGeneratorContainer countdown={countdown} chainId={chain.chainId} onQrReset={setupTransaction}>
         {txPayload && (
           <QrTxGenerator
             payload={txPayload}
             address={address}
-            genesisHash={chainId}
+            genesisHash={chain.chainId}
             derivationPath={derivationPath}
             signingType={account.signingType}
             cryptoType={account.cryptoType || CryptoType.SR25519}
