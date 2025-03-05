@@ -3,8 +3,8 @@ import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { EmptyMessage, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
+import { Box, EmptyMessage } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
 import { tasks } from '../model/tasks';
 
