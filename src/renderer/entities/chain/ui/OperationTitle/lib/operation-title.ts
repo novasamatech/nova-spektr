@@ -6,5 +6,7 @@ export const getCoreTx = (tx: BasketTransaction): Transaction => {
     return tx.coreTx;
   }
 
-  return tx.coreTx.type === TransactionType.BATCH_ALL ? findCoreBatchAll(tx.coreTx) : tx.coreTx;
+  return tx.coreTx.type === TransactionType.BATCH_ALL
+    ? (findCoreBatchAll(tx.coreTx) as unknown as Transaction)
+    : tx.coreTx;
 };

@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Accordion } from '@/shared/ui';
@@ -17,7 +19,7 @@ type SlotProps = {
 
 export const operationTitleSlot = createSlot<SlotProps>();
 
-const Operation = ({ tx, account }: Props) => {
+const Operation = memo(({ tx, account }: Props) => {
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
@@ -32,6 +34,6 @@ const Operation = ({ tx, account }: Props) => {
       </Accordion.Content>
     </Accordion>
   );
-};
+});
 
 export default Operation;

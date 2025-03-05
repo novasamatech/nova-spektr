@@ -2,7 +2,7 @@ import { type TFunction } from 'i18next';
 
 import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
-import { XcmTypes, findCoreBatchAll, getTransactionType } from '@/entities/transaction';
+import { XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { type SelectedFilters } from '../model/filter';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
@@ -162,7 +162,7 @@ export const getFilterableTxType = (tx: BasketTransaction): TransactionType | ty
   if (tx.coreTx.type === TransactionType.BATCH_ALL) {
     const txMatch = findCoreBatchAll(tx.coreTx);
 
-    return getTransactionType(txMatch.method, txMatch.section) || UNKNOWN_TYPE;
+    return 'type' in txMatch ? txMatch.type : UNKNOWN_TYPE;
   }
 
   return tx.coreTx.type;

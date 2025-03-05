@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Weight } from '@polkadot/types/interfaces';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import {
   type Asset,
@@ -20,6 +20,7 @@ import {
   getAssetById,
   getAssetByTypeExtras,
   getNativeAsset,
+  nullable,
   toAccountId,
   transferableAmount,
   validateCallData,
@@ -45,6 +46,7 @@ import {
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
+import { type SigningPayload } from '@/features/operations/OperationSign';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
@@ -67,7 +69,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
+const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
@@ -240,6 +242,18 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
   const readyForNonFinalSign = readyForSign && !thresholdReached;
   const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
 
+  const signingPayloads = useMemo<SigningPayload[]>(() => {
+    if (nullable(approveTx) || nullable(signAccount)) return [];
+    return [
+      {
+        chain: chain,
+        account: signAccount,
+        transaction: approveTx,
+        signatory: signAccount,
+      },
+    ];
+  }, [chain, signAccount, approveTx]);
+
   if (!readyForFinalSign && !readyForNonFinalSign) {
     return null;
   }
@@ -282,14 +296,7 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             apis={apis}
-            signingPayloads={[
-              {
-                chain: chain,
-                account: signAccount,
-                transaction: approveTx,
-                signatory: signAccount,
-              },
-            ]}
+            signingPayloads={signingPayloads}
             validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}
@@ -317,6 +324,6 @@ const ApproveTxModal = ({ tx, account, api, chain, children }: Props) => {
       </Modal.Content>
     </Modal>
   );
-};
+});
 
 export default ApproveTxModal;

@@ -189,14 +189,29 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
   return batchAllOperations.has(type);
 };
 
-export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction | OperationData): Transaction => {
+export const findCoreBatchAll = (
+  coreTx: Transaction | DecodedTransaction | OperationData,
+): Transaction | OperationData => {
   if (isUnlockTransaction(coreTx)) {
     return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
   }
 
   const supportedTransaction = coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 
-  return supportedTransaction || coreTx.args?.transactions?.[0];
+  return supportedTransaction || coreTx.args?.transactions?.[0] || findCoreBatchAllFromOperation(coreTx);
+};
+
+export const findCoreBatchAllFromOperation = (coreTx: OperationData): Transaction => {
+  if (isUnlockTransaction(coreTx)) {
+    return coreTx.args?.calls?.find((t: OperationData) => getType(t) === TransactionType.UNLOCK) || coreTx;
+  }
+
+  const supportedTransaction = coreTx.args?.calls?.find((tx: Transaction) => {
+    const type = getType(tx);
+    return type ? isWrappedInBatchAll(type) : false;
+  });
+
+  return supportedTransaction || coreTx.args?.calls?.[0];
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction | OperationData): string | null => {

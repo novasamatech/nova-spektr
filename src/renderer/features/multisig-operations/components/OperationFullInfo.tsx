@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { type CallData, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -28,7 +29,7 @@ type SlotProps = {
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = ({ tx, account }: Props) => {
+export const OperationFullInfo = memo(({ tx, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
 
@@ -111,4 +112,4 @@ export const OperationFullInfo = ({ tx, account }: Props) => {
       <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
     </div>
   );
-};
+});
