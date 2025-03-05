@@ -1,12 +1,9 @@
-import { type ReactNode } from 'react';
-
-import { Box } from '@/shared/ui-kit';
-import { Icon } from '../Icon/Icon';
-import { FootnoteText, SmallTitleText } from '../Typography';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box } from '../Box/Box';
 
 type Props = {
   title: string;
-  description: ReactNode;
+  description: string;
 };
 
 export const EmptyMessage = ({ title, description }: Props) => {

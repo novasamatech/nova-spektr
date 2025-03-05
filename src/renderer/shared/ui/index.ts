@@ -46,7 +46,6 @@ export { Tabs } from './Tabs/Tabs';
 export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList } from './EmptyList/EmptyList';
-export { EmptyMessage } from './EmptyMessage/EmptyMessage';
 export { Animation } from './Animation/Animation';
 
 export { type IconNames } from './Icon/data';
