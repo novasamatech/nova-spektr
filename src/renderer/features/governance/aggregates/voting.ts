@@ -23,16 +23,16 @@ const $activeWalletVotes = combine(
       return {};
     }
 
-    const addresses = accountUtils.getAddressesForWallet(wallet, chain);
-    const res: VotingMap = {};
+    const accountIds = accountUtils.getAccountsIdsForWallet(wallet, chain);
+    const result: VotingMap = {};
 
-    for (const address of addresses) {
-      if (address in voting) {
-        res[address] = voting[address];
+    for (const accountId of accountIds) {
+      if (accountId in voting) {
+        result[accountId] = voting[accountId];
       }
     }
 
-    return res;
+    return result;
   },
 );
 
