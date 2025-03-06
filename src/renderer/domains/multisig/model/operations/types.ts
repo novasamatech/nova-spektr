@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type CallHash, type ChainId, type HexString, type ProxiedAccount } from '@/shared/core';
+import { type CallHash, type ChainId, type HexString } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 export type MultisigEvent = {
@@ -33,7 +33,3 @@ export type MultisigOperation = {
   events: MultisigEvent[];
   timestamp: number;
 } & OperationData;
-
-export type FlexibleMultisigOperation = MultisigOperation & {
-  proxiedAccount: ProxiedAccount;
-};

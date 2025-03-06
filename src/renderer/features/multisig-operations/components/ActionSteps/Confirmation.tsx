@@ -7,7 +7,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
-import { type FlexibleMultisigOperation, type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/multisig';
 import { networkModel } from '@/entities/network';
 import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -19,11 +19,11 @@ import { Details } from '../Details';
 import { getIconName } from './transactionConfirmIcon';
 
 export const confirmTransactionInfoSlot = createSlot<{
-  operation: MultisigOperation | FlexibleMultisigOperation;
+  operation: MultisigOperation;
 }>();
 
 type Props = {
-  tx: MultisigOperation | FlexibleMultisigOperation;
+  tx: MultisigOperation;
   account: MultisigAccount;
   signAccount?: Account;
   chain: Chain;

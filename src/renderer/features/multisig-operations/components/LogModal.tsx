@@ -8,13 +8,13 @@ import { SS58_DEFAULT_PREFIX, getExtrinsicExplorer, sortByDateAsc, toAddress } f
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type FlexibleMultisigOperation, type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 
 type Props = {
-  tx: MultisigOperation | FlexibleMultisigOperation;
+  tx: MultisigOperation;
   account?: MultisigAccount;
   connection?: ExtendedChain;
   contacts: Contact[];
@@ -49,7 +49,7 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
 };
 
 type SlotProps = {
-  operation: MultisigOperation | FlexibleMultisigOperation;
+  operation: MultisigOperation;
 };
 
 export const logTitleSlot = createSlot<SlotProps>();

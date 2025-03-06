@@ -7,7 +7,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { type FlexibleMultisigOperation, type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -19,7 +19,7 @@ import LogModal from './LogModal';
 type WalletSignatory = Signatory & { wallet: Wallet };
 
 type Props = {
-  tx: MultisigOperation | FlexibleMultisigOperation;
+  tx: MultisigOperation;
   connection: ExtendedChain;
   account: MultisigAccount;
 };
