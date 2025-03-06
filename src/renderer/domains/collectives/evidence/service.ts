@@ -4,7 +4,6 @@ import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -59,13 +58,12 @@ type EvidenceTransactionParams = {
 function createEvidenceTransaction({
   pallet,
   account,
-
   chain,
   wish,
   evidence,
 }: EvidenceTransactionParams): EvidenceTransaction {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_SUBMIT_EVIDENCE,
     args: { pallet, wish, evidence },

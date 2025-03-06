@@ -7,6 +7,7 @@ import {
   type ID,
   type MultisigAccount,
   type NoID,
+  type PolkadotVaultGroup,
   type ProxiedAccount,
   type VaultBaseAccount,
   type VaultChainAccount,
@@ -30,14 +31,15 @@ import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
-export type CreateParams<T extends AnyAccount = AnyAccount> = {
-  wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
+export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
+  wallet: Omit<NoID<W>, 'isActive' | 'accounts'>;
   accounts: (T extends any ? Omit<NoID<T>, 'walletId'> : never)[];
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
-const multishardCreated = createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount>>();
-const singleshardCreated = createEvent<CreateParams<VaultBaseAccount>>();
+const multishardCreated =
+  createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount, PolkadotVaultGroup>>();
+const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();

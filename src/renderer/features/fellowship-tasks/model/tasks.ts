@@ -1,6 +1,6 @@
 import { combine } from 'effector';
 
-import { nonNullable, nullable, toAccountId, toKeysRecord } from '@/shared/lib/utils';
+import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import {
   type OngoingReferendum,
   evidenceService,
@@ -38,7 +38,7 @@ const $basketOperations = combine(basketOperations.$list, profile.$member, (oper
   return operations.filter(
     operation =>
       nonNullable(member) &&
-      toAccountId(operation.coreTx.address) === member.accountId &&
+      operation.coreTx.accountId === member.accountId &&
       (memberService.isSetActiveTransaction(operation.coreTx) ||
         salaryService.isSalaryInductTransaction(operation.coreTx) ||
         salaryService.isSalaryRequestTransaction(operation.coreTx) ||

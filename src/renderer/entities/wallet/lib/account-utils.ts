@@ -46,6 +46,7 @@ export const accountUtils = {
   isCryptoTypeMatch,
 
   getAddressesForWallet,
+  getAccountsIdsForWallet,
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
@@ -121,9 +122,7 @@ function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accoun
 }
 
 function isChainDependant(account: AnyAccountDraft): boolean {
-  if (accountService.isUniversalAccount(account)) return false;
-
-  return !isMultisigAccount(account) || Boolean(account.chainId);
+  return accountService.isChainAccount(account);
 }
 
 function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
@@ -133,9 +132,8 @@ function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   const shardAccountMatch = isVaultShardAccount(account) && account.chainId === chainId;
   const wcAccountMatch = isWcAccount(account) && account.chainId === chainId;
   const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
-  const multisigWalletMatch = isMultisigAccount(account) && account.chainId === chainId;
 
-  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch || multisigWalletMatch;
+  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch;
 }
 
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
@@ -201,7 +199,10 @@ function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[
   return accountIds.map((id) => accountsMap[id]);
 }
 
-type DerivationPathLike = { derivationPath: string };
+type DerivationPathLike = {
+  derivationPath: string;
+};
+
 function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
   if (!Array.isArray(data)) return data.derivationPath;
 
@@ -236,10 +237,14 @@ function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
   return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
 }
 
-function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {
   const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
-    return accountUtils.isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
+    return isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
   });
 
-  return matchedAccounts.map((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }));
+  return matchedAccounts.map((a) => a.accountId);
+}
+
+function getAddressesForWallet(wallet: Wallet, chain: Chain) {
+  return getAccountsIdsForWallet(wallet, chain).map((id) => toAddress(id, { prefix: chain.addressPrefix }));
 }

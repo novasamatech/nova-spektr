@@ -1,19 +1,12 @@
-import {
-  type Explorer,
-  type VaultBaseAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
-  type Wallet,
-} from '@/shared/core';
+import { type Explorer, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BodyText, HelpText, IconButton, Identicon, Truncate } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
-import { ExplorersPopover, accountUtils, walletUtils } from '@/entities/wallet';
+import { ExplorersPopover, accountUtils } from '@/entities/wallet';
 
 type Props = {
-  wallet?: Wallet;
-  account: VaultBaseAccount | VaultChainAccount | VaultShardAccount;
+  account: VaultChainAccount | VaultShardAccount;
   addressPrefix?: number;
   explorers?: Explorer[];
   checked: boolean;
@@ -24,7 +17,6 @@ type Props = {
 };
 
 export const SelectableShard = ({
-  wallet,
   account,
   addressPrefix,
   explorers,
@@ -38,15 +30,12 @@ export const SelectableShard = ({
 
   const isChain = accountUtils.isVaultChainAccount(account);
   const isShard = accountUtils.isVaultShardAccount(account);
-  const isBase = accountUtils.isVaultBaseAccount(account);
   const isSharded = isShard || isChain;
   const address = toAddress(account.accountId, { prefix: addressPrefix });
 
-  const theme = isBase && walletUtils.isPolkadotVault(wallet) ? 'jdenticon' : undefined;
-
   const content = (
     <div className="flex items-center gap-x-2">
-      <Identicon address={address} theme={theme} size={20} background={false} canCopy={false} />
+      <Identicon address={address} size={20} background={false} canCopy={false} />
       <div className={cnTw('mr-auto truncate', className)}>
         {account.name && !isShard && <BodyText>{account.name}</BodyText>}
         {truncate ? (

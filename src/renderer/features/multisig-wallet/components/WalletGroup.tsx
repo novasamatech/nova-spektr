@@ -1,13 +1,18 @@
 import { memo } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
+import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
-import { WalletRow } from './WalletRow';
+const { WalletFiatBalance } = walletsFiatBalanceFeature.views;
+
+export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
 type Props = {
   title: string;
@@ -51,7 +56,16 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => (
-              <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
+              <WalletManagement
+                key={wallet.id}
+                wallet={wallet}
+                description={
+                  <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                }
+                onClick={() => onSelect(wallet)}
+              >
+                <Slot id={walletActionsSlot} props={{ wallet }} />
+              </WalletManagement>
             ))}
           </Box>
         </Accordion.Content>

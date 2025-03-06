@@ -30,7 +30,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "types": ["@testing-library/jest-dom", "vitest/globals"]
+    "types": ["@polkadot/api-augment", "@testing-library/jest-dom", "vitest/globals"]
   },
   "include": ["src", ".storybook", "tests", "config", ".eslintrc.cjs", "*.ts", "*.js", "*.cjs"],
   "exclude": ["node_modules"]

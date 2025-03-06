@@ -1,13 +1,33 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/renderer/**/index.{ts,tsx}", "src/main/index.ts", "tests/**/*", "scripts/*.js"],
-  "project": ["src/renderer/**/*.{js,ts,tsx}", "src/main/**/*.{js,ts,tsx}", "tests/**/*.{js,ts,tsx}"],
+  "entry": [
+    "src/renderer/**/index.{ts,tsx}",
+    "src/main/index.ts",
+    "src/main/preload.ts",
+    "tests/**/*",
+    "scripts/*.js",
+    "docs/**/*"
+  ],
+  "project": [
+    "src/renderer/**/*.{js,ts,tsx}",
+    "src/main/**/*.{js,ts,tsx}",
+    "tests/**/*.{js,ts,tsx}"
+  ],
   "playwright": true,
   "storybook": true,
   "tailwind": true,
   "typescript": true,
+  "vitest": {
+    "config": "vitest.config.ts"
+  },
+  "vite": {
+    "config": [
+      "./vite.config.renderer.ts",
+      "./vite.config.main.ts",
+      "./vite.config.preload.ts"
+    ]
+  },
   "prettier": true,
-  "jest": true,
   "eslint": true,
   "lint-staged": true
 }

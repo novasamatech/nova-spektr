@@ -91,17 +91,15 @@ const $api = combine(
 const $transactions = combine(
   {
     api: $api,
-    walletData: $walletData,
     coreTxs: $coreTxs,
     txWrappers: $txWrappers,
   },
-  ({ api, walletData, coreTxs, txWrappers }) => {
-    if (!api || !walletData.chain) return undefined;
+  ({ api, coreTxs, txWrappers }) => {
+    if (!api) return undefined;
 
     return coreTxs.map((tx) =>
       transactionService.getWrappedTransaction({
         api,
-        addressPrefix: walletData.chain!.addressPrefix,
         transaction: tx,
         txWrappers,
       }),
@@ -438,7 +436,7 @@ sample({
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({
     api: network!.api,
-    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    accounts: accountUtils.getAccountsIdsForWallet(wallet!, network!.chain),
     chain: network!.chain,
   }),
   target: votingAggregate.events.requestVoting,

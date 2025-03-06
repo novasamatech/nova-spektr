@@ -2,7 +2,6 @@ import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
-import { walletDetailsUtils } from '../../lib/utils';
 import { FlexibleWalletDetails } from '../wallets/FlexibleWalletDetails';
 import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
@@ -18,11 +17,6 @@ type Props = {
 };
 
 export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
-  const multiShardAccounts =
-    nullable(wallet) || !walletUtils.isMultiShard(wallet)
-      ? new Map()
-      : walletDetailsUtils.getMultishardMap(wallet.accounts);
-
   if (!isOpen || nullable(wallet)) {
     return null;
   }
@@ -31,8 +25,8 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
-  if (walletUtils.isMultiShard(wallet) && multiShardAccounts.size > 0) {
-    return <MultishardWalletDetails wallet={wallet} accounts={multiShardAccounts} onClose={onClose} />;
+  if (walletUtils.isMultiShard(wallet)) {
+    return <MultishardWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isRegularMultisig(wallet)) {

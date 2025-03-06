@@ -1,6 +1,5 @@
 import {
   AccountType,
-  type Address,
   type Chain,
   ChainOptions,
   CryptoType,
@@ -8,7 +7,7 @@ import {
   type NoID,
   SigningType,
 } from '@/shared/core';
-import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const multisigUtils = {
@@ -18,15 +17,10 @@ export const multisigUtils = {
   getOtherSignatories,
 };
 
-function getOtherSignatories(
-  account: MultisigAccount,
-  signer: AccountId | Address,
-  addressPrefix: number,
-) {
-  const signerAddress = toAddress(signer, { prefix: addressPrefix });
-
+function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
   return (
     Array.from(account.signatories)
+      .map((s) => s.accountId)
       /**
        * Public keys of signers' wallets are compared byte-for-byte and sorted
        * ascending before being used to generate the multisig address. For
@@ -38,9 +32,8 @@ function getOtherSignatories(
        * other signatories will be first A, then B. If we put first B, then A,
        * the transaction will fail.
        */
-      .sort((a, b) => a.accountId.localeCompare(b.accountId))
-      .map((s) => toAddress(s.accountId, { prefix: addressPrefix }))
-      .filter((address) => address !== signerAddress)
+      .sort((a, b) => a.localeCompare(b))
+      .filter((account) => account !== signer)
   );
 }
 
@@ -61,23 +54,21 @@ type BuildMultisigParams = {
   threshold: number;
   accountId: AccountId;
   signatories: AccountId[];
-  chain: Chain;
+  name: string;
 };
 
-function buildMultisigAccount({ threshold, accountId, signatories, chain }: BuildMultisigParams) {
+function buildMultisigAccount({ threshold, accountId, signatories, name }: BuildMultisigParams) {
   const account: NoID<Omit<MultisigAccount, 'walletId'>> = {
     threshold: threshold,
     accountId: accountId,
     signatories: signatories.map((signatory) => ({
       accountId: signatory,
-      address: toAddress(signatory),
     })),
-    name: toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-    chainId: chain.chainId,
+    name: name,
     cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
-    type: 'chain',
+    type: 'universal',
   };
 
   return account;

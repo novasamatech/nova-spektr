@@ -5,12 +5,14 @@ import { readonly } from 'patronum';
 
 import { type Address, type Chain, type ChainId, type TrackId } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 import { networkSelectorModel } from './networkSelector';
 
-const requestLocks = createEvent<{ api: ApiPromise; chain: Chain; addresses: Address[] }>();
+const requestLocks = createEvent<{ api: ApiPromise; chain: Chain; accounts: AccountId[] }>();
 const subscribeLocks = createEvent();
 
 const $trackLocks = createStore<Record<ChainId, Record<Address, Record<TrackId, BN>>>>({}).reset(
@@ -44,40 +46,40 @@ const $totalLock = combine(
 
 const $isLoading = createStore(true);
 
-const $walletAddresses = combine(
+const $walletAccounts = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   ({ wallet, chain }) => {
     if (!wallet || !chain) return [];
 
-    return accountUtils.getAddressesForWallet(wallet, chain);
+    return accountUtils.getAccountsIdsForWallet(wallet, chain);
   },
 );
 
 type RequestParams = {
   api: ApiPromise;
   chain: Chain;
-  addresses: Address[];
+  accounts: AccountId[];
 };
 
-const requestLocksFx = createEffect(({ api, addresses }: RequestParams) => {
-  return governanceService.getTrackLocks(api, addresses);
+const requestLocksFx = createEffect(({ api, accounts }: RequestParams) => {
+  return governanceService.getTrackLocks(api, accounts);
 });
 
 const {
   subscribe,
   received: receiveLocks,
   unsubscribe: unsubscribeLocks,
-} = createSubscriber<RequestParams, Record<Address, Record<TrackId, BN>>>(({ api, addresses }, cb) => {
-  return governanceSubscribeService.subscribeTrackLocks(api, addresses, (locks) => {
+} = createSubscriber<RequestParams, Record<Address, Record<TrackId, BN>>>(({ api, accounts }, cb) => {
+  return governanceSubscribeService.subscribeTrackLocks(api, accounts, (locks) => {
     if (locks) cb(locks);
   });
 });
 
 sample({
-  clock: [networkSelectorModel.$network, $walletAddresses],
+  clock: [networkSelectorModel.$network, $walletAccounts],
   target: subscribeLocks,
 });
 
@@ -85,16 +87,16 @@ sample({
   clock: subscribeLocks,
   source: {
     network: networkSelectorModel.$network,
-    addresses: $walletAddresses,
+    accounts: $walletAccounts,
   },
   filter: ({ network }) => nonNullable(network),
-  fn: ({ network, addresses }) => ({ api: network!.api, chain: network!.chain, addresses }),
+  fn: ({ network, accounts }) => ({ api: network!.api, chain: network!.chain, accounts }),
   target: subscribe,
 });
 
 sample({
   clock: requestLocks,
-  fn: ({ chain, api, addresses }) => ({ api, chain, addresses }),
+  fn: ({ chain, api, accounts }) => ({ api, chain, accounts }),
   target: requestLocksFx,
 });
 

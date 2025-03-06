@@ -1,4 +1,6 @@
-export { accountsDomainModel as accounts } from './account/model';
+export { transactionService } from './transaction/service';
+
+export { accounts } from './account/model';
 export { accountService } from './account/service';
 
 export { identity } from './identity/model';

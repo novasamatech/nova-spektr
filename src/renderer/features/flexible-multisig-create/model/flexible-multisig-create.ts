@@ -21,16 +21,7 @@ import {
   TransactionType,
   WalletType,
 } from '@/shared/core';
-import {
-  SS58_DEFAULT_PREFIX,
-  Step,
-  TEST_ACCOUNTS,
-  isStep,
-  nonNullable,
-  toAccountId,
-  toAddress,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -159,7 +150,7 @@ const $fakeTx = combine(
 
     return {
       chainId: chain.chainId,
-      address: toAddress(TEST_ACCOUNTS[0], { prefix: SS58_DEFAULT_PREFIX }),
+      accountId: TEST_ACCOUNTS[0],
       type: TransactionType.MULTISIG_AS_MULTI,
       args: {
         threshold: 2,
@@ -342,7 +333,7 @@ sample({
   },
   fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, multisigAccountId, signatories }, signParams) => {
     const isEthereumChain = networkUtils.isEthereumBased(addMultisigStore!.chain.options);
-    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address), address: s.address }));
+    const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address) }));
 
     return {
       event: {
@@ -350,14 +341,13 @@ sample({
         chain: addMultisigStore!.chain,
         account: {
           signatories: signatoriesWrapped,
-          chainId: addMultisigStore!.chain.chainId,
           name: addMultisigStore!.name,
           accountId: multisigAccountId!,
           threshold: addMultisigStore!.threshold,
           cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
           signingType: SigningType.MULTISIG,
           accountType: AccountType.MULTISIG,
-          type: 'chain',
+          type: 'universal',
         } as MultisigAccount,
         coreTxs: [coreTx!],
         wrappedTxs: [wrappedTx!],
@@ -452,14 +442,13 @@ sample({
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
-      chainId: chain!.chainId,
       name: name.trim(),
       accountId: multisigAccoutId!,
       threshold: threshold,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
-      type: 'chain',
+      type: 'universal',
     };
 
     return {

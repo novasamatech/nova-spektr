@@ -29,7 +29,10 @@ export default defineConfig({
         baseUrl: `${pkg.repository}/edit/dev`,
       },
       customCss: ['@fontsource/inter', resolve(docsDir, 'styles/custom.css'), resolve(docsDir, 'styles/theme.css')],
-      sidebar: [{ label: 'Onboarding', autogenerate: { directory: 'onboarding' } }],
+      sidebar: [
+        { label: 'Onboarding', autogenerate: { directory: 'onboarding' } },
+        { label: 'Code style', autogenerate: { directory: 'code/style' } },
+      ],
     }),
   ],
 });

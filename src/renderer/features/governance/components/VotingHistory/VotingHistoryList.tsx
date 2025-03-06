@@ -4,9 +4,9 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { formatAsset, performSearch, toAccountId } from '@/shared/lib/utils';
-import { EmptyList, FootnoteText } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
-import { Box, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListPlaceholder } from './VotingHistoryListPlaceholder';
@@ -15,12 +15,15 @@ type Props = {
   items: AggregatedVoteHistory[];
   chain: Chain | null;
   asset: Asset | null;
+  listName: string;
   loading?: boolean;
 };
 
-export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) => {
+export const VotingHistoryList = memo(({ items, asset, listName, chain, loading }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
+
+  items.length = 0;
 
   const filteredItems = useMemo(
     () => performSearch({ records: items, query, weights: { voter: 0.5, name: 1 } }),
@@ -57,7 +60,12 @@ export const VotingHistoryList = memo(({ items, asset, chain, loading }: Props) 
         <Box gap={1} padding={[0, 3, 2]}>
           {shouldRenderLoader && <VotingHistoryListPlaceholder />}
 
-          {shouldRenderEmptyState && <EmptyList message={t('governance.voteHistory.listEmptyState')} />}
+          {shouldRenderEmptyState && (
+            <EmptyMessage
+              title={t('governance.voteHistory.listEmptyTitle', { list: listName })}
+              description={t('governance.voteHistory.listEmptyDescription')}
+            />
+          )}
 
           {shouldRenderList &&
             deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {

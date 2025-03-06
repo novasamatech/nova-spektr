@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type Address, type TrackId } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type TrackId } from '@/shared/core';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { type ConvictionVotingVoteVoting, convictionVotingClassLock, convictionVotingVoteVoting } from './schema';
 
@@ -27,17 +27,17 @@ export const storage = {
    * amounts which they require. The actual amount locked on behalf of this
    * pallet should always be the maximum of this list.
    */
-  classLocksFor(api: ApiPromise, addresses: Address[]) {
+  classLocksFor(api: ApiPromise, accounts: AccountId[]) {
     const schema = pjsSchema.vec(pjsSchema.vec(convictionVotingClassLock));
 
-    return substrateRpcPool.call(() => getQuery(api, 'classLocksFor').multi(addresses)).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(api, 'classLocksFor').multi(accounts)).then(schema.parse);
   },
 
   /**
    * All voting for a particular voter in a particular voting class. We store
    * the balance for the number of votes that we have recorded.
    */
-  votingFor(api: ApiPromise, keys: [address: Address, trackId: TrackId][]) {
+  votingFor(api: ApiPromise, keys: [accountId: AccountId, trackId: TrackId][]) {
     const schema = pjsSchema.vec(convictionVotingVoteVoting);
 
     return substrateRpcPool.call(() => getQuery(api, 'votingFor').multi(keys)).then(schema.parse);
@@ -49,7 +49,7 @@ export const storage = {
    */
   subscribeVotingFor(
     api: ApiPromise,
-    keys: (readonly [address: Address, trackId: TrackId])[],
+    keys: (readonly [accountId: AccountId, trackId: TrackId])[],
     callback: (value: ConvictionVotingVoteVoting[]) => unknown,
   ) {
     const schema = pjsSchema.vec(convictionVotingVoteVoting);

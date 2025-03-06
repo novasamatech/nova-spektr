@@ -1,5 +1,4 @@
 import { type Chain, type Transaction, TransactionType } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -24,7 +23,7 @@ const createVoteTransaction = ({
   referendumId,
 }: VoteTransactionParams): VotingTransaction => {
   return {
-    address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
+    accountId: account.accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_VOTE,
     args: {
