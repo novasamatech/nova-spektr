@@ -117,15 +117,29 @@ export const QrSignatureReader = ({
     }
   };
 
-  const stopScanning = () => {
-    if (streamRef.current) {
-      for (const track of streamRef.current.getVideoTracks()) {
-        track.stop();
-      }
-    }
+  const stopScanning = async () => {
+    try {
+      await Promise.all([controlsRef.current?.stop(), bgControlsRef.current?.stop()].filter(Boolean));
 
-    controlsRef.current?.stop();
-    bgControlsRef.current?.stop();
+      if (streamRef.current) {
+        const tracks = streamRef.current.getVideoTracks();
+        await Promise.all(
+          tracks
+            .map((track) => {
+              try {
+                track.stop();
+                return Promise.resolve();
+              } catch (e) {
+                console.warn('Failed to stop video track:', e);
+              }
+            })
+            .filter(Boolean),
+        );
+        streamRef.current = undefined;
+      }
+    } catch (error) {
+      console.warn('Error while stopping scanner:', error);
+    }
   };
 
   useEffect(() => {
@@ -146,7 +160,7 @@ export const QrSignatureReader = ({
     })();
 
     return () => {
-      stopScanning();
+      void stopScanning();
     };
   }, []);
 
