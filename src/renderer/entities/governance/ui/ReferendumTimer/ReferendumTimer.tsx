@@ -30,6 +30,7 @@ const TimerText: Record<Status, string> = {
 };
 
 type Props = {
+  shortDateFormat?: boolean;
   status: ReferendumStatus;
   time: number;
 };
@@ -41,7 +42,7 @@ const StatusMap: Record<ReferendumStatus, Status> = {
   Execute: 'execute',
 };
 
-export const ReferendumTimer = ({ status, time }: Props) => {
+export const ReferendumTimer = ({ status, time, shortDateFormat }: Props) => {
   const { t } = useI18n();
   const referendumStatus = StatusMap[status];
 
@@ -68,7 +69,7 @@ export const ReferendumTimer = ({ status, time }: Props) => {
     <div className={cnTw('flex items-center gap-x-1', TimerColor[referendumStatus])}>
       <Icon name={TimerIcon[referendumStatus]} size={16} className="text-inherit" />
       <FootnoteText className="text-inherit">{t(TimerText[referendumStatus])}</FootnoteText>
-      <Duration as={FootnoteText} className="text-inherit" seconds={countdown} shortFormat />
+      <Duration as={FootnoteText} className="text-inherit" seconds={countdown} shortFormat={shortDateFormat} />
     </div>
   );
 };
