@@ -8,11 +8,6 @@ type Props = PropsWithChildren<{
   className?: string;
 }>;
 
-/**
- * TODO: Remove this component
- *
- * @deprecated Use LabelHelpBox from ui/kit
- */
 export const LabelHelpBox = forwardRef<HTMLDivElement, Props>(({ className, children }, ref) => (
   <div
     ref={ref}
