@@ -1,12 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, attach, createEffect, sample } from 'effector';
+import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { lockPeriodsModel } from '@/features/governance';
 import { type BalanceMap, type NetworkStore } from '@/widgets/Transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
@@ -122,11 +121,6 @@ const validateFx = attach({
     };
   },
   effect: rootValidateFx,
-});
-
-sample({
-  clock: rootValidateFx,
-  target: lockPeriodsModel.events.requestLockPeriods,
 });
 
 export const delegateValidateModel = {

@@ -35,7 +35,7 @@ sample({
 sample({
   clock: $network,
   filter: nonNullable,
-  target: lockPeriodsModel.events.requestLockPeriods,
+  target: lockPeriodsModel.requestLockPeriods,
 });
 
 export const locksPeriodsAggregate = {
