@@ -28,7 +28,7 @@ const $activeWalletVotes = combine(
 
     for (const accountId of accountIds) {
       if (accountId in voting) {
-        res[accountId] = voting[accountId];
+        result[accountId] = voting[accountId];
       }
     }
 
