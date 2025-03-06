@@ -24,7 +24,7 @@ const $operations = createStore<Record<ChainId, MultisigOperation[]>>({});
 const { request: requestOperations } = createDataSource({
   source: $operations,
   target: $operations,
-  pool: (params: RequestParams) => params.api.genesisHash.toString(),
+  pool: (params: RequestParams) => params.api.genesisHash.toHex() || '0x00',
   async fn({ api, accountId }: RequestParams) {
     const operations: MultisigOperation[] = [];
 
@@ -87,7 +87,6 @@ const { subscribe, unsubscribe } = createDataSubscription<
   RequestParams[],
   { operations: MultisigOperation[]; chainId: ChainId }
 >({
-  key: params => params[0]!.chain.chainId,
   initial: {},
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];

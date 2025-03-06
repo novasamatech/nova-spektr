@@ -5,6 +5,7 @@ import { readonly, spread } from 'patronum';
 import { storageService } from '@/shared/api/storage';
 // eslint-disable-next-line boundaries/element-types
 import { type HexString } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation, type OperationData, operations } from '@/domains/multisig';
@@ -62,7 +63,12 @@ const $filteredTxs = restore<MultisigOperation[]>(changeFilteredTxs, []).reset($
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: [operations.requestOperations, operations.subscribe, populateFx],
+  target: series(operations.requestOperations),
+});
+
+sample({
+  clock: multisigOperationsFeatureStatus.running,
+  target: [operations.subscribe, populateFx],
 });
 
 sample({
