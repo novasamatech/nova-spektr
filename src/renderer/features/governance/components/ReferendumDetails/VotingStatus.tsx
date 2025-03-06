@@ -60,7 +60,7 @@ export const VotingStatus = ({
       <div className="flex w-full justify-between gap-x-1">
         <VotingStatusBadge passing={isPassing} referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} shortDateFormat/>
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} shortDateFormat />
       </div>
 
       {votedFractions && (
