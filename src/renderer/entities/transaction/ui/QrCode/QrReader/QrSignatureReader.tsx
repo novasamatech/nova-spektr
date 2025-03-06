@@ -89,9 +89,7 @@ export const QrSignatureReader = ({
 
       try {
         await init();
-
         const qr = result.getText();
-
         const signature = u8aToHex(hexToU8a(qr));
         isComplete.current = true;
         onResult?.(signature);
@@ -113,6 +111,7 @@ export const QrSignatureReader = ({
           decodeCallback,
         );
       }
+
       onStart?.();
     } catch {
       throw QR_READER_ERRORS[QrError.DECODE_ERROR];
@@ -126,37 +125,27 @@ export const QrSignatureReader = ({
   useEffect(() => {
     (async () => {
       try {
-        const camerasAmount = await getVideoInputs();
-        scannerRef.current = new BrowserQRCodeReader(undefined, {
-          delayBetweenScanAttempts: 50,
-          delayBetweenScanSuccess: 50,
-        });
+        if (!scannerRef.current) {
+          const camerasAmount = await getVideoInputs();
+          scannerRef.current = new BrowserQRCodeReader(undefined, {
+            delayBetweenScanAttempts: 50,
+            delayBetweenScanSuccess: 50,
+          });
 
-        if (!camerasAmount || camerasAmount === 1) {
-          await startScanning();
+          if (!cameraId && (!camerasAmount || camerasAmount === 1)) {
+            await startScanning();
+          }
         }
       } catch (error) {
-        onError?.(error as ErrorObject);
+        {
+          onError?.(error as ErrorObject);
+        }
       }
     })();
 
     return () => {
       handleStopScanning();
     };
-  }, []);
-
-  useEffect(() => {
-    if (!cameraId) return;
-
-    (async () => {
-      try {
-        controlsRef.current?.stop();
-        bgControlsRef.current?.stop();
-        await startScanning();
-      } catch {
-        onError?.(QR_READER_ERRORS[QrError.BAD_NEW_CAMERA]);
-      }
-    })();
   }, [cameraId]);
 
   if (!bgVideo) {
