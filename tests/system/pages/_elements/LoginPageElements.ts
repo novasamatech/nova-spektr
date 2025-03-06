@@ -13,4 +13,5 @@ export class LoginPageElements implements BasePageElements {
   firstInfoButton = TEST_IDS.COMMON.INFO_BUTTON;
   subscanLabel = 'View on Subscan';
   onboardingLabel = 'Add your wallet';
+  importDatabaseButton = TEST_IDS.ONBOARDING.IMPORT_DATABASE_BUTTON;
 }

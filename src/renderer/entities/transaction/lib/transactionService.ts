@@ -1,11 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
-import { u32 } from '@polkadot/types';
-import { type Weight } from '@polkadot/types/interfaces';
+import { GenericSignerPayload, u32 } from '@polkadot/types';
+import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
-import { construct } from '@substrate/txwrapper-polkadot';
 
 import {
   type Account,
@@ -22,7 +21,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable, toAccountId } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable, scaleEncodedToNumber } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -32,7 +31,7 @@ import { walletUtils } from '@/entities/wallet';
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
 import { type ExtrinsicResultParams } from './common/types';
 import { decodeDispatchError } from './common/utils';
-import { getExtrinsic, getUnsignedTransaction, wrapAsMulti, wrapAsProxy } from './extrinsicService';
+import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
   isMultisig,
@@ -67,7 +66,7 @@ async function getTransactionFee(
   options?: Partial<SignerOptions>,
 ): Promise<string> {
   const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-  const paymentInfo = await extrinsic.paymentInfo(transaction.address, options);
+  const paymentInfo = await extrinsic.paymentInfo(transaction.accountId, options);
 
   return paymentInfo.partialFee.toString();
 }
@@ -100,7 +99,7 @@ async function signAndSubmit(
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>((resolve) => {
     const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const accountId = toAccountId(transaction.address);
+    const accountId = transaction.accountId;
     extrinsic.addSignature(accountId, hexToU8a(signature), payload);
 
     let unsubscribe: VoidFunction;
@@ -310,7 +309,6 @@ function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappers
 
 type WrapperParams = {
   api: ApiPromise;
-  addressPrefix: number;
   transaction: Transaction;
   txWrappers: TxWrapper[];
 };
@@ -320,13 +318,12 @@ export type WrappedTransactions = {
   multisigTx?: Transaction;
 };
 
-function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: WrapperParams): WrappedTransactions {
+function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams): WrappedTransactions {
   return txWrappers.reduce<WrappedTransactions>(
     (acc, txWrapper) => {
       if (isMultisig(txWrapper)) {
         const multisigTx = wrapAsMulti({
           api,
-          addressPrefix,
           transaction: acc.wrappedTx,
           txWrapper: txWrapper,
         });
@@ -338,7 +335,6 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 
       if (isProxy(txWrapper)) {
         acc.wrappedTx = wrapAsProxy({
-          addressPrefix,
           transaction: acc.wrappedTx,
           txWrapper: txWrapper,
         });
@@ -351,26 +347,50 @@ function getWrappedTransaction({ api, addressPrefix, transaction, txWrappers }: 
 }
 
 async function createPayload(transaction: Transaction, api: ApiPromise) {
-  const metadata = await createTxMetadata(transaction.address, api);
+  const metadata = await createTxMetadata(transaction.accountId, api);
 
   return createPayloadWithMetadata(transaction, api, metadata);
 }
 
-function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { info, options, registry }: TxMetadata) {
-  const unsigned = getUnsignedTransaction[transaction.type](transaction, info, options, api);
-  if (options.signedExtensions?.includes('ChargeAssetTxPayment')) {
-    unsigned.assetId = undefined;
+function createEra(api: ApiPromise, blockNumber: HexString) {
+  const mortalLength = 64;
+  return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: blockNumber, period: mortalLength }]);
+}
+
+function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
+  // TODO we should get extrinsic from arguments, not construct it inside
+  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+  if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
+    signerPayloadBase.assetId = undefined;
   }
 
-  const signingPayloadHex = construct.signingPayload(unsigned, { registry });
+  // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
+  const era = createEra(api, signerPayloadBase.blockNumber);
+
+  const signingPayload = new GenericSignerPayload(api.registry, {
+    ...signerPayloadBase,
+    method: extrinsic.method.toHex(),
+    version: extrinsic.version,
+    era: era.toHex(),
+    // Immortal transaction requires genesisHash instead of blockHash
+    blockHash: era.toNumber() === 0 ? signerPayloadBase.genesisHash : signerPayloadBase.blockHash,
+    runtimeVersion: {
+      specVersion: signerPayloadBase.specVersion,
+      transactionVersion: signerPayloadBase.transactionVersion,
+    },
+  }).toPayload();
+
+  const signingPayloadHex = api.registry
+    .createType('ExtrinsicPayload', signingPayload, { version: signingPayload.version })
+    .toHex();
 
   return {
     type: transaction.type,
     args: transaction.args,
-    unsigned,
+    unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
-    info,
   };
 }
 
@@ -458,26 +478,28 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 }
 
 function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
-  console.groupCollapsed('transaction log');
-  for (const log of info) {
-    console.info('operation type:', log.type);
+  console.groupCollapsed('Transactions');
+  for (const [index, log] of info.entries()) {
+    console.groupCollapsed(`Operation ${index}: ${log.type}`);
 
     console.table({
-      address: log.info.address,
-      chain: log.info.genesisHash,
-      nonce: log.info.nonce,
+      address: log.unsigned.address,
+      chain: log.unsigned.genesisHash,
+      nonce: `${log.unsigned.nonce} (${scaleEncodedToNumber(log.unsigned.nonce)})`,
     });
 
     console.group('args');
     console.table(log.args);
     console.groupEnd();
 
-    console.groupCollapsed('unsigned');
+    console.groupCollapsed('signer payload');
     console.info(log.unsigned);
     console.groupEnd();
 
-    console.groupCollapsed('signed');
+    console.groupCollapsed('unsigned payload');
     console.info(log.hexPayload);
+    console.groupEnd();
+
     console.groupEnd();
   }
   console.groupEnd();

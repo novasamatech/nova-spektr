@@ -18,17 +18,6 @@
         "type": "native"
       },
       {
-        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-        "name": "Westmint",
-        "assetId": 2,
-        "assetSymbol": "DOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "0x02010902",
-          "palletName": "ForeignAssets"
-        }
-      },
-      {
         "chainId": "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
         "name": "Acala",
         "assetId": 3,
@@ -272,16 +261,6 @@
         }
       },
       {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 1,
-        "assetSymbol": "KSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "100"
-        }
-      },
-      {
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
         "name": "Basilisk",
         "assetId": 1,
@@ -390,13 +369,6 @@
         "type": "native"
       },
       {
-        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-        "name": "Westmint",
-        "assetId": 0,
-        "assetSymbol": "WND",
-        "type": "native"
-      },
-      {
         "chainId": "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
         "name": "Westend Bridge Hub",
         "assetId": 0,
@@ -430,50 +402,6 @@
         "assetId": 0,
         "assetSymbol": "WND",
         "type": "native"
-      }
-    ]
-  },
-  {
-    "name": "Siri",
-    "precision": 10,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
-    },
-    "symbol": "SIRI",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-        "name": "Westmint",
-        "assetId": 1,
-        "assetSymbol": "SIRI",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "81"
-        }
-      }
-    ]
-  },
-  {
-    "name": "JOE token",
-    "precision": 3,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
-    },
-    "symbol": "JOE",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-        "name": "Westmint",
-        "assetId": 3,
-        "assetSymbol": "JOE",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "8"
-        }
       }
     ]
   },
@@ -616,28 +544,6 @@
     ]
   },
   {
-    "name": "Bill Coin",
-    "precision": 8,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BILLCOIN.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BILLCOIN.svg"
-    },
-    "symbol": "BILLCOIN",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
-        "name": "Kusama Asset Hub",
-        "assetId": 5,
-        "assetSymbol": "BILLCOIN",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "223"
-        }
-      }
-    ]
-  },
-  {
     "name": "USD Tether",
     "precision": 6,
     "priceId": "tether",
@@ -715,16 +621,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 9,
-        "assetSymbol": "USDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "102"
         }
       },
       {
@@ -936,16 +832,6 @@
         }
       },
       {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 5,
-        "assetSymbol": "KAR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "107"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 3,
@@ -1028,16 +914,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 2,
-        "assetSymbol": "aSEEDk",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "103"
         }
       },
       {
@@ -1248,16 +1124,6 @@
         }
       },
       {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 3,
-        "assetSymbol": "LKSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "109"
-        }
-      },
-      {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
         "name": "Turing",
         "assetId": 4,
@@ -1327,16 +1193,6 @@
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "40000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 7,
-        "assetSymbol": "PHA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "115"
         }
       },
       {
@@ -1462,16 +1318,6 @@
         }
       },
       {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 10,
-        "assetSymbol": "KINT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "119"
-        }
-      },
-      {
         "chainId": "0xbf88efe70e9e0e916416e8bed61f2b45717f517d7f3523e33c7b001e5ffcbc72",
         "name": "Interlay",
         "assetId": 3,
@@ -1567,16 +1413,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
-        }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 11,
-        "assetSymbol": "kBTC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "121"
         }
       },
       {
@@ -1781,16 +1617,6 @@
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 6,
-        "assetSymbol": "MOVR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "113"
-        }
       }
     ]
   },
@@ -1826,13 +1652,6 @@
         "typeExtras": {
           "assetId": "76100021443485661246318545281171740067"
         }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 0,
-        "assetSymbol": "HKO",
-        "type": "native"
       },
       {
         "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
@@ -2113,16 +1932,6 @@
           "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
           "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 8,
-        "assetSymbol": "GENS",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "123"
         }
       }
     ]
@@ -2514,54 +2323,6 @@
     ]
   },
   {
-    "name": "Test token",
-    "precision": 18,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
-    },
-    "symbol": "DEV",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
-        "name": "Moonbase Alpha",
-        "assetId": 0,
-        "assetSymbol": "DEV",
-        "type": "native"
-      }
-    ]
-  },
-  {
-    "name": "Test token",
-    "precision": 12,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
-    },
-    "symbol": "UNIT",
-    "isTestToken": true,
-    "chains": [
-      {
-        "chainId": "0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527",
-        "name": "Moonbase Alpha",
-        "assetId": 1,
-        "assetSymbol": "xcUNIT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "42259045809535163221576417993425387648"
-        }
-      },
-      {
-        "chainId": "0xe1ea3ab1d46ba8f4898b6b4b9c54ffc05282d299f89e84bd0fd08067758c9443",
-        "name": "Moonbase Relay Testnet",
-        "assetId": 0,
-        "assetSymbol": "UNIT",
-        "type": "native"
-      }
-    ]
-  },
-  {
     "name": "Zenlink Network",
     "precision": 18,
     "priceId": "zenlink-network-token",
@@ -2659,41 +2420,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
-        }
-      }
-    ]
-  },
-  {
-    "name": "s Kusama",
-    "precision": 12,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/sKSM.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/sKSM.svg"
-    },
-    "symbol": "sKSM",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x64a1c658a48b2e70a7fb1ad4c39eea35022568c20fc44a6e2e3d0a57aee6053b",
-        "name": "Parallel Heiko",
-        "assetId": 4,
-        "assetSymbol": "sKSM",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "1000"
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 6,
-        "assetSymbol": "sKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x06000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "500000000",
-          "transfersEnabled": true
         }
       }
     ]
@@ -4682,6 +4408,31 @@
     ]
   },
   {
+    "name": "s Kusama",
+    "precision": 12,
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/sKSM.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/sKSM.svg"
+    },
+    "symbol": "sKSM",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
+        "name": "Turing",
+        "assetId": 6,
+        "assetSymbol": "sKSM",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x06000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "500000000",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "Aleph Zero",
     "precision": 12,
     "priceId": "aleph-zero",
@@ -4752,21 +4503,21 @@
     ]
   },
   {
-    "name": "Litentry",
+    "name": "Heima",
     "precision": 18,
-    "priceId": "litentry",
+    "priceId": "heima",
     "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LIT.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/LIT.svg"
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/HEI.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/HEI.svg"
     },
-    "symbol": "LIT",
+    "symbol": "HEI",
     "isTestToken": false,
     "chains": [
       {
         "chainId": "0x2fc8bb6ed7c0051bdcf4866c322ed32b6276572713607e3297ccf411b8f14aa9",
-        "name": "Litentry",
+        "name": "Heima",
         "assetId": 0,
-        "assetSymbol": "LIT",
+        "assetSymbol": "HEI",
         "type": "native"
       }
     ]

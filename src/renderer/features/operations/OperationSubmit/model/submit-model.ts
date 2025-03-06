@@ -87,8 +87,6 @@ const signAndSubmitExtrinsicsFx = createEffect(
       transactionService
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {
-          console.log(result);
-
           if (result.executed) {
             boundExtrinsicSucceeded({ id: index, params: result.params });
           } else {

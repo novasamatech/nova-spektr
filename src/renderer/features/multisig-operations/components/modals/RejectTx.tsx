@@ -1,14 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Account, type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetById, getAssetByTypeExtras, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, getAssetByTypeExtras, getNativeAsset, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -19,6 +19,7 @@ import { priceProviderModel } from '@/entities/price';
 import { OperationResult, isXcmTransaction, transactionService, validateBalance } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
+import { type SigningPayload } from '@/features/operations/OperationSign';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -41,7 +42,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
+const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -77,6 +78,18 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
     walletFn: walletUtils.isValidSignatory,
     accountFn: account => account.accountId === tx.depositor,
   })?.accounts[0];
+
+  const signingPayloads = useMemo<SigningPayload[]>(() => {
+    if (nullable(rejectTx) || nullable(signAccount)) return [];
+    return [
+      {
+        chain: chain,
+        account: signAccount,
+        transaction: rejectTx,
+        signatory: signAccount,
+      },
+    ];
+  }, [chain, signAccount, rejectTx]);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -185,14 +198,7 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
             apis={apis}
-            signingPayloads={[
-              {
-                chain: chain,
-                account: signAccount,
-                transaction: rejectTx,
-                signatory: signAccount,
-              },
-            ]}
+            signingPayloads={signingPayloads}
             validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}
@@ -211,6 +217,6 @@ const RejectTxModal = ({ api, tx, account, chain, children }: Props) => {
       </Modal.Content>
     </Modal>
   );
-};
+});
 
 export default RejectTxModal;

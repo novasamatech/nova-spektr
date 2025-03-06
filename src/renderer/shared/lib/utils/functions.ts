@@ -106,3 +106,7 @@ export function shallowEqual(objA: unknown, objB: unknown): boolean {
 
   return true;
 }
+
+export function delay(ttl: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ttl));
+}

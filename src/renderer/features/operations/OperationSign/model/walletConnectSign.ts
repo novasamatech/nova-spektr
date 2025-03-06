@@ -1,12 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type SignerPayloadJSON } from '@substrate/txwrapper-polkadot';
+import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { combineEvents } from 'patronum';
 
-import { type Address, type ChainId, type HexString } from '@/shared/core';
-import { series, waitFor } from '@/shared/effector';
-import { assert, createTxMetadata, nonNullable, toAddress, upgradeNonce } from '@/shared/lib/utils';
+import { type ChainId, type HexString } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
@@ -40,8 +41,7 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
   const account = payload.signatory || payload.account;
   const api = apis[payload.chain.chainId];
 
-  const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
-  let metadata = await createTxMetadata(address, api);
+  let metadata = await createTxMetadata(account.accountId, api);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
@@ -60,24 +60,22 @@ const getSessionFx = attach({ effect: walletConnect.restoreSession });
 
 type SignParams = {
   session: SessionTypes.Struct;
-  chainId: ChainId;
-  address: Address;
   payload: SignerPayloadJSON;
 };
 
 const signFx = attach({
   source: walletConnect.$client,
-  async effect(client, { chainId, address, payload, session }: SignParams) {
+  async effect(client, { payload, session }: SignParams) {
     assert(client, 'Wallet Connect client not found.');
 
     const response = await walletConnect.request({
       client,
       session,
-      chainId: walletConnectService.getWalletConnectChainId(chainId),
+      chainId: walletConnectService.getWalletConnectChainId(payload.genesisHash),
       request: {
         method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
         params: {
-          address,
+          address: payload.address,
           transactionPayload: payload,
         },
       },
@@ -169,9 +167,11 @@ sample({
   target: setupTransactionFx,
 });
 
-const readyToSign = waitFor({
-  source: getSessionFx.doneData,
-  clock: setupTransactionFx.doneData,
+const readyToSign = combineEvents({
+  events: {
+    session: getSessionFx.doneData,
+    transactions: setupTransactionFx.doneData,
+  },
   reset: flow.close,
 });
 
@@ -179,12 +179,12 @@ sample({
   clock: readyToSign,
   source: walletConnect.$client,
   filter: nonNullable,
-  fn(client, { trigger: transactions, event: session }) {
-    return transactions.map<SignParams>(({ info, unsigned: { metadataRpc: _, ...unsigned } }) => ({
-      client: client!,
+  fn(client, { transactions, session }) {
+    assert(client, 'WC client not found');
+
+    return transactions.map<SignParams>(({ unsigned }) => ({
+      client,
       session,
-      chainId: info.genesisHash as ChainId,
-      address: info.address,
       payload: unsigned,
     }));
   },

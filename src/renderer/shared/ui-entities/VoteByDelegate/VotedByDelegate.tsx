@@ -14,9 +14,10 @@ type Props = {
   voterName?: string;
   votingPower: BN;
   decision: 'aye' | 'nay';
+  testId?: string;
 };
 
-export const VotedByDelegate = memo(({ asset, address, voterName, votingPower, decision }: Props) => {
+export const VotedByDelegate = memo(({ asset, address, voterName, votingPower, decision, testId }: Props) => {
   const { t } = useI18n();
 
   const delegate = voterName ? (
@@ -28,7 +29,7 @@ export const VotedByDelegate = memo(({ asset, address, voterName, votingPower, d
   const amount = <AssetBalance className="text-icon-accent" value={votingPower} asset={asset} />;
 
   return (
-    <div className="flex items-center gap-x-1">
+    <div className="flex items-center gap-x-1" data-testid={testId}>
       <Icon name="voted" size={16} className="text-icon-accent" />
       <FootnoteText className="flex max-w-56 items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
         <Trans

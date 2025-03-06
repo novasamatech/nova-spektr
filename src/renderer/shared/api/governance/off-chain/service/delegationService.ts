@@ -75,17 +75,24 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
   return client
     .request(GET_DELEGATOR, { voters })
     .then((data: any) => {
-      const result: Record<ReferendumId, DelegateInfo> = {};
+      const result: Record<ReferendumId, DelegateInfo[]> = {};
 
-      for (const { vote, parent } of data.delegatorVotings.nodes) {
+      for (const { vote, delegator, parent } of data.delegatorVotings.nodes) {
         if (nullable(parent.delegateId)) continue;
 
-        result[parent.referendumId] = {
+        const info: DelegateInfo = {
+          delegator,
           delegateId: parent.delegateId,
           decision: parent.standardVote.aye ? 'aye' : 'nay',
           amount: new BN(vote.amount),
           conviction: vote.conviction,
         };
+
+        if (result[parent.referendumId]) {
+          result[parent.referendumId].push(info);
+        } else {
+          result[parent.referendumId] = [info];
+        }
       }
 
       return result;

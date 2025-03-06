@@ -10,7 +10,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { redeemableAmount } from '@/shared/lib/utils';
+import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
@@ -191,12 +191,13 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     accounts,
   );
   const era = await eraService.getActiveEra(apis[chainId]);
+  const address = toAddress(transaction.coreTx.accountId, { prefix: chain.addressPrefix });
 
   const staking = (await new Promise((resolve) => {
-    useStakingData().subscribeStaking(chainId, apis[chainId], [transaction.coreTx.address], resolve);
+    useStakingData().subscribeStaking(chainId, apis[chainId], [address], resolve);
   })) as any;
 
-  const amount = redeemableAmount(staking?.[transaction.coreTx.address]?.unlocking, era || 0);
+  const amount = redeemableAmount(staking?.[address]?.unlocking, era || 0);
 
   return {
     id: transaction.id,

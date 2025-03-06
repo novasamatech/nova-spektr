@@ -109,14 +109,10 @@ const createProviderFx = createEffect(
       { nodes, metadata },
       {
         onConnected: () => {
-          // api.isConnected returns false right after provider connected signal.
-          // This timeout fixes this race condition
-          setTimeout(() => {
-            if (DEBUG_NETWORKS) {
-              console.info('🟢 Provider connected ==> ', chainId);
-            }
-            boundConnected(chainId);
-          }, 100);
+          if (DEBUG_NETWORKS) {
+            console.info('🟢 Provider connected ==> ', chainId);
+          }
+          boundConnected(chainId);
         },
         onDisconnected: () => {
           if (DEBUG_NETWORKS) {

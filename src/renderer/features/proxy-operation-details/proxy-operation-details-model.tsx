@@ -68,7 +68,7 @@ proxyOperationDetailFeature.inject(operationDetailsSlot, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={toAccountId(sender)} variant="short" chain={chain} />
+          <Account accountId={sender} variant="short" chain={chain} />
         </DetailRow>,
       );
     }

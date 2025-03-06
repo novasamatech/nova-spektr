@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 
 import { type ChainId, type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { assert, createTxMetadata, toAddress } from '@/shared/lib/utils';
+import { assert, createTxMetadata } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { polkadotExtensionService } from '@/features/extension-wallet';
@@ -37,12 +37,11 @@ const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<Sign
 
   if (!polkadotExtensionService.isExtensionAccount(account)) throw new Error('Incorrect account for signing');
 
-  const address = toAddress(account.accountId, { prefix: payload.chain.addressPrefix });
   const wallet = getWalletBySource(account.extension);
 
   assert(wallet, 'Wallet not found');
 
-  const metadata = await createTxMetadata(address, api);
+  const metadata = await createTxMetadata(account.accountId, api);
   const txPayload = transactionService.createPayloadWithMetadata(payload.transaction, api, metadata);
 
   transactionService.logPayload([txPayload]);

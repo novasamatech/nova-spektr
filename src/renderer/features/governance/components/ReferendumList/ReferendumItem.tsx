@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
@@ -9,6 +10,7 @@ import { Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
+import { listService } from '../../lib/listService';
 import { type AggregatedReferendum } from '../../types/structs';
 import { ReferendumEndTimer } from '../ReferendumEndTimer/ReferendumEndTimer';
 import { VotedBy } from '../VotedBy';
@@ -35,10 +37,10 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
     fn: (titles, [id]) => titles[id] ?? null,
   });
 
-  const voter = useStoreMap({
+  const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegate?.delegateId],
-    fn: (proposers, [delegateId]) => (delegateId ? (proposers[delegateId] ?? null) : null),
+    keys: [referendum.votedByDelegates],
+    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
   });
 
   const voteFractions =
@@ -62,7 +64,11 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
 
         <div className="ml-auto flex text-text-secondary">
-          {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
+          {referendumId && (
+            <FootnoteText className="text-inherit" testId={TEST_IDS.GOVERNANCE.PROPOSAL_ID}>
+              #{referendumId}
+            </FootnoteText>
+          )}
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
         </div>
       </div>
@@ -78,8 +84,8 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
 
       <VotedBy
         asset={asset}
-        voterName={voter?.parent.name}
-        delegate={referendum.votedByDelegate}
+        identity={identity}
+        delegates={referendum.votedByDelegates}
         castingVotes={referendum.voting.votes}
       />
     </ListItem>

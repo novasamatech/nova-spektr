@@ -881,7 +881,7 @@
     "vote": {
       "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction.<br />Your voting power will be <amount/>.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
-      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegatee to vote or remove delegation to be able to vote directly.",
+      "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
       "delegationErrorTitle": "Already delegating votes",
       "errors": {
         "noAccountError": "Please select your account",
@@ -905,7 +905,8 @@
     "voteHistory": {
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
-      "listEmptyState": "No one voted here",
+      "listEmptyDescription": "Nobody has voted yet",
+      "listEmptyTitle": "{list} vote history is empty",
       "notAvailable": "Vote history is unavailable",
       "notAvailableDescription": "Please refresh to update the information.",
       "title": "Vote history",
@@ -916,8 +917,11 @@
     "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
+    "votedAyeByDelegates": "AYE <amount/> via delegates",
+    "votedByDelegates": "Voted via delegates",
     "votedNay": "NAY <amount/>",
     "votedNayBy": "NAY <amount/> via <delegate/>",
+    "votedNayByDelegates": "NAY <amount/> via delegates",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
@@ -978,7 +982,7 @@
   "notifications": {
     "details": {
       "flexibleMultisigWalletSignAction": "Sign operation",
-      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength } available on  <chain />",
+      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
@@ -1890,6 +1894,7 @@
       "openInfoAction": "Open info",
       "proxiedAddressTitle": "Delegated from",
       "proxiesTabTitle": "Delegated authorities (proxies)",
+      "proxiesTabTitleShort": "Delegated",
       "proxyDeposit": "Total proxy deposit",
       "proxyToControl": "to control",
       "proxyTooltipWhatIsProxy": "A delegated authority is a type of account that acts as an intermediary or delegate for another account. Delegated authorities add an additional layer of control for your assets, allowing other accounts to control various operations for your account in a customizable way depending upon the access type.",
@@ -1916,12 +1921,13 @@
       "accountTab": "Account and signatories",
       "accountsGroup": "Your accounts",
       "addressInProgress": "In progress...",
+      "chainTitle": "with threshold { threshold } out of { signatories } signatories",
       "changeSignatories": "Change signatories/threshold",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
+      "otherSignatories": "Other signatories { count }",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
-      "singleChainTitle": "on <chain /> with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },

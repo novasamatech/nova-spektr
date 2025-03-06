@@ -2,6 +2,7 @@ export { useResizeObserver } from './hooks/useResizeObserver';
 export { useTheme } from './Theme/useTheme';
 
 export { FilledIconButton } from './FilledIconButton/FilledIconButton';
+export { EmptyMessage } from './EmptyMessage/EmptyMessage';
 export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
 export { ScrollArea } from './ScrollArea/ScrollArea';

@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
@@ -30,6 +31,7 @@ export const Filters = () => {
           onChange={(value) => filterModel.events.selectedTracksChanged(value.map(({ id }) => id))}
         />
         <Select
+          testId={TEST_IDS.GOVERNANCE.FILTER_VOTED_OPTION}
           placeholder={t('governance.filters.vote')}
           value={selectedVoteId}
           onChange={filterModel.events.selectedVoteChanged}

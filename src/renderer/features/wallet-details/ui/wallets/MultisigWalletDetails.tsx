@@ -5,13 +5,12 @@ import { Trans } from 'react-i18next';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { assert, nonNullable, toAddress } from '@/shared/lib/utils';
+import { assert, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
-import { AccountExplorers, Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
+import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { flexibleMultisigFeature } from '@/features/flexible-multisig-create';
@@ -62,35 +61,26 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   assert(multisigAccount, 'Multisig account not found.');
 
   // Check for deprecated multichain multisig accounts
-  const singleChain = multisigAccount.chainId ? chains[multisigAccount.chainId] : undefined;
 
   const multisigChains = useMemo(() => {
     return Object.values(chains).filter(chain => {
-      const isAccountChain = multisigAccount.chainId === chain.chainId;
       const isMultisigSupported = networkUtils.isMultisigSupported(chain.options);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(multisigAccount, chain);
+      const isChainAndCryptoMatch = accountService.isAccountAvailableOnChain(multisigAccount, chain);
 
-      return isAccountChain || (isMultisigSupported && isChainAndCryptoMatch);
+      return isMultisigSupported && isChainAndCryptoMatch;
     });
   }, [chains]);
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
     const nonAnyProxy = permissionUtils.canCreateNonAnyProxy(wallet);
-
-    if (!singleChain) {
-      return anyProxy || nonAnyProxy;
-    }
-
-    return (anyProxy || nonAnyProxy) && networkUtils.isProxySupported(singleChain?.options);
-  }, [singleChain]);
+    return (anyProxy || nonAnyProxy) && multisigChains.some(c => networkUtils.isProxySupported(c.options));
+  }, [multisigChains]);
 
   const canCreatePureProxy = useMemo(() => {
-    if (!singleChain) return false;
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
-
-    return anyProxy && networkUtils.isPureProxySupported(singleChain?.options);
-  }, [singleChain]);
+    return anyProxy && multisigChains.some(c => networkUtils.isPureProxySupported(c.options));
+  }, [multisigChains]);
 
   const options = [
     {
@@ -146,82 +136,20 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   const TabItems: { id: string; title: string; panel: ReactNode }[] = [];
 
-  if (singleChain) {
-    const TabAccount = {
-      id: '1',
-      title: t('walletDetails.multisig.accountTab'),
-      panel: (
-        <div>
-          <div className="flex flex-col gap-y-3 px-5">
-            <FootnoteText className="text-text-tertiary">{t('walletDetails.multisig.accountGroup')}</FootnoteText>
+  const multisigAccounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
 
-            <div className="-mx-2">
-              <ContactItem address={multisigAccount.accountId} addressPrefix={singleChain.addressPrefix}>
-                <AccountExplorers accountId={multisigAccount.accountId} chain={singleChain} />
-              </ContactItem>
-            </div>
-          </div>
+  const TabAccountList = {
+    id: '1',
+    title: t('walletDetails.multisig.networksTab'),
+    panel: <ChainAccountsList accounts={multisigAccounts} />,
+  };
 
-          <div className="mt-6 flex flex-col gap-y-2 px-5">
-            <FootnoteText className="text-text-tertiary">
-              {t('walletDetails.multisig.signatoriesGroup', { amount: multisigAccount.signatories.length })}
-            </FootnoteText>
-
-            <ul className="flex flex-col gap-y-2">
-              {signatories.wallets.map(([wallet, accountId]) => (
-                <li key={accountId} className="-mx-2">
-                  <WalletCardMd
-                    wallet={wallet}
-                    description={
-                      <div className="text-help-text text-text-tertiary">
-                        <Address address={toAddress(accountId, { prefix: singleChain.addressPrefix })} />
-                      </div>
-                    }
-                  >
-                    <AccountExplorers accountId={accountId} chain={singleChain} />
-                  </WalletCardMd>
-                </li>
-              ))}
-              {signatories.contacts.map(signatory => (
-                <li key={signatory.accountId} className="-mx-2">
-                  <ContactItem
-                    name={signatory.name}
-                    address={signatory.accountId}
-                    addressPrefix={singleChain.addressPrefix}
-                  >
-                    <AccountExplorers accountId={signatory.accountId} chain={singleChain} />
-                  </ContactItem>
-                </li>
-              ))}
-              {signatories.people.map(accountId => (
-                <li key={accountId} className="-mx-2">
-                  <ContactItem address={accountId} addressPrefix={singleChain.addressPrefix}>
-                    <AccountExplorers accountId={accountId} chain={singleChain} />
-                  </ContactItem>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      ),
-    };
-    TabItems.push(TabAccount);
-  }
-
-  if (!singleChain) {
-    const accounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
-
-    const TabAccountList = {
-      id: '1',
-      title: t('walletDetails.multisig.networksTab'),
-      panel: <ChainAccountsList accounts={accounts} />,
-    };
-
-    const TabSignatories = {
-      id: '2',
-      title: t('walletDetails.multisig.signatoriesTab'),
-      panel: (
-        <div className="flex flex-col">
+  const TabSignatories = {
+    id: '2',
+    title: t('walletDetails.multisig.signatoriesTab'),
+    panel: (
+      <ScrollArea>
+        <div className="flex flex-col gap-2">
           <FootnoteText className="px-5 text-text-tertiary">
             {t('walletDetails.multisig.thresholdLabel', {
               min: multisigAccount.threshold,
@@ -229,7 +157,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             })}
           </FootnoteText>
 
-          <div>
+          <div className="flex flex-col gap-2">
             {signatories.wallets.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <FootnoteText className="px-5 text-text-tertiary">
@@ -272,19 +200,37 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
                 </ul>
               </div>
             )}
+
+            {signatories.people.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <FootnoteText className="px-5 text-text-tertiary">
+                  {t('walletDetails.multisig.otherSignatories', { amount: signatories.people.length })}
+                </FootnoteText>
+
+                <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">
+                  {signatories.people.map(accountId => (
+                    <li key={accountId} className="px-3">
+                      <ContactItem address={accountId}>
+                        <RootExplorers accountId={accountId} />
+                      </ContactItem>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
-      ),
-    };
+      </ScrollArea>
+    ),
+  };
 
-    TabItems.push(TabAccountList);
-    TabItems.push(TabSignatories);
-  }
+  TabItems.push(TabAccountList);
+  TabItems.push(TabSignatories);
 
   if (canCreateProxy) {
     const TabProxy = {
       id: '3',
-      title: t('walletDetails.common.proxiesTabTitle'),
+      title: t('walletDetails.common.proxiesTabTitleShort'),
       panel: hasProxies ? (
         <ProxiesList wallet={wallet} canCreateProxy={canCreateProxy} />
       ) : (
@@ -304,30 +250,19 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         <Modal.HeaderContent>
           <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
-            {nonNullable(singleChain) && (
-              <div className="flex items-center">
-                <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-                <div className="flex items-center text-footnote">
-                  <Trans
-                    t={t}
-                    i18nKey="walletDetails.multisig.singleChainTitle"
-                    components={{
-                      chain: (
-                        <ChainTitle
-                          className="mx-1 gap-x-1"
-                          fontClass="text-text-primary"
-                          chainId={singleChain.chainId}
-                        />
-                      ),
-                    }}
-                    values={{
-                      threshold: multisigAccount.threshold,
-                      signatories: multisigAccount.signatories.length,
-                    }}
-                  />
-                </div>
+            <div className="flex items-center">
+              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+              <div className="flex items-center text-footnote">
+                <Trans
+                  t={t}
+                  i18nKey="walletDetails.multisig.chainTitle"
+                  values={{
+                    threshold: multisigAccount.threshold,
+                    signatories: multisigAccount.signatories.length,
+                  }}
+                />
               </div>
-            )}
+            </div>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
@@ -343,9 +278,9 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             </Box>
             {TabItems.map(({ id, panel }) => (
               <Tabs.Content key={id} value={id}>
-                <ScrollArea>
-                  <Box padding={[4, 0]}>{panel}</Box>
-                </ScrollArea>
+                <Box padding={[4, 0, 0]} fitContainer>
+                  {panel}
+                </Box>
               </Tabs.Content>
             ))}
           </Tabs>

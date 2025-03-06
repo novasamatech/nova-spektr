@@ -72,7 +72,6 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
     signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
@@ -137,7 +136,6 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
     signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
@@ -202,7 +200,6 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
     signatory: null,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: transaction.coreTx,
       txWrappers: transaction.txWrappers,
     }),
@@ -268,7 +265,6 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
     beneficiary: coreTx.args.beneficiary,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: coreTx,
       txWrappers: transaction.txWrappers,
     }),
@@ -335,7 +331,6 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
     evidence: coreTx.args.evidence,
     wrappedTransactions: transactionService.getWrappedTransaction({
       api,
-      addressPrefix: chain.addressPrefix,
       transaction: coreTx,
       txWrappers: transaction.txWrappers,
     }),

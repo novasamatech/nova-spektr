@@ -152,11 +152,11 @@ export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefine
   return coreTx.args.destinationChain;
 };
 
-export const getSender = (tx: MultisigTransaction): Address | undefined => {
+export const getSender = (tx: MultisigTransaction): AccountId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
-  return coreTx.address;
+  return coreTx.accountId;
 };
 
 export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {

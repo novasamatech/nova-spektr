@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 
 import { type ChainXCM, type XcmConfig } from '@/shared/api/xcm';
 import { type Asset, type Transaction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { XcmFee } from './XcmFee';
 
@@ -27,7 +28,7 @@ describe('entities/transaction/ui/XcmFee', () => {
   test('should render component', async () => {
     const asset = { symbol: 'DOT', precision: 10 } as Asset;
     const tx = {
-      address: '0x123',
+      accountId: '0x123' as AccountId,
       chainId: '0x00',
       type: 'xcm_limited_teleport_assets',
       args: {

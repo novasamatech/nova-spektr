@@ -2,7 +2,6 @@ import {
   AccountType,
   CryptoType,
   KeyType,
-  type MultiShardWallet,
   type PolkadotVaultWallet,
   SigningType,
   type VaultBaseAccount,
@@ -103,16 +102,8 @@ const multishardAccounts = [
     derivationPath: '//polkadot//main',
   },
   {
-    id: '1',
-    walletId: 2,
-    name: 'My First ROOT',
-    type: 'universal',
-    accountType: AccountType.BASE,
-    accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11',
-  },
-  {
     id: '5',
-    baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
+    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
     walletId: 2,
     name: 'Second WND key',
     type: 'chain',
@@ -121,43 +112,16 @@ const multishardAccounts = [
     chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
     derivationPath: '//westend//pub',
   },
-  {
-    id: '6',
-    baseAccountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340' as AccountId,
-    walletId: 2,
-    name: 'Second ACA key',
-    type: 'chain',
-    accountType: AccountType.CHAIN,
-    accountId: '0x04b42c45250880695e6cec68c5adce35a0e2ec60ed46b77b734ad6020b991658',
-    chainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c',
-    derivationPath: '//acala//main',
-  },
-  {
-    id: '4',
-    walletId: 2,
-    name: 'My Second ROOT',
-    type: 'universal',
-    accountType: AccountType.BASE,
-    accountId: '0x5a920a698b26cc691faf5ee41b454581348f8a68cce99c84c7fb82ce87605340',
-  },
 ] as unknown as (VaultBaseAccount | VaultChainAccount)[];
 
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,
   isActive: true,
+  rootAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
   name: 'My Vault wallet',
   signingType: SigningType.POLKADOT_VAULT,
   type: WalletType.POLKADOT_VAULT,
   accounts: vaultAccounts,
-};
-
-const multishardWallet: MultiShardWallet = {
-  id: 2,
-  isActive: true,
-  name: 'My Multishard wallet',
-  signingType: SigningType.POLKADOT_VAULT,
-  type: WalletType.MULTISHARD_PARITY_SIGNER,
-  accounts: multishardAccounts,
 };
 
 const chainsMap = {
@@ -189,7 +153,6 @@ const chainsMap = {
 
 export const shardsMock = {
   vaultWallet,
-  multishardWallet,
   vaultAccounts,
   multishardAccounts,
   chainsMap,

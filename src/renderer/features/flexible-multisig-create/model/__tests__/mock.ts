@@ -11,7 +11,7 @@ import {
   type Wallet,
   WalletType,
 } from '@/shared/core';
-import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { createAccountId, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const testApi = {
@@ -36,10 +36,9 @@ export const multisigWallet: Wallet = {
     {
       id: '3',
       walletId: 3,
-      type: 'chain',
+      type: 'universal',
       accountId: '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' as AccountId,
       accountType: AccountType.MULTISIG,
-      chainId: polkadotChain.chainId,
       cryptoType: CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       threshold: 1,

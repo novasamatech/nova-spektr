@@ -5,7 +5,6 @@ import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
 import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
@@ -14,7 +13,7 @@ type Props = {
 };
 
 export const FlexibleMultisigCreatedNotification = ({
-  notification: { threshold, signatories, multisigAccountName, chainId, walletId },
+  notification: { threshold, signatories, multisigAccountName, walletId },
 }: Props) => {
   const { t } = useI18n();
 
@@ -40,9 +39,6 @@ export const FlexibleMultisigCreatedNotification = ({
                 threshold,
                 signatoriesLength: signatories.length,
                 name: multisigAccountName,
-              }}
-              components={{
-                chain: <ChainTitle chainId={chainId} fontClass="text-text-primary text-body" />,
               }}
             />
           </BodyText>

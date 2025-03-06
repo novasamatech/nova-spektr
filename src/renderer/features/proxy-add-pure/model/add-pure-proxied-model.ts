@@ -108,7 +108,7 @@ const getPureProxyFx = createEffect(
       const pureCreatedParams = {
         section: 'proxy',
         method: 'PureCreated',
-        data: [undefined, toAddress(accountId, { prefix: api.registry.chainSS58 })],
+        data: [undefined, toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() })],
       };
 
       const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {

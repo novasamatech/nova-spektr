@@ -81,12 +81,11 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
     walletId: 3,
     signatories: [],
     threshold: 0,
-    chainId: '0x00',
     signingType: SigningType.MULTISIG,
     cryptoType: CryptoType.SR25519,
     accountId: '0x7f7cc72b17ac5d762869e97af14ebcc561590b6cc9eeeac7a3cdadde646c95c3' as AccountId,
     accountType: AccountType.MULTISIG,
-    type: 'chain',
+    type: 'universal',
   },
 ];
 

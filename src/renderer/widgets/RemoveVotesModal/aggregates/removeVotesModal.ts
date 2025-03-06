@@ -291,16 +291,11 @@ sample({
 
 sample({
   clock: removeVoteConfirmModel.events.submitFinished,
-  source: {
-    accounts: $availableAccounts,
-    chain: flow.state.map(({ chain }) => chain),
-  },
-  fn: ({ accounts, chain }) => {
-    const addresses = accounts
-      .filter(nonNullable)
-      .map((account) => toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+  source: $availableAccounts,
+  fn: (accounts) => {
+    const accountIds = accounts.filter(nonNullable).map((a) => a.accountId);
 
-    return { addresses };
+    return { accounts: accountIds };
   },
   target: votingAggregate.events.requestVoting,
 });

@@ -73,9 +73,9 @@ The goal is to create interfaces so transparent that they almost narrate the dom
 
 Real life example:
 
-import domainEntrypointExample from '@/domains/network/index.ts?raw';
+import networkDomainEntrypointExample from '@/domains/network/index.ts?raw';
 
-<Code title="domains/network/index.ts" code={domainEntrypointExample} lang="ts" />
+<Code title="domains/network/index.ts" code={networkDomainEntrypointExample} lang="ts" />
 
 ### model
 
@@ -127,28 +127,46 @@ export const accountService = {
 };
 ```
 
+## Aggregate
+
+An aggregate is a model that contains contextual data.
+Unlike a domain model, an aggregate can store user-specific state.
+For example, a selected wallet or network for working within a specific feature.
+
+### Folder structure
+
+<FileTree>
+  - aggregate-name
+  - model.ts
+  - service.ts (optional)
+  - index.ts
+</FileTree>
+
 ## Feature
+
+Features are the connecting link between domain logic and the user.
+They are responsible for implementing specific user scenarios and corresponding interfaces.
+A feature can be integrated with other features through Dependency Injection (DI), creating a composition of scenarios for a more global flow.
+
+Feature **must**:
+- Contain one or few related user flows. E.g. `fellowship-evidence` and `fellowship-profile` are separate features because of different flows.
+- Export feature identificator created with `createFeature` factory.
+- Be written as standalone module with integrations in feature identificatior (`feature.inject(...)`).
+
+Feature **can**:
+- Export components and events related to internal logic.
+
+Feature **must not**:
+- Export any store or logic with data access. Data should be store eather in domain of aggregate. Feature can implement own data request or storage logic but it should be scoped inside.
 
 ### Folder structure
 
 <FileTree>
   - feature-name
     - components/
+    - services/
     - model/
       - feature.tsx
       - ...
     - index.tsx
 </FileTree>
-
-## Aggregate
-
-### Folder structure
-
-<FileTree>
-  - aggregate-name
-    - model-file-1.ts
-    - model-file-2.ts
-    - model-file-3.ts
-    - index.tsx
-</FileTree>
-

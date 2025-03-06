@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type BasketTransaction, type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { findCoreBatchAll, isEditDelegationTransaction, transactionService } from '@/entities/transaction';
 
@@ -24,7 +23,7 @@ async function getTransactionData(
 
   const chain = chains[chainId]!;
   const account = accounts.find(
-    a => a.accountId === transaction.initiatorAccountId && a.accountId === toAccountId(transaction.coreTx.address),
+    a => a.accountId === transaction.initiatorAccountId && a.accountId === transaction.coreTx.accountId,
   );
 
   return { chainId, chain, account, fee };

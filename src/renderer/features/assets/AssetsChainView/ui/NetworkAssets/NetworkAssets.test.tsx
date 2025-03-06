@@ -89,14 +89,14 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
     await renderNetworkAssets();
 
     const balances = screen.getAllByTestId('AssetCard');
-    expect(balances).toHaveLength(7);
+    expect(balances).toHaveLength(testChain.assets.length);
   });
 
   test('should hide assets', async () => {
     await renderNetworkAssets();
 
     const balancesBefore = screen.getAllByTestId('AssetCard');
-    expect(balancesBefore).toHaveLength(7);
+    expect(balancesBefore).toHaveLength(testChain.assets.length);
 
     const button = screen.getByRole('button');
     act(() => button.click());

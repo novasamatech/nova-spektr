@@ -3,7 +3,7 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, toAccountId } from '@/shared/lib/utils';
+import { getAssetById } from '@/shared/lib/utils';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -35,12 +35,11 @@ const rootValidateFx = createEffect(
     balances,
     signerOptions,
   }: ValidateParams): Promise<{ id: ID; result: ValidationResult }> => {
-    const accountId = toAccountId(transaction.address);
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
     const rules: Validation[] = [
       {
-        value: { accountId },
+        value: { accountId: transaction.accountId },
         form: {
           chain,
         },
