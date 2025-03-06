@@ -1,18 +1,28 @@
 import { u8aToHex } from '@polkadot/util';
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { type Chain } from '@/shared/core';
-import { AccountType, CryptoType, CryptoTypeString, ErrorType, SigningType, WalletType } from '@/shared/core';
+import {
+  AccountType,
+  type Chain,
+  CryptoType,
+  CryptoTypeString,
+  ErrorType,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Field, Input, Modal } from '@/shared/ui-kit';
+import { identity as identityDomain, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { IDENTITY_CHAIN } from '../../lib/constants';
 
 type WalletForm = {
   walletName: string;
@@ -32,10 +42,6 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
 
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner?.public));
-
-  const accounts = useMemo(() => chains.map(chain => [chain, accountId] as const), [chains, accountId]);
-
   const {
     handleSubmit,
     control,
@@ -44,6 +50,24 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   } = useForm<WalletForm>({
     mode: 'onChange',
     defaultValues: { walletName: seedInfo[0].name || '' },
+  });
+
+  const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner?.public));
+
+  const accounts = useMemo(() => {
+    return chains.map(chain => [chain, accountId] as const);
+  }, [chains, accountId]);
+
+  const identityName = useStoreMap({
+    store: identityDomain.$list,
+    keys: [accounts.at(0)],
+    fn: (identity, [account]) => {
+      if (nullable(account)) return null;
+
+      const accountIdentity = identity[IDENTITY_CHAIN]?.[accountId];
+
+      return accountIdentity ? identityService.getFullName(accountIdentity) : null;
+    },
   });
 
   const isEthereumBased = seedInfo[0].multiSigner?.MultiSigner === CryptoTypeString.ECDSA;
@@ -57,7 +81,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     setChains(filteredChains);
   }, []);
 
-  const createWallet: SubmitHandler<WalletForm> = async ({ walletName }) => {
+  const createWallet: SubmitHandler<WalletForm> = ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
     walletModel.events.singleshardCreated({
@@ -109,6 +133,17 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
                       value={value}
                       onChange={onChange}
                     />
+                    {/* TODO: use real UI from Figma */}
+                    {nonNullable(identityName) && (
+                      <div className="flex gap-x-2">
+                        {/* eslint-disable-next-line i18next/no-literal-string */}
+                        <span>Use your on-chain identity - </span>
+                        <button type="button" onClick={() => onChange(identityName)}>
+                          {identityName}
+                        </button>
+                      </div>
+                    )}
+
                     <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
                       {t('onboarding.watchOnly.walletNameMaxLenError')}
                     </InputHint>
