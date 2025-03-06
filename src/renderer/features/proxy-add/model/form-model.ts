@@ -37,8 +37,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-// eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { multisigOperations } from '@/features/multisig-operations';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
