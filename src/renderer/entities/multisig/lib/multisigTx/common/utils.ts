@@ -1,18 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Vec } from '@polkadot/types';
-import { type AccountId32 } from '@polkadot/types/interfaces';
 
-import {
-  type Address,
-  type ChainId,
-  type MultisigAccount,
-  type MultisigTransaction,
-  type MultisigEvent as OldMultisigEvent,
-  type Transaction,
-} from '@/shared/core';
-import { MultisigTxInitStatus } from '@/shared/core';
-import { getCreatedDate } from '@/shared/lib/utils';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type Address, type MultisigAccount, type Transaction } from '@/shared/core';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation, type OperationData } from '@/domains/multisig';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 
@@ -34,116 +23,6 @@ export const getPendingMultisigTxs = async (
 
       return [...acc, { callHash, params }];
     }, []);
-};
-
-export const updateOldEventsPayload = (events: OldMultisigEvent[], approvals: Vec<AccountId32>): OldMultisigEvent[] => {
-  return events.map((e) => {
-    const isPendingSigned = e.status === 'PENDING_SIGNED';
-    const hasApproval = approvals.find((a) => a.toHex() === e.accountId);
-
-    if (!isPendingSigned || !hasApproval) return e;
-
-    return { ...e, status: 'SIGNED' };
-  });
-};
-
-export const createNewEventsPayload = (
-  events: OldMultisigEvent[],
-  tx: MultisigTransaction,
-  approvals: Vec<AccountId32>,
-): OldMultisigEvent[] => {
-  return approvals.reduce<OldMultisigEvent[]>((acc, a) => {
-    const hasApprovalEvent = events.some((e) => e.status === 'SIGNED' && e.accountId === a.toHex());
-
-    if (!hasApprovalEvent) {
-      acc.push({
-        txAccountId: tx.accountId,
-        txChainId: tx.chainId,
-        txCallHash: tx.callHash,
-        txBlock: tx.blockCreated,
-        txIndex: tx.indexCreated,
-        status: 'SIGNED',
-        accountId: a.toHex() as AccountId,
-        dateCreated: Date.now(),
-      });
-    }
-
-    return acc;
-  }, []);
-};
-
-export const updateTransactionPayload = (
-  transaction: MultisigTransaction,
-  pendingTransaction: PendingMultisigTransaction,
-): MultisigTransaction | undefined => {
-  const { when, deposit, depositor } = pendingTransaction.params;
-
-  const blockCreated = when.height.toNumber();
-  const indexCreated = when.index.toNumber();
-
-  if (
-    transaction.blockCreated === blockCreated &&
-    transaction.indexCreated === indexCreated &&
-    transaction.deposit === deposit.toString() &&
-    transaction.depositor === depositor.toHex()
-  )
-    return;
-
-  return {
-    ...transaction,
-    blockCreated,
-    indexCreated,
-    deposit: deposit.toString(),
-    depositor: depositor.toHex() as AccountId,
-  };
-};
-
-export const createEventsPayload = (
-  tx: MultisigTransaction,
-  pendingTransaction: PendingMultisigTransaction,
-  account: MultisigAccount,
-  currentBlock: number,
-  blockTime: number,
-): OldMultisigEvent[] => {
-  const { when, approvals, depositor } = pendingTransaction.params;
-
-  const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
-
-  return approvals.map((a) => ({
-    txAccountId: tx.accountId,
-    txChainId: tx.chainId,
-    txCallHash: tx.callHash,
-    txBlock: tx.blockCreated,
-    txIndex: tx.indexCreated,
-    status: 'SIGNED',
-    accountId: account.signatories.find((s) => s.accountId === a.toHuman())?.accountId || (a.toHex() as AccountId),
-    dateCreated: a.toHex() === depositor.toHex() ? dateCreated : undefined,
-  }));
-};
-
-export const createTransactionPayload = (
-  pendingTransaction: PendingMultisigTransaction,
-  chainId: ChainId,
-  account: MultisigAccount,
-  currentBlock: number,
-  blockTime: number,
-): MultisigTransaction => {
-  const { when, deposit, depositor } = pendingTransaction.params;
-
-  const dateCreated = getCreatedDate(when.height.toNumber(), currentBlock, blockTime);
-
-  return {
-    chainId,
-    dateCreated,
-    blockCreated: when.height.toNumber(),
-    indexCreated: when.index.toNumber(),
-    status: MultisigTxInitStatus.SIGNING,
-    callHash: pendingTransaction.callHash.toHex(),
-    signatories: account.signatories,
-    deposit: deposit.toString(),
-    depositor: depositor.toHex() as AccountId,
-    accountId: account.accountId || '0x',
-  };
 };
 
 export const buildMultisigTx = (

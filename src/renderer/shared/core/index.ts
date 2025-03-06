@@ -80,16 +80,11 @@ export { NotificationType } from './types/notification';
 
 export { XcmPallets } from './types/substrate';
 
-export { TransactionType, MultisigTxInitStatus, MultisigTxFinalStatus, WrapperKind } from './types/transaction';
+export { TransactionType, WrapperKind } from './types/transaction';
 export type {
   Transaction,
   SigningStatus,
-  MultisigTxStatus,
   DecodedTransaction,
-  MultisigEvent,
-  MultisigTransaction,
-  FlexibleMultisigTransaction,
-  MultisigTransactionKey,
   ProxyTransaction,
   TxWrapper,
   TxWrappers_OLD,
