@@ -37,61 +37,64 @@ export const BasketList = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 pt-4">
+    <div className="flex flex-grow flex-col gap-4 pt-4">
       <BasketFilter />
-      <div className="flex w-full flex-col items-center gap-4">
-        <div className="flex w-[736px] items-center justify-between">
-          <div className="ml-3">
-            <Checkbox
-              checked={operations.length > 0 && operations.length === selected.length}
-              semiChecked={selected.length > 0 && operations.length !== selected.length}
-              onChange={value => {
-                value
-                  ? basketOperations.select(operations.map(x => x.id))
-                  : basketOperations.deselect(operations.map(x => x.id));
-              }}
-            >
-              <FootnoteText className="text-text-secondary">
-                {t('basket.selectedStatus', { count: operations.length, selected: selected.length })}
-              </FootnoteText>
-            </Checkbox>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              size="sm"
-              variant="text"
-              isLoading={refreshPending}
-              prefixElement={<Icon size={16} name="refresh" className="text-inherit" />}
-              onClick={() => validation.validateAll()}
-            >
-              {t('basket.refreshButton')}
-            </Button>
-            <Button
-              size="sm"
-              className="w-[125px]"
-              disabled={!isSignAvailable}
-              onClick={() => signOperations.startFlow({ transactions: selected })}
-            >
-              {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {operations.length > 0 && (
-        <div className="scrollbar-stable flex w-full flex-col items-center gap-4 overflow-y-auto">
-          <ul className="flex w-[736px] flex-col gap-y-1.5 rounded-md">
-            {operations.map(transaction => (
-              <BasketItem
-                key={transaction.id}
-                transaction={transaction}
-                selected={nonNullable(selected.find(s => s.id === transaction.id))}
-                onSelect={toggleSelection}
-                onClick={openSignModal}
-              />
-            ))}
-          </ul>
-        </div>
+        <>
+          <div className="flex w-full flex-col items-center gap-4">
+            <div className="flex w-[736px] items-center justify-between">
+              <div className="ml-3">
+                <Checkbox
+                  checked={operations.length > 0 && operations.length === selected.length}
+                  semiChecked={selected.length > 0 && operations.length !== selected.length}
+                  onChange={value => {
+                    value
+                      ? basketOperations.select(operations.map(x => x.id))
+                      : basketOperations.deselect(operations.map(x => x.id));
+                  }}
+                >
+                  <FootnoteText className="text-text-secondary">
+                    {t('basket.selectedStatus', { count: operations.length, selected: selected.length })}
+                  </FootnoteText>
+                </Checkbox>
+              </div>
+              <div className="flex items-center gap-4">
+                <Button
+                  size="sm"
+                  variant="text"
+                  isLoading={refreshPending}
+                  prefixElement={<Icon size={16} name="refresh" className="text-inherit" />}
+                  onClick={() => validation.validateAll()}
+                >
+                  {t('basket.refreshButton')}
+                </Button>
+                <Button
+                  size="sm"
+                  className="w-[125px]"
+                  disabled={!isSignAvailable}
+                  onClick={() => signOperations.startFlow({ transactions: selected })}
+                >
+                  {t(selected.length === 0 ? 'basket.emptySignButton' : 'basket.signButton')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="scrollbar-stable flex w-full flex-col items-center gap-4 overflow-y-auto">
+            <ul className="flex w-[736px] flex-col gap-y-1.5 rounded-md">
+              {operations.map(transaction => (
+                <BasketItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  selected={nonNullable(selected.find(s => s.id === transaction.id))}
+                  onSelect={toggleSelection}
+                  onClick={openSignModal}
+                />
+              ))}
+            </ul>
+          </div>
+        </>
       )}
 
       {operations.length === 0 && (
