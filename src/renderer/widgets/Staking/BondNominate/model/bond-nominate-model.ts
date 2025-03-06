@@ -19,7 +19,9 @@ import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';

@@ -6,7 +6,9 @@ import { type Asset, type Wallet } from '@/shared/core';
 import { type CollectivePalletsType } from '@/domains/collectives';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 // TODO fix cycle
 import {

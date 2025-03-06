@@ -7,7 +7,9 @@ import { BodyText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 
 export const operationsNavigationFeature = createFeature({
   name: 'operations/navigation',

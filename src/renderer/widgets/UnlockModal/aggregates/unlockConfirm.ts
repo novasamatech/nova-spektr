@@ -8,7 +8,9 @@ import { networkModel } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type UnlockFormData } from '@/features/governance/types/structs';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 
 const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();

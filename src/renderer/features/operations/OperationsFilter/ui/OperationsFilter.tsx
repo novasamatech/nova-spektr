@@ -7,7 +7,9 @@ import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type MultisigOperation } from '@/domains/multisig';
 import { TransferTypes, XcmTypes, getTransactionType } from '@/entities/transaction';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';

@@ -15,7 +15,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { multisigOperations } from '@/features/multisig-operations';
+// TODO: Fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 
 type Input = {
   id?: number;
