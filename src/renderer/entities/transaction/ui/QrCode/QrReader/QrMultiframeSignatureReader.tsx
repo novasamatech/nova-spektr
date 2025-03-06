@@ -12,6 +12,7 @@ import { QR_READER_ERRORS } from '../common/errors';
 import { type DecodeCallback, type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
 
 import RaptorFrame from './RaptorFrame';
+import { stopScanning } from './useQrScanner';
 
 const enum Status {
   'FIRST_FRAME',
@@ -243,15 +244,8 @@ export const QrMultiframeSignatureReader = ({
     }
   };
 
-  const stopScanning = () => {
-    if (streamRef.current) {
-      for (const track of streamRef.current.getVideoTracks()) {
-        track.stop();
-      }
-    }
-
-    controlsRef.current?.stop();
-    bgControlsRef.current?.stop();
+  const handleStopScanning = () => {
+    void stopScanning({ streamRef, controlsRef, bgControlsRef });
   };
 
   useEffect(() => {
@@ -272,7 +266,7 @@ export const QrMultiframeSignatureReader = ({
     })();
 
     return () => {
-      stopScanning();
+      handleStopScanning();
     };
   }, []);
 

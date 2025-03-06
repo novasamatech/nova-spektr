@@ -10,6 +10,8 @@ import { ErrorFields } from '../common/constants';
 import { QR_READER_ERRORS } from '../common/errors';
 import { type DecodeCallback, type ErrorObject, QrError, type VideoInput } from '../common/types';
 
+import { stopScanning } from './useQrScanner';
+
 type Props = {
   size?: number;
   cameraId?: string;
@@ -117,29 +119,8 @@ export const QrSignatureReader = ({
     }
   };
 
-  const stopScanning = async () => {
-    try {
-      await Promise.all([controlsRef.current?.stop(), bgControlsRef.current?.stop()].filter(Boolean));
-
-      if (streamRef.current) {
-        const tracks = streamRef.current.getVideoTracks();
-        await Promise.all(
-          tracks
-            .map((track) => {
-              try {
-                track.stop();
-                return Promise.resolve();
-              } catch (e) {
-                console.warn('Failed to stop video track:', e);
-              }
-            })
-            .filter(Boolean),
-        );
-        streamRef.current = undefined;
-      }
-    } catch (error) {
-      console.warn('Error while stopping scanner:', error);
-    }
+  const handleStopScanning = () => {
+    void stopScanning({ streamRef, controlsRef, bgControlsRef });
   };
 
   useEffect(() => {
@@ -160,7 +141,7 @@ export const QrSignatureReader = ({
     })();
 
     return () => {
-      void stopScanning();
+      handleStopScanning();
     };
   }, []);
 

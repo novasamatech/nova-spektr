@@ -25,6 +25,7 @@ import {
 } from '../common/types';
 
 import RaptorFrame from './RaptorFrame';
+import { stopScanning } from './useQrScanner';
 
 const enum Status {
   'FIRST_FRAME',
@@ -308,15 +309,8 @@ export const QrReader = ({
     }
   };
 
-  const stopScanning = () => {
-    if (streamRef.current) {
-      for (const track of streamRef.current.getVideoTracks()) {
-        track.stop();
-      }
-    }
-
-    controlsRef.current?.stop();
-    bgControlsRef.current?.stop();
+  const handleStopScanning = () => {
+    void stopScanning({ streamRef, controlsRef, bgControlsRef });
   };
 
   useEffect(() => {
@@ -337,7 +331,7 @@ export const QrReader = ({
     })();
 
     return () => {
-      stopScanning();
+      handleStopScanning();
     };
   }, []);
 
