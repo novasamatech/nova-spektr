@@ -104,7 +104,7 @@ const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
     coreTxs: $pureTxs,
-    transactions: multisigOperations.$all,
+    transactions: multisigOperations.$availableOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

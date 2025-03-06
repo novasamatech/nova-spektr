@@ -26,7 +26,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: multisigOperations.$all,
+  $multisigTransactions: multisigOperations.$availableOperations,
 });
 
 export const confirmModel = {

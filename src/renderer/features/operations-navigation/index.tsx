@@ -17,7 +17,7 @@ export const operationsNavigationFeature = createFeature({
 operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const wallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
-  const operations = useUnit(multisigOperations.$all);
+  const operations = useUnit(multisigOperations.$availableOperations);
 
   if (!wallet) return items;
 

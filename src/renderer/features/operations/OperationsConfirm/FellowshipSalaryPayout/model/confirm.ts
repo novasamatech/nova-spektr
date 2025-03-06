@@ -29,7 +29,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<CollectiveSalaryPayoutConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: multisigOperations.$all,
+  $multisigTransactions: multisigOperations.$availableOperations,
 });
 
 export const confirm = {

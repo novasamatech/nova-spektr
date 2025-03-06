@@ -27,7 +27,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<CollectiveSalaryInductConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: multisigOperations.$all,
+  $multisigTransactions: multisigOperations.$availableOperations,
 });
 
 export const confirm = {

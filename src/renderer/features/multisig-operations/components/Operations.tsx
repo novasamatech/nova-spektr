@@ -18,7 +18,7 @@ export const Operations = () => {
   const { formatDate } = useI18n();
 
   const account = useUnit(operationsContextModel.$account);
-  const txs = useUnit(multisigOperations.$all);
+  const txs = useUnit(multisigOperations.$availableOperations);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
   const filteredTxs = useUnit(multisigOperations.$filteredTxs);
 

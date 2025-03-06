@@ -9,7 +9,7 @@ import { multisigOperations } from './model';
 const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isMultisigAccount) ?? null);
 
 const $incompleteFlexibleMultisigTx = combine(
-  { account: $account, wallet: walletSelect.$selectedWallet, txs: multisigOperations.$all },
+  { account: $account, wallet: walletSelect.$selectedWallet, txs: multisigOperations.$availableOperations },
   ({ account, wallet, txs }) => {
     const signingTransactions = txs.filter(tx => tx.status === 'pending');
 

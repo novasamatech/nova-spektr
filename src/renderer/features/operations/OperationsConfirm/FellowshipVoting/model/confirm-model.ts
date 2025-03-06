@@ -30,7 +30,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<CollectiveVoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: multisigOperations.$all,
+  $multisigTransactions: multisigOperations.$availableOperations,
 });
 
 export const confirmModel = {

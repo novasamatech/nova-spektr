@@ -45,7 +45,7 @@ const updateCallDataFx = createEffect(
   },
 );
 
-const $all = combine(
+const $availableOperations = combine(
   {
     accounts: walletSelect.$selectedAccounts,
     operations: $list,
@@ -56,7 +56,7 @@ const $all = combine(
   },
 );
 
-const $filteredTxs = restore<MultisigOperation[]>(changeFilteredTxs, []).reset($all);
+const $filteredTxs = restore<MultisigOperation[]>(changeFilteredTxs, []).reset($availableOperations);
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
@@ -157,7 +157,7 @@ sample({
 
 export const multisigOperations = {
   $list: readonly($list),
-  $all,
+  $availableOperations,
   $pending: multisigOperationsFeatureStatus.isStarting,
   $fulfilled: multisigOperationsFeatureStatus.isRunning,
   $filteredTxs,
