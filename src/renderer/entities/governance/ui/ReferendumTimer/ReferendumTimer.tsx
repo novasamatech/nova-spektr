@@ -47,10 +47,17 @@ export const ReferendumTimer = ({ status, time }: Props) => {
 
   const [countdown, setCountdown] = useState(time);
 
+  const interval =
+    countdown < 60
+      ? 1000 // if less then a minute, countdown each second
+      : countdown < 3600
+        ? 60000 // if less then an hour, countdown each minute
+        : 36000; // countdown each hour
+
   useEffect(() => {
     if (countdown === 0) return;
 
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    const timer = setTimeout(() => setCountdown(countdown - 1), interval);
 
     return () => {
       clearTimeout(timer);
