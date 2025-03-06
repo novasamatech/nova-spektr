@@ -199,7 +199,10 @@ function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[
   return accountIds.map((id) => accountsMap[id]);
 }
 
-type DerivationPathLike = { derivationPath: string };
+type DerivationPathLike = {
+  derivationPath: string;
+};
+
 function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
   if (!Array.isArray(data)) return data.derivationPath;
 
@@ -236,7 +239,7 @@ function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
 
 function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {
   const matchedAccounts = walletUtils.getAccountsBy([wallet], (account) => {
-    return accountUtils.isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
+    return isNonBaseVaultAccount(account, wallet) && isChainIdMatch(account, chain.chainId);
   });
 
   return matchedAccounts.map((a) => a.accountId);
