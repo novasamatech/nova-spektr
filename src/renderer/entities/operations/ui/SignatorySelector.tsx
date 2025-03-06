@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
 import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
@@ -54,11 +54,10 @@ export const SignatorySelector = ({
               <div className="flex w-full items-center justify-between">
                 <Address
                   showIcon
-                  hideAddress
                   variant="short"
                   iconSize={20}
                   address={address}
-                  title={isShard ? address : signer.name}
+                  title={isShard ? toShortAddress(address, 16) : signer.name}
                   canCopy={false}
                 />
                 <AssetBalance value={balance.toString()} asset={asset} />
