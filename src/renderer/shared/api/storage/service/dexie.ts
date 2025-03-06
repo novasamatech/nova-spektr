@@ -2,8 +2,6 @@ import { default as Dexie } from 'dexie';
 import { exportDB, importInto } from 'dexie-export-import';
 
 import {
-  type DataStorage,
-  type IStorage,
   type TAccount,
   type TAccount2,
   type TBalance,
@@ -11,9 +9,7 @@ import {
   type TConnection,
   type TContact,
   type TMetadata,
-  type TMultisigEvent,
   type TMultisigOperations,
-  type TMultisigTransaction,
   type TNotification,
   type TProxy,
   type TProxyGroup,
@@ -26,10 +22,6 @@ import {
   migratePVAccounts,
   migrateWallets,
 } from '../migration';
-
-import { useMultisigEventStorage } from './multisigEventStorage';
-import { useTransactionStorage } from './transactionStorage';
-
 class DexieStorage extends Dexie {
   connections: TConnection;
   balances: TBalance;
@@ -41,9 +33,7 @@ class DexieStorage extends Dexie {
   accounts: TAccount;
   accounts2: TAccount2;
   contacts: TContact;
-  multisigTransactions: TMultisigTransaction;
   multisigOperations: TMultisigOperations;
-  multisigEvents: TMultisigEvent;
   notifications: TNotification;
   metadata: TMetadata;
   proxies: TProxy;
@@ -125,33 +115,12 @@ class DexieStorage extends Dexie {
     this.accounts = this.table('accounts');
     this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
-    this.multisigTransactions = this.table('multisigTransactions');
     this.multisigOperations = this.table('multisigOperations');
-    this.multisigEvents = this.table('multisigEvents');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');
     this.proxyGroups = this.table('proxyGroups');
     this.basketTransactions = this.table('basketTransactions');
-  }
-}
-
-class StorageFactory implements IStorage {
-  private dexieDB: DexieStorage;
-
-  constructor(dexie: DexieStorage) {
-    this.dexieDB = dexie;
-  }
-
-  public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
-    switch (name) {
-      case 'multisigTransactions':
-        return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
-      case 'multisigEvents':
-        return useMultisigEventStorage(this.dexieDB.multisigEvents) as DataStorage[T];
-      default:
-        return undefined;
-    }
   }
 }
 
@@ -173,8 +142,6 @@ export const importDb = async (blob: Blob) => {
 export const deleteDb = async () => {
   await dexie.delete();
 };
-
-export const storage = new StorageFactory(dexie);
 
 export const dexieStorage = {
   wallets: dexie.wallets,

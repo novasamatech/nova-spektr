@@ -5,12 +5,12 @@ import { spread } from 'patronum';
 import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel } from '@/entities/balance';
-import { useForgetMultisig } from '@/entities/multisig';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+// TODO: fix circular dependencies
+// eslint-disable-next-line boundaries/entry-point
+import { multisigOperations } from '@/features/multisig-operations/model/model';
 import { proxiesModel } from '@/features/proxies';
-
-const { deleteMultisigTxs } = useForgetMultisig();
 
 export type Callbacks = {
   onDeleteFinished: () => void;
@@ -28,7 +28,7 @@ const callbacksApi = createApi($callbacks, {
 
 const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
   try {
-    await deleteMultisigTxs(account.accountId);
+    await multisigOperations.removeAccountTransactions(account.accountId);
   } catch (e) {
     console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
   }

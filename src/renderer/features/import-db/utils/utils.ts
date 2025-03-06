@@ -7,6 +7,7 @@ const REQUIRED_TABLES = [
   'notifications',
   'contacts',
   'multisigTransactions',
+  'multisigOperations',
   'multisigEvents',
 ];
 const OPTIONAL_TABLES = ['connections'];

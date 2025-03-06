@@ -6,6 +6,7 @@ import { storageService } from '@/shared/api/storage';
 // eslint-disable-next-line boundaries/element-types
 import { type HexString } from '@/shared/core';
 import { merge } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation, type OperationData, operations } from '@/domains/multisig';
 import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
@@ -15,6 +16,7 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 import { multisigOperationsFeatureStatus } from './status';
 
 const changeFilteredTxs = createEvent<MultisigOperation[]>();
+const removeAccountTransactions = createEvent<AccountId>();
 
 const $list = createStore<MultisigOperation[]>([]);
 
@@ -155,6 +157,15 @@ sample({
   target: addTransactionsFx,
 });
 
+sample({
+  clock: removeAccountTransactions,
+  source: $list,
+  fn(txs, accountId) {
+    return txs.filter(tx => tx.accountId === accountId);
+  },
+  target: removeTransactionsFx,
+});
+
 export const multisigOperations = {
   $list: readonly($list),
   $availableOperations,
@@ -167,5 +178,6 @@ export const multisigOperations = {
   addTransactions: addTransactionsFx,
   updateTransactions: updateTransactionsFx,
   removeTransactions: removeTransactionsFx,
+  removeAccountTransactions,
   updateCallData: updateCallDataFx,
 };

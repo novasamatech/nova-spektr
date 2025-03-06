@@ -1,5 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
+// TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
 import { Operations as OperationsList } from '@/features/multisig-operations/components/Operations';
 

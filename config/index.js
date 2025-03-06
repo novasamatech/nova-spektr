@@ -25,8 +25,7 @@ export const main = {
   },
 };
 
-// TODO: Revert to 3000
-const rendererUrl = new URL('https://localhost:4000');
+const rendererUrl = new URL('https://localhost:3000');
 
 export const renderer = {
   server: {

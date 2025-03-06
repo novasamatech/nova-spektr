@@ -19,10 +19,6 @@ import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { forgetWalletModel } from '../forget-wallet-model';
 
-vi.mock('@/entities/multisig', () => ({
-  useForgetMultisig: () => ({ deleteMultisigTxs: jest.fn() }),
-}));
-
 vi.mock('@/entities/balance', async () => ({
   ...(await vi.importActual('@/entities/balance')),
   useBalanceService: () => ({ deleteBalance: jest.fn() }),
