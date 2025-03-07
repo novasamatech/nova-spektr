@@ -4,9 +4,9 @@ import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ValidationErrors, cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, Countdown, FootnoteText, Shimmering, SmallTitleText } from '@/shared/ui';
-import { Select, ThemeProvider } from '@/shared/ui-kit';
+import { type QrReaderCamera, QrReaderErrorCode, Select, ThemeProvider } from '@/shared/ui-kit';
 import { CameraAccessErrors, CameraError, WhiteTextButtonStyle } from '../common/constants';
-import { type ErrorObject, type Progress, QrError, type VideoInput } from '../common/types';
+import { type ErrorObject, type Progress } from '../common/types';
 
 import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
 import { QrSignatureReader } from './QrSignatureReader';
@@ -42,7 +42,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   const [progress, setProgress] = useState<Progress>();
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const [activeCamera, setActiveCamera] = useState<string>();
+  const [activeCamera, setActiveCamera] = useState<string | null>(null);
   const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
   useEffect(() => {
@@ -53,10 +53,10 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
 
   const isCameraOn = !error || !CameraAccessErrors.includes(error);
 
-  const onCameraList = (cameras: VideoInput[]) => {
+  const onCameraList = (cameras: QrReaderCamera[]) => {
     const formattedCameras = cameras.map((camera) => ({
       title: camera.label,
-      value: camera.id,
+      value: camera.deviceId,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -91,9 +91,9 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   };
 
   const onError = (error: ErrorObject) => {
-    if (error.code === QrError.USER_DENY) {
+    if (error.code === QrReaderErrorCode.USER_DENY) {
       setError(CameraError.DENY_ERROR);
-    } else if (error.code === QrError.DECODE_ERROR) {
+    } else if (error.code === QrReaderErrorCode.DECODE_ERROR) {
       setError(CameraError.DECODE_ERROR);
     } else {
       setError(CameraError.UNKNOWN_ERROR);
@@ -104,15 +104,8 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
   };
 
   const qrReaderProps: QrReaderProps = {
-    size: 240,
-    bgVideoClassName: 'w-[440px] h-[544px]',
-    className: cnTw(
-      'top-[-126px] z-10 h-[544px] w-[440px]',
-      error === CameraError.INVALID_ERROR && 'blur-[13px]',
-      className,
-    ),
+    size: [440, 544],
     cameraId: activeCamera,
-    onStart: () => setIsLoading(false),
     onCameraList,
     onError,
   };
