@@ -63,7 +63,7 @@ export const ReferendumTimer = ({ status, time, shortDateFormat }: Props) => {
     return () => {
       clearTimeout(timer);
     };
-  }, [countdown]);
+  }, [countdown, countdownUnit]);
 
   return (
     <div className={cnTw('flex items-center gap-x-1', TimerColor[referendumStatus])}>
