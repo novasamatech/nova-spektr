@@ -236,10 +236,10 @@ const $coreTx = combine(
 
 const { $wrappedTx: $transaction, $txWrappers } = createTxStore({
   $api,
+  $coreTx,
   $activeWallet: walletModel.$activeWallet,
   $wallets: walletModel.$wallets,
   $chain: $transferForm.fields.xcmChain.$value,
-  $coreTx,
   $account: $transferForm.fields.account.$value || null,
   $signatory: $transferForm.fields.signatory.$value || null,
 });
