@@ -10,6 +10,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { generateEventId, generateOperationId } from '@/entities/multisig';
 
 import { fetchOperations } from './resource';
+import { multisigEvent } from './schema';
 import { operationsService } from './service';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
@@ -82,7 +83,90 @@ const { request: requestOperations } = createDataSource({
   },
 });
 
-const { subscribe, unsubscribe } = createDataSubscription<
+const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDataSubscription<
+  Record<`0x${string}`, MultisigOperation[]>,
+  RequestParams[],
+  { event: MultisigEvent; operationId: string; chainId: ChainId }
+>({
+  initial: $operations,
+  fn: (params, callback) => {
+    const unsubscribeFns: Promise<VoidFunction>[] = [];
+
+    for (const { accountId, api } of params) {
+      const unsubscribeFn = polkadotjsHelpers.subscribeSystemEvents(
+        {
+          api,
+          section: 'multisig',
+          // TODO support 'NewMultisig' event
+          methods: ['MultisigApproval', 'MultisigExecuted', 'MultisigCancelled'],
+        },
+        event => {
+          const data = multisigEvent.parse(event.data);
+
+          if (data.multisig !== accountId) return;
+
+          const operationId = generateOperationId(
+            data.callHash,
+            data.account,
+            data.timepoint.height,
+            data.timepoint.index,
+          );
+
+          callback({
+            done: true,
+            value: {
+              chainId: api.genesisHash.toHex(),
+              operationId,
+              event: {
+                id: generateEventId(operationId, accountId, 'approve'),
+                accountId: data.account,
+                status: event.method === 'MultisigCancelled' ? 'reject' : 'approve',
+                indexCreated: data.timepoint.index,
+                blockCreated: data.timepoint.height,
+                timestamp: Date.now(),
+              },
+            },
+          });
+        },
+      );
+
+      unsubscribeFns.push(unsubscribeFn);
+    }
+
+    return () => {
+      Promise.all(unsubscribeFns).then(fns => {
+        for (const fn of fns) {
+          fn();
+        }
+      });
+    };
+  },
+  map: (store, { result: { chainId, operationId, event } }) => {
+    const oldOperations = store[chainId] ?? [];
+    const operation = oldOperations.find(x => x.id === operationId);
+    if (!operation) return store;
+
+    const newOperation = {
+      ...operation,
+      status: event.status === 'reject' ? 'cancelled' : operation.status,
+      events: operationsService.mergeEvents(operation?.events, [event]),
+    };
+
+    const newList = merge({
+      a: oldOperations,
+      b: [newOperation],
+      mergeBy: a => [a.accountId, a.blockCreated, a.indexCreated, a.callHash],
+      sort: (a, b) => b.blockCreated - a.blockCreated,
+    });
+
+    return {
+      ...store,
+      [chainId]: newList,
+    };
+  },
+});
+
+const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createDataSubscription<
   Record<ChainId, MultisigOperation[]>,
   RequestParams[],
   { operations: MultisigOperation[]; chainId: ChainId }
@@ -135,6 +219,8 @@ export const operations = {
   $operations,
 
   requestOperations,
-  subscribe,
-  unsubscribe,
+  subscribeIndexer,
+  unsubscribeIndexer,
+  subscribeEvents,
+  unsubscribeEvents,
 };

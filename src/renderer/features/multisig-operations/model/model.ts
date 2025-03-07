@@ -68,12 +68,12 @@ sample({
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: [operations.subscribe, populateFx],
+  target: [operations.subscribeIndexer, operations.subscribeEvents, populateFx],
 });
 
 sample({
   clock: multisigOperationsFeatureStatus.stopped,
-  target: operations.unsubscribe,
+  target: [operations.unsubscribeIndexer, operations.unsubscribeEvents],
 });
 
 sample({
