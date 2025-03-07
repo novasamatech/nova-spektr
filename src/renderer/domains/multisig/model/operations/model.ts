@@ -151,17 +151,11 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
       status: event.status === 'reject' ? 'cancelled' : operation.status,
       events: operationsService.mergeEvents(operation?.events, [event]),
     };
-
-    const newList = merge({
-      a: oldOperations,
-      b: [newOperation],
-      mergeBy: a => [a.accountId, a.blockCreated, a.indexCreated, a.callHash],
-      sort: (a, b) => b.blockCreated - a.blockCreated,
-    });
+    const newOperations = operationsService.mergeMultisigOperations(oldOperations, [newOperation]);
 
     return {
       ...store,
-      [chainId]: newList,
+      [chainId]: newOperations,
     };
   },
 });
