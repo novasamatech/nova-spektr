@@ -1,14 +1,17 @@
-import { sample } from 'effector';
+import { attach, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { identity } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesModel } from '@/features/proxies';
 
 const flow = createGate();
+
+const requestIdentityFx = attach({ effect: identity.request });
 
 // TODO form should react on actual wallet create flow,
 sample({
@@ -28,4 +31,7 @@ sample({
 
 export const pairingFormModel = {
   flow,
+
+  $identityPending: requestIdentityFx.pending,
+  requestIdentity: requestIdentityFx,
 };

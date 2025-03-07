@@ -217,5 +217,6 @@ export const pairingFormModel = {
   $session,
   $accounts,
   $step,
+  $identityPending: requestIdentityFx.pending,
   reset,
 };

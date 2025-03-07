@@ -147,4 +147,5 @@ export const pairingFormModel = {
   form,
   $accountDraft,
   $chains,
+  $identityPending: requestIdentityFx.pending,
 };
