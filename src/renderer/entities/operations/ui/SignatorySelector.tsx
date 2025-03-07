@@ -55,7 +55,7 @@ export const SignatorySelector = ({
                 <Address
                   showIcon
                   hideAddress
-                  variant="short"
+                  variant="truncate"
                   iconSize={20}
                   address={address}
                   title={isShard ? toShortAddress(address, 16) : signer.name}
