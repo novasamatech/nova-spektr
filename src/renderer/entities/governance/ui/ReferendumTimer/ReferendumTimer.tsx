@@ -30,6 +30,7 @@ const TimerText: Record<Status, string> = {
 };
 
 type Props = {
+  shortDateFormat?: boolean;
   status: ReferendumStatus;
   time: number;
 };
@@ -41,27 +42,34 @@ const StatusMap: Record<ReferendumStatus, Status> = {
   Execute: 'execute',
 };
 
-export const ReferendumTimer = ({ status, time }: Props) => {
+export const ReferendumTimer = ({ status, time, shortDateFormat }: Props) => {
   const { t } = useI18n();
   const referendumStatus = StatusMap[status];
 
   const [countdown, setCountdown] = useState(time);
 
+  const countdownUnit =
+    countdown < 60
+      ? 1 // if less then a minute, countdown each second
+      : countdown < 3600
+        ? 60 // if less then an hour, countdown each minute
+        : 3600; // countdown each hour
+
   useEffect(() => {
     if (countdown === 0) return;
 
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    const timer = setTimeout(() => setCountdown(countdown - countdownUnit), countdownUnit * 1000);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [countdown]);
+  }, [countdown, countdownUnit]);
 
   return (
     <div className={cnTw('flex items-center gap-x-1', TimerColor[referendumStatus])}>
       <Icon name={TimerIcon[referendumStatus]} size={16} className="text-inherit" />
       <FootnoteText className="text-inherit">{t(TimerText[referendumStatus])}</FootnoteText>
-      <Duration as={FootnoteText} className="text-inherit" seconds={countdown} />
+      <Duration as={FootnoteText} className="text-inherit" seconds={countdown} shortFormat={shortDateFormat} />
     </div>
   );
 };
