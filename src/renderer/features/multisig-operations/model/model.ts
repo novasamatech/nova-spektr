@@ -1,14 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { isEqual } from 'lodash';
 import { readonly, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 // eslint-disable-next-line boundaries/element-types
 import { type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { merge } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation, type OperationData, operations } from '@/domains/multisig';
+import { type MultisigOperation, type OperationData, operations, operationsService } from '@/domains/multisig';
 import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -104,8 +104,11 @@ sample({
     const toAdd = [];
 
     for (const tx of Object.values(updatedList).flat()) {
-      if (list.find(t => t.id === tx.id)) {
-        toUpdate.push(tx);
+      const foundTx = list.find(t => t.id === tx.id);
+      if (foundTx) {
+        if (!isEqual(foundTx, tx)) {
+          toUpdate.push(tx);
+        }
       } else {
         toAdd.push(tx);
       }
@@ -125,13 +128,8 @@ sample({
 sample({
   clock: operations.$operations,
   source: $list,
-  fn(list, updatedList) {
-    return merge({
-      a: list,
-      b: Object.values(updatedList).flat(),
-      mergeBy: a => [a.chainId, a.accountId, a.blockCreated, a.indexCreated, a.callHash],
-      sort: (a, b) => b.blockCreated - a.blockCreated,
-    });
+  fn(list, updatedOperations) {
+    return operationsService.mergeMultisigOperations(list, Object.values(updatedOperations).flat());
   },
   target: $list,
 });
@@ -140,12 +138,7 @@ sample({
   clock: updateCallDataFx.doneData,
   source: $list,
   fn(list, updatedTx) {
-    return merge({
-      a: list,
-      b: [updatedTx],
-      mergeBy: a => [a.chainId, a.accountId, a.blockCreated, a.indexCreated, a.callHash],
-      sort: (a, b) => b.blockCreated - a.blockCreated,
-    });
+    return operationsService.mergeMultisigOperations(list, [updatedTx]);
   },
   target: $list,
 });
