@@ -7,12 +7,12 @@ import { getCreatedDateFromApi, merge, nullable } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { generateEventId, generateOperationId } from '@/entities/multisig';
+import { generateEventId, generateOperationId, multisigService } from '@/entities/multisig';
 
 import { fetchOperations } from './resource';
 import { multisigEvent } from './schema';
 import { operationsService } from './service';
-import { type MultisigEvent, type MultisigOperation } from './types';
+import { type MultisigEvent, type MultisigOperation, type OperationData } from './types';
 
 type RequestParams = {
   accountId: AccountId;
@@ -52,6 +52,16 @@ const { request: requestOperations } = createDataSource({
           }) as MultisigEvent,
       );
 
+      const transaction = await multisigService.getTransactionFromChain({
+        api,
+        callHash: key.callHash,
+        blockHeight: multisig.when.height,
+        extrinsicIndex: multisig.when.index,
+      });
+
+      const callData = transaction?.decoded.hash.toHex() || null;
+      const operationData = (transaction?.decoded.method.toHuman() || {}) as OperationData;
+
       operations.push({
         id: operationId,
         chainId,
@@ -64,7 +74,8 @@ const { request: requestOperations } = createDataSource({
         deposit: multisig.deposit,
         timestamp,
         events,
-        callData: null,
+        callData,
+        ...operationData,
       });
     }
 

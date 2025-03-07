@@ -20,6 +20,7 @@ export const multisigService = {
   filterMultisigsAccounts,
   findFlexibleMultisigs,
   getUniqMultisigs,
+  getTransactionFromChain,
 };
 
 export type MultisigResult = {
@@ -68,14 +69,14 @@ function getUniqMultisigs(results: MultisigResult[]): MultisigResult[] {
   return filtered;
 }
 
-// TODO: can be deleted after a new indexer will be added
+// Callback for not indexed transaction
 type GetCallDataParams = {
   api: ApiPromise;
   callHash: CallHash;
   blockHeight: number;
   extrinsicIndex: number;
 };
-const getTransactionFromChain = async ({ api, callHash, blockHeight, extrinsicIndex }: GetCallDataParams) => {
+async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIndex }: GetCallDataParams) {
   try {
     const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
     if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return null;
@@ -95,7 +96,7 @@ const getTransactionFromChain = async ({ api, callHash, blockHeight, extrinsicIn
 
     return null;
   }
-};
+}
 
 async function isCreateProxyTransaction(api: ApiPromise, tx: PendingMultisigTransaction): Promise<boolean> {
   const transaction = await getTransactionFromChain({

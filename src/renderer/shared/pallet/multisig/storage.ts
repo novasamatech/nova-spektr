@@ -30,7 +30,7 @@ export const storage = {
         [
           'key',
           pjsSchema
-            .storageKey(pjsSchema.accountId, pjsSchema.u8Array)
+            .storageKey(pjsSchema.accountId, pjsSchema.hex)
             .transform(([accountId, callHash]) => ({ accountId, callHash })),
         ],
         ['multisig', pjsSchema.optional(multisig)],

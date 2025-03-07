@@ -72,7 +72,7 @@ export const dataStringSchema = z
   .instanceof(Data)
   .transform((value) => (value.isRaw ? u8aToString(value.asRaw) : value.value.toString()));
 
-export const hexSchema = z.instanceof(Raw).transform((value) => u8aToHex(value.hash));
+export const hexSchema = z.instanceof(Raw).transform((value) => u8aToHex(value));
 
 export type BlockHeight = z.infer<typeof blockHeightSchema>;
 export const blockHeightSchema = u32Schema.describe('blockHeight').brand('blockHeight');
