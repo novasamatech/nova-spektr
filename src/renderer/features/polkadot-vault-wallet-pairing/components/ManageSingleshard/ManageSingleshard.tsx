@@ -15,14 +15,15 @@ import {
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { Button, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
-import { Field, Input, Modal } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityDomain, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { IDENTITY_CHAIN } from '../../lib/constants';
+import { pairingFormModel } from '../../model/pairing-form-model';
 
 type WalletForm = {
   walletName: string;
@@ -39,6 +40,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
+  const identityPending = useUnit(pairingFormModel.$identityPending);
 
   const [chains, setChains] = useState<Chain[]>([]);
 
@@ -134,16 +136,6 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
                       value={value}
                       onChange={onChange}
                     />
-                    {/* TODO: use real UI from Figma */}
-                    {nonNullable(identityName) && (
-                      <div className="flex gap-x-2">
-                        {/* eslint-disable-next-line i18next/no-literal-string */}
-                        <span>Use your on-chain identity - </span>
-                        <button type="button" onClick={() => onChange(identityName)}>
-                          {identityName}
-                        </button>
-                      </div>
-                    )}
 
                     <InputHint variant="error" active={errors.walletName?.type === ErrorType.MAX_LENGTH}>
                       {t('onboarding.watchOnly.walletNameMaxLenError')}
@@ -151,6 +143,28 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
                     <InputHint variant="error" active={errors.walletName?.type === ErrorType.REQUIRED}>
                       {t('onboarding.watchOnly.walletNameRequiredError')}
                     </InputHint>
+
+                    {identityPending && (
+                      <Box direction="row" gap={2}>
+                        <Loader color="primary" />
+                        <FootnoteText className="text-text-secondary">{t('onboarding.searchIdentity')}</FootnoteText>
+                      </Box>
+                    )}
+                    {nonNullable(identityName) && (
+                      <Box direction="column" gap={2}>
+                        <FootnoteText className="text-text-secondary">{t('onboarding.foundIdentity')}</FootnoteText>
+                        <Button
+                          className="w-fit"
+                          size="sm"
+                          variant="chip"
+                          pallet="secondary"
+                          disabled={value.trim() === identityName}
+                          onClick={() => onChange(identityName)}
+                        >
+                          {identityName}
+                        </Button>
+                      </Box>
+                    )}
                   </Field>
                 </div>
               )}

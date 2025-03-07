@@ -5,7 +5,6 @@ import { type ComponentProps, type ComponentType, type PropsWithChildren, useEff
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Carousel, Modal } from '@/shared/ui-kit';
-import { identity } from '@/domains/network';
 import { type SeedInfo, VaultFeatures } from '@/entities/transaction';
 import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/pairing-form-model';
@@ -71,7 +70,7 @@ export const PairingModal = ({ children }: PropsWithChildren) => {
 
     if (nullable(seedInfo) || qrType !== 'singleshard') return;
 
-    identity.request({
+    pairingFormModel.requestIdentity({
       chainId: IDENTITY_CHAIN,
       accounts: [pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public))],
     });

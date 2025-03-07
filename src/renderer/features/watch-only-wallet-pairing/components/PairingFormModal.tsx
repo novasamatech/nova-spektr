@@ -5,7 +5,7 @@ import { type PropsWithChildren } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAccountId } from '@/shared/lib/utils';
-import { Button, Icon, IconButton, Identicon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Icon, IconButton, Identicon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityDomain, identityService } from '@/domains/network';
@@ -22,6 +22,7 @@ export const PairingFormModal = ({ children }: Props) => {
   const open = useUnit(pairingFormModel.flow.status);
   const chains = useUnit(pairingFormModel.$chains);
   const accountDraft = useUnit(pairingFormModel.$accountDraft);
+  const identityPending = useUnit(pairingFormModel.$identityPending);
 
   const { fields, eachValid, submit } = useForm(pairingFormModel.form);
 
@@ -91,22 +92,34 @@ export const PairingFormModal = ({ children }: Props) => {
                   testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
                   onChange={fields.walletName.onChange}
                 />
-                {/* TODO: use real UI from Figma */}
-                {nonNullable(identityName) && (
-                  <div className="flex gap-x-2">
-                    {/* eslint-disable-next-line i18next/no-literal-string */}
-                    <span>Use your on-chain identity - </span>
-                    <button type="button" onClick={() => fields.walletName.onChange(identityName)}>
-                      {identityName}
-                    </button>
-                  </div>
-                )}
 
                 {fields.walletName.errors.map(({ errorText, rule }) => (
                   <InputHint key={rule} variant="error" active>
                     {t(errorText ?? '')}
                   </InputHint>
                 ))}
+
+                {identityPending && (
+                  <Box direction="row" gap={2}>
+                    <Loader color="primary" />
+                    <FootnoteText className="text-text-secondary">{t('onboarding.searchIdentity')}</FootnoteText>
+                  </Box>
+                )}
+                {nonNullable(identityName) && (
+                  <Box direction="column" gap={2}>
+                    <FootnoteText className="text-text-secondary">{t('onboarding.foundIdentity')}</FootnoteText>
+                    <Button
+                      className="w-fit"
+                      size="sm"
+                      variant="chip"
+                      pallet="secondary"
+                      disabled={fields.walletName.value.trim() === identityName}
+                      onClick={() => fields.walletName.onChange(identityName)}
+                    >
+                      {identityName}
+                    </Button>
+                  </Box>
+                )}
               </Field>
 
               <div className="flex flex-1 items-end justify-between">
@@ -120,7 +133,6 @@ export const PairingFormModal = ({ children }: Props) => {
               </div>
             </form>
           </div>
-
           <div className="relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg bg-input-background-disabled pt-4">
             <div className="absolute right-3 top-3 m-1">
               <IconButton name="close" size={20} onClick={() => toggleModal(false)} />
@@ -135,6 +147,7 @@ export const PairingFormModal = ({ children }: Props) => {
               <EmptyState />
             )}
           </div>
+          ;
         </Box>
       </Modal.Content>
     </Modal>

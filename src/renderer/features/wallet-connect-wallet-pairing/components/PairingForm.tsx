@@ -5,7 +5,7 @@ import { type FormEvent } from 'react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityDomain, identityService } from '@/domains/network';
 import { MultiAccountsList } from '@/entities/wallet';
@@ -23,6 +23,7 @@ export const PairingForm = ({ type, onBack }: Props) => {
 
   const session = useUnit(pairingFormModel.$session);
   const accounts = useUnit(pairingFormModel.$accounts);
+  const identityPending = useUnit(pairingFormModel.$identityPending);
 
   const { fields, submit, reset, isValid } = useForm(pairingFormModel.form);
 
@@ -76,20 +77,31 @@ export const PairingForm = ({ type, onBack }: Props) => {
                 value={fields.walletName.value}
                 onChange={fields.walletName.onChange}
               />
-              {/* TODO: use real UI from Figma */}
-              {nonNullable(identityName) && (
-                <div className="flex gap-x-2">
-                  {/* eslint-disable-next-line i18next/no-literal-string */}
-                  <span>Use your on-chain identity - </span>
-                  <button type="button" onClick={() => fields.walletName.onChange(identityName)}>
-                    {identityName}
-                  </button>
-                </div>
-              )}
-
               <InputHint variant="error" active={fields.walletName.hasError()}>
                 {t(fields.walletName.errorText())}
               </InputHint>
+
+              {identityPending && (
+                <Box direction="row" gap={2}>
+                  <Loader color="primary" />
+                  <FootnoteText className="text-text-secondary">{t('onboarding.searchIdentity')}</FootnoteText>
+                </Box>
+              )}
+              {nonNullable(identityName) && (
+                <Box direction="column" gap={2}>
+                  <FootnoteText className="text-text-secondary">{t('onboarding.foundIdentity')}</FootnoteText>
+                  <Button
+                    className="w-fit"
+                    size="sm"
+                    variant="chip"
+                    pallet="secondary"
+                    disabled={fields.walletName.value.trim() === identityName}
+                    onClick={() => fields.walletName.onChange(identityName)}
+                  >
+                    {identityName}
+                  </Button>
+                </Box>
+              )}
             </Field>
 
             <div className="flex flex-1 items-end justify-between">
