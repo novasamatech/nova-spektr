@@ -9,9 +9,10 @@ type Props = {
   api: ApiPromise;
   status: ReferendumStatus | null;
   endBlock: number | null;
+  shortDateFormat?: boolean;
 };
 
-export const ReferendumEndTimer = ({ status, endBlock, api }: Props) => {
+export const ReferendumEndTimer = ({ status, endBlock, api, shortDateFormat }: Props) => {
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {
@@ -24,5 +25,5 @@ export const ReferendumEndTimer = ({ status, endBlock, api }: Props) => {
 
   if (!endBlock || !status || !endTime) return null;
 
-  return <ReferendumTimer status={status} time={endTime} />;
+  return <ReferendumTimer status={status} time={endTime} shortDateFormat={shortDateFormat} />;
 };
