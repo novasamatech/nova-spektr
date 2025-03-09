@@ -6,12 +6,12 @@ describe('createAbstractIdentifier.', () => {
     const identifier = createAbstractIdentifier<string, string>({
       type: 'test',
       name: 'test',
-      processHandler: (handler) => handler,
+      processHandler: handler => handler,
     });
 
     identifier.registerHandler({
       available: () => true,
-      body: (input) => `${input.acc} ${input.input} ${input.index}`,
+      body: input => `${input.acc} ${input.input} ${input.index}`,
     });
 
     const result = syncApplyImpl({
@@ -27,15 +27,15 @@ describe('createAbstractIdentifier.', () => {
     const identifier = createAbstractIdentifier<void, string>({
       type: 'test',
       name: 'test',
-      processHandler: (handler) => ({
+      processHandler: handler => ({
         available: () => true,
-        body: (value) => handler.body(value) + ' attached',
+        body: value => handler.body(value) + ' attached',
       }),
     });
 
     identifier.registerHandler({
       available: () => true,
-      body: (input) => input.acc + ' World',
+      body: input => input.acc + ' World',
     });
 
     const result = syncApplyImpl({
@@ -51,12 +51,12 @@ describe('createAbstractIdentifier.', () => {
     const identifier = createAbstractIdentifier<void, string>({
       type: 'test',
       name: 'test',
-      processHandler: (handler) => handler,
+      processHandler: handler => handler,
     });
 
     identifier.registerHandler({
       available: () => false,
-      body: (input) => input.acc + ' World',
+      body: input => input.acc + ' World',
     });
 
     const result = syncApplyImpl({
@@ -72,16 +72,16 @@ describe('createAbstractIdentifier.', () => {
     const identifier = createAbstractIdentifier<void, number>({
       type: 'test',
       name: 'test',
-      processHandler: (handler) => handler,
+      processHandler: handler => handler,
     });
 
     identifier.registerHandler({
       available: () => true,
-      body: (input) => input.acc + 1,
+      body: input => input.acc + 1,
     });
     identifier.registerHandler({
       available: () => true,
-      body: (input) => {
+      body: input => {
         throw new Error('fail');
 
         return input.acc + 1;
@@ -89,7 +89,7 @@ describe('createAbstractIdentifier.', () => {
     });
     identifier.registerHandler({
       available: () => true,
-      body: (input) => input.acc + 1,
+      body: input => input.acc + 1,
     });
 
     const result = syncApplyImpl({

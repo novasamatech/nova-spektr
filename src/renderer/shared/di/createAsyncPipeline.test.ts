@@ -7,11 +7,11 @@ describe('createAsyncPipeline', () => {
     const asyncPipeline = createAsyncPipeline<string[]>();
 
     asyncPipeline.registerHandler({
-      body: (v) => setTimeout(0).then(() => [...v, '1']),
+      body: v => setTimeout(0).then(() => [...v, '1']),
       available: () => true,
     });
     asyncPipeline.registerHandler({
-      body: (v) => [...v, '2'],
+      body: v => [...v, '2'],
       available: () => true,
     });
 
@@ -33,11 +33,11 @@ describe('createAsyncPipeline', () => {
 
   it('should postprocess', async () => {
     const asyncPipeline = createAsyncPipeline<string[]>({
-      postprocess: (v) => Array.from(v).reverse(),
+      postprocess: v => Array.from(v).reverse(),
     });
 
-    asyncPipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
-    asyncPipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
+    asyncPipeline.registerHandler({ body: v => [...v, '1'], available: () => true });
+    asyncPipeline.registerHandler({ body: v => [...v, '2'], available: () => true });
 
     const res = await asyncPipeline.apply(['0']);
 

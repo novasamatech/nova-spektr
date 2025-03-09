@@ -11,27 +11,27 @@ export const isIdentifier = (v: unknown): v is AnyIdentifier => {
 export const combineIdentifiers = <HandlerBody>(
   ...identifiers: AnyIdentifier<unknown, unknown, HandlerBody>[]
 ): AnyIdentifier<unknown, unknown, HandlerBody> => {
-  const types = uniq(identifiers.map((identifier) => identifier.type));
-  const names = uniq(identifiers.map((identifier) => identifier.identifierName));
+  const types = uniq(identifiers.map(identifier => identifier.type));
+  const names = uniq(identifiers.map(identifier => identifier.identifierName));
   const registerHandler = createEvent<Handler<HandlerBody>>();
   const updateHandlers = createEvent();
   const resetHandlers = createEvent();
   const $handlers = combine(
-    identifiers.map((identifier) => identifier.$handlers),
-    (handlers) => handlers.flat(),
+    identifiers.map(identifier => identifier.$handlers),
+    handlers => handlers.flat(),
   );
 
   sample({
     clock: registerHandler,
-    target: identifiers.map((identifier) => identifier.registerHandler),
+    target: identifiers.map(identifier => identifier.registerHandler),
   });
   sample({
     clock: updateHandlers,
-    target: identifiers.map((identifier) => identifier.updateHandlers),
+    target: identifiers.map(identifier => identifier.updateHandlers),
   });
   sample({
     clock: resetHandlers,
-    target: identifiers.map((identifier) => identifier.resetHandlers),
+    target: identifiers.map(identifier => identifier.resetHandlers),
   });
 
   return {
