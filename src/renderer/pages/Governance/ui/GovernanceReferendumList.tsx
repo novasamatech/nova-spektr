@@ -2,6 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ReferendumId } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
@@ -25,48 +26,48 @@ export const GovernanceReferendumList = () => {
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
 
-  if (!chainId) {
+  if (nullable(chainId)) {
     return null;
   }
-
-  const shouldShowLoadingState = isLoading || (isSearching && isTitlesLoading);
-
-  const shouldNetworkDisabledError = !isApiConnected && !shouldShowLoadingState && all.length === 0;
-
-  const shouldRenderEmptyState = !shouldShowLoadingState && isApiConnected && all.length === 0;
-  const shouldRenderList = shouldShowLoadingState || (!shouldRenderEmptyState && !shouldNetworkDisabledError);
 
   const navigate = (referendumId: ReferendumId) => {
     navigationModel.events.navigateTo(generatePath(Paths.GOVERNANCE_REFERENDUM, { chainId, referendumId }));
   };
 
+  const isLoadingState = isLoading || (isSearching && isTitlesLoading);
+  const isNetworkDisabled = !isApiConnected && !isLoadingState && all.length === 0;
+  const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
+  const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
+
   return (
     <Box gap={4} grow={1}>
       <Filters />
 
-      {shouldRenderEmptyState && <EmptyGovernance />}
-      {shouldNetworkDisabledError && <InactiveNetwork active className="grow" />}
-      {shouldRenderList && network && (
-        <div className="flex flex-col gap-y-3 pb-10">
+      {isEmptyState && <EmptyGovernance />}
+
+      {isNetworkDisabled && <InactiveNetwork active className="grow" />}
+
+      {isRegularState && (
+        <Box direction="column" gap={3} padding={[0, 0, 10]}>
           <OngoingReferendums
-            api={network.api}
-            asset={network.asset}
+            api={network?.api}
+            asset={network?.asset}
             referendums={ongoing}
-            isTitlesLoading={isTitlesLoading}
             isLoading={isLoading}
-            mixLoadingWithData={shouldShowLoadingState}
+            isTitlesLoading={isTitlesLoading}
+            mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />
           <CompletedReferendums
-            api={network.api}
-            asset={network.asset}
+            api={network?.api}
+            asset={network?.asset}
             referendums={completed}
-            isTitlesLoading={isTitlesLoading}
             isLoading={isLoading}
-            mixLoadingWithData={shouldShowLoadingState}
+            isTitlesLoading={isTitlesLoading}
+            mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />
-        </div>
+        </Box>
       )}
 
       <Outlet />
