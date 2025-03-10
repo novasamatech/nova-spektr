@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
+import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 import { Accordion, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -12,8 +13,8 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
-  api: ApiPromise;
-  asset: Asset;
+  api?: ApiPromise;
+  asset?: Asset;
   referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
@@ -33,16 +34,19 @@ export const CompletedReferendums = memo(
   ({ api, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
     const { t } = useI18n();
 
-    const { isLoading: shouldRenderLoadingState, list: deferredReferendums } = useDeferredList({
+    const { isLoading: isLoadingState, list: deferredReferendums } = useDeferredList({
       isLoading,
       list: referendums,
     });
 
-    const placeholdersCount = shouldRenderLoadingState
+    const placeholdersCount = isLoadingState
       ? Math.min(referendums.length || 4, 50)
       : Math.max(1, 3 - referendums.length);
 
     if (!isLoading && referendums.length === 0) return null;
+
+    const showList = (!isLoadingState || mixLoadingWithData) && nonNullable(api) && nonNullable(asset);
+    const showPlaceholders = isLoadingState || mixLoadingWithData;
 
     return (
       <Accordion initialOpen>
@@ -58,7 +62,9 @@ export const CompletedReferendums = memo(
         </Accordion.Trigger>
         <Accordion.Content>
           <ul className="mt-3 flex flex-col gap-y-2">
-            {(!shouldRenderLoadingState || mixLoadingWithData) &&
+            {showPlaceholders && createPlaceholders(placeholdersCount)}
+
+            {showList &&
               deferredReferendums.map((referendum) => (
                 <li key={referendum.referendumId}>
                   <ReferendumItem
@@ -70,7 +76,6 @@ export const CompletedReferendums = memo(
                   />
                 </li>
               ))}
-            {(shouldRenderLoadingState || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
           </ul>
         </Accordion.Content>
       </Accordion>
