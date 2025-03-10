@@ -59,7 +59,7 @@ const { request: requestOperations } = createDataSource({
         extrinsicIndex: multisig.when.index,
       });
 
-      const callData = transaction?.decoded.hash.toHex() || null;
+      const callData = transaction?.decoded.method.toHex() || null;
       const operationData = (transaction?.decoded.method.toHuman() || {}) as OperationData;
 
       operations.push({
