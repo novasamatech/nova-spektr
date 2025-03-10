@@ -54,7 +54,6 @@ export const SignatorySelector = ({
               <div className="flex w-full items-center justify-between">
                 <Address
                   showIcon
-                  hideAddress
                   variant="truncate"
                   iconSize={20}
                   address={address}
