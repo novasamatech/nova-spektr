@@ -1,6 +1,7 @@
 import { type Meta, type StoryFn } from '@storybook/react';
 import { enGB } from 'date-fns/locale/en-GB';
 
+import { shortDateLocaleEnGB } from '@/shared/i18n/lib/constants';
 import { type LanguageItem } from '@/shared/i18n/lib/types';
 
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -11,6 +12,7 @@ const languages: LanguageItem[] = [
     label: 'English',
     shortLabel: 'EN',
     dateLocale: enGB,
+    shortDateLocale: shortDateLocaleEnGB,
   },
 ];
 

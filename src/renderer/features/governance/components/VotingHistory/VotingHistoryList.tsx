@@ -23,8 +23,6 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
 
-  items.length = 0;
-
   const filteredItems = useMemo(
     () => performSearch({ records: items, query, weights: { voter: 0.5, name: 1 } }),
     [items, query],
