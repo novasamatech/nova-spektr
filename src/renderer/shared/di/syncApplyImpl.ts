@@ -26,12 +26,16 @@ export const syncApplyImpl = <Input, Output>({
 
   for (let index = 0; index < handlers.length; index++) {
     const handler = handlers[index];
-    if (!handler) continue;
+    if (!handler) {
+      continue;
+    }
 
     try {
       if (handler.available()) {
         const value = handler.body({ acc: result, input, index });
-        if (value === skipAction) continue;
+        if (value === skipAction) {
+          continue;
+        }
 
         result = value;
       }
