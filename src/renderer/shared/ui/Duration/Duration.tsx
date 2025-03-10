@@ -11,6 +11,7 @@ type Props = {
   seconds: string | number;
   className?: string;
   testId?: string;
+  shortFormat?: boolean;
 };
 
 const stripDuration = (duration: DurationType): DurationType => {
@@ -48,8 +49,8 @@ const stripDuration = (duration: DurationType): DurationType => {
   return { seconds: duration.seconds };
 };
 
-export const Duration = ({ as: Tag = 'span', seconds, className, testId = 'Duration' }: Props) => {
-  const { dateLocale } = useI18n();
+export const Duration = ({ as: Tag = 'span', seconds, className, testId = 'Duration', shortFormat = false }: Props) => {
+  const { dateLocale, shortDateLocale } = useI18n();
   const numericSeconds = typeof seconds === 'string' ? parseInt(seconds) : seconds;
 
   const duration = useMemo(() => {
@@ -58,7 +59,10 @@ export const Duration = ({ as: Tag = 'span', seconds, className, testId = 'Durat
     return stripDuration(duration);
   }, [numericSeconds]);
 
-  const formatted = useMemo(() => formatDuration(duration, { locale: dateLocale }), [duration, dateLocale]);
+  const formatted = useMemo(
+    () => formatDuration(duration, { locale: shortFormat ? shortDateLocale : dateLocale }),
+    [duration, dateLocale, shortDateLocale, shortFormat],
+  );
 
   return (
     <Tag className={className} data-testid={testId}>

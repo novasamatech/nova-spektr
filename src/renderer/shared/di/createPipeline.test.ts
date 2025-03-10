@@ -9,8 +9,8 @@ describe('createPipeline', () => {
   it('should handle simple case with array concat', () => {
     const pipeline = createPipeline<string[]>();
 
-    pipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
-    pipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
+    pipeline.registerHandler({ body: v => [...v, '1'], available: () => true });
+    pipeline.registerHandler({ body: v => [...v, '2'], available: () => true });
 
     const res = pipeline(['0']);
 
@@ -30,11 +30,11 @@ describe('createPipeline', () => {
 
   it('should postprocess', () => {
     const pipeline = createPipeline<string[]>({
-      postprocess: (v) => v.reverse(),
+      postprocess: v => v.reverse(),
     });
 
-    pipeline.registerHandler({ body: (v) => [...v, '1'], available: () => true });
-    pipeline.registerHandler({ body: (v) => [...v, '2'], available: () => true });
+    pipeline.registerHandler({ body: v => [...v, '1'], available: () => true });
+    pipeline.registerHandler({ body: v => [...v, '2'], available: () => true });
 
     const res = pipeline(['0']);
 
