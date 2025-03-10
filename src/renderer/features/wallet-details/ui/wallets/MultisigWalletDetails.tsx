@@ -204,7 +204,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             {signatories.people.length > 0 && (
               <div className="flex flex-col gap-2">
                 <FootnoteText className="px-5 text-text-tertiary">
-                  {t('walletDetails.multisig.otherSignatories', { amount: signatories.people.length })}
+                  {t('walletDetails.multisig.otherSignatories', { count: signatories.people.length })}
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">
