@@ -24,6 +24,7 @@ type I18nContextProps = {
   t: TFunction<'translation'>;
   locale: SupportedLocale;
   dateLocale: Locale;
+  shortDateLocale: Locale;
   formatDate: typeof fnsFormatDate;
   locales: LanguageItem[];
   changeLocale: (locale: SupportedLocale) => Promise<void>;
@@ -46,7 +47,9 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
 
   const locale = getLocale();
   const locales = getLocales();
-  const dateLocale = locales.find((l) => l.value === locale)?.dateLocale || enGB;
+  const langItem = locales.find((l) => l.value === locale);
+  const dateLocale = langItem?.dateLocale || enGB;
+  const shortDateLocale = langItem?.shortDateLocale || enGB;
 
   const formatDate: typeof fnsFormatDate = (date, format, options = {}) => {
     const mergedOptions = { locale: dateLocale, ...options };
@@ -60,6 +63,7 @@ export const I18Provider = ({ children }: PropsWithChildren) => {
     locale,
     locales,
     dateLocale,
+    shortDateLocale,
     formatDate,
     changeLocale: onLocaleChange,
   };
