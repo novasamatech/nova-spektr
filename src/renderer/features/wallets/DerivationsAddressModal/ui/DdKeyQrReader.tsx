@@ -227,8 +227,8 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             onError={onError}
           />
 
-          <div className="absolute bottom-[138px] z-10 w-full">
-            <div className="mx-auto w-[208px]">
+          <div className="absolute bottom-[108px] z-10 w-full">
+            <div className="mx-auto w-[240px]">
               {availableCameras.length > 1 && (
                 <Select
                   placeholder={t('onboarding.paritySigner.selectCameraLabel')}

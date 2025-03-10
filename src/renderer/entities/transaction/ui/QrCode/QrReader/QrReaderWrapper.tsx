@@ -152,7 +152,7 @@ export const QrReaderWrapper = ({ className, onResult, countdown, validationErro
           )}
         </div>
 
-        <div className="mb-4 w-[208px]">
+        <div className="mb-4 w-[240px]">
           {availableCameras.length > 1 && (
             <Select
               placeholder={t('onboarding.paritySigner.selectCameraLabel')}

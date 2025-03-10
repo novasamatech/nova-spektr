@@ -143,7 +143,7 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
         controls={false}
         ref={setBgVideo}
         data-testid="qr-reader-background"
-        className="h-full w-full max-w-none -scale-x-100 bg-black object-cover object-center blur-[14px]"
+        className="h-full w-full max-w-none -scale-x-100 bg-black object-cover object-center blur-[20px]"
       />
       <div className="video-cover" />
     </div>
