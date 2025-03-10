@@ -14,8 +14,8 @@ type Params<T> = {
  * deferred list rendering finished. This problem appears on large lists.
  *
  * @returns {Object} List - deferred data for rendering.
- * @returns {Object} Field isLoading - isLoading parameter + delay, introduced
- *   by deferred rendering.
+ * @returns {Object} IsLoading - isLoading parameter + delay, introduced by
+ *   deferred rendering.
  */
 export const useDeferredList = <T>({ list, isLoading, forceFirstRender }: Params<T>) => {
   const deferred = useDeferredValue(list);
