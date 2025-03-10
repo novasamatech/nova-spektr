@@ -4503,7 +4503,7 @@
     ]
   },
   {
-    "name": "Heima",
+    "name": "Should be included in scripts/data/assetsNameMap",
     "precision": 18,
     "priceId": "heima",
     "icon": {
