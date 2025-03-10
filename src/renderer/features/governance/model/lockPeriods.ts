@@ -31,15 +31,10 @@ sample({
     apis: networkModel.$apis,
     chains: networkModel.$chains,
   },
-  fn({ apis, chains }, { transaction }) {
-    const chain = chains[transaction.chainId];
-    const api = apis[transaction.chainId];
-
-    return {
-      api,
-      chain,
-    };
-  },
+  fn: ({ apis, chains }, { transaction }) => ({
+    api: apis[transaction.chainId],
+    chain: chains[transaction.chainId],
+  }),
   target: requestLockPeriodsFx,
 });
 

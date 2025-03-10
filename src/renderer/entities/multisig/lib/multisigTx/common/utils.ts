@@ -49,7 +49,7 @@ export const buildMultisigTx = (
     status: 'approve',
   };
 
-  const transaction: MultisigOperation = {
+  return {
     id: operationId,
     accountId: account.accountId,
     depositor: multisigTx.accountId,
@@ -63,8 +63,6 @@ export const buildMultisigTx = (
     events: [event],
     ...tx,
   };
-
-  return transaction;
 };
 
 export const generateOperationId = (callHash: string, address: string, block: number, index: number): string =>
