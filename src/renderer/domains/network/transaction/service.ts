@@ -1,19 +1,27 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 
-import { type Chain } from '@/shared/core';
-import { createPipeline, createTransformer } from '@/shared/di';
-import { nullable } from '@/shared/lib/utils';
+import { type HexString } from '@/shared/core';
+import { createTransformer } from '@/shared/di';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '../account/types';
 
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction } from './types';
 
-const wrapTransactionPipeline = createPipeline<EncodedTransaction, { account: AnyAccount; chain: Chain }>();
-const encodeTransactionTransformer = createTransformer<
+const wrapTransactionTransformer = createTransformer<
+  AnyTransaction,
+  AnyTransaction | Promise<AnyTransaction>,
+  { account: AnyAccount; api: ApiPromise }
+>();
+
+const unwrapTransactionTransformer = createTransformer<
+  // currect transaction
   AnyDecodedTransaction,
-  EncodedTransaction,
+  // child transaction
+  AnyTransaction,
   { api: ApiPromise }
 >();
+const encodeTransactionTransformer = createTransformer<AnyDecodedTransaction, HexString, { api: ApiPromise }>();
 const decodeTransactionTransformer = createTransformer<SubmittableExtrinsic<'promise'>, AnyDecodedTransaction>();
 
 function isEncodedTransaction(transaction: AnyTransaction): transaction is EncodedTransaction {
@@ -24,40 +32,41 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
   return transaction.type === 'decoded';
 }
 
-function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], chain: Chain) {
-  let wrapped = transaction;
+async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
+  let wrapped: AnyTransaction = transaction;
   for (const account of Array.from(route).reverse()) {
-    wrapped = wrapTransactionPipeline(wrapped, { account, chain });
+    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, api });
+    if (nonNullable(result)) {
+      wrapped = result;
+    }
   }
   return wrapped;
 }
 
-function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): EncodedTransaction {
-  if (isEncodedTransaction(transaction)) {
-    return transaction;
-  }
+async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
+  const decoded = decodeTransaction(transaction, api);
+  const list = [decoded];
+  let last: AnyDecodedTransaction | null = decoded;
 
-  const result = encodeTransactionTransformer(transaction, { api });
-  if (nullable(result)) {
-    const error = new Error(`Serializer for transaction ${transaction.section}.${transaction.method} not found`);
-    error.cause = transaction;
-    throw error;
+  while (nonNullable(last)) {
+    const childTransaction = unwrapTransactionTransformer(last, { api });
+    if (nonNullable(childTransaction)) {
+      last = decodeTransaction(childTransaction, api);
+      list.push(last);
+    } else {
+      last = null;
+    }
   }
-
-  return result;
+  return list;
 }
 
-function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDecodedTransaction {
-  if (isDecodedTransaction(transaction)) {
-    return transaction;
-  }
-
-  let decoded: SubmittableExtrinsic<'promise'> | null = null;
+function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): SubmittableExtrinsic<'promise'> {
+  const encodedExtrinsic = encodeTransaction(transaction, api);
 
   try {
-    decoded = api.tx(transaction.callData);
+    return api.tx(encodedExtrinsic.callData);
   } catch {
-    const extrinsicCall = api.createType('Call', transaction.callData);
+    const extrinsicCall = api.createType('Call', encodedExtrinsic.callData);
     const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
 
     const apiSection = api.tx[section];
@@ -67,9 +76,34 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
     if (!extrinsicFn)
       throw new Error(`Method ${section}.${method} not found in api for chain ${api.genesisHash.toHex()}`);
 
-    decoded = extrinsicFn(...extrinsicCall.args);
+    return extrinsicFn(...extrinsicCall.args);
+  }
+}
+
+function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): EncodedTransaction {
+  if (isEncodedTransaction(transaction)) {
+    return transaction;
   }
 
+  const callData = encodeTransactionTransformer(transaction, { api });
+  if (nullable(callData)) {
+    const error = new Error(`Serializer for transaction ${transaction.section}.${transaction.method} not found`);
+    error.cause = transaction;
+    throw error;
+  }
+
+  return {
+    type: 'encoded',
+    callData,
+  };
+}
+
+function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDecodedTransaction {
+  if (isDecodedTransaction(transaction)) {
+    return transaction;
+  }
+
+  const decoded = createSubmittableExtrinsic(transaction, api);
   const result = decodeTransactionTransformer(decoded);
   if (nullable(result)) {
     const error = new Error("Can't decode extrinsic");
@@ -80,8 +114,19 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
   return result;
 }
 
+async function getExtrinsicFee(extrinsic: SubmittableExtrinsic<'promise'>) {
+  const { partialFee } = await extrinsic.paymentInfo(extrinsic.signer);
+  return partialFee.toBn();
+}
+
+async function getExtrinsicWeight(extrinsic: SubmittableExtrinsic<'promise'>) {
+  const { weight } = await extrinsic.paymentInfo(extrinsic.signer);
+  return weight;
+}
+
 export const transactionService = {
-  wrapTransactionPipeline,
+  wrapTransactionTransformer,
+  unwrapTransactionTransformer,
   encodeTransactionTransformer,
   decodeTransactionTransformer,
 
@@ -89,6 +134,12 @@ export const transactionService = {
   isDecodedTransaction,
 
   wrapTransaction,
+  unwrapTransaction,
   encodeTransaction,
   decodeTransaction,
+
+  createSubmittableExtrinsic,
+
+  getExtrinsicFee,
+  getExtrinsicWeight,
 };

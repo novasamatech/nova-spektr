@@ -5,7 +5,7 @@ import { isIdentifier } from './helpers';
 import { type Identifier } from './types';
 
 // Public interface
-type TransformerHandler<Value, Result, Meta> = (value: Value, meta: Meta) => Result | null | undefined;
+type TransformerHandler<Value, Result, Meta> = (value: Value, meta: Meta) => Result | null | void;
 
 export type TransformerIdentifier<Value, Result, Meta> = Identifier<
   Meta,
@@ -20,6 +20,11 @@ export const isTransformerIdentifier = (v: unknown): v is TransformerIdentifier<
   return isIdentifier(v) && v.type === 'Transformer';
 };
 
+/**
+ * Create a transformer DI function. The transformer acts similarly to a
+ * pipeline, but returns the first non-nullable value. Input and output values
+ * can be of different types.
+ */
 export const createTransformer = <Value, Result, Meta = void>(config?: {
   name?: string;
   postprocess?(result: Result): Result;

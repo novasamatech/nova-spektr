@@ -14,6 +14,15 @@ export const isPipelineIdentifier = (v: unknown): v is PipelineIdentifier<any, a
   return isIdentifier(v) && v.type === 'pipeline';
 };
 
+/**
+ * Create a pipeline DI function. The pipeline acts like a list of data
+ * transformers; it gets a value from the previous pipeline function and passes
+ * it to the next one. Behavior is similar to this code:
+ *
+ * ```ts
+ * functions.reduce((fn, data) => fn(data), input);
+ * ```
+ */
 export const createPipeline = <Value, Meta = void>(config?: {
   name?: string;
   postprocess?: PipelineHandler<Value, Meta>;
@@ -21,7 +30,7 @@ export const createPipeline = <Value, Meta = void>(config?: {
   const identifier = createAbstractIdentifier<Meta, Value, PipelineHandler<Value, Meta>>({
     type: 'pipeline',
     name: config?.name ?? 'unknownPipeline',
-    processHandler: (handler) => ({
+    processHandler: handler => ({
       key: handler.key,
       available: handler.available,
       body: ({ acc, input }) => handler.body(acc, input),
