@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { Identicon } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -33,7 +34,18 @@ accountSDK(walletConnectWalletFeature, {
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
-  return <WalletIcon wallet={wallet} size={size} />;
+  // ToDo: use utils
+  const polkadotAccount =
+    wallet.accounts.find(
+      account => account.chainId === '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+    ) || wallet.accounts[0];
+
+  return (
+    <div className="relative">
+      <Identicon address={polkadotAccount.accountId} size={size} background={false} />
+      <WalletIcon wallet={wallet} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+    </div>
+  );
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {

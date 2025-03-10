@@ -1,9 +1,11 @@
+import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { Identicon } from '@/shared/ui';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -47,7 +49,15 @@ accountSDK(polkadotVaultWalletFeature, {
 polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
 
-  return <WalletIcon type={wallet.type} size={size} />;
+  const theme: IconTheme = wallet.accounts.length === 1 ? 'polkadot' : 'jdenticon';
+  const address = wallet.accounts.length === 1 ? wallet.accounts[0].accountId : wallet.rootAccountId;
+
+  return (
+    <div className="relative">
+      <Identicon address={address} size={size} background={false} theme={theme} />
+      <WalletIcon type={wallet.type} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+    </div>
+  );
 });
 
 polkadotVaultWalletFeature.inject(walletGroupSlot, {

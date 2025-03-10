@@ -52,6 +52,7 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
               <WalletManagement
                 key={wallet.id}
                 wallet={wallet}
+                accountId={wallet.accounts[0].accountId}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                 }

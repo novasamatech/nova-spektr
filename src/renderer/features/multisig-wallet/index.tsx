@@ -4,6 +4,7 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { Identicon } from '@/shared/ui';
 import { networkUtils } from '@/entities/network';
 import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -66,7 +67,12 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
       ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
       : wallet.type;
 
-  return <WalletIcon type={type} size={size} />;
+  return (
+    <div className="relative">
+      <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
+      <WalletIcon type={type} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+    </div>
+  );
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

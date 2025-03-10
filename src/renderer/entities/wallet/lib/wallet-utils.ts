@@ -55,6 +55,7 @@ function isPolkadotVault(wallet?: Wallet): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
+// ToDo: rm because MULTISHARD_PARITY_SIGNER is legacy
 function isMultiShard(wallet?: Wallet): wallet is MultiShardWallet {
   return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }

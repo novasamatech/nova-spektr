@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Icon } from '@/shared/ui';
+import { Icon, Identicon } from '@/shared/ui';
 import { accountService } from '@/domains/network';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -31,7 +31,12 @@ extensionWalletFeature.inject(accountService.accountActionPermissionAnyOf, ({ ac
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isExtensionWallet(wallet)) return null;
 
-  return <Icon name={walletIcon[wallet.type].icon} size={size} />;
+  return (
+    <div className="relative">
+      <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
+      <Icon name={walletIcon[wallet.type].icon} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+    </div>
+  );
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

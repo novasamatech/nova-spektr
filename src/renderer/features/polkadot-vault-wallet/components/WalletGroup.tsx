@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { type Wallet, type WalletType } from '@/shared/core';
+import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { performSearch } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
@@ -18,7 +18,7 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 type Props = {
   title: string;
   walletType: WalletType;
-  wallets: Wallet[];
+  wallets: PolkadotVaultGroup[];
   query: string;
   onSelect: (wallet: Wallet) => unknown;
 };
@@ -48,6 +48,8 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               <WalletManagement
                 key={wallet.id}
                 wallet={wallet}
+                accountId={wallet.rootAccountId}
+                isMultishard={wallet.accounts.length > 1}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                 }

@@ -4,7 +4,7 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { Icon } from '@/shared/ui';
+import { Icon, Identicon } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -44,7 +44,12 @@ accountSDK(proxiedWalletFeature, {
 
 proxiedWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (walletUtils.isProxied(wallet)) {
-    return <Icon name="proxiedBackground" size={size} />;
+    return (
+      <div className="relative">
+        <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
+        <Icon name="proxiedBackground" size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+      </div>
+    );
   }
   return null;
 });
