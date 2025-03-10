@@ -7,10 +7,11 @@ import { transactionService } from './service';
 import { metadata } from './service.mocks';
 import { type AnyDecodedTransaction, type EncodedTransaction } from './types';
 
-const createApi = async () => {
+const createMockApi = async () => {
   const registry = new TypeRegistry();
   const provider = new MockProvider(registry);
-  const genesisHash = registry.createType('Hash', await provider.send('chain_getBlockHash', [])).toHex();
+  const firstBlockHash = await provider.send('chain_getBlockHash', []);
+  const genesisHash = registry.createType('Hash', firstBlockHash).toHex();
   const specVersion = 0;
   return ApiPromise.create({
     metadata: { [`${genesisHash}-${specVersion}`]: metadata },
@@ -33,7 +34,7 @@ describe('Transactions service', () => {
   });
 
   it('should decode transaction', async () => {
-    const api = await createApi();
+    const api = await createMockApi();
     const encodedTransfer: EncodedTransaction = {
       type: 'encoded',
       callData: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
@@ -74,7 +75,7 @@ describe('Transactions service', () => {
   });
 
   it('should throw error when no decoding handlers for given transaction found', async () => {
-    const api = await createApi();
+    const api = await createMockApi();
     const encodedTransfer: EncodedTransaction = {
       type: 'encoded',
       callData: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
