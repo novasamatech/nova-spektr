@@ -28,7 +28,6 @@ type Props = {
 export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, onError }: Props) => {
   const { t } = useI18n();
 
-  const streamRef = useRef<MediaStream>();
   const scaner = useMemo(() => {
     return new BrowserQRCodeReader(undefined, {
       delayBetweenScanAttempts: 50,
@@ -36,7 +35,7 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
     });
   }, []);
 
-  const controlsRef = useRef<IScannerControls>();
+  const controlsRef = useRef<Promise<IScannerControls>>();
 
   const [video, setVideo] = useState<HTMLVideoElement | null>(null);
   const [bgVideo, setBgVideo] = useState<HTMLVideoElement | null>(null);
@@ -53,17 +52,17 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
     }, 500);
   };
 
-  const startScanning = async (video: HTMLVideoElement, cameraId: string): Promise<void> => {
-    try {
-      controlsRef.current = await scaner.decodeFromVideoDevice(cameraId, video, result => {
+  const startScanning = (video: HTMLVideoElement, cameraId: string) => {
+    controlsRef.current = scaner
+      .decodeFromVideoDevice(cameraId, video, result => {
         if (result) {
           onResult?.(result);
           highlightBorder();
         }
+      })
+      .catch(() => {
+        throw QR_READER_ERRORS[QrReaderErrorCode.DECODE_ERROR];
       });
-    } catch {
-      throw QR_READER_ERRORS[QrReaderErrorCode.DECODE_ERROR];
-    }
   };
 
   useEffect(() => {
@@ -92,7 +91,6 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
     mediaStreamPromise
       .then(stream => {
         if (!mounted) return;
-        streamRef.current = stream;
         video.srcObject = stream;
         bgVideo.srcObject = stream;
 
@@ -102,7 +100,7 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
 
     return () => {
       mounted = false;
-      controlsRef.current?.stop();
+      controlsRef.current?.then(c => c.stop());
       mediaStreamPromise.then(stopMediaStream);
     };
   }, [cameraId, bgVideo, video]);
