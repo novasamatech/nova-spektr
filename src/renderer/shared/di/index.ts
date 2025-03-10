@@ -1,6 +1,7 @@
 export { createSDK } from './createSDK';
 export { createAnyOf, isAnyOfIdentifier } from './createAnyOf';
 export { createAsyncPipeline } from './createAsyncPipeline';
+export { createTransformer, isTransformerIdentifier } from './createTransformer';
 export { createPipeline, isPipelineIdentifier } from './createPipeline';
 export { createSlot, isSlotIdentifier, normalizeSlotHandler } from './createSlot';
 export { createCombine, isCombineIdentifier } from './createCombine';
