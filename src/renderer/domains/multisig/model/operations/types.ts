@@ -33,3 +33,5 @@ export type MultisigOperation = {
   events: MultisigEvent[];
   timestamp: number;
 } & OperationData;
+
+export type MultisigOperationDB = Omit<MultisigOperation, 'deposit'> & { deposit?: string };

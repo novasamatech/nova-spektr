@@ -1,14 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { isEqual } from 'lodash';
 import { readonly, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 // eslint-disable-next-line boundaries/element-types
-import { type HexString } from '@/shared/core';
+import { type HexString, type NoID } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation, type OperationData, operations, operationsService } from '@/domains/multisig';
+import { type MultisigOperation, type MultisigOperationDB, type OperationData, operations } from '@/domains/multisig';
 import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -16,21 +17,43 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { multisigOperationsFeatureStatus } from './status';
 
+const transformDepositToString = <T extends NoID<MultisigOperation>>(
+  tx: T,
+): Omit<T, 'deposit'> & { deposit?: string } => {
+  return {
+    ...tx,
+    deposit: tx.deposit?.toString(),
+  };
+};
+
+const transformDepositToBN = (tx: MultisigOperationDB): MultisigOperation => {
+  return {
+    ...tx,
+    deposit: tx.deposit ? new BN(tx.deposit) : undefined,
+  };
+};
+
 const changeFilteredTxs = createEvent<MultisigOperation[]>();
 const removeAccountTransactions = createEvent<AccountId>();
 
 const $list = createStore<MultisigOperation[]>([]);
 
-const populateFx = createEffect(() => storageService.multisigOperations.readAll());
+const populateFx = createEffect(() =>
+  storageService.multisigOperations.readAll().then(txs => txs.map(transformDepositToBN)),
+);
 
 const addTransactionsFx = createEffect(
-  async (transactions: Omit<MultisigOperation, 'id'>[]): Promise<MultisigOperation[]> => {
-    return storageService.multisigOperations.createAll(transactions).then(result => result ?? []);
+  async (transactions: NoID<MultisigOperation>[]): Promise<MultisigOperation[]> => {
+    return storageService.multisigOperations
+      .createAll(transactions.map(transformDepositToString))
+      .then(result => result?.map(transformDepositToBN) ?? []);
   },
 );
 
 const updateTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<number[]> => {
-  return storageService.multisigOperations.updateAll(transactions).then(result => result ?? []);
+  return storageService.multisigOperations
+    .updateAll(transactions.map(transformDepositToString))
+    .then(result => result ?? []);
 });
 
 const removeTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<string[] | undefined> => {
@@ -82,17 +105,17 @@ sample({
 });
 
 sample({
-  clock: addTransactionsFx,
+  clock: addTransactionsFx.doneData,
   target: populateFx,
 });
 
 sample({
-  clock: updateTransactionsFx,
+  clock: updateTransactionsFx.doneData,
   target: populateFx,
 });
 
 sample({
-  clock: removeTransactionsFx,
+  clock: removeTransactionsFx.doneData,
   target: populateFx,
 });
 
@@ -123,24 +146,6 @@ sample({
     toAdd: addTransactionsFx,
     toUpdate: updateTransactionsFx,
   }),
-});
-
-sample({
-  clock: operations.$operations,
-  source: $list,
-  fn(list, updatedOperations) {
-    return operationsService.mergeMultisigOperations(list, Object.values(updatedOperations).flat());
-  },
-  target: $list,
-});
-
-sample({
-  clock: updateCallDataFx.doneData,
-  source: $list,
-  fn(list, updatedTx) {
-    return operationsService.mergeMultisigOperations(list, [updatedTx]);
-  },
-  target: $list,
 });
 
 sample({
