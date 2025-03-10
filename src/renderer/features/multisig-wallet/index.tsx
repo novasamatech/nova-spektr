@@ -49,7 +49,6 @@ transactionSDK(multisigWalletFeature, {
     if (multisigService.isMultisigTransaction(transaction)) {
       const { threshold, otherSignatories, maybeTimepoint, call, maxWeight } = transaction.args;
       const extrinsic = api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
-
       return extrinsic.method.toHex();
     }
   },
