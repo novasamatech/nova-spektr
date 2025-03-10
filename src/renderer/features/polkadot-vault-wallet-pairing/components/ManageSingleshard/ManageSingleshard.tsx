@@ -18,7 +18,7 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
-import { identity as identityDomain, identityService } from '@/domains/network';
+import { identity as identityModel, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -61,7 +61,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   }, [chains, accountId]);
 
   const identityName = useStoreMap({
-    store: identityDomain.$list,
+    store: identityModel.$list,
     keys: [accounts.at(0)],
     fn: (identity, [account]) => {
       if (nullable(account)) return null;
@@ -147,17 +147,20 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
                     {identityPending && (
                       <Box direction="row" gap={2}>
                         <Loader color="primary" />
-                        <FootnoteText className="text-text-secondary">{t('onboarding.searchIdentity')}</FootnoteText>
+                        <FootnoteText className="text-text-secondary">{t('onboarding.identitySearch')}</FootnoteText>
                       </Box>
                     )}
-                    {nonNullable(identityName) && (
+                    {!identityPending && nullable(identityName) && (
+                      <FootnoteText className="text-text-secondary">{t('onboarding.identityNotFound')}</FootnoteText>
+                    )}
+                    {!identityPending && nonNullable(identityName) && (
                       <Box direction="column" gap={2}>
-                        <FootnoteText className="text-text-secondary">{t('onboarding.foundIdentity')}</FootnoteText>
+                        <FootnoteText className="text-text-secondary">{t('onboarding.identityFound')}</FootnoteText>
                         <Button
                           className="w-fit"
                           size="sm"
                           variant="chip"
-                          pallet="secondary"
+                          pallet={value.trim() === identityName ? 'primary' : 'secondary'}
                           disabled={value.trim() === identityName}
                           onClick={() => onChange(identityName)}
                         >

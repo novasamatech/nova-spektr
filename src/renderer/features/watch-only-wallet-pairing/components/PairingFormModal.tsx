@@ -4,11 +4,11 @@ import { type PropsWithChildren } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, IconButton, Identicon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
-import { identity as identityDomain, identityService } from '@/domains/network';
+import { identity as identityModel, identityService } from '@/domains/network';
 import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/form';
 
@@ -24,11 +24,15 @@ export const PairingFormModal = ({ children }: Props) => {
   const accountDraft = useUnit(pairingFormModel.$accountDraft);
   const identityPending = useUnit(pairingFormModel.$identityPending);
 
-  const { fields, eachValid, submit } = useForm(pairingFormModel.form);
+  const {
+    fields: { address, walletName },
+    eachValid,
+    submit,
+  } = useForm(pairingFormModel.form);
 
   const identityName = useStoreMap({
-    store: identityDomain.$list,
-    keys: [fields.address.value],
+    store: identityModel.$list,
+    keys: [address.value],
     fn: (identity, [address]) => {
       const accountIdentity = identity[IDENTITY_CHAIN]?.[toAccountId(address)];
 
@@ -64,20 +68,20 @@ export const PairingFormModal = ({ children }: Props) => {
 
               <Field text={t('onboarding.accountAddressLabel')}>
                 <Input
-                  invalid={fields.address.hasError()}
+                  invalid={address.hasError()}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
-                  value={fields.address.value}
+                  value={address.value}
                   prefixElement={
-                    fields.address.isValid ? (
-                      <Identicon address={fields.address.value} background={false} />
+                    address.isValid ? (
+                      <Identicon address={address.value} background={false} />
                     ) : (
                       <Icon name="emptyIdenticon" />
                     )
                   }
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
-                  onChange={fields.address.onChange}
+                  onChange={address.onChange}
                 />
-                {fields.address.errors.map(({ errorText, rule }) => (
+                {address.errors.map(({ errorText, rule }) => (
                   <InputHint key={rule} variant="error" active>
                     {t(errorText ?? '')}
                   </InputHint>
@@ -87,13 +91,13 @@ export const PairingFormModal = ({ children }: Props) => {
               <Field text={t('onboarding.walletNameLabel')}>
                 <Input
                   placeholder={t('onboarding.walletNamePlaceholder')}
-                  invalid={fields.walletName.hasError()}
-                  value={fields.walletName.value}
+                  invalid={walletName.hasError()}
+                  value={walletName.value}
                   testId={TEST_IDS.ONBOARDING.WALLET_NAME_INPUT}
-                  onChange={fields.walletName.onChange}
+                  onChange={walletName.onChange}
                 />
 
-                {fields.walletName.errors.map(({ errorText, rule }) => (
+                {walletName.errors.map(({ errorText, rule }) => (
                   <InputHint key={rule} variant="error" active>
                     {t(errorText ?? '')}
                   </InputHint>
@@ -102,19 +106,21 @@ export const PairingFormModal = ({ children }: Props) => {
                 {identityPending && (
                   <Box direction="row" gap={2}>
                     <Loader color="primary" />
-                    <FootnoteText className="text-text-secondary">{t('onboarding.searchIdentity')}</FootnoteText>
+                    <FootnoteText className="text-text-secondary">{t('onboarding.identitySearch')}</FootnoteText>
                   </Box>
                 )}
-                {nonNullable(identityName) && (
+                {address.isValid && address.isDirty && !identityPending && nullable(identityName) && (
+                  <FootnoteText className="text-text-secondary">{t('onboarding.identityNotFound')}</FootnoteText>
+                )}
+                {!identityPending && nonNullable(identityName) && (
                   <Box direction="column" gap={2}>
-                    <FootnoteText className="text-text-secondary">{t('onboarding.foundIdentity')}</FootnoteText>
+                    <FootnoteText className="text-text-secondary">{t('onboarding.identityFound')}</FootnoteText>
                     <Button
                       className="w-fit"
                       size="sm"
                       variant="chip"
-                      pallet="secondary"
-                      disabled={fields.walletName.value.trim() === identityName}
-                      onClick={() => fields.walletName.onChange(identityName)}
+                      pallet={walletName.value.trim() === identityName ? 'primary' : 'secondary'}
+                      onClick={() => walletName.onChange(identityName)}
                     >
                       {identityName}
                     </Button>
@@ -138,7 +144,7 @@ export const PairingFormModal = ({ children }: Props) => {
               <IconButton name="close" size={20} onClick={() => toggleModal(false)} />
             </div>
 
-            {fields.address.value && fields.address.isValid ? (
+            {address.value && address.isValid ? (
               <>
                 <SmallTitleText className="mt-[52px] px-5">{t('onboarding.watchOnly.accountsTitle')}</SmallTitleText>
                 <ChainAccountsList accounts={accounts} />

@@ -1018,7 +1018,9 @@
       "talismanTitle": "Add Talisman extension account"
     },
     "extensionNotInstalled": "Not Installed",
-    "foundIdentity": "Use on-chain identity:",
+    "identityFound": "Use on-chain identity:",
+    "identityNotFound": "Identity not found. Use custom name",
+    "identitySearch": "Searching for identity...",
     "novaWallet": {
       "scanTitle": "Scan with Nova Wallet",
       "title": "Add wallet by Nova Wallet"
@@ -1048,7 +1050,6 @@
     "readAccountsLabel": "Following accounts have been successfully read",
     "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
     "readyToUseLabel": "Your wallet is ready to use!",
-    "searchIdentity": "Searching for identity...",
     "vault": {
       "accountTitle": "Account",
       "accountsTitle": "Manage accounts",
