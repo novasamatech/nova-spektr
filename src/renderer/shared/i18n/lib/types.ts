@@ -8,6 +8,7 @@ export type LanguageItem = {
   label: string;
   shortLabel: string;
   dateLocale: Locale;
+  shortDateLocale: Locale;
 };
 
 export type ITranslationService = {
