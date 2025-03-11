@@ -54,7 +54,7 @@ export const SignatorySelector = ({
               <div className="flex w-full items-center justify-between">
                 <Address
                   showIcon
-                  variant="short"
+                  variant="truncate"
                   iconSize={20}
                   address={address}
                   title={isShard ? toShortAddress(address, 16) : signer.name}

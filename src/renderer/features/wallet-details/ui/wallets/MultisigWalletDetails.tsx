@@ -43,9 +43,9 @@ type Props = {
   onClose: () => void;
 };
 export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
-  useGate(multisigWalletDetailsModel.flow, { wallet });
-
   const { t } = useI18n();
+
+  useGate(multisigWalletDetailsModel.flow, { wallet });
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
