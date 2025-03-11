@@ -111,7 +111,7 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
   const topOffset = (bgSizeY - FRAME_SIZE) / 2;
 
   return (
-    <div className="relative" style={sizeStyle}>
+    <div className="relative overflow-hidden" style={sizeStyle}>
       <div className="absolute inset-0 z-10 flex h-full w-full items-center justify-center overflow-hidden rounded-[1.75rem]">
         <div className="relative overflow-hidden rounded-[20px]" style={{ width: FRAME_SIZE, height: FRAME_SIZE }}>
           <video
