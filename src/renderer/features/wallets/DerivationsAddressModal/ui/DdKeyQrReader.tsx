@@ -6,14 +6,12 @@ import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { Select, ThemeProvider } from '@/shared/ui-kit';
+import { type QrReaderCamera, QrReaderErrorCode, Select, ThemeProvider } from '@/shared/ui-kit';
 import {
   type DdAddressInfoDecoded,
   type DdSeedInfo,
   type ErrorObject,
-  QrError,
-  QrReader,
-  type VideoInput,
+  VaultQrReader,
   WhiteTextButtonStyle,
 } from '@/entities/transaction';
 
@@ -43,10 +41,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
 
-  const [activeCamera, setActiveCamera] = useState<string>();
+  const [activeCamera, setActiveCamera] = useState<string | null>(null);
   const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
-  const [isScanComplete, setIsScanComplete] = useState(false);
   const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
 
   const isCameraPending = CameraState.LOADING === cameraState;
@@ -59,10 +56,10 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
     CameraState.DENY_ERROR,
   ].includes(cameraState);
 
-  const onCameraList = (cameras: VideoInput[]) => {
+  const onCameraList = (cameras: QrReaderCamera[]) => {
     const formattedCameras = cameras.map((camera) => ({
       title: camera.label,
-      value: camera.id,
+      value: camera.deviceId,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -81,7 +78,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   };
 
   const resetCamera = () => {
-    setActiveCamera(undefined);
+    setActiveCamera(null);
     setProgress({ decoded: 0, total: 0 });
   };
 
@@ -115,7 +112,6 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
         derivations.push(...derivationsAddressInfo);
       }
 
-      setIsScanComplete(true);
       setTimeout(() => onResult(derivations), RESULT_DELAY);
     } catch {
       setCameraState(CameraState.INVALID_ERROR);
@@ -124,9 +120,9 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
   };
 
   const onError = (error: ErrorObject) => {
-    if (error.code === QrError.USER_DENY) {
+    if (error.code === QrReaderErrorCode.USER_DENY) {
       setCameraState(CameraState.DENY_ERROR);
-    } else if (error.code === QrError.DECODE_ERROR) {
+    } else if (error.code === QrReaderErrorCode.DECODE_ERROR) {
       setCameraState(CameraState.DECODE_ERROR);
     } else {
       setCameraState(CameraState.UNKNOWN_ERROR);
@@ -221,22 +217,18 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           >
             {t('onboarding.vault.scanTitle')}
           </SmallTitleText>
-          <QrReader
-            bgVideo
+          <VaultQrReader
             size={size}
             cameraId={activeCamera}
             isDynamicDerivations
-            className="relative top-[-24px] -scale-x-[1.125] scale-y-[1.125]"
-            wrapperClassName="translate-y-[-84px]"
-            onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
             onResult={(result) => onScanResult(result as DdSeedInfo[])}
             onError={onError}
           />
 
-          <div className="absolute bottom-[138px] z-10 w-full">
-            <div className="mx-auto w-[208px]">
+          <div className="absolute bottom-[108px] z-10 w-full">
+            <div className="mx-auto w-[240px]">
               {availableCameras.length > 1 && (
                 <Select
                   placeholder={t('onboarding.paritySigner.selectCameraLabel')}
@@ -251,17 +243,6 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
                 </Select>
               )}
             </div>
-          </div>
-
-          <div className="absolute inset-0 mt-[58px] flex h-full w-full justify-center">
-            {isScanComplete ? (
-              <>
-                <div className="rounded-2lg backdrop-blur-sm after:absolute after:inset-0 after:bg-white/50" />
-                <Icon size={100} name="checkmarkCutout" className="text-success" />
-              </>
-            ) : (
-              <Icon name="qrFrame" size={240} className="z-20 text-white" />
-            )}
           </div>
 
           <footer className="absolute bottom-0 z-10 flex h-[66px] w-full items-center justify-between px-5">

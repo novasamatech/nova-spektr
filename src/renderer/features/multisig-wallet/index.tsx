@@ -5,13 +5,18 @@ import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { WalletAccountIcon } from '@/shared/ui-entities';
+import { transactionService } from '@/domains/network';
+import { multisigUtils } from '@/entities/multisig';
 import { networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
+import { transactionSDK } from '@/sdk/transaction';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
+import { multisigService } from './services/multisigTransaction';
+import { type MultisigTransaction } from './types';
 
 export { walletActionsSlot };
 
@@ -38,24 +43,67 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
-  wrapTransaction(transaction) {
-    // if (accountUtils.isMultisigAccount(account)) {
-    //   const otherSignatories = multisigUtils.getOtherSignatories(account, transaction.accountId, chain.addressPrefix);
-    //
-    //   return {
-    //     chainId: transaction.chainId,
-    //     accountId: account.accountId,
-    //     type: TransactionType.MULTISIG_AS_MULTI,
-    //     args: {
-    //       threshold: account.threshold,
-    //       otherSignatories,
-    //       maybeTimepoint: null,
-    //       callData,
-    //       callHash,
-    //     },
-    //   };
-    // }
-    return transaction;
+});
+
+transactionSDK(multisigWalletFeature, {
+  encode(transaction, { api }) {
+    if (multisigService.isMultisigTransaction(transaction)) {
+      const { threshold, otherSignatories, maybeTimepoint, call, maxWeight } = transaction.args;
+      const extrinsic = api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
+      return extrinsic.method.toHex();
+    }
+  },
+  decode(extrinsic) {
+    if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
+      const transaction: MultisigTransaction = {
+        type: 'decoded',
+        section: 'multisig',
+        method: 'asMulti',
+        args: {
+          threshold: parseInt(extrinsic.args[0].toString()),
+          // @ts-expect-error TODO use zod schema
+          otherSignatories: extrinsic.args[1].toHuman(),
+          timepoint: extrinsic.args[2].toString(),
+          call: extrinsic.args[3].toHex(),
+          // @ts-expect-error TODO use zod schema
+          maxWeight: extrinsic.args[4].toHuman(),
+        },
+      };
+
+      return transaction;
+    }
+  },
+  wrap(transaction, { api, account }) {
+    if (accountUtils.isMultisigAccount(account)) {
+      const otherSignatories = multisigUtils.getOtherSignatories(account, account.accountId);
+      const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+      const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
+
+      return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+        const multisigTransaction: MultisigTransaction = {
+          type: 'decoded',
+          section: 'multisig',
+          method: 'asMulti',
+          args: {
+            threshold: account.threshold,
+            otherSignatories,
+            maybeTimepoint: null,
+            call: encodedTransaction.callData,
+            maxWeight,
+          },
+        };
+
+        return multisigTransaction;
+      });
+    }
+  },
+  unwrap(transaction) {
+    if (multisigService.isMultisigTransaction(transaction)) {
+      return {
+        type: 'encoded',
+        callData: transaction.args.call,
+      };
+    }
   },
 });
 

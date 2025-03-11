@@ -1,12 +1,12 @@
 import { u8aToHex } from '@polkadot/util';
 import { Parser } from 'binary-parser';
 
-import { QR_READER_ERRORS } from '../common/errors';
-import { QrError } from '../common/types';
+import { QR_READER_DECODE_ERRORS } from '../common/errors';
+import { DecodeQrError } from '../common/types';
 
 const RAPTORQ_HEADER_SIZE = 4;
 
-class RaptorFrame {
+export class RaptorFrame {
   private readonly size: number;
   private readonly total: number;
   private readonly payload: Uint8Array;
@@ -19,7 +19,7 @@ class RaptorFrame {
       .parse(data);
 
     if (!result.payload || result.payload.length === 0) {
-      throw QR_READER_ERRORS[QrError.NOT_RAPTOR_PACKAGE];
+      throw QR_READER_DECODE_ERRORS[DecodeQrError.NOT_RAPTOR_PACKAGE];
     }
 
     this.payload = result.payload;
@@ -38,5 +38,3 @@ class RaptorFrame {
     };
   }
 }
-
-export default RaptorFrame;

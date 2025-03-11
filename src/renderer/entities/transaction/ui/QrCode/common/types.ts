@@ -1,25 +1,13 @@
-import { type DecodeContinuouslyCallback } from '@zxing/browser/esm/common/DecodeContinuouslyCallback';
-
 import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@/shared/core';
+import { type QrReaderError } from '@/shared/ui-kit';
 
 import { type VaultFeature } from './constants';
 
-export const enum QrError {
-  USER_DENY,
-  NO_VIDEO_INPUT,
-  BAD_NEW_CAMERA,
-  FRAME_METADATA,
-  NOT_RAPTOR_PACKAGE,
-  NOT_SAME_QR,
-  DECODE_ERROR,
+export const enum DecodeQrError {
+  FRAME_METADATA = 1000,
+  NOT_RAPTOR_PACKAGE = 1001,
+  NOT_SAME_QR = 1002,
 }
-
-export type DecodeCallback = DecodeContinuouslyCallback;
-
-export type VideoInput = {
-  id: string;
-  label: string;
-};
 
 export type Progress = {
   decoded: number;
@@ -62,10 +50,12 @@ export type DdAddressInfo = {
   encryption: CryptoType;
 };
 
-export type ErrorObject = {
-  code: QrError;
-  message: string;
-};
+export type ErrorObject =
+  | QrReaderError
+  | {
+      code: DecodeQrError;
+      message: string;
+    };
 
 export type DdAddressInfoDecoded = {
   publicKey: MultiSigner<string>;

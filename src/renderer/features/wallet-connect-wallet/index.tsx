@@ -27,9 +27,6 @@ accountSDK(walletConnectWalletFeature, {
   collectAccountChildren(children) {
     return children;
   },
-  wrapTransaction(transaction) {
-    return transaction;
-  },
 });
 
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

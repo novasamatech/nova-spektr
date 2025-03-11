@@ -1,20 +1,26 @@
-import { u8aToHex } from '@polkadot/util';
+import { decodeAddress } from '@polkadot/util-crypto';
 import { type Result } from '@zxing/library';
 import init, { Decoder, EncodingPacket } from 'raptorq/raptorq';
 import { useRef } from 'react';
 
-import { type HexString } from '@/shared/core';
+import { CryptoTypeString } from '@/shared/core';
+import { validateSignerFormat } from '@/shared/lib/utils';
 import { QR_READER_ERRORS, QrReader, type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit';
-import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
-import { FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
+import {
+  DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE,
+  EXPORT_ADDRESS,
+  ErrorFields,
+  FRAME_KEY,
+  type VaultFeature,
+} from '../common/constants';
 import { QR_READER_DECODE_ERRORS } from '../common/errors';
-import { DecodeQrError, type ErrorObject, type Progress } from '../common/types';
+import { type DdSeedInfo, DecodeQrError, type ErrorObject, type Progress, type SeedInfo } from '../common/types';
 
 import { RaptorFrame } from './RaptorFrame';
-import { Status, isQrErrorObject } from './scannerUtils';
 
-const makeResultPayload = <T extends Uint8Array[]>(data?: T): HexString[] => {
-  return (data || []).map((s) => u8aToHex(new Uint8Array([...CRYPTO_SR25519, ...s])));
+const CryptoTypes: Record<string, Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>> = {
+  substrate: CryptoTypeString.SR25519,
+  ethereum: CryptoTypeString.ECDSA,
 };
 
 const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
@@ -25,18 +31,28 @@ const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
   return new RaptorFrame(metadata[0]);
 };
 
+const enum Status {
+  'FIRST_FRAME',
+  'NEXT_FRAME',
+}
+
+type WithFeatures = { features: VaultFeature[] };
+type ScanResult = string | SeedInfo[] | ({ addr: SeedInfo } & WithFeatures) | { addr: DdSeedInfo };
+
 type Props = {
   size?: number | [number, number];
   cameraId: string | null;
-  onResult(scanResult: HexString[]): void;
+  isDynamicDerivations?: boolean;
   onError?(error: ErrorObject): void;
   onProgress?(progress: Progress): void;
   onCameraList(cameras: QrReaderCamera[]): void;
+  onResult(scanResult: (SeedInfo | DdSeedInfo)[]): void;
 };
 
-export const QrMultiframeSignatureReader = ({
+export const VaultQrReader = ({
   size = 300,
   cameraId,
+  isDynamicDerivations,
   onCameraList,
   onResult,
   onProgress,
@@ -46,6 +62,54 @@ export const QrMultiframeSignatureReader = ({
   const packets = useRef<Map<string, Uint8Array>>(new Map());
   const progress = useRef({ size: 0, total: 0, collected: new Set() });
   const isComplete = useRef(false);
+
+  const isQrErrorObject = (error: unknown): boolean => {
+    if (!error) {
+      return false;
+    }
+
+    return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
+  };
+
+  const makeResultPayload = <T extends ScanResult>(data: T): (SeedInfo | DdSeedInfo)[] => {
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    if (typeof data !== 'string') {
+      const payload = { ...data.addr };
+      if ('features' in (data as WithFeatures)) {
+        (payload as SeedInfo).features = (data as WithFeatures).features;
+      }
+
+      return [payload];
+    }
+
+    const [cryptoType, address] = data.split(':');
+
+    return [
+      {
+        name: '',
+        derivedKeys: [],
+        multiSigner: {
+          MultiSigner: CryptoTypes[cryptoType],
+          public: decodeAddress(address),
+        },
+      },
+    ];
+  };
+
+  const handleSimpleQr = (signerAddress: string): boolean => {
+    if (!validateSignerFormat(signerAddress)) {
+      return false;
+    }
+
+    isComplete.current = true;
+    onProgress?.({ decoded: 1, total: 1 });
+    onResult?.(makeResultPayload(signerAddress));
+
+    return true;
+  };
 
   const handleFirstFrame = (
     raptorDecoder: Decoder,
@@ -57,15 +121,15 @@ export const QrMultiframeSignatureReader = ({
 
     if (fountainResult) {
       // decode the 1st frame --> it's a single frame QR
-      let result;
-      try {
-        result = SIGNED_TRANSACTION_BULK.decode(fountainResult);
-      } catch (e) {
-        console.error(e);
+      let result: ScanResult;
+      if (isDynamicDerivations) {
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
+      } else {
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
       }
-
       isComplete.current = true;
-      onResult?.(makeResultPayload(result?.payload.map((item) => item.signature)));
+
+      onResult?.(makeResultPayload(result));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -117,16 +181,15 @@ export const QrMultiframeSignatureReader = ({
         continue;
       }
 
-      let result;
-      try {
-        result = SIGNED_TRANSACTION_BULK.decode(fountainResult);
-      } catch (e) {
-        console.error(e);
+      let result: ScanResult;
+      if (isDynamicDerivations) {
+        result = DYNAMIC_DERIVATIONS_ADDRESS_RESPONSE.decode(fountainResult.slice(3));
+      } else {
+        result = EXPORT_ADDRESS.decode(fountainResult.slice(3)).payload;
       }
 
+      onResult?.(makeResultPayload(result));
       isComplete.current = true;
-
-      onResult?.(makeResultPayload<Uint8Array[]>(result?.payload.map((item) => item.signature)));
       break;
     }
   };
@@ -137,10 +200,17 @@ export const QrMultiframeSignatureReader = ({
     try {
       await init();
 
-      const frame = createFrame(result.getResultMetadata().get(FRAME_KEY) as Uint8Array[]);
+      const isSimpleQr = handleSimpleQr(result.getText());
+      if (isSimpleQr) return;
+
+      const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
+      if (resultMetadata.length > 1) return;
+
+      const frame = createFrame(resultMetadata);
 
       const stringPayload = JSON.stringify(frame.data.payload);
       const isPacketExist = packets.current.get(stringPayload);
+
       if (isPacketExist) return;
 
       packets.current.set(stringPayload, frame.data.payload);
@@ -166,7 +236,6 @@ export const QrMultiframeSignatureReader = ({
       }
     }
   };
-
   return (
     <QrReader size={size} cameraId={cameraId} onCameraList={onCameraList} onResult={decodeFrame} onError={onError} />
   );
