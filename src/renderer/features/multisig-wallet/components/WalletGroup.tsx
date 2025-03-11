@@ -55,18 +55,23 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => (
-              <WalletManagement
-                key={wallet.id}
-                wallet={wallet}
-                description={
-                  <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                }
-                onClick={() => onSelect(wallet)}
-              >
-                <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletManagement>
-            ))}
+            {filteredWallets.map(wallet => {
+              const address = wallet.accounts[0]?.accountId;
+
+              return (
+                <WalletManagement
+                  key={wallet.id}
+                  wallet={wallet}
+                  address={address}
+                  description={
+                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                  }
+                  onClick={() => onSelect(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
+              );
+            })}
           </Box>
         </Accordion.Content>
       </Accordion>
