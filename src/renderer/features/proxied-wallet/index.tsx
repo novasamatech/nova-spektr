@@ -61,7 +61,7 @@ transactionSDK(proxiedWalletFeature, {
       const transaction: ProxyTransaction = {
         type: 'decoded',
         section: 'proxy',
-        method: 'asMulti',
+        method: 'proxy',
         args: {
           real: pjsSchema.helpers.toAccountId(extrinsic.args[0].toHex()),
           // @ts-expect-error TODO use zod schemas
