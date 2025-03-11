@@ -1,7 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEventHandler, type PropsWithChildren, memo, useState } from 'react';
+import { type FormEventHandler, type PropsWithChildren, memo } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
@@ -11,16 +11,17 @@ import { evidenceForm } from '../model/evidenceForm';
 
 type Props = PropsWithChildren<{
   wish: 'Promotion' | 'Retention';
+  isOpen: boolean;
+  onToggle(open: boolean): void;
 }>;
 
-export const EvidenceFormModal = memo(({ wish, children }: Props) => {
+export const EvidenceFormModal = memo(({ isOpen, wish, children, onToggle }: Props) => {
   useFlow(evidenceForm.flow, { wish });
 
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
   const { fields, submit } = useForm(evidenceForm.form);
   const uploadError = useUnit(evidenceForm.$uploadError);
-  const pending = useUnit(evidenceForm.$pending);
+  const pending = useUnit(evidenceForm.post.pending);
 
   const title =
     wish === 'Retention'
@@ -33,7 +34,7 @@ export const EvidenceFormModal = memo(({ wish, children }: Props) => {
   };
 
   return (
-    <Modal size="lg" height="lg" isOpen={open} onToggle={setOpen}>
+    <Modal size="lg" height="lg" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.HeaderContent>
@@ -89,7 +90,7 @@ export const EvidenceFormModal = memo(({ wish, children }: Props) => {
         </form>
       </Modal.Content>
       <Modal.Footer>
-        <Button variant="text" onClick={() => setOpen(false)}>
+        <Button variant="text" onClick={() => onToggle(false)}>
           {t('general.button.closeButton')}
         </Button>
         <Box grow={1} />

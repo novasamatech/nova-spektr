@@ -35,7 +35,9 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   }
 
   if (record.type === 'requested') {
-    return t('fellowship.profile.activityFeed.requested');
+    return record.wish == 'Promotion'
+      ? t('fellowship.profile.activityFeed.requestedPromotion')
+      : t('fellowship.profile.activityFeed.requestedRetention');
   }
 
   return '';
