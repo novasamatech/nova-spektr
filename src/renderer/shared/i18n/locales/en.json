@@ -1516,7 +1516,7 @@
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
-    "qrCountdownTitle": "Time remaining",
+    "qrCountdownTitle": "QR code valid for",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
@@ -1793,7 +1793,7 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
-    "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
+    "invalidSignature": "Error occurred while decoding QR code. Scan again.",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

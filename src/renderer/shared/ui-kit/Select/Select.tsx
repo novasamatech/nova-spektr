@@ -83,7 +83,7 @@ const Button = ({ name, placeholder }: TriggerProps) => {
           'h-8.5': height === 'sm',
           'h-10.5': height === 'md',
           'border-filter-border bg-input-background text-text-primary': theme === 'light',
-          'border-border-dark text-white': theme === 'dark',
+          'border-border-dark bg-background-dark text-white': theme === 'dark',
           'bg-input-background-disabled text-text-tertiary': disabled,
           'border-filter-border-negative': invalid,
         },

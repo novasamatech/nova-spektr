@@ -63,7 +63,7 @@ export const Transfer = ({ chain, asset }: Props) => {
   return (
     <BaseModal
       closeButton
-      contentClass=""
+      contentClass="overflow-hidden"
       isOpen={isModalOpen}
       title={getModalTitle(chain, asset, xcmChain)}
       onClose={closeModal}
