@@ -362,7 +362,8 @@
         "paid": "Salary",
         "promoted": "Promoted to rank {rank}",
         "proven": "Proven at rank {rank}",
-        "requested": "Salary requested"
+        "requestedPromotion": "Promotion requested",
+        "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
       "modalTitle": "Profile",
@@ -1018,6 +1019,9 @@
       "talismanTitle": "Add Talisman extension account"
     },
     "extensionNotInstalled": "Not Installed",
+    "identityFound": "Use on-chain identity:",
+    "identityNotFound": "Identity not found. Use custom name",
+    "identitySearch": "Searching for identity...",
     "novaWallet": {
       "scanTitle": "Scan with Nova Wallet",
       "title": "Add wallet by Nova Wallet"
@@ -1025,50 +1029,23 @@
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
       "accessDeniedLabel": "Access denied!",
-      "accountAddressPlaceholder": "Account address",
-      "accountExistsTitle": "This <strong>account</strong> already exists!",
       "accountNamePlaceholder": "Enter a name for this account",
-      "accountsExistTitle": "These <strong>accounts</strong> already exist!",
-      "addAccount": "Add new accounts",
-      "addByParitySignerLabel": "Add wallet by Polkadot Vault",
-      "addSingleParitySignerDescription": "Here is your account scanned from Polkadot Vault",
-      "autoFillAccountsListButton": "Autofill account names",
       "checkAddress": "Check address",
-      "chooseCameraLabel": "Please choose one to continue",
-      "choseWalletNameLabel": "Here is your account scanned from Polkadot Vault",
       "continueButton": "Continue",
       "decodeErrorDescription": "Error occurred while decoding QR code",
       "decodeErrorLabel": "Recognition error!",
-      "derivedLabel": "Derived accounts on",
-      "existingAccountDescription": "This account already exists",
       "generateAddressesModalTitle": "Generate accounts addresses",
-      "invalidAccountTitle": "The <strong>address</strong> is not a valid polkadot address!",
-      "invalidAccountsTitle": "These <strong>accounts</strong> are not valid!",
-      "multipleCamerasLabel": "There are multiple cameras!",
-      "noNewAccountDescription": "Consider scanning other ones",
-      "noNewAccountLabel": "No new account to add",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
-      "qrModalTitle": "Scan QR code from Polkadot Vault",
-      "rescanQRButton": "Rescan QR code",
-      "saveWalletButton": "Save wallet",
       "scanAgainButton": "Scan again",
-      "scanQRCodeAlt": "Scan QR code from Polkadot Vault",
-      "scanQRFromParitySignerButton": "Scan QR code from Polkadot Vault",
-      "scannerModalTitle": "Scan QR code from Polkadot Vault",
       "selectCameraLabel": "Select camera",
-      "someOldAccountDescription": "Some accounts were scanned and added recently",
-      "someOldAccountLabel": "Not all accounts added",
       "startCameraLabel": "Starting camera",
       "tryAgainButton": "Try again",
       "typeNameButton": "Type a name to finish...",
-      "walletNameDescription": "Examples: Main accounts, My validators, Dotsama crowdloans, etc",
       "walletNameLabel": "Wallet name",
       "walletNamePlaceholder": "Enter a name for your wallet",
       "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address",
-      "wrongQRCodeLabel": "Wrong QR code!",
-      "yourAccountsDescription": "Following accounts have been successfully read from Polkadot Vault",
-      "yourAccountsLabel": "Here are your accounts"
+      "wrongQRCodeLabel": "Wrong QR code!"
     },
     "pasteButton": "Paste",
     "readAccountsLabel": "Following accounts have been successfully read",
@@ -1108,7 +1085,6 @@
       "scanTitle": "Scan with your mobile wallet",
       "title": "Add wallet by WalletConnect"
     },
-    "walletNameExample": "Name examples: Main account, My validator, Dotsama crowdloans, etc",
     "walletNameLabel": "Wallet name",
     "walletNamePlaceholder": "Enter a name for your wallet",
     "watchOnly": {
@@ -1148,8 +1124,7 @@
       "walletConnectTitle": "WalletConnect v2",
       "watchOnlyDescription": "Track the activity of any wallet without injecting your private key to Nova Spektr",
       "watchOnlyTitle": "Watch-only"
-    },
-    "yourAccountsLabel": "Here are your accounts"
+    }
   },
   "operation": {
     "addCallDataButton": "Add call data",
@@ -1542,7 +1517,7 @@
     "metadataPortalLink": "Update metadata in Polkadot Vault",
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
-    "qrCountdownTitle": "Time remaining",
+    "qrCountdownTitle": "QR code valid for",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
@@ -1819,7 +1794,7 @@
     "inProgress": "Submitting operation...",
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
-    "invalidSignature": "QR code is invalid. Please make sure you are scanning QR code for currently signing operation",
+    "invalidSignature": "Error occurred while decoding QR code. Scan again.",
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -1925,7 +1900,8 @@
       "changeSignatories": "Change signatories/threshold",
       "contactsGroup": "Contacts",
       "networksTab": "Networks",
-      "otherSignatories": "Other signatories { count }",
+      "otherSignatories_one": "Other signatory { count }",
+      "otherSignatories_other": "Other signatories { count }",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
       "thresholdLabel": "Threshold { min } out of { max }",

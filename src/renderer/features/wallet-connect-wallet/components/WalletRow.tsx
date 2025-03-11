@@ -1,8 +1,9 @@
 import { useStoreMap, useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, isPolkadotChain } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts as accountsDomainModel } from '@/domains/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -33,9 +34,15 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     },
   });
 
+  const address = useMemo(() => {
+    const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
+    return mainAccount?.accountId;
+  }, [wallet]);
+
   return (
     <WalletManagement
       wallet={wallet}
+      address={address}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

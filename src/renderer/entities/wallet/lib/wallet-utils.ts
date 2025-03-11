@@ -44,7 +44,6 @@ export const walletUtils = {
 
   getAccountBy,
   getAccountsBy,
-  getAllAccounts,
   getWalletFilteredAccounts,
   getWalletsFilteredAccounts,
 };
@@ -55,6 +54,7 @@ function isPolkadotVault(wallet?: Wallet): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
+// ToDo: rm because MULTISHARD_PARITY_SIGNER is legacy
 function isMultiShard(wallet?: Wallet): wallet is MultiShardWallet {
   return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }
@@ -148,13 +148,10 @@ function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: 
   }, []);
 }
 
-function getAllAccounts(wallets: Wallet[]): Account[] {
-  return wallets.reduce<Account[]>((acc, wallet) => acc.concat(wallet.accounts), []);
-}
-
 function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {
   for (const wallet of wallets) {
     const account = wallet.accounts.find((account) => accountFn(account, wallet));
+
     if (account) return account;
   }
 
@@ -162,20 +159,18 @@ function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: W
 }
 
 /**
- * Returns a Wallet object that matches the provided predicates. If no matching
- * Wallet is found, returns undefined.
+ * Returns a Wallet that matches the provided predicates. If no matching Wallet
+ * is found, returns null.
  *
  * @param {Wallet[]} wallets - The array of Wallet objects to search through
  * @param {Object} predicates - The predicates to filter Wallets and Accounts
- * @param {function} predicates.walletFn - A function that takes a Wallet object
- *   and returns a boolean indicating whether it should be included in the
- *   result. Defaults to undefined.
- * @param {function} predicates.accountFn - A function that takes an Account
- *   object and its parent Wallet object and returns a boolean indicating
- *   whether it should be included in the result. Defaults to undefined.
+ * @param {Function} [predicates.walletFn] - A function to filter wallets. If
+ *   provided, only wallets that pass this filter will be considered.
+ * @param {Function} [predicates.accountFn] - A function to filter accounts
+ *   within a wallet. If provided, only accounts that pass this filter will be
+ *   included in the result.
  *
- * @returns {Wallet | null} - The matching Wallet object, or undefined if no
- *   matching Wallet is found.
+ * @returns {Wallet | null}
  */
 function getWalletFilteredAccounts(
   wallets: Wallet[],
@@ -199,6 +194,20 @@ function getWalletFilteredAccounts(
   return null;
 }
 
+/**
+ * Returns Wallets that match the provided predicates. If no matching Wallets
+ * are found, returns null.
+ *
+ * @param {Wallet[]} wallets - The array of Wallet objects to search through
+ * @param {Object} predicates - The predicates to filter Wallets and Accounts
+ * @param {Function} [predicates.walletFn] - A function to filter wallets. If
+ *   provided, only wallets that pass this filter will be considered.
+ * @param {Function} [predicates.accountFn] - A function to filter accounts
+ *   within a wallet. If provided, only accounts that pass this filter will be
+ *   included in the result.
+ *
+ * @returns {Wallet[] | null}
+ */
 function getWalletsFilteredAccounts(
   wallets: Wallet[],
   predicates: {
@@ -208,19 +217,19 @@ function getWalletsFilteredAccounts(
 ): Wallet[] | null {
   if (!predicates.walletFn && !predicates.accountFn) return null;
 
-  const result = wallets.reduce<Wallet[]>((acc, wallet) => {
+  const result: Wallet[] = [];
+
+  for (const wallet of wallets) {
     if (!predicates.walletFn || predicates.walletFn(wallet)) {
       const accounts = wallet.accounts.filter((account) => {
         return !predicates.accountFn || predicates.accountFn(account, wallet);
       });
 
       if (accounts.length > 0) {
-        acc.push({ ...wallet, accounts });
+        result.push({ ...wallet, accounts });
       }
     }
-
-    return acc;
-  }, []);
+  }
 
   return result.length > 0 ? result : null;
 }

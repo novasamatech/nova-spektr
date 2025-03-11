@@ -115,7 +115,7 @@ const AccountSelector = () => {
 
           return (
             <Select.Item key={account.id} value={account.id}>
-              <div className="flex w-full justify-between">
+              <div className="flex w-full items-center justify-between">
                 <AccountAddress
                   showIcon
                   iconSize={20}

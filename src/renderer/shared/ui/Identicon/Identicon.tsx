@@ -18,7 +18,9 @@ type Props = {
   testId?: string;
 };
 
-const PolkadotIdenticon = lazy(() => import('@polkadot/react-identicon').then((m) => ({ default: m.Identicon })));
+const PolkadotIdenticon = lazy(() =>
+  import('@polkadot/react-identicon/Identicon').then(({ Identicon: IdenticonIcon }) => ({ default: IdenticonIcon })),
+);
 
 export const Identicon = memo(
   ({ theme, address, size = 24, background = true, canCopy: canCopyProp, className, testId = 'Identicon' }: Props) => {

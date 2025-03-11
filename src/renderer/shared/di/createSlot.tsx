@@ -1,9 +1,10 @@
 import { isFunction } from 'lodash';
 import { type ComponentType, type FunctionComponent, type ReactNode, memo } from 'react';
 
+import { shallowEqual } from '@/shared/lib/utils';
+
 import { createAbstractIdentifier } from './createAbstractIdentifier';
 import { isIdentifier } from './helpers';
-import { shallowEqual } from './lib/shallowEqual';
 import { type Identifier } from './types';
 
 // Public interface

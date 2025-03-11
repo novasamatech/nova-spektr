@@ -1,6 +1,6 @@
 import { type MouseEvent, type PropsWithChildren } from 'react';
 
-import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Identicon } from '@/shared/ui';
 
@@ -18,13 +18,7 @@ export const RootAccountLg = ({ name, accountId, className, children }: Props) =
   return (
     <div className={cnTw('flex w-full items-center gap-x-2', className)}>
       <div className="flex w-full items-center gap-x-2 overflow-hidden py-[3px]" onClick={handleClick}>
-        <Identicon
-          theme="jdenticon"
-          background={false}
-          canCopy={false}
-          address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
-          size={28}
-        />
+        <Identicon theme="jdenticon" background={false} canCopy={false} address={accountId} size={28} />
         <BodyText className="truncate text-text-secondary">{name}</BodyText>
       </div>
 

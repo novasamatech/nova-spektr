@@ -1,8 +1,9 @@
 import { type Scope, combine, createDomain, createStore, sample } from 'effector';
 import { createGate, useGate } from 'effector-react';
-import { readonly } from 'patronum';
+import { previous, readonly } from 'patronum';
 
 import { type AnyIdentifier, type InferHandlerBody, isSlotIdentifier, normalizeSlotHandler } from '@/shared/di';
+import { shallowEqual } from '@/shared/lib/utils';
 
 import { type RunningState, type StatusParams, createStatus } from './createStatus';
 
@@ -42,6 +43,8 @@ export const createFeature = <T = object>({
     filter,
   });
 
+  const $previousState = previous($state);
+
   const start = enableFlag.prepend(() => 'manual');
   const stop = disableFlag.prepend(() => 'manual');
 
@@ -66,8 +69,19 @@ export const createFeature = <T = object>({
 
   sample({
     clock: $state,
-    filter: ({ status }) => status === 'running',
-    fn: state => (state as RunningState<T>).data,
+    source: $previousState,
+    filter: (previousState, state) => {
+      if (state.status === 'running') {
+        if (!previousState) return true;
+        if (previousState.status === 'running') {
+          return !shallowEqual(previousState.data, state.data);
+        }
+        return true;
+      }
+
+      return false;
+    },
+    fn: (_, state) => (state as RunningState<T>).data,
     target: running,
   });
 

@@ -1,35 +1,66 @@
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, combine, createEvent, createStore, sample } from 'effector';
-import { createGate } from 'effector-react';
+import { createForm } from 'effector-forms';
+import noop from 'lodash/noop';
 
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
-import { waitFor } from '@/shared/effector';
+import { createFlow, waitFor } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { identity } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesModel } from '@/features/proxies';
 import { walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
-import { Step } from '../lib/constants';
+import { IDENTITY_CHAIN, Step, WALLET_NAME_MAX_LENGTH } from '../lib/constants';
+import { type WalletTypeName } from '../lib/types';
+
+const flow = createFlow<{
+  type: 'novawallet' | 'walletconnect' | null;
+  onComplete: (walletName: string, type: WalletTypeName) => void;
+}>({ type: null, onComplete: noop });
 
 const reset = createEvent();
-const createWallet = createEvent<{ name: string }>();
-const flow = createGate<'novawallet' | 'walletconnect' | null>({ defaultState: null });
+
+const $step = createStore(Step.SCAN).reset(reset);
 
 const readyToPair = waitFor({
   source: flow.open,
   clock: walletConnect.$client,
   filter: nonNullable,
-  reset: flow.close,
+  reset: flow.shut,
 });
-
-const $step = createStore(Step.SCAN).reset(reset);
 
 /**
  * Pairing session
  */
 const $session = createStore<SessionTypes.Struct | null>(null);
+
+type WalletForm = {
+  walletName: string;
+};
+
+const form = createForm<WalletForm>({
+  fields: {
+    walletName: {
+      init: '',
+      rules: [
+        {
+          name: 'required',
+          errorText: 'onboarding.watchOnly.walletNameRequiredError',
+          validator: Boolean,
+        },
+        {
+          name: 'maxLength',
+          errorText: 'onboarding.watchOnly.walletNameMaxLenError',
+          validator: value => value.length <= WALLET_NAME_MAX_LENGTH,
+        },
+      ],
+    },
+  },
+  validateOn: ['submit'],
+});
 
 /**
  * Accounts from successful pairing response
@@ -42,15 +73,30 @@ const $accounts = combine($session, networkModel.$chains, (session, chains) => {
 
 const createSessionFx = attach({ effect: walletConnect.createSession });
 const createWalletConnectWalletFx = attach({ effect: walletModel.createWallet });
+const requestIdentityFx = attach({ effect: identity.request });
 
 sample({
-  clock: createWallet,
-  source: { accounts: $accounts, session: $session, walletType: flow.state },
-  fn({ accounts, session, walletType }, { name }) {
+  clock: $accounts,
+  filter: accounts => accounts.length > 0,
+  fn: accounts => ({
+    chainId: IDENTITY_CHAIN,
+    accounts: [accounts[0].accountId],
+  }),
+  target: requestIdentityFx,
+});
+
+sample({
+  clock: form.formValidated,
+  source: {
+    accounts: $accounts,
+    session: $session,
+    flowState: flow.state,
+  },
+  fn({ accounts, session, flowState }, { walletName }) {
     const wcAccounts = accounts.map<Omit<WcAccount, 'id' | 'walletId'>>(({ accountId, chain }) => {
       return {
         type: 'chain',
-        name: name.trim(),
+        name: walletName.trim(),
         accountId,
         accountType: AccountType.WALLET_CONNECT,
         signingType: SigningType.WALLET_CONNECT,
@@ -64,13 +110,34 @@ sample({
     return {
       accounts: wcAccounts,
       wallet: {
-        name: name.trim(),
-        type: walletType === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT,
+        name: walletName.trim(),
+        type: flowState.type === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT,
         signingType: SigningType.WALLET_CONNECT,
       },
     };
   },
   target: createWalletConnectWalletFx,
+});
+
+sample({
+  clock: createWalletConnectWalletFx.done,
+  target: attach({
+    source: flow.state,
+    effect: (state, { params }) => {
+      if (nullable(state.type)) return;
+
+      const walletType: Record<'novawallet' | 'walletconnect', WalletTypeName> = {
+        novawallet: WalletType.NOVA_WALLET,
+        walletconnect: WalletType.WALLET_CONNECT,
+      };
+      state.onComplete(params.wallet.name, walletType[state.type]);
+    },
+  }),
+});
+
+sample({
+  clock: createWalletConnectWalletFx.done,
+  target: [flow.shut, reset],
 });
 
 sample({
@@ -105,16 +172,19 @@ sample({
   target: $session,
 });
 
-const resetSession = sample({
+sample({
   clock: reset,
-  source: { session: $session },
-}).filterMap(({ session }) => {
-  if (session) return { pairingTopic: session.pairingTopic };
+  source: $session,
+  filter: (session: SessionTypes.Struct | null): session is SessionTypes.Struct => nonNullable(session),
+  fn: session => ({
+    pairingTopic: session.pairingTopic,
+  }),
+  target: walletConnect.removeSession,
 });
 
 sample({
-  clock: resetSession,
-  target: walletConnect.removeSession,
+  clock: reset,
+  target: form.reset,
 });
 
 sample({
@@ -139,12 +209,14 @@ sample({
   target: $step,
 });
 
-export const pairingForm = {
+export const pairingFormModel = {
   flow,
+
+  form,
   $uri: walletConnect.$pairingUri,
   $session,
   $accounts,
   $step,
+  $identityPending: requestIdentityFx.pending,
   reset,
-  createWallet,
 };

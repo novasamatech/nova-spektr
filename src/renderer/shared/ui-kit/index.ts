@@ -1,6 +1,7 @@
 export { useResizeObserver } from './hooks/useResizeObserver';
 export { useTheme } from './Theme/useTheme';
 
+export { FilledIconButton } from './FilledIconButton/FilledIconButton';
 export { EmptyMessage } from './EmptyMessage/EmptyMessage';
 export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
@@ -27,6 +28,8 @@ export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
-export { FilledIconButton } from './FilledIconButton/FilledIconButton';
+export { QrReader, type QrScanResult } from './QrReader/QrReader';
 
+export { QR_READER_ERRORS } from './QrReader/errors';
+export { QrReaderErrorCode, type QrReaderCamera, type QrReaderError } from './QrReader/types';
 export { defaultEasing } from './_helpers/easing';
