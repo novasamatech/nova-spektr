@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, Icon } from '@/shared/ui';
-import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
+import { Accordion, Tooltip } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -93,7 +93,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
   const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
 
   return (
-    <Box width="736px">
+    <div className="w-[736px]">
       <Accordion initialOpen>
         <Accordion.Trigger sticky>
           <div className="flex w-full items-center justify-between gap-x-2">
@@ -131,6 +131,6 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
           </ul>
         </Accordion.Content>
       </Accordion>
-    </Box>
+    </div>
   );
 });
