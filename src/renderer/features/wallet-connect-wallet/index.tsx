@@ -43,7 +43,9 @@ walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   return (
     <div className="relative">
       <Identicon address={polkadotAccount.accountId} size={size} background={false} />
-      <WalletIcon wallet={wallet} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
+        <WalletIcon wallet={wallet} size={size / 2} />
+      </div>
     </div>
   );
 });

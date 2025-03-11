@@ -8,16 +8,15 @@ import { walletConnect } from '../model/connect';
 
 type Props = {
   wallet: Wallet;
-  className?: string;
   size: number;
 };
 
-export const WalletIcon = ({ wallet, size, className }: Props) => {
+export const WalletIcon = ({ wallet, size }: Props) => {
   const sessions = useUnit(walletConnect.$sessions);
   const connected = walletConnectService.areAccountsConnected(sessions, wallet.accounts);
 
   return (
-    <div className={cnTw('relative h-fit w-fit', className)}>
+    <div className="relative h-fit w-fit">
       <Icon type={wallet.type} size={size} />
       <span
         className={cnTw(

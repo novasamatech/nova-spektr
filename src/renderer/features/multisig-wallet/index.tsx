@@ -70,7 +70,9 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   return (
     <div className="relative">
       <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
-      <WalletIcon type={type} size={size / 2} className="absolute -bottom-0.5 -right-0.5" />
+      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
+        <WalletIcon type={type} size={size / 2} />
+      </div>
     </div>
   );
 });
