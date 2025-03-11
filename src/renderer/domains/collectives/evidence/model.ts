@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
@@ -57,7 +57,13 @@ const { $: $list, request } = createDataSource({
       return setNestedValue(source, params.palletType, params.chain.chainId, filtered);
     }
 
-    return setNestedValue(source, params.palletType, params.chain.chainId, list.concat(result));
+    const merged = merge({
+      a: list,
+      b: [result],
+      mergeBy: e => e.accountId,
+    });
+
+    return setNestedValue(source, params.palletType, params.chain.chainId, merged);
   },
 });
 
