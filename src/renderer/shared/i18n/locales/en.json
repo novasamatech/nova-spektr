@@ -362,7 +362,8 @@
         "paid": "Salary",
         "promoted": "Promoted to rank {rank}",
         "proven": "Proven at rank {rank}",
-        "requested": "Salary requested"
+        "requestedPromotion": "Promotion requested",
+        "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
       "modalTitle": "Profile",

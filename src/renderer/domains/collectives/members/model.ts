@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSubscription } from '@/shared/effector';
-import { nonNullable, nullable, setNestedValue } from '@/shared/lib/utils';
+import { isEqual, merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
@@ -86,20 +86,31 @@ const {
       ),
     ]);
 
-    return unsubscribe.then(fns => () => {
-      abortController.abort();
-      for (const fn of fns) {
-        fn();
-      }
-    });
+    return () => {
+      unsubscribe.then(fns => () => {
+        abortController.abort();
+        for (const fn of fns) {
+          fn();
+        }
+      });
+    };
   },
   map: (store, { params, result }) => {
-    return setNestedValue(
-      store,
-      params.palletType,
-      params.chainId,
-      result.sort((a, b) => b.rank - a.rank),
-    );
+    const prev = pickNestedValue(store, params.palletType, params.chainId);
+    let list;
+    if (nullable(prev) || prev.length > result.length) {
+      list = result.sort((a, b) => b.rank - a.rank);
+    } else {
+      list = merge({
+        a: prev,
+        b: result,
+        sort: (a, b) => b.rank - a.rank,
+        mergeBy: m => m.accountId,
+        filter: (a, b) => !isEqual(a, b),
+      });
+    }
+
+    return setNestedValue(store, params.palletType, params.chainId, list);
   },
 });
 
