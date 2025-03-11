@@ -2,6 +2,10 @@ import { type Options } from 'qr-code-styling';
 
 import NovaWalletOnboardingIcon from '@/shared/assets/images/walletTypes/novaWalletOnboarding.svg';
 import WalletConnectOnboardingIcon from '@/shared/assets/images/walletTypes/walletConnectOnboarding.svg';
+import { type ChainId } from '@/shared/core';
+
+// Polkadot People
+export const IDENTITY_CHAIN: ChainId = '0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008';
 
 const QrConfig: Partial<Options> = {
   width: 300,
@@ -56,3 +60,5 @@ export const enum Step {
 }
 
 export const EXPIRE_TIMEOUT = 5 * 60 * 1000;
+
+export const WALLET_NAME_MAX_LENGTH = 256;
