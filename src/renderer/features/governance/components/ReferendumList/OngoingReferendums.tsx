@@ -3,6 +3,7 @@ import { memo } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
 import { Accordion, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -11,8 +12,8 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
-  api: ApiPromise;
-  asset: Asset;
+  api?: ApiPromise;
+  asset?: Asset;
   referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
@@ -36,6 +37,9 @@ export const OngoingReferendums = memo(
 
     if (!isLoading && referendums.length === 0) return null;
 
+    const showList = (!isLoading || mixLoadingWithData) && nonNullable(api) && nonNullable(asset);
+    const showPlaceholders = isLoading || mixLoadingWithData;
+
     return (
       <Accordion initialOpen>
         <Accordion.Trigger>
@@ -48,7 +52,9 @@ export const OngoingReferendums = memo(
         </Accordion.Trigger>
         <Accordion.Content>
           <ul className="mt-3 flex flex-col gap-y-2">
-            {(!isLoading || mixLoadingWithData) &&
+            {showPlaceholders && createPlaceholders(placeholdersCount)}
+
+            {showList &&
               referendums.map((referendum) => (
                 <li key={referendum.referendumId}>
                   <ReferendumItem
@@ -60,7 +66,6 @@ export const OngoingReferendums = memo(
                   />
                 </li>
               ))}
-            {(isLoading || mixLoadingWithData) && createPlaceholders(placeholdersCount)}
           </ul>
         </Accordion.Content>
       </Accordion>
