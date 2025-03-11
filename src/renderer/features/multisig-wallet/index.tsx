@@ -4,10 +4,11 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
 import { multisigUtils } from '@/entities/multisig';
 import { networkUtils } from '@/entities/network';
-import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { transactionSDK } from '@/sdk/transaction';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -114,7 +115,9 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
       ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
       : wallet.type;
 
-  return <WalletIcon type={type} size={size} />;
+  const address = wallet.accounts[0]?.accountId;
+
+  return <WalletAccountIcon address={address} type={type} size={size}></WalletAccountIcon>;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

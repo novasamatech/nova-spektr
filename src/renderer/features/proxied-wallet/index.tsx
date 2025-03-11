@@ -5,7 +5,7 @@ import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { Icon } from '@/shared/ui';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -102,7 +102,9 @@ transactionSDK(proxiedWalletFeature, {
 
 proxiedWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (walletUtils.isProxied(wallet)) {
-    return <Icon name="proxiedBackground" size={size} />;
+    const address = wallet.accounts[0]?.accountId;
+
+    return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
   }
   return null;
 });
