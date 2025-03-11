@@ -1,6 +1,6 @@
 import { createFeature } from '@/shared/feature';
-import { Identicon } from '@/shared/ui';
-import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { WalletAccountIcon } from '@/shared/ui-entities';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -39,14 +39,7 @@ watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const address = wallet.accounts[0]?.accountId;
 
-  return (
-    <div className="relative">
-      <Identicon address={address} size={size} background={false} />
-      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
-        <WalletIcon type={wallet.type} size={size / 2} />
-      </div>
-    </div>
-  );
+  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

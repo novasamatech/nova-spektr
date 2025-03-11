@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Icon, Identicon } from '@/shared/ui';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -33,14 +33,7 @@ extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const address = wallet.accounts[0]?.accountId;
 
-  return (
-    <div className="relative">
-      <Identicon address={address} size={size} background={false} />
-      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
-        <Icon name={walletIcon[wallet.type].icon} size={size / 2} />
-      </div>
-    </div>
-  );
+  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

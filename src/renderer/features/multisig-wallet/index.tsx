@@ -4,9 +4,9 @@ import { $features } from '@/shared/config/features';
 import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { Identicon } from '@/shared/ui';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { networkUtils } from '@/entities/network';
-import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -69,14 +69,7 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const address = wallet.accounts[0]?.accountId;
 
-  return (
-    <div className="relative">
-      <Identicon address={address} size={size} background={false} />
-      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
-        <WalletIcon type={type} size={size / 2} />
-      </div>
-    </div>
-  );
+  return <WalletAccountIcon address={address} type={type} size={size}></WalletAccountIcon>;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

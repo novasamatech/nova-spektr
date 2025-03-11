@@ -4,13 +4,12 @@ import { useMemo } from 'react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { isPolkadotChain } from '@/shared/lib/utils';
-import { Identicon } from '@/shared/ui';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
-import { WalletIcon } from './components/WalletIcon';
 import { walletConnectWalletFeature } from './model/feature';
 import { wcWallets } from './model/wallets';
 
@@ -36,19 +35,12 @@ accountSDK(walletConnectWalletFeature, {
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
-  const mainAccount = useMemo(
-    () => wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0],
-    [wallet],
-  );
+  const address = useMemo(() => {
+    const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
+    return mainAccount?.accountId;
+  }, [wallet]);
 
-  return (
-    <div className="relative">
-      <Identicon address={mainAccount.accountId} size={size} background={false} />
-      <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
-        <WalletIcon wallet={wallet} size={size / 2} />
-      </div>
-    </div>
-  );
+  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {
