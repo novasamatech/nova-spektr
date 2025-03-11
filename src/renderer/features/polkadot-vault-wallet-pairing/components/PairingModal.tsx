@@ -1,8 +1,12 @@
+import { u8aToHex } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type ComponentProps, type ComponentType, type PropsWithChildren, useEffect, useState } from 'react';
 
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Carousel, Modal } from '@/shared/ui-kit';
 import { type SeedInfo, VaultFeatures } from '@/entities/transaction';
+import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/pairing-form-model';
 
 import { ManageMultishard } from './ManageMultishard/ManageMultishard';
@@ -10,30 +14,32 @@ import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
 import { ManageVault } from './ManageVault/ManageVault';
 import { ScanStep } from './ScanStep/ScanStep';
 
+type Step = 'scan' | 'manage';
+type QrCodeType = 'singleshard' | 'multishard' | 'polkadot_vault';
+
 const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   return seedInfo.features?.some(feature => feature.VaultFeatures === VaultFeatures.DYNAMIC_DERIVATIONS) ?? false;
 };
 
-type Step = 'scan' | 'manage';
-type QrCodeType = 'singleshard' | 'multishard' | 'polkadot_vault';
+type PairingProps =
+  | ComponentProps<typeof ManageSingleshard>
+  | ComponentProps<typeof ManageMultishard>
+  | ComponentProps<typeof ManageVault>;
 
-export const PairingFormModal = ({ children }: PropsWithChildren) => {
+const PairingComponent: Record<QrCodeType, ComponentType<PairingProps>> = {
+  singleshard: ManageSingleshard,
+  multishard: ManageMultishard,
+  polkadot_vault: ManageVault,
+};
+
+export const PairingModal = ({ children }: PropsWithChildren) => {
   const open = useUnit(pairingFormModel.flow.status);
 
   const [activeStep, setActiveStep] = useState<Step>('scan');
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>([]);
   const [qrType, setQrType] = useState<QrCodeType | null>(null);
 
-  const toggleModal = (open: boolean) => {
-    if (open) {
-      setActiveStep('scan');
-      setQrPayload([]);
-      setQrType(null);
-      pairingFormModel.flow.open();
-    } else {
-      pairingFormModel.flow.close();
-    }
-  };
+  const Component = qrType ? PairingComponent[qrType] : null;
 
   useEffect(() => {
     if (qrPayload.length === 0) return;
@@ -59,9 +65,31 @@ export const PairingFormModal = ({ children }: PropsWithChildren) => {
     setQrType(isSingleshard ? 'singleshard' : 'multishard');
   }, [qrPayload]);
 
+  useEffect(() => {
+    const seedInfo = qrPayload.at(0);
+
+    if (nullable(seedInfo) || qrType !== 'singleshard') return;
+
+    pairingFormModel.requestIdentity({
+      chainId: IDENTITY_CHAIN,
+      accounts: [pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public))],
+    });
+  }, [qrType, qrPayload]);
+
   const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
     setActiveStep('manage');
+  };
+
+  const toggleModal = (open: boolean) => {
+    if (open) {
+      setActiveStep('scan');
+      setQrPayload([]);
+      setQrType(null);
+      pairingFormModel.flow.open();
+    } else {
+      pairingFormModel.flow.close();
+    }
   };
 
   return (
@@ -73,30 +101,14 @@ export const PairingFormModal = ({ children }: PropsWithChildren) => {
             <ScanStep onBack={() => toggleModal(false)} onComplete={onReceiveQr} />
           </Carousel.Item>
           <Carousel.Item id="manage" index={1}>
-            {qrType === 'singleshard' && (
-              <ManageSingleshard
+            {nonNullable(Component) ? (
+              <Component
                 seedInfo={qrPayload}
                 onBack={() => setActiveStep('scan')}
                 onClose={() => toggleModal(false)}
                 onComplete={() => toggleModal(false)}
               />
-            )}
-            {qrType === 'multishard' && (
-              <ManageMultishard
-                seedInfo={qrPayload}
-                onBack={() => setActiveStep('scan')}
-                onClose={() => toggleModal(false)}
-                onComplete={() => toggleModal(false)}
-              />
-            )}
-            {qrType === 'polkadot_vault' && (
-              <ManageVault
-                seedInfo={qrPayload}
-                onBack={() => setActiveStep('scan')}
-                onClose={() => toggleModal(false)}
-                onComplete={() => toggleModal(false)}
-              />
-            )}
+            ) : null}
           </Carousel.Item>
         </Carousel>
       </Modal.Content>
