@@ -67,9 +67,11 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
       ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
       : wallet.type;
 
+  const address = wallet.accounts[0]?.accountId;
+
   return (
     <div className="relative">
-      <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
+      <Identicon address={address} size={size} background={false} />
       <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
         <WalletIcon type={type} size={size / 2} />
       </div>

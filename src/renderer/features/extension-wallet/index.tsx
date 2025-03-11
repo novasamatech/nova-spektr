@@ -31,9 +31,11 @@ extensionWalletFeature.inject(accountService.accountActionPermissionAnyOf, ({ ac
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isExtensionWallet(wallet)) return null;
 
+  const address = wallet.accounts[0]?.accountId;
+
   return (
     <div className="relative">
-      <Identicon address={wallet.accounts[0].accountId} size={size} background={false} />
+      <Identicon address={address} size={size} background={false} />
       <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
         <Icon name={walletIcon[wallet.type].icon} size={size / 2} />
       </div>
