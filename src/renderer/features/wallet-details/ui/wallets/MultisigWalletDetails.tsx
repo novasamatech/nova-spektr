@@ -2,6 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { $features } from '@/shared/config/features';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -13,7 +14,6 @@ import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
-import { flexibleMultisigFeature } from '@/features/flexible-multisig-create';
 import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
@@ -43,9 +43,9 @@ type Props = {
   onClose: () => void;
 };
 export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
-  useGate(multisigWalletDetailsModel.flow, { wallet });
-
   const { t } = useI18n();
+
+  useGate(multisigWalletDetailsModel.flow, { wallet });
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
@@ -104,8 +104,10 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   // TODO: remove it when flexible multisig is supported
+  const features = useUnit($features);
+
   if (canCreatePureProxy) {
-    flexibleMultisigFeature.isRunning
+    features.flexibleMultisig
       ? options.push({
           icon: 'addCircle' as IconNames,
           title: t('walletDetails.common.convertToFlexibleAction'),
@@ -184,7 +186,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             )}
 
             {signatories.contacts.length > 0 && (
-              <div>
+              <div className="px-5">
                 <FootnoteText className="text-text-tertiary">
                   {t('walletDetails.multisig.contactsGroup')} {signatories.contacts.length}
                 </FootnoteText>
@@ -204,7 +206,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             {signatories.people.length > 0 && (
               <div className="flex flex-col gap-2">
                 <FootnoteText className="px-5 text-text-tertiary">
-                  {t('walletDetails.multisig.otherSignatories', { amount: signatories.people.length })}
+                  {t('walletDetails.multisig.otherSignatories', { count: signatories.people.length })}
                 </FootnoteText>
 
                 <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">

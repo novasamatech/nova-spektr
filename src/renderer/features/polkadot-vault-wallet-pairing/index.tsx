@@ -9,7 +9,7 @@ import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 
-import { PairingFormModal } from './components/PairingFormModal';
+import { PairingModal } from './components/PairingModal';
 
 export const polkadotVaultWalletPairingFeature = createFeature({
   name: 'polkadot vault/wallet pairing',
@@ -22,14 +22,14 @@ polkadotVaultWalletPairingFeature.inject(onboardingActionsSlot, {
     const { t } = useI18n();
 
     return (
-      <PairingFormModal>
+      <PairingModal>
         <WalletOnboardingCard
           title={t('onboarding.welcome.polkadotVaultTitle')}
           description={t('onboarding.welcome.polkadotVaultDescription')}
           iconName="vaultOnboarding"
           testId={TEST_IDS.ONBOARDING.VAULT_BUTTON}
         />
-      </PairingFormModal>
+      </PairingModal>
     );
   },
 });
@@ -38,12 +38,12 @@ polkadotVaultWalletPairingFeature.inject(walletPairingDropdownOptionsSlot, {
   order: 0,
   render({ t }) {
     return (
-      <PairingFormModal>
+      <PairingModal>
         <Dropdown.Item>
           <WalletIcon type={WalletType.POLKADOT_VAULT} />
           {t('wallets.addPolkadotVault')}
         </Dropdown.Item>
-      </PairingFormModal>
+      </PairingModal>
     );
   },
 });

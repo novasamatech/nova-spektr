@@ -1,18 +1,45 @@
 import { useUnit } from 'effector-react';
+import { type TFunction } from 'i18next';
+import noop from 'lodash/noop';
 import { type PropsWithChildren, memo, useEffect } from 'react';
 
+import { type StatusModalProps, useStatusContext } from '@/app/providers';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeaderTitleText, SmallTitleText, StatusModal } from '@/shared/ui';
+import { Button, HeaderTitleText, Icon, type IconNames, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Carousel, Modal } from '@/shared/ui-kit';
 import { EXPIRE_TIMEOUT, Step } from '../lib/constants';
-import { pairingForm } from '../model/pairingForm';
+import { type WalletTypeName } from '../lib/types';
+import { pairingFormModel } from '../model/form';
 
-import { ManageStep } from './ManageStep';
+import { PairingForm } from './PairingForm';
 import { WalletConnectQrCode } from './WalletConnectQrCode';
 import novawallet_onboarding_tutorial from './assets/novawallet_onboarding_tutorial.mp4';
 import novawallet_onboarding_tutorial_webm from './assets/novawallet_onboarding_tutorial.webm';
+
+const showCompleteStatus = (t: TFunction, showStatus: (props: StatusModalProps) => Promise<void>) => {
+  const WalletLogo: Record<WalletTypeName, IconNames> = {
+    [WalletType.WALLET_CONNECT]: 'walletConnectOnboarding',
+    [WalletType.NOVA_WALLET]: 'novaWalletOnboarding',
+  };
+
+  return (walletName: string, type: WalletTypeName) => {
+    showStatus({
+      title: walletName,
+      description: t('onboarding.walletConnect.pairedDescription'),
+      content: (
+        <div className="flex h-20 items-center justify-center gap-1">
+          <Icon name="logo" size={56} />
+          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
+          <Icon name="checkmarkOutline" className="text-text-positive" size={18} />
+          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
+          <Icon name={WalletLogo[type]} size={56} />
+        </div>
+      ),
+    });
+  };
+};
 
 type Props = PropsWithChildren<{
   variant: 'novawallet' | 'walletconnect';
@@ -21,40 +48,45 @@ type Props = PropsWithChildren<{
 export const PairingModal = memo(({ variant, children }: Props) => {
   const { t } = useI18n();
 
-  const session = useUnit(pairingForm.$session);
-  const uri = useUnit(pairingForm.$uri);
-  const step = useUnit(pairingForm.$step);
-  const open = useUnit(pairingForm.flow.state) === variant;
+  const { showStatus } = useStatusContext();
+
+  const session = useUnit(pairingFormModel.$session);
+  const uri = useUnit(pairingFormModel.$uri);
+  const step = useUnit(pairingFormModel.$step);
+  const state = useUnit(pairingFormModel.flow.state);
+
+  const open = state.type === variant;
 
   useEffect(() => {
     if (!open) return;
 
     const timeout = setTimeout(() => toggleModal(false), EXPIRE_TIMEOUT);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [open]);
-
-  const goToScan = () => {
-    pairingForm.reset();
-    pairingForm.flow.open(variant);
-  };
 
   const toggleModal = (open: boolean) => {
     if (open) {
-      pairingForm.flow.open(variant);
+      pairingFormModel.flow.open({ type: variant, onComplete: showCompleteStatus(t, showStatus) });
     } else {
-      pairingForm.flow.close(null);
+      pairingFormModel.flow.shut();
     }
   };
 
-  const closeStatusModal = () => {
-    pairingForm.reset();
-    pairingForm.flow.close(null);
+  const goToScan = () => {
+    pairingFormModel.reset();
+    pairingFormModel.flow.open({ type: variant, onComplete: noop });
   };
 
-  const header = variant === 'novawallet' ? t('onboarding.novaWallet.title') : t('onboarding.walletConnect.title');
-  const scanTitle =
-    variant === 'novawallet' ? t('onboarding.novaWallet.scanTitle') : t('onboarding.walletConnect.scanTitle');
+  const closeStatusModal = () => {
+    pairingFormModel.reset();
+    pairingFormModel.flow.shut();
+  };
+
+  const header = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.title`);
+  const scanTitle = t(`onboarding.${variant === 'novawallet' ? 'novaWallet' : 'walletConnect'}.scanTitle`);
 
   if (step === Step.REJECT) {
     return (
@@ -63,7 +95,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
           isOpen={open}
           content={<Animation variant="error" />}
           title={t('onboarding.walletConnect.rejected')}
-          onClose={() => closeStatusModal()}
+          onClose={closeStatusModal}
         />
         {children}
       </>
@@ -85,7 +117,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
                   <WalletConnectQrCode uri={uri} type={variant} />
                 </div>
 
-                <div className="flex items-end justify-between">
+                <div className="mt-auto">
                   <Button variant="text" onClick={() => toggleModal(false)}>
                     {t('onboarding.backButton')}
                   </Button>
@@ -102,10 +134,9 @@ export const PairingModal = memo(({ variant, children }: Props) => {
           </Carousel.Item>
           <Carousel.Item id={Step.MANAGE.toString()} index={1}>
             {session ? (
-              <ManageStep
+              <PairingForm
                 type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
                 onBack={goToScan}
-                onComplete={() => toggleModal(false)}
               />
             ) : null}
           </Carousel.Item>

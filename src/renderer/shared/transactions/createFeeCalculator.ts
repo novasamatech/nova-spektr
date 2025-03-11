@@ -69,5 +69,8 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     target: logErrorFx,
   });
 
-  return { $: $fee, $pending: fetchFeeFx.pending };
+  return {
+    $: $fee,
+    $pending: fetchFeeFx.pending,
+  };
 };

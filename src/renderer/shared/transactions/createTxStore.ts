@@ -6,7 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 import { transactionService } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 
 import { createFeeCalculator } from './createFeeCalculator';
 
@@ -34,12 +34,6 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
 
       const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
         walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-        accountFn: (a, w) => {
-          const isBase = accountUtils.isVaultBaseAccount(a);
-          const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-          return !isBase || !isPolkadotVault;
-        },
       });
 
       return transactionService.getTxWrappers({
@@ -65,7 +59,7 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
   const $isProxy = $txWrappers.map(transactionService.hasProxy);
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
-    $api: $api,
+    $api,
     $transaction: $wrappedTx.map((x) => x?.wrappedTx ?? null),
   });
 

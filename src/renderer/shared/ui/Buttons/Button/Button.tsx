@@ -31,7 +31,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       size = 'md',
       form,
       className,
-      disabled,
+      disabled = false,
       prefixElement,
       suffixElement,
       tabIndex,
@@ -57,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
         (prefixElement || suffixElement || isLoading) && 'justify-between',
         SizeClass[size],
         variant !== 'text' && Padding[size],
-        ViewClass[`${variant}_${pallet}`],
+        ViewClass[`${variant}_${pallet}`](disabled),
         className,
       )}
       tabIndex={tabIndex}
