@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { isPolkadotChain } from '@/shared/lib/utils';
 import { Identicon } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -34,15 +36,14 @@ accountSDK(walletConnectWalletFeature, {
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
-  // ToDo: use utils
-  const polkadotAccount =
-    wallet.accounts.find(
-      account => account.chainId === '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    ) || wallet.accounts[0];
+  const mainAccount = useMemo(
+    () => wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0],
+    [wallet],
+  );
 
   return (
     <div className="relative">
-      <Identicon address={polkadotAccount.accountId} size={size} background={false} />
+      <Identicon address={mainAccount.accountId} size={size} background={false} />
       <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
         <WalletIcon wallet={wallet} size={size / 2} />
       </div>

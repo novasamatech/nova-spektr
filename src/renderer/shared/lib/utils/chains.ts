@@ -61,3 +61,14 @@ export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
     [RelayChains.ROCOCO]: WellKnownChain.rococo_v2_2,
   }[chainId];
 }
+
+/**
+ * Checks whether chainId is equal to Polkadot
+ *
+ * @param chainId Genesis hash of the chain
+ *
+ * @returns Boolean
+ */
+export function isPolkadotChain(chainId: ChainId): boolean {
+  return chainId === RelayChains.POLKADOT;
+}
