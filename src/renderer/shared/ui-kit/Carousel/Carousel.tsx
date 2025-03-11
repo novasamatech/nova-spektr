@@ -109,8 +109,6 @@ const Item = memo(({ id, index, children }: ItemProps) => {
       </animated.section>
     ) : null,
   );
-
-  return null;
 });
 
 const AnimatedResizableBlock = ({ children }: PropsWithChildren) => {

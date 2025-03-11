@@ -23,7 +23,7 @@ export const ButtonLink = ({
   pallet = 'primary',
   size = 'md',
   className,
-  disabled,
+  disabled = false,
   children,
   prefixElement,
   suffixElement,
@@ -33,7 +33,7 @@ export const ButtonLink = ({
     'flex select-none items-center justify-center gap-x-2 font-medium outline-offset-1',
     SizeClass[size],
     variant !== 'text' && Padding[size],
-    ViewClass[`${variant}_${pallet}`],
+    ViewClass[`${variant}_${pallet}`](disabled),
     className,
   );
 
