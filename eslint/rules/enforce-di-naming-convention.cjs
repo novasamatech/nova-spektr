@@ -14,6 +14,7 @@ const IDENTIFIERS_SUFFIXES = {
   createAsyncPipeline: 'AsyncPipeline',
   createAnyOf: 'AnyOf',
   createCombine: 'Combine',
+  createTransformer: 'Transformer',
 };
 
 const DEFAULT_IMPORT_SOURCES = [/@\/shared\/di/];
