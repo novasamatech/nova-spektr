@@ -34,18 +34,16 @@ export const requestAccess = async () => {
 
 export const stopMediaStream = async (stream: MediaStream): Promise<void> => {
   try {
-    if (stream) {
-      const tracks = stream.getVideoTracks();
-      await Promise.allSettled(tracks.map(track => track.stop()))
-        .then(res => res.filter(isRejected))
-        .then(errors => {
-          for (const error of errors) {
-            console.error('Failed to stop video track:', error.reason);
-          }
-        });
-    }
+    const tracks = stream.getVideoTracks();
+    await Promise.allSettled(tracks.map(track => track.stop()))
+      .then(res => res.filter(isRejected))
+      .then(errors => {
+        for (const error of errors) {
+          console.error('Failed to stop video track:', error.reason);
+        }
+      });
   } catch (error) {
-    console.warn('Error while stopping scanner:', error);
+    console.error('Error while stopping scanner:', error);
   }
 };
 
