@@ -42,7 +42,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
   return (
     <WalletManagement
       wallet={wallet}
-      accountId={polkadotAccount.accountId}
+      address={polkadotAccount.accountId}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

@@ -48,7 +48,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               <WalletManagement
                 key={wallet.id}
                 wallet={wallet}
-                accountId={wallet.rootAccountId}
+                address={wallet.rootAccountId}
                 isMultishard={wallet.accounts.length > 1}
                 description={
                   <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />

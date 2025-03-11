@@ -1,6 +1,6 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { type Wallet } from '@/shared/core';
+import { type Address, type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, Identicon } from '@/shared/ui';
 
@@ -8,14 +8,14 @@ type Props = {
   wallet: Wallet;
   description?: string | ReactNode;
   meta?: ReactNode;
-  accountId: string | undefined;
+  address: Address | undefined;
   isMultishard?: boolean;
   onClick: () => void;
 };
 
 export const WalletManagement = ({
   wallet,
-  accountId,
+  address,
   isMultishard = false,
   description,
   meta,
@@ -36,7 +36,7 @@ export const WalletManagement = ({
           <div className="row-span-2 h-5 w-5 shrink-0" />
         )}
 
-        <Identicon address={accountId} size={16} background={false} theme={isMultishard ? 'jdenticon' : 'polkadot'} />
+        <Identicon address={address} size={16} background={false} theme={isMultishard ? 'jdenticon' : 'polkadot'} />
 
         <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">
