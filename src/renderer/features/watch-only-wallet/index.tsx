@@ -28,9 +28,6 @@ accountSDK(watchOnlyWalletFeature, {
   collectAccountChildren(children) {
     return children;
   },
-  wrapTransaction(transaction) {
-    return transaction;
-  },
 });
 
 watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
