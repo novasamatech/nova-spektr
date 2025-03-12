@@ -1,6 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { OperationStatus } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 
 const StatusTitle: Record<MultisigOperation['status'], string> = {
   pending: 'operation.status.signing',

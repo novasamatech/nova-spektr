@@ -1,7 +1,7 @@
 import { useStoreMap } from 'effector-react';
 
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 

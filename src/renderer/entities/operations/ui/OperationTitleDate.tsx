@@ -1,6 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 
 type Props = {
   operation: MultisigOperation;

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type ChainId, type Transaction } from '@/shared/core';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
 
 export const operationsUtils = {

@@ -5,11 +5,11 @@ import { type ChainId, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { TransferTypes, XcmTypes, getTransactionType } from '@/entities/transaction';
 // TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';
@@ -58,7 +58,7 @@ export const OperationsFilter = ({ txs }: Props) => {
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
-    multisigOperations.changeFilteredTxs(txs);
+    operations.changeFilteredTxs(txs);
   }, [txs, availableChains]);
 
   const getFilterableTxType = (tx: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
@@ -139,12 +139,12 @@ export const OperationsFilter = ({ txs }: Props) => {
     setSelectedOptions(newSelectedOptions);
 
     const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
-    multisigOperations.changeFilteredTxs(filteredTxs);
+    operations.changeFilteredTxs(filteredTxs);
   };
 
   const clearFilters = () => {
     setSelectedOptions(EmptySelected);
-    multisigOperations.changeFilteredTxs(txs);
+    operations.changeFilteredTxs(txs);
   };
 
   const filtersSelected =

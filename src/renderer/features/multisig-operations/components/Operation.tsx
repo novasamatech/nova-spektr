@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Accordion } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 
 import { OperationFullInfo } from './OperationFullInfo';

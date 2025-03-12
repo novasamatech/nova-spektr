@@ -4,7 +4,7 @@ import { type Explorer } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Icon, type IconNames } from '@/shared/ui';
-import { type MultisigEvent } from '@/domains/multisig';
+import { type MultisigEvent } from '@/domains/network';
 import { ExplorersPopover } from '@/entities/wallet';
 
 const IconProps: Record<MultisigEvent['status'], { className: string; name: IconNames }> = {

@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
 import { BaseModal, Button, InputHint } from '@/shared/ui';
 import { TextArea } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 
 type CallDataForm = {
   callData: string;

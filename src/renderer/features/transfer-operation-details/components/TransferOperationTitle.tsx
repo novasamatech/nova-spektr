@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';

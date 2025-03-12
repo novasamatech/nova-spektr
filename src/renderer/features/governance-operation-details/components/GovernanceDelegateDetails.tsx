@@ -7,7 +7,7 @@ import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { TracksDetails } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';

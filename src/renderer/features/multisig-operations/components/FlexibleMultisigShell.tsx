@@ -8,7 +8,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Header, Plate, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Accordion, Box, Modal, Progress } from '@/shared/ui-kit';
-import { type MultisigEvent, type MultisigOperation } from '@/domains/multisig';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain, useNetworkData } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';

@@ -28,11 +28,9 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { multisigUtils } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -163,7 +161,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   };
 
   const getMultisigTx = (signer: AccountId): Transaction => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account, signer);
+    const otherSignatories = multisigOperationService.getOtherSignatories(account, signer);
     const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
 
     return {

@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';

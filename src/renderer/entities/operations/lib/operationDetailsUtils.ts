@@ -16,8 +16,13 @@ import {
 import { dictionary, toAccountId, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigEvent, type MultisigOperation, type OperationData } from '@/domains/multisig';
-import { type AnyAccount, accountService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigEvent,
+  type MultisigOperation,
+  type MultisigOperationData,
+  accountService,
+} from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { getTransactionType } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -177,7 +182,7 @@ export const getDelegationVotes = (tx: MultisigOperation): string | undefined =>
 
   if (transactionType === TransactionType.BATCH_ALL) {
     coreTx = txData.args?.calls?.find(
-      (operationData: OperationData) =>
+      (operationData: MultisigOperationData) =>
         operationData.method &&
         operationData.section &&
         getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
@@ -204,7 +209,7 @@ export const getDelegationTarget = (tx: MultisigOperation): string | undefined =
 
   if (transactionType === TransactionType.BATCH_ALL) {
     coreTx = txData.args?.calls?.find(
-      (operationData: OperationData) =>
+      (operationData: MultisigOperationData) =>
         getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
     );
   } else if (transactionType === TransactionType.DELEGATE) {
@@ -223,11 +228,11 @@ export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined
 
   if (transactionType === TransactionType.BATCH_ALL) {
     const delegateTxs = coreTxDelegate.args?.calls?.filter(
-      (operationData: OperationData) =>
+      (operationData: MultisigOperationData) =>
         TransactionType.DELEGATE === getTransactionType(operationData.method, operationData.section),
     );
     const undelegateTxs = coreTxDelegate.args?.calls?.filter(
-      (operationData: OperationData) =>
+      (operationData: MultisigOperationData) =>
         TransactionType.UNDELEGATE === getTransactionType(operationData.method, operationData.section),
     );
 
@@ -238,7 +243,7 @@ export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined
 
   if (!coreTxs || coreTxs.length === 0) return;
 
-  return coreTxs.map((tx: OperationData) => tx.args?.track?.toString());
+  return coreTxs.map((tx: MultisigOperationData) => tx.args?.track?.toString());
 };
 
 export const getUndelegationData = async (
@@ -254,7 +259,7 @@ export const getUndelegationData = async (
 
   if (transactionType === TransactionType.BATCH_ALL) {
     coreTx = txData.args?.calls?.find(
-      (operationData: OperationData) =>
+      (operationData: MultisigOperationData) =>
         getTransactionType(operationData.method, operationData.section) === TransactionType.UNDELEGATE,
     );
   } else if (transactionType === TransactionType.UNDELEGATE) {
@@ -286,7 +291,7 @@ export const getVote = (tx: MultisigOperation): TransactionVote | undefined => {
   return coreTx?.args?.vote;
 };
 
-export const getOperationData = (tx: OperationData): OperationData | undefined => {
+export const getOperationData = (tx: MultisigOperationData): MultisigOperationData | undefined => {
   if (!tx.args || !tx.method || !tx.section) return undefined;
 
   const transactionType = getTransactionType(tx.method, tx.section);

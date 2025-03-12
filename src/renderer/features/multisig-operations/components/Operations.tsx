@@ -8,7 +8,7 @@ import { FootnoteText } from '@/shared/ui';
 import { priceProviderModel } from '@/entities/price';
 import { OperationsFilter } from '@/features/operations';
 import { operationsContextModel } from '../model/context';
-import { multisigOperations } from '../model/model';
+import { operations } from '../model/model';
 
 import EmptyOperations from './EmptyState/EmptyOperations';
 import { FlexibleMultisigShell } from './FlexibleMultisigShell';
@@ -18,9 +18,9 @@ export const Operations = () => {
   const { formatDate } = useI18n();
 
   const account = useUnit(operationsContextModel.$account);
-  const txs = useUnit(multisigOperations.$availableOperations);
+  const txs = useUnit(operations.$availableOperations);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
-  const filteredTxs = useUnit(multisigOperations.$filteredTxs);
+  const filteredTxs = useUnit(operations.$filteredTxs);
 
   const groupedTxs = groupBy(filteredTxs, tx => {
     const timestamp = tx.timestamp || Date.now();

@@ -7,7 +7,7 @@ import { type XcmConfig, xcmService } from '@/shared/api/xcm';
 import { type Asset } from '@/shared/core';
 import { toLocalChainId } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
-import { type OperationData } from '@/domains/multisig';
+import { type MultisigOperationData } from '@/domains/network';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -16,7 +16,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: OperationData | null;
+  transaction?: MultisigOperationData | null;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;

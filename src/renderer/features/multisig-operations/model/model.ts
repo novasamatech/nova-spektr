@@ -9,7 +9,12 @@ import { storageService } from '@/shared/api/storage';
 import { type HexString, type NoID } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation, type MultisigOperationDB, type OperationData, operations } from '@/domains/multisig';
+import {
+  type MultisigOperation,
+  type MultisigOperationDB,
+  type MultisigOperationData,
+  multisigOperations,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -66,7 +71,7 @@ const updateCallDataFx = createEffect(
 
     return {
       ...tx,
-      ...(decoded.method.toHuman() as OperationData),
+      ...(decoded.method.toHuman() as MultisigOperationData),
     };
   },
 );
@@ -86,17 +91,17 @@ const $filteredTxs = restore<MultisigOperation[]>(changeFilteredTxs, []).reset($
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: series(operations.requestOperations),
+  target: series(multisigOperations.requestOperations),
 });
 
 sample({
   clock: multisigOperationsFeatureStatus.running,
-  target: [operations.subscribeIndexer, operations.subscribeEvents, populateFx],
+  target: [multisigOperations.subscribeIndexer, multisigOperations.subscribeEvents, populateFx],
 });
 
 sample({
   clock: multisigOperationsFeatureStatus.stopped,
-  target: [operations.unsubscribeIndexer, operations.unsubscribeEvents],
+  target: [multisigOperations.unsubscribeIndexer, multisigOperations.unsubscribeEvents],
 });
 
 sample({
@@ -120,7 +125,7 @@ sample({
 });
 
 sample({
-  clock: operations.$operations,
+  clock: multisigOperations.$list,
   source: $list,
   fn(list, updatedList) {
     const toUpdate = [];
@@ -170,7 +175,7 @@ sample({
   target: removeTransactionsFx,
 });
 
-export const multisigOperations = {
+export const operations = {
   $list: readonly($list),
   $availableOperations,
   $pending: multisigOperationsFeatureStatus.isStarting,

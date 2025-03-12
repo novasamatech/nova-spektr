@@ -6,7 +6,7 @@ import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
 import { governanceModel } from '@/entities/governance';
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';

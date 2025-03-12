@@ -19,7 +19,7 @@ import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 // TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 
 export type Input = {
   id?: number;
@@ -161,7 +161,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: multisigOperations.$availableOperations,
+    transactions: operations.$availableOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

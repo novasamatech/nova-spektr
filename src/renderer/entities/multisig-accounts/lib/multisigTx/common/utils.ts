@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Address, type MultisigAccount, type Transaction } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { type MultisigEvent, type MultisigOperation, type OperationData } from '@/domains/multisig';
+import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from '@/domains/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
@@ -26,7 +26,7 @@ export const getPendingMultisigTxs = async (
 };
 
 export const buildMultisigTx = (
-  tx: OperationData,
+  tx: MultisigOperationData,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
   account: MultisigAccount,

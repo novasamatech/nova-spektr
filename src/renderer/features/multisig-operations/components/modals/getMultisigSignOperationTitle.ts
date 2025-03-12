@@ -2,7 +2,7 @@ import { type TFunction } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type MultisigOperation, type OperationData } from '@/domains/multisig';
+import { type MultisigOperation, type MultisigOperationData } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { findCoreBatchAll, getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
@@ -65,7 +65,11 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => 'fellowship.salary.promotionTitle',
 };
 
-export const getModalTransactionTitle = (crossChain: boolean, t: TFunction, transaction?: OperationData): string => {
+export const getModalTransactionTitle = (
+  crossChain: boolean,
+  t: TFunction,
+  transaction?: MultisigOperationData,
+): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
   const coreTx = operationDetailsUtils.getOperationData(transaction);

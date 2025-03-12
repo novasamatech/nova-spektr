@@ -5,9 +5,7 @@ import { type Chain, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
-import { type MultisigOperation } from '@/domains/multisig';
-import { type AnyAccount } from '@/domains/network';
-import { multisigUtils } from '@/entities/multisig';
+import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -85,7 +83,7 @@ sample({
   },
   filter: ({ account }) => nonNullable(account),
   fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, tx }) => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId);
+    const otherSignatories = multisigOperationService.getOtherSignatories(account!, signerAccountId);
 
     if (walletUtils.isFlexibleMultisig(wallet) && !wallet.activated && wrappedTx) {
       return transactionBuilder.buildRejectFlexibleMultisigTx({

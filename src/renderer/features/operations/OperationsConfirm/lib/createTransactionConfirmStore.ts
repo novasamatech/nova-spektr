@@ -2,8 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 
 import { type Account, type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
-import { type MultisigOperation } from '@/domains/multisig';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';

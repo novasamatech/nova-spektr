@@ -6,7 +6,7 @@ import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, accountUtils } from '@/entities/wallet';

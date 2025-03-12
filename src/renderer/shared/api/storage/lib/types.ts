@@ -15,7 +15,7 @@ import {
 } from '@/shared/core';
 // TODO don't know what to do here, looks like it's impossible to decouple storage service because of version migration code.
 // eslint-disable-next-line boundaries/element-types
-import { type MultisigOperationDB } from '@/domains/multisig';
+import { type MultisigOperationDB } from '@/domains/network';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 

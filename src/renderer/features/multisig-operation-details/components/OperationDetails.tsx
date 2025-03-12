@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';

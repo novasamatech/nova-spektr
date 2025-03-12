@@ -10,7 +10,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';

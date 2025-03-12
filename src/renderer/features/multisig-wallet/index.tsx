@@ -5,8 +5,7 @@ import { WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { WalletAccountIcon } from '@/shared/ui-entities';
-import { transactionService } from '@/domains/network';
-import { multisigUtils } from '@/entities/multisig';
+import { multisigOperationService, transactionService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -75,7 +74,7 @@ transactionSDK(multisigWalletFeature, {
   },
   wrap(transaction, { api, account }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigUtils.getOtherSignatories(account, account.accountId);
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
       const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
 

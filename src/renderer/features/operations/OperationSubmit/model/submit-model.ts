@@ -11,9 +11,8 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
-import { type OperationData } from '@/domains/multisig';
-import { type AnyAccount } from '@/domains/network';
-import { buildMultisigTx } from '@/entities/multisig';
+import { type AnyAccount, type MultisigOperationData } from '@/domains/network';
+import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import {
   type ExtrinsicResultParams,
@@ -107,7 +106,7 @@ const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, a
 
     const transaction = getTxFromCallData(api, multisigTx.args.callData);
     const tx = {
-      ...(transaction.method.toHuman() as OperationData),
+      ...(transaction.method.toHuman() as MultisigOperationData),
       callData: transaction.toHex(),
     };
 

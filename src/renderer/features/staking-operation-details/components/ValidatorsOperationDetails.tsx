@@ -8,7 +8,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';

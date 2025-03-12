@@ -39,7 +39,7 @@ import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 // TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
@@ -501,7 +501,7 @@ const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
     coreTxs: $pureTx.map((tx) => (tx ? [tx] : [])),
-    transactions: multisigOperations.$availableOperations,
+    transactions: operations.$availableOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

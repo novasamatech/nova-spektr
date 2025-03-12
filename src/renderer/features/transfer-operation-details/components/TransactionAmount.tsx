@@ -1,6 +1,6 @@
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { getTransactionAmount } from '@/entities/transaction';

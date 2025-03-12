@@ -9,7 +9,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
 // TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 
 export const operationsNavigationFeature = createFeature({
   name: 'operations/navigation',
@@ -19,11 +19,11 @@ export const operationsNavigationFeature = createFeature({
 operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const wallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
-  const operations = useUnit(multisigOperations.$availableOperations);
+  const availableOperations = useUnit(operations.$availableOperations);
 
   if (!wallet) return items;
 
-  const txs = operations.filter((tx) => tx.status === 'pending' && chains[tx.chainId]);
+  const txs = availableOperations.filter((tx) => tx.status === 'pending' && chains[tx.chainId]);
 
   return items.concat({
     order: 4,

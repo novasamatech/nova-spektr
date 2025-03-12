@@ -7,12 +7,12 @@ import { getCreatedDateFromApi, merge, nullable } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { generateEventId, generateOperationId, multisigService } from '@/entities/multisig';
+import { generateEventId, generateOperationId, multisigService } from '@/entities/multisig-accounts';
 
 import { fetchOperations } from './resource';
 import { multisigEvent } from './schema';
-import { operationsService } from './service';
-import { type MultisigEvent, type MultisigOperation, type OperationData } from './types';
+import { multisigOperationService } from './service';
+import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
 
 type RequestParams = {
   accountId: AccountId;
@@ -20,11 +20,11 @@ type RequestParams = {
   chain: Chain;
 };
 
-const $operations = createStore<Record<ChainId, MultisigOperation[]>>({});
+const $list = createStore<Record<ChainId, MultisigOperation[]>>({});
 
 const { request: requestOperations } = createDataSource({
-  source: $operations,
-  target: $operations,
+  source: $list,
+  target: $list,
   pool: (params: RequestParams) => params.api.genesisHash.toHex() || '0x00',
   async fn({ api, accountId }: RequestParams) {
     const operations: MultisigOperation[] = [];
@@ -60,7 +60,7 @@ const { request: requestOperations } = createDataSource({
       });
 
       const callData = transaction?.decoded.method.toHex() || null;
-      const operationData = (transaction?.decoded.method.toHuman() || {}) as OperationData;
+      const operationData = (transaction?.decoded.method.toHuman() || {}) as MultisigOperationData;
 
       operations.push({
         id: operationId,
@@ -85,7 +85,7 @@ const { request: requestOperations } = createDataSource({
     const chainId = api.genesisHash.toHex();
 
     const oldOperations = operations[chainId] ?? [];
-    const newOperations = operationsService.mergeMultisigOperations(oldOperations, result);
+    const newOperations = multisigOperationService.mergeMultisigOperations(oldOperations, result);
 
     return {
       ...operations,
@@ -99,7 +99,7 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
   RequestParams[],
   { event: MultisigEvent; operationId: string; chainId: ChainId }
 >({
-  initial: $operations,
+  initial: $list,
   fn: (params, callback) => {
     const unsubscribeFns: Promise<VoidFunction>[] = [];
 
@@ -160,9 +160,9 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
     const newOperation = {
       ...operation,
       status: event.status === 'reject' ? 'cancelled' : operation.status,
-      events: operationsService.mergeEvents(operation?.events, [event]),
+      events: multisigOperationService.mergeEvents(operation?.events, [event]),
     };
-    const newOperations = operationsService.mergeMultisigOperations(oldOperations, [newOperation]);
+    const newOperations = multisigOperationService.mergeMultisigOperations(oldOperations, [newOperation]);
 
     return {
       ...store,
@@ -220,8 +220,8 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
   },
 });
 
-export const operations = {
-  $operations,
+export const multisigOperations = {
+  $list,
 
   requestOperations,
   subscribeIndexer,

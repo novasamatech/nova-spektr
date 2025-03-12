@@ -13,13 +13,13 @@ export type MultisigEvent = {
   extrinsicHash?: HexString;
 };
 
-export type OperationData = {
+export type MultisigOperationData = {
   method?: string | null;
   section?: string | null;
   args?: Record<string, any> | null;
 };
 
-export type MultisigOperation = {
+export type MultisigOperation = MultisigOperationData & {
   id: string;
   status: 'pending' | 'cancelled' | 'executed' | 'error';
   chainId: ChainId;
@@ -32,6 +32,6 @@ export type MultisigOperation = {
   callData: HexString | null;
   events: MultisigEvent[];
   timestamp: number;
-} & OperationData;
+};
 
 export type MultisigOperationDB = Omit<MultisigOperation, 'deposit'> & { deposit?: string };

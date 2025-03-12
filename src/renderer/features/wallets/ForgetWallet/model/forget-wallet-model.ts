@@ -9,7 +9,7 @@ import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 // TODO: fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 import { proxiesModel } from '@/features/proxies';
 
 export type Callbacks = {
@@ -28,7 +28,7 @@ const callbacksApi = createApi($callbacks, {
 
 const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
   try {
-    await multisigOperations.removeAccountTransactions(account.accountId);
+    await operations.removeAccountTransactions(account.accountId);
   } catch (e) {
     console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
   }

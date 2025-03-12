@@ -10,7 +10,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 // TODO: Fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { multisigOperations } from '@/features/multisig-operations/model/model';
+import { operations } from '@/features/multisig-operations/model/model';
 
 const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();
@@ -143,7 +143,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: multisigOperations.$availableOperations,
+    transactions: operations.$availableOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

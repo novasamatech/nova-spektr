@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type MultisigOperation } from '@/domains/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 
 import { Status } from './Status';

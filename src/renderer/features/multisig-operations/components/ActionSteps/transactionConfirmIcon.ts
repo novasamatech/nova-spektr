@@ -1,6 +1,6 @@
 import { TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { type OperationData } from '@/domains/multisig';
+import { type MultisigOperationData } from '@/domains/network';
 import { getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
@@ -57,7 +57,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 // TODO remove
-export const getIconName = (transaction?: OperationData): IconNames => {
+export const getIconName = (transaction?: MultisigOperationData): IconNames => {
   const operationType = getTransactionType(transaction?.method, transaction?.section);
 
   if (!operationType) return 'unknownConfirm';
