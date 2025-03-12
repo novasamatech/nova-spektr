@@ -105,7 +105,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-polkadot-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-polkadot-stg.novasama-tech.org"
         }
       ]
     }
