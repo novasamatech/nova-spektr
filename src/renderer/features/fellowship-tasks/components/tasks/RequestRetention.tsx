@@ -6,7 +6,7 @@ import { toRomanNumeral } from '@/shared/lib/utils';
 import { Button, HeadlineText, TitleText } from '@/shared/ui';
 import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceInfo } from '../../model/evidence';
+import { tracks } from '../../model/tracks';
 
 export const requestRetentionActionSlot = createSlot();
 
@@ -18,7 +18,7 @@ type Props = {
 export const RequestRetention = ({ canSkip, onSkip }: Props) => {
   const { t } = useI18n();
 
-  const track = useUnit(evidenceInfo.$track);
+  const track = useUnit(tracks.$currentTrack);
 
   return (
     <Box fillContainer padding={5} gap={5}>

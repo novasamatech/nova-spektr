@@ -2,14 +2,20 @@ import { combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { member } from '@/domains/collectives';
-import { identity } from '@/domains/network';
+import { accountService, identity } from '@/domains/network';
 
 import { fellowshipTasksFeature } from './feature';
 
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
+
+const $hasPermission = $account.map(account => {
+  return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
+});
+
+const $hasAccount = $account.map(nonNullable);
 
 const $identities = combine(fellowshipTasksFeature.input, identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
@@ -46,9 +52,11 @@ sample({
   target: identity.request,
 });
 
-export const profile = {
+export const memberProfile = {
   $member,
   $account,
+  $hasPermission,
+  $hasAccount,
   $identity,
   $pending: or($pendingMember, fellowshipTasksFeature.isStarting),
 };

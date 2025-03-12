@@ -1,4 +1,5 @@
 import { combine } from 'effector';
+import { or } from 'patronum';
 
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import {
@@ -9,7 +10,6 @@ import {
   trackService,
   votingService,
 } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
@@ -21,20 +21,15 @@ import { type OperationType, type TaskDescription } from '../types';
 
 import { evidenceInfo } from './evidence';
 import { fellowshipTasksFeature } from './feature';
+import { memberProfile } from './memberProfile';
 import { memberSalary } from './memberSalary';
-import { profile } from './profile';
+import { periods } from './periods';
 import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
-const $hasPermission = profile.$account.map(account => {
-  return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
-});
-
-const $hasAccount = profile.$account.map(nonNullable);
-
-const $basketOperations = combine(basketOperations.$list, profile.$member, (operations, member) => {
+const $basketOperations = combine(basketOperations.$list, memberProfile.$member, (operations, member) => {
   return operations.filter(
     operation =>
       nonNullable(member) &&
@@ -82,7 +77,7 @@ const $basketOperationsIds = $basketOperations.map(operations => {
 
 const $salaryTasks = combine(
   {
-    member: profile.$member,
+    member: memberProfile.$member,
     period: memberSalary.$currentPeriod,
     claimStatus: memberSalary.$memberClaimStatus,
   },
@@ -129,10 +124,10 @@ const $salaryTasks = combine(
 
 const $evidenceTasks = combine(
   {
-    member: profile.$member,
+    member: memberProfile.$member,
     evidencePopulated: evidenceInfo.$evidencePopulated,
-    leftToPromotion: evidenceInfo.$leftToPromotion,
-    leftToDemotion: evidenceInfo.$leftToDemotion,
+    leftToPromotion: periods.$leftToPromotion,
+    leftToDemotion: periods.$leftToDemotion,
     hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
     hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
   },
@@ -193,7 +188,7 @@ const $list = combine(
     referendumTasks: $referendumTasks,
     evidenceTasks: $evidenceTasks,
     operations: $basketOperationsIds,
-    hasPermission: $hasPermission,
+    hasPermission: memberProfile.$hasPermission,
   },
   ({ salaryTasks, referendumTasks, evidenceTasks, operations, hasPermission }) => {
     if (hasPermission) {
@@ -207,17 +202,9 @@ const $list = combine(
   },
 );
 
-const $showReadyToSignScreen = combine(
-  $basketOperations,
-  $list,
-  (operations, list) => operations.length > 0 && list.length === 0,
-);
-
 export const tasks = {
-  $showReadyToSignScreen,
-  $hasPermission,
-  $hasAccount,
   $chainName,
   $basketOperations,
   $list,
+  pending: or(basketOperations.pending, memberProfile.$pending, evidenceInfo.pending),
 };
