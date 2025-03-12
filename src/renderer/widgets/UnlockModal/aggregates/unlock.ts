@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type ClaimChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
+import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
@@ -60,7 +60,7 @@ sample({
   clock: unlockFormStarted,
   source: unlockModel.$claimSchedule,
   filter: (claims) => nonNullable(claims),
-  fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAddress[],
+  fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAccountId[],
   target: unlockFormAggregate.events.formInitiated,
 });
 
@@ -184,9 +184,11 @@ sample({
     return (chunks || []).filter((chunk) => {
       if (chunk.type !== UnlockChunkType.CLAIMABLE) return true;
 
-      return !unlockData!.shards.some(
-        (shard) => (shard.address || unlockData!.proxiedAccount?.address) === chunk.address,
-      );
+      return !unlockData!.shards.some((shard) => {
+        const accountId = shard.accountId || unlockData!.proxiedAccount?.accountId;
+
+        return accountId === chunk.accountId;
+      });
     });
   },
   target: [unlockModel.$claimSchedule, locksModel.events.subscribeLocks],

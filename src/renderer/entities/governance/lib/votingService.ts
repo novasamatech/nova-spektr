@@ -16,7 +16,7 @@ import {
   type Voting,
   type VotingMap,
 } from '@/shared/core';
-import { toKeysRecord } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 enum ConvictionMultiplier {
   None = 0.1,
@@ -111,36 +111,36 @@ const isReferendumVoted = (referendumId: ReferendumId, voting: VotingMap) => {
 };
 
 const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap) => {
-  const res: Record<Address, AccountVote> = {};
+  const result: Record<AccountId, AccountVote> = {};
 
-  for (const [address, votingMap] of Object.entries(voting)) {
+  for (const [accountId, votingMap] of Object.entries(voting)) {
     for (const voting of Object.values(votingMap)) {
-      if (isCasting(voting)) {
-        const referendumVote = voting.votes[referendumId];
-        if (referendumVote) {
-          res[address] = referendumVote;
-        }
+      if (!isCasting(voting)) continue;
+
+      const referendumVote = voting.votes[referendumId];
+      if (referendumVote) {
+        result[accountId as AccountId] = referendumVote;
       }
     }
   }
 
-  return res;
+  return result;
 };
 
 const getReferendumVoting = (referendumId: ReferendumId, voting: VotingMap) => {
-  const res: Record<Address, Voting> = {};
+  const result: Record<AccountId, Voting> = {};
 
-  for (const [address, votingMap] of Object.entries(voting)) {
+  for (const [accountId, votingMap] of Object.entries(voting)) {
     for (const voting of Object.values(votingMap)) {
-      if (isCasting(voting)) {
-        if (referendumId in voting.votes) {
-          res[address] = voting;
-        }
+      if (!isCasting(voting)) continue;
+
+      if (referendumId in voting.votes) {
+        result[accountId as AccountId] = voting;
       }
     }
   }
 
-  return res;
+  return result;
 };
 
 const getReferendumVote = (referendumId: ReferendumId, address: Address, voting: VotingMap) => {
@@ -159,20 +159,6 @@ const getReferendumVote = (referendumId: ReferendumId, address: Address, voting:
   }
 
   return null;
-};
-
-const getReferendumAccountVotesForAddresses = (referendumId: ReferendumId, addresses: Address[], voting: VotingMap) => {
-  const allVotes = getReferendumAccountVotes(referendumId, voting);
-  const addressesMap = toKeysRecord(addresses);
-  const res: Record<Address, AccountVote> = {};
-
-  for (const [address, vote] of Object.entries(allVotes)) {
-    if (address in addressesMap) {
-      res[address] = vote;
-    }
-  }
-
-  return res;
 };
 
 const calculateVotingPower = (balance: BN, conviction: Conviction) => {
@@ -266,7 +252,6 @@ export const votingService = {
   getReferendumVote,
   getReferendumVoting,
   getReferendumAccountVotes,
-  getReferendumAccountVotesForAddresses,
 
   calculateVotingPower,
   calculateAccountVotePower,
