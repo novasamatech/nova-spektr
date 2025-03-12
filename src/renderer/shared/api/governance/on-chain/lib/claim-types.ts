@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type BlockHeight, type ReferendumId, type TrackId } from '@/shared/core';
+import { type BlockHeight, type ReferendumId, type TrackId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type ClaimableLock = {
   claimAt: ClaimTime;
@@ -73,15 +74,15 @@ export interface PendingChunk {
   claimableAt: ClaimTime;
 }
 
-export interface PendingChunkWithAddress extends PendingChunk {
-  address: Address;
+export interface PendingChunkWithAccountId extends PendingChunk {
+  accountId: AccountId;
   timeToBlock?: number;
 }
 
-export interface ClaimChunkWithAddress extends ClaimableChunk {
-  address: Address;
+export interface ClaimChunkWithAccountId extends ClaimableChunk {
+  accountId: AccountId;
 }
 
 export type Chunks = ClaimableChunk | PendingChunk;
 
-export type UnlockChunk = ClaimChunkWithAddress | PendingChunkWithAddress;
+export type UnlockChunk = ClaimChunkWithAccountId | PendingChunkWithAccountId;

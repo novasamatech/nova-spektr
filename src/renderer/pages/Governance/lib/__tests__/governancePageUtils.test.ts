@@ -1,6 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 
 import { type OngoingReferendum } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { type AggregatedReferendum } from '@/features/governance';
 import { governancePageUtils } from '../governancePageUtils';
 
@@ -47,7 +48,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
     return {
       voting: {
         of: isVoted ? 1 : 0,
-        votes: isVoted ? [{ voter: '', vote: someVote }] : [],
+        votes: isVoted ? [{ voter: TEST_ACCOUNTS[0], vote: someVote }] : [],
       },
       votedByDelegates: isVotedByDelegate ? [{}] : [],
       type: 'Ongoing',
@@ -58,7 +59,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
   const referendum = {
     voting: {
       of: 1,
-      votes: [{ voter: '', vote: someVote }],
+      votes: [{ voter: TEST_ACCOUNTS[0], vote: someVote }],
     },
     type: 'Ongoing',
     track: '1',
