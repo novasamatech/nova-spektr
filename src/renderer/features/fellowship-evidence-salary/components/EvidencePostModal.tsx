@@ -21,7 +21,7 @@ type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = PropsWithChildren<{
   isOpen: boolean;
-  onToggle: (open: boolean) => unknown;
+  onToggle: (open: boolean, done: boolean) => unknown;
   wish: 'Promotion' | 'Retention';
   evidence: HexString;
 }>;
@@ -36,8 +36,8 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
   const wallet = useUnit(evidencePost.$wallet);
   const fee = useUnit(evidencePost.$fee);
 
-  const handleToggle = (open: boolean) => {
-    onToggle(open);
+  const handleToggle = (open: boolean, done: boolean) => {
+    onToggle(open, done);
     setStep('confirm');
   };
 
@@ -52,7 +52,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
   };
 
   if (step === 'submit') {
-    return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false)} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false, true)} />;
   }
 
   if (step === 'basket') {
@@ -62,7 +62,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
         variant="success"
         autoCloseTimeout={2000}
         title={t('operation.addedToBasket')}
-        onClose={() => handleToggle(false)}
+        onClose={() => handleToggle(false, true)}
       />
     );
   }
@@ -74,7 +74,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
         variant="error"
         autoCloseTimeout={2000}
         title={t('fellowship.voting.errors.noAccount')}
-        onClose={() => handleToggle(false)}
+        onClose={() => handleToggle(false, true)}
       />
     );
   }
@@ -83,7 +83,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
     wish === 'Retention' ? t('fellowship.salary.requestRetention') : t('fellowship.salary.requestPromotion');
 
   return (
-    <Modal size="md" isOpen={isOpen} onToggle={handleToggle}>
+    <Modal size="md" isOpen={isOpen} onToggle={open => handleToggle(open, false)}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={title} chainId={input.chain.chainId} />

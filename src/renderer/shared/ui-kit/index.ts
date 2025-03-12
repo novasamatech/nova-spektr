@@ -28,5 +28,8 @@ export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
+export { QrReader, type QrScanResult } from './QrReader/QrReader';
 
+export { QR_READER_ERRORS } from './QrReader/errors';
+export { QrReaderErrorCode, type QrReaderCamera, type QrReaderError } from './QrReader/types';
 export { defaultEasing } from './_helpers/easing';
