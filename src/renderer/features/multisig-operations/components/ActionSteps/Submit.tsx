@@ -9,8 +9,8 @@ import { useToggle } from '@/shared/lib/hooks';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
-import { buildMultisigTx, generateEventId } from '@/entities/multisig-accounts';
+import { type MultisigEvent, type MultisigOperation, multisigOperationService } from '@/domains/network';
+import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { isProxyTypeTransaction, transactionService } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
 import { operationsContextModel } from '../../model/context';
@@ -85,7 +85,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
 
         const eventStatus = isReject ? 'reject' : 'approve';
         const event: MultisigEvent = {
-          id: generateEventId(updatedTx.id, account.accountId, eventStatus),
+          id: multisigOperationService.getEventId(updatedTx.id, account.accountId, eventStatus),
           status: eventStatus,
           accountId: account.accountId,
           extrinsicHash: params.extrinsicHash,

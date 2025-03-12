@@ -1,18 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type GraphQLClient } from 'graphql-request';
 
-import { type CallHash, type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
-import { nonNullable, validateCallData } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { getDataFromCallData, getTransactionType } from '@/entities/transaction';
-import {
-  DEFAULT_BLOCK_HASH,
-  MULTISIG_EXTRINSIC_CALL_INDEX,
-  type PendingMultisigTransaction,
-  getPendingMultisigTxs,
-} from '../lib';
+import { multisigOperationService } from '@/domains/network';
+import { getTransactionType } from '@/entities/transaction';
+import { type PendingMultisigTransaction, getPendingMultisigTxs } from '../lib';
 
 import { FILTER_MULTISIG_ACCOUNT_IDS } from './graphql/queries/multisigs';
 
@@ -20,7 +16,6 @@ export const multisigService = {
   filterMultisigsAccounts,
   findFlexibleMultisigs,
   getUniqMultisigs,
-  getTransactionFromChain,
 };
 
 export type MultisigResult = {
@@ -69,44 +64,15 @@ function getUniqMultisigs(results: MultisigResult[]): MultisigResult[] {
   return filtered;
 }
 
-// Callback for not indexed transaction
-type GetCallDataParams = {
-  api: ApiPromise;
-  callHash: CallHash;
-  blockHeight: number;
-  extrinsicIndex: number;
-};
-async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIndex }: GetCallDataParams) {
-  try {
-    const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
-    if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return null;
-
-    const { block } = await api.rpc.chain.getBlock(blockHash);
-    const extrinsic = block.extrinsics[extrinsicIndex];
-
-    if (!extrinsic.argsDef.call) return null;
-
-    const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
-
-    if (!validateCallData(callData, callHash)) return null;
-
-    return getDataFromCallData(api, callData);
-  } catch (e) {
-    console.warn('Error during update call data from chain', e);
-
-    return null;
-  }
-}
-
 async function isCreateProxyTransaction(api: ApiPromise, tx: PendingMultisigTransaction): Promise<boolean> {
-  const transaction = await getTransactionFromChain({
+  const transaction = await multisigOperationService.getTransactionFromChain({
     api,
     callHash: tx.callHash.toHex(),
     blockHeight: tx.params.when.height.toNumber(),
     extrinsicIndex: tx.params.when.index.toNumber(),
   });
 
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
+  const transactionType = getTransactionType(transaction?.method?.method, transaction?.method.section);
 
   return transactionType === TransactionType.CREATE_PURE_PROXY;
 }

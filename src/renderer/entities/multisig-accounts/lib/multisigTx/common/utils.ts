@@ -2,7 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Address, type MultisigAccount, type Transaction } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from '@/domains/network';
+import {
+  type MultisigEvent,
+  type MultisigOperation,
+  type MultisigOperationData,
+  multisigOperationService,
+} from '@/domains/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 
 import { type PendingMultisigTransaction } from './types';
@@ -31,13 +36,13 @@ export const buildMultisigTx = (
   params: ExtrinsicResultParams,
   account: MultisigAccount,
 ): MultisigOperation => {
-  const operationId = generateOperationId(
+  const operationId = multisigOperationService.getOperationId(
     multisigTx.args.callHash,
     account.accountId,
     params.timepoint.height,
     params.timepoint.index,
   );
-  const eventId = generateEventId(operationId, multisigTx.accountId, 'approve');
+  const eventId = multisigOperationService.getEventId(operationId, multisigTx.accountId, 'approve');
 
   const event: MultisigEvent = {
     id: eventId,
@@ -64,9 +69,3 @@ export const buildMultisigTx = (
     ...tx,
   };
 };
-
-export const generateOperationId = (callHash: string, address: string, block: number, index: number): string =>
-  `${callHash}-${address}-${block}-${index}`;
-
-export const generateEventId = (operationId: string, signer: string, status: 'approve' | 'reject'): string =>
-  `${operationId}-${signer}-${status}`;

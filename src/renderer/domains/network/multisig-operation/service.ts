@@ -1,7 +1,11 @@
-import { type Chain, ChainOptions, type MultisigAccount } from '@/shared/core';
-import { merge } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type ApiPromise } from '@polkadot/api';
 
+import { type CallHash, type Chain, ChainOptions, type MultisigAccount } from '@/shared/core';
+import { merge, nullable, validateCallData } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { transactionService } from '../transaction/service';
+
+import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX } from './constants';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
@@ -22,6 +26,43 @@ function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
       .sort((a, b) => a.localeCompare(b))
       .filter(account => account !== signer)
   );
+}
+
+function getOperationId(callHash: string, address: string, block: number, index: number) {
+  return `${callHash}-${address}-${block}-${index}`;
+}
+
+function getEventId(operationId: string, signer: string, status: 'approve' | 'reject') {
+  return `${operationId}-${signer}-${status}`;
+}
+
+// Callback for not indexed transaction
+type GetCallDataParams = {
+  api: ApiPromise;
+  callHash: CallHash;
+  blockHeight: number;
+  extrinsicIndex: number;
+};
+async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIndex }: GetCallDataParams) {
+  try {
+    const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
+    if (blockHash.toHex() === DEFAULT_BLOCK_HASH) return null;
+
+    const { block } = await api.rpc.chain.getBlock(blockHash);
+    const extrinsic = block.extrinsics[extrinsicIndex];
+    if (nullable(extrinsic)) return null;
+    if (!extrinsic.argsDef['call']) return null;
+
+    const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
+
+    if (!validateCallData(callData, callHash)) return null;
+
+    return transactionService.createSubmittableExtrinsic({ type: 'encoded', callData }, api);
+  } catch (e) {
+    console.warn('Error during update call data from chain', e);
+
+    return null;
+  }
 }
 
 function isMultisigSupported(chain: Chain) {
@@ -66,6 +107,10 @@ const mergeMultisigOperations = (
 export const multisigOperationService = {
   isSameMultisig,
   isSameEvent,
+
+  getOperationId,
+  getEventId,
+  getTransactionFromChain,
 
   mergeEvents,
   mergeMultisigOperations,
