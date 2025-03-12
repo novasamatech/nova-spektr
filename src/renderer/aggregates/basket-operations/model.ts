@@ -102,6 +102,7 @@ sample({
 export const basketOperations = {
   $list: readonly($list),
   $selected: readonly($selected),
+  pending: populateFx.pending,
 
   populate: populateFx,
   addTransactions: addTransactionsFx,

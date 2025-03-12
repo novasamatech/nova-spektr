@@ -6,7 +6,7 @@ import { toRomanNumeral } from '@/shared/lib/utils';
 import { Button, HeadlineText, Icon, TitleText } from '@/shared/ui';
 import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { evidenceInfo } from '../../model/evidence';
+import { tracks } from '../../model/tracks';
 
 export const requestPromotionActionSlot = createSlot();
 
@@ -18,14 +18,14 @@ type Props = {
 export const RequestPromotion = ({ canSkip, onSkip }: Props) => {
   const { t } = useI18n();
 
-  const track = useUnit(evidenceInfo.$track);
-  const nextTrack = useUnit(evidenceInfo.$nextTrack);
+  const currentTrack = useUnit(tracks.$currentTrack);
+  const nextTrack = useUnit(tracks.$nextTrack);
 
   return (
     <Box fillContainer padding={5} gap={5}>
       <TitleText>{t('fellowship.tasks.task.promotion.title')}</TitleText>
       <Box direction="row" gap={2.5}>
-        {track ? <CollectiveRank rank={track.id}>{track.name}</CollectiveRank> : null}
+        {currentTrack ? <CollectiveRank rank={currentTrack.id}>{currentTrack.name}</CollectiveRank> : null}
         <Icon name="right" size={16} className="text-text-primary" />
         {nextTrack ? <CollectiveRank rank={nextTrack.id}>{nextTrack.name}</CollectiveRank> : null}
       </Box>
