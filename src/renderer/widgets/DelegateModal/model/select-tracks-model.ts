@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Account, type Chain, TransactionType, type Wallet } from '@/shared/core';
+import { type Chain, TransactionType, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -13,6 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -27,10 +28,10 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<DelegateAccount>();
-const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
+const formSubmitted = createEvent<{ tracks: number[]; accounts: AnyAccount[] }>();
 const trackToggled = createEvent<number>();
 const tracksSelected = createEvent<number[]>();
-const accountsChanged = createEvent<Account[]>();
+const accountsChanged = createEvent<AnyAccount[]>();
 
 const $delegate = restore(formInitiated, null);
 
@@ -39,17 +40,11 @@ const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
-const $accounts = createStore<Account[]>([]);
+const $accounts = createStore<AnyAccount[]>([]);
 const $isMaxWeightReached = createStore(false);
 
 const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
-});
-
-const $addresses = combine({ accounts: $accounts, network: delegationAggregate.$network }, ({ accounts, network }) => {
-  if (!network?.chain) return [];
-
-  return accounts.map((a) => toAddress(a.accountId, { prefix: network.chain.addressPrefix }));
 });
 
 const $availableAccounts = combine(
@@ -138,18 +133,22 @@ sample({
 });
 
 sample({
-  clock: [votingAggregate.$activeWalletVotes, $addresses],
+  clock: [votingAggregate.$activeWalletVotes, $accounts],
   source: {
+    accounts: $accounts,
     votes: votingAggregate.$activeWalletVotes,
-    addresses: $addresses,
   },
-  fn: ({ addresses, votes }) => {
+  fn: ({ accounts, votes }) => {
     const activeTracks = new Set<string>();
     const delegatedTracks = new Set<string>();
-    const votesToRemove = [];
+    const accountsIds = new Set<AccountId>(accounts.map((a) => a.accountId));
 
-    for (const [address, voteList] of Object.entries(votes)) {
-      if (!addresses.includes(address)) continue;
+    const votesToRemove: VotesToRemove[] = [];
+
+    for (const [voterAccountId, voteList] of Object.entries(votes)) {
+      const accountId = voterAccountId as AccountId;
+
+      if (!accountsIds.has(accountId as AccountId)) continue;
 
       for (const [track, vote] of Object.entries(voteList)) {
         if (
@@ -165,7 +164,7 @@ sample({
 
         if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
           for (const referendum of Object.keys(vote.votes)) {
-            votesToRemove.push({ voter: address, track, referendum });
+            votesToRemove.push({ voter: accountId, track, referendum });
           }
         }
       }

@@ -10,7 +10,6 @@ import {
   formatAmount,
   removeItemsFromCollection,
   toAccountId,
-  toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -45,12 +44,6 @@ const $isMaxWeightReached = createStore(false).reset(formInitiated);
 
 const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
-});
-
-const $addresses = combine({ accounts: $accounts, network: delegationAggregate.$network }, ({ accounts, network }) => {
-  if (!network?.chain) return [];
-
-  return accounts.map((a) => toAddress(a.accountId, { prefix: network.chain.addressPrefix }));
 });
 
 const $accountsBalances = combine(
@@ -120,21 +113,26 @@ sample({
 });
 
 sample({
-  clock: [votingAggregate.$activeWalletVotes, $addresses],
+  clock: [votingAggregate.$activeWalletVotes, $accounts],
   source: {
     tracks: $tracks,
     votes: votingAggregate.$activeWalletVotes,
-    addresses: $addresses,
+    accounts: $accounts,
     delegate: $delegate,
   },
-  fn: ({ tracks, addresses, votes, delegate }) => {
+  fn: ({ tracks, accounts, votes, delegate }) => {
     const activeTracks = new Set<string>();
     const otherDelegatedTracks = new Set<string>();
     const currentDelegatedTracks = new Set<number>();
-    const votesToRemove = [];
+    const accountsIds = new Set<AccountId>(accounts.map((a) => a.accountId));
 
-    for (const [address, voteList] of Object.entries(votes)) {
-      if (!addresses.includes(address)) continue;
+    const votesToRemove: VotesToRemove[] = [];
+
+    for (const [voterAccountId, voteList] of Object.entries(votes)) {
+      const accountId = voterAccountId as AccountId;
+
+      if (!accountsIds.has(accountId as AccountId)) continue;
+
       for (const [track, vote] of Object.entries(voteList)) {
         const isDelegateExist = votingService.isDelegating(vote) && delegate;
         const isCurrentDelegate = isDelegateExist && toAccountId(delegate.accountId) === toAccountId(vote.target);
@@ -154,7 +152,7 @@ sample({
 
         if (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) {
           for (const referendum of Object.keys(vote.votes)) {
-            votesToRemove.push({ voter: address, track, referendum });
+            votesToRemove.push({ voter: accountId, track, referendum });
           }
         }
       }

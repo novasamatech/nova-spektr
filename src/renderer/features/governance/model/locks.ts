@@ -3,7 +3,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type TrackId } from '@/shared/core';
+import { type Chain, type ChainId, type TrackLocks } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
@@ -15,9 +15,7 @@ import { networkSelectorModel } from './networkSelector';
 const requestLocks = createEvent<{ api: ApiPromise; chain: Chain; accounts: AccountId[] }>();
 const subscribeLocks = createEvent();
 
-const $trackLocks = createStore<Record<ChainId, Record<Address, Record<TrackId, BN>>>>({}).reset(
-  walletModel.$activeWallet,
-);
+const $trackLocks = createStore<Record<ChainId, TrackLocks>>({}).reset(walletModel.$activeWallet);
 
 const $totalLock = combine(
   {
@@ -72,7 +70,7 @@ const {
   subscribe,
   received: receiveLocks,
   unsubscribe: unsubscribeLocks,
-} = createSubscriber<RequestParams, Record<Address, Record<TrackId, BN>>>(({ api, accounts }, cb) => {
+} = createSubscriber<RequestParams, TrackLocks>(({ api, accounts }, cb) => {
   return governanceSubscribeService.subscribeTrackLocks(api, accounts, (locks) => {
     if (locks) cb(locks);
   });
@@ -125,9 +123,10 @@ sample({
 sample({
   clock: [receiveLocks, requestLocksFx.done],
   source: $trackLocks,
-  fn: (trackLocks, { params, result }) => {
-    return { ...trackLocks, [params.chain.chainId]: result };
-  },
+  fn: (trackLocks, { params, result }) => ({
+    ...trackLocks,
+    [params.chain.chainId]: result,
+  }),
   target: $trackLocks,
 });
 

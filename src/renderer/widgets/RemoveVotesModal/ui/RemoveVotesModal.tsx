@@ -2,18 +2,11 @@ import { type ApiPromise } from '@polkadot/api';
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import {
-  type Account,
-  type AccountVote,
-  type Address,
-  type Asset,
-  type Chain,
-  type ReferendumId,
-  type TrackId,
-} from '@/shared/core';
+import { type Account, type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button } from '@/shared/ui';
 import { AccountSelectModal } from '@/shared/ui-entities';
 import { basketUtils } from '@/entities/basket';
@@ -33,7 +26,7 @@ type Props = {
    */
   single?: boolean;
   votes: {
-    voter: Address;
+    voter: AccountId;
     referendum: ReferendumId;
     track: TrackId;
     vote?: AccountVote;

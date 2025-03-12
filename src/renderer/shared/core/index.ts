@@ -98,6 +98,7 @@ export type { BasketTransaction } from './types/basket';
 export type {
   TrackId,
   TrackInfo,
+  TrackLocks,
   VotingThreshold,
   VotingCurve,
   ReciprocalCurve,

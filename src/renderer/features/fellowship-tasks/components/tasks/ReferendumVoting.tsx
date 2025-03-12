@@ -11,6 +11,7 @@ import { type OngoingReferendum, evidenceService, trackService } from '@/domains
 import { evidenceInfo } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
+import { tracks } from '../../model/tracks';
 
 export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
 export const taskVotingDetailsActionSlot = createSlot<{ referendumId: ReferendumId }>();
@@ -25,12 +26,12 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
-  const tracks = useUnit(referendums.$tracks);
+  const allTacks = useUnit(tracks.$tracks);
   const evidencePending = useUnit(referendums.$evidencePending);
   const evidences = useUnit(evidenceInfo.$evidences);
 
   const api = input?.api;
-  const track = tracks.find(t => t.id === referendum.track);
+  const track = allTacks.find(t => t.id === referendum.track);
 
   const proposer =
     nonNullable(api) && referendum.proposal.type === 'Inline'
