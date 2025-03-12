@@ -18,7 +18,7 @@ import {
   type LockTypes,
   type OrmlExtras,
 } from '@/shared/core';
-import { getAssetId, getRepeatedIndex, groupBy, isHex, nullable, toAddress } from '@/shared/lib/utils';
+import { getAssetId, getRepeatedIndex, groupBy, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type NoIdBalance = Omit<Balance, 'id'>;
@@ -165,7 +165,7 @@ function subscribeStatemineAssetsChange(
   const assetsTuples = assets.reduce<[string | Codec, Address][]>((acc, asset) => {
     const assetId = getAssetId(asset);
     // @ts-expect-error type argument in createType has incorrect types
-    const location = isHex(assetId) ? api.createType(type, assetId) : assetId;
+    const location = api.createType(type, assetId);
 
     for (const accountId of accountIds) {
       acc.push([location, toAddress(accountId, { prefix: chain.addressPrefix })]);

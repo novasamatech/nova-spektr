@@ -1,13 +1,15 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { isPolkadotChain } from '@/shared/lib/utils';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup } from './components/WalletGroup';
-import { WalletIcon } from './components/WalletIcon';
 import { walletConnectWalletFeature } from './model/feature';
 import { wcWallets } from './model/wallets';
 
@@ -25,15 +27,17 @@ accountSDK(walletConnectWalletFeature, {
   collectAccountChildren(children) {
     return children;
   },
-  wrapTransaction(transaction) {
-    return transaction;
-  },
 });
 
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
-  return <WalletIcon wallet={wallet} size={size} />;
+  const address = useMemo(() => {
+    const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
+    return mainAccount?.accountId;
+  }, [wallet]);
+
+  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {

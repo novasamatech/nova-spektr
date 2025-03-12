@@ -5,7 +5,8 @@ import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } fro
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BaseModal, Button, InfoLink, SmallTitleText } from '@/shared/ui';
+import { Button, InfoLink, SmallTitleText } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { type DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@/entities/transaction';
 import { derivationAddressUtils } from '../lib/utils';
 
@@ -46,36 +47,42 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
   };
 
   return (
-    <BaseModal
+    <Modal
       isOpen={isOpen}
-      contentClass={step === Step.GENERATE_QR ? 'px-5 py-4' : 'p-0'}
-      title={t('onboarding.paritySigner.generateAddressesModalTitle')}
-      onClose={onClose}
+      size="md"
+      onToggle={(open) => {
+        if (!open) {
+          onClose();
+        }
+      }}
     >
-      {step === Step.GENERATE_QR && (
-        <div className="flex flex-col items-center">
-          <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-          <QrDerivationsGenerator
-            size={240}
-            address={toAddress(rootAccountId, { prefix: 1 })}
-            derivations={derivationAddressUtils.createDerivationsRequest(keys)}
-          />
-          <InfoLink url={TROUBLESHOOTING_URL} className="mb-8.5 mt-10.5">
-            {t('signing.troubleshootingLink')}
-          </InfoLink>
-          <div className="mt-3 flex w-full justify-between pl-2">
-            <Button variant="text" onClick={onClose}>
-              {t('operation.goBackButton')}
-            </Button>
+      <Modal.Title>{t('onboarding.paritySigner.generateAddressesModalTitle')}</Modal.Title>
+      <Modal.Content>
+        {step === Step.GENERATE_QR && (
+          <div className="flex flex-col items-center px-5 py-4">
+            <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
+            <QrDerivationsGenerator
+              size={240}
+              address={toAddress(rootAccountId, { prefix: 1 })}
+              derivations={derivationAddressUtils.createDerivationsRequest(keys)}
+            />
+            <InfoLink url={TROUBLESHOOTING_URL} className="mb-8.5 mt-10.5">
+              {t('signing.troubleshootingLink')}
+            </InfoLink>
+            <div className="mt-3 flex w-full justify-between pl-2">
+              <Button variant="text" onClick={onClose}>
+                {t('operation.goBackButton')}
+              </Button>
 
-            <Button onClick={() => setStep(Step.READ_QR)}>{t('signing.continueButton')}</Button>
+              <Button onClick={() => setStep(Step.READ_QR)}>{t('signing.continueButton')}</Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {step === Step.READ_QR && (
-        <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={() => setStep(Step.GENERATE_QR)} />
-      )}
-    </BaseModal>
+        {step === Step.READ_QR && (
+          <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={() => setStep(Step.GENERATE_QR)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };

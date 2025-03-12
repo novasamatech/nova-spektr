@@ -1,4 +1,4 @@
-import { combine, createEvent, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 import { reshape } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
@@ -119,14 +119,10 @@ sample({
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
-    open: flow.status,
     transactions: $wrappedTx,
     api: $api,
     account: $account,
     chain: $chain,
-  },
-  filter({ open }) {
-    return open;
   },
   fn({ api, account, chain }) {
     return {
@@ -139,12 +135,28 @@ sample({
   target: evidence.request,
 });
 
+// Steps
+
+const setStep = createEvent<'closed' | 'form' | 'submit'>();
+const $step = restore(setStep, 'closed');
+
+sample({
+  clock: evidenceForm.evidenceUploaded,
+  fn: () => 'submit' as const,
+  target: $step,
+});
+
+sample({
+  clock: $step,
+  filter: step => step === 'closed',
+  target: evidenceForm.reset,
+});
+
 // Basket
 
 const saveToBasket = createEvent();
-const basketSaveRequestCreated = createEvent<BasketTransaction | null>();
 
-sample({
+const basketSaveRequestCreated = sample({
   clock: saveToBasket,
   source: {
     transactions: $wrappedTx,
@@ -165,7 +177,6 @@ sample({
 
     return tx;
   },
-  target: basketSaveRequestCreated,
 });
 
 sample({
@@ -177,10 +188,12 @@ sample({
 export const evidencePost = {
   flow,
   $fee,
+  $step,
   $wallet,
   $account,
   $wrappedTx,
   $txWrappers,
   sign,
   saveToBasket,
+  setStep,
 };

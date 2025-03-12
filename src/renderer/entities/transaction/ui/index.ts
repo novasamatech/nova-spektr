@@ -18,7 +18,7 @@ export { DeliveryFeeWithLabel } from './DeliveryFeeWithLabel/DeliveryFeeWithLabe
 export { cryptoTypeToMultisignerIndex } from './QrCode/QrGenerator/common/utils';
 export { QrDerivationsGenerator } from './QrCode/QrGenerator/QrDerivationsGenerator';
 export { QrTextGenerator } from './QrCode/QrGenerator/QrTextGenerator';
-export { QrReader } from './QrCode/QrReader/QrReader';
+export { VaultQrReader } from './QrCode/QrReader/VaultQrReader';
 export { QrReaderWrapper } from './QrCode/QrReader/QrReaderWrapper';
 export * from './QrCode/common/types';
 export * from './QrCode/common/constants';

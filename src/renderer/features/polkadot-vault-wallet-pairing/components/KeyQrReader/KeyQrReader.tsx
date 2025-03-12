@@ -6,8 +6,8 @@ import { CryptoTypeString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { Select } from '@/shared/ui-kit';
-import { type ErrorObject, QrError, QrReader, type SeedInfo, type VideoInput } from '@/entities/transaction';
+import { type QrReaderCamera, QrReaderErrorCode, Select } from '@/shared/ui-kit';
+import { type ErrorObject, type SeedInfo, VaultQrReader } from '@/entities/transaction';
 
 const enum CameraState {
   ACTIVE,
@@ -23,14 +23,14 @@ const RESULT_DELAY = 250;
 
 type Props = {
   size?: number | [number, number];
-  onComplete: (payload: SeedInfo[]) => void;
+  onComplete(payload: SeedInfo[]): void;
 };
 
 const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
-  const [activeCamera, setActiveCamera] = useState<string>();
+  const [activeCamera, setActiveCamera] = useState<string | null>(null);
   const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
 
   const [isScanComplete, setIsScanComplete] = useState(false);
@@ -45,10 +45,10 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
     CameraState.DENY_ERROR,
   ].includes(cameraState);
 
-  const onCameraList = (cameras: VideoInput[]) => {
+  const onCameraList = (cameras: QrReaderCamera[]) => {
     const formattedCameras = cameras.map(camera => ({
       title: camera.label,
-      value: camera.id,
+      value: camera.deviceId,
     }));
 
     setAvailableCameras(formattedCameras);
@@ -67,7 +67,7 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   };
 
   const resetCamera = () => {
-    setActiveCamera(undefined);
+    setActiveCamera(null);
     setProgress({ decoded: 0, total: 0 });
   };
 
@@ -97,9 +97,9 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   };
 
   const onError = (error: ErrorObject) => {
-    if (error.code === QrError.USER_DENY) {
+    if (error.code === QrReaderErrorCode.USER_DENY) {
       setCameraState(CameraState.DENY_ERROR);
-    } else if (error.code === QrError.DECODE_ERROR) {
+    } else if (error.code === QrReaderErrorCode.DECODE_ERROR) {
       setCameraState(CameraState.DECODE_ERROR);
     } else {
       setCameraState(CameraState.UNKNOWN_ERROR);
@@ -110,7 +110,7 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
 
   if (isCameraError) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2">
         <div className="flex h-full w-full flex-col items-center justify-center text-center">
           {cameraState === CameraState.INVALID_ERROR && (
             <>
@@ -184,12 +184,9 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
 
       <div className="flex flex-col gap-4">
         <div className={cnTw('relative overflow-hidden rounded-2lg', isCameraPending && 'hidden')} style={sizeStyle}>
-          <QrReader
-            bgVideo
+          <VaultQrReader
             size={size}
             cameraId={activeCamera}
-            className="relative top-[-24px] -scale-x-[1.125] scale-y-[1.125]"
-            onStart={() => setCameraState(CameraState.ACTIVE)}
             onCameraList={onCameraList}
             onProgress={setProgress}
             onResult={result => onScanResult(result as SeedInfo[])}
@@ -202,9 +199,7 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
                 <div className="rounded-2lg backdrop-blur-sm after:absolute after:inset-0 after:bg-white/50" />
                 <Icon size={100} name="checkmarkCutout" className="text-success" />
               </>
-            ) : (
-              <Icon name="qrFrame" size={240} className="z-20 text-white" />
-            )}
+            ) : null}
           </div>
         </div>
 
