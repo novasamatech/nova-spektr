@@ -36,7 +36,7 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   }
 
   public async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
-    return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId);
+    return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModal();
   }
 
   public async checkTransferFee(chain: ChainModel): Promise<VaultAssetsPage> {

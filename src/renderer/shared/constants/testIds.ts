@@ -24,6 +24,9 @@ export const TEST_IDS = {
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
     ESTIMATE_FEE: 'operations-estimate-fee',
+    AMOUNT_INPUT: 'operations-amount-input',
+    RECIPIENT_INPUT: 'operations-recipient-input',
+    QR_CODE_CONTAINER: 'operations-qr-code-container',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',

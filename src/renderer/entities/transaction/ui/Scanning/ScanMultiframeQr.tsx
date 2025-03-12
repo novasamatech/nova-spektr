@@ -3,6 +3,7 @@ import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Address, type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
@@ -136,6 +137,7 @@ export const ScanMultiframeQr = ({
       <QrGeneratorContainer
         countdown={countdown}
         chainId={signingPayloads[0].chain.chainId}
+        testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransactions}
       >
         {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}

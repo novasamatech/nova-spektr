@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address, type Chain, type Transaction } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -65,7 +66,12 @@ export const ScanSingleframeQr = ({
 
   return (
     <>
-      <QrGeneratorContainer countdown={countdown} chainId={chain.chainId} onQrReset={setupTransaction}>
+      <QrGeneratorContainer
+        countdown={countdown}
+        chainId={chain.chainId}
+        testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
+        onQrReset={setupTransaction}
+      >
         {txPayload && (
           <QrTxGenerator
             payload={txPayload}
