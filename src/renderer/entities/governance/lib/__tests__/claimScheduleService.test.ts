@@ -10,6 +10,7 @@ import {
   type TrackInfo,
   type Voting,
 } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { claimScheduleService } from '../claimScheduleService';
 
 describe('claimScheduleService', () => {
@@ -37,7 +38,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -76,14 +77,14 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_TWO, unlockAt: 1000 },
         votes: {},
       },
       1: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ONE, unlockAt: 1100 },
         votes: {},
@@ -118,7 +119,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ONE, unlockAt: 1100 },
         votes: {
@@ -160,7 +161,7 @@ describe('claimScheduleService', () => {
       0: {
         type: 'Casting',
         prior: { amount: BN_ZERO, unlockAt: 0 },
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         votes: {
           0: {
@@ -206,7 +207,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ONE, unlockAt: 1100 },
         votes: {
@@ -250,7 +251,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -264,7 +265,7 @@ describe('claimScheduleService', () => {
       1: {
         type: 'Casting',
         track: '0',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
           1: {
@@ -311,7 +312,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '1',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -324,7 +325,7 @@ describe('claimScheduleService', () => {
       },
       2: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '2',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -337,7 +338,7 @@ describe('claimScheduleService', () => {
       },
       3: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '3',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -382,7 +383,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -421,7 +422,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -434,14 +435,14 @@ describe('claimScheduleService', () => {
       },
       1: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_TEN, unlockAt: 1000 },
         votes: {},
       },
       2: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ONE, unlockAt: 1100 },
         votes: {},
@@ -480,7 +481,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       1: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_TEN, unlockAt: 1100 },
         votes: {},
@@ -510,7 +511,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_FIVE, unlockAt: 1050 },
         votes: {},
@@ -545,7 +546,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       0: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -606,7 +607,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, CastingVoting> = {
       20: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '20',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -619,7 +620,7 @@ describe('claimScheduleService', () => {
       },
       21: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '21',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         votes: {
@@ -665,7 +666,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
         type: 'Delegating',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
@@ -698,7 +699,7 @@ describe('claimScheduleService', () => {
       0: {
         type: 'Delegating',
         track: '0',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         prior: { amount: BN_TEN, unlockAt: 1100 },
         balance: BN_ONE,
         target: '123',
@@ -734,7 +735,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting> = {
       0: {
         type: 'Delegating',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
@@ -774,7 +775,7 @@ describe('claimScheduleService', () => {
     const votingByTrack: Record<TrackId, DelegatingVoting | CastingVoting> = {
       0: {
         type: 'Delegating',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
@@ -783,7 +784,7 @@ describe('claimScheduleService', () => {
       },
       1: {
         type: 'Casting',
-        address: '',
+        accountId: TEST_ACCOUNTS[0],
         track: '1',
         prior: { amount: BN_TEN, unlockAt: 1000 },
         votes: {

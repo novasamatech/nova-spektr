@@ -3,8 +3,9 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
-import { type Address, type Referendum, type TrackId, type TrackInfo, type VotingMap } from '@/shared/core';
+import { type Referendum, type TrackId, type TrackInfo, type TrackLocks, type VotingMap } from '@/shared/core';
 import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { unlockService } from '../../lib/unlockService';
@@ -19,7 +20,7 @@ type Props = {
   api: ApiPromise;
   referendums: Referendum[];
   tracks: Record<TrackId, TrackInfo>;
-  trackLocks: Record<Address, Record<TrackId, BN>>;
+  trackLocks: TrackLocks;
   voting: VotingMap;
 };
 
@@ -29,30 +30,32 @@ const getClaimScheduleFx = createEffect(
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
 
-    const claims = Object.entries(trackLocks).flatMap(([address, trackLock]) => {
+    const claims = Object.entries(trackLocks).flatMap((entry) => {
+      const [accountId, trackLock] = entry as [AccountId, Record<TrackId, BN>];
+
       const claimSchedule = claimScheduleService.estimateClaimSchedule({
         currentBlockNumber,
         referendums,
         tracks,
         trackLocks: trackLock,
-        votingByTrack: voting[address],
+        votingByTrack: voting[accountId],
         voteLockingPeriod,
         undecidingTimeout,
       });
 
-      return unlockService.filterClaims(claimSchedule, address);
+      return unlockService.filterClaims(claimSchedule, accountId);
     });
 
-    return Promise.all(
-      claims.map((claim) => {
-        if (claim.type !== UnlockChunkType.PENDING_LOCK) return claim;
+    const claimsDates = claims.map((claim) => {
+      if (claim.type !== UnlockChunkType.PENDING_LOCK) return claim;
 
-        return getCreatedDateFromApi((claim.claimableAt as ClaimTimeAt).block, api).then((timeToBlock) => ({
-          ...claim,
-          timeToBlock,
-        }));
-      }),
-    ).then((result) => result);
+      return getCreatedDateFromApi((claim.claimableAt as ClaimTimeAt).block, api).then((timeToBlock) => ({
+        ...claim,
+        timeToBlock,
+      }));
+    });
+
+    return Promise.all(claimsDates);
   },
 );
 
@@ -91,8 +94,8 @@ sample({
   fn: ({ network, tracks, trackLocks, voting, referendums }) => ({
     api: network!.api,
     tracks,
-    trackLocks: trackLocks[network!.chain.chainId],
     voting,
+    trackLocks: trackLocks[network!.chain.chainId],
     referendums: referendums[network!.chain.chainId],
   }),
   target: getClaimScheduleFx,

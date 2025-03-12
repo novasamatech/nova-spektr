@@ -72,7 +72,7 @@ sample({
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({
     api: network!.api,
-    addresses: accountUtils.getAddressesForWallet(wallet!, network!.chain),
+    accounts: accountUtils.getAccountsIdsForWallet(wallet!, network!.chain),
     chain: network!.chain,
   }),
   target: [

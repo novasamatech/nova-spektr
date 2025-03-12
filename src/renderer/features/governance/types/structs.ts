@@ -14,17 +14,22 @@ import {
   type Transaction,
   type VotingThreshold,
 } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 
 export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
+  end: BlockHeight | null;
+  status: ReferendumStatus | null;
   approvalThreshold: VotingThreshold | null;
   supportThreshold: VotingThreshold | null;
   votedByDelegates: DelegateInfo[];
   voting: {
     of: number;
-    votes: { voter: Address; vote: AccountVote }[];
+    votes: {
+      voter: AccountId;
+      vote: AccountVote;
+    }[];
   };
-  end: BlockHeight | null;
-  status: ReferendumStatus | null;
 };
 
 export type DecoupledVote = {
@@ -45,7 +50,7 @@ type ClaimData = {
   address?: Address;
 };
 
-export type AccountWithClaim = Account & ClaimData;
+export type AccountWithClaim = AnyAccount & ClaimData;
 
 export type UnlockFormData = {
   id?: number;

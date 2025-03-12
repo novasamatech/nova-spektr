@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type PendingChunkWithAddress, UnlockChunkType } from '@/shared/api/governance';
+import { type PendingChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
 import { getSecondsDurationToBlock } from '@/shared/lib/utils';
 import { Button, Duration, FootnoteText, Icon } from '@/shared/ui';
@@ -42,7 +42,7 @@ export const UnlockInfo = () => {
 
       {pendingSchedule.map((lock) => (
         <div
-          key={`${lock.amount.toString()}-${lock.type}-${lock.address}`}
+          key={`${lock.amount.toString()}-${lock.type}-${lock.accountId}`}
           className="mb-3 flex items-center justify-between self-stretch"
         >
           <AssetBalance value={lock.amount.toString()} asset={network.asset} />
@@ -75,7 +75,7 @@ const ActionsSection = () => {
   );
 };
 
-const UnlockCountdown = ({ lock }: { lock: PendingChunkWithAddress }) => {
+const UnlockCountdown = ({ lock }: { lock: PendingChunkWithAccountId }) => {
   const { t } = useI18n();
 
   const [countdown, setCountdown] = useState(getSecondsDurationToBlock(lock.timeToBlock || 0));
