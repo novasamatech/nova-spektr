@@ -3,12 +3,11 @@ import { type BN } from '@polkadot/util';
 
 import {
   type AccountVote,
-  type Address,
   type Referendum,
   type ReferendumId,
   type TrackId,
+  type TrackLocks,
   TransactionType,
-  type Voting,
   type VotingMap,
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
@@ -25,13 +24,9 @@ export const governanceSubscribeService = {
   subscribeVotingFor,
 };
 
-function subscribeTrackLocks(
-  api: ApiPromise,
-  accounts: AccountId[],
-  callback: (res?: Record<Address, Record<TrackId, BN>>) => void,
-): () => void {
+function subscribeTrackLocks(api: ApiPromise, accounts: AccountId[], callback: (res?: TrackLocks) => void): () => void {
   const unsubscribe = api.query.convictionVoting.classLocksFor.multi(accounts, (tuples) => {
-    const result: Record<Address, Record<TrackId, BN>> = {};
+    const result: TrackLocks = {};
 
     for (const [index, locks] of tuples.entries()) {
       const lockData = locks.reduce<Record<TrackId, BN>>((acc, lock) => {
@@ -59,24 +54,24 @@ function subscribeVotingFor(
   const tuples = accounts.flatMap((accounts) => tracksIds.map((trackId) => [accounts, trackId] as const));
 
   return convictionVotingPallet.storage.subscribeVotingFor(api, tuples, (votings) => {
-    const result = accounts.reduce<Record<AccountId, Record<TrackId, Voting>>>((acc, address) => {
-      acc[address] = {};
+    const result = accounts.reduce<VotingMap>((acc, accountId) => {
+      acc[accountId] = {};
 
       return acc;
     }, {});
 
     for (const [index, convictionVoting] of votings.entries()) {
-      const address = tuples[index]?.[0];
+      const accountId = tuples[index]?.[0];
       const trackId = tuples[index]?.[1];
-      if (!address || !trackId) {
+      if (!accountId || !trackId) {
         continue;
       }
 
       switch (convictionVoting.type) {
         case 'Delegating': {
-          result[address][trackId] = {
+          result[accountId][trackId] = {
             type: 'Delegating',
-            address,
+            accountId,
             track: trackId,
             balance: convictionVoting.data.balance,
             conviction: convictionVoting.data.conviction,
@@ -119,10 +114,10 @@ function subscribeVotingFor(
             }
           }
 
-          result[address][trackId] = {
+          result[accountId][trackId] = {
             type: 'Casting',
             track: trackId,
-            address,
+            accountId,
             votes,
             prior: convictionVoting.data.prior,
           };

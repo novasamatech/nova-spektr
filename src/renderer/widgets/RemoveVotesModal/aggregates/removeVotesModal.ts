@@ -3,16 +3,10 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import uniq from 'lodash/uniq';
 
-import {
-  type Account,
-  type AccountVote,
-  type Address,
-  type Asset,
-  type Chain,
-  type ReferendumId,
-  type TrackId,
-} from '@/shared/core';
+import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -25,7 +19,7 @@ import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/
 
 const flow = createGate<{
   votes: {
-    voter: Address | null;
+    voter: AccountId;
     referendum: ReferendumId;
     track: TrackId;
     vote?: AccountVote;
@@ -44,7 +38,7 @@ const flow = createGate<{
 
 // Account
 
-const selectAccount = createEvent<Account>();
+const selectAccount = createEvent<AnyAccount>();
 
 const $pickedAccount = restore(selectAccount, null).reset(flow.close);
 
@@ -53,10 +47,9 @@ const $availableAccounts = combine(walletModel.$activeWallet, flow.state, (walle
 
   const accounts = uniq(votes.map((vote) => vote.voter).filter(nonNullable));
 
-  return accounts.map(
-    (address) =>
-      walletUtils.getAccountBy([wallet], (a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address)!,
-  );
+  return accounts.map((accountId) => {
+    return walletUtils.getAccountBy([wallet], (a) => a.accountId === accountId)!;
+  });
 });
 
 const $accounts = combine($availableAccounts, $pickedAccount, (availableAccounts, pickedAccount) => {
@@ -66,16 +59,17 @@ const $accounts = combine($availableAccounts, $pickedAccount, (availableAccounts
 });
 
 const $initiatorWallet = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
-  if (accounts.length === 0) return null;
+  const account = accounts.at(0);
+  if (nullable(account)) return null;
 
-  return walletUtils.getWalletById(wallets, accounts[0].walletId) ?? null;
+  return walletUtils.getWalletById(wallets, account.walletId) ?? null;
 });
 
 // Signatory
 
-const selectSignatory = createEvent<Account>();
+const selectSignatory = createEvent<AnyAccount>();
 
-const $signatory = createStore<Account | null>(null);
+const $signatory = createStore<AnyAccount | null>(null);
 
 const $signatories = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
   const account = accounts.at(0);
@@ -123,7 +117,7 @@ const $coreTxs = combine(flow.state, $accounts, ({ chain, votes }, accounts) => 
     transactionBuilder.buildRemoveVotes({
       accountId: account!.accountId,
       chain,
-      votes: votes.filter((vote) => vote.voter === toAddress(account!.accountId, { prefix: chain.addressPrefix })),
+      votes: votes.filter((vote) => vote.voter === account.accountId),
     }),
   );
 });
@@ -234,7 +228,7 @@ sample({
       asset,
       account,
       signatory,
-      votes: votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain.addressPrefix })),
+      votes: votes.filter((vote) => vote.voter === account.accountId),
       wrappedTransactions: wrappedTxs[index],
     }));
   },

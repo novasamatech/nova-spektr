@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type ClaimChunkWithAddress } from '@/shared/api/governance';
+import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import {
   type Asset,
   type Chain,
@@ -13,7 +13,7 @@ import {
   type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
-import { ZERO_BALANCE, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -53,7 +53,7 @@ type FormSubmitEvent = {
   };
 };
 
-const formInitiated = createEvent<ClaimChunkWithAddress[]>();
+const formInitiated = createEvent<ClaimChunkWithAccountId[]>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const formCleared = createEvent();
 
@@ -364,21 +364,26 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: {
-    shards: $shards,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  filter: ({ shards, chain }) => shards.length > 0 && !!chain,
-  fn: ({ shards, chain }, claims) => {
-    return claims.reduce<AccountWithClaim[]>((acc, claim) => {
-      const shard = shards.find(
-        (shard) => claim.address === toAddress(shard.accountId, { prefix: chain!.addressPrefix }),
-      );
+  source: $shards,
+  filter: (shards) => shards.length > 0,
+  fn: (shards, claims) => {
+    const shardsMap = dictionary(shards, 'accountId');
+    const result: AccountWithClaim[] = [];
 
-      if (!shard) return acc;
+    for (const claim of claims) {
+      const shard = shardsMap[claim.accountId];
 
-      return [...acc, { ...shard, actions: claim.actions, amount: claim.amount.toString(), address: claim.address }];
-    }, []);
+      if (!shard) continue;
+
+      result.push({
+        ...shard,
+        actions: claim.actions,
+        amount: claim.amount.toString(),
+        address: claim.accountId,
+      });
+    }
+
+    return result;
   },
   target: $unlockForm.fields.shards.onChange,
 });

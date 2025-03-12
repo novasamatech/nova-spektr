@@ -29,7 +29,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
     if (votingService.isStandardVote(vote)) {
       res.push({
         decision: vote.vote.aye ? 'aye' : 'nay',
-        voter: voting.address,
+        voter: voting.accountId,
         balance: vote.balance,
         conviction: convictionMultiplier,
         votingPower: votingService.calculateAccountVotePower(vote),
@@ -39,14 +39,14 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
     if (votingService.isSplitVote(vote)) {
       res.push({
         decision: 'aye',
-        voter: voting.address,
+        voter: voting.accountId,
         balance: vote.aye,
         conviction: convictionMultiplier,
         votingPower: votingService.calculateVotingPower(vote.aye, conviction),
       });
       res.push({
         decision: 'nay',
-        voter: voting.address,
+        voter: voting.accountId,
         balance: vote.nay,
         conviction: convictionMultiplier,
         votingPower: votingService.calculateVotingPower(vote.nay, conviction),
@@ -57,7 +57,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
       if (!vote.aye.isZero()) {
         res.push({
           decision: 'aye',
-          voter: voting.address,
+          voter: voting.accountId,
           balance: vote.aye,
           conviction: convictionMultiplier,
           votingPower: votingService.calculateVotingPower(vote.aye, conviction),
@@ -66,7 +66,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
       if (!vote.nay.isZero()) {
         res.push({
           decision: 'nay',
-          voter: voting.address,
+          voter: voting.accountId,
           balance: vote.nay,
           conviction: convictionMultiplier,
           votingPower: votingService.calculateVotingPower(vote.nay, conviction),
@@ -75,7 +75,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
       if (!vote.abstain.isZero()) {
         res.push({
           decision: 'abstain',
-          voter: voting.address,
+          voter: voting.accountId,
           balance: vote.abstain,
           conviction: convictionMultiplier,
           votingPower: votingService.calculateVotingPower(vote.abstain, conviction),
