@@ -131,7 +131,7 @@ sample({
     const toUpdate = [];
     const toAdd = [];
 
-    for (const tx of Object.values(updatedList).flat()) {
+    for (const tx of updatedList) {
       const foundTx = list.find(t => t.id === tx.id);
       if (foundTx) {
         if (!isEqual(foundTx, tx)) {
