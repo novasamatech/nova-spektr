@@ -9,7 +9,15 @@ const getCoreTx = (tx: BasketTransaction): Transaction => {
     return tx.coreTx;
   }
 
-  return tx.coreTx.type === TransactionType.BATCH_ALL ? (findCoreBatchAll(tx.coreTx) as Transaction) : tx.coreTx;
+  if (tx.coreTx.type === TransactionType.BATCH_ALL) {
+    const innerTx = findCoreBatchAll(tx.coreTx);
+    // innerTx is Transaction, not OperationData
+    if ('type' in innerTx) {
+      return innerTx;
+    }
+  }
+
+  return tx.coreTx;
 };
 
 async function getTransactionData(

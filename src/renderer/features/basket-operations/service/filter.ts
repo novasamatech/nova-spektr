@@ -169,9 +169,9 @@ export const getFilterableTxType = (tx: BasketTransaction): TransactionType | ty
 };
 
 export const getAvailableFiltersOptions = (transactions: BasketTransaction[], chains: Chain[], t: TFunction) => {
-  const StatusOptions = getStatusOptions(t);
-  const TransactionOptions = getTransactionOptions(t);
-  const NetworkOptions = chains.map(({ chainId, name }) => ({
+  const statusOptions = getStatusOptions(t);
+  const transactionOptions = getTransactionOptions(t);
+  const networkOptions = chains.map(({ chainId, name }) => ({
     id: chainId,
     value: chainId,
     element: name,
@@ -182,9 +182,9 @@ export const getAvailableFiltersOptions = (transactions: BasketTransaction[], ch
       const txType = getFilterableTxType(tx);
       const xcmDestination = tx.coreTx?.args.destinationChain;
 
-      const originNetworkOption = NetworkOptions.find(s => s.value === tx.coreTx.chainId);
-      const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
-      const typeOption = TransactionOptions.find(s => s.value === txType);
+      const originNetworkOption = networkOptions.find(s => s.value === tx.coreTx.chainId);
+      const destNetworkOption = networkOptions.find(s => s.value === xcmDestination);
+      const typeOption = transactionOptions.find(s => s.value === txType);
 
       if (originNetworkOption) acc.network.add(originNetworkOption);
       if (destNetworkOption) acc.network.add(destNetworkOption);
@@ -200,6 +200,6 @@ export const getAvailableFiltersOptions = (transactions: BasketTransaction[], ch
 
   return {
     ...options,
-    status: new Set(StatusOptions),
+    status: new Set(statusOptions),
   };
 };
