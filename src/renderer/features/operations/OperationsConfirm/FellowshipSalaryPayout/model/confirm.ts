@@ -7,9 +7,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '@/domains/collectives';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { submitModel } from '@/features/operations/OperationSubmit';
 // TODO fix cycle
 import {
@@ -31,7 +29,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<CollectiveSalaryPayoutConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operations.$availableOperations,
+  $multisigTransactions: accountMultisigOperations.$accountOperations,
 });
 
 export const confirm = {

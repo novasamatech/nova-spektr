@@ -137,13 +137,12 @@ type ItemProps = PropsWithChildren<{
 const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
   const { keepOpen } = useContext(Context);
 
-  const callback = keepOpen
-    ? (e: Event) => {
-        e.preventDefault();
-        onSelect?.();
-      }
-    : onSelect;
-
+  const callback = (e: Event) => {
+    if (keepOpen) {
+      e.preventDefault();
+    }
+    onSelect?.();
+  };
   return (
     <DropdownMenu.Item
       asChild

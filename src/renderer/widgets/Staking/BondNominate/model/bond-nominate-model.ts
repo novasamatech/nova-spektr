@@ -18,10 +18,8 @@ import { operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { basketOperations } from '@/aggregates/basket-operations';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -106,7 +104,7 @@ const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
     coreTxs: $pureTxs,
-    transactions: operations.$availableOperations,
+    transactions: accountMultisigOperations.$accountOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

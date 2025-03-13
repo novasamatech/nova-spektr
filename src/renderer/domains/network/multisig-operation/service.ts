@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type CallHash, type Chain, ChainOptions, type MultisigAccount } from '@/shared/core';
-import { merge, nullable, validateCallData } from '@/shared/lib/utils';
+import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
 
@@ -93,16 +93,15 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-const mergeMultisigOperations = (
-  oldMultisigs: MultisigOperation[],
-  newMultisigs: MultisigOperation[],
-): MultisigOperation[] =>
-  merge({
-    a: oldMultisigs,
-    b: newMultisigs,
+const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[]): MultisigOperation[] => {
+  return merge({
+    a,
+    b,
+    filter: (a, b) => !isEqual(a, b),
     mergeBy: a => [a.callHash, a.blockCreated, a.indexCreated, a.chainId, a.accountId],
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
+};
 
 export const multisigOperationService = {
   isSameMultisig,

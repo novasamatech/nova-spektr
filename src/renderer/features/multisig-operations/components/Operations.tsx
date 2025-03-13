@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { priceProviderModel } from '@/entities/price';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { OperationsFilter } from '@/features/operations';
 import { operationsContextModel } from '../model/context';
 import { operations } from '../model/model';
@@ -18,7 +19,7 @@ export const Operations = () => {
   const { formatDate } = useI18n();
 
   const account = useUnit(operationsContextModel.$account);
-  const txs = useUnit(operations.$availableOperations);
+  const txs = useUnit(accountMultisigOperations.$accountOperations);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
   const filteredTxs = useUnit(operations.$filteredTxs);
 

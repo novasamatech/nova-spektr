@@ -6,9 +6,7 @@ import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 
 type Input = {
   id?: number;
@@ -116,7 +114,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: operations.$availableOperations,
+    transactions: accountMultisigOperations.$accountOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

@@ -7,7 +7,7 @@ projects:
   SubQuery Proxy:
     schema: https://subquery-proxy-polkadot-stg.novasama-tech.org
     include:
-      - src/renderer/domains/multisig/**
+      - src/renderer/domains/network/multisig-operation/**
       - src/renderer/entities/multisig/**
       - src/renderer/entities/proxy/**
 

@@ -7,10 +7,8 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
 
 const formInitiated = createEvent<UnlockFormData[]>();
 const formSubmitted = createEvent();
@@ -143,7 +141,7 @@ const $isMultisigExists = combine(
         .map((store) => store.coreTx)
         .filter(nonNullable),
     ),
-    transactions: operations.$availableOperations,
+    transactions: accountMultisigOperations.$accountOperations,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );

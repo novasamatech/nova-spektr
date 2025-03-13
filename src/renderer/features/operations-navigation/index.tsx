@@ -5,11 +5,9 @@ import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { BodyText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationTopLinksPipeline } from '@/features/app-shell';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
 
 export const operationsNavigationFeature = createFeature({
   name: 'operations/navigation',
@@ -19,7 +17,7 @@ export const operationsNavigationFeature = createFeature({
 operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const wallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
-  const availableOperations = useUnit(operations.$availableOperations);
+  const availableOperations = useUnit(accountMultisigOperations.$accountOperations);
 
   if (!wallet) return items;
 

@@ -4,10 +4,9 @@ import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const $trigger = createStore<string>('');
@@ -36,38 +35,39 @@ const $input = combine(
   {
     apis: $debouncedApis,
     chains: networkModel.$chains,
-    wallet: walletModel.$activeWallet,
+    accounts: walletSelect.$selectedAccounts,
   },
-  ({ apis, chains, wallet }) => {
-    if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
+  ({ apis, chains, accounts }) => {
+    const multisigAccounts = accounts.filter(accountUtils.isMultisigAccount);
+    const proxiedAccounts = accounts.filter(accountUtils.isProxiedAccount);
+    if (multisigAccounts.length === 0 && proxiedAccounts.length === 0) return null;
 
+    const multisigChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
     const input = [];
 
-    for (const account of wallet.accounts) {
-      if (accountUtils.isProxiedAccount(account)) {
-        const api = apis[account.chainId];
-        const chain = chains[account.chainId];
+    for (const account of proxiedAccounts) {
+      const api = apis[account.chainId];
+      const chain = chains[account.chainId];
+
+      if (api) {
+        input.push({
+          api,
+          chain,
+          accountId: account.accountId,
+        });
+      }
+    }
+
+    for (const account of multisigAccounts) {
+      for (const chain of multisigChains) {
+        const api = apis[chain.chainId];
 
         if (api) {
           input.push({
             api,
             chain,
-            accountId: account.accountId as AccountId,
+            accountId: account.accountId,
           });
-        }
-      } else {
-        const multisigChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-
-        for (const chain of multisigChains) {
-          const api = apis[chain.chainId];
-
-          if (api) {
-            input.push({
-              api,
-              chain,
-              accountId: account.accountId as AccountId,
-            });
-          }
         }
       }
     }
@@ -76,15 +76,13 @@ const $input = combine(
   },
 );
 
-export const multisigOperationsFeatureStatus = createFeature({
+export const multisigOperationsFeature = createFeature({
   name: 'multisig/operations',
   input: $input,
 });
 
-multisigOperationsFeatureStatus.start();
-
 sample({
   clock: walletSelect.$selectedWallet,
   filter: wallet => nonNullable(wallet) && walletUtils.isMultisig(wallet),
-  target: multisigOperationsFeatureStatus.restore,
+  target: multisigOperationsFeature.restore,
 });

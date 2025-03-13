@@ -34,6 +34,7 @@ import { governanceOperationDetailFeature } from '@/features/governance-operatio
 import { importDBFeature } from '@/features/import-db';
 import { ledgerWalletPairingFeature } from '@/features/ledger-wallet-pairing';
 import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
+import { multisigOperationsFeature } from '@/features/multisig-operations';
 import { multisigWalletFeature } from '@/features/multisig-wallet';
 import { multisigWalletPairingFeature } from '@/features/multisig-wallet-pairing';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
@@ -145,6 +146,7 @@ export const bootstrap = () => {
     governanceBasketFeature,
     governanceOperationDetailFeature,
 
+    multisigOperationsFeature,
     multisigOperationDetailsFeature,
 
     transferOperationDetailFeature,

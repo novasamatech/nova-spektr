@@ -5,8 +5,8 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type MultisigEvent = z.infer<typeof multisigEvent>;
 export const multisigEvent = pjsSchema.tupleMap(
-  ['account', pjsSchema.accountId],
+  ['accountId', pjsSchema.accountId],
   ['timepoint', multisigPallet.schema.multisigTimepoint],
-  ['multisig', pjsSchema.accountId],
+  ['multisigAccountId', pjsSchema.accountId],
   ['callHash', pjsSchema.hex],
 );

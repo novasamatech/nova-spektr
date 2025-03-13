@@ -7,11 +7,10 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperations } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { operations } from '../model/model';
 
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
@@ -50,7 +49,7 @@ export const OperationFullInfo = memo(({ tx, account }: Props) => {
   const setupCallData = async (callData: CallData) => {
     if (!api || !tx) return;
 
-    operations.updateCallData({ api, tx, callData });
+    multisigOperations.updateCallData({ tx, callData });
   };
 
   const isRejectAvailable = wallets.some(wallet => {

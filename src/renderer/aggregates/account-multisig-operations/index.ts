@@ -1,0 +1,1 @@
+export { accountMultisigOperations } from './model';

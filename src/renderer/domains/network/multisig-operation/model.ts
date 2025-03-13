@@ -1,17 +1,68 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createStore } from 'effector';
+import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { storageService } from '@/shared/api/storage';
+import { type Chain, type ChainId, type HexString, type NoID } from '@/shared/core';
 import { createDataSource, createDataSubscription } from '@/shared/effector';
-import { getCreatedDateFromApi, merge, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nullable } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkModel } from '@/entities/network';
+import { getDataFromCallData } from '@/entities/transaction';
 
+import { transformDepositToBN, transformDepositToString } from './helpers';
 import { fetchOperations } from './resource';
 import { multisigEvent } from './schema';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
+
+const $list = createStore<MultisigOperation[]>([]);
+
+const populateFx = createEffect(() =>
+  storageService.multisigOperations.readAll().then(txs => txs.map(transformDepositToBN)),
+);
+
+const addTransactionsFx = createEffect(
+  async (transactions: NoID<MultisigOperation>[]): Promise<MultisigOperation[]> => {
+    return storageService.multisigOperations
+      .createAll(transactions.map(transformDepositToString))
+      .then(result => result?.map(transformDepositToBN) ?? []);
+  },
+);
+
+const updateTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<number[]> => {
+  return storageService.multisigOperations
+    .updateAll(transactions.map(transformDepositToString))
+    .then(result => result ?? []);
+});
+
+const removeTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<string[] | undefined> => {
+  return storageService.multisigOperations.deleteAll(transactions.map(t => t.id)).then(result => result ?? []);
+});
+
+type UpdateCallDataParams = {
+  tx: MultisigOperation;
+  callData: HexString;
+};
+
+const updateCallDataFx = attach({
+  source: networkModel.$apis,
+  effect(apis, { tx, callData }: UpdateCallDataParams) {
+    const update = scopeBind(updateTransactionsFx, { safe: true });
+    const api = apis[tx.chainId];
+    if (!api) {
+      throw new Error(`Api from tx not found: ${tx.chainId}`);
+    }
+    const { decoded } = getDataFromCallData(api, callData);
+    const transaction = {
+      ...tx,
+      ...(decoded.method.toHuman() as MultisigOperationData),
+    };
+
+    return update([transaction]);
+  },
+});
 
 type RequestParams = {
   accountId: AccountId;
@@ -19,11 +70,8 @@ type RequestParams = {
   chain: Chain;
 };
 
-const $list = createStore<MultisigOperation[]>([]);
-
 const { request: requestOperations } = createDataSource({
-  source: $list,
-  target: $list,
+  initial: $list,
   pool: (params: RequestParams) => params.api.genesisHash.toHex() || '0x00',
   async fn({ api, accountId }: RequestParams) {
     const operations: MultisigOperation[] = [];
@@ -110,11 +158,11 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
         event => {
           const data = multisigEvent.parse(event.data);
 
-          if (data.multisig !== accountId) return;
+          if (data.multisigAccountId !== accountId) return;
 
           const operationId = multisigOperationService.getOperationId(
             data.callHash,
-            data.account,
+            data.accountId,
             data.timepoint.height,
             data.timepoint.index,
           );
@@ -126,7 +174,7 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
               operationId,
               event: {
                 id: multisigOperationService.getEventId(operationId, accountId, 'approve'),
-                accountId: data.account,
+                accountId: data.accountId,
                 status: event.method === 'MultisigCancelled' ? 'reject' : 'approve',
                 indexCreated: data.timepoint.index,
                 blockCreated: data.timepoint.height,
@@ -163,11 +211,11 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
 });
 
 const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createDataSubscription<
-  Record<ChainId, MultisigOperation[]>,
+  MultisigOperation[],
   RequestParams[],
-  { operations: MultisigOperation[]; chainId: ChainId }
+  MultisigOperation[]
 >({
-  initial: {},
+  initial: $list,
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];
 
@@ -179,7 +227,7 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
 
       const fn = () => {
         fetchOperations(url, accountId, chain.chainId).then(value => {
-          callback({ done: true, value: { chainId: chain.chainId, operations: value } });
+          callback({ done: true, value });
         });
       };
 
@@ -196,27 +244,41 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
     });
   },
   map(store, { result }) {
-    const prev = store[result.chainId] ?? [];
-    const newList = merge({
-      a: prev,
-      b: result.operations,
-      mergeBy: a => [a.accountId, a.blockCreated, a.indexCreated, a.callHash],
-      sort: (a, b) => b.blockCreated - a.blockCreated,
-    });
-
-    return {
-      ...store,
-      [result.chainId]: newList,
-    };
+    return multisigOperationService.mergeMultisigOperations(store, result);
   },
+});
+
+sample({
+  clock: populateFx.doneData,
+  target: $list,
+});
+
+sample({
+  clock: addTransactionsFx.doneData,
+  target: populateFx,
+});
+
+sample({
+  clock: updateTransactionsFx.doneData,
+  target: populateFx,
+});
+
+sample({
+  clock: removeTransactionsFx.doneData,
+  target: populateFx,
 });
 
 export const multisigOperations = {
   $list,
 
+  populate: populateFx,
+  addTransactions: addTransactionsFx,
+  updateTransactions: updateTransactionsFx,
+  removeTransactions: removeTransactionsFx,
+  updateCallData: updateCallDataFx,
   requestOperations,
-  subscribeIndexer,
-  unsubscribeIndexer,
+  subscribe: subscribeIndexer,
+  unsubscribe: unsubscribeIndexer,
   subscribeEvents,
   unsubscribeEvents,
 };

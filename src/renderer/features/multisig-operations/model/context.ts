@@ -2,14 +2,13 @@ import { combine } from 'effector';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
-
-import { operations } from './model';
 
 const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isMultisigAccount) ?? null);
 
 const $incompleteFlexibleMultisigTx = combine(
-  { account: $account, wallet: walletSelect.$selectedWallet, txs: operations.$availableOperations },
+  { account: $account, wallet: walletSelect.$selectedWallet, txs: accountMultisigOperations.$accountOperations },
   ({ account, wallet, txs }) => {
     const signingTransactions = txs.filter(tx => tx.status === 'pending');
 

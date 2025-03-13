@@ -4,9 +4,7 @@ import { createEvent } from 'effector';
 import { type AccountVote, type Asset, type ReferendumId, type TrackId } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
+import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import {
   type ConfirmInfo,
@@ -28,7 +26,7 @@ const sign = createEvent();
 const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operations.$availableOperations,
+  $multisigTransactions: accountMultisigOperations.$accountOperations,
 });
 
 export const confirmModel = {

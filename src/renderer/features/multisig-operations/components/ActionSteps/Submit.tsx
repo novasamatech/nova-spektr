@@ -9,13 +9,17 @@ import { useToggle } from '@/shared/lib/hooks';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { type MultisigEvent, type MultisigOperation, multisigOperationService } from '@/domains/network';
+import {
+  type MultisigEvent,
+  type MultisigOperation,
+  multisigOperationService,
+  multisigOperations,
+} from '@/domains/network';
 import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { isProxyTypeTransaction, transactionService } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
 import { operationsContextModel } from '../../model/context';
 import { flexibleShellModel } from '../../model/flexible-shell-model';
-import { operations } from '../../model/model';
 import { rejectModel } from '../../model/reject-model';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
@@ -77,7 +81,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
           if (tx.type === TransactionType.BATCH_ALL && wrappedTx && wrappedTx.multisigTx && multisigAccount) {
             const multisigData = buildMultisigTx(wrappedTx.coreTx, wrappedTx.multisigTx, params, multisigAccount);
 
-            await operations.addTransactions([multisigData]);
+            await multisigOperations.addTransactions([multisigData]);
           }
 
           updatedTx.status = 'cancelled';
@@ -96,7 +100,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
 
         updatedTx.events.push(event);
 
-        await operations.updateTransactions([updatedTx]);
+        await multisigOperations.updateTransactions([updatedTx]);
       }
 
       toggleSuccessMessage();
