@@ -21,7 +21,7 @@ export const operationsModel = {
     changeFilteredTxs,
   },
 
-  gate: {
+  gates: {
     flow,
   },
 };

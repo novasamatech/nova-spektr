@@ -58,7 +58,10 @@ const $activeTracks = combine(
 );
 
 const $activeDelegations = combine(
-  { delegations: delegationAggregate.$activeDelegations, delegate: $delegate },
+  {
+    delegations: delegationAggregate.$activeDelegations,
+    delegate: $delegate,
+  },
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 

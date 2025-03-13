@@ -41,7 +41,9 @@ const $activeDelegations = combine(
   ({ activeVotes, chain }) => {
     const activeBalances: DelegationBalanceMap = {};
 
-    for (const [address, delegations] of Object.entries(activeVotes)) {
+    for (const [voterAccountId, delegations] of Object.entries(activeVotes)) {
+      const voterAddress = toAddress(voterAccountId, { prefix: chain?.addressPrefix });
+
       for (const delegation of Object.values(delegations)) {
         if (!votingService.isDelegating(delegation)) continue;
 
@@ -51,7 +53,7 @@ const $activeDelegations = combine(
           activeBalances[target] = {};
         }
 
-        activeBalances[target][address] = {
+        activeBalances[target][voterAddress] = {
           conviction: delegation.conviction,
           balance: delegation.balance,
         };
@@ -70,7 +72,9 @@ const $activeTracks = combine(
   ({ activeVotes, chain }) => {
     const activeTracks: DelegationTracksMap = {};
 
-    for (const [address, delegations] of Object.entries(activeVotes)) {
+    for (const [voterAccountId, delegations] of Object.entries(activeVotes)) {
+      const voterAddress = toAddress(voterAccountId, { prefix: chain?.addressPrefix });
+
       for (const [track, delegation] of Object.entries(delegations)) {
         if (!votingService.isDelegating(delegation)) continue;
 
@@ -80,11 +84,11 @@ const $activeTracks = combine(
           activeTracks[target] = {};
         }
 
-        if (!activeTracks[target][address]) {
-          activeTracks[target][address] = [];
+        if (!activeTracks[target][voterAddress]) {
+          activeTracks[target][voterAddress] = [];
         }
 
-        activeTracks[target][address].push(track);
+        activeTracks[target][voterAddress].push(track);
       }
     }
 
