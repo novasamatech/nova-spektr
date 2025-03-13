@@ -2,10 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { type Form, type FormConfig, createForm } from 'effector-forms';
-import { isNil } from 'lodash';
 
 import { type Address, type Asset, type Balance, type Chain, type Transaction, type Wallet } from '@/shared/core';
-import { nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
@@ -68,7 +67,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           {
             name: 'emptyAccount',
             errorText: 'governance.vote.errors.noAccountError',
-            validator: (account) => !isNil(account),
+            validator: nonNullable,
           },
         ],
       },
@@ -79,7 +78,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
             name: 'emptySignatory',
             errorText: 'governance.vote.errors.noSignatoryError',
             source: $signatories,
-            validator: (signatory, _, signatories) => signatories.length === 0 || !isNil(signatory),
+            validator: (signatory, _, signatories) => signatories.length === 0 || nonNullable(signatory),
           },
         ],
       },
