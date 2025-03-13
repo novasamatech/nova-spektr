@@ -12,8 +12,7 @@ import { networkModel } from '@/entities/network';
 import { getDataFromCallData } from '@/entities/transaction';
 
 import { transformDepositToBN, transformDepositToString } from './helpers';
-import { fetchOperations } from './resource';
-import { multisigEvent } from './schema';
+import { fetchOperations, multisigEvent } from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
 
@@ -23,21 +22,19 @@ const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(transformDepositToBN)),
 );
 
-const addTransactionsFx = createEffect(
-  async (transactions: NoID<MultisigOperation>[]): Promise<MultisigOperation[]> => {
-    return storageService.multisigOperations
-      .createAll(transactions.map(transformDepositToString))
-      .then(result => result?.map(transformDepositToBN) ?? []);
-  },
-);
-
-const updateTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<number[]> => {
+const addTransactionsFx = createEffect(async (transactions: NoID<MultisigOperation>[]) => {
   return storageService.multisigOperations
-    .updateAll(transactions.map(transformDepositToString))
-    .then(result => result ?? []);
+    .createAll(transactions.map(transformDepositToString))
+    .then(result => result?.map(transformDepositToBN) ?? []);
 });
 
-const removeTransactionsFx = createEffect((transactions: MultisigOperation[]): Promise<string[] | undefined> => {
+const updateTransactionsFx = createEffect((transactions: MultisigOperation[]) => {
+  return storageService.multisigOperations
+    .updateAll(transactions.map(transformDepositToString))
+    .then(() => transactions);
+});
+
+const removeTransactionsFx = createEffect((transactions: MultisigOperation[]) => {
   return storageService.multisigOperations.deleteAll(transactions.map(t => t.id)).then(result => result ?? []);
 });
 
@@ -90,19 +87,16 @@ const { request: requestOperations } = createDataSource({
         multisig.when.index,
       );
 
-      const events = multisig.approvals.map(
-        accountId =>
-          ({
-            id: multisigOperationService.getEventId(operationId, accountId, 'approve'),
-            chainId,
-            accountId,
-            status: 'approve',
-            callHash: key.callHash,
-            blockCreated: multisig.when.height,
-            indexCreated: multisig.when.index,
-            timestamp,
-          }) as MultisigEvent,
-      );
+      const events = multisig.approvals.map<MultisigEvent>(accountId => ({
+        id: multisigOperationService.getEventId(operationId, accountId, 'approve'),
+        chainId,
+        accountId,
+        status: 'approve',
+        callHash: key.callHash,
+        blockCreated: multisig.when.height,
+        indexCreated: multisig.when.index,
+        timestamp,
+      }));
 
       const transaction = await multisigOperationService.getTransactionFromChain({
         api,
@@ -219,7 +213,7 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];
 
-    for (const { chain, accountId, api } of params) {
+    for (const { chain, accountId } of params) {
       const url = chain.externalApi?.proxy.find(x => x.type === 'subquery')?.url;
       if (nullable(url)) {
         throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
@@ -232,9 +226,8 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
       };
 
       fn();
-
-      const unsubscribe = polkadotjsHelpers.subscribeSystemEvents({ api, section: 'multisig' }, fn);
-      unsubscribeFns.push(unsubscribe);
+      const interval = setInterval(fn, 60 * 1000);
+      unsubscribeFns.push(() => clearInterval(interval));
     }
 
     return Promise.all(unsubscribeFns).then(fns => () => {
@@ -255,17 +248,25 @@ sample({
 
 sample({
   clock: addTransactionsFx.doneData,
-  target: populateFx,
+  source: $list,
+  fn: multisigOperationService.mergeMultisigOperations,
+  target: $list,
 });
 
 sample({
   clock: updateTransactionsFx.doneData,
-  target: populateFx,
+  source: $list,
+  fn: multisigOperationService.mergeMultisigOperations,
+  target: $list,
 });
 
 sample({
   clock: removeTransactionsFx.doneData,
-  target: populateFx,
+  source: $list,
+  fn(list, removedIds) {
+    return list.filter(l => !removedIds.includes(l.id));
+  },
+  target: $list,
 });
 
 export const multisigOperations = {

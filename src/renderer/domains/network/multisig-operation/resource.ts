@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { multisigPallet } from '@/shared/pallet/multisig';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { vecSchema } from '@/shared/polkadotjs-schemas/structs';
 
@@ -85,3 +86,10 @@ export async function fetchOperations(
     .map((node: unknown) => mapSubqueryOperationRecord(node, chainId))
     .filter(nonNullable);
 }
+
+export const multisigEvent = pjsSchema.tupleMap(
+  ['accountId', pjsSchema.accountId],
+  ['timepoint', multisigPallet.schema.multisigTimepoint],
+  ['multisigAccountId', pjsSchema.accountId],
+  ['callHash', pjsSchema.hex],
+);
