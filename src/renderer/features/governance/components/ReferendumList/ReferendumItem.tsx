@@ -83,6 +83,7 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
       </div>
 
       <VotedBy
+        variant="columns"
         asset={asset}
         identity={identity}
         delegates={referendum.votedByDelegates}

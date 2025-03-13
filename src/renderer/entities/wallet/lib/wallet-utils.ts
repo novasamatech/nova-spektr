@@ -50,15 +50,15 @@ export const walletUtils = {
 
 // Wallet types
 
-function isPolkadotVault(wallet?: Wallet): wallet is PolkadotVaultWallet {
+function isPolkadotVault(wallet?: Wallet | null): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
-function isMultiShard(wallet?: Wallet): wallet is MultiShardWallet {
+function isMultiShard(wallet?: Wallet | null): wallet is MultiShardWallet {
   return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }
 
-function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
+function isSingleShard(wallet?: Wallet | null): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
@@ -66,39 +66,39 @@ function isFlexibleMultisig(wallet?: Wallet | null): wallet is FlexibleMultisigW
   return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
 }
 
-function isRegularMultisig(wallet?: Wallet): wallet is MultisigWallet {
+function isRegularMultisig(wallet?: Wallet | null): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isMultisig(wallet?: Wallet): wallet is MultisigWallet | FlexibleMultisigWallet {
+function isMultisig(wallet?: Wallet | null): wallet is MultisigWallet | FlexibleMultisigWallet {
   return isFlexibleMultisig(wallet) || isRegularMultisig(wallet);
 }
 
-function isWatchOnly(wallet?: Wallet): wallet is WatchOnlyWallet {
+function isWatchOnly(wallet?: Wallet | null): wallet is WatchOnlyWallet {
   return wallet?.type === WalletType.WATCH_ONLY;
 }
 
-function isNovaWallet(wallet?: Wallet): wallet is NovaWalletWallet {
+function isNovaWallet(wallet?: Wallet | null): wallet is NovaWalletWallet {
   return wallet?.type === WalletType.NOVA_WALLET;
 }
 
-function isWalletConnect(wallet?: Wallet): wallet is WalletConnectWallet {
+function isWalletConnect(wallet?: Wallet | null): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
 
-function isProxied(wallet?: Wallet): wallet is ProxiedWallet {
+function isProxied(wallet?: Wallet | null): wallet is ProxiedWallet {
   return wallet?.type === WalletType.PROXIED;
 }
 
-function isPolkadotExtension(wallet?: Wallet): wallet is PolkadotExtensionWallet {
+function isPolkadotExtension(wallet?: Wallet | null): wallet is PolkadotExtensionWallet {
   return wallet?.type === WalletType.POLKADOT_EXTENSION;
 }
 
-function isTalismanExtension(wallet?: Wallet): wallet is TalismanExtensionWallet {
+function isTalismanExtension(wallet?: Wallet | null): wallet is TalismanExtensionWallet {
   return wallet?.type === WalletType.TALISMAN_EXTENSION;
 }
 
-function isSubWalletExtension(wallet?: Wallet): wallet is SubWalletExtensionWallet {
+function isSubWalletExtension(wallet?: Wallet | null): wallet is SubWalletExtensionWallet {
   return wallet?.type === WalletType.SUBWALLET_EXTENSION;
 }
 

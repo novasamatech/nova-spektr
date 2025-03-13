@@ -6,24 +6,34 @@ import { VotedByDelegates } from './VotedByDelegates';
 import { VotedCombined } from './VotedCombined';
 
 type Props = {
+  variant: 'columns' | 'rows';
   asset: Asset;
   identity: Record<Address, Identity>;
   delegates: DelegateInfo[];
+  conviction?: boolean;
   castingVotes: {
     voter: AccountId;
     vote: AccountVote;
   }[];
 };
 
-export const VotedBy = ({ asset, identity, castingVotes, delegates }: Props) => {
+export const VotedBy = ({ variant, asset, identity, castingVotes, delegates, conviction }: Props) => {
   // Delegates only
   if (delegates.length > 0 && !castingVotes.length) {
-    return <VotedByDelegates asset={asset} identity={identity} delegates={delegates} />;
+    return <VotedByDelegates asset={asset} identity={identity} delegates={delegates} conviction={conviction} />;
   }
 
   // Voters and delegate if presented
   if (castingVotes.length > 0) {
-    return <VotedCombined asset={asset} castingVotes={castingVotes} delegates={delegates} />;
+    return (
+      <VotedCombined
+        variant={variant}
+        asset={asset}
+        castingVotes={castingVotes}
+        delegates={delegates}
+        conviction={conviction}
+      />
+    );
   }
 
   // No delegate and No votes

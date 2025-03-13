@@ -16,7 +16,7 @@ type Props = {
   api: ApiPromise;
   referendum: AggregatedReferendum;
   asset: Asset;
-  wallet?: Wallet;
+  wallet: Wallet | null;
   canVote: boolean;
   hasAccount: boolean;
   onVoteRequest: () => unknown;

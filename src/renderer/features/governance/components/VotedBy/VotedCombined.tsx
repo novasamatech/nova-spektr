@@ -12,8 +12,10 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { votingService } from '@/entities/governance';
 
 type Props = {
+  variant: 'columns' | 'rows';
   asset: Asset;
   delegates: DelegateInfo[];
+  conviction?: boolean;
   castingVotes: {
     voter: AccountId;
     vote: AccountVote;
@@ -76,17 +78,12 @@ const Voted = ({ asset, type, votes, delegates }: VotedProps) => {
   const { t } = useI18n();
 
   const votedAmount = votes.reduce((acc, vote) => {
-    const isStandardVote = votingService.isStandardVote(vote);
+    const balance = votingService.isStandardVote(vote) ? vote.balance : vote.abstain;
 
-    const balance = isStandardVote ? vote.balance : vote.abstain;
-    const conviction = isStandardVote ? vote.vote.conviction : 'None';
-
-    return acc.add(votingService.calculateVotingPower(balance, conviction));
+    return acc.add(balance);
   }, BN_ZERO);
 
-  const delegatedAmount = (delegates ?? []).reduce((acc, delegate) => {
-    return acc.add(votingService.calculateVotingPower(delegate.amount, delegate.conviction));
-  }, BN_ZERO);
+  const delegatedAmount = (delegates ?? []).reduce((acc, delegate) => acc.add(delegate.amount), BN_ZERO);
 
   return (
     <div className="flex items-center gap-x-1">

@@ -549,14 +549,14 @@
       "emptyList": "There is no vote history",
       "modalTitle": "Vote history",
       "showHistoryButton": "View vote history",
-      "votes_one": "{count} vote",
-      "votes_other": "{count} votes",
+      "votes_one": "{ count } vote",
+      "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
   "general": {
     "actions": {
-      "multiply": "{value} × {multiplier}"
+      "multiply": "<asset /> × { multiplier }x"
     },
     "button": {
       "applyButton": "Apply",

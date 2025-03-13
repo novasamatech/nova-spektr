@@ -8,12 +8,12 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
-import { votingService } from '@/entities/governance';
 
 type Props = {
   asset: Asset;
   identity: Record<Address, Identity>;
   delegates: DelegateInfo[];
+  conviction?: boolean;
 };
 
 export const VotedByDelegates = ({ asset, identity, delegates }: Props) => {
@@ -28,18 +28,12 @@ export const VotedByDelegates = ({ asset, identity, delegates }: Props) => {
       <AccountAddress showIcon={false} variant="short" address={delegate.delegateId} />
     );
 
-    const amount = (
-      <AssetBalance
-        className="text-icon-accent"
-        value={votingService.calculateVotingPower(delegate.amount, delegate.conviction)}
-        asset={asset}
-      />
-    );
+    const amount = <AssetBalance className="text-icon-alert" value={delegate.amount} asset={asset} />;
 
     return (
       <div className="flex items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
-        <Icon name="voted" size={16} className="text-icon-accent" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
+        <Icon name="voted" size={16} className="text-icon-alert" />
+        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={`governance.${delegate.decision === 'aye' ? 'votedAyeBy' : 'votedNayBy'}`}
@@ -54,19 +48,17 @@ export const VotedByDelegates = ({ asset, identity, delegates }: Props) => {
   const isDelegatesNay = delegates.every((d) => d.decision === 'nay');
 
   if (isDelegatesAye || isDelegatesNay) {
-    const delegatedAmount = delegates.reduce((acc, delegate) => {
-      return acc.add(votingService.calculateVotingPower(delegate.amount, delegate.conviction));
-    }, BN_ZERO);
+    const delegatedAmount = delegates.reduce((acc, delegate) => acc.add(delegate.amount), BN_ZERO);
 
     return (
       <div className="flex items-center gap-x-1">
-        <Icon name="voted" size={16} className="text-icon-accent" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
+        <Icon name="voted" size={16} className="text-icon-alert" />
+        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={`governance.${isDelegatesAye ? 'votedAyeByDelegates' : 'votedNayByDelegates'}`}
             components={{
-              amount: <AssetBalance className="text-icon-accent" asset={asset} value={delegatedAmount} />,
+              amount: <AssetBalance className="text-icon-alert" asset={asset} value={delegatedAmount} />,
             }}
           />
         </FootnoteText>
@@ -76,8 +68,8 @@ export const VotedByDelegates = ({ asset, identity, delegates }: Props) => {
 
   return (
     <div className="flex items-center gap-x-1">
-      <Icon name="voted" size={16} className="text-icon-accent" />
-      <FootnoteText className="text-icon-accent">{t('governance.votedByDelegates')}</FootnoteText>
+      <Icon name="voted" size={16} className="text-icon-alert" />
+      <FootnoteText className="text-icon-alert">{t('governance.votedByDelegates')}</FootnoteText>
     </div>
   );
 };
