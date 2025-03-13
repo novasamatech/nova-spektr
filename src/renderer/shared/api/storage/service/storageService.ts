@@ -26,6 +26,9 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
   }
 
   async createAll(items: NoID<T>[]): Promise<T[] | undefined> {
+    if (items.length === 0) {
+      return undefined;
+    }
     try {
       const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
       if (!ids) return undefined;
@@ -84,6 +87,9 @@ class StorageService<T extends { id: K }, K extends IndexableType> {
   }
 
   async updateAll(items: (Partial<T> & { id: K })[]): Promise<number[] | undefined> {
+    if (items.length === 0) {
+      return undefined;
+    }
     try {
       const updates = items.map((item) => {
         return this.dexieTable.update(item.id, item);

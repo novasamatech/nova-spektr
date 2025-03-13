@@ -216,7 +216,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-kusama-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-kusama-stg.novasama-tech.org"
         }
       ]
     }

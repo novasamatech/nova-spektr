@@ -1,10 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString, type NoID } from '@/shared/core';
 import { createDataSource, createDataSubscription } from '@/shared/effector';
-import { getCreatedDateFromApi, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, isEqual, nullable } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -16,6 +17,7 @@ import { fetchOperations, multisigEvent } from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
 
+const $proxyList = createStore<MultisigOperation[]>([]);
 const $list = createStore<MultisigOperation[]>([]);
 
 const populateFx = createEffect(() =>
@@ -68,13 +70,14 @@ type RequestParams = {
 };
 
 const { request: requestOperations } = createDataSource({
-  initial: $list,
-  pool: (params: RequestParams) => params.api.genesisHash.toHex() || '0x00',
-  async fn({ api, accountId }: RequestParams) {
+  initial: $proxyList,
+  pool: ({ chain }: RequestParams) => chain.chainId,
+  async fn({ api, accountId, chain }: RequestParams) {
     const operations: MultisigOperation[] = [];
 
     const response = await multisigPallet.storage.multisigs(api, accountId);
-    const chainId = api.genesisHash.toHex();
+    const chainId = chain.chainId;
+    console.log(response);
 
     for (const { key, multisig } of response) {
       if (nullable(multisig)) continue;
@@ -137,7 +140,7 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
   RequestParams[],
   { event: MultisigEvent; operationId: string; chainId: ChainId }
 >({
-  initial: $list,
+  initial: $proxyList,
   fn: (params, callback) => {
     const unsubscribeFns: Promise<VoidFunction>[] = [];
 
@@ -209,7 +212,7 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
   RequestParams[],
   MultisigOperation[]
 >({
-  initial: $list,
+  initial: $proxyList,
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];
 
@@ -267,6 +270,32 @@ sample({
     return list.filter(l => !removedIds.includes(l.id));
   },
   target: $list,
+});
+
+sample({
+  clock: $proxyList.updates,
+  source: $list,
+  fn(proxy, operations) {
+    const toAdd: MultisigOperation[] = [];
+    const toUpdate: MultisigOperation[] = [];
+
+    for (const newOperation of proxy) {
+      const existingOperation = operations.find(o => o.id === newOperation.id);
+      if (existingOperation) {
+        if (!isEqual(existingOperation, newOperation)) {
+          toUpdate.push(newOperation);
+        }
+      } else {
+        toAdd.push(newOperation);
+      }
+    }
+
+    return { toAdd, toUpdate };
+  },
+  target: spread({
+    toAdd: addTransactionsFx,
+    toUpdate: updateTransactionsFx,
+  }),
 });
 
 export const multisigOperations = {
