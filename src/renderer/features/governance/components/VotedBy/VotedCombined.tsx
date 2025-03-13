@@ -4,15 +4,9 @@ import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
 import { TEST_IDS } from '@/shared/constants';
-import {
-  type AccountVote,
-  type Address,
-  type Asset,
-  type SplitAbstainVote,
-  type StandardVote,
-  type XOR,
-} from '@/shared/core';
+import { type AccountVote, type Asset, type SplitAbstainVote, type StandardVote, type XOR } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { votingService } from '@/entities/governance';
@@ -21,7 +15,7 @@ type Props = {
   asset: Asset;
   delegates: DelegateInfo[];
   castingVotes: {
-    voter: Address;
+    voter: AccountId;
     vote: AccountVote;
   }[];
 };
