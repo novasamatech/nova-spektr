@@ -49,10 +49,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
   const txs = getLiveAccountMultisigTxs(account?.accountId ? [account.accountId] : []);
   const events = getLiveEventsByKeys(txs);
 
-  useGate(operationsModel.gate.flow, {
-    transactions: txs,
-    events,
-  });
+  useGate(operationsModel.gates.flow, { transactions: txs, events });
 
   useEffect(() => {
     // eslint-disable-next-line no-restricted-syntax
