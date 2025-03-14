@@ -41,9 +41,11 @@ export const useMultisigTx = ({ addTask }: Props): IMultisigTxService => {
   const { addEventWithQueue, getEvents, updateEvent } = useMultisigEvent({ addTask });
 
   const subscribeMultisigAccount = (api: ApiPromise, account: MultisigAccount): (() => void) => {
+    console.log('subscribeMultisigAccount');
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const subscribeFn = async () => {
+      console.log('qwe subscribeFn');
       // TODO: Use mutex to avoid events doubling
       const pendingTxs = await getPendingMultisigTxs(api, account.accountId);
       const currentBlockNumber = await getCurrentBlockNumber(api);

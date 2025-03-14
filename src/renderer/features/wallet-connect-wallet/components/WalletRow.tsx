@@ -1,11 +1,10 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { cnTw, isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts as accountsDomainModel } from '@/domains/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';

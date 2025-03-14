@@ -1,4 +1,3 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
@@ -7,7 +6,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';

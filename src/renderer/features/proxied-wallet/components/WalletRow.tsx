@@ -1,10 +1,9 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';

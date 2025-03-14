@@ -1,4 +1,3 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
@@ -6,7 +5,7 @@ import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';

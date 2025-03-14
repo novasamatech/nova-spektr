@@ -202,7 +202,7 @@ export const MultisigChainProvider = ({ children }: PropsWithChildren) => {
         unsubscribe();
       }
     };
-  }, [availableConnectionsAmount, account]);
+  }, [apis, availableConnectionsAmount, account]);
 
   return <MultisigChainContext.Provider value={taskQueue}>{children}</MultisigChainContext.Provider>;
 };

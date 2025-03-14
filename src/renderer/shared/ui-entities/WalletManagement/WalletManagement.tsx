@@ -1,9 +1,8 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Address, type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, Identicon } from '@/shared/ui';
+import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
 
 type Props = {
   wallet: Wallet;

@@ -1,10 +1,9 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
