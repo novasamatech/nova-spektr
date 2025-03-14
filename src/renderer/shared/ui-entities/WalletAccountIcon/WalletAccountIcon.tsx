@@ -1,8 +1,8 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
-
 import { type Address, type WalletIconType, type WalletType } from '@/shared/core';
-import { Identicon } from '@/shared/ui';
+import { Identicon, type IconTheme as IdenticonIconTheme } from '@/shared/ui';
 import { WalletIcon } from '@/entities/wallet';
+
+export type IconTheme = IdenticonIconTheme;
 
 type Props = {
   address: Address | undefined;

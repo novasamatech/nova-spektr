@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isPolkadotChain } from '@/shared/lib/utils';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -36,8 +36,10 @@ walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
     const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
     return mainAccount?.accountId;
   }, [wallet]);
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {
