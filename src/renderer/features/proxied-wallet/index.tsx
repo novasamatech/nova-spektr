@@ -1,9 +1,11 @@
+import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { isEthereumAccountId } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
@@ -103,8 +105,10 @@ transactionSDK(proxiedWalletFeature, {
 proxiedWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (walletUtils.isProxied(wallet)) {
     const address = wallet.accounts[0]?.accountId;
+    const isEthereum = isEthereumAccountId(address);
+    const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-    return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
+    return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
   }
   return null;
 });

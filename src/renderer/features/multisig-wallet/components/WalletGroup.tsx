@@ -1,9 +1,10 @@
+import { type IconTheme } from '@polkadot/react-identicon/types';
 import { memo } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { performSearch } from '@/shared/lib/utils';
+import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
@@ -57,11 +58,14 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const address = wallet.accounts[0]?.accountId;
+              const isEthereum = isEthereumAccountId(address);
+              const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
               return (
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
+                  theme={theme}
                   address={address}
                   description={
                     <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />

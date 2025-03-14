@@ -1,7 +1,9 @@
+import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
+import { isEthereumAccountId } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { ChainIcon } from '@/entities/chain';
@@ -32,11 +34,14 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
   const chain = account ? chains[account.chainId] : null;
 
   const address = wallet.accounts[0]?.accountId;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
   return (
     <WalletManagement
       wallet={wallet}
       address={address}
+      theme={theme}
       meta={chain ? <ChainIcon src={chain.icon} size={16} /> : null}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
