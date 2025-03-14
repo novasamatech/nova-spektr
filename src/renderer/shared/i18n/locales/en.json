@@ -556,7 +556,7 @@
   },
   "general": {
     "actions": {
-      "multiply": "<asset /> × { multiplier }x"
+      "multiply": "<balance /> × { multiplier }x"
     },
     "button": {
       "applyButton": "Apply",
@@ -611,7 +611,6 @@
       },
       "alreadyDelegatedError": "Already delegated",
       "amountMultiply": "Amount & Multiply",
-      "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
@@ -665,8 +664,8 @@
         "accountLabel": "Account",
         "acrossTracks_one": "Across { count } track",
         "acrossTracks_other": "Across { count } tracks",
-        "amountLabel": "Amount",
-        "delegateSummary": "Delegate summary",
+        "delegatedLabel": "Delegated",
+        "delegationSummary": "Delegation summary",
         "delegateVoted": "Delegate voted:",
         "listEmptyState": "Nothing was found"
       },
@@ -719,6 +718,7 @@
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
       "votesLabel": "Voting power",
+      "lockedLabel": "Locked amount",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourAccountError": "You cannot delegate to the same account"

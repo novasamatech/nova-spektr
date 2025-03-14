@@ -129,8 +129,8 @@ async function getDelegatesForAccount(chain: Chain, accountId: string): Promise<
     .catch(() => null);
 }
 
-function calculateTotalVotes(votingPower: BN, tracks: number[], chain: Chain): BN {
-  return toPrecision(votingPower, chain.assets[0].precision).mul(new BN(tracks.length));
+function calculateTotalVotes(voteAmount: BN, tracks: number[], chain: Chain): BN {
+  return toPrecision(voteAmount, chain.assets[0].precision).mul(new BN(tracks.length));
 }
 
 export const delegationService: DelegationApi = {

@@ -34,7 +34,7 @@ export const DelegateActivity = () => {
       >
         <AssetBalance
           showSymbol={false}
-          value={delegate.delegatorVotes?.toString() || '0'}
+          value={delegate.delegatorVotes || '0'}
           asset={chain?.assets[0]}
           className="text-footnote"
         />

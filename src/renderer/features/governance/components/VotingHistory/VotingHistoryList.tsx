@@ -82,14 +82,14 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                     chain={chain}
                     variant="truncate"
                   />
-                  <Box direction="row" horizontalAlign="end">
+                  <FootnoteText>
                     <Trans
                       t={t}
                       i18nKey="general.actions.multiply"
-                      components={{ asset: <AssetBalance value={balance} asset={asset} /> }}
                       values={{ multiplier: conviction }}
+                      components={{ balance: <AssetBalance className="text-footnote" value={balance} asset={asset} /> }}
                     />
-                  </Box>
+                  </FootnoteText>
                 </div>
               );
             })}

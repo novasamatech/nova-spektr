@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable, toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Box, Tooltip } from '@/shared/ui-kit';
+import { Tooltip } from '@/shared/ui-kit';
 import { allTracks, votingService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationModel } from '@/widgets/DelegationModal';
@@ -74,47 +74,25 @@ export const YourDelegation = () => {
           </DetailRow>
 
           {activeAccounts.length === 1 && (
-            <DetailRow wrapperClassName="items-start" label={t('governance.addDelegation.votesLabel')}>
-              <Box horizontalAlign="end" verticalAlign="end">
-                <FootnoteText>
-                  <Trans
-                    t={t}
-                    i18nKey="governance.addDelegation.votesValue"
-                    components={{
-                      votes: (
-                        <AssetBalance
-                          value={votingService.calculateVotingPower(
-                            activeDelegations[activeAccounts[0]]?.balance,
-                            activeDelegations[activeAccounts[0]]?.conviction,
-                          )}
-                          asset={chain?.assets[0]}
-                          showSymbol={false}
-                        />
-                      ),
-                    }}
-                  />
-                </FootnoteText>
-                <FootnoteText className="text-text-tertiary">
-                  <Trans
-                    t={t}
-                    i18nKey="governance.addDelegation.balanceValue"
-                    values={{
-                      conviction: votingService.getConvictionMultiplier(
-                        activeDelegations[activeAccounts[0]]?.conviction,
-                      ),
-                    }}
-                    components={{
-                      balance: (
-                        <AssetBalance
-                          className="text-text-tertiary"
-                          value={activeDelegations[activeAccounts[0]]?.balance}
-                          asset={chain.assets[0]}
-                        />
-                      ),
-                    }}
-                  />
-                </FootnoteText>
-              </Box>
+            <DetailRow wrapperClassName="items-start" label={t('governance.addDelegation.lockedLabel')}>
+              <FootnoteText>
+                <Trans
+                  t={t}
+                  i18nKey="general.actions.multiply"
+                  values={{
+                    multiplier: votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
+                  }}
+                  components={{
+                    balance: (
+                      <AssetBalance
+                        className="text-footnote"
+                        value={activeDelegations[activeAccounts[0]]?.balance}
+                        asset={chain?.assets[0]}
+                      />
+                    ),
+                  }}
+                />
+              </FootnoteText>
             </DetailRow>
           )}
         </div>

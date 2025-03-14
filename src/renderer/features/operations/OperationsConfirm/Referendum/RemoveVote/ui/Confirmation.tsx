@@ -1,10 +1,11 @@
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, formatBalance, toAddress, toNumberWithPrecision } from '@/shared/lib/utils';
-import { DetailRow, HeadlineText, Icon, Loader } from '@/shared/ui';
-import { TransactionDetails } from '@/shared/ui-entities';
+import { toAddress } from '@/shared/lib/utils';
+import { DetailRow, Icon, LargeTitleText, Loader } from '@/shared/ui';
+import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import {
   LockPeriodDiff,
@@ -81,21 +82,15 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         <Icon className="text-icon-default" name="retractMst" size={60} />
 
         {votingPower && amount && conviction && (
-          <div className="flex flex-col items-center gap-y-1">
-            <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
-              {t('governance.referendum.votes', {
-                votes: '-' + formatBalance(votingPower, asset.precision).formatted,
-                count: toNumberWithPrecision(votingPower, asset.precision),
-              })}
-            </span>
-
-            <HeadlineText className="text-text-tertiary">
-              {t('general.actions.multiply', {
-                value: formatAsset(amount, asset),
-                multiplier: `${votingService.getConvictionMultiplier(conviction)}x`,
-              })}
-            </HeadlineText>
-          </div>
+          <LargeTitleText as="p" className="font-manrope">
+            {'-'}
+            <Trans
+              t={t}
+              i18nKey="general.actions.multiply"
+              values={{ multiplier: conviction }}
+              components={{ balance: <AssetBalance className="text-large-title" value={amount} asset={asset} /> }}
+            />
+          </LargeTitleText>
         )}
       </div>
 

@@ -15,7 +15,7 @@ import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferab
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { votingModel, votingService } from '@/entities/governance';
+import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -406,16 +406,10 @@ sample({
   filter: ({ delegate, data, walletData }) => {
     return !!delegate && !!data && !!walletData.chain;
   },
-  fn: ({ delegate, tracks, data, walletData }) => {
-    return {
-      delegate: delegate!,
-      votes: delegationService.calculateTotalVotes(
-        votingService.calculateVotingPower(new BN(data!.balance), data!.conviction),
-        tracks,
-        walletData.chain!,
-      ),
-    };
-  },
+  fn: ({ delegate, tracks, data, walletData }) => ({
+    delegate: delegate!,
+    votes: delegationService.calculateTotalVotes(new BN(data!.balance), tracks, walletData.chain!),
+  }),
   target: delegateRegistryAggregate.events.addDelegation,
 });
 
@@ -486,14 +480,12 @@ sample({
     const account = accounts.at(0);
     if (!account) throw new Error('Account not found');
 
-    const txs = coreTxs!.map((coreTx) => ({
+    return coreTxs!.map((coreTx) => ({
       initiatorAccountId: account.accountId,
       coreTx,
       txWrappers,
       createdAt: Date.now(),
     }));
-
-    return txs;
   },
   target: basketOperations.addTransactions,
 });
