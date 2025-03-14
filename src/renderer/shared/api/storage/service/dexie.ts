@@ -103,11 +103,14 @@ class DexieStorage extends Dexie {
       .stores({
         accounts2: 'id',
         wallets: '++id',
-        multisigOperations: 'id',
       })
       .upgrade(migrateMultisigAccounts);
 
     this.version(28).upgrade(migratePVAccounts);
+
+    this.version(29).stores({
+      multisigOperations: 'id',
+    });
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

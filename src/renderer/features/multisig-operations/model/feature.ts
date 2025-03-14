@@ -4,9 +4,8 @@ import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const $trigger = createStore<string>('');
@@ -79,10 +78,4 @@ const $input = combine(
 export const multisigOperationsFeature = createFeature({
   name: 'multisig/operations',
   input: $input,
-});
-
-sample({
-  clock: walletSelect.$selectedWallet,
-  filter: wallet => nonNullable(wallet) && walletUtils.isMultisig(wallet),
-  target: multisigOperationsFeature.restore,
 });

@@ -10,14 +10,14 @@ import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
-import { getDataFromCallData } from '@/entities/transaction';
+import { decodeCallData, getDataFromCallData } from '@/entities/transaction';
 
 import { transformDepositToBN, transformDepositToString } from './helpers';
 import { fetchOperations, multisigEvent } from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
 
-const $proxyList = createStore<MultisigOperation[]>([]);
+const $buffer = createStore<MultisigOperation[]>([]);
 const $list = createStore<MultisigOperation[]>([]);
 
 const populateFx = createEffect(() =>
@@ -70,14 +70,13 @@ type RequestParams = {
 };
 
 const { request: requestOperations } = createDataSource({
-  initial: $proxyList,
+  initial: $buffer,
   pool: ({ chain }: RequestParams) => chain.chainId,
   async fn({ api, accountId, chain }: RequestParams) {
     const operations: MultisigOperation[] = [];
 
     const response = await multisigPallet.storage.multisigs(api, accountId);
     const chainId = chain.chainId;
-    console.log(response);
 
     for (const { key, multisig } of response) {
       if (nullable(multisig)) continue;
@@ -109,7 +108,11 @@ const { request: requestOperations } = createDataSource({
       });
 
       const callData = transaction?.method.toHex() || null;
-      const operationData = (transaction?.method.toHuman() || {}) as MultisigOperationData;
+      let args: Record<string, any> = {};
+      if (callData) {
+        const decoded = decodeCallData(api, key.accountId, callData);
+        args = decoded.args;
+      }
 
       operations.push({
         id: operationId,
@@ -124,7 +127,7 @@ const { request: requestOperations } = createDataSource({
         timestamp,
         events,
         callData,
-        ...operationData,
+        args,
       });
     }
 
@@ -135,12 +138,49 @@ const { request: requestOperations } = createDataSource({
   },
 });
 
+const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createDataSubscription<
+  MultisigOperation[],
+  RequestParams[],
+  MultisigOperation[]
+>({
+  initial: $buffer,
+  fn(params: RequestParams[], callback) {
+    const unsubscribeFns = [];
+
+    for (const { chain, accountId, api } of params) {
+      const url = chain.externalApi?.proxy.find(x => x.type === 'subquery')?.url;
+      if (nullable(url)) {
+        throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
+      }
+
+      const fn = () => {
+        fetchOperations(url, accountId, chain.chainId, api).then(value => {
+          callback({ done: true, value });
+        });
+      };
+
+      fn();
+      const interval = setInterval(fn, 60 * 1000);
+      unsubscribeFns.push(() => clearInterval(interval));
+    }
+
+    return Promise.all(unsubscribeFns).then(fns => () => {
+      for (const fn of fns) {
+        fn();
+      }
+    });
+  },
+  map(store, { result }) {
+    return multisigOperationService.mergeMultisigOperations(store, result);
+  },
+});
+
 const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDataSubscription<
   MultisigOperation[],
   RequestParams[],
   { event: MultisigEvent; operationId: string; chainId: ChainId }
 >({
-  initial: $proxyList,
+  initial: $buffer,
   fn: (params, callback) => {
     const unsubscribeFns: Promise<VoidFunction>[] = [];
 
@@ -207,43 +247,6 @@ const { subscribe: subscribeEvents, unsubscribe: unsubscribeEvents } = createDat
   },
 });
 
-const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createDataSubscription<
-  MultisigOperation[],
-  RequestParams[],
-  MultisigOperation[]
->({
-  initial: $proxyList,
-  fn(params: RequestParams[], callback) {
-    const unsubscribeFns = [];
-
-    for (const { chain, accountId } of params) {
-      const url = chain.externalApi?.proxy.find(x => x.type === 'subquery')?.url;
-      if (nullable(url)) {
-        throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
-      }
-
-      const fn = () => {
-        fetchOperations(url, accountId, chain.chainId).then(value => {
-          callback({ done: true, value });
-        });
-      };
-
-      fn();
-      const interval = setInterval(fn, 60 * 1000);
-      unsubscribeFns.push(() => clearInterval(interval));
-    }
-
-    return Promise.all(unsubscribeFns).then(fns => () => {
-      for (const fn of fns) {
-        fn();
-      }
-    });
-  },
-  map(store, { result }) {
-    return multisigOperationService.mergeMultisigOperations(store, result);
-  },
-});
-
 sample({
   clock: populateFx.doneData,
   target: $list,
@@ -273,13 +276,13 @@ sample({
 });
 
 sample({
-  clock: $proxyList.updates,
+  clock: $buffer.updates,
   source: $list,
-  fn(proxy, operations) {
+  fn(operations, buffer) {
     const toAdd: MultisigOperation[] = [];
     const toUpdate: MultisigOperation[] = [];
 
-    for (const newOperation of proxy) {
+    for (const newOperation of buffer) {
       const existingOperation = operations.find(o => o.id === newOperation.id);
       if (existingOperation) {
         if (!isEqual(existingOperation, newOperation)) {

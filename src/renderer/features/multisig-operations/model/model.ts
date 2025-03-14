@@ -20,7 +20,7 @@ sample({
 
 sample({
   clock: multisigOperationsFeature.running,
-  target: [multisigOperations.subscribe, multisigOperations.subscribeEvents, multisigOperations.populate],
+  target: [multisigOperations.subscribe, multisigOperations.subscribeEvents],
 });
 
 sample({

@@ -25,11 +25,11 @@ export type MultisigOperation = MultisigOperationData & {
   chainId: ChainId;
   accountId: AccountId;
   callHash: CallHash;
+  callData: HexString | null;
   depositor: AccountId;
   deposit?: BN;
   blockCreated: BlockHeight;
   indexCreated: number;
-  callData: HexString | null;
   events: MultisigEvent[];
   timestamp: number;
 };
