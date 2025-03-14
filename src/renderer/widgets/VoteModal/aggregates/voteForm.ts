@@ -1,6 +1,5 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
-import { isNil } from 'lodash';
 import { and, empty, not, reset } from 'patronum';
 
 import { type AccountVote, type Address, type Conviction, type OngoingReferendum } from '@/shared/core';
@@ -9,7 +8,7 @@ import { balanceModel } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
 import { type WrappedTransactions, transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { networkSelectorModel } from '@/features/governance';
+import { type AggregatedReferendum, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { type BasicFormParams, createTransactionForm } from '@/features/governance/lib/createTransactionForm';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
@@ -28,9 +27,10 @@ type FormInput = {
   wrappedTransactions: WrappedTransactions;
 };
 
+const $type = createStore<'vote' | 'revote' | null>(null);
 const $voters = createStore<Address[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
-const $referendum = createStore<OngoingReferendum | null>(null);
+const $referendum = createStore<AggregatedReferendum<OngoingReferendum> | null>(null);
 const $availableBalance = createStore(BN_ZERO);
 const $lockForAccount = createStore(BN_ZERO);
 
@@ -39,12 +39,13 @@ const $canSubmit = createStore(false);
 const formSubmitted = createEvent<FormInput>();
 
 const transactionForm = createTransactionForm<Form>({
+  $type,
   $voters,
   $asset: votingAssetModel.$votingAsset,
   $chain: networkSelectorModel.$governanceChain,
   $api: networkSelectorModel.$governanceChainApi,
 
-  $activeWallet: walletModel.$activeWallet.map((x) => x ?? null),
+  $activeWallet: walletModel.$activeWallet.map((w) => w ?? null),
   $wallets: walletModel.$wallets,
   $balances: balanceModel.$balances,
 
@@ -129,12 +130,15 @@ sample({
 
 sample({
   clock: form.fields.account.onChange,
-  source: { referendum: $referendum, accounts: accounts.$available },
-  filter: ({ referendum }, account) => !isNil(account) && !isNil(referendum),
+  source: {
+    referendum: $referendum,
+    accounts: accounts.$available,
+  },
+  filter: ({ referendum }, account) => nonNullable(account) && nonNullable(referendum),
   fn: ({ referendum, accounts }, account) => {
     if (!account || !referendum) return BN_ZERO;
 
-    const accountBalance = accounts.find((x) => x.account.accountId === account.accountId)?.balance ?? null;
+    const accountBalance = accounts.find((a) => a.account.accountId === account.accountId)?.balance ?? null;
     if (!accountBalance) return BN_ZERO;
 
     return locksService.getAvailableBalance(accountBalance);
@@ -217,6 +221,7 @@ sample({
 export const voteFormAggregate = {
   transactionForm,
 
+  $type,
   $referendum,
   $voters,
   $existingVote,

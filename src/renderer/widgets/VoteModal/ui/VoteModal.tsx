@@ -9,6 +9,7 @@ import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
+import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
 import { voteModalAggregate } from '../aggregates/voteModal';
@@ -16,16 +17,17 @@ import { voteModalAggregate } from '../aggregates/voteModal';
 import { VoteForm } from './VoteForm';
 
 type Props = {
-  referendum: OngoingReferendum;
+  referendum: AggregatedReferendum<OngoingReferendum>;
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
 };
 
 export const VoteModal = ({ referendum, asset, chain, onClose }: Props) => {
-  useGate(voteModalAggregate.gates.flow, { referendum, votes: [] });
-
   const { t } = useI18n();
+
+  useGate(voteModalAggregate.gates.flow, { type: 'vote', referendum });
+
   const step = useUnit(voteModalAggregate.$step);
   const initiatorWallet = useUnit(voteModalAggregate.accounts.$initiatorWallet);
 

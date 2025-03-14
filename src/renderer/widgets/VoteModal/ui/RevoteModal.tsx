@@ -1,6 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { type AccountVote, type Address, type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
+import { type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep } from '@/shared/lib/utils';
@@ -8,6 +8,7 @@ import { BaseModal, Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
+import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
 import { voteModalAggregate } from '../aggregates/voteModal';
@@ -15,17 +16,17 @@ import { voteModalAggregate } from '../aggregates/voteModal';
 import { VoteForm } from './VoteForm';
 
 type Props = {
-  referendum: OngoingReferendum;
-  votes: { voter: Address; vote: AccountVote }[];
+  referendum: AggregatedReferendum<OngoingReferendum>;
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
 };
 
-export const RevoteModal = ({ referendum, votes, asset, chain, onClose }: Props) => {
-  useGate(voteModalAggregate.gates.flow, { referendum, votes });
-
+export const RevoteModal = ({ referendum, asset, chain, onClose }: Props) => {
   const { t } = useI18n();
+
+  useGate(voteModalAggregate.gates.flow, { type: 'revote', referendum });
+
   const step = useUnit(voteModalAggregate.$step);
   const initiatorWallet = useUnit(voteModalAggregate.accounts.$initiatorWallet);
 

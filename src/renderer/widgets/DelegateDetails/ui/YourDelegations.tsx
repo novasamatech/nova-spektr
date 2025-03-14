@@ -92,10 +92,11 @@ export const YourDelegations = () => {
 
         <ul className="mx-2 mb-4 flex flex-col gap-y-2">
           {activeAccounts.map((address, index) => {
+            const activeDelegation = activeDelegations[address];
+
             const account = wallet?.accounts.find((a) => {
               return toAddress(a.accountId, { prefix: chain.addressPrefix }) === address;
             });
-            const activeDelegation = activeDelegations[address];
 
             if (!account || !activeDelegation || !activeTracks[address]) return null;
 
