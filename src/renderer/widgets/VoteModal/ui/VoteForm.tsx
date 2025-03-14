@@ -116,12 +116,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             errorText={amount.errorText()}
             onChange={amount.onChange}
           />
-          <ConvictionSelect
-            value={conviction.value}
-            asset={asset}
-            amount={amount.value || BN_ZERO}
-            onChange={conviction.onChange}
-          />
+          <ConvictionSelect value={conviction.value} onChange={conviction.onChange} />
         </div>
         <div className="flex flex-col gap-4">
           <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.governanceLock')}>

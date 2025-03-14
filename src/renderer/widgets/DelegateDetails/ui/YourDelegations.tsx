@@ -8,7 +8,7 @@ import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
-import { allTracks, votingService } from '@/entities/governance';
+import { allTracks } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -116,27 +116,14 @@ export const YourDelegations = () => {
                   />
                 </Box>
 
-                <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
-                  <BodyText>
-                    <Trans
-                      t={t}
-                      i18nKey="governance.addDelegation.balanceValue"
-                      values={{ conviction: votingService.getConvictionMultiplier(activeDelegation.conviction) }}
-                      components={{
-                        balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
-                      }}
-                    />
-                  </BodyText>
-                </Box>
-
-                <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
-                  <BodyText>
-                    <AssetBalance
-                      value={votingService.calculateVotingPower(activeDelegation.balance, activeDelegation.conviction)}
-                      asset={chain.assets[0]}
-                    />
-                  </BodyText>
-                </Box>
+                <BodyText>
+                  <Trans
+                    t={t}
+                    i18nKey="general.actions.multiply"
+                    values={{ multiplier: activeDelegation.conviction }}
+                    components={{ balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} /> }}
+                  />
+                </BodyText>
 
                 <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
                   <Tooltip side="bottom">

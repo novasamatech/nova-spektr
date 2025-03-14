@@ -1,14 +1,15 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { Fragment, useMemo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { formatAsset, nullable, toAccountId } from '@/shared/lib/utils';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Modal } from '@/shared/ui-kit';
+import { Box, Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
@@ -99,14 +100,17 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
               </div>
               <BodyText className="col-span-2 px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
               <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
-                <BodyText className="whitespace-nowrap">
-                  <AssetBalance value={vote.votingPower} asset={asset} />
-                </BodyText>
-                <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                  {t('general.actions.multiply', {
-                    value: formatAsset(vote.balance, asset),
-                    multiplier: vote.conviction,
-                  })}
+                <AssetBalance value={vote.balance} asset={asset} />
+
+                <FootnoteText>
+                  <Trans
+                    t={t}
+                    i18nKey="general.actions.multiply"
+                    values={{ multiplier: vote.conviction }}
+                    components={{
+                      balance: <AssetBalance className="text-footnote" value={vote.balance} asset={asset} />,
+                    }}
+                  />
                 </FootnoteText>
               </div>
             </Fragment>
@@ -135,12 +139,14 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                     value={votingService.calculateVotingPower(delegate.amount, delegate.conviction)}
                   />
                 </BodyText>
-                <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                  {t('general.actions.multiply', {
-                    value: formatAsset(delegate.amount, asset),
-                    multiplier: votingService.getConvictionMultiplier(delegate.conviction),
-                  })}
-                </FootnoteText>
+                <Box direction="row" horizontalAlign="end">
+                  <Trans
+                    t={t}
+                    i18nKey="general.actions.multiply"
+                    values={{ multiplier: delegate.conviction }}
+                    components={{ balance: <AssetBalance value={delegate.amount} asset={asset} /> }}
+                  />
+                </Box>
               </div>
             </Fragment>
           ))}
