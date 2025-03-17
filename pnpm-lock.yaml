@@ -336,6 +336,9 @@ importers:
       '@vitest/ui':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5)
+      allure-js-commons:
+        specifier: 3.2.0
+        version: 3.2.0(allure-playwright@3.0.6(@playwright/test@1.49.1))
       allure-playwright:
         specifier: 3.0.6
         version: 3.0.6(@playwright/test@1.49.1)
@@ -3330,6 +3333,14 @@ packages:
     resolution: {integrity: sha512-q3r3Cj3sG6hR7jH8SGkfNleLJK+yFAGwzyFDGzIfu+WLZ4yeFcBZHkWuq7QreRpxvsZWNby/38jhrj5yYFwQ2g==}
     peerDependencies:
       allure-playwright: 3.0.6
+    peerDependenciesMeta:
+      allure-playwright:
+        optional: true
+
+  allure-js-commons@3.2.0:
+    resolution: {integrity: sha512-UXRo3D6/XEIMosro+OldWj8phJ65eSOYaAUlThOpl6nJJ0sGngMpJYog+Z9FmZDo1BZn4edwLs4aAUaTgkz4Cg==}
+    peerDependencies:
+      allure-playwright: 3.2.0
     peerDependenciesMeta:
       allure-playwright:
         optional: true
@@ -12526,6 +12537,12 @@ snapshots:
       require-from-string: 2.0.2
 
   allure-js-commons@3.0.6(allure-playwright@3.0.6(@playwright/test@1.49.1)):
+    dependencies:
+      md5: 2.3.0
+    optionalDependencies:
+      allure-playwright: 3.0.6(@playwright/test@1.49.1)
+
+  allure-js-commons@3.2.0(allure-playwright@3.0.6(@playwright/test@1.49.1)):
     dependencies:
       md5: 2.3.0
     optionalDependencies:
