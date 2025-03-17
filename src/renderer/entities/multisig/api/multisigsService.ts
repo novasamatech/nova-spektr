@@ -42,16 +42,20 @@ async function filterMultisigsAccounts(
   accountIds: AccountId[],
   chain: Chain,
 ): Promise<MultisigResult[]> {
-  const data = await client.request(FILTER_MULTISIG_ACCOUNT_IDS, { accountIds });
+  try {
+    const data = await client.request(FILTER_MULTISIG_ACCOUNT_IDS, { accountIds });
 
-  const filteredMultisigs = (data as any)?.accounts?.nodes?.map(({ id, threshold, signatories }: any) => ({
-    accountId: id,
-    threshold,
-    signatories: signatories.nodes.map(({ signatory }: any) => signatory.id),
-    chain,
-  }));
+    const filteredMultisigs = (data as any)?.accounts?.nodes?.map(({ id, threshold, signatories }: any) => ({
+      accountId: id,
+      threshold,
+      signatories: signatories.nodes.map(({ signatory }: any) => signatory.id),
+      chain,
+    }));
 
-  return filteredMultisigs || [];
+    return filteredMultisigs || [];
+  } catch {
+    return [];
+  }
 }
 
 function getUniqMultisigs(results: MultisigResult[]): MultisigResult[] {
@@ -127,7 +131,7 @@ async function findShellMultisigs(
 ): Promise<Map<string, MultisigResult>> {
   const shellFlexibleMultisigs = new Map();
 
-  await Promise.all(
+  await Promise.allSettled(
     multisigs.map(async (mult) => {
       const id = `${mult.chain.chainId}-${mult.accountId}`;
       const api = apis[mult.chain.chainId];
