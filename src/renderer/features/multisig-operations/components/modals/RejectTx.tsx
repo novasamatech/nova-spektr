@@ -185,7 +185,7 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
       <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
-            tx={tx}
+            operation={tx}
             account={account}
             api={api}
             chain={chain}

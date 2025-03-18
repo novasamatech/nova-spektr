@@ -59,13 +59,19 @@ export const buildMultisigTx = (
     accountId: account.accountId,
     depositor: multisigTx.accountId,
     chainId: multisigTx.chainId,
-    callData: multisigTx.args.callData,
+    transaction: multisigTx.args.callData
+      ? {
+          type: 'encoded',
+          callData: multisigTx.args.callData,
+        }
+      : null,
     callHash: multisigTx.args.callHash,
     status: 'pending',
     blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
     indexCreated: params.timepoint.index,
     timestamp: Date.now(),
     events: [event],
-    ...tx,
+    section: tx.section ?? null,
+    method: tx.method ?? null,
   };
 };

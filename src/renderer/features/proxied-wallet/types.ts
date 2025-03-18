@@ -1,9 +1,8 @@
-import { type HexString, type ProxyType } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type DecodedTransaction } from '@/domains/network';
+import { type Address, type ProxyType } from '@/shared/core';
+import { type DecodedTransaction, type EncodedTransaction } from '@/domains/network';
 
 export type ProxyTransaction = DecodedTransaction<{
-  real: AccountId;
+  real: Address;
   forceProxyType: ProxyType;
-  call: HexString;
+  call: EncodedTransaction;
 }>;

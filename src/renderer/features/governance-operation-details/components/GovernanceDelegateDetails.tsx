@@ -1,29 +1,31 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Address } from '@/shared/core';
+import { type Address, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyDecodedTransaction } from '@/domains/network';
 import { TracksDetails } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { isUndelegateTransaction } from '@/entities/transaction';
 
-type Props = { operation: MultisigOperation };
+type Props = {
+  transaction: AnyDecodedTransaction;
+  chainId: ChainId;
+};
 
-export const GovernanceDelegateDetails = ({ operation }: Props) => {
+export const GovernanceDelegateDetails = ({ transaction, chainId }: Props) => {
   const { t } = useI18n();
-  const transaction = operationDetailsUtils.getOperationData(operation);
 
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
 
-  const chain = chains[operation.chainId];
-  const api = apis[operation.chainId];
+  const chain = chains[chainId];
+  const api = apis[chainId];
 
   const defaultAsset = chain?.assets[0];
 
@@ -40,17 +42,17 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
 
     if (!api) return;
 
-    operationDetailsUtils.getUndelegationData(api, operation).then(({ votes, target }) => {
+    operationDetailsUtils.getUndelegationData(api, transaction).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
       setIsUndelegationLoading(false);
     });
-  }, [api, operation]);
+  }, [api, transaction]);
 
   // TODO: Move this to domain layer
-  const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
-  const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
-  const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
+  const delegationTarget = operationDetailsUtils.getDelegationTarget(transaction);
+  const delegationTracks = operationDetailsUtils.getDelegationTracks(transaction);
+  const delegationVotes = operationDetailsUtils.getDelegationVotes(transaction);
 
   if (isUndelegationLoading) {
     result.push(

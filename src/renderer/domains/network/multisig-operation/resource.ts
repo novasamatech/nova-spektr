@@ -1,14 +1,11 @@
 import { gql } from '@apollo/client';
-import { type ApiPromise } from '@polkadot/api';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
-import { vecSchema } from '@/shared/polkadotjs-schemas/structs';
-import { decodeCallData } from '@/entities/transaction';
+import { type EncodedTransaction } from '../transaction/types';
 
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
@@ -25,7 +22,7 @@ const operationsGqlSchema = z.object({
   method: z.string().nullable(),
   section: z.string().nullable(),
   events: z.object({
-    nodes: vecSchema(
+    nodes: z.array(
       z.object({
         accountId: z.string().transform(pjsSchema.helpers.toAccountId),
         status: z.enum(['approve', 'reject']),
@@ -74,9 +71,25 @@ function mapSubqueryOperationRecord(node: unknown, chainId: ChainId): MultisigOp
     response.indexCreated,
   );
 
+  const transaction: EncodedTransaction | null = response.callData
+    ? {
+        type: 'encoded',
+        callData: response.callData,
+      }
+    : null;
+
   return {
-    ...response,
     id: operationId,
+    transaction,
+    section: response.section,
+    method: response.method,
+    timestamp: response.timestamp,
+    accountId: response.accountId,
+    callHash: response.callHash,
+    blockCreated: response.blockCreated,
+    indexCreated: response.indexCreated,
+    status: response.status,
+    depositor: response.depositor,
     events: response.events.nodes.map(event => {
       return {
         ...event,
@@ -91,33 +104,25 @@ export async function fetchOperations(
   url: string,
   accountId: AccountId,
   chainId: ChainId,
-  api: ApiPromise,
 ): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
   const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
 
-  return result.multisigOperations.nodes
-    .map((node: unknown) => mapSubqueryOperationRecord(node, chainId))
-    .filter(nonNullable)
-    .map((record: MultisigOperation) => {
-      if (record.callData) {
-        try {
-          const decoded = decodeCallData(api, record.accountId, record.callData);
-          return {
-            ...record,
-            args: decoded.args,
-          };
-        } catch {
-          return record;
-        }
-      }
-      return record;
-    });
+  return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, chainId));
 }
 
-export const multisigEvent = pjsSchema.tupleMap(
-  ['accountId', pjsSchema.accountId],
-  ['timepoint', multisigPallet.schema.multisigTimepoint],
-  ['multisigAccountId', pjsSchema.accountId],
-  ['callHash', pjsSchema.hex],
-);
+export const multisigEvent = z.union([
+  pjsSchema.tupleMap(
+    ['accountId', pjsSchema.accountId],
+    ['timepoint', multisigPallet.schema.multisigTimepoint],
+    ['multisigAccountId', pjsSchema.accountId],
+    ['callHash', pjsSchema.hex],
+  ),
+  pjsSchema.tupleMap(
+    ['accountId', pjsSchema.accountId],
+    ['timepoint', multisigPallet.schema.multisigTimepoint],
+    ['multisigAccountId', pjsSchema.accountId],
+    ['callHash', pjsSchema.hex],
+    ['status', pjsSchema.enumType('Ok', 'Basic', 'Empty', 'Err', 'None')],
+  ),
+]);

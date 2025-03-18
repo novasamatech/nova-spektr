@@ -21,22 +21,22 @@ import ApproveTxModal from './modals/ApproveTx';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigOperation;
+  operation: MultisigOperation;
   account: MultisigAccount;
 };
 
-export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
+export const FlexibleMultisigShell = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const { connection, chain, api, extendedChain } = useNetworkData(tx.chainId);
+  const { connection, chain, api, extendedChain } = useNetworkData(operation.chainId);
 
-  const events = tx.events;
+  const events = operation.events;
 
   const wallets = useUnit(walletModel.$wallets);
   const signatories = account.signatories;
   const isRejectAvailable = wallets.some(wallet => {
-    const hasDepositor = wallet.accounts.some(account => account.accountId === tx.depositor);
+    const hasDepositor = wallet.accounts.some(account => account.accountId === operation.depositor);
 
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'pending';
+    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && operation.status === 'pending';
   });
 
   const approvals = events.filter(e => e.status === 'approve');
@@ -48,7 +48,11 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
       <Plate className="mt-6 flex w-92 flex-col gap-6 rounded-2xl border-filter-border p-6">
         <Box gap={4}>
           <Box horizontalAlign="center">
-            <Status status={tx.status} signed={approvals.length} threshold={account.threshold ?? approvals.length} />
+            <Status
+              status={operation.status}
+              signed={approvals.length}
+              threshold={account.threshold ?? approvals.length}
+            />
           </Box>
 
           <SmallTitleText align="center">{t('operation.createFlexibleMultisig.title')}</SmallTitleText>
@@ -62,21 +66,21 @@ export const FlexibleMultisigShell = memo(({ tx, account }: Props) => {
 
         <div className="flex items-center">
           {connection && isRejectAvailable && (
-            <ConfirmReject api={api} tx={tx} account={account} chain={chain}>
+            <ConfirmReject api={api} operation={operation} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </ConfirmReject>
           )}
           {connection && (
-            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
+            <ApproveTxModal api={api} tx={operation} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}
         </div>
         <Signatories signatories={signatories} connection={extendedChain} events={events} chain={extendedChain} />
 
-        <Details tx={tx} chain={extendedChain} />
+        <Details operation={operation} chain={extendedChain} />
       </Plate>
     </div>
   );
@@ -171,7 +175,7 @@ const Signatories = memo(({ signatories, connection, events, chain }: Signatorie
   );
 });
 
-const Details = ({ tx, chain }: { tx: MultisigOperation; chain: Chain }) => {
+const Details = ({ operation, chain }: { operation: MultisigOperation; chain: Chain }) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
 
@@ -180,7 +184,7 @@ const Details = ({ tx, chain }: { tx: MultisigOperation; chain: Chain }) => {
       <Accordion.Trigger>{t('operation.detailsTitle')}</Accordion.Trigger>
       <Accordion.Content>
         <div className="mt-3">
-          <OperationAdvancedDetails tx={tx} chain={chain} wallets={wallets} />
+          <OperationAdvancedDetails operation={operation} chain={chain} wallets={wallets} />
         </div>
       </Accordion.Content>
     </Accordion>
@@ -189,13 +193,13 @@ const Details = ({ tx, chain }: { tx: MultisigOperation; chain: Chain }) => {
 
 type ConfirmRejectParams = {
   api: ApiPromise;
-  tx: MultisigOperation;
+  operation: MultisigOperation;
   account: MultisigAccount;
   chain: Chain;
   children: React.ReactNode;
 };
 
-const ConfirmReject = ({ api, tx, account, chain, children }: ConfirmRejectParams) => {
+const ConfirmReject = ({ api, operation, account, chain, children }: ConfirmRejectParams) => {
   const { t } = useI18n();
   const isRejectConfirmOpen = useUnit(flexibleShellModel.$isRejectConfirmOpen);
 
@@ -228,7 +232,7 @@ const ConfirmReject = ({ api, tx, account, chain, children }: ConfirmRejectParam
           >
             {t('general.button.cancelButton')}
           </Button>
-          <RejectTxModal api={api} tx={tx} account={account} chain={chain}>
+          <RejectTxModal api={api} tx={operation} account={account} chain={chain}>
             <Button size="sm" className="w-full" pallet="error" variant="fill">
               {t('operation.rejectButton')}
             </Button>

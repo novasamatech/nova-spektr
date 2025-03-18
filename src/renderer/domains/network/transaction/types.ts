@@ -12,5 +12,10 @@ export interface EncodedTransaction {
   callData: HexString;
 }
 
-export type AnyDecodedTransaction<Args extends NonNullable<unknown> = NonNullable<unknown>> = DecodedTransaction<Args>;
+export type AnyDecodedTransaction<Args extends NonNullable<unknown> = Record<string, unknown>> =
+  DecodedTransaction<Args>;
 export type AnyTransaction = EncodedTransaction | AnyDecodedTransaction;
+
+export type BatchTransaction = DecodedTransaction<{
+  calls: AnyDecodedTransaction[];
+}>;

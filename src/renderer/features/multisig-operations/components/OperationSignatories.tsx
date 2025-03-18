@@ -150,7 +150,7 @@ export const OperationSignatories = ({ tx, connection, account }: Props) => {
 
       <LogModal
         isOpen={isLogModalOpen}
-        tx={tx}
+        operation={tx}
         account={account}
         connection={connection}
         contacts={contacts}

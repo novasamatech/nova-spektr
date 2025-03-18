@@ -13,7 +13,7 @@ import { WalletIcon, accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
-  tx: MultisigOperation;
+  operation: MultisigOperation;
   wallets: Wallet[];
   chain: Chain;
 };
@@ -21,11 +21,11 @@ type Props = {
 const InteractionStyle =
   'rounded hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
+export const OperationAdvancedDetails = ({ operation, wallets, chain }: Props) => {
   const { t } = useI18n();
   const accounts = useUnit(walletSelect.$selectedAccounts);
 
-  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
+  const { indexCreated, blockCreated, deposit, depositor, callHash, transaction } = operation;
   const valueClass = 'text-text-secondary';
   const multisigAccount = accounts.find(a => accountUtils.isMultisigAccount(a));
   const signatories = (multisigAccount as MultisigAccount).signatories;
@@ -61,14 +61,14 @@ export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
         </DetailRow>
       )}
 
-      {callData && (
+      {transaction && (
         <DetailRow label={t('operation.details.callData')} className={valueClass}>
           <button
             type="button"
             className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-            onClick={() => copyToClipboard(callData)}
+            onClick={() => copyToClipboard(transaction.callData)}
           >
-            <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+            <FootnoteText className="text-inherit">{truncate(transaction.callData, 7, 8)}</FootnoteText>
             <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
           </button>
         </DetailRow>

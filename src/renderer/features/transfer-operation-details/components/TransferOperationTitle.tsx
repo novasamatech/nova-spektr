@@ -1,21 +1,32 @@
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyDecodedTransaction } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 import { useTransactionAsset } from '../hooks/useTransactionAsset';
 
 type Props = {
-  operation: MultisigOperation;
+  transaction: AnyDecodedTransaction;
+  chainId: ChainId;
+  variant: 'long' | 'short';
 };
 
-export const TransferOperationTitle = ({ operation }: Props) => {
+export const TransferOperationTitle = ({ transaction, chainId, variant }: Props) => {
   const { t } = useI18n();
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const asset = useTransactionAsset(operation);
+  const asset = useTransactionAsset(transaction, chainId);
   const amount = transaction ? getTransactionAmount(transaction) : null;
+
+  if (variant === 'short') {
+    return (
+      <TransactionTitle
+        className="flex-1 overflow-hidden"
+        title={t('operations.titles.transfer', { asset: asset?.symbol })}
+        icon="transferMst"
+      />
+    );
+  }
 
   return (
     <>
@@ -32,7 +43,7 @@ export const TransferOperationTitle = ({ operation }: Props) => {
         </Box>
       )}
 
-      <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      <ChainTitle chainId={chainId} className="w-[114px]" />
     </>
   );
 };

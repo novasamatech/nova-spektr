@@ -7,7 +7,12 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { transactionService } from './service';
 import { metadata } from './service.mocks';
-import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from './types';
+import {
+  type AnyDecodedTransaction,
+  type BatchTransaction,
+  type DecodedTransaction,
+  type EncodedTransaction,
+} from './types';
 
 type TrasferDecodedTransaction = DecodedTransaction<{
   destination: AccountId;
@@ -103,6 +108,55 @@ describe('Transaction service', () => {
         `[Error: Can't decode extrinsic]`,
       );
     });
+
+    it('should decode batch', async () => {
+      const api = await createMockApi();
+      const transaction: EncodedTransaction = {
+        callData: '0x18000404030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
+        type: 'encoded',
+      };
+
+      transactionService.decodeTransactionTransformer.registerHandler({
+        available: () => true,
+        body(extrinsic) {
+          if (extrinsic.method.section === 'balances' && extrinsic.method.method === 'transferKeepAlive') {
+            const destination = extrinsic.args[0]?.toHex();
+            const amount = extrinsic.args[1]?.toString();
+
+            return {
+              type: 'decoded',
+              section: extrinsic.method.section,
+              method: extrinsic.method.method,
+              args: {
+                destination,
+                amount,
+              },
+            };
+          }
+        },
+      });
+
+      expect(transactionService.decodeTransaction(transaction, api)).toMatchInlineSnapshot(`
+        {
+          "args": {
+            "calls": [
+              {
+                "args": {
+                  "amount": "1000000000000",
+                  "destination": "0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242",
+                },
+                "method": "transferKeepAlive",
+                "section": "balances",
+                "type": "decoded",
+              },
+            ],
+          },
+          "method": "batch",
+          "section": "utility",
+          "type": "decoded",
+        }
+      `);
+    });
   });
 
   describe('encoding', () => {
@@ -150,6 +204,45 @@ describe('Transaction service', () => {
       expect(() => transactionService.encodeTransaction(decodedTransaction, api)).toThrowErrorMatchingInlineSnapshot(
         `[Error: Serializer for transaction balances.transferKeepAlive not found]`,
       );
+    });
+
+    it('should encode batch', async () => {
+      const api = await createMockApi();
+      const transaction: BatchTransaction = {
+        type: 'decoded',
+        section: 'utility',
+        method: 'batch',
+        args: {
+          calls: [
+            {
+              type: 'decoded',
+              section: 'balances',
+              method: 'transferKeepAlive',
+              args: {
+                amount: '1000000000000',
+                destination: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+              },
+            },
+          ],
+        },
+      };
+
+      transactionService.encodeTransactionTransformer.registerHandler({
+        available: () => true,
+        body(transaction) {
+          if (isTransferTransaction(transaction)) {
+            const extrinsic = api.tx.balances.transferKeepAlive(transaction.args.destination, transaction.args.amount);
+            return extrinsic.method.toHex();
+          }
+        },
+      });
+
+      expect(transactionService.encodeTransaction(transaction, api)).toMatchInlineSnapshot(`
+        {
+          "callData": "0x18000404030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8",
+          "type": "encoded",
+        }
+      `);
     });
   });
 });

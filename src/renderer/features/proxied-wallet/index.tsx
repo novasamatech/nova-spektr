@@ -4,7 +4,6 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -18,7 +17,7 @@ import { walletsModel } from './model/wallets';
 import { proxyService } from './services/proxyTransaction';
 import { type ProxyTransaction } from './types';
 
-export { walletActionsSlot };
+export { walletActionsSlot, proxyService };
 
 export const proxiedWalletFeature = createFeature({
   name: 'wallet/proxied',
@@ -63,10 +62,13 @@ transactionSDK(proxiedWalletFeature, {
         section: 'proxy',
         method: 'proxy',
         args: {
-          real: pjsSchema.helpers.toAccountId(extrinsic.args[0].toHex()),
+          real: extrinsic.args[0].toString(),
           // @ts-expect-error TODO use zod schemas
-          forceProxyType: extrinsic.args[1].toString(),
-          call: extrinsic.args[2].toHex(),
+          forceProxyType: extrinsic.args[1].unwrapOr('').toString(),
+          call: {
+            type: 'encoded',
+            callData: extrinsic.args[2].toHex(),
+          },
         },
       };
 
@@ -83,7 +85,7 @@ transactionSDK(proxiedWalletFeature, {
         args: {
           real: account.accountId,
           forceProxyType: account.proxyType,
-          call: encodedTransaction.callData,
+          call: encodedTransaction,
         },
       };
 
@@ -94,7 +96,7 @@ transactionSDK(proxiedWalletFeature, {
     if (proxyService.isProxyTransaction(transaction)) {
       return {
         type: 'encoded',
-        callData: transaction.args.call,
+        callData: transaction.args.call.callData,
       };
     }
   },

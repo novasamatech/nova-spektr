@@ -6,20 +6,19 @@ import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
+import { transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
-  TransactionTitle,
   getTransactionType,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
-
-import { ProxyOperationTitle } from './components/ProxyOperationTitle';
+import { multisigOperationSDK } from '@/sdk/multisig-operation';
+import { operationDetailsSlot } from '@/features/multisig-operations';
+import { proxyService } from '@/features/proxied-wallet';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -36,18 +35,43 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
   return Title[transactionType];
 };
 
-proxyOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
+multisigOperationSDK(proxyOperationDetailFeature, {
+  icon(transaction) {
+    const type = getTransactionType(transaction?.method, transaction?.section);
+    if (
+      type === TransactionType.PROXY ||
+      type === TransactionType.ADD_PROXY ||
+      type === TransactionType.REMOVE_PROXY ||
+      type === TransactionType.CREATE_PURE_PROXY ||
+      type === TransactionType.REMOVE_PURE_PROXY
+    ) {
+      return 'proxyMst';
+    }
+  },
+  details({ transaction, chainId, multisigAccountId }) {
     const { t } = useI18n();
-    const transaction = operationDetailsUtils.getOperationData(operation);
     const chains = useUnit(networkModel.$chains);
-    const chain = chains[operation.chainId];
+    const apis = useUnit(networkModel.$apis);
+    const chain = chains[chainId];
+    const api = apis[chainId];
 
     const result = [];
 
-    const delegate = operationDetailsUtils.getDelegate(operation);
-    const sender = operationDetailsUtils.getSender(operation);
-    const proxyType = operationDetailsUtils.getProxyType(operation);
+    if (proxyService.isProxyTransaction(transaction) && api) {
+      try {
+        result.push(
+          operationDetailsSlot.render({
+            transaction: transactionService.decodeTransaction(transaction.args.call, api),
+            chainId,
+            multisigAccountId,
+          }),
+        );
+      } catch {}
+    }
+
+    const delegate = transaction.args.delegate;
+    const sender = multisigAccountId;
+    const proxyType = transaction.args.proxyType;
 
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
@@ -81,34 +105,6 @@ proxyOperationDetailFeature.inject(operationDetailsSlot, {
       );
     }
 
-    return <>{result.map((e) => e)}</>;
+    return <>{result}</>;
   },
-  order: 1,
-});
-
-proxyOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
-
-  const title = transactionType && getOperationTitle(transactionType);
-
-  if (title) {
-    return <ProxyOperationTitle operation={operation} title={title} />;
-  }
-
-  return null;
-});
-
-proxyOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
-  const { t } = useI18n();
-  const transaction = operationDetailsUtils.getOperationData(operation);
-  const transactionType = getTransactionType(transaction?.method, transaction?.section);
-
-  const title = transactionType && getOperationTitle(transactionType);
-
-  if (title) {
-    return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;
-  }
-
-  return null;
 });

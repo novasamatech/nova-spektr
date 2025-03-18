@@ -6,7 +6,12 @@ import { createTransformer } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '../account/types';
 
-import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction } from './types';
+import {
+  type AnyDecodedTransaction,
+  type AnyTransaction,
+  type BatchTransaction,
+  type EncodedTransaction,
+} from './types';
 
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
@@ -22,7 +27,11 @@ const unwrapTransactionTransformer = createTransformer<
   { api: ApiPromise }
 >();
 const encodeTransactionTransformer = createTransformer<AnyDecodedTransaction, HexString, { api: ApiPromise }>();
-const decodeTransactionTransformer = createTransformer<SubmittableExtrinsic<'promise'>, AnyDecodedTransaction>();
+const decodeTransactionTransformer = createTransformer<
+  SubmittableExtrinsic<'promise'>,
+  AnyDecodedTransaction,
+  { api: ApiPromise }
+>();
 
 function isEncodedTransaction(transaction: AnyTransaction): transaction is EncodedTransaction {
   return transaction.type === 'encoded';
@@ -30,6 +39,14 @@ function isEncodedTransaction(transaction: AnyTransaction): transaction is Encod
 
 function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDecodedTransaction {
   return transaction.type === 'decoded';
+}
+
+function isBatchTransaction(transaction: AnyTransaction): transaction is BatchTransaction {
+  return (
+    isDecodedTransaction(transaction) &&
+    transaction.section === 'utility' &&
+    ['batchAll', 'batch', 'forceBatch'].includes(transaction.method)
+  );
 }
 
 async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
@@ -43,7 +60,7 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
   return wrapped;
 }
 
-async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
+function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
   const decoded = decodeTransaction(transaction, api);
   const list = [decoded];
   let last: AnyDecodedTransaction | null = decoded;
@@ -61,12 +78,12 @@ async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
 }
 
 function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): SubmittableExtrinsic<'promise'> {
-  const encodedExtrinsic = encodeTransaction(transaction, api);
+  const encodedTransaction = encodeTransaction(transaction, api);
 
   try {
-    return api.tx(encodedExtrinsic.callData);
+    return api.tx(encodedTransaction.callData);
   } catch {
-    const extrinsicCall = api.createType('Call', encodedExtrinsic.callData);
+    const extrinsicCall = api.createType('Call', encodedTransaction.callData);
     const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
 
     const apiSection = api.tx[section];
@@ -83,6 +100,21 @@ function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise
 function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): EncodedTransaction {
   if (isEncodedTransaction(transaction)) {
     return transaction;
+  }
+
+  // Batched extrinsics are supported out of the box.
+  if (transaction.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(transaction.method)) {
+    const calls = (transaction as BatchTransaction).args.calls.map(c => encodeTransaction(c, api).callData);
+    const method = api.tx.utility[transaction.method];
+
+    if (!method) {
+      throw new Error(`Batch method ${transaction.method} not found!`);
+    }
+
+    return {
+      type: 'encoded',
+      callData: method(calls).method.toHex(),
+    };
   }
 
   const callData = encodeTransactionTransformer(transaction, { api });
@@ -104,7 +136,27 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
   }
 
   const decoded = createSubmittableExtrinsic(transaction, api);
-  const result = decodeTransactionTransformer(decoded);
+
+  // Batched extrinsics are supported out of the box.
+  const { section, method } = decoded.method;
+  if (section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(method)) {
+    const callsArg = decoded.args[0]?.toHex();
+    if (callsArg) {
+      const calls = api.createType('Vec<Call>', callsArg);
+      const batchedTransactions = calls.map(call => {
+        return decodeTransaction({ type: 'encoded', callData: call.toHex() }, api);
+      });
+
+      return {
+        type: 'decoded',
+        section,
+        method,
+        args: { calls: batchedTransactions },
+      } satisfies BatchTransaction;
+    }
+  }
+
+  const result = decodeTransactionTransformer(decoded, { api });
   if (nullable(result)) {
     const error = new Error("Can't decode extrinsic");
     error.cause = transaction;
@@ -132,6 +184,7 @@ export const transactionService = {
 
   isEncodedTransaction,
   isDecodedTransaction,
+  isBatchTransaction,
 
   wrapTransaction,
   unwrapTransaction,

@@ -1,5 +1,4 @@
-export { logTitleSlot } from './components/LogModal';
-export { operationTitleSlot } from './components/Operation';
+export { operationTitleSlot } from './components/OperationTitle';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmation';
 export { Operations } from './components/Operations';

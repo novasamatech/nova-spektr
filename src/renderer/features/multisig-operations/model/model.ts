@@ -1,6 +1,5 @@
 import { createEvent, restore, sample } from 'effector';
 
-import { series } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation, multisigOperations } from '@/domains/network';
 import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
@@ -13,10 +12,10 @@ const removeAccountTransactions = createEvent<AccountId>();
 
 const $filteredTxs = restore(changeFilteredTxs, []).reset(accountMultisigOperations.$accountOperations);
 
-sample({
-  clock: multisigOperationsFeature.running,
-  target: series(multisigOperations.requestOperations),
-});
+// sample({
+//   clock: multisigOperationsFeature.running,
+//   target: series(multisigOperations.requestOperations),
+// });
 
 sample({
   clock: multisigOperationsFeature.running,

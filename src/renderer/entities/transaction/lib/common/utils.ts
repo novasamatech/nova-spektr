@@ -3,7 +3,7 @@ import { type DispatchError } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
-import { type MultisigOperationData } from '@/domains/network';
+import { type AnyDecodedTransaction, type MultisigOperationData } from '@/domains/network';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 import { getTransactionType } from '../callDataDecoder';
 
@@ -49,7 +49,7 @@ export const hasDestWeight = (api: ApiPromise): boolean => {
 };
 
 export const getType = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
+  transaction?: Transaction | DecodedTransaction | MultisigOperationData | AnyDecodedTransaction,
 ): TransactionType | undefined => {
   if (!transaction) return;
 
@@ -102,7 +102,7 @@ export const isProxyTypeTransaction = (
 };
 
 export const isAddProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
+  transaction?: Transaction | DecodedTransaction | MultisigOperationData | AnyDecodedTransaction,
 ): boolean => {
   const type = getType(transaction);
   if (!type) return false;

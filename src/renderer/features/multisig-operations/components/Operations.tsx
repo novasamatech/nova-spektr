@@ -31,13 +31,13 @@ export const Operations = memo(() => {
   }, [filteredTxs]);
 
   const nodes = useMemo(() => {
-    return groupedTxs.map(([date, txs]) => (
+    return groupedTxs.map(([date, operations]) => (
       <section className="mt-6 w-fit" key={date}>
         <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
         <ul className="flex w-[736px] flex-col gap-y-1.5">
-          {txs.map(tx => (
-            <li key={tx.timestamp}>
-              <Operation tx={tx} account={account} />
+          {operations.map(operation => (
+            <li key={operation.timestamp}>
+              <Operation operation={operation} />
             </li>
           ))}
         </ul>
@@ -50,7 +50,7 @@ export const Operations = memo(() => {
   }, []);
 
   if (incompleteFlexibleMultisigTx && account) {
-    return <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx} account={account} />;
+    return <FlexibleMultisigShell operation={incompleteFlexibleMultisigTx} account={account} />;
   }
 
   return (

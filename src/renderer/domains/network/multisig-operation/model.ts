@@ -10,7 +10,7 @@ import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
-import { decodeCallData, getDataFromCallData } from '@/entities/transaction';
+import { getDataFromCallData } from '@/entities/transaction';
 
 import { transformDepositToBN, transformDepositToString } from './helpers';
 import { fetchOperations, multisigEvent } from './resource';
@@ -41,25 +41,25 @@ const removeTransactionsFx = createEffect((transactions: MultisigOperation[]) =>
 });
 
 type UpdateCallDataParams = {
-  tx: MultisigOperation;
+  operation: MultisigOperation;
   callData: HexString;
 };
 
 const updateCallDataFx = attach({
   source: networkModel.$apis,
-  effect(apis, { tx, callData }: UpdateCallDataParams) {
+  effect(apis, { operation, callData }: UpdateCallDataParams) {
     const update = scopeBind(updateTransactionsFx, { safe: true });
-    const api = apis[tx.chainId];
+    const api = apis[operation.chainId];
     if (!api) {
-      throw new Error(`Api from tx not found: ${tx.chainId}`);
+      throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
     const { decoded } = getDataFromCallData(api, callData);
-    const transaction = {
-      ...tx,
+    const newOperation = {
+      ...operation,
       ...(decoded.method.toHuman() as MultisigOperationData),
     };
 
-    return update([transaction]);
+    return update([newOperation]);
   },
 });
 
@@ -108,11 +108,6 @@ const { request: requestOperations } = createDataSource({
       });
 
       const callData = transaction?.method.toHex() || null;
-      let args: Record<string, any> = {};
-      if (callData) {
-        const decoded = decodeCallData(api, key.accountId, callData);
-        args = decoded.args;
-      }
 
       operations.push({
         id: operationId,
@@ -124,10 +119,17 @@ const { request: requestOperations } = createDataSource({
         blockCreated: multisig.when.height,
         indexCreated: multisig.when.index,
         deposit: multisig.deposit,
+        // TODO what should we do?
+        method: null,
+        section: null,
         timestamp,
         events,
-        callData,
-        args,
+        transaction: callData
+          ? {
+              type: 'encoded',
+              callData,
+            }
+          : null,
       });
     }
 
@@ -147,14 +149,14 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];
 
-    for (const { chain, accountId, api } of params) {
+    for (const { chain, accountId } of params) {
       const url = chain.externalApi?.proxy.find(x => x.type === 'subquery')?.url;
       if (nullable(url)) {
         throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
       }
 
       const fn = () => {
-        fetchOperations(url, accountId, chain.chainId, api).then(value => {
+        fetchOperations(url, accountId, chain.chainId).then(value => {
           callback({ done: true, value });
         });
       };

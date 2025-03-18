@@ -1,32 +1,35 @@
 import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
+import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyDecodedTransaction } from '@/domains/network';
 import { voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
 
-type Props = { operation: MultisigOperation };
+type Props = {
+  transaction: AnyDecodedTransaction;
+  chainId: ChainId;
+};
 
-export const GovernanceVoteDetails = ({ operation }: Props) => {
+export const GovernanceVoteDetails = ({ transaction, chainId }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const chain = chains[operation.chainId];
+  const chain = chains[chainId];
   const defaultAsset = chain?.assets[0];
 
   const result = [];
 
-  const referendumId = operationDetailsUtils.getReferendumId(operation);
-  const vote = operationDetailsUtils.getVote(operation);
+  const referendumId = transaction.args.referendum;
+  const vote = transaction.args.vote;
 
   if (referendumId) {
     result.push(
       <DetailRow label={t('operation.details.referendum')} className="text-text-secondary">
-        <FootnoteText className="text-text-secondary">#{referendumId}</FootnoteText>
+        <FootnoteText className="text-text-secondary">#{referendumId.toString()}</FootnoteText>
       </DetailRow>,
     );
   }
@@ -36,14 +39,17 @@ export const GovernanceVoteDetails = ({ operation }: Props) => {
       <DetailRow label={t('operation.details.votes')} className="text-text-secondary">
         <FootnoteText className="text-text-secondary">
           <>
-            <span className="uppercase">{t(`governance.referendum.${voteTransactionService.getDecision(vote)}`)}</span>:{' '}
+            <span className="uppercase">
+              {t(`governance.referendum.${voteTransactionService.getDecision(vote as never)}`)}
+            </span>
+            :{' '}
             <Trans
               t={t}
               i18nKey="governance.addDelegation.votesValue"
               components={{
                 votes: (
                   <AssetBalance
-                    value={voteTransactionService.getVotes(vote)}
+                    value={voteTransactionService.getVotes(vote as never)}
                     asset={defaultAsset}
                     showSymbol={false}
                     className="text-text-secondary"

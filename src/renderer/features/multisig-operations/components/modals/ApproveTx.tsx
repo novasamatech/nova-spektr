@@ -4,21 +4,12 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-import {
-  type Asset,
-  type Chain,
-  type HexString,
-  type MultisigAccount,
-  type Timepoint,
-  type Transaction,
-} from '@/shared/core';
+import { type Chain, type HexString, type MultisigAccount, type Timepoint, type Transaction } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import {
   TEST_ADDRESS,
-  getAssetById,
-  getAssetByTypeExtras,
   getNativeAsset,
   nullable,
   toAccountId,
@@ -28,7 +19,12 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  multisigOperationService,
+  transactionService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -37,14 +33,14 @@ import { priceProviderModel } from '@/entities/price';
 import {
   MAX_WEIGHT,
   OperationResult,
-  getTxFromCallData,
   isXcmTransaction,
-  transactionService,
+  transactionService as oldTransactionService,
   validateBalance,
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { type SigningPayload } from '@/features/operations/OperationSign';
+import { useTransactionAsset } from '@/features/transfer-operation-details';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
@@ -86,18 +82,11 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transaction = operationDetailsUtils.getOperationData(tx);
+  const transaction = tx.transaction;
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx), t, feeTx?.type, tx);
 
   const nativeAsset = getNativeAsset(chain.assets);
-  let asset: Asset | null = null;
-  if (transaction) {
-    if (transaction.args?.assetId) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args?.assetId);
-    } else {
-      asset = getAssetById(transaction.args?.asset, chain.assets) ?? null;
-    }
-  }
+  const asset = useTransactionAsset(transaction, chain.chainId);
 
   const availableAccounts = wallets.reduce<AnyAccount[]>((acc, wallet) => {
     if (permissionUtils.canApproveMultisigTx(wallet)) {
@@ -130,9 +119,9 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const initWeight = async () => {
     let weight;
     try {
-      if (!tx.callData || !api) return;
+      if (!tx.transaction || !api) return;
 
-      const transaction = getTxFromCallData(api, tx.callData);
+      const transaction = transactionService.createSubmittableExtrinsic(tx.transaction, api);
 
       weight = await transactionService.getExtrinsicWeight(transaction);
     } catch {
@@ -162,7 +151,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
 
   const getMultisigTx = (signer: AccountId): Transaction => {
     const otherSignatories = multisigOperationService.getOtherSignatories(account, signer);
-    const hasCallData = tx.callData && validateCallData(tx.callData, tx.callHash);
+    const hasCallData = tx.transaction && validateCallData(tx.transaction.callData, tx.callHash);
 
     return {
       chainId: tx.chainId,
@@ -175,8 +164,8 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
         maybeTimepoint: {
           height: tx.blockCreated,
           index: tx.indexCreated,
-        } as Timepoint,
-        callData: tx.callData || undefined,
+        } satisfies Timepoint,
+        callData: tx.transaction?.callData,
         callHash: tx.callHash,
       },
     };
@@ -187,7 +176,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
       return false;
     }
 
-    const fee = await transactionService.getTransactionFee(feeTx, api);
+    const fee = await oldTransactionService.getTransactionFee(feeTx, api);
     const balance = balanceUtils.getBalance(
       balances,
       signAccount.accountId,
@@ -231,14 +220,14 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
       getBalance: balanceUtils.getBalanceWrapped(balances),
-      getTransactionFee: transactionService.getTransactionFee,
+      getTransactionFee: oldTransactionService.getTransactionFee,
     });
 
   const thresholdReached = tx.events.filter(e => e.status === 'approve').length === account.threshold - 1;
 
   const readyForSign = tx.status === 'pending' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;
-  const readyForFinalSign = readyForSign && thresholdReached && !!tx.callData;
+  const readyForFinalSign = readyForSign && thresholdReached && !!tx.transaction;
 
   const signingPayloads = useMemo<SigningPayload[]>(() => {
     if (nullable(approveTx) || nullable(signAccount)) return [];
@@ -280,7 +269,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
       <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
-            tx={tx}
+            operation={tx}
             account={account}
             api={api}
             chain={chain}

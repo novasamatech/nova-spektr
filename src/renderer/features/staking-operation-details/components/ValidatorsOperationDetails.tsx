@@ -1,25 +1,25 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 
 import { chainsService } from '@/shared/api/network';
-import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
+import { type Address, type ChainId, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyDecodedTransaction, transactionService } from '@/domains/network';
 import { identity } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
 import { ValidatorsModal, useValidatorsMap } from '@/entities/staking';
 import { getTransactionType } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigOperation;
+  transaction: AnyDecodedTransaction;
+  chainId: ChainId;
 };
 
-export const ValidatorsOperationDetails = ({ operation }: Props) => {
+export const ValidatorsOperationDetails = memo(({ transaction, chainId }: Props) => {
   const { t } = useI18n();
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
@@ -28,20 +28,19 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   const apis = useUnit(networkModel.$apis);
   const connections = useUnit(networkModel.$connections);
 
-  const api = apis[operation.chainId];
-  const connection = connections[operation.chainId];
-  const chain = chains[operation.chainId];
+  const api = apis[chainId];
+  const connection = connections[chainId];
+  const chain = chains[chainId];
   const defaultAsset = chain?.assets[0];
 
   const result = [];
 
-  const transaction = operationDetailsUtils.getOperationData(operation);
   const transactionType = getTransactionType(transaction?.method, transaction?.section);
   const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
 
   const identities = useStoreMap({
     store: identity.$list,
-    keys: [operation.chainId],
+    keys: [chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
@@ -50,14 +49,14 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
     if (accounts.length === 0) return;
 
-    identity.request({ chainId: operation.chainId, accounts });
+    identity.request({ chainId: chainId, accounts });
   }, [validatorsMap]);
 
   const allValidators = Object.values(validatorsMap);
 
   const startStakingValidators: Address[] =
-    (transactionType === TransactionType.BATCH_ALL &&
-      transaction?.args?.transactions.find((tx: Transaction) => tx.type === TransactionType.NOMINATE)?.args?.targets) ||
+    (transactionService.isBatchTransaction(transaction) &&
+      transaction?.args?.calls.find((tx) => tx.section === 'staking' && tx.method === 'nominate')?.args.targets) ||
     [];
 
   const selectedValidators: Validator[] =
@@ -100,4 +99,4 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   }
 
   return <>{result.map((e) => e)}</>;
-};
+});
