@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, formatBalance } from '@/shared/lib/utils';
 
 type Props = {
-  value: BN | string;
+  value?: BN | string;
   asset?: Asset | AssetByChains;
   className?: string;
   showSymbol?: boolean;

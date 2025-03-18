@@ -5,7 +5,7 @@ import { type FormEvent } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Button, InputHint, MultiSelect, Shimmering } from '@/shared/ui';
+import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { SignatorySelector } from '@/entities/operations';
@@ -175,7 +175,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={isStakingLoading ? <Shimmering width={50} height={10} /> : unstakeBalanceRange}
+        balance={isStakingLoading ? null : unstakeBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
