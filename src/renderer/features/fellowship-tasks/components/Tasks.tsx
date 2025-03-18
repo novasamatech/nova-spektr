@@ -23,7 +23,7 @@ export const Tasks = memo(() => {
 
   if (nullable(input) || pending) {
     return (
-      <div className="col-span-2 flex h-[504px] flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
+      <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
         <Loader color="primary" />
       </div>
     );
@@ -39,7 +39,7 @@ export const Tasks = memo(() => {
   });
 
   return (
-    <div className="col-span-2 flex h-[504px] flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} padding={[4, 5]} shrink={0}>
         <Box direction="row" height={6.5} verticalAlign="center" gap={1.5}>
           <span className="text-button-small">{t('fellowship.tasks.cardTitle')}</span>

@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
-import { Box, ScrollArea, Select } from '@/shared/ui-kit';
+import { Box, Select } from '@/shared/ui-kit';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import {
@@ -18,7 +18,7 @@ import {
   fellowshipPageModel,
 } from '../model/fellowshipPage';
 
-export const fellowshipHeaderCardsSlot = createSlot();
+export const fellowshipSidebarSlot = createSlot();
 export const fellowshipContentSlot = createSlot();
 
 export const Fellowship = () => {
@@ -39,7 +39,7 @@ export const Fellowship = () => {
   }, [chainId]);
 
   return (
-    <div className="flex h-full flex-col">
+    <Box height="100%" width="100%">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px] shrink-0">
         {isDev() && (
           <Box width="200px">
@@ -64,21 +64,17 @@ export const Fellowship = () => {
         )}
       </Header>
 
-      <ScrollArea>
-        <Box horizontalAlign="center" fillContainer padding={[6, 0]}>
-          <Box width="736px" gap={5}>
-            <div className="grid grid-cols-3 gap-4">
-              <Slot id={fellowshipHeaderCardsSlot} />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <Slot id={fellowshipContentSlot} />
-            </div>
-
-            <Outlet />
+      <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
+        <Box direction="row" gap={2} width="1089px" height="100%">
+          <Box width="276px" height="100%" gap={2.5} shrink={0}>
+            <Slot id={fellowshipSidebarSlot} />
+          </Box>
+          <Box width="805px" height="100%" gap={2.5} shrink={0}>
+            <Slot id={fellowshipContentSlot} />
           </Box>
         </Box>
-      </ScrollArea>
-    </div>
+        <Outlet />
+      </Box>
+    </Box>
   );
 };

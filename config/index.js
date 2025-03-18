@@ -20,7 +20,7 @@ export const appId =
 
 export const main = {
   window: {
-    width: 1024,
+    width: 1372,
     height: 800,
   },
 };

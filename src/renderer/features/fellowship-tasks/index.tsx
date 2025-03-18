@@ -21,6 +21,6 @@ export {
 };
 
 fellowshipTasksFeature.inject(fellowshipContentSlot, {
-  order: 0,
+  order: 1,
   render: () => <Tasks />,
 });

@@ -17,7 +17,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (max-aspect-ratio: 32 / 25) and (width < 1024px) {
+@media (max-aspect-ratio: 343 / 200) and (width < 1372px) {
   html,
   body {
     max-height: 800px;
