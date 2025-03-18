@@ -11,7 +11,7 @@ import {
   requestSalaryActionSlot,
   requestSalaryInductActionSlot,
 } from '@/features/fellowship-tasks';
-import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
+import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { DotIndicator } from './components/DotIndicator';
 import { EntrypointCard } from './components/EntrypointCard';
@@ -30,7 +30,7 @@ import { salaryRequest } from './model/salaryRequest';
 
 export { fellowshipSalaryFeature, SalaryRegisterConfirmation, SalaryPayoutConfirmation, SubmitEvidenceConfirmation };
 
-fellowshipSalaryFeature.inject(fellowshipHeaderCardsSlot, {
+fellowshipSalaryFeature.inject(fellowshipSidebarSlot, {
   order: 1,
   render: () => <EntrypointCard />,
 });
