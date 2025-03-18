@@ -81,8 +81,8 @@ importers:
         specifier: ^1.4.4
         version: 1.4.5
       '@substrate/connect':
-        specifier: 2.1.1
-        version: 2.1.1
+        specifier: 1.3.1
+        version: 1.3.1
       '@talismn/connect-wallets':
         specifier: 1.2.8
         version: 1.2.8(@polkadot/api@15.7.1)(@polkadot/extension-inject@0.58.1(@polkadot/api@15.7.1)(@polkadot/util@13.4.3))
@@ -263,7 +263,7 @@ importers:
         version: 1.49.1
       '@storybook/addon-a11y':
         specifier: 8.5.3
-        version: 8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5)
+        version: 8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@storybook/addon-essentials':
         specifier: ^8.5.3
         version: 8.5.3(@types/react@18.0.14)(storybook@8.5.3(prettier@3.3.3))
@@ -332,7 +332,7 @@ importers:
         version: 3.7.2(@swc/helpers@0.5.15)(vite@6.1.0(@types/node@20.17.12)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@vitest/coverage-v8':
         specifier: 3.0.5
-        version: 3.0.5(vitest@3.0.5)
+        version: 3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@vitest/ui':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5)
@@ -371,7 +371,7 @@ importers:
         version: 33.3.1
       electron-builder:
         specifier: 25.1.8
-        version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
+        version: 25.1.8(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       electron-devtools-installer:
         specifier: 3.2.1
         version: 3.2.1
@@ -2626,19 +2626,19 @@ packages:
     resolution: {integrity: sha512-ofLs1PAO9AtDdPbdyTYj217Pe+lBfTLltdHDs3ds8no0BseoLeAGxpz1mHfi7zB4IxI3YyAiLjH6U8cw4pj4Nw==}
     deprecated: versions below 1.x are no longer maintained
 
-  '@substrate/connect@2.1.1':
-    resolution: {integrity: sha512-25/F2A6OCs/0IpMPxRPP7RycT6/vDU6YL4rS2Wfqgcs3Ru7ATxGxS9jAVVEYuIkvdZ4baVcpC3a4KgH65mNeNw==}
+  '@substrate/connect@1.3.1':
+    resolution: {integrity: sha512-jIvudD/wjATjsoiQvAQxHT6WV4eZUEc/wtuUVix7SPLRLSTEI9El8K7TGdy6rsWoqv0rljLojyRH+exZzwkIkg==}
 
-  '@substrate/discovery@0.2.1':
-    resolution: {integrity: sha512-SRWlBK65Qy6WvHG2V2vjctJaz07Td2HZTw58z59bZOcr+I10q7OxqFKYPIvQwz/VWrWEGdHQ57jt7EwS4T6mDQ==}
+  '@substrate/discovery@0.2.2':
+    resolution: {integrity: sha512-vD5B1LqIaiDBWpJ7h1b89jzhU0AKjOySFAt2zbTDz+gpRdcOn0I8PoxhOrent4LXFX9O/ch8bGG/JYDtr2B2QA==}
 
   '@substrate/light-client-extension-helpers@1.0.0':
     resolution: {integrity: sha512-TdKlni1mBBZptOaeVrKnusMg/UBpWUORNDv5fdCaJklP4RJiFOzBCrzC+CyVI5kQzsXBisZ+2pXm+rIjS38kHg==}
     peerDependencies:
       smoldot: 2.x
 
-  '@substrate/smoldot-discovery@2.0.1':
-    resolution: {integrity: sha512-8IXrZN4X6mOb/VOYF6Sy+MWSICiZQ92475ca/8fU65f54JkbXhslF6CmIUm2pGDHb51/uNZ+ZUkc/zPHwBdI2w==}
+  '@substrate/smoldot-discovery@1.2.0':
+    resolution: {integrity: sha512-Vs+9Y0JuvoAUtL35uKtXD/Qnb5WDksHHBvcbjhGIdgyMZJs5KFb+2iL+M7bJ71xq6qqAGjwI8Gdmf/B9CZHL2w==}
 
   '@substrate/ss58-registry@1.51.0':
     resolution: {integrity: sha512-TWDurLiPxndFgKjVavCniytBIw+t4ViOi7TYp9h/D0NMmkEc9klFTo+827eyEJ0lELpqO207Ey7uGxUa+BS1jQ==}
@@ -7939,8 +7939,8 @@ packages:
   smoldot@2.0.26:
     resolution: {integrity: sha512-F+qYmH4z2s2FK+CxGj8moYcd1ekSIKH8ywkdqlOz88Dat35iB1DIYL11aILN46YSGMzQW/lbJNS307zBSDN5Ig==}
 
-  smoldot@2.0.34:
-    resolution: {integrity: sha512-mw9tCbGEhEp0koMqLL0jBEixVY1MIN/xI3pE6ZY1TuOPU+LnYy8FloODVyzkvzQPaBYrETXJdRlmA/+k6g3gow==}
+  smoldot@2.0.30:
+    resolution: {integrity: sha512-5/KaEdIlTHg4+Hs8YovrCkwI+Y9QsKtoyWkHRqz15kXMZFsePf+KdMAPpDgReINK+at6t+D+uEVrCkd+r9JpyQ==}
 
   snake-case@3.0.4:
     resolution: {integrity: sha512-LAOh4z89bGQvl9pFfNF8V146i7o7/CqFPbqzYgP+yYzDIDeS9HaNFtXABamRW+AQzEVODcvE79ljJ+8a9YSdMg==}
@@ -9481,7 +9481,7 @@ snapshots:
       '@types/node': 20.5.1
       chalk: 4.1.2
       cosmiconfig: 8.3.6(typescript@5.7.3)
-      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3))(typescript@5.7.3)
+      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3))(typescript@5.7.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -11305,13 +11305,13 @@ snapshots:
       ignore: 5.3.2
       p-map: 4.0.0
 
-  '@storybook/addon-a11y@8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5)':
+  '@storybook/addon-a11y@8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))':
     dependencies:
       '@storybook/addon-highlight': 8.5.3(storybook@8.5.3(prettier@3.3.3))
       '@storybook/test': 8.5.3(storybook@8.5.3(prettier@3.3.3))
       axe-core: 4.10.2
       storybook: 8.5.3(prettier@3.3.3)
-      vitest-axe: 0.1.0(vitest@3.0.5)
+      vitest-axe: 0.1.0(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
     transitivePeerDependencies:
       - vitest
 
@@ -11557,17 +11557,17 @@ snapshots:
       - utf-8-validate
     optional: true
 
-  '@substrate/connect@2.1.1':
+  '@substrate/connect@1.3.1':
     dependencies:
       '@substrate/connect-extension-protocol': 2.2.1
       '@substrate/connect-known-chains': 1.9.0
-      '@substrate/smoldot-discovery': 2.0.1
-      smoldot: 2.0.34
+      '@substrate/smoldot-discovery': 1.2.0
+      smoldot: 2.0.30
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@substrate/discovery@0.2.1': {}
+  '@substrate/discovery@0.2.2': {}
 
   '@substrate/light-client-extension-helpers@1.0.0(smoldot@2.0.26)':
     dependencies:
@@ -11581,9 +11581,9 @@ snapshots:
       smoldot: 2.0.26
     optional: true
 
-  '@substrate/smoldot-discovery@2.0.1':
+  '@substrate/smoldot-discovery@1.2.0':
     dependencies:
-      '@substrate/discovery': 0.2.1
+      '@substrate/discovery': 0.2.2
 
   '@substrate/ss58-registry@1.51.0': {}
 
@@ -12096,7 +12096,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitest/coverage-v8@3.0.5(vitest@3.0.5)':
+  '@vitest/coverage-v8@3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -12588,7 +12588,7 @@ snapshots:
 
   app-builder-bin@5.0.0-alpha.10: {}
 
-  app-builder-lib@25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8):
+  app-builder-lib@25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8)):
     dependencies:
       '@develar/schema-utils': 2.6.5
       '@electron/notarize': 2.5.0
@@ -13431,11 +13431,11 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3))(typescript@5.7.3):
+  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
       '@types/node': 20.5.1
       cosmiconfig: 8.3.6(typescript@5.7.3)
-      ts-node: 10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3)
+      ts-node: 10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3)
       typescript: 5.7.3
 
   cosmiconfig@8.3.6(typescript@5.7.3):
@@ -13808,7 +13808,7 @@ snapshots:
 
   dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       builder-util: 25.1.7
       builder-util-runtime: 9.2.10
       fs-extra: 10.1.0
@@ -13935,7 +13935,7 @@ snapshots:
 
   electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       archiver: 5.3.2
       builder-util: 25.1.7
       fs-extra: 10.1.0
@@ -13944,9 +13944,9 @@ snapshots:
       - dmg-builder
       - supports-color
 
-  electron-builder@25.1.8(electron-builder-squirrel-windows@25.1.8):
+  electron-builder@25.1.8(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8)):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       builder-util: 25.1.7
       builder-util-runtime: 9.2.10
       chalk: 4.1.2
@@ -18294,7 +18294,7 @@ snapshots:
       - utf-8-validate
     optional: true
 
-  smoldot@2.0.34:
+  smoldot@2.0.30:
     dependencies:
       ws: 8.18.0
     transitivePeerDependencies:
@@ -19232,7 +19232,7 @@ snapshots:
     optionalDependencies:
       vite: 6.1.0(@types/node@20.17.12)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1)
 
-  vitest-axe@0.1.0(vitest@3.0.5):
+  vitest-axe@0.1.0(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1)):
     dependencies:
       aria-query: 5.3.2
       axe-core: 4.10.2
