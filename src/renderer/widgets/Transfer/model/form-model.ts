@@ -81,7 +81,7 @@ const $isProxy = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $accountBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
+const $accountBalance = createStore<BalanceMap | null>(null);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
 
@@ -335,7 +335,10 @@ const $accounts = combine(
 
       return {
         account,
-        balances: { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) },
+        balances:
+          balance && nativeBalance
+            ? { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) }
+            : null,
       };
     });
   },
@@ -516,7 +519,7 @@ sample({
   fn: ({ accounts, selectedAccount }) => {
     const match = accounts.find((a) => a.account.id === selectedAccount?.id);
 
-    return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
+    return match?.balances || null;
   },
   target: $accountBalance,
 });
