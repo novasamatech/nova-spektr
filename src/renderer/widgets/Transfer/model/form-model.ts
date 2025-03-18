@@ -84,6 +84,7 @@ const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCance
 const $accountBalance = createStore<BalanceMap | null>(null);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
+const $isAccountBalanceLoading = $accountBalance.map((value) => value == null);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -435,9 +436,12 @@ const $canSubmit = combine(
     isFeeLoading: $isFeeLoading,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
     isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
+    isAccountBalanceLoading: $isAccountBalanceLoading,
   },
-  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
-    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
+  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading, isAccountBalanceLoading }) => {
+    return (
+      isFormValid && !isFeeLoading && !isAccountBalanceLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
+    );
   },
 );
 
