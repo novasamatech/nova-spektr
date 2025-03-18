@@ -28,7 +28,7 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance: string | string[] | ReactNode | null;
+  balance: string | string[] | null;
   invalid?: boolean;
   showCurrency?: boolean;
   onChange?: (value: string) => void;
