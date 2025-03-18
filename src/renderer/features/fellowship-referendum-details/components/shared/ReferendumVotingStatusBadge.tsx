@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { OperationStatus } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum, collectiveDomain } from '@/domains/collectives';
+import { type Referendum, referendumService } from '@/domains/collectives';
 
 type Props = {
   referendum: Referendum | null;
@@ -37,7 +37,7 @@ export const ReferendumVotingStatusBadge = memo<Props>(({ referendum, pending })
     }
   }
 
-  if (collectiveDomain.referendumService.isOngoing(referendum)) {
+  if (referendumService.isOngoing(referendum)) {
     let status = 'Deciding';
 
     if (nullable(referendum.decisionDeposit)) {
@@ -55,7 +55,7 @@ export const ReferendumVotingStatusBadge = memo<Props>(({ referendum, pending })
     return <OperationStatus pallet={status === 'Passing' ? 'success' : 'default'}>{statusText}</OperationStatus>;
   }
 
-  if (collectiveDomain.referendumService.isApproved(referendum)) {
+  if (referendumService.isApproved(referendum)) {
     // TODO implement
     const isExecuted = false;
 

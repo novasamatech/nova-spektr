@@ -33,23 +33,6 @@ const $store = combine(
   combineStores,
 );
 
-/**
- * @deprecated Use direct imports instead
- */
-export const collectiveDomain = {
-  $store,
-  members: member,
-  tracks: track,
-  referendum,
-  referendumMeta,
-  voting,
-
-  trackService,
-  memberService,
-  referendumService,
-  votingService,
-};
-
 export {
   $store as $collectiveStore,
   member,

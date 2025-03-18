@@ -1,7 +1,7 @@
 import { combine } from 'effector';
 
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { type VotingThreshold, collectiveDomain } from '@/domains/collectives';
+import { type VotingThreshold, referendumService, trackService } from '@/domains/collectives';
 
 import { fellowshipModel } from './fellowship';
 import { tracksModel } from './tracks';
@@ -23,7 +23,7 @@ const $thresholds = combine(
     const result: Thresholds = {};
 
     for (const referendum of referendums) {
-      if (collectiveDomain.referendumService.isCompleted(referendum)) continue;
+      if (referendumService.isCompleted(referendum)) continue;
 
       const track = tracks.find(t => t.id === referendum.track);
       if (!track) {
@@ -31,13 +31,13 @@ const $thresholds = combine(
       }
 
       result[referendum.id] = {
-        support: collectiveDomain.trackService.supportThreshold({
+        support: trackService.supportThreshold({
           track,
           maxRank,
           members,
           tally: referendum.tally,
         }),
-        approval: collectiveDomain.trackService.approvalThreshold({
+        approval: trackService.approvalThreshold({
           track,
           maxRank,
           tally: referendum.tally,
