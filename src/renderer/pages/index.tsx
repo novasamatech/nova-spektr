@@ -38,11 +38,6 @@ const FellowshipReferendumDetails = lazy(() =>
     default: FellowshipReferendumDetails,
   })),
 );
-const FellowshipReferendumList = lazy(() =>
-  import('./Fellowship/ui/FellowshipReferendumList').then(({ FellowshipReferendumList }) => ({
-    default: FellowshipReferendumList,
-  })),
-);
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
@@ -115,11 +110,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
         children: [
           {
             path: Paths.FELLOWSHIP_LIST,
-            element: (
-              <Suspense fallback={<PageLoadingState />}>
-                <FellowshipReferendumList />
-              </Suspense>
-            ),
             children: [
               {
                 path: Paths.FELLOWSHIP_REFERENDUM,
