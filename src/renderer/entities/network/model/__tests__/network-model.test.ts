@@ -83,7 +83,11 @@ describe('entities/network/model/network-model', () => {
       connections: [mockConnection],
       metadata: [mockMetadata],
     });
-    const provider = { isConnected: true, onMetadataReceived: () => {} } as unknown as ProviderWithMetadata;
+
+    const provider = {
+      isConnected: true,
+      onMetadataReceived: () => {},
+    } as unknown as ProviderWithMetadata;
     const scope = fork();
 
     const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
@@ -113,12 +117,13 @@ describe('entities/network/model/network-model', () => {
       ],
       metadata: [mockMetadata],
     });
-    const connectMock = jest.fn();
+    const connectMock = jest.fn().mockResolvedValue(null);
     const provider = {
       connect: connectMock,
       isConnected: true,
       onMetadataReceived: () => {},
     } as unknown as ProviderWithMetadata;
+
     const spyCreateProvider = jest.spyOn(networkService, 'createProvider').mockReturnValue(provider);
     const scope = fork();
 
@@ -131,8 +136,6 @@ describe('entities/network/model/network-model', () => {
       { metadata: mockMetadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel._test.$providers)).toEqual({
-      '0x01': provider,
-    });
+    expect(scope.getState(networkModel._test.$providers)).toEqual({ '0x01': provider });
   });
 });

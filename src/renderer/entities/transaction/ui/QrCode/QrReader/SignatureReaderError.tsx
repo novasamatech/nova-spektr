@@ -3,12 +3,11 @@ import { Button, FootnoteText } from '@/shared/ui';
 import { CameraAccessErrors, type CameraError, CameraErrorText } from '../common/constants';
 
 type Props = {
-  error?: CameraError;
+  error: CameraError | null;
   onTryAgain: () => void;
-  isCameraOn: boolean;
 };
 
-export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) => {
+export const SignatureReaderError = ({ error, onTryAgain }: Props) => {
   const { t } = useI18n();
 
   if (!error) {
@@ -16,8 +15,8 @@ export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) =
   }
 
   return (
-    <>
-      <FootnoteText className={(isCameraOn && 'text-white') || ''} align="center">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-y-4 rounded-2lg backdrop-blur-md">
+      <FootnoteText className="text-white" align="center">
         {t(CameraErrorText[error].label)}
         <br />
         {t(CameraErrorText[error].description)}
@@ -27,6 +26,6 @@ export const SignatureReaderError = ({ error, onTryAgain, isCameraOn }: Props) =
           {t('onboarding.paritySigner.tryAgainButton')}
         </Button>
       )}
-    </>
+    </div>
   );
 };

@@ -6,6 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Box, EmptyMessage } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
+import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
 
 import { Basket } from './Basket';
@@ -15,11 +16,12 @@ export const Tasks = memo(() => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
-  const hasPermission = useUnit(tasks.$hasPermission);
-  const hasAccount = useUnit(tasks.$hasAccount);
+  const hasPermission = useUnit(memberProfile.$hasPermission);
+  const pending = useUnit(tasks.pending);
+  const hasAccount = useUnit(memberProfile.$hasAccount);
   const [active, setActive] = useState(0);
 
-  if (nullable(input)) {
+  if (nullable(input) || pending) {
     return (
       <div className="col-span-2 flex h-[504px] flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
         <Loader color="primary" />

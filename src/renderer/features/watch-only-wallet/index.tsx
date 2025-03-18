@@ -1,5 +1,7 @@
 import { createFeature } from '@/shared/feature';
-import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
@@ -28,15 +30,16 @@ accountSDK(watchOnlyWalletFeature, {
   collectAccountChildren(children) {
     return children;
   },
-  wrapTransaction(transaction) {
-    return transaction;
-  },
 });
 
 watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWatchOnly(wallet)) return null;
 
-  return <WalletIcon type={wallet.type} size={size} />;
+  const address = wallet.accounts[0]?.accountId;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

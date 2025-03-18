@@ -4,24 +4,23 @@ import { populated } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { evidence, referendumService, track, trackService, voting } from '@/domains/collectives';
+import { evidence, referendum, referendumService, track, trackService, voting } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
-import { profile } from './profile';
+import { memberProfile } from './memberProfile';
 
 const requestEvidence = createEvent<AccountId>();
 const requestEvidenceFx = attach({ effect: evidence.request });
 const requestVotesFx = attach({ effect: voting.request });
 
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
-const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
 const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $votesPopulated = populated(requestVotesFx);
 
-const $memberVotes = combine(profile.$member, $votes, (member, voting) => {
+const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
   if (nullable(member)) return [];
   return voting.filter(v => v.accountId === member.accountId);
 });
@@ -29,7 +28,7 @@ const $memberVotes = combine(profile.$member, $votes, (member, voting) => {
 const $notVotedReferendumns = combine(
   {
     maxRank: $maxRank,
-    member: profile.$member,
+    member: memberProfile.$member,
     ongoing: $ongoing,
     votes: $memberVotes,
     votesPopulated: $votesPopulated,
@@ -79,10 +78,10 @@ sample({
 });
 
 export const referendums = {
-  $tracks,
   $memberVoting: $memberVotes,
   $notVotedReferendumns,
   $evidencePending: requestEvidenceFx.pending,
 
+  pending: referendum.pending,
   requestEvidence,
 };
