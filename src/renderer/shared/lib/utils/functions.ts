@@ -5,7 +5,7 @@
  *
  * @returns {Boolean}
  */
-export function nonNullable<T>(value: T): value is NonNullable<T> {
+export function nonNullable<T>(value: T): value is Exclude<NonNullable<T>, void> {
   return value !== null && value !== undefined;
 }
 

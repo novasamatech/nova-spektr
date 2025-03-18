@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Icon } from '@/shared/ui';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -31,7 +32,11 @@ extensionWalletFeature.inject(accountService.accountActionPermissionAnyOf, ({ ac
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isExtensionWallet(wallet)) return null;
 
-  return <Icon name={walletIcon[wallet.type].icon} size={size} />;
+  const address = wallet.accounts[0]?.accountId;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

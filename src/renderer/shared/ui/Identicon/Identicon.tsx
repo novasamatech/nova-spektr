@@ -1,4 +1,4 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
+import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
 import { Suspense, type SyntheticEvent, lazy, memo, useEffect, useState } from 'react';
 
 import { type Address } from '@/shared/core';
@@ -18,7 +18,11 @@ type Props = {
   testId?: string;
 };
 
-const PolkadotIdenticon = lazy(() => import('@polkadot/react-identicon').then((m) => ({ default: m.Identicon })));
+export type IconTheme = IdenticonIconTheme;
+
+const PolkadotIdenticon = lazy(() =>
+  import('@polkadot/react-identicon/Identicon').then(({ Identicon: IdenticonIcon }) => ({ default: IdenticonIcon })),
+);
 
 export const Identicon = memo(
   ({ theme, address, size = 24, background = true, canCopy: canCopyProp, className, testId = 'Identicon' }: Props) => {

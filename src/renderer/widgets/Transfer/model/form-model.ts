@@ -508,11 +508,13 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.account.onChange,
-  source: $accounts,
-  filter: (_, account) => nonNullable(account),
-  fn: (accounts, account) => {
-    const match = accounts.find((a) => a.account.id === account!.id);
+  source: {
+    accounts: $accounts,
+    selectedAccount: $transferForm.fields.account.$value,
+  },
+  filter: ({ selectedAccount }) => nonNullable(selectedAccount),
+  fn: ({ accounts, selectedAccount }) => {
+    const match = accounts.find((a) => a.account.id === selectedAccount?.id);
 
     return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
   },

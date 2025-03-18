@@ -4,8 +4,8 @@ import { memo } from 'react';
 import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { performSearch } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
+import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -48,18 +48,26 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => (
-              <WalletManagement
-                key={wallet.id}
-                wallet={wallet}
-                description={
-                  <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                }
-                onClick={() => onSelect(wallet)}
-              >
-                <Slot id={walletActionsSlot} props={{ wallet }} />
-              </WalletManagement>
-            ))}
+            {filteredWallets.map(wallet => {
+              const address = wallet.accounts[0]?.accountId;
+              const isEthereum = isEthereumAccountId(address);
+              const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
+              return (
+                <WalletManagement
+                  key={wallet.id}
+                  wallet={wallet}
+                  theme={theme}
+                  address={address}
+                  description={
+                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                  }
+                  onClick={() => onSelect(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
+              );
+            })}
           </Box>
         </Accordion.Content>
       </Accordion>

@@ -20,7 +20,7 @@ operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
   const chains = useUnit(networkModel.$chains);
   const { getLiveAccountMultisigTxs } = useMultisigTx({});
 
-  const txs = getLiveAccountMultisigTxs(walletUtils.isMultisig(wallet) ? [wallet.accounts[0].accountId] : []).filter(
+  const txs = getLiveAccountMultisigTxs(walletUtils.isMultisig(wallet) ? [wallet.accounts[0]?.accountId] : []).filter(
     (tx) => tx.status === MultisigTxInitStatus.SIGNING && chains[tx.chainId],
   );
 

@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
 import { type HexString } from '@/shared/core';
@@ -146,28 +146,7 @@ sample({
   target: $evidence,
 });
 
-// steps
-
-const setStep = createEvent<'form' | 'submit'>();
-const $step = restore(setStep, 'form');
-
-sample({
-  clock: flow.open,
-  fn: () => 'form' as const,
-  target: $step,
-});
-
-sample({
-  clock: flow.open,
-  fn: () => 'form' as const,
-  target: $step,
-});
-
-sample({
-  clock: [postEvidenceFx.done, skipUploading],
-  fn: () => 'submit' as const,
-  target: $step,
-});
+const evidenceUploaded = sample({ clock: [postEvidenceFx.done, skipUploading] }).map(() => undefined);
 
 // reset
 
@@ -180,12 +159,11 @@ sample({
 export const evidenceForm = {
   flow,
   form,
-  $step,
   $wish,
   $evidence,
   $formattedMarkdown,
   $uploadError,
-  $pending: postEvidenceFx.pending,
-  posting: postEvidenceFx,
-  setStep,
+  post: postEvidenceFx,
+  reset: form.reset,
+  evidenceUploaded,
 };

@@ -426,8 +426,11 @@ async function getTxWeight(
 function verifySignature(payload: Uint8Array, signature: HexString, accountId: AccountId): boolean {
   // For big transaction we get hash from payload
   const payloadToVerify = payload.length > 256 ? blake2AsU8a(payload) : payload;
-
-  return signatureVerify(payloadToVerify, signature, accountId).isValid;
+  try {
+    return signatureVerify(payloadToVerify, signature, accountId).isValid;
+  } catch {
+    return false;
+  }
 }
 
 async function getBlockLimit(api: ApiPromise): Promise<BN> {
