@@ -105,7 +105,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-polkadot-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-polkadot-stg.novasama-tech.org"
         }
       ]
     }
@@ -216,7 +216,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-kusama-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-kusama-stg.novasama-tech.org"
         }
       ]
     }
@@ -318,6 +318,20 @@
         }
       },
       {
+        "name": "Bill Coin",
+        "assetId": 5,
+        "symbol": "BILLCOIN",
+        "precision": 8,
+        "type": "statemine",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BILLCOIN.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BILLCOIN.svg"
+        },
+        "typeExtras": {
+          "assetId": "223"
+        }
+      },
+      {
         "name": "USD Tether",
         "assetId": 7,
         "symbol": "USDT",
@@ -360,7 +374,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-kusama-ah-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-kusama-ah-stg.novasama-tech.org"
         }
       ]
     }
@@ -425,7 +439,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-polkadot-people-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-polkadot-people-stg.novasama-tech.org"
         }
       ]
     }
@@ -486,7 +500,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-kusama-people-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-kusama-people-stg.novasama-tech.org"
         }
       ]
     }
@@ -1403,7 +1417,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-moonbeam-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-moonbeam-stg.novasama-tech.org"
         }
       ]
     }
@@ -1822,7 +1836,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-moonriver-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-moonriver-stg.novasama-tech.org"
         }
       ]
     }
@@ -2981,6 +2995,23 @@
           "existentialDeposit": "1000000000",
           "transfersEnabled": true
         }
+      },
+      {
+        "name": "NEMO",
+        "assetId": 16,
+        "symbol": "NEMO",
+        "precision": 18,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x02fa904c86b73fd041d6cc2aeed9e6ec0148fd51da",
+          "currencyIdType": "AcalaPrimitivesCurrencyCurrencyId",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        }
       }
     ],
     "explorers": [
@@ -3272,10 +3303,6 @@
       {
         "url": "wss://parallel.gatotech.network",
         "name": "Gatotech node"
-      },
-      {
-        "url": "wss://polkadot-parallel-rpc.parallel.fi",
-        "name": "Parallel node"
       }
     ],
     "assets": [
@@ -3725,6 +3752,48 @@
           "assetId": "0x010100a534",
           "palletName": "ForeignAssets"
         }
+      },
+      {
+        "name": "BASTI",
+        "assetId": 20,
+        "symbol": "BASTI",
+        "precision": 12,
+        "type": "statemine",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+        },
+        "typeExtras": {
+          "assetId": "22222015"
+        }
+      },
+      {
+        "name": "DAMN",
+        "assetId": 21,
+        "symbol": "DAMN",
+        "precision": 12,
+        "type": "statemine",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DAMN.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DAMN.svg"
+        },
+        "typeExtras": {
+          "assetId": "22222012"
+        }
+      },
+      {
+        "name": "Bill Coin",
+        "assetId": 22,
+        "symbol": "BILLCOIN",
+        "precision": 12,
+        "type": "statemine",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BILLCOIN.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BILLCOIN.svg"
+        },
+        "typeExtras": {
+          "assetId": "50000075"
+        }
       }
     ],
     "explorers": [
@@ -3750,7 +3819,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-polkadot-ah-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-polkadot-ah-stg.novasama-tech.org"
         }
       ]
     }
@@ -4012,10 +4081,6 @@
       {
         "url": "wss://zeitgeist.api.onfinality.io/public-ws",
         "name": "OnFinality node"
-      },
-      {
-        "url": "wss://main.rpc.zeitgeist.pm/ws",
-        "name": "Zeitgeist node"
       }
     ],
     "assets": [
@@ -4972,6 +5037,91 @@
           "existentialDeposit": "59084194977843",
           "transfersEnabled": true
         }
+      },
+      {
+        "name": "BASTI",
+        "assetId": 46,
+        "symbol": "BASTI",
+        "precision": 12,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/Default.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/Default.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x64430f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "name": "DAMN",
+        "assetId": 47,
+        "symbol": "DAMN",
+        "precision": 12,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DAMN.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DAMN.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x5e430f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "name": "SOL-Wormhole",
+        "assetId": 48,
+        "symbol": "SOL-Wormhole",
+        "precision": 9,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SOL-Wormhole.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SOL-Wormhole.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x30450f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "46339",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "name": "tBTC",
+        "assetId": 50,
+        "symbol": "tBTC",
+        "precision": 18,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/tBTC.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/tBTC.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x3d450f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "106803374987",
+          "transfersEnabled": true
+        }
+      },
+      {
+        "name": "Bill Coin",
+        "assetId": 51,
+        "symbol": "BILLCOIN",
+        "precision": 12,
+        "type": "orml",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/BILLCOIN.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/BILLCOIN.svg"
+        },
+        "typeExtras": {
+          "currencyIdScale": "0x3a450f00",
+          "currencyIdType": "u32",
+          "existentialDeposit": "1",
+          "transfersEnabled": true
+        }
       }
     ],
     "explorers": [
@@ -4992,7 +5142,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-hydradx-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-hydradx-stg.novasama-tech.org"
         }
       ]
     }
@@ -5304,10 +5454,6 @@
     "options": [],
     "nodes": [
       {
-        "url": "wss://rpc.turing.oak.tech",
-        "name": "Turing node"
-      },
-      {
         "url": "wss://turing-rpc.dwellir.com",
         "name": "Dwellir node"
       }
@@ -5528,7 +5674,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-aleph-zero-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-aleph-zero-stg.novasama-tech.org"
         }
       ]
     }
@@ -5800,7 +5946,7 @@
     ],
     "assets": [
       {
-        "name": "Heima",
+        "name": "HEI",
         "assetId": 0,
         "symbol": "HEI",
         "precision": 18,
@@ -6018,42 +6164,6 @@
         "multisig": "https://mangatax.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
       }
     ]
-  },
-  {
-    "name": "Imbue",
-    "specName": "kusama",
-    "addressPrefix": 42,
-    "chainId": "0xca93a37c913a25fa8fdb33c7f738afc39379cb71d37874a16d4c091a5aef9f89",
-    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Imbue.svg",
-    "options": [],
-    "nodes": [
-      {
-        "url": "wss://kusama.imbuenetwork.com",
-        "name": "Imbue node"
-      }
-    ],
-    "assets": [
-      {
-        "name": "Imbue",
-        "assetId": 0,
-        "symbol": "IMBU",
-        "precision": 12,
-        "type": "native",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/IMBU.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/IMBU.svg"
-        }
-      }
-    ],
-    "externalApi": {
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-imbue"
-        }
-      ]
-    }
   },
   {
     "name": "Amplitude",
@@ -6316,7 +6426,7 @@
         }
       },
       {
-        "name": "Should be included in scripts/data/assetsNameMap",
+        "name": "USDC.axl",
         "assetId": 17,
         "symbol": "USDC.axl",
         "precision": 6,
@@ -6398,7 +6508,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-bittensor-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-bittensor-stg.novasama-tech.org"
         }
       ]
     }
@@ -6689,7 +6799,7 @@
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
         },
         "typeExtras": {
-          "assetId": "10",
+          "assetId": "0x0100",
           "palletName": "ForeignAssets"
         }
       },
@@ -6705,7 +6815,7 @@
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDT.svg"
         },
         "typeExtras": {
-          "assetId": "1984",
+          "assetId": "0x010300a10f043205011f",
           "palletName": "ForeignAssets"
         }
       },
@@ -6721,7 +6831,7 @@
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDC.svg"
         },
         "typeExtras": {
-          "assetId": "1337",
+          "assetId": "0x010300a10f043205e514",
           "palletName": "ForeignAssets"
         }
       }
@@ -6893,7 +7003,7 @@
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-westend-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
         }
       ]
     }
@@ -6915,6 +7025,14 @@
       {
         "url": "wss://polkadot-mythos-rpc.polkadot.io",
         "name": "Parity node"
+      },
+      {
+        "url": "wss://mythos.ibp.network",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://mythos.dotters.network",
+        "name": "IBP2 node"
       }
     ],
     "assets": [
@@ -6943,13 +7061,19 @@
       "history": [
         {
           "type": "subquery",
-          "url": "https://api.subquery.network/sq/nova-wallet/nova-wallet-mythos"
+          "url": "https://subquery-history-mythos-prod.novasama-tech.org"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-mythos-prod.novasama-tech.org"
         }
       ],
       "proxy": [
         {
           "type": "subquery",
-          "url": "https://subquery-proxy-mythos-prod.novasama-tech.org"
+          "url": "https://subquery-proxy-mythos-stg.novasama-tech.org"
         }
       ]
     }
