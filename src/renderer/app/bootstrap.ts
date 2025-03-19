@@ -24,7 +24,6 @@ import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
-import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
 import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
@@ -110,7 +109,6 @@ export const bootstrap = () => {
     fellowshipNavigationFeature,
     fellowshipProfileFeature,
     fellowshipReferendumsDetailsFeature,
-    fellowshipReferendumsFeature,
     fellowshipSalaryFeature,
     fellowshipTasksFeature,
     fellowshipVotingFeature,

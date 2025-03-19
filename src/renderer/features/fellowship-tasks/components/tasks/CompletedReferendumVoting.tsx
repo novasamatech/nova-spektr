@@ -24,7 +24,7 @@ export const CompletedReferendumVoting = ({ referendum, onReferendumSelect }: Pr
     <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
       <Box fillContainer padding={4} gap={5}>
         <SmallTitleText>
-          {meta.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+          {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
         </SmallTitleText>
       </Box>
     </button>
