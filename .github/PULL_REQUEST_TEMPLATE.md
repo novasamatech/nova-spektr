@@ -13,9 +13,3 @@
 
 ## Screenshots/Recordings
 <!-- If applicable, add screenshots or recordings to help explain your changes -->
-
-## Testing Performed
-<!-- Describe the testing you've done (manual tests, unit tests, etc.) -->
-
-## Checklist
-- [ ] I have performed a self-review of my code
