@@ -5,7 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { Button, Markdown, TitleText } from '@/shared/ui';
+import { Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
@@ -18,11 +18,9 @@ export const taskVotingDetailsActionSlot = createSlot<{ referendumId: Referendum
 
 type Props = {
   referendum: OngoingReferendum;
-  canSkip: boolean;
-  onSkip: VoidFunction;
 };
 
-export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
+export const PromotionRetentionVoting = ({ referendum }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -58,18 +56,13 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
 
   return (
     <Box fillContainer padding={5} gap={5}>
-      <TitleText>{title}</TitleText>
+      <SmallTitleText>{title}</SmallTitleText>
       {!evidence?.summary && evidencePending && <Skeleton height="5em" width="85%" />}
       <Markdown>{evidence?.summary ?? ''}</Markdown>
       <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
       <Box grow={1} />
       <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
         <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
       </Box>
     </Box>
   );

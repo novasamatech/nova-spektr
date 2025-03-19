@@ -18,6 +18,7 @@ const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
+const $completed = $referendums.map(referendumService.getCompletedReferendums);
 const $votesPopulated = populated(requestVotesFx);
 
 const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
@@ -80,6 +81,7 @@ sample({
 export const referendums = {
   $memberVoting: $memberVotes,
   $notVotedReferendumns,
+  $completed,
   $evidencePending: requestEvidenceFx.pending,
 
   pending: referendum.pending,

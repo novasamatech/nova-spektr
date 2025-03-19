@@ -3,19 +3,14 @@ import { useUnit } from 'effector-react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toRomanNumeral } from '@/shared/lib/utils';
-import { Button, HeadlineText, Icon, TitleText } from '@/shared/ui';
+import { HeadlineText, Icon, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { tracks } from '../../model/tracks';
 
 export const requestPromotionActionSlot = createSlot();
 
-type Props = {
-  canSkip: boolean;
-  onSkip: VoidFunction;
-};
-
-export const RequestPromotion = ({ canSkip, onSkip }: Props) => {
+export const RequestPromotion = () => {
   const { t } = useI18n();
 
   const currentTrack = useUnit(tracks.$currentTrack);
@@ -23,7 +18,7 @@ export const RequestPromotion = ({ canSkip, onSkip }: Props) => {
 
   return (
     <Box fillContainer padding={5} gap={5}>
-      <TitleText>{t('fellowship.tasks.task.promotion.title')}</TitleText>
+      <SmallTitleText>{t('fellowship.tasks.task.promotion.title')}</SmallTitleText>
       <Box direction="row" gap={2.5}>
         {currentTrack ? <CollectiveRank rank={currentTrack.id}>{currentTrack.name}</CollectiveRank> : null}
         <Icon name="right" size={16} className="text-text-primary" />
@@ -36,11 +31,6 @@ export const RequestPromotion = ({ canSkip, onSkip }: Props) => {
       <Box grow={1} />
       <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
         <Slot id={requestPromotionActionSlot} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
       </Box>
     </Box>
   );

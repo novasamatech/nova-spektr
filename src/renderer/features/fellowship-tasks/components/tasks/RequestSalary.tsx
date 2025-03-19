@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getCreatedDateFromApi, getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Button, Duration, HeadlineText, Icon, SmallTitleText, TitleText } from '@/shared/ui';
+import { Button, Duration, HeadlineText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -36,7 +36,7 @@ export const RequestSalary = ({ canSkip, onSkip }: Props) => {
 
   return (
     <Box fillContainer padding={5} gap={5}>
-      <TitleText>{t('fellowship.tasks.task.requestSalary.title')}</TitleText>
+      <SmallTitleText>{t('fellowship.tasks.task.requestSalary.title')}</SmallTitleText>
       <Box direction="row" verticalAlign="center" gap={1.5}>
         <Icon className="text-icon-warning" name="warn" size={14} />
         <SmallTitleText>
