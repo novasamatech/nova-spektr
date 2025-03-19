@@ -4,7 +4,7 @@ import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, DetailRow, Icon, LargeTitleText } from '@/shared/ui';
+import { Alert, BodyText, Button, DetailRow, Icon, LargeTitleText } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
@@ -29,6 +29,7 @@ type Props = PropsWithChildren<{
 export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) => {
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
+  const [alertOpen, setAlertOpen] = useState(!isActive);
   const isOpen = useUnit(setActive.flow.status);
   const account = useUnit(setActive.$account);
   const wallet = useUnit(setActive.$wallet);
@@ -61,6 +62,10 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
   const handleBasketSave = () => {
     setActive.saveToBasket();
     setStep('basket');
+  };
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
   };
 
   if (step === 'submit') {
@@ -116,6 +121,18 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
                 <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
                 <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
               </TransactionDetails>
+
+              {alertOpen && (
+                <div className="pt-6">
+                  <Alert
+                    title={t('fellowship.profile.setActive.setInactiveAlert.title')}
+                    active={alertOpen}
+                    onClose={handleAlertClose}
+                  >
+                    <BodyText>{t('fellowship.profile.setActive.setInactiveAlert.text')}</BodyText>
+                  </Alert>
+                </div>
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (

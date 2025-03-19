@@ -373,7 +373,11 @@
         "activeTrue": "Yes",
         "active": "Active",
         "inactive": "Inactive",
-        "title": "Switching status on"
+        "title": "Switching status on",
+        "setInactiveAlert": {
+          "title": "Review changes before switching status",
+          "text": "During the inactive period, you are not required to participate in fellowship activities, however, you only receive a part of your salary. Voting still remains available. Note that other fellows can still bump you."
+        }
       }
     },
     "referendums": {
