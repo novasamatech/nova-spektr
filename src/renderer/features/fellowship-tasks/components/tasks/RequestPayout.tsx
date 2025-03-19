@@ -34,7 +34,7 @@ export const RequestPayout = ({ canSkip, onSkip }: Props) => {
     }
   }, [input?.api, currentPeriod]);
   return (
-    <Box fillContainer padding={5} gap={5}>
+    <Box fillContainer padding={4} gap={5}>
       <SmallTitleText>{t('fellowship.tasks.task.requestPayout.title')}</SmallTitleText>
       <Box direction="row" verticalAlign="center" gap={1.5}>
         <Icon className="text-icon-warning" name="warn" size={14} />

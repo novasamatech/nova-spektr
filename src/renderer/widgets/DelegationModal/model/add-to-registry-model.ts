@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { localStorageService } from '@/shared/api/local-storage';
-import { governanceModel } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 export const ADD_TO_REGISTRY_KEY = 'add_to_registry';
 
@@ -18,7 +18,7 @@ const saveAddToRegistryModalFx = createEffect((shown: boolean) => {
 });
 
 sample({
-  clock: governanceModel.events.governanceStarted,
+  clock: governanceMetaProvider.$metaProvider,
   target: getAddToRegistryModalFx,
 });
 

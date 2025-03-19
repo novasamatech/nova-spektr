@@ -489,8 +489,7 @@
       "reviewBasketTitle_other": "Decisions",
       "task": {
         "anyReferendum": {
-          "title": "Review referendum",
-          "viewEvidence": "View <a>the full evidence</a>"
+          "title": "Review referendum"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",

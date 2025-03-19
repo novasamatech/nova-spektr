@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { type GovernanceApi } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { governanceModel } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
@@ -22,7 +22,7 @@ const requestDescriptionsFx = createEffect(({ service, chain, index }: RequestDe
 sample({
   clock: requestDescription,
   source: {
-    api: governanceModel.$governanceApi,
+    api: governanceMetaProvider.$metaProvider,
     descriptions: $descriptions,
   },
   filter: ({ api, descriptions }, { referendum, chain }) =>

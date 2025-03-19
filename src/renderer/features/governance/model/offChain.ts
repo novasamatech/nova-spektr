@@ -1,7 +1,8 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
-import { type GovernanceApiSource, governanceModel } from '@/entities/governance';
+import { type GovernanceApiSource } from '@/aggregates/governance-meta-provider';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 const flowStarted = createEvent();
 const flowClosed = createEvent();
@@ -28,7 +29,7 @@ const $canSubmit = combine(
   {
     isValid: $offChainForm.$isValid,
     newSource: $offChainForm.fields.source.$value,
-    oldSource: governanceModel.$governanceApi,
+    oldSource: governanceMetaProvider.$metaProvider,
   },
   ({ isValid, newSource, oldSource }) => {
     return isValid && newSource !== oldSource?.type;
@@ -43,7 +44,7 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: governanceModel.$governanceApi,
+  source: governanceMetaProvider.$metaProvider,
   fn: (governanceApi) => ({
     source: governanceApi?.type || 'polkassembly',
   }),
@@ -53,7 +54,7 @@ sample({
 sample({
   clock: $offChainForm.formValidated,
   fn: ({ source }) => source,
-  target: [governanceModel.events.governanceApiChanged, flowClosed],
+  target: [governanceMetaProvider.changeProvider, flowClosed],
 });
 
 export const offChainModel = {

@@ -7,9 +7,22 @@ import { CaptionText } from '../Typography';
 
 type Props = PropsWithChildren<{
   className?: string;
+  vertical?: boolean;
 }>;
 
-export const Separator = ({ className, children }: Props) => {
+export const Separator = ({ className, vertical, children }: Props) => {
+  if (vertical) {
+    return (
+      <div className={cnTw('spektr-vertical-separator flex items-center border-divider', className)}>
+        {children ? (
+          <CaptionText className="my-4 uppercase text-text-tertiary" align="center">
+            {children}
+          </CaptionText>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className={cnTw('spektr-separator flex w-full items-center border-divider', className)}>
       {children ? (

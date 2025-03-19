@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { groupBy, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Accordion, Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
+import { type Referendum } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../model/feature';
 import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
@@ -12,7 +13,11 @@ import { tasks } from '../model/tasks';
 import { Basket } from './Basket';
 import { Title } from './Title';
 
-export const Tasks = memo(() => {
+type Props = {
+  onReferendumSelect(referendum: Referendum): void;
+};
+
+export const Tasks = memo(({ onReferendumSelect }: Props) => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
@@ -46,7 +51,7 @@ export const Tasks = memo(() => {
               <Accordion.Content>
                 <div className="divide-y divide-filter-border bg-card-background">
                   {groups.personal.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} />
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
                   ))}
                 </div>
               </Accordion.Content>
@@ -63,7 +68,7 @@ export const Tasks = memo(() => {
               <Accordion.Content>
                 <div className="divide-y divide-filter-border bg-card-background">
                   {groups.general.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} />
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
                   ))}
                 </div>
               </Accordion.Content>
@@ -80,7 +85,7 @@ export const Tasks = memo(() => {
               <Accordion.Content>
                 <div className="divide-y divide-filter-border bg-card-background">
                   {groups.completed.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} />
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
                   ))}
                 </div>
               </Accordion.Content>

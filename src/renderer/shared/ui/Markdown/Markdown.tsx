@@ -10,7 +10,6 @@ import { Checkbox } from '@/shared/ui-kit';
 import { Button } from '../Buttons';
 import { Icon } from '../Icon/Icon';
 import { InfoLink } from '../InfoLink/InfoLink';
-import { BodyText } from '../Typography';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
@@ -65,7 +64,10 @@ const components: Components = {
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis text-balance', className)} {...props} />
+    <p
+      className={cnTw('overflow-hidden overflow-ellipsis text-balance text-start text-inherit', className)}
+      {...props}
+    />
   ),
   hr: () => <hr className="bg-current" />,
   input: ({ node: _, type, ...props }) =>
