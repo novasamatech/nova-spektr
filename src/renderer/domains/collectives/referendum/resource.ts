@@ -44,7 +44,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
     }
 
     // system.remark('RFC_APPROVE({GITHUB_PR},{DOCUMENT_HASH})') is used for rfc voting.
-    if (struct.method === 'remark') {
+    if (struct.method === 'remark' || struct.method === 'remarkWithEvent') {
       const parsed = pjsSchema.uint8String.safeParse(struct.args.at(0));
       if (parsed.success) {
         const regexp = /RFC_APPROVE\(([0-9]+),(.+)\)/;
