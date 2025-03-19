@@ -131,20 +131,23 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
                   />
                 </BodyText>
               </div>
+
               <BodyText className="col-span-2 px-2">{t(`governance.referendum.${delegate.decision}`)}</BodyText>
+
               <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
-                <BodyText className="whitespace-nowrap">
+                <Box direction="column" horizontalAlign="end">
+                  <FootnoteText>
+                    <Trans
+                      t={t}
+                      i18nKey="general.actions.multiply"
+                      values={{ multiplier: votingService.getConvictionMultiplier(delegate.conviction) }}
+                      components={{ balance: <AssetBalance value={delegate.amount} asset={asset} /> }}
+                    />
+                  </FootnoteText>
                   <AssetBalance
+                    className="text-footnote text-text-tertiary"
                     asset={asset}
                     value={votingService.calculateVotingPower(delegate.amount, delegate.conviction)}
-                  />
-                </BodyText>
-                <Box direction="row" horizontalAlign="end">
-                  <Trans
-                    t={t}
-                    i18nKey="general.actions.multiply"
-                    values={{ multiplier: delegate.conviction }}
-                    components={{ balance: <AssetBalance value={delegate.amount} asset={asset} /> }}
                   />
                 </Box>
               </div>

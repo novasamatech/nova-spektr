@@ -112,6 +112,7 @@ export const Delegate = () => {
           }
         >
           {transactions.map((_, index) => (
+            // eslint-disable-next-line react/no-array-index-key
             <ConfirmSlider.Item key={index}>
               <Confirmation id={index} hideSignButton />
             </ConfirmSlider.Item>

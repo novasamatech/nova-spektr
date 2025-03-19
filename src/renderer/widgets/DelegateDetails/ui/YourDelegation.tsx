@@ -78,9 +78,9 @@ export const YourDelegation = () => {
               <FootnoteText>
                 <Trans
                   t={t}
-                  i18nKey="general.actions.multiply"
+                  i18nKey="general.actions.duration"
                   values={{
-                    multiplier: votingService.getConvictionMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
+                    duration: votingService.getConvictionDays(activeDelegations[activeAccounts[0]]?.conviction),
                   }}
                   components={{
                     balance: (

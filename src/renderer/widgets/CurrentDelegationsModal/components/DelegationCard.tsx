@@ -1,13 +1,15 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText } from '@/shared/ui';
+import { BodyText, DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { votingService } from '@/entities/governance';
 import { DelegateName } from '@/features/governance';
 
 type Props = {
@@ -42,7 +44,20 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
 
       <div className="flex flex-col gap-4 divide-divider border-t p-3">
         <DetailRow label={t('governance.addDelegation.card.lockedAmount')}>
-          <AssetBalance value={totalVotes} asset={asset} />
+          {votes.length > 1 && <AssetBalance value={totalVotes} asset={asset} />}
+
+          {votes.length === 1 && (
+            <BodyText>
+              <Trans
+                t={t}
+                i18nKey="general.actions.duration"
+                values={{ duration: votingService.getConvictionDays(votes[0].conviction) }}
+                components={{
+                  balance: <AssetBalance value={totalVotes} asset={asset} />,
+                }}
+              />
+            </BodyText>
+          )}
         </DetailRow>
       </div>
     </button>
