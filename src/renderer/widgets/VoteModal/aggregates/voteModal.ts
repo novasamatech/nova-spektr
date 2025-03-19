@@ -1,13 +1,15 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { spread } from 'patronum';
 
-import { type AccountVote, type Address, type OngoingReferendum } from '@/shared/core';
+import { type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import {
+  type AggregatedReferendum,
   delegationAggregate,
   lockPeriodsModel,
   locksModel,
@@ -22,11 +24,11 @@ import { voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteFormAggregate } from './voteForm';
 
 const flow = createGate<{
-  referendum: OngoingReferendum | null;
-  votes: { voter: Address; vote: AccountVote }[];
+  type: 'vote' | 'revote' | null;
+  referendum: AggregatedReferendum<OngoingReferendum> | null;
 }>({
   defaultState: {
-    votes: [],
+    type: null,
     referendum: null,
   },
 });
@@ -47,8 +49,8 @@ const $hasDelegatedTrack = combine(
 
     const accountAddress = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
-    for (const dalegators of Object.values(tracks)) {
-      for (const [address, tracks] of Object.entries(dalegators)) {
+    for (const delegators of Object.values(tracks)) {
+      for (const [address, tracks] of Object.entries(delegators)) {
         if (address === accountAddress && tracks.includes(referendum.track)) {
           return true;
         }
@@ -141,30 +143,45 @@ sample({
 
 sample({
   clock: flow.open,
-  fn: ({ referendum }) => referendum,
-  target: voteFormAggregate.$referendum,
+  source: networkSelectorModel.$network,
+  filter: (network, { referendum }) => {
+    return nonNullable(network) && nonNullable(referendum);
+  },
+  fn: (network, { type, referendum }) => {
+    const voters = referendum!.voting.votes.map((vote) =>
+      toAddress(vote.voter, { prefix: network?.chain.addressPrefix }),
+    );
+
+    return { type, referendum, voters };
+  },
+  target: spread({
+    type: voteFormAggregate.$type,
+    referendum: voteFormAggregate.$referendum,
+    voters: voteFormAggregate.$voters,
+  }),
+});
+
+sample({
+  clock: flow.open,
+  target: reinitForm,
 });
 
 sample({
   clock: form.fields.account.$value,
-  source: { state: flow.state, network: networkSelectorModel.$network },
+  source: {
+    state: flow.state,
+    network: networkSelectorModel.$network,
+  },
   fn: ({ state, network }, account) => {
-    if (nullable(account) || nullable(network) || state.votes.length === 0) return null;
+    if (nullable(account) || nullable(network) || state.referendum?.voting.votes.length === 0) return null;
 
-    const record = state.votes.find(({ voter }) => {
-      return voter === toAddress(account.accountId, { prefix: network.chain.addressPrefix });
-    });
+    const record = state.referendum?.voting.votes.find(({ voter }) => voter === account.accountId);
 
     if (!record) return null;
 
     return record.vote;
   },
   target: voteFormAggregate.$existingVote,
-});
-
-sample({
-  clock: flow.open,
-  target: reinitForm,
 });
 
 sample({
@@ -188,7 +205,13 @@ sample({
 
 sample({
   clock: flow.state,
-  fn: ({ votes }) => votes.map((x) => x.voter),
+  source: networkSelectorModel.$network,
+  filter: (network, { referendum }) => {
+    return nonNullable(network) && nonNullable(referendum);
+  },
+  fn: (network, { referendum }) => {
+    return referendum!.voting.votes.map((vote) => toAddress(vote.voter, { prefix: network?.chain.addressPrefix }));
+  },
   target: voteFormAggregate.$voters,
 });
 
@@ -196,7 +219,9 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.sign,
-  source: { confirms: voteConfirmModel.$confirmMap },
+  source: {
+    confirms: voteConfirmModel.$confirmMap,
+  },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
     if (!confirms) {
       return { signingPayloads: [] };

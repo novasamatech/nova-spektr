@@ -125,7 +125,7 @@ const AccountSelector = () => {
                   title={isShard ? toShortAddress(address, 16) : account.name}
                   canCopy={false}
                 />
-                <AssetBalance value={balances.balance} asset={network.asset} />
+                <AssetBalance value={balances?.balance} asset={network.asset} />
               </div>
             </Select.Item>
           );
@@ -259,7 +259,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$transferForm);
 
-  const { balance } = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -271,7 +271,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={balance}
+        balance={accountBalance?.balance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
@@ -346,17 +346,17 @@ const AlertForDeliveryFee = () => {
   } = useForm(formModel.$transferForm);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const { native } = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
   const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
   const asset = network?.chain.assets.at(0);
 
-  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError) {
+  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError || !accountBalance) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(native, asset.precision).value;
+  const formattedBalance = formatBalance(accountBalance.native, asset.precision).value;
 
   return (
     <DeliveryFeeAlert

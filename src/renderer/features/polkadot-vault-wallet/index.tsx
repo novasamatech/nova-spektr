@@ -1,11 +1,11 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { SigningType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -46,8 +46,10 @@ accountSDK(polkadotVaultWalletFeature, {
 polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
 
-  const theme: IconTheme = wallet.accounts.length === 1 ? 'polkadot' : 'jdenticon';
-  const address = wallet.accounts.length === 1 ? wallet.accounts[0].accountId : wallet.rootAccountId;
+  const isMultishard = wallet.accounts.length > 1;
+  const address = isMultishard ? wallet.rootAccountId : wallet.accounts[0].accountId;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : isMultishard ? 'jdenticon' : 'polkadot';
 
   return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
 });

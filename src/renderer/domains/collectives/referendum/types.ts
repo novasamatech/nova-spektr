@@ -1,6 +1,5 @@
 import { type BN } from '@polkadot/util';
 
-import { type HexString } from '@/shared/core';
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
@@ -15,15 +14,23 @@ export type Deposit = {
   amount: BN;
 };
 
+export type Proposal =
+  | {
+      type: 'Evidence';
+      accountId: AccountId;
+    }
+  | {
+      type: 'Rfc';
+      pullRequest: string;
+      documentHash: string;
+    };
+
 export type OngoingReferendum = {
   type: 'Ongoing';
   id: ReferendumId;
   origin: string;
   track: TrackId;
-  proposal: {
-    type: 'Inline' | 'Lookup' | 'Legacy';
-    data: HexString;
-  };
+  proposal: Proposal | null;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

@@ -33,9 +33,11 @@ export const GovernanceReferendumDetails = () => {
   const selectedReferendum = useMemo(() => {
     if (!selectedReferendumId) return null;
 
-    return (
-      all.find((x) => referendaPallet.helpers.toReferendumId(parseInt(x.referendumId)) === selectedReferendumId) ?? null
-    );
+    const referendum = all.find(({ referendumId }) => {
+      return referendaPallet.helpers.toReferendumId(parseInt(referendumId)) === selectedReferendumId;
+    });
+
+    return referendum ?? null;
   }, [all, selectedReferendumId]);
 
   useEffect(() => {
@@ -98,7 +100,6 @@ export const GovernanceReferendumDetails = () => {
         referendumService.isOngoing(selectedReferendum) && (
           <RevoteModal
             referendum={selectedReferendum}
-            votes={selectedReferendum.voting.votes}
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}

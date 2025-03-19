@@ -11,7 +11,7 @@ export const ReferendumDescription = () => {
   const referendumMeta = useUnit(referendumDetails.$referendumMeta);
   const pendingReferendumMeta = useUnit(referendumDetails.$pendingMeta);
   const pendingEvidence = useUnit(referendumDetails.$pendingEvidence);
-  const evidence = useUnit(referendumDetails.$evidence);
+  const description = useUnit(referendumDetails.$description);
 
   const metaLoadingState = pendingReferendumMeta && nullable(referendumMeta);
 
@@ -21,7 +21,7 @@ export const ReferendumDescription = () => {
       <HeaderTitleText className="text-balance">
         {metaLoadingState ? <Skeleton height="1lh" width="80%" /> : referendumMeta?.title}
       </HeaderTitleText>
-      {pendingEvidence ? <Skeleton height="8lh" width="100%" /> : <Markdown>{evidence?.content ?? ''}</Markdown>}
+      {pendingEvidence ? <Skeleton height="8lh" width="100%" /> : <Markdown>{description ?? ''}</Markdown>}
     </Box>
   );
 };

@@ -1,4 +1,5 @@
-import { ApiPromise, ScProvider, WsProvider } from '@polkadot/api';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
 import * as Sc from '@substrate/connect';
 
@@ -32,6 +33,7 @@ type ProviderListeners = {
   onDisconnected: (value?: any) => void;
   onError: (value?: any) => void;
 };
+
 function createProvider(
   chainId: ChainId,
   providerType: ProviderType,

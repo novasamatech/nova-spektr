@@ -18,6 +18,7 @@ import {
 } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { currencyModel, useCurrencyRate } from '@/entities/price';
 
 type Props = {
@@ -27,7 +28,7 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance?: string | string[] | ReactNode;
+  balance?: string | string[] | null;
   invalid?: boolean;
   showCurrency?: boolean;
   testId?: string;
@@ -104,7 +105,9 @@ export const AmountInput = ({
   }, [value]);
 
   const getBalance = useCallback(() => {
-    if (!balance) return;
+    if (!balance) {
+      return <Skeleton width={12} height={4} />;
+    }
 
     if (Array.isArray(balance)) {
       return (

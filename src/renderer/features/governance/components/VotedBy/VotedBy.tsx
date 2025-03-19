@@ -1,5 +1,6 @@
 import { type DelegateInfo } from '@/shared/api/governance';
 import { type AccountVote, type Address, type Asset, type Identity } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { VotedByDelegates } from './VotedByDelegates';
 import { VotedCombined } from './VotedCombined';
@@ -9,7 +10,7 @@ type Props = {
   identity: Record<Address, Identity>;
   delegates: DelegateInfo[];
   castingVotes: {
-    voter: Address;
+    voter: AccountId;
     vote: AccountVote;
   }[];
 };

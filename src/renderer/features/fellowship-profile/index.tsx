@@ -1,4 +1,4 @@
-import { fellowshipHeaderCardsSlot } from '@/pages/Fellowship/ui/Fellowship';
+import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { ProfileCard, additionalProfileCardInfoSlot } from './components/ProfileCard';
 import { profileInfoSlot } from './components/ProfileModal';
@@ -8,7 +8,7 @@ import { setActive } from './model/setActive';
 
 export { fellowshipProfileFeature, SetActiveConfirmation, setActive, profileInfoSlot, additionalProfileCardInfoSlot };
 
-fellowshipProfileFeature.inject(fellowshipHeaderCardsSlot, {
+fellowshipProfileFeature.inject(fellowshipSidebarSlot, {
   order: 0,
   render: () => <ProfileCard />,
 });

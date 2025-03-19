@@ -155,14 +155,17 @@ const enrichIndexedMultisigsFx = createEffect(
     if (accounts.length === 0) return [];
 
     // TODO: uncomment when flexible multisigs will be supported
-    // const { regularMultisigs, flexibleMultisigs } = await multisigService.findFlexibleMultisigs(
-    //   apis,
-    //   accounts,
-    // );
+    // const flexibleMultisigs = await multisigService.findFlexibleMultisigs(apis, accounts);
 
     // const buildFlex = flexibleMultisigs.map(
-    //   ({ threshold, proxied, accountId, signatories, chain }): FlexibleMultisigResponse => {
-    //     const multisigAccount = multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain });
+    //   ({ threshold, proxied, accountId, signatories, chain, name }): FlexibleMultisigResponse => {
+    //     const multisigAccount = multisigUtils.buildMultisigAccount({
+    //       threshold,
+    //       accountId,
+    //       signatories,
+    //       name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
+    //     });
+
     //     const flexibleAccounts = proxied
     //       ? [
     //           {
@@ -172,6 +175,7 @@ const enrichIndexedMultisigsFx = createEffect(
     //             type: 'chain',
     //             chainId: chain.chainId,
     //             signingType: SigningType.WATCH_ONLY,
+    //             name: name ?? toAddress(proxied.accountId, { chunk: 5, prefix: chain.addressPrefix }),
     //           } as ProxiedAccount,
     //           multisigAccount,
     //         ]
@@ -186,13 +190,20 @@ const enrichIndexedMultisigsFx = createEffect(
     //   },
     // );
 
-    // const buildRegular = regularMultisigs.map(({ threshold, accountId, signatories, chain }): GetMultisigResponse => {
-    //   return {
+    // const buildRegular = multisigService.getUniqMultisigs(accounts).map(
+    //   ({ threshold, accountId, signatories, chain, name }): GetMultisigResponse => ({
     //     type: 'multisig',
-    //     accounts:[ multisigUtils.buildMultisigAccount({ threshold, accountId, signatories, chain })]
+    //     accounts: [
+    //       multisigUtils.buildMultisigAccount({
+    //         threshold,
+    //         accountId,
+    //         signatories,
+    //         name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
+    //       }),
+    //     ],
     //     chain,
-    //   };
-    // });
+    //   }),
+    // );
 
     // return [...buildRegular, ...buildFlex];
 
@@ -233,13 +244,16 @@ sample({
 
 sample({
   clock: getLastMultisigsFx.doneData,
-  source: $multisigAccounts,
+  source: {
+    multisigAccounts: $multisigAccounts,
+    apis: networkModel.$apis,
+  },
   filter: (_, multisigs) => multisigs.length > 0,
-  fn: (multisigAccounts, indexedMultisigs) => {
+  fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
     const existingAccountIds = new Set(multisigAccounts.map((a) => a.accountId));
     const accounts = indexedMultisigs.filter((indexed) => !existingAccountIds.has(indexed.accountId));
 
-    return { accounts };
+    return { accounts, apis };
   },
   target: enrichIndexedMultisigsFx,
 });
@@ -344,6 +358,7 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
+// Find proxies after all wallets are created
 const readyForProxies = waitFor({
   clock: proxiesModel.findAllProxies.pending,
   source: createWalletsFx.doneData,
@@ -409,7 +424,7 @@ sample({
   fn: (wallet, account) => {
     return { ...wallet!, activated: undefined, type: WalletType.MULTISIG, accounts: [account!] };
   },
-  target: walletModel.events.updateWalletWithDB,
+  target: walletModel.events.updateWalletWithDB, //remove or update flex wallet depending on multisig
 });
 
 // Convert regular multisig to flexible

@@ -131,7 +131,7 @@ export const WalletConnect = ({
         })}
       </SmallTitleText>
 
-      <Countdown countdown={transactions.length ? countdown : 0} />
+      <Countdown countdown={countdown} />
 
       <div className="relative w-full">
         {!pairingUri && (

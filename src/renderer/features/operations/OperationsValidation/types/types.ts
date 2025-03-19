@@ -94,7 +94,7 @@ export type AmountFeeStore = {
 };
 
 export type TransferAmountFeeStore = {
-  balance: BalanceMap;
+  balance: BalanceMap | null;
   network: NetworkStore | null;
   isXcm: boolean;
   isNative: boolean;
