@@ -33,7 +33,7 @@ const { pending, subscribe, unsubscribe, received, fulfilled } = createDataSubsc
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 200),
-      map: mapReferendums,
+      map: record => mapReferendums(record, api),
     });
 
     fetchPages(abortController, callback);
@@ -85,7 +85,7 @@ const { request } = createDataSource<CollectivesStruct<Referendum[]>, Referendum
     await api.isReady;
     const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
 
-    return mapReferendums(response);
+    return mapReferendums(response, api);
   },
   map(store, { params, result }) {
     const currentStore = pickNestedValue(store, params.palletType, params.chainId) ?? [];

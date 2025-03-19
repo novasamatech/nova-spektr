@@ -79,7 +79,10 @@ const frameSupportDispatchRawOrigin = pjsSchema.enumValue({
 export type FrameSupportPreimagesBounded = z.infer<typeof frameSupportPreimagesBounded>;
 const frameSupportPreimagesBounded = pjsSchema.enumValue({
   Inline: pjsSchema.bytesHex,
-  Lookup: pjsSchema.structHex,
+  Lookup: pjsSchema.object({
+    len: pjsSchema.u32,
+    hash_: pjsSchema.uint8Hex,
+  }),
   Legacy: pjsSchema.structHex,
 });
 
