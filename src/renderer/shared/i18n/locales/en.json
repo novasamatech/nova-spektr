@@ -371,8 +371,9 @@
       "setActive": {
         "activeFalse": "No",
         "activeTrue": "Yes",
-        "isActive": "Active",
-        "title": "Set active status on"
+        "active": "Active",
+        "inactive": "Inactive",
+        "title": "Switching status on"
       }
     },
     "referendums": {
@@ -534,7 +535,8 @@
     "voting": {
       "aye": "Aye",
       "confirmation": {
-        "fee": "Fee",
+        "fee": "Network fee",
+        "salary": "Salary",
         "vote": "Vote"
       },
       "errors": {

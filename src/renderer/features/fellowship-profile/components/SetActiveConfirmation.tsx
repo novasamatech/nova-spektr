@@ -21,7 +21,7 @@ export const SetActiveConfirmation = ({ fee, account, wallets, chain, asset, isA
 
   return (
     <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
-      <DetailRow label={t('fellowship.profile.setActive.isActive')}>
+      <DetailRow label={t('fellowship.profile.setActive.active')}>
         {isActive ? t('fellowship.profile.setActive.activeTrue') : t('fellowship.profile.setActive.activeFalse')}
       </DetailRow>
       <Separator className="border-filter-border" />

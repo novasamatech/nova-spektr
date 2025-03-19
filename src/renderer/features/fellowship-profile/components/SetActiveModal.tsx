@@ -1,10 +1,13 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { Button, DetailRow, Icon } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { salaryService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -12,16 +15,18 @@ import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { setActive } from '../model/setActive';
 
-import { SetActiveConfirmation } from './SetActiveConfirmation';
-
 type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = PropsWithChildren<{
   isActive: boolean;
   disabled: boolean;
+  salary: {
+    active: BN;
+    passive: BN;
+  };
 }>;
 
-export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
+export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) => {
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
   const isOpen = useUnit(setActive.flow.status);
@@ -40,6 +45,13 @@ export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
       setActive.flow.close({ isActive });
     }
   };
+
+  const salaryChange = useMemo(() => {
+    const totalSalary = salary.active.add(salary.passive);
+    const from = salaryService.formatSalaryAmount(isActive ? salary.passive : totalSalary);
+    const to = salaryService.formatSalaryAmount(isActive ? totalSalary : salary.passive);
+    return `${from} → ${to}`;
+  }, [isActive, salary]);
 
   const handleSign = () => {
     setActive.sign();
@@ -89,14 +101,19 @@ export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SetActiveConfirmation
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                isActive={isActive}
-                fee={fee}
-              />
+              <div className="flex justify-center">
+                <Icon name={isActive ? 'activateConfirm' : 'deactivateConfirm'} size={60} />
+              </div>
+              <div className="flex justify-center py-[16px] font-manrope text-2xl font-bold">
+                {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
+                &nbsp;{'→'}&nbsp;
+                {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
+              </div>
+
+              <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
+                <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
+                <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
+              </TransactionDetails>
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (
