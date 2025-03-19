@@ -1,11 +1,16 @@
-import { type Conviction } from '@/shared/core';
+import { type BN } from '@polkadot/util';
+
+import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText } from '@/shared/ui';
+import { DetailRow, FootnoteText } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Slider } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
 
 type Props = {
   value: Conviction;
+  amount: BN;
+  asset: Asset;
   disabled?: boolean;
   onChange: (value: Conviction) => void;
 };
@@ -29,10 +34,11 @@ const renderLabel = (value: number) => (
   </FootnoteText>
 );
 
-export const ConvictionSelect = ({ value, disabled, onChange }: Props) => {
+export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: Props) => {
   const { t } = useI18n();
 
   const numericValue = Math.max(convictionList.indexOf(value), 0);
+  const votingPower = votingService.calculateVotingPower(amount, value);
 
   const handleChange = (index: number) => {
     onChange(convictionList.at(index) ?? 'None');
@@ -49,6 +55,13 @@ export const ConvictionSelect = ({ value, disabled, onChange }: Props) => {
         disabled={disabled}
         onChange={handleChange}
       />
+      <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.votingPower')}>
+        <AssetBalance
+          className="text-text-tertiary transition-colors group-hover:text-text-primary"
+          value={votingPower}
+          asset={asset}
+        />
+      </DetailRow>
     </div>
   );
 };

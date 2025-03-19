@@ -70,9 +70,10 @@ sample({
     chain: delegateDetailsModel.$chain,
   },
   filter: ({ delegate, chain }) => nonNullable(delegate) && nonNullable(chain),
-  fn: ({ delegate, chain }) => {
-    return { accountId: delegate!.accountId, chain: chain! };
-  },
+  fn: ({ delegate, chain }) => ({
+    accountId: delegate!.accountId,
+    chain: chain!,
+  }),
   target: [getDelegatesFx, getReferendumsForVoterFx],
 });
 

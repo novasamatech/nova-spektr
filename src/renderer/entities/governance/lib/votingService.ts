@@ -58,6 +58,8 @@ const getAccountVoteConviction = (vote: AccountVote): Conviction => {
 
 const getConvictionMultiplier = (conviction: Conviction): number => ConvictionMultiplier[conviction];
 
+const getConvictionDays = (conviction: Conviction): number => Math.floor(ConvictionMultiplier[conviction] * 7);
+
 const getConviction = (conviction: number): Conviction => {
   return ({
     0.1: 'None',
@@ -245,6 +247,7 @@ export const votingService = {
   getAccountVoteConviction,
   getConvictionMultiplier,
   getConviction,
+  getConvictionDays,
   getVotedCount,
   getVoteFractions,
   getVotingAsset,

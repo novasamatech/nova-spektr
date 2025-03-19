@@ -557,7 +557,8 @@
   },
   "general": {
     "actions": {
-      "multiply": "<balance /> × { multiplier }x"
+      "multiply": "<balance /> × { multiplier }x",
+      "duration": "<balance /> for { duration } days"
     },
     "button": {
       "applyButton": "Apply",
@@ -611,7 +612,7 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
-      "amountMultiply": "Amount & Multiply",
+      "lockedAmount": "Locked amount",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
@@ -718,7 +719,6 @@
       "votedAllTime": "Voted for all time",
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
-      "votesLabel": "Voting power",
       "lockedLabel": "Locked amount",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",

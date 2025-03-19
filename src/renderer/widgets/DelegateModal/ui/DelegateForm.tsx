@@ -122,14 +122,23 @@ const Signatories = () => {
 };
 
 const Conviction = () => {
-  const { fields } = useForm(formModel.$delegateForm);
+  const {
+    fields: { conviction, amount },
+  } = useForm(formModel.$delegateForm);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
     return null;
   }
 
-  return <ConvictionSelect value={fields.conviction.value} onChange={fields.conviction.onChange} />;
+  return (
+    <ConvictionSelect
+      value={conviction.value}
+      asset={network.asset}
+      amount={new BN(formatAmount(amount.value, network.asset.precision))}
+      onChange={conviction.onChange}
+    />
+  );
 };
 
 const Amount = () => {

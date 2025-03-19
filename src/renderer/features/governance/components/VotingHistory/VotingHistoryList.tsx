@@ -68,7 +68,7 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           )}
 
           {shouldRenderList &&
-            deferredItems.map(({ voter, balance, conviction, name }) => {
+            deferredItems.map(({ voter, balance, conviction, votingPower, name }) => {
               return (
                 <div
                   key={`${voter}-${balance.toString()}-${conviction}`}
@@ -82,14 +82,20 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                     chain={chain}
                     variant="truncate"
                   />
-                  <FootnoteText>
-                    <Trans
-                      t={t}
-                      i18nKey="general.actions.multiply"
-                      values={{ multiplier: conviction }}
-                      components={{ balance: <AssetBalance className="text-footnote" value={balance} asset={asset} /> }}
-                    />
-                  </FootnoteText>
+
+                  <Box direction="column" horizontalAlign="end">
+                    <FootnoteText>
+                      <Trans
+                        t={t}
+                        i18nKey="general.actions.multiply"
+                        values={{ multiplier: conviction }}
+                        components={{
+                          balance: <AssetBalance className="text-footnote" value={balance} asset={asset} />,
+                        }}
+                      />
+                    </FootnoteText>
+                    <AssetBalance className="text-footnote text-text-tertiary" asset={asset} value={votingPower} />
+                  </Box>
                 </div>
               );
             })}
