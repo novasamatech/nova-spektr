@@ -1,4 +1,3 @@
-export { governanceModel } from './model/governanceApi';
 export { referendumModel } from './model/referendum';
 export { tracksModel } from './model/tracks';
 export { votingModel } from './model/voting';
@@ -34,7 +33,6 @@ export {
 
 export { createSubscriber } from './utils/createSubscriber';
 
-export type { GovernanceApiSource } from './types/governanceApiSource';
 export type {
   TransactionVote,
   VoteTransaction,

@@ -2,9 +2,18 @@ import { attach, combine, createEvent, sample } from 'effector';
 
 import { populated } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { evidence, referendum, referendumService, track, trackService, voting } from '@/domains/collectives';
+import {
+  evidence,
+  referendum,
+  referendumMeta,
+  referendumService,
+  track,
+  trackService,
+  voting,
+} from '@/domains/collectives';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -17,6 +26,7 @@ const requestVotesFx = attach({ effect: voting.request });
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $completed = $referendums.map(referendumService.getCompletedReferendums);
 const $votesPopulated = populated(requestVotesFx);
@@ -78,10 +88,26 @@ sample({
   target: requestEvidenceFx,
 });
 
+const metadataProviderUpdated = attachToFeatureInput(fellowshipTasksFeature, governanceMetaProvider.$metaProvider);
+
+sample({
+  clock: metadataProviderUpdated,
+  filter({ data }) {
+    return nonNullable(data);
+  },
+  fn: ({ input: { chainId, palletType }, data: api }) => ({
+    provider: api!.type,
+    chainId,
+    palletType,
+  }),
+  target: referendumMeta.request,
+});
+
 export const referendums = {
   $memberVoting: $memberVotes,
   $notVotedReferendumns,
   $completed,
+  $metadata,
   $evidencePending: requestEvidenceFx.pending,
 
   pending: referendum.pending,

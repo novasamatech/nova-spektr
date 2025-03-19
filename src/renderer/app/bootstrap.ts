@@ -5,12 +5,12 @@ import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts } from '@/domains/network';
-import { governanceModel } from '@/entities/governance';
 import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -83,9 +83,10 @@ const populate = async () => {
   multisigsModel.subscribe();
   await proxyModel.populate();
 
+  governanceMetaProvider.populate();
+
   // TODO rework as populate effects
   kernelModel.events.appStarted();
-  governanceModel.events.governanceStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   proxiesModel.findAllProxies();
