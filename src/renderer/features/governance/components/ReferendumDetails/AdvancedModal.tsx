@@ -1,4 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
+import { isString } from 'lodash';
 
 import { type Asset, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -60,12 +61,14 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
 
             <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
 
-            <DetailRow label={t('governance.advanced.fields.callHash')}>
-              <div className="flex w-32 items-center gap-1 text-text-secondary">
-                <Truncate className="text-footnote" start={6} end={5} text={proposal} />
-                <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
-              </div>
-            </DetailRow>
+            {isString(proposal) ? (
+              <DetailRow label={t('governance.advanced.fields.callHash')}>
+                <div className="flex w-32 items-center gap-1 text-text-secondary">
+                  <Truncate className="text-footnote" start={6} end={5} text={proposal} />
+                  <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
+                </div>
+              </DetailRow>
+            ) : null}
           </div>
         </div>
       </Modal.Content>

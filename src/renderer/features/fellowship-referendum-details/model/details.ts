@@ -5,11 +5,11 @@ import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { evidence, evidenceService, referendum, referendumMeta, referendumService } from '@/domains/collectives';
+import { evidence, referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowship } from './fellowship';
 
 const requestEvidence = attach({ effect: evidence.request });
 
@@ -17,10 +17,9 @@ const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: n
 
 const $referendumId = flow.state.map(state => state.referendumId);
 
-const $api = fellowshipReferendumsDetailsFeature.input.map(input => input?.api ?? null);
-const $evidences = fellowshipModel.$store.map(store => store?.evidence ?? []);
-const $referendums = fellowshipModel.$store.map(store => store?.referendums ?? []);
-const $meta = fellowshipModel.$store.map(store => store?.referendumMeta ?? {});
+const $evidences = fellowship.$store.map(store => store?.evidence ?? []);
+const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   if (referendums.length === 0 || referendumId === null) return null;
@@ -40,12 +39,12 @@ const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
   return meta[referendumId] ?? null;
 });
 
-const $proposer = combine($referendum, $api, (referendum, api) => {
-  if (nullable(api) || nullable(referendum) || referendumService.isCompleted(referendum)) return null;
+const $proposer = $referendum.map(referendum => {
+  if (nullable(referendum) || referendumService.isCompleted(referendum)) return null;
 
-  return referendum.proposal.type === 'Inline'
-    ? evidenceService.getProposalAccount(api, referendum.proposal.data)
-    : null;
+  return referendum.proposal?.type === 'Evidence'
+    ? referendum.proposal.accountId
+    : (referendum.submissionDeposit?.who ?? null);
 });
 
 const $proposerIdentity = combine($identities, $proposer, (identities, proposer) => {
@@ -54,11 +53,22 @@ const $proposerIdentity = combine($identities, $proposer, (identities, proposer)
   return identities[proposer] ?? null;
 });
 
-const $evidence = combine($evidences, $proposer, (list, proposer) => {
-  if (nullable(proposer)) return null;
+const $description = combine(
+  { referendum: $referendum, metadata: $referendumMeta, evidences: $evidences, proposer: $proposer },
+  ({ referendum, metadata, evidences, proposer }) => {
+    if (nullable(referendum) || referendumService.isCompleted(referendum) || nullable(referendum.proposal)) return null;
 
-  return list.find(x => x.accountId === proposer) ?? null;
-});
+    if (referendum.proposal.type === 'Evidence') {
+      return evidences.find(x => x.accountId === proposer)?.content ?? null;
+    }
+
+    if (referendum.proposal.type === 'Rfc') {
+      return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
+    }
+
+    return metadata?.description ?? null;
+  },
+);
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
@@ -86,7 +96,7 @@ export const referendumDetails = {
 
   $proposer,
   $proposerIdentity,
-  $evidence,
+  $description,
   $referendum,
   $referendumMeta,
 
