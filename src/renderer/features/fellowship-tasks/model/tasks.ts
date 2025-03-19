@@ -3,6 +3,7 @@ import { or } from 'patronum';
 
 import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
 import {
+  type CompletedReferendum,
   type OngoingReferendum,
   evidenceService,
   memberService,
@@ -11,7 +12,8 @@ import {
   votingService,
 } from '@/domains/collectives';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
+import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
+import { PromotionRetentionVoting } from '../components/tasks/PromotionRetentionVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
@@ -90,6 +92,7 @@ const $salaryTasks = combine(
         {
           id: 'salary_request',
           priority: 0,
+          group: 'personal',
           body: RequestSalary,
           meta: {},
         },
@@ -101,6 +104,7 @@ const $salaryTasks = combine(
         {
           id: 'salary_payout',
           priority: 0,
+          group: 'personal',
           body: RequestPayout,
           meta: {},
         },
@@ -112,6 +116,7 @@ const $salaryTasks = combine(
         {
           id: 'salary_induct',
           priority: 0,
+          group: 'personal',
           body: RequestSalaryInduct,
           meta: {},
         },
@@ -146,6 +151,7 @@ const $evidenceTasks = combine(
         {
           id: 'evidence',
           priority: 0,
+          group: 'general',
           body: RequestRetention,
           meta: {},
         },
@@ -157,6 +163,7 @@ const $evidenceTasks = combine(
         {
           id: 'evidence',
           priority: 2,
+          group: 'general',
           body: RequestPromotion,
           meta: {},
         },
@@ -167,7 +174,7 @@ const $evidenceTasks = combine(
   },
 );
 
-const $referendumTasks = combine(referendums.$notVotedReferendumns, referendums => {
+const $promotionRetentionTasks = combine(referendums.$notVotedReferendumns, referendums => {
   return referendums
     .filter(referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track);
@@ -176,24 +183,38 @@ const $referendumTasks = combine(referendums.$notVotedReferendumns, referendums 
       return {
         id: `referendum_${referendum.id}`,
         priority: 1,
-        body: ReferendumVoting,
+        group: 'general',
+        body: PromotionRetentionVoting,
         meta: { referendum },
       };
     });
 });
 
+const $completedReferendumsTasks = combine(referendums.$completed, referendums => {
+  return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
+    return {
+      id: `referendum_completed_${referendum.id}`,
+      priority: 1,
+      group: 'completed',
+      body: CompletedReferendumVoting,
+      meta: { referendum },
+    };
+  });
+});
+
 const $list = combine(
   {
     salaryTasks: $salaryTasks,
-    referendumTasks: $referendumTasks,
+    referendumTasks: $promotionRetentionTasks,
+    completedReferendumsTasks: $completedReferendumsTasks,
     evidenceTasks: $evidenceTasks,
     operations: $basketOperationsIds,
     hasPermission: memberProfile.$hasPermission,
   },
-  ({ salaryTasks, referendumTasks, evidenceTasks, operations, hasPermission }) => {
+  ({ salaryTasks, referendumTasks, completedReferendumsTasks, evidenceTasks, operations, hasPermission }) => {
     if (hasPermission) {
       const operationsMap = toKeysRecord(operations);
-      return [...salaryTasks, ...referendumTasks, ...evidenceTasks]
+      return [...salaryTasks, ...referendumTasks, ...evidenceTasks, ...completedReferendumsTasks]
         .filter(t => !(t.id in operationsMap))
         .sort((a, b) => a.priority - b.priority);
     }
