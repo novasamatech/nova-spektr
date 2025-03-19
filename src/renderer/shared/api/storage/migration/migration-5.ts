@@ -17,6 +17,7 @@ export async function migratePVAccounts(t: Transaction): Promise<void> {
   const walletsToUpdate: Wallet[] = [];
 
   for (const [walletId, group] of Object.entries(groupedAccounts)) {
+    if (!group) continue;
     const wallet = wallets.find((w) => w.id.toString() === walletId);
     if (!wallet) {
       // delete accounts with missing wallets

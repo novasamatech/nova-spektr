@@ -1,25 +1,31 @@
 import { useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { groupBy, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { Box, EmptyMessage } from '@/shared/ui-kit';
+import { Accordion, Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
+import { type Referendum } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../model/feature';
 import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
 
 import { Basket } from './Basket';
-import { Stack } from './Stack';
+import { Title } from './Title';
 
-export const Tasks = memo(() => {
+type Props = {
+  onReferendumSelect(referendum: Referendum): void;
+};
+
+export const Tasks = memo(({ onReferendumSelect }: Props) => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
   const hasPermission = useUnit(memberProfile.$hasPermission);
   const pending = useUnit(tasks.pending);
   const hasAccount = useUnit(memberProfile.$hasAccount);
-  const [active, setActive] = useState(0);
+
+  const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
 
   if (nullable(input) || pending) {
     return (
@@ -29,31 +35,67 @@ export const Tasks = memo(() => {
     );
   }
 
-  const nextTask = () => setActive(a => a + 1);
-
-  const cards = activeTasks.map(({ id, body: Component, meta }) => {
-    return {
-      id,
-      node: <Component {...meta} canSkip={activeTasks.length > 1} onSkip={nextTask} />,
-    };
-  });
-
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
-      <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} padding={[4, 5]} shrink={0}>
-        <Box direction="row" height={6.5} verticalAlign="center" gap={1.5}>
-          <span className="text-button-small">{t('fellowship.tasks.cardTitle')}</span>
-          <span className="text-footnote text-text-tertiary">{activeTasks.length}</span>
-        </Box>
-        <Basket />
-      </Box>
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
+      <Title />
       {hasAccount && hasPermission && activeTasks.length ? (
-        <Box padding={[0, 5, 4]} grow={1}>
-          <Stack active={active} cards={cards} />
-        </Box>
+        <ScrollArea>
+          {groups.personal && groups.personal.length > 0 ? (
+            <Accordion initialOpen>
+              <Accordion.Trigger>
+                <Box direction="row" gap={2} padding={[0, 2]}>
+                  <span>{t('fellowship.tasks.personal')}</span>
+                  <span className="text-text-tertiary">{groups.personal.length}</span>
+                </Box>
+              </Accordion.Trigger>
+              <Accordion.Content>
+                <div className="divide-y divide-filter-border bg-card-background">
+                  {groups.personal.map(({ id, body: Component, meta }) => (
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
+                  ))}
+                </div>
+              </Accordion.Content>
+            </Accordion>
+          ) : null}
+          {groups.general && groups.general.length > 0 ? (
+            <Accordion initialOpen>
+              <Accordion.Trigger>
+                <Box direction="row" gap={2} padding={[0, 2]}>
+                  <span>{t('fellowship.tasks.general')}</span>
+                  <span className="text-text-tertiary">{groups.general.length}</span>
+                </Box>
+              </Accordion.Trigger>
+              <Accordion.Content>
+                <div className="divide-y divide-filter-border bg-card-background">
+                  {groups.general.map(({ id, body: Component, meta }) => (
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
+                  ))}
+                </div>
+              </Accordion.Content>
+            </Accordion>
+          ) : null}
+          {groups.completed && groups.completed.length > 0 ? (
+            <Accordion initialOpen>
+              <Accordion.Trigger>
+                <Box direction="row" gap={2} padding={[0, 2]}>
+                  <span>{t('fellowship.tasks.completed')}</span>
+                  <span className="text-text-tertiary">{groups.completed.length}</span>
+                </Box>
+              </Accordion.Trigger>
+              <Accordion.Content>
+                <div className="divide-y divide-filter-border bg-card-background">
+                  {groups.completed.map(({ id, body: Component, meta }) => (
+                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
+                  ))}
+                </div>
+              </Accordion.Content>
+            </Accordion>
+          ) : null}
+        </ScrollArea>
       ) : null}
       {hasAccount && hasPermission && !activeTasks.length ? <AllDone /> : null}
       {!hasAccount ? <AccountNotFound /> : null}
+      <Basket />
     </div>
   );
 });

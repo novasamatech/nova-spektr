@@ -477,17 +477,19 @@
     },
     "tasks": {
       "cardTitle": "Actions Required",
+      "completed": "Completed",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
+      "general": "General",
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
-      "reviewBasket_one": "Confirm {count} decision",
-      "reviewBasket_other": "Confirm {count} decisions",
-      "skip": "Skip for now",
+      "personal": "Personal",
+      "reviewBasket": "Confirm now",
+      "reviewBasketTitle_one": "Decision",
+      "reviewBasketTitle_other": "Decisions",
       "task": {
         "anyReferendum": {
-          "title": "Review referendum",
-          "viewEvidence": "View <a>the full evidence</a>"
+          "title": "Review referendum"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",

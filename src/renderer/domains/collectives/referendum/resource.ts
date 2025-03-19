@@ -43,16 +43,27 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       }
     }
 
-    // system.remark('{github_pr_number},{DOCUMENT_HASH}') is used for rfc voting.
-    if (struct.method === 'remark') {
+    // system.remark('RFC_APPROVE({GITHUB_PR},{DOCUMENT_HASH})') is used for rfc voting.
+    if (struct.method === 'remark' || struct.method === 'remarkWithEvent') {
       const parsed = pjsSchema.uint8String.safeParse(struct.args.at(0));
       if (parsed.success) {
-        const [pullRequest, documentHash] = parsed.data.split(',');
-        if (pullRequest && documentHash) {
+        const regexp = /RFC_APPROVE\(([0-9]+),(.+)\)/;
+        const match = regexp.exec(parsed.data);
+        if (match) {
+          const pullRequest = match[1];
+          const documentHash = match[2];
+
+          if (pullRequest && documentHash) {
+            return {
+              type: 'Rfc',
+              pullRequest,
+              documentHash,
+            };
+          }
+        } else {
           return {
-            type: 'Rfc',
-            pullRequest,
-            documentHash,
+            type: 'Unknown',
+            description: parsed.data,
           };
         }
       }
