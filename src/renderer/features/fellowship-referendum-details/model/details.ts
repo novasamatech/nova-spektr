@@ -66,6 +66,10 @@ const $description = combine(
       return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
     }
 
+    if (referendum.proposal.type === 'Unknown') {
+      return referendum.proposal.description;
+    }
+
     return metadata?.description ?? null;
   },
 );
