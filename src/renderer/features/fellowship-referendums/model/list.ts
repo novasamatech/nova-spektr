@@ -4,13 +4,15 @@ import { and, or } from 'patronum';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable } from '@/shared/lib/utils';
 import { referendum, referendumMeta, referendumService } from '@/domains/collectives';
-import { governanceModel } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipReferendumsFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
-// TODO do smth about it, this connection looks terrible
-const metadataProviderUpdated = attachToFeatureInput(fellowshipReferendumsFeature, governanceModel.$governanceApi);
+const metadataProviderUpdated = attachToFeatureInput(
+  fellowshipReferendumsFeature,
+  governanceMetaProvider.$metaProvider,
+);
 
 sample({
   clock: metadataProviderUpdated,

@@ -6,7 +6,8 @@ import { readonly } from 'patronum';
 import { type GovernanceApi, type ReferendumTimelineRecord } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { getCreatedDateFromApi, nonNullable } from '@/shared/lib/utils';
-import { governanceModel, referendumService } from '@/entities/governance';
+import { referendumService } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { networkSelectorModel } from './networkSelector';
 
@@ -46,7 +47,7 @@ sample({
   clock: requestTimeline,
   source: {
     chain: networkSelectorModel.$governanceChain,
-    api: governanceModel.$governanceApi,
+    api: governanceMetaProvider.$metaProvider,
   },
   filter: ({ chain, api }) => nonNullable(chain) && nonNullable(api),
   fn: ({ chain, api }, { referendum }) => ({

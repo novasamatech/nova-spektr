@@ -2,39 +2,31 @@ import { useUnit } from 'effector-react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Button, HeadlineText, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Separator, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { memberSalary } from '../../model/memberSalary';
 
 export const requestSalaryInductActionSlot = createSlot();
 
-type Props = {
-  canSkip: boolean;
-  onSkip: VoidFunction;
-};
-
-export const RequestSalaryInduct = ({ canSkip, onSkip }: Props) => {
+export const RequestSalaryInduct = () => {
   const { t } = useI18n();
 
   const salary = useUnit(memberSalary.$memberSalary);
 
   return (
-    <Box fillContainer padding={5} gap={5}>
-      <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
-      <HeadlineText>
-        {t('fellowship.tasks.task.requestSalaryInduct.description', {
-          salary: salaryService.formatSalaryAmount(salary.active),
-        })}
-      </HeadlineText>
-      <Box grow={1} />
-      <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
+    <Box direction="row" fillContainer padding={5} gap={5}>
+      <Box gap={3}>
+        <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
+        <FootnoteText>
+          {t('fellowship.tasks.task.requestSalaryInduct.description', {
+            salary: salaryService.formatSalaryAmount(salary.active),
+          })}
+        </FootnoteText>
+      </Box>
+      <Separator vertical />
+      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
         <Slot id={requestSalaryInductActionSlot} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
       </Box>
     </Box>
   );

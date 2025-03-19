@@ -151,7 +151,7 @@ const $evidenceTasks = combine(
         {
           id: 'evidence',
           priority: 0,
-          group: 'general',
+          group: 'personal',
           body: RequestRetention,
           meta: {},
         },
@@ -163,7 +163,7 @@ const $evidenceTasks = combine(
         {
           id: 'evidence',
           priority: 2,
-          group: 'general',
+          group: 'personal',
           body: RequestPromotion,
           meta: {},
         },

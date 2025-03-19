@@ -3,7 +3,7 @@ import { createStore, sample } from 'effector';
 import { type GovernanceApi } from '@/shared/api/governance';
 import { type Chain, type ChainId, type ReferendumId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { governanceModel } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { createChunksEffect } from '../utils/createChunksEffect';
 
 import { networkSelectorModel } from './networkSelector';
@@ -36,7 +36,7 @@ const {
 sample({
   clock: networkSelectorModel.events.networkSelected,
   source: {
-    governanceApi: governanceModel.$governanceApi,
+    governanceApi: governanceMetaProvider.$metaProvider,
     loading: $loading,
     loaded: $loaded,
   },
