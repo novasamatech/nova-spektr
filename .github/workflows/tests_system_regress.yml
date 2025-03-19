@@ -41,9 +41,6 @@ jobs:
       - name: ⚙️ Install test dependencies
         uses: ./.github/workflows/install-test
 
-      - name: Run Playwright tests
-        run: allurectl watch -- npx playwright test --grep @regress
-
       - name: Run System Tests - Regression
         uses: ./.github/workflows/run-system-tests
         with:
