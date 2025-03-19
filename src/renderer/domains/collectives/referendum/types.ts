@@ -23,6 +23,10 @@ export type Proposal =
       type: 'Rfc';
       pullRequest: string;
       documentHash: string;
+    }
+  | {
+      type: 'Unknown';
+      description: string;
     };
 
 export type OngoingReferendum = {

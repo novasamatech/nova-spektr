@@ -60,6 +60,11 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
               documentHash,
             };
           }
+        } else {
+          return {
+            type: 'Unknown',
+            description: parsed.data,
+          };
         }
       }
     }
