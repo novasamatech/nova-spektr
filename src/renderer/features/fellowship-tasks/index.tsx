@@ -1,7 +1,7 @@
 import { fellowshipContentSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { Tasks } from './components/Tasks';
-import { taskVotingActionSlot, taskVotingDetailsActionSlot } from './components/tasks/ReferendumVoting';
+import { taskVotingActionSlot, taskVotingDetailsActionSlot } from './components/tasks/PromotionRetentionVoting';
 import { payoutSalaryActionSlot } from './components/tasks/RequestPayout';
 import { requestPromotionActionSlot } from './components/tasks/RequestPromotion';
 import { requestRetentionActionSlot } from './components/tasks/RequestRetention';

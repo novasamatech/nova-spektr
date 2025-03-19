@@ -6,11 +6,13 @@ export type OperationType =
   | 'salary_payout'
   | 'salary_induct'
   | 'evidence'
-  | `referendum_${number}`;
+  | `referendum_${number}`
+  | `referendum_completed_${number}`;
 
 export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
-  priority: 0 | 1 | 2;
-  body: ComponentType<T & { canSkip: boolean; onSkip: VoidFunction }>;
+  group: 'personal' | 'general' | 'completed';
+  priority: number;
+  body: ComponentType<T>;
   meta: T;
 };
