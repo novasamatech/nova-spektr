@@ -4,7 +4,7 @@ import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, DetailRow, Icon } from '@/shared/ui';
+import { Button, DetailRow, Icon, LargeTitleText } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
@@ -104,10 +104,12 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
               <div className="flex justify-center">
                 <Icon name={isActive ? 'activateConfirm' : 'deactivateConfirm'} size={60} />
               </div>
-              <div className="flex justify-center py-[16px] font-manrope text-2xl font-bold">
-                {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
-                &nbsp;{'→'}&nbsp;
-                {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
+              <div className="flex justify-center py-[16px]">
+                <LargeTitleText>
+                  {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
+                  &nbsp;{'→'}&nbsp;
+                  {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
+                </LargeTitleText>
               </div>
 
               <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
