@@ -88,6 +88,16 @@ sample({
   target: requestEvidenceFx,
 });
 
+sample({
+  clock: fellowshipTasksFeature.running,
+  target: referendum.subscribe,
+});
+
+sample({
+  clock: fellowshipTasksFeature.stopped,
+  target: referendum.unsubscribe,
+});
+
 const metadataProviderUpdated = attachToFeatureInput(fellowshipTasksFeature, governanceMetaProvider.$metaProvider);
 
 sample({
