@@ -1,8 +1,75 @@
-import { type ReferendaReferendumInfoConvictionVotingTally, type ReferendumId } from '@/shared/pallet/referenda';
+import { type ApiPromise } from '@polkadot/api';
+import { u8aToHex } from '@polkadot/util';
 
-import { type Referendum } from './types';
+import { type HexString } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import {
+  type FrameSupportPreimagesBounded,
+  type ReferendaReferendumInfoConvictionVotingTally,
+  type ReferendumId,
+} from '@/shared/pallet/referenda';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
-export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoConvictionVotingTally): Referendum => {
+import { type Proposal, type Referendum } from './types';
+
+async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPromise): Promise<Proposal | null> {
+  let proposalHex: HexString | null = null;
+
+  if (proposal.type === 'Inline') {
+    proposalHex = proposal.data;
+  }
+
+  if (proposal.type === 'Lookup') {
+    const preimage = await api.query.preimage.preimageFor([proposal.data.hash_, proposal.data.len]);
+    if (preimage.isSome) {
+      proposalHex = u8aToHex(preimage.value);
+    }
+  }
+
+  if (nullable(proposalHex)) return null;
+
+  try {
+    const struct = api.registry.createType('Proposal', proposalHex);
+
+    // parsing "who" argument for promote/retain
+    if (struct.method === 'promote' || struct.method === 'promoteFast' || struct.method === 'approve') {
+      const parsed = pjsSchema.accountId.safeParse(struct.args.at(0));
+
+      if (parsed.success) {
+        return {
+          type: 'Evidence',
+          accountId: parsed.data,
+        };
+      }
+    }
+
+    // system.remark('{github_pr_number},{DOCUMENT_HASH}') is used for rfc voting.
+    if (struct.method === 'remark') {
+      const parsed = pjsSchema.uint8String.safeParse(struct.args.at(0));
+      if (parsed.success) {
+        const [pullRequest, documentHash] = parsed.data.split(',');
+        if (pullRequest && documentHash) {
+          return {
+            type: 'Rfc',
+            pullRequest,
+            documentHash,
+          };
+        }
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+
+  return null;
+}
+
+async function mapReferendum(
+  id: ReferendumId,
+  info: ReferendaReferendumInfoConvictionVotingTally,
+  api: ApiPromise,
+): Promise<Referendum> {
   switch (info.type) {
     case 'Ongoing':
       if (!('bareAyes' in info.data.tally)) {
@@ -14,7 +81,7 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
         type: info.type,
         track: info.data.track,
         submitted: info.data.submitted,
-        proposal: info.data.proposal,
+        proposal: await parseProposal(info.data.proposal, api),
         origin: info.data.origin.type,
         enactment: {
           value: info.data.enactment.data,
@@ -44,16 +111,18 @@ export const mapReferendum = (id: ReferendumId, info: ReferendaReferendumInfoCon
         since: info.data,
       };
   }
-};
+}
 
-export const mapReferendums = (
+export async function mapReferendums(
   list: { id: ReferendumId; info: ReferendaReferendumInfoConvictionVotingTally | null }[],
-) => {
+  api: ApiPromise,
+) {
   const value: Referendum[] = [];
   for (const { id, info } of list) {
     if (!info) continue;
-    value.push(mapReferendum(id, info));
+    const record = await mapReferendum(id, info, api);
+    value.push(record);
   }
 
   return value;
-};
+}

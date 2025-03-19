@@ -21,8 +21,12 @@ const {
   fulfilled,
 } = createDataSource<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>, RequestParams, ReferendumMeta[]>({
   initial: {},
-  fn: async ({ provider }) => {
+  fn: async ({ chainId, provider }) => {
     let response: ReferendumMeta[] = [];
+    // external providers work only with polkadot collectives chain
+    if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {
+      return [];
+    }
 
     if (provider === 'subsquare') {
       // TODO support ambassadors

@@ -3,11 +3,11 @@ import { useEffect } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button, Markdown, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type OngoingReferendum, evidenceService, trackService } from '@/domains/collectives';
+import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
@@ -33,11 +33,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const api = input?.api;
   const track = allTacks.find(t => t.id === referendum.track);
 
-  const proposer =
-    nonNullable(api) && referendum.proposal.type === 'Inline'
-      ? evidenceService.getProposalAccount(api, referendum.proposal.data)
-      : null;
-
+  const proposer = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
   const evidence = evidences.find(e => e.accountId === proposer);
 
   useEffect(() => {
