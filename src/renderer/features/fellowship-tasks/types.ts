@@ -1,5 +1,6 @@
 import { type ComponentType } from 'react';
 
+import { type Transaction } from '@/shared/core';
 import { type Referendum } from '@/domains/collectives';
 
 export type OperationType =
@@ -15,6 +16,6 @@ export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
   group: 'personal' | 'general' | 'completed';
   priority: number;
-  body: ComponentType<T & { onReferendumSelect(referendum: Referendum): void }>;
-  meta: T;
+  body: ComponentType<T & { transaction: Transaction | null; onReferendumSelect(referendum: Referendum): void }>;
+  meta: T & { transaction: Transaction | null };
 };
