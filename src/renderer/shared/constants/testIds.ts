@@ -37,4 +37,5 @@ export const TEST_IDS = {
     PROPOSAL_ID: 'governance-proposal-id',
     PROPOSAL_VOTE_DETAILS: 'governance-proposal-vote-details',
   },
+  CLOSE_BUTTON: 'Icon:close',
 } as const;

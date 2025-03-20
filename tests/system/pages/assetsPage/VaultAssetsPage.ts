@@ -46,7 +46,7 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
     if (targetChain) {
       for (const asset of targetChain.assets) {
         await (await this.openTransfer(chain, asset.assetId)).checkFeeforAsset();
-        await this.page.getByTestId('Icon:close').click();
+        await this.page.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
         // TODO: need to wait a few moments before open another transfer modal
         await this.page.waitForTimeout(500);
       }
