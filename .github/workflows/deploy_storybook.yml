@@ -24,6 +24,8 @@ jobs:
         uses: ./.github/workflows/install-pnpm
 
       - name: Build storybook
+        env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
           pnpm storybook:build
 
