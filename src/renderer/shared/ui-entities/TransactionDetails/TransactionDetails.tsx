@@ -3,7 +3,7 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { CaptionText, FootnoteText, Icon } from '@/shared/ui';
+import { CaptionText, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
 import { Box } from '@/shared/ui-kit';
 // TODO what should we do with domain imports in ui-entities? Is it an exception from rules?
@@ -135,6 +135,8 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </Box>
         </DetailRow>
       )}
+
+      {children ? <Separator className="border-filter-border" /> : null}
 
       {children}
 
