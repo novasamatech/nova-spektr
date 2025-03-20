@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { Slot, createSlot } from '@/shared/di';
+import { type Transaction } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
@@ -13,14 +13,15 @@ import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
-export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
+import { taskVotingActionSlot } from './OngoingReferendumVoting';
 
 type Props = {
   referendum: OngoingReferendum;
+  transaction: Transaction | null;
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const PromotionRetentionVoting = ({ referendum, onReferendumSelect }: Props) => {
+export const PromotionRetentionVoting = ({ referendum, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -67,7 +68,7 @@ export const PromotionRetentionVoting = ({ referendum, onReferendumSelect }: Pro
       </button>
       <Separator vertical />
       <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
-        <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
+        <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id, transaction }} />
       </Box>
     </Box>
   );
