@@ -107,7 +107,7 @@ function getReferendumImportance({
   const controversyScore = getControversyScore(referendum, maximumAvailableVotingWeight);
   const userImportanceScore = getUserImportanceScore(maximumAvailableVotingWeight, memberVotingWeight);
 
-  const isUrgent = urgencyScore > 0.5;
+  const isUrgent = urgencyScore > 0.3;
   const isControversial = controversyScore > 0.5;
   const isImportantVote = userImportanceScore > 0.5;
 
