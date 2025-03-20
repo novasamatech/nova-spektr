@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useMemo, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
@@ -26,6 +26,19 @@ type Props = PropsWithChildren<{
   };
 }>;
 
+function getSalaryChange(
+  isActive: boolean,
+  salary: {
+    active: BN;
+    passive: BN;
+  },
+) {
+  const totalSalary = salary.active.add(salary.passive);
+  const from = salaryService.formatSalaryAmount(isActive ? salary.passive : totalSalary);
+  const to = salaryService.formatSalaryAmount(isActive ? totalSalary : salary.passive);
+  return `${from} → ${to}`;
+}
+
 export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) => {
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
@@ -47,12 +60,7 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
     }
   };
 
-  const salaryChange = useMemo(() => {
-    const totalSalary = salary.active.add(salary.passive);
-    const from = salaryService.formatSalaryAmount(isActive ? salary.passive : totalSalary);
-    const to = salaryService.formatSalaryAmount(isActive ? totalSalary : salary.passive);
-    return `${from} → ${to}`;
-  }, [isActive, salary]);
+  const salaryChange = getSalaryChange(isActive, salary);
 
   const handleSign = () => {
     setActive.sign();
