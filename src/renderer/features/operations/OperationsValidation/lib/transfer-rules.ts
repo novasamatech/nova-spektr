@@ -82,7 +82,7 @@ export const TransferRules = {
     },
 
     notEnoughBalance: (
-      source: Store<{ network: NetworkStore | null; balance: BalanceMap }>,
+      source: Store<{ network: NetworkStore | null; balance: BalanceMap | null }>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'notEnoughBalance',
@@ -91,9 +91,11 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, balance }: { network: NetworkStore | null; balance: BalanceMap },
+        { network, balance }: { network: NetworkStore | null; balance?: BalanceMap },
       ) => {
         if (!network) return false;
+
+        if (!balance) return true;
 
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
 
@@ -113,6 +115,8 @@ export const TransferRules = {
         { network, isNative, isProxy, isMultisig, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
+
+        if (!balance) return true;
 
         return balanceValidation.insufficientBalanceForFee(
           {
@@ -142,7 +146,7 @@ export const TransferRules = {
         { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
-        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee) return true;
+        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee || !balance) return true;
 
         return balanceValidation.insufficientBalanceForDeliveryFee(
           {
@@ -173,6 +177,8 @@ export const TransferRules = {
         { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
+
+        if (!balance) return true;
 
         return balanceValidation.insufficientBalanceForXcmFee(
           {

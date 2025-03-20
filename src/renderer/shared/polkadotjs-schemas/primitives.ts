@@ -64,6 +64,9 @@ export const bytesSchema = z.instanceof(Bytes).transform((value) => value.toU8a(
 export const bytesString = z.instanceof(Bytes).transform((value) => value.toString());
 export const bytesHexSchema = z.instanceof(Bytes).transform((value) => value.toHex());
 
+export const uint8HexSchema = z.instanceof(Uint8Array).transform((value) => u8aToHex(value));
+export const uint8StringSchema = z.instanceof(Uint8Array).transform((value) => u8aToString(value));
+
 export const boolSchema = z.instanceof(bool).transform((value) => value.toPrimitive());
 
 export const structHexSchema = z.instanceof(Struct).transform((value) => value.toHex());

@@ -3,26 +3,24 @@ import { useEffect } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { Button, Markdown, TitleText } from '@/shared/ui';
+import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type OngoingReferendum, evidenceService, trackService } from '@/domains/collectives';
+import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
 export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId }>();
-export const taskVotingDetailsActionSlot = createSlot<{ referendumId: ReferendumId }>();
 
 type Props = {
   referendum: OngoingReferendum;
-  canSkip: boolean;
-  onSkip: VoidFunction;
+  onReferendumSelect(referendum: Referendum): void;
 };
 
-export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
+export const PromotionRetentionVoting = ({ referendum, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -33,11 +31,7 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   const api = input?.api;
   const track = allTacks.find(t => t.id === referendum.track);
 
-  const proposer =
-    nonNullable(api) && referendum.proposal.type === 'Inline'
-      ? evidenceService.getProposalAccount(api, referendum.proposal.data)
-      : null;
-
+  const proposer = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
   const evidence = evidences.find(e => e.accountId === proposer);
 
   useEffect(() => {
@@ -61,19 +55,19 @@ export const ReferendumVoting = ({ referendum, canSkip, onSkip }: Props) => {
   }
 
   return (
-    <Box fillContainer padding={5} gap={5}>
-      <TitleText>{title}</TitleText>
-      {!evidence?.summary && evidencePending && <Skeleton height="5em" width="85%" />}
-      <Markdown>{evidence?.summary ?? ''}</Markdown>
-      <Slot id={taskVotingDetailsActionSlot} props={{ referendumId: referendum.id }} />
-      <Box grow={1} />
-      <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
+    <Box direction="row" gap={5} padding={4}>
+      <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
+        <Box fillContainer gap={3} grow={1}>
+          <SmallTitleText>{title}</SmallTitleText>
+          {!evidence?.summary && evidencePending && <Skeleton height="2em" width="85%" />}
+          <FootnoteText>
+            <Markdown>{evidence?.summary ?? ''}</Markdown>
+          </FootnoteText>
+        </Box>
+      </button>
+      <Separator vertical />
+      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
         <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id }} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
       </Box>
     </Box>
   );
