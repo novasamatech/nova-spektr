@@ -29,7 +29,6 @@ export const substrateChains = [
   { name: 'Bifrost Polkadot' },
   { name: 'Heima' },
   { name: 'Mangata X' },
-  { name: 'Imbue' },
   { name: 'Amplitude' },
   { name: 'Pendulum' },
   { name: 'Bittensor' },

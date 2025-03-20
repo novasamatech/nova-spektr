@@ -67,7 +67,7 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
 
   public async importDatabase(dbFileName: string): Promise<VaultAssetsPage> {
     await this.gotoOnboarding();
-    await this.click(this.pageElements.importDatabaseButton);
+    await this.page.getByTestId(this.pageElements.importDatabaseButton).click();
 
     const projectRoot = cwd();
     const dbFilePath = join(projectRoot, 'tests/system/data/db/', dbFileName);

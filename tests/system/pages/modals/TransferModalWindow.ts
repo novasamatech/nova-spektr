@@ -32,7 +32,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
     const chainId = filteredChain.chainId;
     const url = TransferModalElements.getUrl(chainId, this.assetId);
-    await this.page.waitForTimeout(1000);
+    // TODO: Update waiting approach, currently it waits until header is loaded
+    await this.page.getByText('Token').waitFor();
     await this.page.goto(url);
 
     return this;
