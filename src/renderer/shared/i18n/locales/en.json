@@ -559,8 +559,8 @@
   },
   "general": {
     "actions": {
-      "multiply": "<balance /> × { multiplier }x",
-      "duration": "<balance /> for { duration } days"
+      "duration": "<balance /> for { duration } days",
+      "multiply": "<balance /> × { multiplier }x"
     },
     "button": {
       "applyButton": "Apply",
@@ -614,7 +614,6 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
-      "lockedAmount": "Locked amount",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
@@ -650,6 +649,8 @@
         "treasury": "Treasury"
       },
       "invalidAddressError": "Invalid address",
+      "lockedAmount": "Locked amount",
+      "lockedLabel": "Locked amount",
       "manyAccountsPlaceholder": "Select accounts",
       "maxWeightError": "Max transaction weight reached",
       "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
@@ -668,9 +669,9 @@
         "accountLabel": "Account",
         "acrossTracks_one": "Across { count } track",
         "acrossTracks_other": "Across { count } tracks",
+        "delegateVoted": "Delegate voted:",
         "delegatedLabel": "Delegated",
         "delegationSummary": "Delegation summary",
-        "delegateVoted": "Delegate voted:",
         "listEmptyState": "Nothing was found"
       },
       "title": "Add delegation on",
@@ -721,7 +722,6 @@
       "votedAllTime": "Voted for all time",
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
-      "lockedLabel": "Locked amount",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourAccountError": "You cannot delegate to the same account"
@@ -919,15 +919,15 @@
     "voted": "Voted",
     "votedAbstain": "ABSTAIN <amount/>",
     "votedAye": "AYE <amount/>",
-    "votedConvictedAye": "AYE <amount/> × { multiplier }x",
     "votedAyeBy": "AYE <amount/> via <delegate/>",
-    "votedConvictedAyeBy": "AYE <amount/> × { multiplier }x via <delegate/>",
     "votedAyeByDelegates": "AYE <amount/> via delegates",
     "votedByDelegates": "Voted via delegates",
-    "votedNay": "NAY <amount/>",
+    "votedConvictedAye": "AYE <amount/> × { multiplier }x",
+    "votedConvictedAyeBy": "AYE <amount/> × { multiplier }x via <delegate/>",
     "votedConvictedNay": "NAY <amount/> × { multiplier }x",
-    "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedConvictedNayBy": "NAY <amount/> × { multiplier }x via <delegate/>",
+    "votedNay": "NAY <amount/>",
+    "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedNayByDelegates": "NAY <amount/> via delegates",
     "votedWithAmount": "Voted:",
     "voting": {
