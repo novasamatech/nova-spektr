@@ -6,7 +6,7 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
@@ -82,13 +82,15 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
         </div>
       </div>
 
-      <VotedBy
-        variant="columns"
-        asset={asset}
-        identity={identity}
-        delegates={referendum.votedByDelegates}
-        castingVotes={referendum.voting.votes}
-      />
+      <Box width="max-content">
+        <VotedBy
+          direction="row"
+          asset={asset}
+          identity={identity}
+          delegates={referendum.votedByDelegates}
+          castingVotes={referendum.voting.votes}
+        />
+      </Box>
     </ListItem>
   );
 });

@@ -41,7 +41,6 @@ export const ReferendumItem = memo<Props>(({ referendum, isTitlesLoading, onSele
       <Box gap={3} padding={[4, 3]}>
         <Box direction="row" verticalAlign="center" gap={2}>
           <AccountVoting referendum={referendum} />
-          {/*<VotedBy address={referendum.votedByDelegate} />*/}
           <ReferendumVotingStatusBadge referendum={referendum} pending={false} />
 
           {/*<ReferendumTimer status="reject" time={600000} />*/}
