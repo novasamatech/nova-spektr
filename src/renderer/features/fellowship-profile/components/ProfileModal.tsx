@@ -69,7 +69,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               {active ? (
                 <FootnoteText className="text-text-positive">{t('fellowship.profile.active')}</FootnoteText>
               ) : null}
-              <SetActiveModal isActive={!active} disabled={setActiveDisabled}>
+              <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
                 <div>
                   <div className="pointer-events-none">
                     <Switch
