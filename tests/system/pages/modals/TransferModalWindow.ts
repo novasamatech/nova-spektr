@@ -1,5 +1,6 @@
 import { type Page, expect } from '@playwright/test';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
 import { BaseModal } from '../BaseModalWindow';
@@ -32,10 +33,10 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
     const chainId = filteredChain.chainId;
     const url = TransferModalElements.getUrl(chainId, this.assetId);
-    // TODO: Update waiting approach, currently it waits until header is loaded
-    await this.page.getByText('Token').waitFor();
+    // TODO: Update waiting approach, currently it waits until send button is loaded
+    await this.page.getByTestId(TEST_IDS.ASSETS.SEND_ARROW_ICON).first().waitFor();
     await this.page.goto(url);
-    await this.page.getByText('Transfer').waitFor();
+    await this.page.getByTestId(TEST_IDS.OPERATIONS.AMOUNT_INPUT).first().waitFor();
 
     return this;
   }
