@@ -71,6 +71,23 @@ function getUserImportanceScore(maximumAvailableVotingWeight: number, userVoting
 }
 
 /**
+ * Weights are adjustable and can be changed after feedback
+ */
+function getSortingScope(isUrgent: boolean, isControversial: boolean, isImportantVote: boolean) {
+  if (isUrgent && isImportantVote) {
+    return 4;
+  } else if (isUrgent && isControversial) {
+    return 3;
+  } else if (isImportantVote) {
+    return 2;
+  } else if (isControversial) {
+    return 1;
+  }
+
+  return 0;
+}
+
+/**
  * Computes an overall importance (sorting_score) for a given referendum, along
  * with a set of tags for UI to display The sorting_score is a simple linear
  * combination of the three sub-scores
@@ -90,17 +107,20 @@ function getReferendumImportance({
   const controversyScore = getControversyScore(referendum, maximumAvailableVotingWeight);
   const userImportanceScore = getUserImportanceScore(maximumAvailableVotingWeight, memberVotingWeight);
 
-  // You can adjust these weights as desired
-  const sortingScore = urgencyScore + controversyScore + userImportanceScore;
+  const isUrgent = urgencyScore > 0.5;
+  const isControversial = controversyScore > 0.5;
+  const isImportantVote = userImportanceScore > 0.5;
 
   const tags: string[] = [];
-  if (urgencyScore > 0.5) {
+  const sortingScore = getSortingScope(isUrgent, isControversial, isImportantVote);
+
+  if (isUrgent) {
     tags.push('urgent');
   }
-  if (controversyScore > 0.5) {
+  if (isControversial) {
     tags.push('controversial');
   }
-  if (userImportanceScore > 0.5) {
+  if (isImportantVote) {
     tags.push('importantVote');
   }
 
