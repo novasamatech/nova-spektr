@@ -114,16 +114,16 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <div className="flex justify-center">
+              <Box horizontalAlign="center">
                 <Icon name={isActive ? 'activateConfirm' : 'deactivateConfirm'} size={60} />
-              </div>
-              <div className="flex justify-center py-[16px]">
-                <LargeTitleText>
+              </Box>
+              <Box horizontalAlign="center">
+                <LargeTitleText className="py-[16px]">
                   {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
                   &nbsp;{'→'}&nbsp;
                   {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
                 </LargeTitleText>
-              </div>
+              </Box>
 
               <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
                 <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
