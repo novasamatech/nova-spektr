@@ -39,6 +39,7 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
     test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ loginPage }) => {
       await allure.feature(feature);
       await allure.story(story);
+      test.slow();
       const vaultWallet = await loginPage.importDatabase('transfers/pv-root-polkadot.json');
       const assetsPage = await vaultWallet.gotoMain();
       const chain = getChainByName(substrateChains, chainName);
