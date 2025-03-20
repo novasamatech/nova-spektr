@@ -369,10 +369,15 @@
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "setActive": {
+        "active": "Active",
         "activeFalse": "No",
         "activeTrue": "Yes",
-        "isActive": "Active",
-        "title": "Set active status on"
+        "inactive": "Inactive",
+        "setInactiveAlert": {
+          "text": "During the inactive period, you are not required to participate in fellowship activities, however, you only receive a part of your salary. Voting still remains available. Note that other fellows can still bump you.",
+          "title": "Review changes before switching status"
+        },
+        "title": "Switching status on"
       }
     },
     "referendums": {
@@ -534,7 +539,8 @@
     "voting": {
       "aye": "Aye",
       "confirmation": {
-        "fee": "Fee",
+        "fee": "Network fee",
+        "salary": "Salary",
         "vote": "Vote"
       },
       "errors": {
