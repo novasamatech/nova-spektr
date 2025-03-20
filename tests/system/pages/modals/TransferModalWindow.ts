@@ -35,6 +35,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     // TODO: Update waiting approach, currently it waits until header is loaded
     await this.page.getByText('Token').waitFor();
     await this.page.goto(url);
+    await this.page.getByText('Transfer').waitFor();
 
     return this;
   }
@@ -44,7 +45,6 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
     await this.waitForContinueButtonToBeEnabled();
     await this.expectTransferFeeNotZero();
-    await this.page.getByRole('banner').getByRole('button').click();
   }
 
   private async expectTransferFeeNotZero(): Promise<void> {
