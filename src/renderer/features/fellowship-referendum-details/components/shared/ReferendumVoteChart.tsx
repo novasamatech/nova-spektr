@@ -4,9 +4,9 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { HelpText } from '@/shared/ui';
 import { VoteChart } from '@/shared/ui-entities';
-import { Skeleton, Tooltip } from '@/shared/ui-kit';
+import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
@@ -50,7 +50,7 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
   const threshold = thresholds.approval.threshold.div(BN_MILLION).toNumber() / 10;
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
-  const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} />;
+  const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} showDivider={false} />;
 
   if (descriptionPosition === 'tooltip') {
     return (
@@ -71,22 +71,16 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
 
   if (descriptionPosition === 'bottom') {
     return (
-      <div className="flex w-full flex-col gap-1">
+      <div className="flex w-full flex-col">
         {chartNode}
-        <div className="flex justify-between">
-          <div className="flex flex-col items-start">
-            <FootnoteText>{aye.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.aye')}</FootnoteText>
-          </div>
-          <div className="flex flex-col items-center">
-            <FootnoteText>{threshold.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.toPass')}</FootnoteText>
-          </div>
-          <div className="flex flex-col items-end">
-            <FootnoteText>{nay.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.nay')}</FootnoteText>
-          </div>
-        </div>
+        <Box direction="row" horizontalAlign="space-between">
+          <HelpText className="text-text-secondary">
+            {t('voteChart.aye')}: {referendum.tally.ayes}
+          </HelpText>
+          <HelpText className="text-text-secondary">
+            {t('voteChart.nay')}: {referendum.tally.nays}
+          </HelpText>
+        </Box>
       </div>
     );
   }

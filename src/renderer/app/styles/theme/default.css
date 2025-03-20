@@ -96,8 +96,12 @@
   --badge-background: rgba(70, 73, 246, 0.16);
   --badge-background-hover: rgba(70, 73, 246, 0.24);
   --badge-red-background-default: rgba(245, 33, 99, 0.16);
+  --badge-red-background: rgba(245, 33, 99, 0.24);
+  --badge-dark-red-background: rgba(137, 9, 48, 1);
   --badge-orange-background-default: rgba(246, 143, 7, 0.16);
   --badge-green-background-default: rgba(1, 166, 62, 0.16);
+  --badge-green-background: rgba(1, 166, 62, 0.24);
+  --badge-dark-green-background: rgba(7, 99, 41, 1);
   --extended-block-background: rgba(69, 69, 137, 0.03);
   --block-background-default: #fff;
   --negative-action-background: rgba(245, 33, 99, 0.06);

@@ -1,11 +1,15 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { nonNullable } from '@/shared/lib/utils';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
+import { trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
-import { additionalInfoSlot, referendumActionsSlot } from '@/features/fellowship-referendum-details';
+import {
+  additionalInfoSlot,
+  fellowshipReferendumDetails,
+  referendumActionsSlot,
+} from '@/features/fellowship-referendum-details';
 import { taskVotingActionSlot } from '@/features/fellowship-tasks';
 
 import { VotingButtons } from './components/VotingButtons';
@@ -19,17 +23,30 @@ import { votingStatus } from './model/votingStatus';
 
 export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
 
-fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendumId }) => {
-  useFlow(votingStatus.flow, { referendumId });
+const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
+
+fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction }) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-  const canVote = useUnit(votingStatus.$canVote);
   const account = useUnit(votingStatus.$votingAccount);
-  const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
-  const disabled = !canVote || !hasRequiredRank;
+
+  const maxRank = useUnit(votingStatus.$maxRank);
+  const currentMember = useUnit(votingStatus.$currentMember);
+  const canVote = useUnit(votingStatus.$canVote);
+  const accountsVotes = useUnit(votingStatus.$accountsVotes);
+  const referendumDecision = accountsVotes.find(voting => voting.referendumId === referendum?.id)?.decision;
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
+  const hasRequiredRank =
+    nonNullable(currentMember) &&
+    nonNullable(referendum) &&
+    trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
+
+  const disabled = !canVote || !hasRequiredRank;
+
   const aye = () => {
+    votingStatus.flow.open({ referendumId: referendum?.id });
+
     if (canAddToBasket) {
       voting.flow.open({ vote: 'aye' });
       voting.saveToBasket();
@@ -40,6 +57,8 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendumId }) => {
   };
 
   const nay = () => {
+    votingStatus.flow.open({ referendumId: referendum?.id });
+
     if (canAddToBasket) {
       voting.flow.open({ vote: 'nay' });
       voting.saveToBasket();
@@ -50,9 +69,28 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendumId }) => {
   };
 
   return (
-    <Box direction="row" gap={3}>
-      <FilledIconButton variant="negative" icon="thumbDown" disabled={disabled} onClick={nay} />
-      <FilledIconButton variant="positive" icon="thumbUp" disabled={disabled} onClick={aye} />
+    <Box gap={1}>
+      <Box direction="row" gap={0.5}>
+        <FilledIconButton
+          variant="negative"
+          icon="thumbDown"
+          disabled={disabled}
+          voted={referendumDecision === 'Nay'}
+          checked={nonNullable(transaction) && !transaction.args.aye}
+          onClick={nay}
+        />
+        <FilledIconButton
+          variant="positive"
+          icon="thumbUp"
+          disabled={disabled}
+          voted={referendumDecision === 'Aye'}
+          checked={nonNullable(transaction) && transaction.args.aye}
+          onClick={aye}
+        />
+      </Box>
+      <div className="w-[102px]">
+        <ReferendumVoteChart referendum={referendum} pending={!!referendum} descriptionPosition="bottom" />
+      </div>
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
     </Box>
   );

@@ -172,7 +172,7 @@ const $evidenceTasks = combine(
 );
 
 const $ongoingReferendumsTasks = combine(
-  { referendums: referendums.$notVotedReferendumns, operations: $basketOperationsMap },
+  { referendums: referendums.$ongoing, operations: $basketOperationsMap },
   ({ referendums, operations }) => {
     const groups = groupBy(referendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)

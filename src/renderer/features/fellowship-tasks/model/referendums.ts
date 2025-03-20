@@ -116,6 +116,7 @@ sample({
 export const referendums = {
   $memberVoting: $memberVotes,
   $notVotedReferendumns,
+  $ongoing,
   $completed,
   $metadata,
   $evidencePending: requestEvidenceFx.pending,

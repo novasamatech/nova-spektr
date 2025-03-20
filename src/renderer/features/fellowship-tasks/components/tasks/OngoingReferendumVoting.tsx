@@ -3,13 +3,12 @@ import { useStoreMap } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Separator, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 
-export const taskVotingActionSlot = createSlot<{ referendumId: ReferendumId; transaction: Transaction | null }>();
+export const taskVotingActionSlot = createSlot<{ referendum: OngoingReferendum; transaction: Transaction | null }>();
 
 type Props = {
   referendum: OngoingReferendum;
@@ -37,7 +36,7 @@ export const OngoingReferendumVoting = ({ referendum, transaction, onReferendumS
       </button>
       <Separator vertical />
       <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
-        <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id, transaction }} />
+        <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>
   );

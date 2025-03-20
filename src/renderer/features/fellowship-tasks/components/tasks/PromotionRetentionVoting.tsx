@@ -68,7 +68,7 @@ export const PromotionRetentionVoting = ({ referendum, transaction, onReferendum
       </button>
       <Separator vertical />
       <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
-        <Slot id={taskVotingActionSlot} props={{ referendumId: referendum.id, transaction }} />
+        <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>
   );
