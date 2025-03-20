@@ -24,7 +24,7 @@ export const DetailRow = ({ label, className, wrapperClassName, testId, children
     )}
 
     {typeof children === 'string' ? (
-      <FootnoteText as="dd" align="right" className={cnTw('justify-end px-2 py-[3px] pr-0', className)}>
+      <FootnoteText as="dd" align="right" className={cnTw('justify-end py-[3px] ps-2', className)}>
         {children}
       </FootnoteText>
     ) : (
