@@ -93,7 +93,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
           ) : null}
         </ScrollArea>
       ) : null}
-      {hasAccount && hasPermission && !activeTasks.length ? <AllDone /> : null}
+      {(hasAccount && hasPermission && !activeTasks.length) || (hasAccount && !hasPermission) ? <AllDone /> : null}
       {!hasAccount ? <AccountNotFound /> : null}
       <Basket />
     </div>
