@@ -1,10 +1,8 @@
-import { type ApiPromise } from '@polkadot/api';
 import { hexToU8a } from '@polkadot/util';
 import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 import { type CoreMember } from '../members/types';
@@ -29,12 +27,6 @@ function getEvidenceIpfsUrl(evidence: HexString) {
 
 function getEvidenceUploadIpfsUrl() {
   return new URL(`/api/nova/ipfs/files`, 'https://collectives.subsquare.io');
-}
-
-function getProposalAccount(api: ApiPromise, inline: HexString) {
-  const proposal = api.registry.createType('Proposal', inline);
-  const parsed = pjsSchema.accountId.safeParse(proposal.args.at(0));
-  return parsed.success ? parsed.data : null;
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
@@ -79,7 +71,6 @@ export const evidenceService = {
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,
   getEvidenceFromCid,
-  getProposalAccount,
   getPromotionPeriod,
   getDemotionPeriod,
 

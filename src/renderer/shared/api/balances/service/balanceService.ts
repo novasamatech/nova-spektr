@@ -63,7 +63,7 @@ function subscribeBalances(
     subscribeNativeAssetsChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
     subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
 
-    ...Object.entries(stateminePalletGroups).map(([pallet, assets]) => {
+    ...Object.entries(stateminePalletGroups).map(([pallet, assets = []]) => {
       return subscribeStatemineAssetsChange(api, pallet, chain, assets, uniqueAccountIds, callback);
     }),
   ];

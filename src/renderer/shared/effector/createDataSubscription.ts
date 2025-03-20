@@ -208,16 +208,17 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
 
 type PageHandlerParams<Input, Output> = {
   fn: () => AsyncGenerator<Input, void>;
-  map: (input: Input) => Output;
+  map: (input: Input) => Output | Promise<Output>;
 };
 
 export const createPagesHandler = <Input, Output>({ fn, map }: PageHandlerParams<Input, Output>) => {
   return async (abort: AbortController, callback: CallbackFn<Output>) => {
-    for await (const value of fn()) {
+    for await (const record of fn()) {
       if (abort.signal.aborted) {
         break;
       }
-      callback({ done: false, value: map(value) });
+      const value = await map(record);
+      callback({ done: false, value });
     }
 
     callback({ done: true, value: undefined });

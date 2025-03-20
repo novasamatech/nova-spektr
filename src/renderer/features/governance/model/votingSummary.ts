@@ -5,7 +5,8 @@ import { readonly } from 'patronum';
 import { type GovernanceApi } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId, type Tally } from '@/shared/core';
 import { nonNullable, setNestedValue } from '@/shared/lib/utils';
-import { governanceModel, referendumService } from '@/entities/governance';
+import { referendumService } from '@/entities/governance';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 const flow = createGate<{ chain: Chain; referendum: Referendum }>();
 
@@ -63,7 +64,7 @@ sample({
 
 sample({
   clock: flow.open,
-  source: governanceModel.$governanceApi,
+  source: governanceMetaProvider.$metaProvider,
   filter: nonNullable,
   fn: (api, { chain, referendum }) => ({
     api: api!.service,

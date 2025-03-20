@@ -23,6 +23,8 @@ import {
   u32Schema,
   u64Schema,
   u8Schema,
+  uint8HexSchema,
+  uint8StringSchema,
 } from './primitives';
 import {
   complexSchema,
@@ -51,6 +53,8 @@ export const pjsSchema = {
   bytes: bytesSchema,
   bytesString: bytesString,
   bytesHex: bytesHexSchema,
+  uint8Hex: uint8HexSchema,
+  uint8String: uint8StringSchema,
   accountId: accountIdSchema,
   storageKey: storageKeySchema,
   bool: boolSchema,

@@ -2,21 +2,22 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type GovernanceApi, polkassemblyService, subsquareService } from '@/shared/api/governance';
 import { localStorageService } from '@/shared/api/local-storage';
-import { type GovernanceApiSource } from '../types/governanceApiSource';
 
-export const GOVERNANCE_API_KEY = 'governance_api';
+import { type GovernanceApiSource } from './types';
 
-export const GovernanceApis: Record<GovernanceApiSource, GovernanceApi> = {
+const GOVERNANCE_API_KEY = 'governance_api';
+
+const GovernanceApis: Record<GovernanceApiSource, GovernanceApi> = {
   polkassembly: polkassemblyService,
   subsquare: subsquareService,
 };
 
 const governanceStarted = createEvent();
-const governanceApiChanged = createEvent<GovernanceApiSource>();
+const changeProvider = createEvent<GovernanceApiSource>();
 
-const $governanceApi = createStore<{ type: GovernanceApiSource; service: GovernanceApi } | null>(null);
+const $metaProvider = createStore<{ type: GovernanceApiSource; service: GovernanceApi } | null>(null);
 
-const getGovernanceApiFx = createEffect((): GovernanceApiSource => {
+const populateFx = createEffect((): GovernanceApiSource => {
   return localStorageService.getFromStorage<GovernanceApiSource>(GOVERNANCE_API_KEY, 'subsquare');
 });
 
@@ -26,28 +27,26 @@ const saveGovernanceApiFx = createEffect((sourceType: GovernanceApiSource) => {
 
 sample({
   clock: governanceStarted,
-  target: getGovernanceApiFx,
+  target: populateFx,
 });
 
 sample({
-  clock: governanceApiChanged,
+  clock: changeProvider,
   target: saveGovernanceApiFx,
 });
 
 sample({
-  clock: [getGovernanceApiFx.doneData, saveGovernanceApiFx.doneData],
-  fn: (sourceType) => ({
+  clock: [populateFx.doneData, saveGovernanceApiFx.doneData],
+  fn: sourceType => ({
     type: sourceType,
     service: GovernanceApis[sourceType],
   }),
-  target: $governanceApi,
+  target: $metaProvider,
 });
 
-export const governanceModel = {
-  $governanceApi,
+export const governanceMetaProvider = {
+  $metaProvider,
 
-  events: {
-    governanceStarted,
-    governanceApiChanged,
-  },
+  populate: populateFx,
+  changeProvider,
 };

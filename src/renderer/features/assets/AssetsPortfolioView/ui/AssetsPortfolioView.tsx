@@ -61,7 +61,10 @@ export const AssetsPortfolioView = () => {
 
       <ul className="flex min-h-full w-full flex-col items-center gap-y-2">
         {list.map((asset) => (
-          <li key={`${asset.priceId || ''}${asset.symbol}`} className="w-full max-w-[736px]">
+          <li
+            key={`${asset.priceId || ''}-${asset.symbol}-${asset.chains[0]?.chainId}`}
+            className="w-full max-w-[736px]"
+          >
             {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
         ))}

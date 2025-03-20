@@ -9,7 +9,7 @@ export type OngoingReferendum = {
   type: 'Ongoing';
   referendumId: ReferendumId;
   track: TrackId;
-  proposal: string;
+  proposal: string | NonNullable<unknown>;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

@@ -3,7 +3,8 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, FootnoteText } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { SignTransactionsModal, signOperations } from '@/features/basket-operations';
 import { fellowshipTasksFeature } from '../model/feature';
@@ -21,11 +22,19 @@ export const Basket = memo(() => {
   };
 
   return (
-    <>
-      <Button size="sm" pallet="secondary" disabled={transactions.length === 0} onClick={openSigning}>
-        {t('fellowship.tasks.reviewBasket', { count: transactions.length })}
-      </Button>
+    <div className="shrink-0 border-t border-filter-border bg-card-background">
+      <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} padding={[3, 4]} shrink={0}>
+        <Box direction="row" gap={2}>
+          <FootnoteText className="text-text-secondary">
+            {t('fellowship.tasks.reviewBasketTitle', { count: transactions.length })}
+          </FootnoteText>
+          <FootnoteText className="text-text-tertiary">{transactions.length.toString()}</FootnoteText>
+        </Box>
+        <Button size="sm" disabled={transactions.length === 0} onClick={openSigning}>
+          {t('fellowship.tasks.reviewBasket')}
+        </Button>
+      </Box>
       <SignTransactionsModal />
-    </>
+    </div>
   );
 });
