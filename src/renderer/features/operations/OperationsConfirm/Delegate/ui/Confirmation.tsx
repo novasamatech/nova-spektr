@@ -1,14 +1,13 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
-import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
-import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
+import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -34,6 +33,7 @@ export const Confirmation = ({
   config = { withFormatAmount: true },
 }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletModel.$wallets);
 
   const confirmStore = useStoreMap({
@@ -76,22 +76,13 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
     : confirmStore.balance;
 
-  const convictionValue = votingService.getConvictionMultiplier(confirmStore.conviction);
-
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
 
         <LargeTitleText as="p" className="font-manrope">
-          <Trans
-            t={t}
-            i18nKey="general.actions.multiply"
-            values={{ multiplier: convictionValue }}
-            components={{
-              balance: <AssetBalance className="text-large-title" value={amountValue} asset={confirmStore.asset} />,
-            }}
-          />
+          <AssetBalance className="text-large-title" value={amountValue} asset={confirmStore.asset} />
         </LargeTitleText>
       </div>
 

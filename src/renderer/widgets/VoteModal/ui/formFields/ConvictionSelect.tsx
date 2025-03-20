@@ -2,15 +2,16 @@ import { type BN } from '@polkadot/util';
 
 import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Slider } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
 
 type Props = {
-  value: Conviction;
-  amount: BN;
-  asset: Asset;
+  amount?: BN;
+  asset?: Asset;
+  conviction: Conviction;
   disabled?: boolean;
   onChange: (value: Conviction) => void;
 };
@@ -34,11 +35,8 @@ const renderLabel = (value: number) => (
   </FootnoteText>
 );
 
-export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: Props) => {
+export const ConvictionSelect = ({ conviction, asset, amount, disabled, onChange }: Props) => {
   const { t } = useI18n();
-
-  const numericValue = Math.max(convictionList.indexOf(value), 0);
-  const votingPower = votingService.calculateVotingPower(amount, value);
 
   const handleChange = (index: number) => {
     onChange(convictionList.at(index) ?? 'None');
@@ -48,20 +46,22 @@ export const ConvictionSelect = ({ value, asset, amount, disabled, onChange }: P
     <div className="group flex flex-col gap-3">
       <FootnoteText className="text-text-tertiary">{t('governance.vote.field.conviction')}</FootnoteText>
       <Slider
-        value={numericValue}
         min={0}
         max={convictionList.length - 1}
+        value={Math.max(convictionList.indexOf(conviction), 0)}
         renderLabel={renderLabel}
         disabled={disabled}
         onChange={handleChange}
       />
-      <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.votingPower')}>
-        <AssetBalance
-          className="text-text-tertiary transition-colors group-hover:text-text-primary"
-          value={votingPower}
-          asset={asset}
-        />
-      </DetailRow>
+      {nonNullable(asset) && nonNullable(amount) ? (
+        <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.votingPower')}>
+          <AssetBalance
+            className="text-text-tertiary transition-colors group-hover:text-text-primary"
+            value={votingService.calculateVotingPower(amount, conviction)}
+            asset={asset}
+          />
+        </DetailRow>
+      ) : null}
     </div>
   );
 };

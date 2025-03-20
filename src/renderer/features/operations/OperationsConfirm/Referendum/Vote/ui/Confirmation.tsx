@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Button, DetailRow, Icon, LargeTitleText, Loader } from '@/shared/ui';
+import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
@@ -74,6 +74,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   );
 
   const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
+  const votingPower = votingService.calculateVotingPower(amount, conviction);
 
   const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
@@ -87,14 +88,22 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Icon className="text-icon-default" name="voteMst" size={60} />
         )}
 
-        <LargeTitleText as="p" className="font-manrope">
-          <Trans
-            t={t}
-            i18nKey="general.actions.multiply"
-            values={{ multiplier: conviction }}
-            components={{ balance: <AssetBalance className="text-large-title" value={amount} asset={asset} /> }}
-          />
-        </LargeTitleText>
+        <Box direction="column" horizontalAlign="center" gap={1}>
+          <LargeTitleText as="p" className="font-manrope">
+            <Trans
+              t={t}
+              i18nKey="general.actions.multiply"
+              values={{ multiplier: votingService.getConvictionMultiplier(conviction) }}
+              components={{
+                balance: <AssetBalance className="text-large-title" value={amount} asset={asset} />,
+              }}
+            />
+          </LargeTitleText>
+
+          <HeadlineText className="text-text-tertiary">
+            <AssetBalance className="text-headline text-text-tertiary" value={votingPower} asset={asset} />
+          </HeadlineText>
+        </Box>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
