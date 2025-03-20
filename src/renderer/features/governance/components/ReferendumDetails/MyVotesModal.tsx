@@ -100,18 +100,17 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
               </div>
               <BodyText className="col-span-2 px-2">{t(`governance.referendum.${vote.decision}`)}</BodyText>
               <div className="col-span-5 flex shrink-0 flex-col items-end gap-0.5 px-2">
-                <AssetBalance value={vote.balance} asset={asset} />
-
-                <FootnoteText>
-                  <Trans
-                    t={t}
-                    i18nKey="general.actions.multiply"
-                    values={{ multiplier: vote.conviction }}
-                    components={{
-                      balance: <AssetBalance className="text-footnote" value={vote.balance} asset={asset} />,
-                    }}
-                  />
-                </FootnoteText>
+                <Box direction="column" horizontalAlign="end">
+                  <FootnoteText>
+                    <Trans
+                      t={t}
+                      i18nKey="general.actions.multiply"
+                      values={{ multiplier: vote.conviction }}
+                      components={{ balance: <AssetBalance value={vote.balance} asset={asset} /> }}
+                    />
+                  </FootnoteText>
+                  <AssetBalance className="text-footnote text-text-tertiary" asset={asset} value={vote.votingPower} />
+                </Box>
               </div>
             </Fragment>
           ))}
