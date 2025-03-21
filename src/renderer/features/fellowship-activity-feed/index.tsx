@@ -1,9 +1,10 @@
 import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
+import { activityFeedRecordDescriptionSlot } from './components/ActivityList';
 import { LastActivity } from './components/LastActivity';
 import { fellowshipActivityFeedFeature } from './model/feature';
 
-export { fellowshipActivityFeedFeature };
+export { fellowshipActivityFeedFeature, activityFeedRecordDescriptionSlot };
 
 fellowshipActivityFeedFeature.inject(fellowshipSidebarSlot, {
   order: 3,

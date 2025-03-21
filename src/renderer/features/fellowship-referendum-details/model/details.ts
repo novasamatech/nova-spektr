@@ -56,18 +56,20 @@ const $proposerIdentity = combine($identities, $proposer, (identities, proposer)
 const $description = combine(
   { referendum: $referendum, metadata: $referendumMeta, evidences: $evidences, proposer: $proposer },
   ({ referendum, metadata, evidences, proposer }) => {
-    if (nullable(referendum) || referendumService.isCompleted(referendum) || nullable(referendum.proposal)) return null;
+    if (nullable(referendum)) return null;
 
-    if (referendum.proposal.type === 'Evidence') {
-      return evidences.find(x => x.accountId === proposer)?.content ?? null;
-    }
+    if (referendumService.isOngoing(referendum) && referendum.proposal) {
+      if (referendum.proposal.type === 'Evidence') {
+        return evidences.find(x => x.accountId === proposer)?.content ?? null;
+      }
 
-    if (referendum.proposal.type === 'Rfc') {
-      return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
-    }
+      if (referendum.proposal.type === 'Rfc') {
+        return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
+      }
 
-    if (referendum.proposal.type === 'Unknown') {
-      return referendum.proposal.description;
+      if (referendum.proposal.type === 'Unknown') {
+        return referendum.proposal.description;
+      }
     }
 
     return metadata?.description ?? null;
