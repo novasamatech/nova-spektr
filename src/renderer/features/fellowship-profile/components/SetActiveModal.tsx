@@ -1,10 +1,13 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { Alert, BodyText, Button, DetailRow, Icon, LargeTitleText } from '@/shared/ui';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { salaryService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -12,18 +15,34 @@ import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { setActive } from '../model/setActive';
 
-import { SetActiveConfirmation } from './SetActiveConfirmation';
-
 type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = PropsWithChildren<{
   isActive: boolean;
   disabled: boolean;
+  salary: {
+    active: BN;
+    passive: BN;
+  };
 }>;
 
-export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
+function getSalaryChange(
+  isActive: boolean,
+  salary: {
+    active: BN;
+    passive: BN;
+  },
+) {
+  const totalSalary = salary.active.add(salary.passive);
+  const from = salaryService.formatSalaryAmount(isActive ? salary.passive : totalSalary);
+  const to = salaryService.formatSalaryAmount(isActive ? totalSalary : salary.passive);
+  return `${from} → ${to}`;
+}
+
+export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) => {
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
+  const [alertOpen, setAlertOpen] = useState(!isActive);
   const isOpen = useUnit(setActive.flow.status);
   const account = useUnit(setActive.$account);
   const wallet = useUnit(setActive.$wallet);
@@ -41,6 +60,8 @@ export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
     }
   };
 
+  const salaryChange = getSalaryChange(isActive, salary);
+
   const handleSign = () => {
     setActive.sign();
     setStep('sign');
@@ -49,6 +70,10 @@ export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
   const handleBasketSave = () => {
     setActive.saveToBasket();
     setStep('basket');
+  };
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
   };
 
   if (step === 'submit') {
@@ -89,14 +114,33 @@ export const SetActiveModal = ({ isActive, disabled, children }: Props) => {
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SetActiveConfirmation
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                isActive={isActive}
-                fee={fee}
-              />
+              <Box horizontalAlign="center">
+                <Icon name={isActive ? 'activateConfirm' : 'deactivateConfirm'} size={60} />
+              </Box>
+              <Box horizontalAlign="center">
+                <LargeTitleText className="py-[16px]">
+                  {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
+                  &nbsp;{'→'}&nbsp;
+                  {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
+                </LargeTitleText>
+              </Box>
+
+              <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
+                <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
+                <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
+              </TransactionDetails>
+
+              {alertOpen && (
+                <div className="pt-6">
+                  <Alert
+                    title={t('fellowship.profile.setActive.setInactiveAlert.title')}
+                    active={alertOpen}
+                    onClose={handleAlertClose}
+                  >
+                    <BodyText>{t('fellowship.profile.setActive.setInactiveAlert.text')}</BodyText>
+                  </Alert>
+                </div>
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (
