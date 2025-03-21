@@ -4,9 +4,9 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
-import { VoteChart } from '@/shared/ui-entities';
-import { Skeleton, Tooltip } from '@/shared/ui-kit';
+import { HelpText } from '@/shared/ui';
+import { DynamicVoteChart, VoteChart } from '@/shared/ui-entities';
+import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
@@ -15,9 +15,11 @@ type Props = {
   referendum: Referendum | null;
   pending: boolean;
   descriptionPosition: 'tooltip' | 'bottom';
+  votes?: number | null;
+  highlight?: 'aye' | 'nay' | null;
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition }) => {
+export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition, votes, highlight }) => {
   useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const { t } = useI18n();
@@ -47,10 +49,13 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
   const total = referendum.tally.ayes + referendum.tally.nays;
   const aye = (referendum.tally.ayes * 100_000) / total / 1000;
   const nay = (referendum.tally.nays * 100_000) / total / 1000;
+  const votesImpact = votes && highlight ? (votes * 100_000) / total / 1000 : 0;
   const threshold = thresholds.approval.threshold.div(BN_MILLION).toNumber() / 10;
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
-  const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} />;
+  const chartNode = (
+    <DynamicVoteChart value={aye} disabled={disabled} votesImpact={highlight === 'nay' ? -votesImpact : votesImpact} />
+  );
 
   if (descriptionPosition === 'tooltip') {
     return (
@@ -71,22 +76,16 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
 
   if (descriptionPosition === 'bottom') {
     return (
-      <div className="flex w-full flex-col gap-1">
+      <div className="flex w-full flex-col">
         {chartNode}
-        <div className="flex justify-between">
-          <div className="flex flex-col items-start">
-            <FootnoteText>{aye.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.aye')}</FootnoteText>
-          </div>
-          <div className="flex flex-col items-center">
-            <FootnoteText>{threshold.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.toPass')}</FootnoteText>
-          </div>
-          <div className="flex flex-col items-end">
-            <FootnoteText>{nay.toFixed(2)}%</FootnoteText>
-            <FootnoteText className="text-text-secondary">{t('voteChart.nay')}</FootnoteText>
-          </div>
-        </div>
+        <Box direction="row" horizontalAlign="space-between">
+          <HelpText className="text-text-secondary">
+            {t('voteChart.aye')}: {referendum.tally.ayes}
+          </HelpText>
+          <HelpText className="text-text-secondary">
+            {t('voteChart.nay')}: {referendum.tally.nays}
+          </HelpText>
+        </Box>
       </div>
     );
   }

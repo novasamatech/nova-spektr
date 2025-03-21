@@ -85,6 +85,7 @@ sample({
 
 export const votingStatus = {
   $referendumVoting,
+  $accountsVotes,
   $hasRequiredRank,
   $votingAccount,
   $currentMember,

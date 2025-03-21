@@ -8,7 +8,7 @@ import { fellowshipReferendumsDetailsFeature } from './model/feature';
 
 export { fellowshipReferendumsDetailsFeature, additionalInfoSlot, referendumActionsSlot };
 
-export const fellowshipReferendumDetailsF = {
+export const fellowshipReferendumDetails = {
   views: {
     ReferendumVoteChart,
     ReferendumTrackInfo,
