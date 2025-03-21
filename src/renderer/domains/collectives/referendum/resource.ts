@@ -5,10 +5,13 @@ import { type HexString } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import {
   type FrameSupportPreimagesBounded,
+  type ReferendaDecidingStatus,
   type ReferendaReferendumInfoConvictionVotingTally,
   type ReferendumId,
+  referendaPallet,
 } from '@/shared/pallet/referenda';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Proposal, type Referendum } from './types';
 
@@ -76,23 +79,50 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
   return null;
 }
 
-async function mapReferendum(
-  id: ReferendumId,
-  info: ReferendaReferendumInfoConvictionVotingTally,
-  api: ApiPromise,
-): Promise<Referendum> {
+function getEndBlock(
+  deciding: ReferendaDecidingStatus | null,
+  submitted: BlockHeight,
+  decisionPeriod: BlockHeight,
+  undecidingTimeout: BlockHeight,
+) {
+  if (deciding?.confirming) return deciding.confirming;
+  if (deciding) return deciding.since + decisionPeriod;
+
+  return submitted + undecidingTimeout;
+}
+
+async function mapReferendum({
+  id,
+  info,
+  tracks,
+  undecidingTimeout,
+  api,
+}: {
+  id: ReferendumId;
+  info: ReferendaReferendumInfoConvictionVotingTally;
+  undecidingTimeout: BlockHeight;
+  tracks: ReturnType<typeof referendaPallet.consts.tracks>;
+  api: ApiPromise;
+}): Promise<Referendum> {
   switch (info.type) {
-    case 'Ongoing':
+    case 'Ongoing': {
       if (!('bareAyes' in info.data.tally)) {
         throw new Error(`Collective tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`);
       }
+
+      const track = tracks.find(({ track }) => track === info.data.track);
+      if (!track) {
+        throw new Error(`Track ${info.data.track} not found in referenda pallet`);
+      }
+
+      const proposal = await parseProposal(info.data.proposal, api);
+      const ends = getEndBlock(info.data.deciding, info.data.submitted, track.info.decisionPeriod, undecidingTimeout);
 
       return {
         id,
         type: info.type,
         track: info.data.track,
         submitted: info.data.submitted,
-        proposal: await parseProposal(info.data.proposal, api),
         origin: info.data.origin.type,
         enactment: {
           value: info.data.enactment.data,
@@ -103,11 +133,14 @@ async function mapReferendum(
         tally: info.data.tally,
         decisionDeposit: info.data.decisionDeposit,
         submissionDeposit: info.data.submissionDeposit,
+        proposal,
+        ends,
       };
+    }
     case 'Approved':
     case 'Rejected':
     case 'Cancelled':
-    case 'TimedOut':
+    case 'TimedOut': {
       return {
         id,
         type: info.type,
@@ -115,25 +148,30 @@ async function mapReferendum(
         submissionDeposit: info.data.submissionDeposit,
         decisionDeposit: info.data.decisionDeposit,
       };
-    case 'Killed':
+    }
+    case 'Killed': {
       return {
         id,
         type: info.type,
         since: info.data,
       };
+    }
   }
 }
 
 export async function mapReferendums(
   list: { id: ReferendumId; info: ReferendaReferendumInfoConvictionVotingTally | null }[],
   api: ApiPromise,
+  palletType: CollectivePalletsType,
 ) {
-  const value: Referendum[] = [];
+  const undecidingTimeout = referendaPallet.consts.undecidingTimeout(palletType, api);
+  const tracks = referendaPallet.consts.tracks(palletType, api);
+  const referendums: Referendum[] = [];
   for (const { id, info } of list) {
     if (!info) continue;
-    const record = await mapReferendum(id, info, api);
-    value.push(record);
+    const referendum = await mapReferendum({ id, info, tracks, undecidingTimeout, api });
+    referendums.push(referendum);
   }
 
-  return value;
+  return referendums;
 }

@@ -23,7 +23,7 @@ export const consts = {
    * decided by. Once this passes, then anyone may cancel the referendum.
    */
   undecidingTimeout(type: PalletType, api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(type, api)['undecidingTimeout']);
+    return pjsSchema.blockHeight.parse(getPallet(type, api)['undecidingTimeout']);
   },
 
   /**

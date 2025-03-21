@@ -15,7 +15,7 @@ export type OperationType =
 export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
   group: 'personal' | 'general' | 'completed';
-  priority: number;
+  weight: number;
   body: ComponentType<T & { transaction: Transaction | null; onReferendumSelect(referendum: Referendum): void }>;
-  meta: T & { transaction: Transaction | null };
+  meta: T & { transaction: Transaction | null; tags: string[] };
 };

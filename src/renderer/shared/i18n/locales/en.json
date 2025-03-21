@@ -486,6 +486,11 @@
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
       "general": "General",
+      "labels": {
+        "controversial": "Tiebreaker",
+        "importantVote": "Important",
+        "urgent": "Flashpoint"
+      },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
       "personal": "Personal",
