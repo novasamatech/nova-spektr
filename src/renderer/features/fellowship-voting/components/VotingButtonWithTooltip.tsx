@@ -14,7 +14,7 @@ type Props = {
   disabled?: boolean;
   votes?: number | null;
   onClick?: MouseEventHandler<HTMLButtonElement>;
-  onHover: (arg: 'aye' | 'nay' | null) => void;
+  onHighlight: (arg: 'aye' | 'nay' | null) => void;
 };
 
 export const VotingButtonWithTooltip = (args: Props) => {
@@ -46,7 +46,13 @@ export const VotingButtonWithTooltip = (args: Props) => {
   );
 };
 
-const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, onHover }: Props) => {
+const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, onHighlight }: Props) => {
+  const vote = variant === 'positive' ? 'aye' : 'nay';
+
+  if (checked) {
+    onHighlight(vote);
+  }
+
   return (
     <button
       type="button"
@@ -56,13 +62,14 @@ const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, on
         'disabled:pointer-events-none disabled:bg-secondary-button-background',
         { 'opacity-30': !voted && !checked },
         {
+          'pointer-events-none': voted || checked,
           'bg-badge-green-background text-text-positive hover:opacity-90 active:opacity-100': variant === 'positive',
           'bg-badge-red-background text-text-negative hover:opacity-90 active:opacity-100': variant === 'negative',
         },
       )}
       onClick={onClick}
-      onMouseOver={() => onHover(variant === 'positive' ? 'aye' : 'nay')}
-      onMouseLeave={() => onHover(null)}
+      onMouseOver={() => onHighlight(vote)}
+      onMouseLeave={() => onHighlight(null)}
     >
       {checked && (
         <div

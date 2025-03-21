@@ -84,7 +84,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={votes}
           onClick={nay}
-          onHover={e => setHighlight(e)}
+          onHighlight={e => setHighlight(e)}
         />
         <VotingButtonWithTooltip
           variant="positive"
@@ -94,7 +94,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={votes}
           onClick={aye}
-          onHover={e => setHighlight(e)}
+          onHighlight={e => setHighlight(e)}
         />
       </Box>
       <div className="w-[102px]">

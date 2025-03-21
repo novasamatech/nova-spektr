@@ -37,7 +37,7 @@ export const DynamicVoteChart = ({ value, disabled, votesImpact = 0 }: Props) =>
           {!!votesImpact && (
             <div
               className={votesImpact > 0 ? 'bg-badge-dark-green-background' : 'bg-badge-dark-red-background'}
-              style={{ width: `calc(${Math.abs(votesImpact)}%)` }}
+              style={{ width: `${Math.abs(votesImpact)}%` }}
             />
           )}
 
