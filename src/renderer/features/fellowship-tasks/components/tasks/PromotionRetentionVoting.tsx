@@ -6,7 +6,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -15,13 +15,29 @@ import { tracks } from '../../model/tracks';
 
 import { taskVotingActionSlot } from './OngoingReferendumVoting';
 
+const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
+  urgent: {
+    text: 'fellowship.tasks.labels.urgent',
+    color: 'purple',
+  },
+  controversial: {
+    text: 'fellowship.tasks.labels.controversial',
+    color: 'blue',
+  },
+  importantVote: {
+    text: 'fellowship.tasks.labels.importantVote',
+    color: 'orange',
+  },
+};
+
 type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
+  tags: string[];
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const PromotionRetentionVoting = ({ referendum, transaction, onReferendumSelect }: Props) => {
+export const PromotionRetentionVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -34,6 +50,9 @@ export const PromotionRetentionVoting = ({ referendum, transaction, onReferendum
 
   const proposer = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
   const evidence = evidences.find(e => e.accountId === proposer);
+
+  const firstTag = tags.at(0);
+  const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
   useEffect(() => {
     if (proposer) {
@@ -64,6 +83,7 @@ export const PromotionRetentionVoting = ({ referendum, transaction, onReferendum
           <FootnoteText>
             <Markdown>{evidence?.summary ?? ''}</Markdown>
           </FootnoteText>
+          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
         </Box>
       </button>
       <Separator vertical />
