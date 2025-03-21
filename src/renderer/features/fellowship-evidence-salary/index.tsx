@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
+import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { additionalProfileCardInfoSlot, profileInfoSlot } from '@/features/fellowship-profile';
 import {
   payoutSalaryActionSlot,
@@ -116,4 +117,23 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
   const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
   return leftToPromotionPeriod === 0 ? <DotIndicator /> : null;
+});
+
+fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {
+  switch (record.type) {
+    case 'promoted':
+      return <>{t('fellowship.activityFeed.record.promoted', { rank: record.rank })}</>;
+    case 'demoted':
+      return <>{t('fellowship.activityFeed.record.demoted', { rank: record.rank })}</>;
+    case 'proven':
+      return <>{t('fellowship.activityFeed.record.proven', { rank: record.rank })}</>;
+    case 'requested':
+      return record.wish === 'Promotion' ? (
+        <>{t('fellowship.activityFeed.record.submittedPromotion')}</>
+      ) : (
+        <>{t('fellowship.activityFeed.record.submittedRetention')}</>
+      );
+    default:
+      return null;
+  }
 });

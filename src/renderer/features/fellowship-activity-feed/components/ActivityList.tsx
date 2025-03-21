@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
@@ -14,27 +15,7 @@ import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
-function getMessage(t: TFunction, record: FeedRecord) {
-  switch (record.type) {
-    case 'activeChanged':
-      return t('fellowship.activityFeed.record.activeChanged', { status: record.isActive ? 'active' : 'inactive' });
-    case 'promoted':
-      return t('fellowship.activityFeed.record.promoted', { rank: record.rank });
-    case 'demoted':
-      return t('fellowship.activityFeed.record.demoted', { rank: record.rank });
-    case 'proven':
-      return t('fellowship.activityFeed.record.proven', { rank: record.rank });
-    case 'imported':
-      return t('fellowship.activityFeed.record.imported', { rank: record.rank });
-    case 'requested':
-      return record.wish === 'Promotion'
-        ? t('fellowship.activityFeed.record.submittedPromotion')
-        : t('fellowship.activityFeed.record.submittedRetention');
-
-    default:
-      return `Unknown action: ${record.type}`;
-  }
-}
+export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
 const ActivityPlaceholder = () => {
   return (
@@ -91,7 +72,9 @@ export const ActivityList = memo(() => {
                 <Duration seconds={(now - record.at.getTime()) / 1000} />
               </HelpText>
             </div>
-            <FootnoteText className="text-text-secondary">{getMessage(t, record)}</FootnoteText>
+            <FootnoteText className="text-text-secondary">
+              <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
+            </FootnoteText>
           </div>
         );
       })}
