@@ -15,8 +15,8 @@ type Props = {
   referendum: Referendum | null;
   pending: boolean;
   descriptionPosition: 'tooltip' | 'bottom';
-  votes: number | null;
-  highlight: 'aye' | 'nay' | null;
+  votes?: number | null;
+  highlight?: 'aye' | 'nay' | null;
 };
 
 export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition, votes, highlight }) => {
