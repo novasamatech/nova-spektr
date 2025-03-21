@@ -27,14 +27,14 @@ const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
 
 fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction }) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-  const account = useUnit(votingStatus.$votingAccount);
 
+  const account = useUnit(votingStatus.$votingAccount);
   const maxRank = useUnit(votingStatus.$maxRank);
   const currentMember = useUnit(votingStatus.$currentMember);
   const canVote = useUnit(votingStatus.$canVote);
   const accountsVotes = useUnit(votingStatus.$accountsVotes);
-  const referendumDecision = accountsVotes.find(voting => voting.referendumId === referendum?.id)?.decision;
 
+  const referendumDecision = accountsVotes.find(voting => voting.referendumId === referendum?.id)?.decision;
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
   const hasRequiredRank =

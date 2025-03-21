@@ -21,7 +21,6 @@ export const VoteChart = ({
   showDivider = true,
   thresholdIndicatorBorder = 'icon-button',
 }: Props) => {
-  console.log({ value, threshold, disabled });
   return (
     <div className="relative flex h-5.5 w-full items-center justify-between">
       {disabled && <div className="h-2.5 w-full rounded-md bg-tab-icon-inactive" />}
