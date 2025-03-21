@@ -34,7 +34,7 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
   const canVote = useUnit(votingStatus.$canVote);
   const accountsVotes = useUnit(votingStatus.$accountsVotes);
 
-  const referendumDecision = accountsVotes.find(voting => voting.referendumId === referendum?.id)?.decision;
+  const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
   const hasRequiredRank =
@@ -75,7 +75,7 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           variant="negative"
           icon="thumbDown"
           disabled={disabled}
-          voted={referendumDecision === 'Nay'}
+          voted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
           onClick={nay}
         />
@@ -83,13 +83,18 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           variant="positive"
           icon="thumbUp"
           disabled={disabled}
-          voted={referendumDecision === 'Aye'}
+          voted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
           onClick={aye}
         />
       </Box>
       <div className="w-[102px]">
-        <ReferendumVoteChart referendum={referendum} pending={!!referendum} descriptionPosition="bottom" />
+        <ReferendumVoteChart
+          referendum={referendum}
+          pending={!!referendum}
+          descriptionPosition="bottom"
+          votes={referendumVote}
+        />
       </div>
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
     </Box>

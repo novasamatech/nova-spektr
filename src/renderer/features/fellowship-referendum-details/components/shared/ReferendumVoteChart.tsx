@@ -5,9 +5,9 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
-import { VoteChart } from '@/shared/ui-entities';
+import { DynamicVoteChart, VoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { type Referendum, referendumService } from '@/domains/collectives';
+import { type Referendum, type Vote, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
 
@@ -15,9 +15,10 @@ type Props = {
   referendum: Referendum | null;
   pending: boolean;
   descriptionPosition: 'tooltip' | 'bottom';
+  votes?: Vote | null;
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition }) => {
+export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition, votes }) => {
   useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const { t } = useI18n();
@@ -47,10 +48,18 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
   const total = referendum.tally.ayes + referendum.tally.nays;
   const aye = (referendum.tally.ayes * 100_000) / total / 1000;
   const nay = (referendum.tally.nays * 100_000) / total / 1000;
+  const votesImpact = votes ? (votes.votes * 100_000) / total / 1000 : 0;
   const threshold = thresholds.approval.threshold.div(BN_MILLION).toNumber() / 10;
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
-  const chartNode = <VoteChart value={aye} threshold={threshold} disabled={disabled} showDivider={false} />;
+  const chartNode = (
+    <DynamicVoteChart
+      value={aye}
+      threshold={threshold}
+      disabled={disabled}
+      votesImpact={votes?.decision === 'Nay' ? -votesImpact : votesImpact}
+    />
+  );
 
   if (descriptionPosition === 'tooltip') {
     return (

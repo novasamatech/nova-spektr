@@ -1,0 +1,56 @@
+type Props = {
+  /**
+   * Value in range of 0..100
+   */
+  value: number;
+  /**
+   * Value in range of 0..100
+   */
+  threshold: number;
+  disabled?: boolean;
+  thresholdIndicatorBorder?: string;
+  votesImpact?: number;
+};
+
+export const DynamicVoteChart = ({
+  value,
+  threshold,
+  disabled,
+  thresholdIndicatorBorder = 'icon-button',
+  votesImpact = 0,
+}: Props) => {
+  return (
+    <div className="relative flex h-3.5 w-full items-center justify-between">
+      {disabled && <div className="h-1.5 w-full rounded-md bg-tab-icon-inactive" />}
+      {!disabled && (
+        <div className="relative flex h-1.5 w-full overflow-hidden rounded-md">
+          {value !== 0 && (
+            <div
+              className="bg-icon-positive"
+              style={{
+                width: `calc(${value}%)`,
+              }}
+            />
+          )}
+
+          {!!votesImpact && (
+            <div
+              className={votesImpact > 0 ? 'bg-badge-dark-green-background' : 'bg-badge-dark-red-background'}
+              style={{ width: `calc(${Math.abs(votesImpact)}%)` }}
+            />
+          )}
+
+          {value !== 100 && <div className="grow bg-icon-negative" />}
+        </div>
+      )}
+
+      <div
+        className="absolute flex h-4 w-[1px] translate-x-[-50%] items-center justify-center rounded-md"
+        style={{
+          backgroundColor: `var(--${thresholdIndicatorBorder})`,
+          left: `clamp(3px, ${threshold}%, calc(100% - 3px))`,
+        }}
+      />
+    </div>
+  );
+};
