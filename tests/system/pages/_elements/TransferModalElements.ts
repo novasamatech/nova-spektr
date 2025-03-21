@@ -4,6 +4,8 @@ export class TransferModalElements {
   static addButton = 'Add';
   static multisigButton = 'Multisig';
   static feeRowLocator = TEST_IDS.OPERATIONS.ESTIMATE_FEE;
+  static amountInputLocator = TEST_IDS.OPERATIONS.AMOUNT_INPUT;
+  static recipientInputLocator = TEST_IDS.OPERATIONS.RECIPIENT_INPUT;
 
   static getUrl(chainId: number, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {

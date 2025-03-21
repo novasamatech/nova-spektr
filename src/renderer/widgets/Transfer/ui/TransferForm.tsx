@@ -2,6 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
@@ -237,6 +238,7 @@ const Destination = () => {
     <Field text={t('transfer.recipientLabel')}>
       <Input
         placeholder={t('transfer.recipientPlaceholder')}
+        testId={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
         invalid={destination.hasError()}
         value={destination.value}
         prefixElement={prefixElement}
@@ -273,6 +275,7 @@ const Amount = () => {
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={amount.onChange}
       />
       <InputHint active={amount.hasError()} variant="error">

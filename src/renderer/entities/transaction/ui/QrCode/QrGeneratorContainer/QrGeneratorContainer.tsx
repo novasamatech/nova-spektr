@@ -8,10 +8,11 @@ import { TROUBLESHOOTING_URL, getMetadataPortalMetadataUrl } from '../common/con
 type Props = {
   countdown: number;
   chainId: ChainId;
+  testId?: string;
   onQrReset: () => void;
 };
 
-export const QrGeneratorContainer = ({ countdown, chainId, children, onQrReset }: PropsWithChildren<Props>) => {
+export const QrGeneratorContainer = ({ countdown, chainId, children, testId, onQrReset }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   return (
@@ -20,7 +21,10 @@ export const QrGeneratorContainer = ({ countdown, chainId, children, onQrReset }
 
       <Countdown countdown={children ? countdown : 0} className="mb-4" />
 
-      <div className="relative flex h-[240px] w-[240px] flex-col items-center justify-center gap-y-4">
+      <div
+        className="relative flex h-[240px] w-[240px] flex-col items-center justify-center gap-y-4"
+        data-testid={testId}
+      >
         {children &&
           (countdown > 0 ? (
             children
