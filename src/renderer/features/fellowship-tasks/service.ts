@@ -148,6 +148,9 @@ function getMaximumAvailableVotingWeight(members: Member[], maxRank: number, tra
 }
 
 export const tasksService = {
+  getUrgencyScore,
+  getControversyScore,
+  getUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
 };

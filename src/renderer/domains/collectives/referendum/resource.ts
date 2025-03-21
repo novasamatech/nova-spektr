@@ -85,7 +85,7 @@ function getEndBlock(
   decisionPeriod: BlockHeight,
   undecidingTimeout: BlockHeight,
 ) {
-  if (deciding && deciding.confirming) return deciding.confirming;
+  if (deciding?.confirming) return deciding.confirming;
   if (deciding) return deciding.since + decisionPeriod;
 
   return submitted + undecidingTimeout;

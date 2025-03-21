@@ -201,12 +201,14 @@ const $ongoingReferendumsTasks = combine(
         maxRank,
         referendum.track,
       );
+
       const memberVotingWeight = trackService.getVoteWeight({
         pallet: 'fellowship',
         maxRank,
         rank: member.rank,
         track: referendum.track,
       });
+
       return tasksService.getReferendumImportance({
         referendum,
         maximumAvailableVotingWeight,
