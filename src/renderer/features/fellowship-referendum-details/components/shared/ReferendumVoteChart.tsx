@@ -7,7 +7,7 @@ import { nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
 import { DynamicVoteChart, VoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
-import { type Referendum, type Vote, referendumService } from '@/domains/collectives';
+import { type Referendum, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
 import { thresholdsModel } from '../../model/thresholds';
 
@@ -15,10 +15,11 @@ type Props = {
   referendum: Referendum | null;
   pending: boolean;
   descriptionPosition: 'tooltip' | 'bottom';
-  votes?: Vote | null;
+  votes: number | null;
+  highlight: 'aye' | 'nay' | null;
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition, votes }) => {
+export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descriptionPosition, votes, highlight }) => {
   useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const { t } = useI18n();
@@ -48,17 +49,12 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
   const total = referendum.tally.ayes + referendum.tally.nays;
   const aye = (referendum.tally.ayes * 100_000) / total / 1000;
   const nay = (referendum.tally.nays * 100_000) / total / 1000;
-  const votesImpact = votes ? (votes.votes * 100_000) / total / 1000 : 0;
+  const votesImpact = votes && highlight ? (votes * 100_000) / total / 1000 : 0;
   const threshold = thresholds.approval.threshold.div(BN_MILLION).toNumber() / 10;
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
   const chartNode = (
-    <DynamicVoteChart
-      value={aye}
-      threshold={threshold}
-      disabled={disabled}
-      votesImpact={votes?.decision === 'Nay' ? -votesImpact : votesImpact}
-    />
+    <DynamicVoteChart value={aye} disabled={disabled} votesImpact={highlight === 'nay' ? -votesImpact : votesImpact} />
   );
 
   if (descriptionPosition === 'tooltip') {

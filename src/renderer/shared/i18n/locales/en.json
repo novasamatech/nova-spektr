@@ -551,6 +551,7 @@
       "summary": "Summary",
       "threshold": "Threshold",
       "title": "Vote on",
+      "voteImpact": "Vote impact:",
       "voted": "Voted:",
       "votingStatus": "Voting status"
     },

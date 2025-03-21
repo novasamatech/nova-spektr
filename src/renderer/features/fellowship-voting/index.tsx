@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { nonNullable } from '@/shared/lib/utils';
-import { Box, FilledIconButton } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/features/fellowship-referendum-details';
 import { taskVotingActionSlot } from '@/features/fellowship-tasks';
 
+import { FilledIconButton } from './components/FilledIconButton';
 import { VotingButtons } from './components/VotingButtons';
 import { VotingConfirmation } from './components/VotingConfirmation';
 import { VotingModal } from './components/VotingModal';
@@ -27,6 +28,7 @@ const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
 
 fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction }) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
+  const [highlight, setHighlight] = useState<'aye' | 'nay' | null>(null);
 
   const account = useUnit(votingStatus.$votingAccount);
   const maxRank = useUnit(votingStatus.$maxRank);
@@ -43,6 +45,15 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
     trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
 
   const disabled = !canVote || !hasRequiredRank;
+
+  const votes =
+    currentMember &&
+    trackService.getVoteWeight({
+      pallet: 'fellowship',
+      rank: currentMember.rank,
+      maxRank,
+      track: referendum.track,
+    });
 
   const aye = () => {
     votingStatus.flow.open({ referendumId: referendum?.id });
@@ -77,7 +88,9 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           disabled={disabled}
           voted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
+          votes={votes}
           onClick={nay}
+          onHover={e => setHighlight(e)}
         />
         <FilledIconButton
           variant="positive"
@@ -85,7 +98,9 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           disabled={disabled}
           voted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
+          votes={votes}
           onClick={aye}
+          onHover={e => setHighlight(e)}
         />
       </Box>
       <div className="w-[102px]">
@@ -93,7 +108,8 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           referendum={referendum}
           pending={!!referendum}
           descriptionPosition="bottom"
-          votes={referendumVote}
+          votes={votes}
+          highlight={highlight}
         />
       </div>
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
