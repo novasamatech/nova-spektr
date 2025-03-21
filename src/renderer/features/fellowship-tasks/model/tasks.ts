@@ -179,7 +179,7 @@ const $evidenceTasks = combine(
 
 const $ongoingReferendumsTasks = combine(
   {
-    referendums: referendums.$notVotedReferendumns,
+    referendums: referendums.$ongoing,
     operations: $basketOperationsMap,
     maxRank: $maxRank,
     members: $members,

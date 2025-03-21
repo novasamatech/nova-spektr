@@ -1,4 +1,5 @@
 export { VoteChart } from './VoteChart/VoteChart';
+export { DynamicVoteChart } from './DynamicVoteChart/DynamicVoteChart';
 export { Hash } from './Hash/Hash';
 export { Address } from './Address/Address';
 export { Account } from './Account/Account';

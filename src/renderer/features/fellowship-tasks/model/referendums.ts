@@ -1,18 +1,9 @@
 import { attach, combine, createEvent, sample } from 'effector';
 
-import { populated } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  evidence,
-  referendum,
-  referendumMeta,
-  referendumService,
-  track,
-  trackService,
-  voting,
-} from '@/domains/collectives';
+import { evidence, referendum, referendumMeta, referendumService, track, voting } from '@/domains/collectives';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
@@ -24,36 +15,15 @@ const requestEvidenceFx = attach({ effect: evidence.request });
 const requestVotesFx = attach({ effect: voting.request });
 
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
-const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $completed = $referendums.map(referendumService.getCompletedReferendums);
-const $votesPopulated = populated(requestVotesFx);
 
 const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
   if (nullable(member)) return [];
   return voting.filter(v => v.accountId === member.accountId);
 });
-
-const $notVotedReferendumns = combine(
-  {
-    maxRank: $maxRank,
-    member: memberProfile.$member,
-    ongoing: $ongoing,
-    votes: $memberVotes,
-    votesPopulated: $votesPopulated,
-  },
-  ({ maxRank, member, ongoing, votes, votesPopulated }) => {
-    if (nullable(member) || !votesPopulated) return [];
-    const votesMap = dictionary(votes, 'referendumId');
-    return ongoing.filter(
-      referendum =>
-        !(referendum.id in votesMap) &&
-        trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track),
-    );
-  },
-);
 
 sample({
   clock: fellowshipTasksFeature.running,
@@ -115,7 +85,7 @@ sample({
 
 export const referendums = {
   $memberVoting: $memberVotes,
-  $notVotedReferendumns,
+  $ongoing,
   $completed,
   $metadata,
   $evidencePending: requestEvidenceFx.pending,
