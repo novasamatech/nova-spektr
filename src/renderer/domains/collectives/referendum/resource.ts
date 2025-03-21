@@ -166,12 +166,12 @@ export async function mapReferendums(
 ) {
   const undecidingTimeout = referendaPallet.consts.undecidingTimeout(palletType, api);
   const tracks = referendaPallet.consts.tracks(palletType, api);
-  const value: Referendum[] = [];
+  const referendums: Referendum[] = [];
   for (const { id, info } of list) {
     if (!info) continue;
-    const record = await mapReferendum({ id, info, tracks, undecidingTimeout, api });
-    value.push(record);
+    const referendum = await mapReferendum({ id, info, tracks, undecidingTimeout, api });
+    referendums.push(referendum);
   }
 
-  return value;
+  return referendums;
 }
