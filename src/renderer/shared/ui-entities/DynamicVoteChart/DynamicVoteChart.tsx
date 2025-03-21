@@ -28,7 +28,7 @@ export const DynamicVoteChart = ({
             <div
               className="bg-icon-positive"
               style={{
-                width: `calc(${value}%)`,
+                width: `calc(${Math.min(value, value - votesImpact)}%)`,
               }}
             />
           )}
