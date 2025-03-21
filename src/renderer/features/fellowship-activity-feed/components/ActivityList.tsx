@@ -4,10 +4,10 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Duration, FootnoteText, HelpText, Icon } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { BodyText, Duration, FootnoteText, HelpText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
@@ -38,13 +38,12 @@ function getMessage(t: TFunction, record: FeedRecord) {
 
 const ActivityPlaceholder = () => {
   return (
-    <div className="flex flex-col gap-1 px-5">
-      <div className="flex items-center gap-4 text-button-small">
-        <div className="flex min-w-0 grow items-center py-1.5">
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Icon name="emptyIdenticon" size={20} />
-            <Skeleton width="10ch" height="1em" />
-          </Box>
+    <div className="flex flex-col gap-1 px-5 pt-2">
+      <div className="flex items-center gap-1 text-button-small">
+        <div className="flex min-w-0 grow items-center">
+          <BodyText>
+            <Skeleton width="10ch" height="1lh" />
+          </BodyText>
         </div>
         <HelpText className="h-fit">
           <Skeleton height="1em" width="5ch" />
@@ -74,18 +73,18 @@ export const ActivityList = memo(() => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5">
-            <div className="flex items-center gap-4 py-1.5 text-button-small">
+          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-4 pt-2">
+            <div className="flex items-center gap-2 text-button-small">
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
-                  <Account
-                    title={identity ? identityService.getFullName(identity) : undefined}
-                    hideAddress
-                    iconSize={20}
-                    variant="short"
-                    accountId={record.accountId}
-                    chain={input.chain}
-                  />
+                  <BodyText>
+                    <Address
+                      title={identity ? identityService.getFullName(identity) : undefined}
+                      hideAddress
+                      variant="short"
+                      address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
+                    />
+                  </BodyText>
                 )}
               </div>
               <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">

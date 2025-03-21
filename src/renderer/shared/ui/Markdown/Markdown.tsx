@@ -64,7 +64,7 @@ const components: Components = {
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <p
+    <div
       className={cnTw('overflow-hidden overflow-ellipsis text-balance text-start text-inherit', className)}
       {...props}
     />
