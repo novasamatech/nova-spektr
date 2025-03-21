@@ -171,42 +171,39 @@ const $evidenceTasks = combine(
   },
 );
 
-const $ongoingReferendumsTasks = combine(
-  { referendums: referendums.$ongoing, operations: $basketOperationsMap },
-  ({ referendums, operations }) => {
-    const groups = groupBy(referendums, referendum => {
-      return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
-        ? 'evidence'
-        : 'other';
-    });
+const $ongoingReferendumsTasks = combine(referendums.$ongoing, $basketOperationsMap, (referendums, operations) => {
+  const groups = groupBy(referendums, referendum => {
+    return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
+      ? 'evidence'
+      : 'other';
+  });
 
-    const evidenceTasks = groups.evidence
-      ? groups.evidence.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
-          return {
-            id: `referendum_${referendum.id}`,
-            priority: 1,
-            group: 'general',
-            body: PromotionRetentionVoting,
-            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
-          };
-        })
-      : [];
+  const evidenceTasks = groups.evidence
+    ? groups.evidence.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
+        return {
+          id: `referendum_${referendum.id}`,
+          priority: 1,
+          group: 'general',
+          body: PromotionRetentionVoting,
+          meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
+        };
+      })
+    : [];
 
-    const otherTasks = groups.other
-      ? groups.other.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
-          return {
-            id: `referendum_${referendum.id}`,
-            priority: 1,
-            group: 'general',
-            body: OngoingReferendumVoting,
-            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
-          };
-        })
-      : [];
+  const otherTasks = groups.other
+    ? groups.other.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
+        return {
+          id: `referendum_${referendum.id}`,
+          priority: 1,
+          group: 'general',
+          body: OngoingReferendumVoting,
+          meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
+        };
+      })
+    : [];
 
-    return [...evidenceTasks, ...otherTasks];
-  },
-);
+  return [...evidenceTasks, ...otherTasks];
+});
 
 const $completedReferendumsTasks = combine(referendums.$completed, referendums => {
   return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
