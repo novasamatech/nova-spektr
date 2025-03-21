@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Box, ScrollArea } from '@/shared/ui-kit';
+import { ScrollArea } from '@/shared/ui-kit';
 
 import { ActivityList } from './ActivityList';
 
@@ -10,9 +10,9 @@ export const LastActivity = memo(() => {
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
-      <Box direction="row" verticalAlign="center" gap={1.5} padding={[4, 5]} height={15} shrink={0}>
+      <div className="flex h-11 shrink-0 items-center border-b border-filter-border bg-card-background px-5">
         <span className="text-button-small">{t('fellowship.activityFeed.lastActivityCardTitle')}</span>
-      </Box>
+      </div>
       <ScrollArea>
         <ActivityList />
       </ScrollArea>

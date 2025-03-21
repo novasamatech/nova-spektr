@@ -15,6 +15,6 @@ const $store = combine($fellowshipStore, fellowshipActivityFeedFeature.state, (f
   return fellowshipStore[state.data.chainId] ?? null;
 });
 
-export const fellowshipModel = {
+export const fellowship = {
   $store,
 };
