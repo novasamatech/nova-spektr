@@ -36,7 +36,7 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
   }
 
   public async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
-    return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId);
+    return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModal();
   }
 
   public async checkTransferFee(chain: ChainModel): Promise<VaultAssetsPage> {
@@ -46,6 +46,9 @@ export class VaultAssetsPage extends BasePage<AssetsPageElements> {
     if (targetChain) {
       for (const asset of targetChain.assets) {
         await (await this.openTransfer(chain, asset.assetId)).checkFeeforAsset();
+        await this.page.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
+        // TODO: need to wait before open another transfer modal
+        await this.page.waitForTimeout(500);
       }
     }
 

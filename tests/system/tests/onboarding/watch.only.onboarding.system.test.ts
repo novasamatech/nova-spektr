@@ -31,7 +31,7 @@ test.describe(
         context.waitForEvent('page'),
         page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),
       ]);
-      await newPage.waitForLoadState('load');
+      await newPage.waitForLoadState('domcontentloaded');
 
       expect(newPage.url()).toContain('subscan.io');
     });
