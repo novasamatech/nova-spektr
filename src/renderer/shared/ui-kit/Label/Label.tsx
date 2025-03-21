@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
-type Variant =
+export type LabelVariant =
   | 'red'
   | 'darkRed'
   | 'orange'
@@ -15,7 +15,7 @@ type Variant =
   | 'gray';
 
 type Props = PropsWithChildren<{
-  variant: Variant;
+  variant: LabelVariant;
 }>;
 
 export const Label = ({ variant, children }: Props) => {

@@ -47,6 +47,7 @@ export type OngoingReferendum = {
     since: BlockHeight;
     confirming: BlockHeight | null;
   } | null;
+  ends: BlockHeight;
   tally: Tally;
 };
 

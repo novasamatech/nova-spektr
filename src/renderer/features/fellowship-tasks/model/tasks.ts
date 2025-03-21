@@ -21,16 +21,22 @@ import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
 import { RequestSalary } from '../components/tasks/RequestSalary';
 import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
+import { tasksService } from '../service';
 import { type OperationType, type TaskDescription } from '../types';
 
+import { block } from './block';
 import { evidenceInfo } from './evidence';
 import { fellowshipTasksFeature } from './feature';
+import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 import { memberSalary } from './memberSalary';
 import { periods } from './periods';
 import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
+const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
+const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
+const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
 const $memberBasketOperations = combine(basketOperations.$list, memberProfile.$member, (operations, member) => {
@@ -86,10 +92,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_request',
-          priority: 0,
+          weight: 2,
           group: 'personal',
           body: RequestSalary,
-          meta: { transaction: operations['salary_request'] ?? null },
+          meta: { transaction: operations['salary_request'] ?? null, tags: [] },
         },
       ];
     }
@@ -98,10 +104,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_payout',
-          priority: 0,
+          weight: 2,
           group: 'personal',
           body: RequestPayout,
-          meta: { transaction: operations['salary_payout'] ?? null },
+          meta: { transaction: operations['salary_payout'] ?? null, tags: [] },
         },
       ];
     }
@@ -110,10 +116,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_induct',
-          priority: 0,
+          weight: 2,
           group: 'personal',
           body: RequestSalaryInduct,
-          meta: { transaction: operations['salary_induct'] ?? null },
+          meta: { transaction: operations['salary_induct'] ?? null, tags: [] },
         },
       ];
     }
@@ -147,10 +153,10 @@ const $evidenceTasks = combine(
       return [
         {
           id: 'evidence',
-          priority: 0,
+          weight: 0,
           group: 'personal',
           body: RequestRetention,
-          meta: { transaction: operations['evidence'] ?? null },
+          meta: { transaction: operations['evidence'] ?? null, tags: [] },
         },
       ];
     }
@@ -159,10 +165,10 @@ const $evidenceTasks = combine(
       return [
         {
           id: 'evidence',
-          priority: 2,
+          weight: 0,
           group: 'personal',
           body: RequestPromotion,
-          meta: { transaction: operations['evidence'] ?? null },
+          meta: { transaction: operations['evidence'] ?? null, tags: [] },
         },
       ];
     }
@@ -172,34 +178,67 @@ const $evidenceTasks = combine(
 );
 
 const $ongoingReferendumsTasks = combine(
-  { referendums: referendums.$notVotedReferendumns, operations: $basketOperationsMap },
-  ({ referendums, operations }) => {
+  {
+    referendums: referendums.$notVotedReferendumns,
+    operations: $basketOperationsMap,
+    maxRank: $maxRank,
+    members: $members,
+    member: $member,
+    currentBlock: block.$currentBlock,
+  },
+  ({ referendums, operations, maxRank, members, member, currentBlock }) => {
+    if (nullable(member)) return [];
+
     const groups = groupBy(referendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
         ? 'evidence'
         : 'other';
     });
 
+    const getWeight = (referendum: OngoingReferendum) => {
+      const maximumAvailableVotingWeight = tasksService.getMaximumAvailableVotingWeight(
+        members,
+        maxRank,
+        referendum.track,
+      );
+
+      const memberVotingWeight = trackService.getVoteWeight({
+        pallet: 'fellowship',
+        maxRank,
+        rank: member.rank,
+        track: referendum.track,
+      });
+
+      return tasksService.getReferendumImportance({
+        referendum,
+        maximumAvailableVotingWeight,
+        memberVotingWeight,
+        currentBlock,
+      });
+    };
+
     const evidenceTasks = groups.evidence
-      ? groups.evidence.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
+      ? groups.evidence.map<TaskDescription>(referendum => {
+          const weight = getWeight(referendum);
           return {
             id: `referendum_${referendum.id}`,
-            priority: 1,
+            weight: weight.sortingScore,
             group: 'general',
             body: PromotionRetentionVoting,
-            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
+            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null, tags: weight.tags },
           };
         })
       : [];
 
     const otherTasks = groups.other
-      ? groups.other.map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
+      ? groups.other.map<TaskDescription>(referendum => {
+          const weight = getWeight(referendum);
           return {
             id: `referendum_${referendum.id}`,
-            priority: 1,
+            weight: weight.sortingScore,
             group: 'general',
             body: OngoingReferendumVoting,
-            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null },
+            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null, tags: weight.tags },
           };
         })
       : [];
@@ -212,10 +251,10 @@ const $completedReferendumsTasks = combine(referendums.$completed, referendums =
   return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
     return {
       id: `referendum_completed_${referendum.id}`,
-      priority: 1,
+      weight: 1,
       group: 'completed',
       body: CompletedReferendumVoting,
-      meta: { referendum, transaction: null },
+      meta: { referendum, transaction: null, tags: [] },
     };
   });
 });
@@ -231,7 +270,7 @@ const $list = combine(
   ({ salaryTasks, referendumTasks, completedReferendumsTasks, evidenceTasks, hasPermission }) => {
     if (hasPermission) {
       const list = [...salaryTasks, ...referendumTasks, ...evidenceTasks, ...completedReferendumsTasks];
-      return list.sort((a, b) => a.priority - b.priority);
+      return list.sort((a, b) => b.weight - a.weight);
     }
 
     return [];

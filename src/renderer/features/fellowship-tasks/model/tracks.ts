@@ -1,7 +1,9 @@
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
+import { track } from '@/domains/collectives';
 
+import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 
@@ -18,6 +20,11 @@ const $nextTrack = combine(memberProfile.$member, $tracks, (member, tracks) => {
   if (nullable(member)) return null;
   const index = tracks.findIndex(t => t.id === member.rank);
   return tracks.at(index + 1) ?? null;
+});
+
+sample({
+  clock: fellowshipTasksFeature.running,
+  target: [track.request],
 });
 
 export const tracks = {
