@@ -7,7 +7,6 @@ type Props = {
    * Value in range of 0..100
    */
   disabled?: boolean;
-  thresholdIndicatorBorder?: string;
   votesImpact?: number;
 };
 

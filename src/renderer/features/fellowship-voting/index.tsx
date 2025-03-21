@@ -12,7 +12,7 @@ import {
 } from '@/features/fellowship-referendum-details';
 import { taskVotingActionSlot } from '@/features/fellowship-tasks';
 
-import { FilledIconButton } from './components/FilledIconButton';
+import { VotingButtonWithTooltip } from './components/VotingButtonWithTooltip';
 import { VotingButtons } from './components/VotingButtons';
 import { VotingConfirmation } from './components/VotingConfirmation';
 import { VotingModal } from './components/VotingModal';
@@ -82,7 +82,7 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
   return (
     <Box gap={1}>
       <Box direction="row" gap={0.5}>
-        <FilledIconButton
+        <VotingButtonWithTooltip
           variant="negative"
           icon="thumbDown"
           disabled={disabled}
@@ -92,7 +92,7 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
           onClick={nay}
           onHover={e => setHighlight(e)}
         />
-        <FilledIconButton
+        <VotingButtonWithTooltip
           variant="positive"
           icon="thumbUp"
           disabled={disabled}

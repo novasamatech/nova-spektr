@@ -26,14 +26,12 @@ type Story = StoryObj<typeof DynamicVoteChart>;
 export const Default: Story = {
   args: {
     value: 30,
-    threshold: 50,
   },
 };
 
 export const PositiveVoteImpact: Story = {
   args: {
     value: 30,
-    threshold: 50,
     votesImpact: 10,
   },
 };
@@ -41,7 +39,6 @@ export const PositiveVoteImpact: Story = {
 export const NegativeVoteImpact: Story = {
   args: {
     value: 30,
-    threshold: 50,
     votesImpact: -10,
   },
 };
@@ -49,7 +46,6 @@ export const NegativeVoteImpact: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
-    threshold: 50,
   },
 };
 

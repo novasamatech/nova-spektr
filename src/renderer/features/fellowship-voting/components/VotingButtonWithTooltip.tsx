@@ -17,12 +17,12 @@ type Props = {
   onHover: (arg: 'aye' | 'nay' | null) => void;
 };
 
-export const FilledIconButton = (args: Props) => {
+export const VotingButtonWithTooltip = (args: Props) => {
   const { t } = useI18n();
 
   const { voted, checked, disabled, votes, variant } = args;
 
-  if (checked || voted || disabled || !votes) return <FilledButton {...args} />;
+  if (checked || voted || disabled || !votes) return <FilledIconButton {...args} />;
 
   const tooltipText = variant === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
 
@@ -30,7 +30,7 @@ export const FilledIconButton = (args: Props) => {
     <Tooltip>
       <Tooltip.Trigger>
         <div>
-          <FilledButton {...args} />
+          <FilledIconButton {...args} />
         </div>
       </Tooltip.Trigger>
       <Tooltip.Content>
@@ -46,7 +46,7 @@ export const FilledIconButton = (args: Props) => {
   );
 };
 
-const FilledButton = ({ variant, disabled, checked, icon, voted, onClick, onHover }: Props) => {
+const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, onHover }: Props) => {
   return (
     <button
       type="button"
