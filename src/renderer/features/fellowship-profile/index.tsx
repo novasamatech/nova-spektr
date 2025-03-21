@@ -1,3 +1,4 @@
+import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { ProfileCard, additionalProfileCardInfoSlot } from './components/ProfileCard';
@@ -11,4 +12,17 @@ export { fellowshipProfileFeature, SetActiveConfirmation, setActive, profileInfo
 fellowshipProfileFeature.inject(fellowshipSidebarSlot, {
   order: 0,
   render: () => <ProfileCard />,
+});
+
+fellowshipProfileFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {
+  switch (record.type) {
+    case 'activeChanged':
+      return (
+        <>{t('fellowship.activityFeed.record.activeChanged', { status: record.isActive ? 'active' : 'inactive' })}</>
+      );
+    case 'imported':
+      return <>{t('fellowship.activityFeed.record.imported', { rank: record.rank })}</>;
+    default:
+      return null;
+  }
 });
