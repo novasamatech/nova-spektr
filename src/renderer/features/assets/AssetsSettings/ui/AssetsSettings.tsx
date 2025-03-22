@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { TEST_IDS } from '@/shared/constants';
+import { AssetsListView, TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, IconButton, Switch } from '@/shared/ui';
 import { Box, Field, Popover, Select } from '@/shared/ui-kit';
-import { AssetsListView } from '@/entities/asset';
 import { assetsSettingsModel } from '../model/assets-settings-modal';
 
 export const AssetsSettings = memo(() => {
@@ -41,10 +40,10 @@ export const AssetsSettings = memo(() => {
               value={assetsView.toString()}
               onChange={(value) => assetsSettingsModel.events.assetsViewChanged(Number(value))}
             >
-              <Select.Item value={AssetsListView.TOKEN_CENTRIC.toString()}>
+              <Select.Item value={AssetsListView.TOKEN.toString()}>
                 <FootnoteText>{t('balances.tokenCentric')}</FootnoteText>
               </Select.Item>
-              <Select.Item value={AssetsListView.CHAIN_CENTRIC.toString()}>
+              <Select.Item value={AssetsListView.CHAIN.toString()}>
                 <FootnoteText>{t('balances.chainCentric')}</FootnoteText>
               </Select.Item>
             </Select>

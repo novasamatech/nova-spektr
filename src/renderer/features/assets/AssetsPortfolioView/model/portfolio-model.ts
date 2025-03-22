@@ -1,9 +1,9 @@
 import { combine, createEvent, createStore, restore } from 'effector';
 import { once } from 'patronum';
 
+import { AssetsListView } from '@/shared/constants';
 import { type Account, type AssetByChains } from '@/shared/core';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
-import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
@@ -34,7 +34,7 @@ const $tokens = combine(
     chains: networkModel.$chains,
   },
   ({ defaultTokens, activeView, wallet, chains }) => {
-    if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
+    if (activeView !== AssetsListView.TOKEN) return DEFAULT_LIST;
     if (nullable(wallet)) return DEFAULT_LIST;
 
     const tokens: AssetByChains[] = [];

@@ -1,8 +1,8 @@
 import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
+import { AssetsListView } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
-import { AssetsListView } from '@/entities/asset';
 import { portfolioModel } from '../portfolio-model';
 
 const mockTokens: AssetByChains[] = [
@@ -64,17 +64,17 @@ const mockTokens: AssetByChains[] = [
 describe('Portfolio model', () => {
   test('should handle activeViewChanged event', async () => {
     const scope = fork({
-      values: new Map().set(portfolioModel.$activeView, AssetsListView.CHAIN_CENTRIC),
+      values: new Map().set(portfolioModel.$activeView, AssetsListView.CHAIN),
     });
 
-    await allSettled(portfolioModel.events.activeViewChanged, { scope, params: AssetsListView.TOKEN_CENTRIC });
-    expect(scope.getState(portfolioModel.$activeView)).toEqual(AssetsListView.TOKEN_CENTRIC);
+    await allSettled(portfolioModel.events.activeViewChanged, { scope, params: AssetsListView.TOKEN });
+    expect(scope.getState(portfolioModel.$activeView)).toEqual(AssetsListView.TOKEN);
   });
 
   test.skip('should update $filteredTokens and $query stores on queryChanged event', async () => {
     const scope = fork({
       values: new Map()
-        .set(portfolioModel.$activeView, AssetsListView.TOKEN_CENTRIC)
+        .set(portfolioModel.$activeView, AssetsListView.TOKEN)
         .set(portfolioModel._test.$defaultTokens, mockTokens)
         .set(portfolioModel._test.$query, ''),
     });

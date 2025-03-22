@@ -2,12 +2,13 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
+import { AssetsListView } from '@/shared/constants';
 import { type Account, type Asset, type Chain } from '@/shared/core';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
+import { EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
@@ -37,7 +38,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN || !activeShards.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -110,7 +111,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     }
   }, [sortedChains, query]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
+  if (assetsView !== AssetsListView.CHAIN || !activeShards.length) {
     return null;
   }
 

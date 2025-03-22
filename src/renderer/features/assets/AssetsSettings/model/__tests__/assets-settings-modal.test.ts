@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { localStorageService } from '@/shared/api/local-storage';
-import { AssetsListView } from '@/entities/asset';
+import { AssetsListView } from '@/shared/constants';
 import { assetsSettingsModel } from '../assets-settings-modal';
 
 describe('features/assets/AssetsSettings/model/assets-settings-model', () => {
@@ -49,25 +49,25 @@ describe('features/assets/AssetsSettings/model/assets-settings-model', () => {
 
     await allSettled(assetsSettingsModel.events.assetsStarted, { scope });
 
-    expect(scope.getState(assetsSettingsModel.$assetsView)).toEqual(AssetsListView.TOKEN_CENTRIC);
+    expect(scope.getState(assetsSettingsModel.$assetsView)).toEqual(AssetsListView.TOKEN);
   });
 
   test('should set $assetsView to value from localStorageService', async () => {
-    jest.spyOn(localStorageService, 'getFromStorage').mockReturnValue(AssetsListView.TOKEN_CENTRIC);
+    jest.spyOn(localStorageService, 'getFromStorage').mockReturnValue(AssetsListView.TOKEN);
 
     const scope = fork();
 
     await allSettled(assetsSettingsModel.events.assetsStarted, { scope });
 
-    expect(scope.getState(assetsSettingsModel.$hideZeroBalances)).toEqual(AssetsListView.TOKEN_CENTRIC);
+    expect(scope.getState(assetsSettingsModel.$hideZeroBalances)).toEqual(AssetsListView.TOKEN);
   });
 
   test('should update $assetsView on change', async () => {
-    const newValue = AssetsListView.CHAIN_CENTRIC;
+    const newValue = AssetsListView.CHAIN;
     jest.spyOn(localStorageService, 'saveToStorage').mockReturnValue(newValue);
 
     const scope = fork({
-      values: new Map().set(assetsSettingsModel.$assetsView, AssetsListView.TOKEN_CENTRIC),
+      values: new Map().set(assetsSettingsModel.$assetsView, AssetsListView.TOKEN),
     });
 
     await allSettled(assetsSettingsModel.events.assetsViewChanged, { scope, params: newValue });

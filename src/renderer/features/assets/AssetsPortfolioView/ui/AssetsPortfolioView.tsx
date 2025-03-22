@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 
+import { AssetsListView } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
+import { EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
@@ -41,7 +42,7 @@ export const AssetsPortfolioView = () => {
     forceFirstRender: true,
   });
 
-  if (activeView !== AssetsListView.TOKEN_CENTRIC || accounts.length === 0) {
+  if (activeView !== AssetsListView.TOKEN || accounts.length === 0) {
     return null;
   }
 
