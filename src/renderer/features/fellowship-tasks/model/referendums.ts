@@ -4,6 +4,7 @@ import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { evidence, referendum, referendumMeta, referendumService, track, voting } from '@/domains/collectives';
+import { identity } from '@/domains/network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
@@ -11,6 +12,37 @@ import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 
 const requestEvidence = createEvent<AccountId>();
+const requestEvidenceIdentityInfo = attach({
+  source: fellowshipTasksFeature.input,
+  effect: async (input, { accountId, periodStart }: { accountId: AccountId; periodStart: string }) => {
+    if (!input) return;
+
+    const identityMap = await identity.request({
+      chainId: input.chainId,
+      accounts: [accountId],
+    });
+
+    console.log({ input, identityMap, accountId });
+
+    const accountIdentity = identityMap[accountId];
+
+    if (!accountIdentity) return;
+
+    console.log({ accountIdentity });
+
+    const evidenceResponse = await evidence.request({
+      palletType: input.palletType,
+      api: input.api,
+      chain: input.chain,
+      accountId: accountId,
+
+      githubHandle: accountIdentity.github,
+      evidencePeriodStart: periodStart,
+    });
+
+    console.log({ input, identityMap, accountId, evidenceResponse });
+  },
+});
 const requestEvidenceFx = attach({ effect: evidence.request });
 const requestVotesFx = attach({ effect: voting.request });
 
@@ -92,4 +124,5 @@ export const referendums = {
 
   pending: referendum.pending,
   requestEvidence,
+  requestEvidenceIdentityInfo,
 };

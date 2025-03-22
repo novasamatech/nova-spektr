@@ -8,9 +8,17 @@ export function fetchEvidenceFromSubsquare(evidence: HexString) {
   return fetch(evidenceService.getEvidenceIpfsUrl(evidence)).then(r => r.text());
 }
 
-export function fetchEvidenceSummary(evidence: HexString, chainId: ChainId, languageIsoCode: string) {
+export function fetchEvidenceSummary(
+  evidence: HexString,
+  chainId: ChainId,
+  languageIsoCode: string,
+  githubHandle?: string,
+  evidencePeriodStart?: string,
+) {
   const schema = z.object({
     summary: z.string(),
+    numberOfPullRequests: z.number().nullable(),
+    numberOfMergedPullRequests: z.number().nullable(),
   });
 
   const evidenceId = evidenceService.getCidByEvidence(evidence);
@@ -26,11 +34,10 @@ export function fetchEvidenceSummary(evidence: HexString, chainId: ChainId, lang
       chainId: chainId.replace(/^0x/, 'x'),
       evidenceId,
       languageIsoCode,
+      githubHandle,
+      evidencePeriodStart,
     }),
   });
 
-  return request
-    .then(r => r.json())
-    .then(schema.parse)
-    .then(r => r.summary);
+  return request.then(r => r.json()).then(schema.parse);
 }

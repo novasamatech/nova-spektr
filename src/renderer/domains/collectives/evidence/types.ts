@@ -9,6 +9,10 @@ export type Evidence = {
   cid: string;
   content: string;
   summary: string;
+  githubInfo?: {
+    pullRequests: number | null;
+    mergedPullRequests: number | null;
+  } | null;
 };
 
 export type EvidencePeriods = {

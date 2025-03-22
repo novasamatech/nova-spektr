@@ -68,6 +68,7 @@ const {
         name: parentIdentity.info.display,
         email: parentIdentity.info.email,
         image: parentIdentity.info.image,
+        github: parentIdentity.info.github,
       };
 
       if (sub.account !== parent.account) {

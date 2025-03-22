@@ -37,6 +37,16 @@ type Props = {
   onReferendumSelect(referendum: Referendum): void;
 };
 
+function extractPeriodStart(content: string) {
+  // Date is kept in md with following format: "Start date: YYYY/MM/DD" or "**Start date**: YYYY/MM/DD"
+  const startDateRegex = /\*{0,2}Start date\*{0,2}:\s*(\d{4}\/\d{2}\/\d{2})/;
+  // extract YYYY/MM/DD value
+  const periodStart = content.match(startDateRegex)?.[1];
+
+  // return DD/MM/YYYY
+  return periodStart?.replace(/^(\d{4})\/(\d{2})\/(\d{2})$/, '$3/$2/$1');
+}
+
 export const PromotionRetentionVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
@@ -48,17 +58,26 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
   const api = input?.api;
   const track = allTacks.find(t => t.id === referendum.track);
 
-  const proposer = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
-  const evidence = evidences.find(e => e.accountId === proposer);
+  const proposerAccountId = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
+  const evidence = evidences.find(e => e.accountId === proposerAccountId);
 
   const firstTag = tags.at(0);
   const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
   useEffect(() => {
-    if (proposer) {
-      referendums.requestEvidence(proposer);
+    if (proposerAccountId) {
+      referendums.requestEvidence(proposerAccountId);
     }
-  }, [proposer]);
+  }, [proposerAccountId]);
+
+  useEffect(() => {
+    if (evidence) {
+      referendums.requestEvidenceIdentityInfo({
+        accountId: evidence.accountId,
+        periodStart: extractPeriodStart(evidence.content) || '', // ToDo: should we apply a default date as a fallback?
+      });
+    }
+  }, [evidence?.accountId]);
 
   if (nullable(track) || nullable(api)) return null;
 
@@ -84,6 +103,30 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
             <Markdown>{evidence?.summary ?? ''}</Markdown>
           </FootnoteText>
           {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+          <div className="flex gap-16 text-left">
+            <div className="w-15">
+              {evidence?.githubInfo?.pullRequests && (
+                <>
+                  <span className="text-footnote text-text-secondary">
+                    {t('fellowship.tasks.task.promotionVoting.pullRequests')}
+                  </span>
+                  &nbsp;
+                  <span className="bold">{evidence?.githubInfo?.pullRequests}</span>
+                </>
+              )}
+            </div>
+            <div className="w-15">
+              {evidence?.githubInfo?.mergedPullRequests && (
+                <>
+                  <span className="text-footnote text-text-secondary">
+                    {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
+                  </span>
+                  &nbsp;
+                  <span className="bold">{evidence?.githubInfo?.mergedPullRequests}</span>
+                </>
+              )}
+            </div>
+          </div>
         </Box>
       </button>
       <Separator vertical />
