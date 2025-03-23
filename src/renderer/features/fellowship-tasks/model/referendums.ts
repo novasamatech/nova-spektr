@@ -22,15 +22,11 @@ const requestEvidenceIdentityInfo = attach({
       accounts: [accountId],
     });
 
-    console.log({ input, identityMap, accountId });
-
     const accountIdentity = identityMap[accountId];
 
     if (!accountIdentity) return;
 
-    console.log({ accountIdentity });
-
-    const evidenceResponse = await evidence.request({
+    return evidence.request({
       palletType: input.palletType,
       api: input.api,
       chain: input.chain,
@@ -39,8 +35,6 @@ const requestEvidenceIdentityInfo = attach({
       githubHandle: accountIdentity.github,
       evidencePeriodStart: periodStart,
     });
-
-    console.log({ input, identityMap, accountId, evidenceResponse });
   },
 });
 const requestEvidenceFx = attach({ effect: evidence.request });
