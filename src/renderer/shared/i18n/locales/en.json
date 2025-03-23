@@ -507,9 +507,9 @@
           "title": "Feel ready for a promotion?"
         },
         "promotionVoting": {
-          "title": "Review promotion evidence",
+          "mergedPullRequests": "Merged",
           "pullRequests": "PRs",
-          "mergedPullRequests": "Merged"
+          "title": "Review promotion evidence"
         },
         "requestPayout": {
           "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
