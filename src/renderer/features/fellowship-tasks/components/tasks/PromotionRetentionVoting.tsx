@@ -4,12 +4,11 @@ import { useEffect } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
-import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
@@ -40,30 +39,27 @@ type Props = {
 export const PromotionRetentionVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipTasksFeature.input);
   const allTacks = useUnit(tracks.$tracks);
   const evidencePending = useUnit(referendums.$evidencePending);
   const evidences = useUnit(evidenceInfo.$evidences);
 
-  const api = input?.api;
   const track = allTacks.find(t => t.id === referendum.track);
 
-  const proposer = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
-  const evidence = evidences.find(e => e.accountId === proposer);
+  const proposerAccountId = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
+  const evidence = evidences.find(e => e.accountId === proposerAccountId);
 
   const firstTag = tags.at(0);
   const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
+  const isRetentionTrack = track ? trackService.isRetentionTrack(track.id) : false;
+  const isPromotionTrack = track ? trackService.isPromotionTrack(track.id) : false;
+
   useEffect(() => {
-    if (proposer) {
-      referendums.requestEvidence(proposer);
-    }
-  }, [proposer]);
-
-  if (nullable(track) || nullable(api)) return null;
-
-  const isRetentionTrack = trackService.isRetentionTrack(track.id);
-  const isPromotionTrack = trackService.isPromotionTrack(track.id);
+    referendums.requestEvidenceSummaryFx({
+      accountId: proposerAccountId as AccountId,
+      isPromotion: isPromotionTrack,
+    });
+  }, [proposerAccountId, isPromotionTrack]);
 
   let title = t('fellowship.tasks.task.anyReferendum.title');
 
@@ -86,6 +82,27 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
           <FootnoteText>
             <Markdown>{evidence?.summary ?? ''}</Markdown>
           </FootnoteText>
+
+          <div className="flex gap-16 text-left">
+            {evidence?.github?.pullRequests && (
+              <div className="w-15">
+                <FootnoteText className="inline text-text-secondary">
+                  {t('fellowship.tasks.task.promotionVoting.pullRequests')}
+                </FootnoteText>
+                &nbsp;
+                <span className="text-black">{evidence?.github?.pullRequests}</span>
+              </div>
+            )}
+            {evidence?.github?.mergedPullRequests && (
+              <div className="w-15">
+                <FootnoteText className="inline text-text-secondary">
+                  {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
+                </FootnoteText>
+                &nbsp;
+                <span className="text-black">{evidence?.github?.mergedPullRequests}</span>
+              </div>
+            )}
+          </div>
         </Box>
       </button>
       <Box alignSelf="flex-end" shrink={0}>

@@ -7,6 +7,7 @@ export type AccountIdentity = {
   subName?: string;
   email: string;
   image: string;
+  github?: string;
 };
 
 export type IdentityMap = Record<ChainId, Record<AccountId, AccountIdentity>>;
