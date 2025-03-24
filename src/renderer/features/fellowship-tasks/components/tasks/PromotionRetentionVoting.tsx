@@ -81,7 +81,7 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
           </FootnoteText>
           {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
           <div className="flex gap-16 text-left">
-            {evidence?.githubInfo?.pullRequests ? (
+            {evidence?.githubInfo?.pullRequests && (
               <div className="w-15">
                 <span className="text-footnote text-text-secondary">
                   {t('fellowship.tasks.task.promotionVoting.pullRequests')}
@@ -89,10 +89,8 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
                 &nbsp;
                 <span className="bold">{evidence?.githubInfo?.pullRequests}</span>
               </div>
-            ) : (
-              <Skeleton height="20px" width="60px" />
             )}
-            {evidence?.githubInfo?.mergedPullRequests ? (
+            {evidence?.githubInfo?.mergedPullRequests && (
               <div className="w-15">
                 <span className="text-footnote text-text-secondary">
                   {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
@@ -100,8 +98,6 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
                 &nbsp;
                 <span className="bold">{evidence?.githubInfo?.mergedPullRequests}</span>
               </div>
-            ) : (
-              <Skeleton height="20px" width="60px" />
             )}
           </div>
         </Box>
