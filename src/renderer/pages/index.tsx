@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, type RouteObject } from 'react-router-dom';
+import { Navigate, Outlet, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
 import { AppShell } from '@/features/app-shell';
@@ -110,6 +110,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
         children: [
           {
             path: Paths.FELLOWSHIP_LIST,
+            element: <Outlet />,
             children: [
               {
                 path: Paths.FELLOWSHIP_REFERENDUM,
