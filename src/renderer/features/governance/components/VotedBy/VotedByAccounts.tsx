@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { votingService } from '@/entities/governance';
+import { locksService, votingService } from '@/entities/governance';
 
 type Props = {
   asset: Asset;
@@ -79,7 +79,7 @@ const Voted = ({ asset, type, votes, multiplier }: VotedProps) => {
   const conviction = useMemo(() => {
     if (!showMultiplier || !votingService.isStandardVote(votes[0])) return undefined;
 
-    return votingService.getConvictionDays(votes[0].vote.conviction);
+    return locksService.getLockPeriodsMultiplier(votes[0].vote.conviction);
   }, [showMultiplier, votes.length]);
 
   return (

@@ -9,7 +9,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { BodyText, DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { votingService } from '@/entities/governance';
+import { locksService } from '@/entities/governance';
 import { DelegateName } from '@/features/governance';
 
 type Props = {
@@ -51,7 +51,7 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
               <Trans
                 t={t}
                 i18nKey="general.actions.duration"
-                values={{ duration: votingService.getConvictionDays(votes[0].conviction) }}
+                values={{ duration: locksService.getLockPeriodsMultiplier(votes[0].conviction) }}
                 components={{
                   balance: <AssetBalance value={totalVotes} asset={asset} />,
                 }}

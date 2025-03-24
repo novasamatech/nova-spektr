@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
-import { votingService } from '@/entities/governance';
+import { locksService } from '@/entities/governance';
 
 type Props = {
   asset: Asset;
@@ -36,7 +36,7 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
       nay: multiplier ? 'governance.votedConvictedNayBy' : 'governance.votedNayBy',
     };
 
-    const conviction = multiplier ? votingService.getConvictionDays(delegate.conviction) : undefined;
+    const conviction = multiplier ? locksService.getLockPeriodsMultiplier(delegate.conviction) : undefined;
 
     return (
       <div className="flex w-full items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
