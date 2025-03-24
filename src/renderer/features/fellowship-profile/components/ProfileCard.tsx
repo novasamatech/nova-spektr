@@ -15,8 +15,6 @@ import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
-const CARD_CLASS = 'p-4 rounded-xl border border-filter-border bg-card-background text-button-small';
-
 // TODO: not sure this is still relevant to the new UI
 export const additionalProfileCardInfoSlot = createSlot<{ member: Member }>();
 
@@ -27,6 +25,22 @@ export const ProfileCard = () => {
       <NoProfile />
       <Member />
     </ProfileLoader>
+  );
+};
+
+type CardProps = {
+  padding?: boolean;
+};
+const Card = ({ padding = true, children }: PropsWithChildren<CardProps>) => {
+  return (
+    <div
+      className={cnTw(
+        'rounded-xl border border-filter-border bg-card-background text-button-small',
+        padding ? 'p-4' : 'p-0',
+      )}
+    >
+      {children}
+    </div>
   );
 };
 
@@ -42,7 +56,7 @@ const ProfileLoader = ({ children }: PropsWithChildren) => {
   }
 
   return (
-    <div className={cnTw(CARD_CLASS, 'p-0')}>
+    <Card padding={false}>
       <div className="divider flex h-11 items-center justify-between border-b border-filter-border px-4">
         <Skeleton height={5} />
       </div>
@@ -50,7 +64,7 @@ const ProfileLoader = ({ children }: PropsWithChildren) => {
       <Box padding={4}>
         <Skeleton height={27} />
       </Box>
-    </div>
+    </Card>
   );
 };
 
@@ -63,18 +77,21 @@ const NoAccount = () => {
   if (isAccountExist) return null;
 
   return (
-    <div className={cnTw('flex items-center gap-x-1 text-text-tertiary', CARD_CLASS)}>
-      {t('fellowship.noAccount')}
+    <Card>
+      <Box direction="row" verticalAlign="center" gap={2}>
+        <Icon name="emptyIdenticon" size={20} />
+        <span className="text-button-small text-text-secondary">{t('fellowship.noAccount')}</span>
 
-      <Tooltip>
-        <Tooltip.Trigger>
-          <div tabIndex={0}>
-            <Icon name="questionOutline" size={14} />
-          </div>
-        </Tooltip.Trigger>
-        <Tooltip.Content>{t('fellowship.tooltips.noAccount', { chain: input?.chain.name || '' })}</Tooltip.Content>
-      </Tooltip>
-    </div>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <div tabIndex={0} className="ml-auto">
+              <Icon name="questionOutline" size={14} />
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('fellowship.tooltips.noAccount', { chain: input?.chain.name || '' })}</Tooltip.Content>
+        </Tooltip>
+      </Box>
+    </Card>
   );
 };
 
@@ -87,18 +104,21 @@ const NoProfile = () => {
   if (!isAccountExist || nonNullable(member)) return null;
 
   return (
-    <div className={cnTw('flex items-center gap-x-1 text-text-tertiary', CARD_CLASS)}>
-      {t('fellowship.noProfile')}
+    <Card>
+      <Box direction="row" verticalAlign="center" gap={2}>
+        <Icon name="emptyIdenticon" size={20} />
+        <span className="text-button-small text-text-secondary">{t('fellowship.noProfile')}</span>
 
-      <Tooltip>
-        <Tooltip.Trigger>
-          <div tabIndex={0}>
-            <Icon name="questionOutline" size={14} />
-          </div>
-        </Tooltip.Trigger>
-        <Tooltip.Content>{t('fellowship.tooltips.noProfile')}</Tooltip.Content>
-      </Tooltip>
-    </div>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <div tabIndex={0} className="ml-auto">
+              <Icon name="questionOutline" size={14} />
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{t('fellowship.tooltips.noProfile')}</Tooltip.Content>
+        </Tooltip>
+      </Box>
+    </Card>
   );
 };
 
@@ -114,7 +134,7 @@ const Member = () => {
   if (!isAccountExist || nullable(member)) return null;
 
   return (
-    <div className={cnTw(CARD_CLASS, 'p-0')}>
+    <Card padding={false}>
       <div className="divider flex h-11 items-center justify-between border-b border-filter-border pl-4 pr-1">
         <span className="text-button-small">{t('fellowship.members.myProfile')}</span>
 
@@ -168,6 +188,6 @@ const Member = () => {
       </Box>
 
       {/* <Slot id={additionalProfileCardInfoSlot} props={{ member }} /> */}
-    </div>
+    </Card>
   );
 };
