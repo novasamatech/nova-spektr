@@ -41,7 +41,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
 
   const disabled = !canVote || !hasRequiredRank;
 
-  const votes = trackService.getVoteWeight({
+  const memberVoteWeight = trackService.getVoteWeight({
     pallet: 'fellowship',
     rank: currentMember.rank,
     maxRank,
@@ -72,8 +72,8 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
     }
   };
 
-  const total = referendum.tally.ayes + referendum.tally.nays;
-  const userVotesImpact = tasksService.getUserImportanceScore(total, votes) * 100;
+  const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
+  const userVotesImpact = tasksService.getUserImportanceScore(totalReferendumVotes, memberVoteWeight) * 100;
 
   return (
     <Box gap={1}>
@@ -84,7 +84,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           disabled={disabled}
           voted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
-          votes={votes}
+          votes={memberVoteWeight}
           voteImpact={userVotesImpact}
           onClick={nay}
           onHighlight={e => setHighlight(e)}
@@ -95,7 +95,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           disabled={disabled}
           voted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
-          votes={votes}
+          votes={memberVoteWeight}
           voteImpact={userVotesImpact}
           onClick={aye}
           onHighlight={e => setHighlight(e)}
@@ -106,7 +106,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           referendum={referendum}
           pending={!!referendum}
           descriptionPosition="bottom"
-          votes={votes}
+          votes={memberVoteWeight}
           highlight={highlight}
         />
       </div>
