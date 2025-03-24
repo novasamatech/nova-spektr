@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
-import { Trans } from 'react-i18next';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getCreatedDateFromApi, getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Duration, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
+import { getCreatedDateFromApi } from '@/shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -15,7 +14,6 @@ export const requestSalaryActionSlot = createSlot();
 
 export const RequestSalary = () => {
   const { t, formatDate } = useI18n();
-  const [timeLeft, setTimeLeft] = useState(0);
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -24,33 +22,25 @@ export const RequestSalary = () => {
 
   useEffect(() => {
     if (input?.api && currentPeriod && currentPeriod.type !== 'unknown') {
-      getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
       getCreatedDateFromApi(currentPeriod.until, input.api).then(setPeriodEnd);
     }
   }, [input?.api, currentPeriod]);
 
   return (
-    <Box direction="row" padding={4} gap={5}>
-      <Box gap={3}>
+    <Box direction="row" padding={4} gap={5} verticalAlign="flex-end">
+      <Box gap={3} grow={1}>
         <SmallTitleText>{t('fellowship.tasks.task.requestSalary.title')}</SmallTitleText>
-        <Box direction="row" verticalAlign="center" gap={1.5}>
-          <Icon className="text-icon-warning" name="warn" />
-          <FootnoteText>
-            <Trans
-              t={t}
-              i18nKey="fellowship.tasks.task.requestSalary.left"
-              components={{ duration: <Duration seconds={timeLeft / 1000} /> }}
-            />
-          </FootnoteText>
-        </Box>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalary.description', {
             salary: salaryService.formatSalaryAmount(salary.active),
-            endDate: formatDate(periodEnd, 'dd/MM/yy'),
+          })}
+        </FootnoteText>
+        <FootnoteText className="text-text-secondary">
+          {t('fellowship.tasks.task.requestSalary.until', {
+            date: formatDate(periodEnd, 'dd.MM.yyyy'),
           })}
         </FootnoteText>
       </Box>
-      <Separator vertical />
       <Box verticalAlign="center" shrink={0}>
         <Slot id={requestSalaryActionSlot} />
       </Box>

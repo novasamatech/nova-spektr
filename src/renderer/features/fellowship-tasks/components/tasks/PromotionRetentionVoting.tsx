@@ -5,7 +5,7 @@ import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
@@ -88,8 +88,7 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
           </FootnoteText>
         </Box>
       </button>
-      <Separator vertical />
-      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
+      <Box alignSelf="flex-end" shrink={0}>
         <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>

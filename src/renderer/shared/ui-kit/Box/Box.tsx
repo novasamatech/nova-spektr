@@ -17,6 +17,7 @@ type BoxProps = PropsWithChildren<{
   height?: CSS.Property.Height | number;
   verticalAlign?: CSS.Property.AlignItems;
   horizontalAlign?: CSS.Property.JustifyContent;
+  alignSelf?: CSS.Property.AlignSelf;
   direction?: CSS.Property.FlexDirection;
   shrink?: CSS.Property.FlexShrink;
   fitContainer?: boolean;
@@ -69,6 +70,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       grow,
       verticalAlign,
       horizontalAlign,
+      alignSelf,
       fitContainer,
       fillContainer,
       hideOverflow,
@@ -105,6 +107,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         padding: calculatedPadding,
         margin: calculatedMargin,
         alignItems: isHorizontal ? verticalAlign : horizontalAlign,
+        alignSelf: alignSelf,
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
         flexShrink: shrink,
         gap: getBoxSize<CSS.Property.Gap>(gap),

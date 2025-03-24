@@ -515,16 +515,16 @@
           "title": "Review promotion evidence"
         },
         "requestPayout": {
-          "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
-          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
           "request": "Withdraw",
-          "title": "Withdraw your salary"
+          "title": "Withdraw your salary",
+          "until": "Submit until {date}"
         },
         "requestSalary": {
-          "description": "Your current earnings are {salary}. Don’t forget to submit your request by {endDate} to receive your payout on time.",
-          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to submit your request on time to receive your payout on time.",
           "request": "Request",
-          "title": "Request your salary"
+          "title": "Request your salary",
+          "until": "Submit until {date}"
         },
         "requestSalaryInduct": {
           "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
@@ -532,7 +532,7 @@
           "title": "Activate your payments"
         },
         "retention": {
-          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months. Your submission will be reviewed by other members, who will determine if you qualify to retain this Rank. Please ensure your evidence is submitted by 29.11.2024.",
+          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
           "request": "Submit",
           "title": "Submit your retention evidence"
         },
