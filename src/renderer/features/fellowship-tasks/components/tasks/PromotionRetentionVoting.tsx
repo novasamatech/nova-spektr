@@ -78,12 +78,14 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
     <Box direction="row" gap={5} padding={4}>
       <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
         <Box fillContainer gap={3} grow={1}>
-          <SmallTitleText>{title}</SmallTitleText>
+          <Box direction="row" gap={3}>
+            {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+            <SmallTitleText className="truncate">{title}</SmallTitleText>
+          </Box>
           {!evidence?.summary && evidencePending && <Skeleton height="2em" width="85%" />}
           <FootnoteText>
             <Markdown>{evidence?.summary ?? ''}</Markdown>
           </FootnoteText>
-          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
         </Box>
       </button>
       <Separator vertical />
