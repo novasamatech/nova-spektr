@@ -75,13 +75,16 @@ function getUserImportanceScore(maximumAvailableVotingWeight: number, userVoting
  */
 function getSortingScope(isUrgent: boolean, isControversial: boolean, isImportantVote: boolean) {
   if (isUrgent && isImportantVote) {
-    return 4;
-  } else if (isUrgent && isControversial) {
-    return 3;
-  } else if (isImportantVote) {
-    return 2;
-  } else if (isControversial) {
     return 1;
+  }
+  if (isUrgent && isControversial) {
+    return 0.75;
+  }
+  if (isImportantVote || isUrgent) {
+    return 0.5;
+  }
+  if (isControversial) {
+    return 0.25;
   }
 
   return 0;
