@@ -23,9 +23,9 @@ type Props = PropsWithChildren<{
 export const CollectiveRank = memo(({ rank, children }: Props) => {
   return (
     <Label variant={pickRankColor(rank)}>
-      <Box direction="row">
+      <Box direction="row" gap={1}>
+        {children ?? null}
         <span>{rank ? toRomanNumeral(rank) : '0'}</span>
-        {children ? <>&nbsp;{children}</> : null}
       </Box>
     </Label>
   );

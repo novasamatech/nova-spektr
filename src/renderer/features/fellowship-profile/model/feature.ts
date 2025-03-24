@@ -43,7 +43,7 @@ export const fellowshipProfileFeature = createFeature({
       : {
           status: 'failed',
           type: 'warning',
-          error: new Error(ERROR.networkDisabled),
+          error: new Error(ERROR.NETWORK_DISABLED),
         };
   },
 });

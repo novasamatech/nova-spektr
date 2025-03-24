@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss';
+import { type Config } from 'tailwindcss';
 
 const fontSizes: Required<Config>['theme']['fontSize'] = {
   // EXTRA BOLD
