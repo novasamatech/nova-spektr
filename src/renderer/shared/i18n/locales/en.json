@@ -344,9 +344,14 @@
     "fellow_other": "{ count } Fellows",
     "members": {
       "active": "Active",
+      "activity": "Activity",
+      "agreement": "Agreement",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
-      "modalTitle": "Fellowship members"
+      "modalTitle": "Fellowship members",
+      "myProfile": "My profile",
+      "toNextRank": "To next rank",
+      "viewDetails": "View details"
     },
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
