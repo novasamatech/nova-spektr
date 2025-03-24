@@ -6,7 +6,7 @@ import { nullable, toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { allTracks, votingService } from '@/entities/governance';
+import { allTracks, locksService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
@@ -80,7 +80,7 @@ export const YourDelegation = () => {
                   t={t}
                   i18nKey="general.actions.duration"
                   values={{
-                    duration: votingService.getConvictionDays(activeDelegations[activeAccounts[0]]?.conviction),
+                    duration: locksService.getLockPeriodsMultiplier(activeDelegations[activeAccounts[0]]?.conviction),
                   }}
                   components={{
                     balance: (

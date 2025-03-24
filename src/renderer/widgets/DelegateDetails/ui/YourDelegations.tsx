@@ -8,7 +8,7 @@ import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
-import { allTracks, votingService } from '@/entities/governance';
+import { allTracks, locksService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -118,7 +118,7 @@ export const YourDelegations = () => {
                     <Trans
                       t={t}
                       i18nKey="general.actions.duration"
-                      values={{ duration: votingService.getConvictionDays(activeDelegation.conviction) }}
+                      values={{ duration: locksService.getLockPeriodsMultiplier(activeDelegation.conviction) }}
                       components={{
                         balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
                       }}
