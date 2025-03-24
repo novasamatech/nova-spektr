@@ -161,7 +161,12 @@ const $evidenceTasks = combine(
       ];
     }
 
-    if (nonNullable(leftToPromotion) && leftToPromotion === 0 && hasPromotionEvidence === false) {
+    if (
+      memberService.canPromote(member) &&
+      nonNullable(leftToPromotion) &&
+      leftToPromotion === 0 &&
+      hasPromotionEvidence === false
+    ) {
       return [
         {
           id: 'evidence',

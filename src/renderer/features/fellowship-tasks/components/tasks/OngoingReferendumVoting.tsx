@@ -3,7 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Separator, SmallTitleText } from '@/shared/ui';
+import { SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
@@ -54,8 +54,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
           </SmallTitleText>
         </Box>
       </button>
-      <Separator vertical />
-      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
+      <Box alignSelf="flex-end" shrink={0}>
         <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>
