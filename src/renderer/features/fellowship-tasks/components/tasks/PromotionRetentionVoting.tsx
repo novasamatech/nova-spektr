@@ -83,20 +83,20 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
           <div className="flex gap-16 text-left">
             {evidence?.githubInfo?.pullRequests && (
               <div className="w-15">
-                <span className="text-footnote text-text-secondary">
+                <FootnoteText className="inline text-text-secondary">
                   {t('fellowship.tasks.task.promotionVoting.pullRequests')}
-                </span>
+                </FootnoteText>
                 &nbsp;
-                <span className="bold">{evidence?.githubInfo?.pullRequests}</span>
+                <span className="text-black">{evidence?.githubInfo?.pullRequests}</span>
               </div>
             )}
             {evidence?.githubInfo?.mergedPullRequests && (
               <div className="w-15">
-                <span className="text-footnote text-text-secondary">
+                <FootnoteText className="inline text-text-secondary">
                   {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
-                </span>
+                </FootnoteText>
                 &nbsp;
-                <span className="bold">{evidence?.githubInfo?.mergedPullRequests}</span>
+                <span className="text-black">{evidence?.githubInfo?.mergedPullRequests}</span>
               </div>
             )}
           </div>

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { isFulfilled, merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
@@ -40,8 +40,8 @@ const { $: $list, request } = createDataSource({
         fetchEvidenceSummary(evidence.value, chain.chainId, 'en', githubHandle, evidencePeriodStart),
       ]).then(([contentResponse, summaryResponse]) => {
         return [
-          contentResponse.status === 'fulfilled' ? contentResponse.value : '',
-          summaryResponse.status === 'fulfilled' ? summaryResponse.value : null,
+          isFulfilled(contentResponse) ? contentResponse.value : '',
+          isFulfilled(summaryResponse) ? summaryResponse.value : null,
         ] as const;
       });
 
@@ -51,11 +51,11 @@ const { $: $list, request } = createDataSource({
         cid: evidenceService.getCidByEvidence(evidence.value),
         hash: evidence.value,
         content,
-        summary: evidenceSummary?.summary || '',
+        summary: evidenceSummary?.summary ?? '',
         githubInfo: evidenceSummary
           ? {
-              pullRequests: evidenceSummary?.numberOfPullRequests ?? null,
-              mergedPullRequests: evidenceSummary?.numberOfMergedPullRequests ?? null,
+              pullRequests: evidenceSummary.numberOfPullRequests ?? null,
+              mergedPullRequests: evidenceSummary.numberOfMergedPullRequests ?? null,
             }
           : null,
       };
