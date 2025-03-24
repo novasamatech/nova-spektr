@@ -115,5 +115,6 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 
 fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
   const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
+
   return leftToPromotionPeriod === 0 ? <DotIndicator /> : null;
 });

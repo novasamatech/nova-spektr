@@ -115,7 +115,7 @@ const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?
 
 const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean }>) => {
   return (
-    <Dialog.Trigger disabled={disabled} asChild>
+    <Dialog.Trigger asChild disabled={disabled}>
       {children}
     </Dialog.Trigger>
   );

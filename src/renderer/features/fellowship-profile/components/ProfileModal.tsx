@@ -20,6 +20,7 @@ export const profileInfoSlot = createSlot<{ member: Member }>();
 
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
+
   const featureInput = useUnit(fellowshipProfileFeature.input);
   const member = useUnit(profile.$member);
   const account = useUnit(profile.$account);
