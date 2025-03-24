@@ -512,6 +512,8 @@
           "title": "Feel ready for a promotion?"
         },
         "promotionVoting": {
+          "mergedPullRequests": "Merged",
+          "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
         "requestPayout": {

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { isFulfilled, merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
@@ -18,24 +18,32 @@ type EvidenceRequestParams = {
   api: ApiPromise;
   chain: Chain;
   accountId: AccountId;
+  githubHandle?: string;
+  evidencePeriodStart?: string | null; // Date string YYYY-MM-DD
 };
 
 const { $: $list, request } = createDataSource({
   initial: {} as EvidenceStore,
-  async fn({ palletType, api, chain, accountId }: EvidenceRequestParams): Promise<Evidence | null> {
+  async fn({
+    palletType,
+    api,
+    chain,
+    accountId,
+    githubHandle,
+    evidencePeriodStart,
+  }: EvidenceRequestParams): Promise<Evidence | null> {
     const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
 
     if (evidence) {
-      const [content, summary] = await Promise.allSettled([
+      const [content, evidenceSummary] = await Promise.allSettled([
         fetchEvidenceFromSubsquare(evidence.value),
-        fetchEvidenceSummary(evidence.value, chain.chainId, 'en'),
-      ]).then(
-        ([contentResponse, summaryResponse]) =>
-          [
-            contentResponse.status === 'fulfilled' ? contentResponse.value : '',
-            summaryResponse.status === 'fulfilled' ? summaryResponse.value : '',
-          ] as const,
-      );
+        fetchEvidenceSummary(evidence.value, chain.chainId, 'en', githubHandle, evidencePeriodStart),
+      ]).then(([contentResponse, summaryResponse]) => {
+        return [
+          isFulfilled(contentResponse) ? contentResponse.value : '',
+          isFulfilled(summaryResponse) ? summaryResponse.value : null,
+        ] as const;
+      });
 
       return {
         wish: evidence.wish,
@@ -43,7 +51,13 @@ const { $: $list, request } = createDataSource({
         cid: evidenceService.getCidByEvidence(evidence.value),
         hash: evidence.value,
         content,
-        summary,
+        summary: evidenceSummary?.summary ?? '',
+        github: evidenceSummary
+          ? {
+              pullRequests: evidenceSummary.numberOfPullRequests ?? null,
+              mergedPullRequests: evidenceSummary.numberOfMergedPullRequests ?? null,
+            }
+          : null,
       };
     }
 

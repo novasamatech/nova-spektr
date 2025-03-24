@@ -109,8 +109,8 @@ export const getExpectedBlockTime = (api: ApiPromise): BN => {
   return bnMin(ONE_DAY, DEFAULT_TIME);
 };
 
-export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: number, blockTime: number): number => {
-  return Date.now() - (currentBlock - neededBlock) * blockTime;
+export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: BlockHeight, blockTime: number): number => {
+  return Date.now() + (neededBlock - currentBlock) * blockTime;
 };
 
 export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
