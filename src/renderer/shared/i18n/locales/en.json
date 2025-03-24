@@ -556,7 +556,12 @@
       "summary": "Summary",
       "threshold": "Threshold",
       "title": "Vote on",
-      "voteImpact": "Vote impact:",
+      "voteImpact": {
+        "huge": "Huge",
+        "impact": "Vote impact:",
+        "minor": "Minor",
+        "moderate": "Moderate"
+      },
       "voted": "Voted:",
       "votingStatus": "Voting status"
     },

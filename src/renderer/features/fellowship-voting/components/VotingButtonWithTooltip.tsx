@@ -1,7 +1,7 @@
 import { type MouseEventHandler } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nullable } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { Tooltip } from '@/shared/ui-kit';
@@ -13,18 +13,29 @@ type Props = {
   checked?: boolean;
   disabled?: boolean;
   votes?: number | null;
+  voteImpact?: number;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onHighlight: (arg: 'aye' | 'nay' | null) => void;
 };
 
+function categorizeImpact(voteImpact: number): string {
+  if (voteImpact >= 60) {
+    return 'huge';
+  } else if (voteImpact <= 20) {
+    return 'minor';
+  }
+  return 'moderate';
+}
+
 export const VotingButtonWithTooltip = (args: Props) => {
   const { t } = useI18n();
 
-  const { voted, checked, disabled, votes, variant } = args;
+  const { voted, checked, disabled, votes, variant, voteImpact } = args;
 
-  if (checked || voted || disabled || !votes) return <FilledIconButton {...args} />;
+  if (checked || voted || disabled || nullable(votes) || nullable(voteImpact)) return <FilledIconButton {...args} />;
 
   const tooltipText = variant === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
+  const impact = categorizeImpact(voteImpact);
 
   return (
     <Tooltip>
@@ -39,7 +50,9 @@ export const VotingButtonWithTooltip = (args: Props) => {
             {tooltipText}: {t('fellowship.votingHistory.votes', { count: votes })}
           </span>
           <br />
-          <span>{t('fellowship.voting.voteImpact')}</span>
+          <span>
+            {t('fellowship.voting.voteImpact.impact')} {t(`fellowship.voting.voteImpact.${impact}`)}
+          </span>
         </p>
       </Tooltip.Content>
     </Tooltip>

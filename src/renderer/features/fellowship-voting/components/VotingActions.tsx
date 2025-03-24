@@ -7,6 +7,7 @@ import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { fellowshipReferendumDetails } from '@/features/fellowship-referendum-details';
+import { tasksService } from '@/features/fellowship-tasks';
 import { voting } from '../model/voting';
 import { votingStatus } from '../model/votingStatus';
 
@@ -33,21 +34,19 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
+  if (!currentMember) return null;
+
   const hasRequiredRank =
-    nonNullable(currentMember) &&
-    nonNullable(referendum) &&
-    trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
+    nonNullable(referendum) && trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
 
   const disabled = !canVote || !hasRequiredRank;
 
-  const votes =
-    currentMember &&
-    trackService.getVoteWeight({
-      pallet: 'fellowship',
-      rank: currentMember.rank,
-      maxRank,
-      track: referendum.track,
-    });
+  const memberVoteWeight = trackService.getVoteWeight({
+    pallet: 'fellowship',
+    rank: currentMember.rank,
+    maxRank,
+    track: referendum.track,
+  });
 
   const aye = () => {
     votingStatus.flow.open({ referendumId: referendum?.id });
@@ -73,6 +72,9 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
     }
   };
 
+  const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
+  const userVotesImpact = tasksService.getUserImportanceScore(totalReferendumVotes, memberVoteWeight) * 100;
+
   return (
     <Box gap={1}>
       <Box direction="row" gap={0.5}>
@@ -82,7 +84,8 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           disabled={disabled}
           voted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
-          votes={votes}
+          votes={memberVoteWeight}
+          voteImpact={userVotesImpact}
           onClick={nay}
           onHighlight={e => setHighlight(e)}
         />
@@ -92,7 +95,8 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           disabled={disabled}
           voted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
-          votes={votes}
+          votes={memberVoteWeight}
+          voteImpact={userVotesImpact}
           onClick={aye}
           onHighlight={e => setHighlight(e)}
         />
@@ -102,7 +106,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           referendum={referendum}
           pending={!!referendum}
           descriptionPosition="bottom"
-          votes={votes}
+          votes={memberVoteWeight}
           highlight={highlight}
         />
       </div>
