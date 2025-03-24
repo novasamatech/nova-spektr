@@ -13,7 +13,7 @@ export function fetchEvidenceSummary(
   chainId: ChainId,
   languageIsoCode: string,
   githubHandle?: string,
-  evidencePeriodStart?: string,
+  evidencePeriodStart?: string | null,
 ) {
   const schema = z.object({
     summary: z.string(),

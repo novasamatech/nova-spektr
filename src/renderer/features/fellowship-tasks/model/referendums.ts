@@ -1,9 +1,18 @@
-import { attach, combine, createEvent, sample } from 'effector';
+import { format } from 'date-fns/format';
+import { attach, combine, sample } from 'effector';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { evidence, referendum, referendumMeta, referendumService, track, voting } from '@/domains/collectives';
+import {
+  evidence,
+  memberService,
+  referendum,
+  referendumMeta,
+  referendumService,
+  track,
+  voting,
+} from '@/domains/collectives';
 import { identity } from '@/domains/network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
@@ -11,10 +20,12 @@ import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 
-const requestEvidence = createEvent<AccountId>();
-const requestEvidenceIdentityInfo = attach({
-  source: fellowshipTasksFeature.input,
-  effect: async (input, { accountId, periodStart }: { accountId: AccountId; periodStart: string }) => {
+const requestEvidenceSummaryFx = attach({
+  source: combine({
+    input: fellowshipTasksFeature.input,
+    members: fellowship.$store.map(state => state?.members || []),
+  }),
+  effect: async ({ input, members }, { accountId, isPromotion }: { accountId: AccountId; isPromotion: boolean }) => {
     if (!input) return;
 
     const identityMap = await identity.request({
@@ -23,8 +34,19 @@ const requestEvidenceIdentityInfo = attach({
     });
 
     const accountIdentity = identityMap[accountId];
+    const member = members.find(m => m.accountId === accountId);
 
-    if (!accountIdentity) return;
+    if (!accountIdentity || !member) return;
+
+    let evidencePeriodStart: string | null = null;
+    console.log({ member, isCoreMember: memberService.isCoreMember(member) });
+    if (memberService.isCoreMember(member)) {
+      // const currentBlock = await getCurrentBlockNumber(input.api);
+      const periodStart = isPromotion
+        ? await getCreatedDateFromApi(member.lastPromotion || member.lastProof, input.api)
+        : await getCreatedDateFromApi(member.lastProof, input.api);
+      evidencePeriodStart = format(periodStart, 'dd/MM/yyyy');
+    }
 
     return evidence.request({
       palletType: input.palletType,
@@ -33,11 +55,10 @@ const requestEvidenceIdentityInfo = attach({
       accountId: accountId,
 
       githubHandle: accountIdentity.github,
-      evidencePeriodStart: periodStart,
+      evidencePeriodStart,
     });
   },
 });
-const requestEvidenceFx = attach({ effect: evidence.request });
 const requestVotesFx = attach({ effect: voting.request });
 
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
@@ -72,19 +93,6 @@ sample({
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, requestEvidence),
-  fn({ input, data: accountId }) {
-    return {
-      palletType: input.palletType,
-      api: input.api,
-      chain: input.chain,
-      accountId,
-    };
-  },
-  target: requestEvidenceFx,
-});
-
-sample({
   clock: fellowshipTasksFeature.running,
   target: referendum.subscribe,
 });
@@ -114,9 +122,8 @@ export const referendums = {
   $ongoing,
   $completed,
   $metadata,
-  $evidencePending: requestEvidenceFx.pending,
+  $evidencePending: requestEvidenceSummaryFx.pending,
 
   pending: referendum.pending,
-  requestEvidence,
-  requestEvidenceIdentityInfo,
+  requestEvidenceSummaryFx,
 };

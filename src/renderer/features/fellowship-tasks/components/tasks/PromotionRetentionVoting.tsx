@@ -4,12 +4,11 @@ import { useEffect } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
-import { fellowshipTasksFeature } from '../../model/feature';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
@@ -37,25 +36,13 @@ type Props = {
   onReferendumSelect(referendum: Referendum): void;
 };
 
-function extractPeriodStart(content: string) {
-  // Date is kept in md with following format: "Start date: YYYY/MM/DD" or "**Start date**: YYYY/MM/DD"
-  const startDateRegex = /\*{0,2}Start date\*{0,2}:\s*(\d{4}\/\d{2}\/\d{2})/;
-  // extract YYYY/MM/DD value
-  const periodStart = content.match(startDateRegex)?.[1];
-
-  // return DD/MM/YYYY
-  return periodStart?.replace(/^(\d{4})\/(\d{2})\/(\d{2})$/, '$3/$2/$1');
-}
-
 export const PromotionRetentionVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipTasksFeature.input);
   const allTacks = useUnit(tracks.$tracks);
   const evidencePending = useUnit(referendums.$evidencePending);
   const evidences = useUnit(evidenceInfo.$evidences);
 
-  const api = input?.api;
   const track = allTacks.find(t => t.id === referendum.track);
 
   const proposerAccountId = referendum.proposal?.type === 'Evidence' ? referendum.proposal.accountId : null;
@@ -64,25 +51,15 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
   const firstTag = tags.at(0);
   const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
-  useEffect(() => {
-    if (proposerAccountId) {
-      referendums.requestEvidence(proposerAccountId);
-    }
-  }, [proposerAccountId]);
+  const isRetentionTrack = track ? trackService.isRetentionTrack(track.id) : false;
+  const isPromotionTrack = track ? trackService.isPromotionTrack(track.id) : false;
 
   useEffect(() => {
-    if (evidence) {
-      referendums.requestEvidenceIdentityInfo({
-        accountId: evidence.accountId,
-        periodStart: extractPeriodStart(evidence.content) || '', // ToDo: should we apply a default date as a fallback?
-      });
-    }
-  }, [evidence?.accountId]);
-
-  if (nullable(track) || nullable(api)) return null;
-
-  const isRetentionTrack = trackService.isRetentionTrack(track.id);
-  const isPromotionTrack = trackService.isPromotionTrack(track.id);
+    referendums.requestEvidenceSummaryFx({
+      accountId: proposerAccountId as AccountId,
+      isPromotion: isPromotionTrack,
+    });
+  }, [proposerAccountId, isPromotionTrack]);
 
   let title = t('fellowship.tasks.task.anyReferendum.title');
 

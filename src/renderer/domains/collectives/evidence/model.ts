@@ -19,12 +19,19 @@ type EvidenceRequestParams = {
   chain: Chain;
   accountId: AccountId;
   githubHandle?: string;
-  evidencePeriodStart?: string; // Date string YYYY-MM-DD
+  evidencePeriodStart?: string | null; // Date string YYYY-MM-DD
 };
 
 const { $: $list, request } = createDataSource({
   initial: {} as EvidenceStore,
-  async fn({ palletType, api, chain, accountId, githubHandle, evidencePeriodStart }: EvidenceRequestParams): Promise<Evidence | null> {
+  async fn({
+    palletType,
+    api,
+    chain,
+    accountId,
+    githubHandle,
+    evidencePeriodStart,
+  }: EvidenceRequestParams): Promise<Evidence | null> {
     const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
 
     if (evidence) {
