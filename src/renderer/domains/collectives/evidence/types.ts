@@ -9,7 +9,7 @@ export type Evidence = {
   cid: string;
   content: string;
   summary: string;
-  githubInfo?: {
+  github?: {
     pullRequests: number | null;
     mergedPullRequests: number | null;
   } | null;

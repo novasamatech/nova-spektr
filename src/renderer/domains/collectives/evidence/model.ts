@@ -52,7 +52,7 @@ const { $: $list, request } = createDataSource({
         hash: evidence.value,
         content,
         summary: evidenceSummary?.summary ?? '',
-        githubInfo: evidenceSummary
+        github: evidenceSummary
           ? {
               pullRequests: evidenceSummary.numberOfPullRequests ?? null,
               mergedPullRequests: evidenceSummary.numberOfMergedPullRequests ?? null,

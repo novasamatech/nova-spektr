@@ -27,11 +27,8 @@ const requestEvidenceSummaryFx = attach({
     const accountIdentity = identityMap[accountId];
     const member = members.find(m => m.accountId === accountId);
 
-    if (!accountIdentity || !member) return;
-
     let evidencePeriodStart: string | null = null;
-    if (memberService.isCoreMember(member)) {
-      // const currentBlock = await getCurrentBlockNumber(input.api);
+    if (member && memberService.isCoreMember(member)) {
       const periodStart = isPromotion
         ? await getCreatedDateFromApi(member.lastPromotion || member.lastProof, input.api)
         : await getCreatedDateFromApi(member.lastProof, input.api);
@@ -44,7 +41,7 @@ const requestEvidenceSummaryFx = attach({
       chain: input.chain,
       accountId: accountId,
 
-      githubHandle: accountIdentity.github,
+      githubHandle: accountIdentity?.github,
       evidencePeriodStart,
     });
   },
