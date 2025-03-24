@@ -2,9 +2,10 @@ import { useStoreMap } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { Box, Label } from '@/shared/ui-kit';
 import { type CompletedReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
+import { votes } from '../../model/voting';
 
 type Props = {
   referendum: CompletedReferendum;
@@ -19,10 +20,16 @@ export const CompletedReferendumVoting = ({ referendum, onReferendumSelect }: Pr
     keys: [referendum.id],
     fn: (meta, [id]) => meta[id] ?? null,
   });
+  const vote = useStoreMap({
+    store: votes.$memberVotes,
+    keys: [referendum.id],
+    fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
+  });
 
   return (
     <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
-      <Box fillContainer padding={4} gap={5}>
+      <Box direction="row" fillContainer padding={4} gap={3}>
+        {vote ? <Label variant="gray">{t('governance.voted')}</Label> : null}
         <SmallTitleText>
           {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
         </SmallTitleText>
