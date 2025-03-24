@@ -1,3 +1,3 @@
 export const ERROR = {
-  networkDisabled: 'Network disabled',
+  NETWORK_DISABLED: 'Network disabled',
 };

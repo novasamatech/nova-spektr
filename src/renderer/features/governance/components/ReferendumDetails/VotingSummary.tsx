@@ -14,9 +14,9 @@ type Props = {
 };
 
 export const VotingSummary = ({ referendum, chain, asset }: Props) => {
-  useGate(votingSummaryModel.gates.flow, { referendum, chain });
-
   const { t } = useI18n();
+
+  useGate(votingSummaryModel.gates.flow, { referendum, chain });
 
   const votingSummary = useStoreMap({
     store: votingSummaryModel.$votingSummary,

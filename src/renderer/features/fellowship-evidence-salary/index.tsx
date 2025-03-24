@@ -43,12 +43,14 @@ fellowshipSalaryFeature.inject(requestSalaryActionSlot, () => {
 
   if (canSaveToBasket) {
     return (
-      <Button onClick={() => salaryRequest.saveToBasket()}>{t('fellowship.tasks.task.requestSalary.request')}</Button>
+      <Button size="sm" onClick={() => salaryRequest.saveToBasket()}>
+        {t('fellowship.tasks.task.requestSalary.request')}
+      </Button>
     );
   } else {
     return (
       <SalaryRegisterModal>
-        <Button>{t('fellowship.tasks.task.requestSalary.request')}</Button>
+        <Button size="sm">{t('fellowship.tasks.task.requestSalary.request')}</Button>
       </SalaryRegisterModal>
     );
   }
@@ -61,14 +63,14 @@ fellowshipSalaryFeature.inject(requestSalaryInductActionSlot, () => {
 
   if (canSaveToBasket) {
     return (
-      <Button onClick={() => salaryInduct.saveToBasket()}>
+      <Button size="sm" onClick={() => salaryInduct.saveToBasket()}>
         {t('fellowship.tasks.task.requestSalaryInduct.request')}
       </Button>
     );
   } else {
     return (
       <SalaryInductModal>
-        <Button>{t('fellowship.tasks.task.requestSalaryInduct.request')}</Button>
+        <Button size="sm">{t('fellowship.tasks.task.requestSalaryInduct.request')}</Button>
       </SalaryInductModal>
     );
   }
@@ -81,12 +83,14 @@ fellowshipSalaryFeature.inject(payoutSalaryActionSlot, () => {
 
   if (canSaveToBasket) {
     return (
-      <Button onClick={() => salaryPayout.saveToBasket()}>{t('fellowship.tasks.task.requestPayout.request')}</Button>
+      <Button size="sm" onClick={() => salaryPayout.saveToBasket()}>
+        {t('fellowship.tasks.task.requestPayout.request')}
+      </Button>
     );
   } else {
     return (
       <SalaryRegisterModal>
-        <Button>{t('fellowship.tasks.task.requestPayout.request')}</Button>
+        <Button size="sm">{t('fellowship.tasks.task.requestPayout.request')}</Button>
       </SalaryRegisterModal>
     );
   }
@@ -96,7 +100,7 @@ fellowshipSalaryFeature.inject(requestPromotionActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Promotion">
-      <Button>{t('fellowship.tasks.task.promotion.request')}</Button>
+      <Button size="sm">{t('fellowship.tasks.task.promotion.request')}</Button>
     </EvidencePostFlowModal>
   );
 });
@@ -105,7 +109,7 @@ fellowshipSalaryFeature.inject(requestRetentionActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Retention">
-      <Button>{t('fellowship.tasks.task.retention.request')}</Button>
+      <Button size="sm">{t('fellowship.tasks.task.retention.request')}</Button>
     </EvidencePostFlowModal>
   );
 });
@@ -116,6 +120,7 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 
 fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
   const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
+
   return leftToPromotionPeriod === 0 ? <DotIndicator /> : null;
 });
 

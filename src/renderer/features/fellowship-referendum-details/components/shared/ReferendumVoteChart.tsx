@@ -5,7 +5,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
-import { DynamicVoteChart, VoteChart } from '@/shared/ui-entities';
+import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
 import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
@@ -34,7 +34,7 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, pending, descripti
     if (pending) {
       return (
         <Skeleton active fullWidth>
-          <VoteChart value={0} disabled />
+          <DynamicVoteChart value={0} disabled />
         </Skeleton>
       );
     } else {

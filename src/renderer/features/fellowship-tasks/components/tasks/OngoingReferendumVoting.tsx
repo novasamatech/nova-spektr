@@ -3,7 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Separator, SmallTitleText } from '@/shared/ui';
+import { SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
@@ -46,16 +46,15 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
 
   return (
     <Box direction="row" gap={5} padding={4}>
-      <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
-        <Box fillContainer gap={3} grow={1}>
-          <SmallTitleText>
+      <button className="block w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
+        <Box direction="row" fillContainer gap={3} grow={1}>
+          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+          <SmallTitleText className="truncate">
             {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
           </SmallTitleText>
-          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
         </Box>
       </button>
-      <Separator vertical />
-      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
+      <Box alignSelf="flex-end" shrink={0}>
         <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>

@@ -4,8 +4,9 @@ import { useEffect } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
+import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { FootnoteText, Markdown, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
@@ -74,12 +75,15 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
     <Box direction="row" gap={5} padding={4}>
       <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
         <Box fillContainer gap={3} grow={1}>
-          <SmallTitleText>{title}</SmallTitleText>
+          <Box direction="row" gap={3}>
+            {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+            <SmallTitleText className="truncate">{title}</SmallTitleText>
+          </Box>
           {!evidence?.summary && evidencePending && <Skeleton height="2em" width="85%" />}
           <FootnoteText>
             <Markdown>{evidence?.summary ?? ''}</Markdown>
           </FootnoteText>
-          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+
           <div className="flex gap-16 text-left">
             {evidence?.githubInfo?.pullRequests && (
               <div className="w-15">
@@ -102,8 +106,7 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
           </div>
         </Box>
       </button>
-      <Separator vertical />
-      <Box verticalAlign="center" horizontalAlign="space-between" shrink={0}>
+      <Box alignSelf="flex-end" shrink={0}>
         <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>

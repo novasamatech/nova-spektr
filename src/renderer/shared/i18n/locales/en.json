@@ -344,9 +344,14 @@
     "fellow_other": "{ count } Fellows",
     "members": {
       "active": "Active",
+      "activity": "Activity",
+      "agreement": "Agreement",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
-      "modalTitle": "Fellowship members"
+      "modalTitle": "Fellowship members",
+      "myProfile": "My profile",
+      "toNextRank": "To next rank",
+      "viewDetails": "View details"
     },
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
@@ -512,16 +517,16 @@
           "title": "Review promotion evidence"
         },
         "requestPayout": {
-          "description": "Your current earnings are {salary}. Don’t forget to get your salary by {endDate} to receive your funds on time.",
-          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
           "request": "Withdraw",
-          "title": "Withdraw your salary"
+          "title": "Withdraw your salary",
+          "until": "Submit until {date}"
         },
         "requestSalary": {
-          "description": "Your current earnings are {salary}. Don’t forget to submit your request by {endDate} to receive your payout on time.",
-          "left": "Left: <duration/>",
+          "description": "Your current earnings are {salary}. Don’t forget to submit your request on time to receive your payout on time.",
           "request": "Request",
-          "title": "Request your salary"
+          "title": "Request your salary",
+          "until": "Submit until {date}"
         },
         "requestSalaryInduct": {
           "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
@@ -529,7 +534,7 @@
           "title": "Activate your payments"
         },
         "retention": {
-          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months. Your submission will be reviewed by other members, who will determine if you qualify to retain this Rank. Please ensure your evidence is submitted by 29.11.2024.",
+          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
           "request": "Submit",
           "title": "Submit your retention evidence"
         },
@@ -558,7 +563,12 @@
       "summary": "Summary",
       "threshold": "Threshold",
       "title": "Vote on",
-      "voteImpact": "Vote impact:",
+      "voteImpact": {
+        "huge": "Huge",
+        "impact": "Vote impact:",
+        "minor": "Minor",
+        "moderate": "Moderate"
+      },
       "voted": "Voted:",
       "votingStatus": "Voting status"
     },
@@ -566,14 +576,15 @@
       "emptyList": "There is no vote history",
       "modalTitle": "Vote history",
       "showHistoryButton": "View vote history",
-      "votes_one": "{count} vote",
-      "votes_other": "{count} votes",
+      "votes_one": "{ count } vote",
+      "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
   "general": {
     "actions": {
-      "multiply": "{value} × {multiplier}"
+      "duration": "<balance /> for { duration } days",
+      "multiply": "<balance /> × { multiplier }x"
     },
     "button": {
       "applyButton": "Apply",
@@ -627,8 +638,6 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
-      "amountMultiply": "Amount & Multiply",
-      "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
@@ -664,6 +673,8 @@
         "treasury": "Treasury"
       },
       "invalidAddressError": "Invalid address",
+      "lockedAmount": "Locked amount",
+      "lockedLabel": "Locked amount",
       "manyAccountsPlaceholder": "Select accounts",
       "maxWeightError": "Max transaction weight reached",
       "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
@@ -682,9 +693,9 @@
         "accountLabel": "Account",
         "acrossTracks_one": "Across { count } track",
         "acrossTracks_other": "Across { count } tracks",
-        "amountLabel": "Amount",
-        "delegateSummary": "Delegate summary",
         "delegateVoted": "Delegate voted:",
+        "delegatedLabel": "Delegated",
+        "delegationSummary": "Delegation summary",
         "listEmptyState": "Nothing was found"
       },
       "title": "Add delegation on",
@@ -735,7 +746,6 @@
       "votedAllTime": "Voted for all time",
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
-      "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourAccountError": "You cannot delegate to the same account"
@@ -936,6 +946,10 @@
     "votedAyeBy": "AYE <amount/> via <delegate/>",
     "votedAyeByDelegates": "AYE <amount/> via delegates",
     "votedByDelegates": "Voted via delegates",
+    "votedConvictedAye": "AYE <amount/> × { multiplier }x",
+    "votedConvictedAyeBy": "AYE <amount/> × { multiplier }x via <delegate/>",
+    "votedConvictedNay": "NAY <amount/> × { multiplier }x",
+    "votedConvictedNayBy": "NAY <amount/> × { multiplier }x via <delegate/>",
     "votedNay": "NAY <amount/>",
     "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedNayByDelegates": "NAY <amount/> via delegates",

@@ -21,7 +21,7 @@ export const DelegateDetails = () => {
   const delegate = useUnit(delegateDetailsModel.$delegate);
 
   return (
-    <Modal isOpen={isOpen} size="full" height="fit" onToggle={() => delegateDetailsModel.events.closeModal()}>
+    <Modal isOpen={isOpen} size="xl" height="full" onToggle={() => delegateDetailsModel.events.closeModal()}>
       <Modal.Title close>{t('governance.addDelegation.delegateTitle')}</Modal.Title>
       <Modal.Content>
         <div className="flex min-h-[678px] items-start gap-4 rounded-lg bg-main-app-background px-6 py-6">

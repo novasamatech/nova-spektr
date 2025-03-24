@@ -2,7 +2,7 @@ import { format } from 'date-fns/format';
 import { attach, combine, sample } from 'effector';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   evidence,
@@ -11,14 +11,12 @@ import {
   referendumMeta,
   referendumService,
   track,
-  voting,
 } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
-import { memberProfile } from './memberProfile';
 
 const requestEvidenceSummaryFx = attach({
   source: combine({
@@ -59,37 +57,15 @@ const requestEvidenceSummaryFx = attach({
     });
   },
 });
-const requestVotesFx = attach({ effect: voting.request });
 
-const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $completed = $referendums.map(referendumService.getCompletedReferendums);
 
-const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
-  if (nullable(member)) return [];
-  return voting.filter(v => v.accountId === member.accountId);
-});
-
 sample({
   clock: fellowshipTasksFeature.running,
   target: [track.request],
-});
-
-sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, $ongoing),
-  filter({ data: referendums }) {
-    return referendums.length > 0;
-  },
-  fn({ input, data }) {
-    return {
-      palletType: input.palletType,
-      chainId: input.chainId,
-      referendums: data.map(r => r.id),
-    };
-  },
-  target: requestVotesFx,
 });
 
 sample({
@@ -118,7 +94,6 @@ sample({
 });
 
 export const referendums = {
-  $memberVoting: $memberVotes,
   $ongoing,
   $completed,
   $metadata,

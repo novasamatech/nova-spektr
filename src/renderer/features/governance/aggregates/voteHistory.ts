@@ -36,26 +36,22 @@ const $voteHistory = combine(
   ({ history, proposers, chainId }) => {
     if (!chainId) return {};
 
-    const acc: Record<ReferendumId, AggregatedVoteHistory[]> = {};
+    const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
     for (const [referendumId, historyList] of Object.entries(history)) {
-      acc[referendumId] = historyList
-        .flatMap((vote) => {
-          const proposer = proposers[vote.voter] ?? null;
+      const aggregatedHistory = historyList.flatMap((vote) => {
+        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
-          const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+        return splitVotes.map((vote) => ({
+          ...vote,
+          name: proposers[vote.voter]?.parent.name ?? null,
+        }));
+      });
 
-          return splitVotes.map((vote) => {
-            return {
-              ...vote,
-              name: proposer ? proposer.parent.name : null,
-            };
-          });
-        })
-        .sort(votingPowerSorting);
+      result[referendumId] = aggregatedHistory.sort(votingPowerSorting);
     }
 
-    return acc;
+    return result;
   },
 );
 

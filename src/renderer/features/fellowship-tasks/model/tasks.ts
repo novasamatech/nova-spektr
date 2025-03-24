@@ -92,7 +92,7 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_request',
-          weight: 2,
+          weight: 0,
           group: 'personal',
           body: RequestSalary,
           meta: { transaction: operations['salary_request'] ?? null, tags: [] },
@@ -104,7 +104,7 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_payout',
-          weight: 2,
+          weight: 0,
           group: 'personal',
           body: RequestPayout,
           meta: { transaction: operations['salary_payout'] ?? null, tags: [] },
@@ -116,7 +116,7 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_induct',
-          weight: 2,
+          weight: 0,
           group: 'personal',
           body: RequestSalaryInduct,
           meta: { transaction: operations['salary_induct'] ?? null, tags: [] },
@@ -153,7 +153,7 @@ const $evidenceTasks = combine(
       return [
         {
           id: 'evidence',
-          weight: 0,
+          weight: 1,
           group: 'personal',
           body: RequestRetention,
           meta: { transaction: operations['evidence'] ?? null, tags: [] },
@@ -161,11 +161,16 @@ const $evidenceTasks = combine(
       ];
     }
 
-    if (nonNullable(leftToPromotion) && leftToPromotion === 0 && hasPromotionEvidence === false) {
+    if (
+      memberService.canPromote(member) &&
+      nonNullable(leftToPromotion) &&
+      leftToPromotion === 0 &&
+      hasPromotionEvidence === false
+    ) {
       return [
         {
           id: 'evidence',
-          weight: 0,
+          weight: 1,
           group: 'personal',
           body: RequestPromotion,
           meta: { transaction: operations['evidence'] ?? null, tags: [] },
@@ -251,7 +256,7 @@ const $completedReferendumsTasks = combine(referendums.$completed, referendums =
   return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
     return {
       id: `referendum_completed_${referendum.id}`,
-      weight: 1,
+      weight: 0,
       group: 'completed',
       body: CompletedReferendumVoting,
       meta: { referendum, transaction: null, tags: [] },

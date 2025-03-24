@@ -36,7 +36,7 @@ const openSummaryModal = createEvent();
 
 const $isModalOpen = createStore(false);
 const $delegations = createStore<Record<ChainId, Record<Address, Delegation[]>>>({});
-const $referedumsList = createStore<Record<ChainId, Record<Address, VotedReferendum[]>>>({});
+const $referendumsList = createStore<Record<ChainId, Record<Address, VotedReferendum[]>>>({});
 const $votedReferendumsMonth = createStore<VotedReferendum[]>([]);
 
 const closeModal = $isModalOpen.reinit;
@@ -70,9 +70,10 @@ sample({
     chain: delegateDetailsModel.$chain,
   },
   filter: ({ delegate, chain }) => nonNullable(delegate) && nonNullable(chain),
-  fn: ({ delegate, chain }) => {
-    return { accountId: delegate!.accountId, chain: chain! };
-  },
+  fn: ({ delegate, chain }) => ({
+    accountId: delegate!.accountId,
+    chain: chain!,
+  }),
   target: [getDelegatesFx, getReferendumsForVoterFx],
 });
 
@@ -92,10 +93,10 @@ sample({
   clock: getReferendumsForVoterFx.done,
   source: {
     currentReferendums: $currentReferendums,
-    referedumsList: $referedumsList,
+    referendumsList: $referendumsList,
   },
   filter: (_, { result }) => nonNullable(result),
-  fn: ({ currentReferendums, referedumsList }, { params, result }) => {
+  fn: ({ currentReferendums, referendumsList }, { params, result }) => {
     const referendums: VotedReferendum[] = [];
 
     for (const ref of currentReferendums) {
@@ -133,9 +134,9 @@ sample({
       });
     }
 
-    return setNestedValue(referedumsList, params.chain.chainId, params.accountId, referendums);
+    return setNestedValue(referendumsList, params.chain.chainId, params.accountId, referendums);
   },
-  target: $referedumsList,
+  target: $referendumsList,
 });
 
 const $currentDelegations = combine(
@@ -155,7 +156,7 @@ const $currentDelegations = combine(
 
 const $votedReferendums = combine(
   {
-    referendumsList: $referedumsList,
+    referendumsList: $referendumsList,
     chain: delegateDetailsModel.$chain,
     delegate: delegateDetailsModel.$delegate,
   },

@@ -32,12 +32,7 @@ export const DelegateActivity = () => {
       <DetailRow
         label={<FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>}
       >
-        <AssetBalance
-          showSymbol={false}
-          value={delegate.delegatorVotes?.toString() || '0'}
-          asset={chain?.assets[0]}
-          className="text-footnote"
-        />
+        <AssetBalance className="text-footnote" value={delegate.delegatorVotes || '0'} asset={chain?.assets[0]} />
       </DetailRow>
 
       <DetailRow

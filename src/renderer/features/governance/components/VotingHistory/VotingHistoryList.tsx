@@ -1,11 +1,12 @@
 import { memo, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { formatAsset, performSearch, toAccountId } from '@/shared/lib/utils';
+import { performSearch } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
+import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
@@ -21,6 +22,7 @@ type Props = {
 
 export const VotingHistoryList = memo(({ items, asset, listName, chain, loading }: Props) => {
   const { t } = useI18n();
+
   const [query, setQuery] = useState<string>('');
 
   const filteredItems = useMemo(
@@ -66,22 +68,34 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           )}
 
           {shouldRenderList &&
-            deferredItems.map(({ voter, balance, votingPower, conviction, name }) => {
+            deferredItems.map(({ voter, balance, conviction, votingPower, name }) => {
               return (
-                <div key={`${voter}-${balance.toString()}-${conviction}`} className="flex gap-3 px-2 text-body">
-                  <div className="flex min-w-0 shrink grow items-center gap-1">
-                    <Address address={voter} title={name ?? ''} variant="truncate" showIcon />
-                    <AccountExplorers accountId={toAccountId(voter)} chain={chain} />
-                  </div>
-                  <div className="flex shrink-0 basis-28 flex-col items-end gap-0.5">
-                    <AssetBalance value={votingPower} asset={asset} />
-                    <FootnoteText className="whitespace-nowrap text-text-tertiary">
-                      {t('general.actions.multiply', {
-                        value: formatAsset(balance, asset),
-                        multiplier: conviction,
-                      })}
+                <div
+                  key={`${voter}-${balance.toString()}-${conviction}`}
+                  className="grid h-11 grid-cols-[224px,1fr] items-center gap-x-3 px-2"
+                >
+                  <Account
+                    hideAddress
+                    iconSize={20}
+                    title={name ?? ''}
+                    accountId={voter}
+                    chain={chain}
+                    variant="truncate"
+                  />
+
+                  <Box direction="column" horizontalAlign="end">
+                    <FootnoteText>
+                      <Trans
+                        t={t}
+                        i18nKey="general.actions.multiply"
+                        values={{ multiplier: conviction }}
+                        components={{
+                          balance: <AssetBalance className="text-footnote" value={balance} asset={asset} />,
+                        }}
+                      />
                     </FootnoteText>
-                  </div>
+                    <AssetBalance className="text-footnote text-text-tertiary" asset={asset} value={votingPower} />
+                  </Box>
                 </div>
               );
             })}

@@ -117,8 +117,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
             onChange={amount.onChange}
           />
           <ConvictionSelect
-            value={conviction.value}
             asset={asset}
+            conviction={conviction.value}
             amount={amount.value || BN_ZERO}
             onChange={conviction.onChange}
           />

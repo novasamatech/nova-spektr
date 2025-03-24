@@ -232,13 +232,16 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
   return coreTxs.map((tx: Transaction) => tx.args.track?.toString());
 };
 
-export const getUndelegationData = async (
+export const getUndelegationData = (
   api: ApiPromise,
   tx: MultisigTransaction,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
   const coreTxDelegate = getCoreTx(tx);
+  const emptyResult = { votes: undefined, target: undefined };
 
-  if (!coreTxDelegate || !api) return { votes: undefined, target: undefined };
+  if (!coreTxDelegate || !api) {
+    return Promise.resolve(emptyResult);
+  }
 
   let coreTx;
 
@@ -248,17 +251,20 @@ export const getUndelegationData = async (
     coreTx = coreTxDelegate;
   }
 
-  if (!coreTx) return { votes: undefined, target: undefined };
+  if (!coreTx) {
+    return Promise.resolve(emptyResult);
+  }
 
-  const votes = await convictionVotingPallet.storage.votingFor(api, [[coreTx.address, coreTx.args.track]]);
+  return convictionVotingPallet.storage.votingFor(api, [[coreTx.address, coreTx.args.track]]).then((votes) => {
+    const delegation = votes.find((vote) => vote.type === 'Delegating');
 
-  const delegation = votes.find((vote) => vote.type === 'Delegating');
+    if (!delegation) return emptyResult;
 
-  return {
-    votes:
-      delegation && votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
-    target: delegation && toAddress(delegation.data.target),
-  };
+    return {
+      votes: votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
+      target: toAddress(delegation.data.target),
+    };
+  });
 };
 
 export const getReferendumId = (tx: MultisigTransaction): string | undefined => {
