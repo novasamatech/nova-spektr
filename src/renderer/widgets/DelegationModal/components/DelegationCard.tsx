@@ -30,21 +30,21 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
 
           <div className="grid grid-cols-[1fr,100px,128px] gap-x-5">
             <div className="flex flex-col gap-1">
-              <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.votes')}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.card.votes')}</FootnoteText>
               <BodyText>
-                <AssetBalance value={delegate.delegatorVotes?.toString() || '0'} asset={asset} />
+                <AssetBalance value={delegate.delegatorVotes || '0'} asset={asset} />
               </BodyText>
             </div>
 
             <div className="flex flex-col gap-1 divide-divider border-l pl-5">
-              <FootnoteText className="text-text-secondary">
+              <FootnoteText className="text-text-tertiary">
                 {t('governance.addDelegation.card.delegations')}
               </FootnoteText>
               <BodyText>{delegate.delegators || '0'}</BodyText>
             </div>
 
             <div className="flex flex-col gap-1 divide-divider border-l pl-5">
-              <FootnoteText className="text-text-secondary">{t('governance.addDelegation.card.voted')}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.card.voted')}</FootnoteText>
               <BodyText>{delegate.delegateVotesMonth || '0'}</BodyText>
             </div>
           </div>

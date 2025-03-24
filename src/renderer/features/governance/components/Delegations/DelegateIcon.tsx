@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const DelegateIcon = ({ delegate, className }: Props) => {
-  if (!delegate.name) return <Identicon address={delegate.accountId} size={46} />;
+  if (!delegate.name) return <Identicon background={false} address={delegate.accountId} size={46} />;
 
   if (isDefaultImage(delegate.image)) {
     return (

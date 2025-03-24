@@ -1,14 +1,13 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
-import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
-import { Button, DetailRow, FootnoteText, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
-import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails, votingService } from '@/entities/governance';
+import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
@@ -34,6 +33,7 @@ export const Confirmation = ({
   config = { withFormatAmount: true },
 }: Props) => {
   const { t } = useI18n();
+
   const wallets = useUnit(walletModel.$wallets);
 
   const confirmStore = useStoreMap({
@@ -76,43 +76,15 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
     : confirmStore.balance;
 
-  const convictionValue = votingService.getConvictionMultiplier(confirmStore.conviction);
-  const votesValue = votingService.calculateVotingPower(new BN(amountValue), confirmStore.conviction);
-
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="revokeDelegationConfirm" size={60} />
 
-        <div className="flex flex-col items-center gap-y-1">
-          <LargeTitleText as="p">
-            {'-'}
-            <AssetBalance
-              className="text-large-title text-text-primary"
-              value={votesValue}
-              asset={confirmStore.asset}
-            />
-          </LargeTitleText>
-
-          <HeadlineText className="text-text-tertiary">
-            <Trans
-              t={t}
-              i18nKey="governance.addDelegation.balanceValue"
-              values={{
-                conviction: convictionValue,
-              }}
-              components={{
-                balance: (
-                  <AssetBalance
-                    value={amountValue}
-                    asset={confirmStore.asset}
-                    className="text-headline text-text-tertiary"
-                  />
-                ),
-              }}
-            />
-          </HeadlineText>
-        </div>
+        <LargeTitleText as="p" className="font-manrope">
+          {'-'}
+          <AssetBalance className="text-large-title" value={amountValue} asset={confirmStore.asset} />
+        </LargeTitleText>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />

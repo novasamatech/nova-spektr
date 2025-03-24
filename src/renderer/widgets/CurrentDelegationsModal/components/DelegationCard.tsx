@@ -1,13 +1,15 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { useMemo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Asset, type Conviction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { BodyText, FootnoteText } from '@/shared/ui';
+import { BodyText, DetailRow, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { votingService } from '@/entities/governance';
+import { Box } from '@/shared/ui-kit';
+import { locksService } from '@/entities/governance';
 import { DelegateName } from '@/features/governance';
 
 type Props = {
@@ -23,53 +25,40 @@ type Props = {
 export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) => {
   const { t } = useI18n();
 
-  const { totalVotes, totalVotingPower } = useMemo(() => {
-    const result = {
-      totalVotes: BN_ZERO,
-      totalVotingPower: BN_ZERO,
-    };
-
-    for (const { balance, conviction } of votes) {
-      result.totalVotes = result.totalVotes.add(balance);
-      result.totalVotingPower = result.totalVotingPower.add(votingService.calculateVotingPower(balance, conviction));
-    }
-
-    return result;
+  const totalVotes = useMemo(() => {
+    return votes.reduce((acc, { balance }) => acc.add(balance), BN_ZERO);
   }, [votes.length]);
 
   return (
     <button
       className={cnTw(
-        'w-full rounded border border-container-border bg-white p-4 transition-shadow',
+        'w-full rounded border border-container-border bg-white transition-shadow',
         'shadow-shadow-1 hover:shadow-shadow-2 focus:shadow-shadow-2',
       )}
       onClick={onClick}
     >
-      <div className="flex flex-col gap-4">
+      <Box direction="column" gap={4} padding={4}>
         <DelegateName delegate={delegate} titleClassName="max-w-[200px]" />
-        <div className="flex flex-col gap-2.5">
-          <FootnoteText>{delegate.shortDescription}</FootnoteText>
+        <FootnoteText>{delegate.shortDescription}</FootnoteText>
+      </Box>
 
-          <div className="grid grid-cols-2">
-            <div className="flex flex-col gap-1">
-              <FootnoteText className="text-text-secondary">
-                {t('governance.addDelegation.card.lockedAmount')}
-              </FootnoteText>
-              <BodyText>
-                <AssetBalance value={totalVotes} asset={asset} />
-              </BodyText>
-            </div>
+      <div className="flex flex-col gap-4 divide-divider border-t p-3">
+        <DetailRow label={t('governance.addDelegation.card.lockedAmount')}>
+          {votes.length > 1 && <AssetBalance value={totalVotes} asset={asset} />}
 
-            <div className="flex flex-col gap-1 divide-divider border-l pl-5">
-              <FootnoteText className="text-text-secondary">
-                {t('governance.addDelegation.card.votingPower')}
-              </FootnoteText>
-              <BodyText>
-                <AssetBalance value={totalVotingPower} asset={asset} />
-              </BodyText>
-            </div>
-          </div>
-        </div>
+          {votes.length === 1 && (
+            <BodyText>
+              <Trans
+                t={t}
+                i18nKey="general.actions.duration"
+                values={{ duration: locksService.getLockPeriodsMultiplier(votes[0].conviction) }}
+                components={{
+                  balance: <AssetBalance value={totalVotes} asset={asset} />,
+                }}
+              />
+            </BodyText>
+          )}
+        </DetailRow>
       </div>
     </button>
   );
