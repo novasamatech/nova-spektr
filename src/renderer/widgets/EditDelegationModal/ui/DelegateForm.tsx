@@ -124,7 +124,7 @@ const Signatories = () => {
 
 const Conviction = () => {
   const {
-    fields: { conviction, amount, isUnchanged },
+    fields: { conviction, isUnchanged },
   } = useForm(formModel.$delegateForm);
   const network = useUnit(formModel.$networkStore);
 
@@ -132,15 +132,7 @@ const Conviction = () => {
     return null;
   }
 
-  return (
-    <ConvictionSelect
-      value={conviction.value}
-      asset={network.asset}
-      amount={new BN(formatAmount(amount.value, network.asset.precision))}
-      disabled={isUnchanged.value}
-      onChange={conviction.onChange}
-    />
-  );
+  return <ConvictionSelect conviction={conviction.value} disabled={isUnchanged.value} onChange={conviction.onChange} />;
 };
 
 const Amount = () => {

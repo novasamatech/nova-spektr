@@ -6,9 +6,10 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, IconButton, Plate } from '@/shared/ui';
-import { Box, Modal } from '@/shared/ui-kit';
+import { Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { detailsAggregate } from '../../aggregates/details';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { listService } from '../../lib/listService';
@@ -54,7 +55,7 @@ export const ReferendumDetailsModal = ({
 
   const canVote = useUnit(detailsAggregate.$canVote);
   const hasAccount = useUnit(detailsAggregate.$hasAccount);
-  const wallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const [showWalletVotes, toggleShowWalletVotes] = useToggle();
   const [showVoteHistory, toggleShowVoteHistory] = useToggle();
@@ -88,15 +89,17 @@ export const ReferendumDetailsModal = ({
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
               {(referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0) && (
                 <DetailsCard>
-                  <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
+                  <div className="grid grid-cols-[270px,auto] items-center justify-between gap-x-1">
                     <VotedBy
+                      direction="column"
                       asset={asset}
                       identity={identity}
                       delegates={referendum.votedByDelegates}
                       castingVotes={referendum.voting.votes}
+                      multiplier={walletUtils.isSingleShard(wallet)}
                     />
-                    <IconButton name="info" onClick={toggleShowWalletVotes} />
-                  </Box>
+                    <IconButton name="info" className="shrink-0" onClick={toggleShowWalletVotes} />
+                  </div>
                 </DetailsCard>
               )}
 

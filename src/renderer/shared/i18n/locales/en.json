@@ -569,14 +569,15 @@
       "emptyList": "There is no vote history",
       "modalTitle": "Vote history",
       "showHistoryButton": "View vote history",
-      "votes_one": "{count} vote",
-      "votes_other": "{count} votes",
+      "votes_one": "{ count } vote",
+      "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
   "general": {
     "actions": {
-      "multiply": "{value} × {multiplier}"
+      "duration": "<balance /> for { duration } days",
+      "multiply": "<balance /> × { multiplier }x"
     },
     "button": {
       "applyButton": "Apply",
@@ -630,8 +631,6 @@
         "title": "Are you a delegate?"
       },
       "alreadyDelegatedError": "Already delegated",
-      "amountMultiply": "Amount & Multiply",
-      "balanceValue": "<balance /> × {conviction}x",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
@@ -667,6 +666,8 @@
         "treasury": "Treasury"
       },
       "invalidAddressError": "Invalid address",
+      "lockedAmount": "Locked amount",
+      "lockedLabel": "Locked amount",
       "manyAccountsPlaceholder": "Select accounts",
       "maxWeightError": "Max transaction weight reached",
       "maxWeightErrorDescription": "Max transaction weight for this wallet type reached. Select fewer tracks or select wallet with another type.",
@@ -685,9 +686,9 @@
         "accountLabel": "Account",
         "acrossTracks_one": "Across { count } track",
         "acrossTracks_other": "Across { count } tracks",
-        "amountLabel": "Amount",
-        "delegateSummary": "Delegate summary",
         "delegateVoted": "Delegate voted:",
+        "delegatedLabel": "Delegated",
+        "delegationSummary": "Delegation summary",
         "listEmptyState": "Nothing was found"
       },
       "title": "Add delegation on",
@@ -738,7 +739,6 @@
       "votedAllTime": "Voted for all time",
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
-      "votesLabel": "Voting power",
       "votesValue": "<votes /> votes",
       "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
       "yourAccountError": "You cannot delegate to the same account"
@@ -939,6 +939,10 @@
     "votedAyeBy": "AYE <amount/> via <delegate/>",
     "votedAyeByDelegates": "AYE <amount/> via delegates",
     "votedByDelegates": "Voted via delegates",
+    "votedConvictedAye": "AYE <amount/> × { multiplier }x",
+    "votedConvictedAyeBy": "AYE <amount/> × { multiplier }x via <delegate/>",
+    "votedConvictedNay": "NAY <amount/> × { multiplier }x",
+    "votedConvictedNayBy": "NAY <amount/> × { multiplier }x via <delegate/>",
     "votedNay": "NAY <amount/>",
     "votedNayBy": "NAY <amount/> via <delegate/>",
     "votedNayByDelegates": "NAY <amount/> via delegates",
