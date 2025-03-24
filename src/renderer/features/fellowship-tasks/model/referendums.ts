@@ -4,14 +4,7 @@ import { attach, combine, sample } from 'effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { getCreatedDateFromApi, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import {
-  evidence,
-  memberService,
-  referendum,
-  referendumMeta,
-  referendumService,
-  track,
-} from '@/domains/collectives';
+import { evidence, memberService, referendum, referendumMeta, referendumService, track } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
@@ -37,7 +30,6 @@ const requestEvidenceSummaryFx = attach({
     if (!accountIdentity || !member) return;
 
     let evidencePeriodStart: string | null = null;
-    console.log({ member, isCoreMember: memberService.isCoreMember(member) });
     if (memberService.isCoreMember(member)) {
       // const currentBlock = await getCurrentBlockNumber(input.api);
       const periodStart = isPromotion
