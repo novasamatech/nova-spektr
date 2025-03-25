@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -10,7 +11,7 @@ import { tracks } from '../../model/tracks';
 
 export const requestPromotionActionSlot = createSlot();
 
-export const RequestPromotion = () => {
+export const RequestPromotion = memo(() => {
   const { t } = useI18n();
 
   const currentTrack = useUnit(tracks.$currentTrack);
@@ -34,4 +35,4 @@ export const RequestPromotion = () => {
       </Box>
     </Box>
   );
-};
+});

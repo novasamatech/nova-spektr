@@ -1,4 +1,5 @@
 import { useStoreMap } from 'effector-react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { SmallTitleText } from '@/shared/ui';
@@ -12,7 +13,7 @@ type Props = {
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const CompletedReferendumVoting = ({ referendum, onReferendumSelect }: Props) => {
+export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const meta = useStoreMap({
@@ -36,4 +37,4 @@ export const CompletedReferendumVoting = ({ referendum, onReferendumSelect }: Pr
       </Box>
     </button>
   );
-};
+});

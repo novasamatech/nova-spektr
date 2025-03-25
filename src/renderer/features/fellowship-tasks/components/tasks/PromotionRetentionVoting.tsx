@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
@@ -9,7 +9,6 @@ import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
-import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
 import { taskVotingActionSlot } from './OngoingReferendumVoting';
@@ -36,11 +35,11 @@ type Props = {
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const PromotionRetentionVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
+export const PromotionRetentionVoting = memo(({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const allTacks = useUnit(tracks.$tracks);
-  const evidencePending = useUnit(referendums.$evidencePending);
+  const evidencePending = useUnit(evidenceInfo.pending);
   const evidences = useUnit(evidenceInfo.$evidences);
 
   const track = allTacks.find(t => t.id === referendum.track);
@@ -55,14 +54,13 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
   const isPromotionTrack = track ? trackService.isPromotionTrack(track.id) : false;
 
   useEffect(() => {
-    referendums.requestEvidenceSummaryFx({
+    evidenceInfo.requestEvidenceSummaryFx({
       accountId: proposerAccountId as AccountId,
       isPromotion: isPromotionTrack,
     });
   }, [proposerAccountId, isPromotionTrack]);
 
   let title = t('fellowship.tasks.task.anyReferendum.title');
-
   if (isRetentionTrack) {
     title = t('fellowship.tasks.task.retentionVoting.title');
   }
@@ -110,4 +108,4 @@ export const PromotionRetentionVoting = ({ referendum, tags, transaction, onRefe
       </Box>
     </Box>
   );
-};
+});

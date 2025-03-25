@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -9,7 +10,7 @@ import { tracks } from '../../model/tracks';
 
 export const requestRetentionActionSlot = createSlot();
 
-export const RequestRetention = () => {
+export const RequestRetention = memo(() => {
   const { t } = useI18n();
 
   const track = useUnit(tracks.$currentTrack);
@@ -27,4 +28,4 @@ export const RequestRetention = () => {
       </Box>
     </Box>
   );
-};
+});

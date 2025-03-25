@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -9,7 +10,7 @@ import { memberSalary } from '../../model/memberSalary';
 
 export const requestSalaryInductActionSlot = createSlot();
 
-export const RequestSalaryInduct = () => {
+export const RequestSalaryInduct = memo(() => {
   const { t } = useI18n();
 
   const salary = useUnit(memberSalary.$memberSalary);
@@ -29,4 +30,4 @@ export const RequestSalaryInduct = () => {
       </Box>
     </Box>
   );
-};
+});
