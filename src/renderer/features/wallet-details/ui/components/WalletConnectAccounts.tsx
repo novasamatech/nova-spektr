@@ -51,7 +51,9 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
           <Icon name="document" size={64} className="mb-6 text-icon-default" />
           <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
           <FootnoteText className="mb-4 text-text-tertiary" align="center">
-            {t('walletDetails.walletConnect.disconnectedDescription')}
+            {t('walletDetails.walletConnect.disconnectedDescription', {
+              walletName: WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect',
+            })}
           </FootnoteText>
           <Button size="sm" onClick={() => walletConnectReconnect.start()}>
             {t('walletDetails.walletConnect.reconnectButton')}
@@ -69,7 +71,13 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
       )}
 
       {wcDetailsUtils.isReconnecting(reconnectStep) && !!reconnectUri && (
-        <div className="py-7">
+        <div className="py-4">
+          <SmallTitleText className="pb-4 text-center">
+            {t('walletDetails.walletConnect.signTitle', {
+              walletName: WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect',
+            })}
+          </SmallTitleText>
+
           <WalletConnectQrCode
             uri={reconnectUri}
             type={wallet.type === WalletType.NOVA_WALLET ? 'novawallet' : 'walletconnect'}
