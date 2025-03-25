@@ -66,6 +66,8 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
     }
   };
 
+  const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
+
   const getStatusProps = () => {
     if (step === 'rejected') {
       return {
@@ -103,7 +105,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
       <SmallTitleText>
         {t('operation.walletConnect.signTitle', {
           count: transactions.length || 1,
-          walletName: signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect',
+          walletName,
         })}
       </SmallTitleText>
 
