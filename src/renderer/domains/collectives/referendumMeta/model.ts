@@ -42,6 +42,7 @@ const {
             title: x.title,
             description: x.content,
             track: x.track,
+            createdAt: x.indexer.blockTime,
           })),
         );
       }
@@ -60,6 +61,7 @@ const {
             title: x.title,
             description: x.content ?? '',
             track: x.trackNumber,
+            createdAt: new Date(x.created_at).getTime(),
           })),
         );
       }

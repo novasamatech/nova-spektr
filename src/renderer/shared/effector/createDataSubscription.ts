@@ -197,11 +197,11 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   return {
     $: $store,
 
-    subscribed: $subscribed,
+    subscribed: readonly($subscribed),
     subscribe,
     unsubscribe,
-    pending: $pending,
-    fulfilled: $fulfilled,
+    pending: readonly($pending),
+    fulfilled: readonly($fulfilled),
     received: readonly(received),
   };
 };

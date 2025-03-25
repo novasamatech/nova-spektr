@@ -3,7 +3,7 @@ import { BN, BN_BILLION, BN_ONE, bnMax, bnMin } from '@polkadot/util';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType } from '../_lib/types';
 import { calculateVoteWeightPipeline } from '../configuration/inject';
-import { type Member } from '../members/types';
+import { type Member } from '../member/types';
 import { type Tally } from '../referendum/types';
 
 import { type Track, type VotingCurve, type VotingThreshold } from './types';

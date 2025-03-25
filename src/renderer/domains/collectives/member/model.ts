@@ -27,19 +27,9 @@ const {
   key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
   initial: {},
   fn: ({ api, palletType }, callback) => {
-    let abortController = new AbortController();
-
     const fn = async () => {
-      abortController.abort();
-      abortController = new AbortController();
-
-      await api.isReady;
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
-      if (abortController.signal.aborted) return;
-
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
-      if (abortController.signal.aborted) return;
-
       const result: (Member | CoreMember)[] = [];
 
       for (const collectiveMember of collectiveMembers) {
@@ -88,7 +78,6 @@ const {
 
     return () => {
       unsubscribe.then(fns => () => {
-        abortController.abort();
         for (const fn of fns) {
           fn();
         }

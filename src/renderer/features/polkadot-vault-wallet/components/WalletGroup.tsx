@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
 import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
@@ -45,8 +45,11 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
+              const firstAccount = wallet.accounts.at(0);
               const isMultishard = wallet.accounts.length > 1;
-              const address = isMultishard ? wallet.rootAccountId : wallet.accounts[0].accountId;
+              const address = isMultishard ? wallet.rootAccountId : firstAccount?.accountId;
+              if (nullable(address)) return null;
+
               const isEthereum = isEthereumAccountId(address);
               const theme: IconTheme = isEthereum ? 'ethereum' : isMultishard ? 'jdenticon' : 'polkadot';
 
