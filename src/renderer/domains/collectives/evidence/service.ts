@@ -5,7 +5,7 @@ import { create as createDigest } from 'multiformats/hashes/digest';
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
-import { type CoreMember } from '../members/types';
+import { type CoreMember } from '../member/types';
 
 import { type EvidencePeriods, type EvidenceTransaction } from './types';
 

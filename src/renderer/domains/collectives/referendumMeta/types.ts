@@ -5,4 +5,5 @@ export type ReferendumMeta = {
   title: string;
   description: string;
   track: number;
+  createdAt: number;
 };

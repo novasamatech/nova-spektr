@@ -32,7 +32,7 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
+const $pendingMember = and(member.pending, identity.pending, $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 
