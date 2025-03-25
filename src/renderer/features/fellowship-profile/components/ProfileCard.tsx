@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -18,7 +18,7 @@ import { ProfileModal } from './ProfileModal';
 // TODO: not sure this is still relevant to the new UI
 export const additionalProfileCardInfoSlot = createSlot<{ member: Member }>();
 
-export const ProfileCard = () => {
+export const ProfileCard = memo(() => {
   return (
     <ProfileLoader>
       <NoAccount />
@@ -26,7 +26,7 @@ export const ProfileCard = () => {
       <Member />
     </ProfileLoader>
   );
-};
+});
 
 type CardProps = {
   padding?: boolean;
