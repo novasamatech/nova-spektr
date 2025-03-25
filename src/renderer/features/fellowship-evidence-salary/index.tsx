@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
+import { Button, Duration } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { additionalProfileCardInfoSlot, profileInfoSlot } from '@/features/fellowship-profile';
@@ -14,7 +16,6 @@ import {
 } from '@/features/fellowship-tasks';
 import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
-import { DotIndicator } from './components/DotIndicator';
 import { EntrypointCard } from './components/EntrypointCard';
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
 import { PromotionInfo } from './components/PromotionInfo';
@@ -119,9 +120,22 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
-  const leftToPromotionPeriod = useUnit(evidenceInfo.$leftToPromotion);
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  return leftToPromotionPeriod === 0 ? <DotIndicator /> : null;
+  const input = useUnit(fellowshipSalaryFeature.input);
+  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
+
+  useEffect(() => {
+    if (input?.api && nonNullable(leftToPromotion)) {
+      if (leftToPromotion > 0) {
+        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
+      } else {
+        setTimeLeft(0);
+      }
+    }
+  }, [input?.api, leftToPromotion]);
+
+  return timeLeft !== 0 ? <Duration seconds={timeLeft / 1000} /> : <span>0</span>;
 });
 
 fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {

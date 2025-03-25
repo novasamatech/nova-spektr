@@ -1,4 +1,5 @@
 import { type Address, type HexString } from '@/shared/core';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 
 export type PolkassemblyProposalType =
   | 'democracy_proposals'
@@ -53,7 +54,7 @@ export type PolkassemblyListingPost = {
 };
 
 export type PolkassemblyFellowshipListingReferendum = Omit<PolkassemblyListingPost, 'post_id'> & {
-  id: number;
+  id: ReferendumId;
   trackNumber: number;
   content: string | null;
 };

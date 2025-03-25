@@ -8,6 +8,7 @@ import { requestRetentionActionSlot } from './components/tasks/RequestRetention'
 import { requestSalaryActionSlot } from './components/tasks/RequestSalary';
 import { requestSalaryInductActionSlot } from './components/tasks/RequestSalaryInduct';
 import { fellowshipTasksFeature } from './model/feature';
+import { votes } from './model/voting';
 import { tasksService } from './service';
 
 export {
@@ -19,6 +20,7 @@ export {
   taskVotingActionSlot,
   payoutSalaryActionSlot,
   tasksService,
+  votes,
 };
 
 fellowshipTasksFeature.inject(fellowshipContentSlot, {
