@@ -74,8 +74,9 @@ sample({
   filter({ data }) {
     return nonNullable(data);
   },
-  fn: ({ input: { chainId, palletType }, data: api }) => ({
-    provider: api!.type,
+  fn: ({ input: { chainId, palletType, api }, data: apiSource }) => ({
+    provider: apiSource!.type,
+    api,
     chainId,
     palletType,
   }),

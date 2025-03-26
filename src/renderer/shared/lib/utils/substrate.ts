@@ -150,6 +150,14 @@ export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise): Prom
   return Math.max(0, currentBlock - completedBlocks);
 };
 
+export const getBlockFromTime = async (neededTime: number, api: ApiPromise): Promise<number> => {
+  const timestampMs = new Date(neededTime).getTime();
+  const currentTime = Date.now();
+  const time = currentTime - timestampMs;
+
+  return getBlockTimeAgo(time, api);
+};
+
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
   const enumValues = getTypeEnumValues(api, typeName);
   const supportedVersions = enumValues.filter((value) => SUPPORTED_VERSIONS.includes(value));

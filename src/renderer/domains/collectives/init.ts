@@ -9,6 +9,7 @@ import { memberService } from './member/service';
 import { referendum } from './referendum/model';
 import { referendumService } from './referendum/service';
 import { referendumMeta } from './referendumMeta/model';
+import { referendumMetaService } from './referendumMeta/service';
 import { salary } from './salary/model';
 import { salaryService } from './salary/service';
 import { track } from './tracks/model';
@@ -47,6 +48,7 @@ export {
   trackService,
   memberService,
   referendumService,
+  referendumMetaService,
   votingService,
   salaryService,
 };

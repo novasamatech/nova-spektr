@@ -18,20 +18,13 @@ export const DynamicVoteChart = ({ value, disabled, votesImpact = 0 }: Props) =>
       {disabled && <div className="h-1.5 w-full rounded-md bg-tab-icon-inactive" />}
       {!disabled && (
         <div className="relative flex h-1.5 w-full overflow-hidden rounded-md">
-          {value !== 0 && (
-            <div
-              className="bg-icon-positive"
-              style={{
-                width: `${voteValue}%`,
-              }}
-            />
-          )}
+          {value !== 100 && <div className="grow bg-icon-negative" />}
 
           {value !== 0 && value !== 100 && (
             <div
               className="absolute flex h-2 w-1 items-center justify-center bg-icon-button"
               style={{
-                left: `${value}%`,
+                left: `${100 - value}%`,
               }}
             />
           )}
@@ -43,7 +36,14 @@ export const DynamicVoteChart = ({ value, disabled, votesImpact = 0 }: Props) =>
             />
           )}
 
-          {value !== 100 && <div className="grow bg-icon-negative" />}
+          {value !== 0 && (
+            <div
+              className="bg-icon-positive"
+              style={{
+                width: `${Math.abs(voteValue)}%`,
+              }}
+            />
+          )}
         </div>
       )}
     </div>
