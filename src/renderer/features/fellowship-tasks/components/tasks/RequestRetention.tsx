@@ -25,7 +25,7 @@ export const RequestRetention = () => {
           {t('fellowship.tasks.task.retention.description', { rank: toRomanNumeral(track?.id ?? 0) })}
         </FootnoteText>
       </Box>
-      <Box verticalAlign="center" gap={1} horizontalAlign="end" shrink={0} height="100%">
+      <Box verticalAlign="center" gap={1.5} horizontalAlign="end" shrink={0} height="100%">
         <ReferendumEndTimer endBlock={endDemotionPeriod} referendumType="personal" shortDateFormat />
         <Slot id={requestRetentionActionSlot} />
       </Box>
