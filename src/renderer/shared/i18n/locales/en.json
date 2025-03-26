@@ -1265,7 +1265,7 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle_one": "Confirm the operation on your { walletName } app",
+      "signTitle_one": "Scan with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
@@ -1949,7 +1949,7 @@
       "abortRejectButton": "Close",
       "confirmButton": "Yes, refresh",
       "connectedStatus": "Connected",
-      "disconnectedDescription": "Resume the connection to work with the WalletConnect",
+      "disconnectedDescription": "Resume the connection to work with the {walletName}",
       "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
       "failedDescription": "Please try again later or create a new wallet",
@@ -1959,7 +1959,8 @@
       "reconnectConfirmTitle": "Is a proper wallet selected?",
       "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
-      "rejectTitle": "Rejected"
+      "rejectTitle": "Rejected",
+      "signTitle": "Scan with {walletName} to reconnect your wallet"
     }
   },
   "wallets": {

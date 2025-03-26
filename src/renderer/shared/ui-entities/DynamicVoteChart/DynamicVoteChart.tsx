@@ -11,6 +11,8 @@ type Props = {
 };
 
 export const DynamicVoteChart = ({ value, disabled, votesImpact = 0 }: Props) => {
+  const voteValue = value === 0 || value === 100 ? value - Math.abs(votesImpact) : Math.min(value, value + votesImpact);
+
   return (
     <div className="relative flex h-3.5 w-full items-center justify-between">
       {disabled && <div className="h-1.5 w-full rounded-md bg-tab-icon-inactive" />}
@@ -20,14 +22,14 @@ export const DynamicVoteChart = ({ value, disabled, votesImpact = 0 }: Props) =>
             <div
               className="bg-icon-positive"
               style={{
-                width: `${Math.min(value, value + votesImpact)}%`,
+                width: `${voteValue}%`,
               }}
             />
           )}
 
           {value !== 0 && value !== 100 && (
             <div
-              className="absolute flex h-2 w-[1px] items-center justify-center rounded-md bg-icon-button"
+              className="absolute flex h-2 w-1 items-center justify-center bg-icon-button"
               style={{
                 left: `${value}%`,
               }}

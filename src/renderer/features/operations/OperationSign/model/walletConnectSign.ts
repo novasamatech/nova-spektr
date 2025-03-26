@@ -23,7 +23,6 @@ const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloa
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
 const $transactions = createStore<ReturnType<typeof transactionService.createPayloadWithMetadata>[]>([]);
-const $session = createStore<SessionTypes.Struct | null>(null);
 const $step = createStore<Step>('idle');
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
@@ -86,18 +85,6 @@ const signFx = attach({
 });
 
 const signAllFx = series(signFx);
-
-// Storing session
-
-sample({
-  clock: getSessionFx.doneData,
-  target: $session,
-});
-
-sample({
-  clock: flow.close,
-  target: $session.reinit,
-});
 
 // Storing transaction data
 
@@ -199,7 +186,6 @@ sample({
 export const walletConnectSign = {
   $pairingUri: walletConnect.$pairingUri,
   $transactions,
-  $session,
   $step,
   $signed,
   flow,

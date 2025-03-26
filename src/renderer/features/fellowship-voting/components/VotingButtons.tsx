@@ -44,18 +44,6 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
       <Box gap={4}>
         <Box direction="row" gap={4}>
-          {renderAyeButton ? (
-            <ButtonCard
-              pallet="positive"
-              icon="thumbUp"
-              disabled={buttonDiabled}
-              fullWidth
-              onClick={() => setDecision('aye')}
-            >
-              {t('fellowship.voting.aye')}
-            </ButtonCard>
-          ) : null}
-
           {renderNayButton ? (
             <ButtonCard
               pallet="negative"
@@ -65,6 +53,18 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
               onClick={() => setDecision('nay')}
             >
               {t('fellowship.voting.nay')}
+            </ButtonCard>
+          ) : null}
+
+          {renderAyeButton ? (
+            <ButtonCard
+              pallet="positive"
+              icon="thumbUp"
+              disabled={buttonDiabled}
+              fullWidth
+              onClick={() => setDecision('aye')}
+            >
+              {t('fellowship.voting.aye')}
             </ButtonCard>
           ) : null}
         </Box>
