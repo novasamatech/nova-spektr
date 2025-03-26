@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert, HeaderTitleText, Markdown } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
@@ -9,6 +10,8 @@ import { details } from '../model/details';
 import { ProposerName } from './ProposerName';
 
 export const ReferendumDescription = () => {
+  const { t } = useI18n();
+
   const referendum = useUnit(details.$referendum);
   const referendumMeta = useUnit(details.$referendumMeta);
   const pendingReferendumMeta = useUnit(details.$pendingMeta);
@@ -38,7 +41,11 @@ export const ReferendumDescription = () => {
 
       {shouldRenderEvidencePending ? <Skeleton height="8lh" width="100%" /> : null}
       {shouldRenderEvidence ? <Markdown>{evidence ?? ''}</Markdown> : null}
-      {shouldRenderEvidenceAlert ? <Alert active variant="warn" title="Evidence not provided"></Alert> : null}
+      <Alert
+        active={shouldRenderEvidenceAlert}
+        variant="warn"
+        title={t('fellowship.tasks.task.promotionVoting.noEvidence')}
+      />
     </Box>
   );
 };

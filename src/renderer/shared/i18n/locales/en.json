@@ -513,7 +513,7 @@
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
-          "noEvidence": "No evidence provided",
+          "noEvidence": "Evidence not provided",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
