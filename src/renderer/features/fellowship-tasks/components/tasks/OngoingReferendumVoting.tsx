@@ -1,5 +1,4 @@
 import { useStoreMap } from 'effector-react';
-import { memo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -33,7 +32,7 @@ type Props = {
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const OngoingReferendumVoting = memo(({ referendum, tags, transaction, onReferendumSelect }: Props) => {
+export const OngoingReferendumVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
   const { t } = useI18n();
 
   const meta = useStoreMap({
@@ -46,7 +45,7 @@ export const OngoingReferendumVoting = memo(({ referendum, tags, transaction, on
   const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
   return (
-    <Box direction="row" gap={5} padding={4}>
+    <Box direction="row" gap={10} padding={4}>
       <button className="block w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
         <Box direction="row" fillContainer gap={3} grow={1}>
           {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
@@ -60,4 +59,4 @@ export const OngoingReferendumVoting = memo(({ referendum, tags, transaction, on
       </Box>
     </Box>
   );
-});
+};

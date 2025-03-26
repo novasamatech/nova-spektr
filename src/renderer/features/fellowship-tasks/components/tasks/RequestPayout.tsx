@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -14,7 +14,7 @@ const threeDays = 3 * 24 * 3600 * 1000;
 
 export const payoutSalaryActionSlot = createSlot();
 
-export const RequestPayout = memo(() => {
+export const RequestPayout = () => {
   const { t, formatDate } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
   const [periodEnd, setPeriodEnd] = useState(0);
@@ -54,8 +54,10 @@ export const RequestPayout = memo(() => {
             <Duration seconds={timeLeft / 1000} />
           </FootnoteText>
         </Box>
-        <Slot id={payoutSalaryActionSlot} />
+        <Box width="102px">
+          <Slot id={payoutSalaryActionSlot} />
+        </Box>
       </Box>
     </Box>
   );
-});
+};

@@ -513,6 +513,7 @@
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
+          "noEvidence": "No evidence provided",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
@@ -530,7 +531,7 @@
         },
         "requestSalaryInduct": {
           "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
-          "request": "Activate payments",
+          "request": "Activate",
           "title": "Activate your payments"
         },
         "retention": {

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -12,7 +12,7 @@ import { memberSalary } from '../../model/memberSalary';
 
 export const requestSalaryActionSlot = createSlot();
 
-export const RequestSalary = memo(() => {
+export const RequestSalary = () => {
   const { t, formatDate } = useI18n();
   const [periodEnd, setPeriodEnd] = useState(0);
 
@@ -46,4 +46,4 @@ export const RequestSalary = memo(() => {
       </Box>
     </Box>
   );
-});
+};

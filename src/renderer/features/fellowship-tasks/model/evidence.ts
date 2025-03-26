@@ -1,12 +1,7 @@
-import { format } from 'date-fns/format';
 import { attach, combine, sample } from 'effector';
-import { or } from 'patronum';
 
 import { populated } from '@/shared/effector';
-import { getCreatedDateFromApi } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { evidence, memberService } from '@/domains/collectives';
-import { identity } from '@/domains/network';
+import { evidence } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -15,7 +10,6 @@ import { memberProfile } from './memberProfile';
 // evidences
 
 const requestEvidenceFx = attach({ effect: evidence.request });
-const requestIdentityFx = attach({ effect: identity.request });
 
 const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 const $evidencePopulated = populated(requestEvidenceFx);
@@ -26,42 +20,6 @@ const $memberEvidence = combine(memberProfile.$member, $evidences, (member, evid
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
-
-const requestEvidenceSummaryFx = attach({
-  source: combine({
-    input: fellowshipTasksFeature.input,
-    members: fellowship.$store.map(state => state?.members || []),
-  }),
-  effect: async ({ input, members }, { accountId, isPromotion }: { accountId: AccountId; isPromotion: boolean }) => {
-    if (!input) return;
-
-    const identityMap = await requestIdentityFx({
-      chainId: input.chainId,
-      accounts: [accountId],
-    });
-
-    const accountIdentity = identityMap[accountId];
-    const member = members.find(m => m.accountId === accountId);
-
-    let evidencePeriodStart: string | null = null;
-    if (member && memberService.isCoreMember(member)) {
-      const periodStart = isPromotion
-        ? await getCreatedDateFromApi(member.lastPromotion, input.api)
-        : await getCreatedDateFromApi(member.lastProof, input.api);
-      evidencePeriodStart = format(periodStart, 'dd/MM/yyyy');
-    }
-
-    return requestEvidenceFx({
-      palletType: input.palletType,
-      api: input.api,
-      chain: input.chain,
-      accountId: accountId,
-
-      githubHandle: accountIdentity?.github,
-      evidencePeriodStart,
-    });
-  },
-});
 
 // requesting data
 
@@ -86,6 +44,5 @@ export const evidenceInfo = {
   $memberEvidence,
   $hasRetentionEvidence,
   $hasPromotionEvidence,
-  pending: or(requestEvidenceFx.pending, requestIdentityFx.pending),
-  requestEvidenceSummaryFx,
+  pending: requestEvidenceFx.pending,
 };

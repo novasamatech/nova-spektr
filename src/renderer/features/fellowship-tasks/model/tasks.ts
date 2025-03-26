@@ -15,7 +15,7 @@ import {
 import { basketOperations } from '@/aggregates/basket-operations';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
-import { PromotionRetentionVoting } from '../components/tasks/PromotionRetentionVoting';
+import { PromotionRetentionReferendumVoting } from '../components/tasks/PromotionRetentionReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
@@ -229,7 +229,7 @@ const $ongoingReferendumsTasks = combine(
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
             group: 'general',
-            body: PromotionRetentionVoting,
+            body: PromotionRetentionReferendumVoting,
             meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null, tags: weight.tags },
           };
         })

@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +10,7 @@ import { tracks } from '../../model/tracks';
 
 export const requestPromotionActionSlot = createSlot();
 
-export const RequestPromotion = memo(() => {
+export const RequestPromotion = () => {
   const { t } = useI18n();
 
   const currentTrack = useUnit(tracks.$currentTrack);
@@ -30,9 +29,9 @@ export const RequestPromotion = memo(() => {
           {t('fellowship.tasks.task.promotion.description', { rank: toRomanNumeral(nextTrack?.id ?? 0) })}
         </FootnoteText>
       </Box>
-      <Box verticalAlign="center" shrink={0}>
+      <Box verticalAlign="center" shrink={0} width="102px">
         <Slot id={requestPromotionActionSlot} />
       </Box>
     </Box>
   );
-});
+};

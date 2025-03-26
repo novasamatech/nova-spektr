@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -10,14 +9,14 @@ import { memberSalary } from '../../model/memberSalary';
 
 export const requestSalaryInductActionSlot = createSlot();
 
-export const RequestSalaryInduct = memo(() => {
+export const RequestSalaryInduct = () => {
   const { t } = useI18n();
 
   const salary = useUnit(memberSalary.$memberSalary);
 
   return (
     <Box direction="row" fillContainer padding={4} gap={5} verticalAlign="flex-end">
-      <Box gap={3}>
+      <Box gap={3} width="100%">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalaryInduct.description', {
@@ -25,9 +24,9 @@ export const RequestSalaryInduct = memo(() => {
           })}
         </FootnoteText>
       </Box>
-      <Box height="100%" shrink={0}>
+      <Box height="100%" width="102px" shrink={0}>
         <Slot id={requestSalaryInductActionSlot} />
       </Box>
     </Box>
   );
-});
+};
