@@ -29,6 +29,7 @@ const $store = combine(
     claimantStatus: salary.$claimantStatus,
     evidence: evidence.$list,
     evidencePeriods: evidence.$periods,
+    evidenceSummary: evidence.$summary,
     feed: feed.$list,
   },
   combineStores,

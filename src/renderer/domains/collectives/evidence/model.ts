@@ -1,49 +1,32 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { isFulfilled, merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { fetchEvidenceFromSubsquare, fetchEvidenceSummary } from './resource';
 import { evidenceService } from './service';
-import { type Evidence, type EvidencePeriods } from './types';
+import { type Evidence, type EvidencePeriods, type EvidenceSummary } from './types';
 
 type EvidenceStore = CollectivesStruct<Evidence[]>;
 
 type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chain: Chain;
+  chainId: ChainId;
   accountId: AccountId;
-  githubHandle?: string;
-  evidencePeriodStart?: string | null; // Date string YYYY-MM-DD
 };
 
 const { $: $list, request } = createDataSource({
   initial: {} as EvidenceStore,
-  async fn({
-    palletType,
-    api,
-    chain,
-    accountId,
-    githubHandle,
-    evidencePeriodStart,
-  }: EvidenceRequestParams): Promise<Evidence | null> {
+  async fn({ palletType, api, accountId }: EvidenceRequestParams): Promise<Evidence | null> {
     const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
 
     if (evidence) {
-      const [content, evidenceSummary] = await Promise.allSettled([
-        fetchEvidenceFromSubsquare(evidence.value),
-        fetchEvidenceSummary(evidence.value, chain.chainId, 'en', githubHandle, evidencePeriodStart),
-      ]).then(([contentResponse, summaryResponse]) => {
-        return [
-          isFulfilled(contentResponse) ? contentResponse.value : '',
-          isFulfilled(summaryResponse) ? summaryResponse.value : null,
-        ] as const;
-      });
+      const content = await fetchEvidenceFromSubsquare(evidence.value);
 
       return {
         wish: evidence.wish,
@@ -51,24 +34,17 @@ const { $: $list, request } = createDataSource({
         cid: evidenceService.getCidByEvidence(evidence.value),
         hash: evidence.value,
         content,
-        summary: evidenceSummary?.summary ?? '',
-        github: evidenceSummary
-          ? {
-              pullRequests: evidenceSummary.numberOfPullRequests ?? null,
-              mergedPullRequests: evidenceSummary.numberOfMergedPullRequests ?? null,
-            }
-          : null,
       };
     }
 
     return null;
   },
   map(source, { params, result }) {
-    const list = pickNestedValue(source, params.palletType, params.chain.chainId) ?? [];
+    const list = pickNestedValue(source, params.palletType, params.chainId) ?? [];
 
     if (nullable(result)) {
       const filtered = list.filter(x => x.accountId !== params.accountId);
-      return setNestedValue(source, params.palletType, params.chain.chainId, filtered);
+      return setNestedValue(source, params.palletType, params.chainId, filtered);
     }
 
     const merged = merge({
@@ -77,7 +53,7 @@ const { $: $list, request } = createDataSource({
       mergeBy: e => e.accountId,
     });
 
-    return setNestedValue(source, params.palletType, params.chain.chainId, merged);
+    return setNestedValue(source, params.palletType, params.chainId, merged);
   },
 });
 
@@ -108,9 +84,63 @@ const { $: $periods, request: requestPeriods } = createDataSource({
   },
 });
 
+type EvidenceSummmaryStore = CollectivesStruct<EvidenceSummary[]>;
+
+type EvidenceSummaryRequestParams = {
+  palletType: CollectivePalletsType;
+  chainId: ChainId;
+  evidence: HexString;
+  accountId: AccountId;
+  /**
+   * User github name
+   */
+  githubHandle?: string;
+  /**
+   * Date string YYYY-MM-DD
+   */
+  evidencePeriodStart?: string | null;
+};
+
+const { $: $summary, request: requestSummary } = createDataSource({
+  initial: {} as EvidenceSummmaryStore,
+  async fn({
+    accountId,
+    evidence,
+    chainId,
+    githubHandle,
+    evidencePeriodStart,
+  }: EvidenceSummaryRequestParams): Promise<EvidenceSummary> {
+    const evidenceSummary = await fetchEvidenceSummary(evidence, chainId, 'en', githubHandle, evidencePeriodStart);
+
+    return {
+      accountId,
+      hash: evidence,
+      summary: evidenceSummary.summary ?? '',
+      github: evidenceSummary
+        ? {
+            pullRequests: evidenceSummary.numberOfPullRequests ?? null,
+            mergedPullRequests: evidenceSummary.numberOfMergedPullRequests ?? null,
+          }
+        : null,
+    };
+  },
+  map(source, { params, result }) {
+    const prev = pickNestedValue(source, params.palletType, params.chainId) ?? [];
+    const merged = merge({
+      a: prev,
+      b: [result],
+      mergeBy: e => e.hash,
+    });
+
+    return setNestedValue(source, params.palletType, params.chainId, merged);
+  },
+});
+
 export const evidence = {
   $list,
   $periods,
+  $summary,
   request,
   requestPeriods,
+  requestSummary,
 };

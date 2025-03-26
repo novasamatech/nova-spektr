@@ -8,7 +8,12 @@ export type Evidence = {
   hash: HexString;
   cid: string;
   content: string;
+};
+
+export type EvidenceSummary = {
+  hash: HexString;
   summary: string;
+  accountId: AccountId;
   github?: {
     pullRequests: number | null;
     mergedPullRequests: number | null;

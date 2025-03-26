@@ -91,7 +91,7 @@ const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetai
     return {
       api: input.api,
       palletType: input.palletType,
-      chain: input.chain,
+      chainId: input.chainId,
       accountId: data,
     };
   },
