@@ -110,7 +110,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           referendum={referendum}
           pending={!!referendum}
           votes={memberVoteWeight}
-          isVotedAye={referendumVote?.decision}
+          voted={referendumVote?.decision}
           highlight={highlight}
         />
       </div>

@@ -14,10 +14,10 @@ type Props = {
   pending: boolean;
   votes?: number | null;
   highlight?: 'Aye' | 'Nay' | null;
-  isVotedAye?: 'Aye' | 'Nay';
+  voted?: 'Aye' | 'Nay';
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, isVotedAye, pending, votes, highlight }) => {
+export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, votes, highlight }) => {
   useGate(fellowshipReferendumsDetailsFeature.gate);
 
   const { t } = useI18n();
@@ -42,13 +42,13 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, isVotedAye, pendin
 
   const total = referendum.tally.ayes + referendum.tally.nays;
   const aye =
-    isVotedAye === 'Aye' && showDiff
+    voted === 'Aye' && showDiff
       ? ((referendum.tally.ayes - votes) / (total - votes)) * 100
       : (referendum.tally.ayes / total) * 100;
 
   // if user wants to revote then votes diff for the referendum x2
-  const voteDiff = showDiff && (nullable(isVotedAye) || isVotedAye === highlight ? votes : votes * 2);
-  const votesImpact = voteDiff ? (voteDiff / (isVotedAye ? total : total + votes)) * 100 : 0;
+  const voteDiff = showDiff && (nullable(voted) || voted === highlight ? votes : votes * 2);
+  const votesImpact = voteDiff ? (voteDiff / (voted ? total : total + votes)) * 100 : 0;
 
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
