@@ -4,7 +4,6 @@ import { memo, useEffect } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
@@ -41,8 +40,8 @@ export const PromotionRetentionReferendumVoting = memo(
     const { t } = useI18n();
 
     const allTacks = useUnit(tracks.$tracks);
-    const evidencePending = useUnit(referendums.$evidencePending);
-    const evidences = useUnit(evidenceInfo.$evidences);
+    const evidenceSummaryPending = useUnit(evidenceInfo.summaryPending);
+    const evidenceSummaries = useUnit(evidenceInfo.$evidenceSummaries);
     const meta = useStoreMap({
       store: referendums.$metadata,
       keys: [referendum.id],
@@ -52,7 +51,7 @@ export const PromotionRetentionReferendumVoting = memo(
     const track = allTacks.find(t => t.id === referendum.track);
 
     const proposerAccountId = referendumService.getProposer(referendum);
-    const evidence = evidences.find(e => e.accountId === proposerAccountId);
+    const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
 
     const firstTag = tags.at(0);
     const labelConfig = firstTag ? tagLabels[firstTag] : null;
@@ -61,10 +60,12 @@ export const PromotionRetentionReferendumVoting = memo(
     const isPromotionTrack = track ? trackService.isPromotionTrack(track.id) : false;
 
     useEffect(() => {
-      referendums.requestEvidenceSummaryFx({
-        accountId: proposerAccountId as AccountId,
-        isPromotion: isPromotionTrack,
-      });
+      if (proposerAccountId) {
+        evidenceInfo.requestEvidenceSummary({
+          accountId: proposerAccountId,
+          isPromotion: isPromotionTrack,
+        });
+      }
     }, [proposerAccountId, isPromotionTrack]);
 
     let staticTitle = t('fellowship.tasks.task.anyReferendum.title');
@@ -82,29 +83,31 @@ export const PromotionRetentionReferendumVoting = memo(
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{meta?.title ?? staticTitle}</SmallTitleText>
             </Box>
-            {!evidence?.summary && evidencePending && <Skeleton height="2em" width="85%" />}
+            {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2em" width="85%" />}
             <FootnoteText>
-              {evidence?.summary ? <Markdown>{evidence?.summary}</Markdown> : null}
-              {!evidence?.summary && !evidencePending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
+              {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+              {!evidenceSummary?.summary && !evidenceSummaryPending
+                ? t('fellowship.tasks.task.promotionVoting.noEvidence')
+                : null}
             </FootnoteText>
 
             <div className="flex gap-16 text-left">
-              {evidence?.github?.pullRequests && (
+              {evidenceSummary?.github?.pullRequests && (
                 <div className="w-15">
                   <FootnoteText className="inline text-text-secondary">
                     {t('fellowship.tasks.task.promotionVoting.pullRequests')}
                   </FootnoteText>
                   &nbsp;
-                  <span className="text-black">{evidence?.github?.pullRequests}</span>
+                  <span className="text-black">{evidenceSummary?.github?.pullRequests}</span>
                 </div>
               )}
-              {evidence?.github?.mergedPullRequests && (
+              {evidenceSummary?.github?.mergedPullRequests && (
                 <div className="w-15">
                   <FootnoteText className="inline text-text-secondary">
                     {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
                   </FootnoteText>
                   &nbsp;
-                  <span className="text-black">{evidence?.github?.mergedPullRequests}</span>
+                  <span className="text-black">{evidenceSummary?.github?.mergedPullRequests}</span>
                 </div>
               )}
             </div>
