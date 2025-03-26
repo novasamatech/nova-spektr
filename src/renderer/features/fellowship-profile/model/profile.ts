@@ -20,7 +20,7 @@ import { fellowshipModel } from './fellowship';
 const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
 const $referendums = fellowshipModel.$store.map(store => store?.referendumMeta ?? []);
 const $votes = fellowshipModel.$store.map(store => store?.voting ?? []);
-const $maxRank = fellowshipModel.$store.map(x => x?.maxRank ?? 0);
+const $maxRank = fellowshipModel.$store.map(store => store?.maxRank ?? 0);
 
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipProfileFeature.input.map(store => (store ? store.account : null));
@@ -103,7 +103,7 @@ const $profileDetails = combine(
       const memberVote = memberVotesMap[referendum.referendumId];
 
       if (!memberVote) continue;
-      if (referendumMetaService.matchReferendumStatus(referendum) === memberVote.decision) agreementVote++;
+      if (referendumMetaService.getReferendumVotingFromStatus(referendum) === memberVote.decision) agreementVote++;
       voted++;
     }
 

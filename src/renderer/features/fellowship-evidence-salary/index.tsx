@@ -135,7 +135,7 @@ fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
     }
   }, [input?.api, leftToPromotion]);
 
-  return timeLeft !== 0 ? <Duration seconds={timeLeft / 1000} /> : <span>0</span>;
+  return timeLeft === 0 ? <span>0</span> : <Duration seconds={timeLeft / 1000} />;
 });
 
 fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {

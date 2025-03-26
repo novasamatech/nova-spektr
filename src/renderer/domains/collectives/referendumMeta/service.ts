@@ -1,6 +1,6 @@
 import { type ReferendumMeta } from './types';
 
-function matchReferendumStatus(referendum: ReferendumMeta) {
+function getReferendumVotingFromStatus(referendum: ReferendumMeta) {
   switch (referendum.status) {
     case 'Executed':
     case 'Approved':
@@ -14,5 +14,5 @@ function matchReferendumStatus(referendum: ReferendumMeta) {
 }
 
 export const referendumMetaService = {
-  matchReferendumStatus,
+  getReferendumVotingFromStatus,
 };
