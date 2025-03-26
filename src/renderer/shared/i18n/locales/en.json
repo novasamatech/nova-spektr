@@ -851,6 +851,7 @@
     "referendums": {
       "approveIn": "Approve in",
       "approved": "Approved",
+      "canceled": "Canceled",
       "cancelled": "Cancelled",
       "completed": "Completed",
       "crowdloans": "Crowdloans",
@@ -868,6 +869,7 @@
       "noDeposit": "Waiting for deposit",
       "ongoing": "Ongoing",
       "passing": "Passing",
+      "pending": "Pending",
       "referendumTitle": "Referendum #{ index }",
       "rejectIn": "Reject in",
       "rejected": "Rejected",
