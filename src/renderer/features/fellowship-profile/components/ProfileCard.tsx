@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, memo } from 'react';
 
-import { createSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
@@ -15,8 +15,7 @@ import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
-// TODO: not sure this is still relevant to the new UI
-export const additionalProfileCardInfoSlot = createSlot<{ member: Member }>();
+export const additionalProfileCardInfoSlot = createSlot();
 
 export const ProfileCard = memo(() => {
   return (
@@ -130,6 +129,8 @@ const Member = () => {
   const identity = useUnit(profile.$identity);
   const isAccountExist = useUnit(profile.$isAccountExist);
   const input = useUnit(fellowshipProfileFeature.input);
+  const profileDetails = useUnit(profile.$profileDetails);
+  const pendingDetails = useUnit(profile.$pendingDetails);
 
   if (!isAccountExist || nullable(member)) return null;
 
@@ -175,19 +176,30 @@ const Member = () => {
         </Box>
 
         <div className="grid grid-cols-3 gap-x-4 gap-y-2">
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <SmallTitleText>6m</SmallTitleText>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <SmallTitleText>70%</SmallTitleText>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
-          <SmallTitleText>80%</SmallTitleText>
+          <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
+          {pendingDetails ? (
+            <>
+              <Skeleton height={6} width="100%" />
+              <Skeleton height={6} width="100%" />
+              <Skeleton height={6} width="100%" />
+            </>
+          ) : (
+            <>
+              <SmallTitleText>
+                {nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : 'N/A'}
+              </SmallTitleText>
+              <SmallTitleText>
+                {nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : 'N/A'}
+              </SmallTitleText>
+              <SmallTitleText>
+                <Slot id={additionalProfileCardInfoSlot} />
+              </SmallTitleText>
+            </>
+          )}
         </div>
       </Box>
-
-      {/* <Slot id={additionalProfileCardInfoSlot} props={{ member }} /> */}
     </Card>
   );
 };

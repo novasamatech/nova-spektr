@@ -9,6 +9,7 @@ export {
   member,
   referendum,
   referendumMeta,
+  referendumMetaService,
   track,
   voting,
   salary,
