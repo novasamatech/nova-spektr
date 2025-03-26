@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { HelpText } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
@@ -60,12 +60,12 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, vo
     <div className="flex w-full flex-col">
       {chartNode}
       <Box direction="row" horizontalAlign="space-between">
-        <HelpText className="text-text-secondary">
+        <FootnoteText className="text-text-secondary">
           {t('voteChart.nay')}: {referendum.tally.nays}
-        </HelpText>
-        <HelpText className="text-text-secondary">
+        </FootnoteText>
+        <FootnoteText className="text-text-secondary">
           {t('voteChart.aye')}: {referendum.tally.ayes}
-        </HelpText>
+        </FootnoteText>
       </Box>
     </div>
   );
