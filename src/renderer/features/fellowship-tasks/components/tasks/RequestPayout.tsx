@@ -54,7 +54,9 @@ export const RequestPayout = () => {
             <Duration seconds={timeLeft / 1000} />
           </FootnoteText>
         </Box>
-        <Slot id={payoutSalaryActionSlot} />
+        <Box width="102px">
+          <Slot id={payoutSalaryActionSlot} />
+        </Box>
       </Box>
     </Box>
   );

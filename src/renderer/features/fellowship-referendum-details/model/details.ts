@@ -11,7 +11,7 @@ import { identity } from '@/domains/network';
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowship } from './fellowship';
 
-const requestEvidence = attach({ effect: evidence.request });
+const requestEvidenceFx = attach({ effect: evidence.request });
 
 const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
 
@@ -41,10 +41,7 @@ const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
 
 const $proposer = $referendum.map(referendum => {
   if (nullable(referendum) || referendumService.isCompleted(referendum)) return null;
-
-  return referendum.proposal?.type === 'Evidence'
-    ? referendum.proposal.accountId
-    : (referendum.submissionDeposit?.who ?? null);
+  return referendumService.getProposer(referendum);
 });
 
 const $proposerIdentity = combine($identities, $proposer, (identities, proposer) => {
@@ -53,28 +50,36 @@ const $proposerIdentity = combine($identities, $proposer, (identities, proposer)
   return identities[proposer] ?? null;
 });
 
-const $description = combine(
-  { referendum: $referendum, metadata: $referendumMeta, evidences: $evidences, proposer: $proposer },
-  ({ referendum, metadata, evidences, proposer }) => {
+const $evidence = combine(
+  { referendum: $referendum, evidences: $evidences, proposer: $proposer },
+  ({ referendum, evidences, proposer }) => {
     if (nullable(referendum)) return null;
 
     if (referendumService.isOngoing(referendum) && referendum.proposal) {
       if (referendum.proposal.type === 'Evidence') {
         return evidences.find(x => x.accountId === proposer)?.content ?? null;
       }
-
-      if (referendum.proposal.type === 'Rfc') {
-        return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
-      }
-
-      if (referendum.proposal.type === 'Unknown') {
-        return referendum.proposal.description;
-      }
     }
 
-    return metadata?.description ?? null;
+    return null;
   },
 );
+
+const $description = combine({ referendum: $referendum, metadata: $referendumMeta }, ({ referendum, metadata }) => {
+  if (nullable(referendum)) return null;
+
+  if (referendumService.isOngoing(referendum) && referendum.proposal) {
+    if (referendum.proposal.type === 'Rfc') {
+      return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
+    }
+
+    if (referendum.proposal.type === 'Unknown') {
+      return referendum.proposal.description;
+    }
+  }
+
+  return metadata?.description ?? null;
+});
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
@@ -94,19 +99,20 @@ const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetai
 
 sample({
   clock: proposeEvidenceRequested,
-  target: requestEvidence,
+  target: requestEvidenceFx,
 });
 
-export const referendumDetails = {
+export const details = {
   flow,
 
   $proposer,
   $proposerIdentity,
+  $evidence,
   $description,
   $referendum,
   $referendumMeta,
 
-  $pendingEvidence: requestEvidence.pending,
+  $pendingEvidence: requestEvidenceFx.pending,
   $pendingProposer: identity.pending,
   $pendingMeta: or($pendingReferendumMeta, fellowshipReferendumsDetailsFeature.isStarting),
   $pending: or($pendingReferendum, fellowshipReferendumsDetailsFeature.isStarting),

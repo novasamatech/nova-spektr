@@ -44,6 +44,7 @@ import UpdateIcon from '@/shared/assets/images/functionals/update.svg?jsx';
 import UploadFileIcon from '@/shared/assets/images/functionals/upload-file.svg?jsx';
 import ViewValidatorsIcon from '@/shared/assets/images/functionals/view-validators.svg?jsx';
 import VotedIcon from '@/shared/assets/images/functionals/voted.svg?jsx';
+import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-filled.svg?jsx';
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
 import WhitelistVotingIcon from '@/shared/assets/images/functionals/whitelist-voting.svg?jsx';
 
@@ -85,6 +86,7 @@ const FunctionalImages = {
   opengovVotingLock: { svg: OpenGovVotingLockIcon },
   opengovDelegations: { svg: OpenGovDelegationsIcon },
   voted: { svg: VotedIcon },
+  votingCheckFilled: { svg: VotingCheckFilled },
   thumbUp: { svg: ThumbUpIcon },
   thumbDown: { svg: ThumbDownIcon },
   minusCircle: { svg: MinusCircleIcon },

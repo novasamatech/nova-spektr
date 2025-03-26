@@ -16,7 +16,7 @@ export const RequestSalaryInduct = () => {
 
   return (
     <Box direction="row" fillContainer padding={4} gap={5} verticalAlign="flex-end">
-      <Box gap={3}>
+      <Box gap={3} width="100%">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalaryInduct.description', {
@@ -24,7 +24,7 @@ export const RequestSalaryInduct = () => {
           })}
         </FootnoteText>
       </Box>
-      <Box height="100%" shrink={0}>
+      <Box height="100%" width="102px" shrink={0}>
         <Slot id={requestSalaryInductActionSlot} />
       </Box>
     </Box>

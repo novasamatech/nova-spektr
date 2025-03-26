@@ -41,6 +41,14 @@ function getOperationStatus(referendum: OngoingReferendum) {
   return 'deciding';
 }
 
+function getProposer(referendum: OngoingReferendum) {
+  if (referendum.proposal?.type === 'Evidence') {
+    return referendum.proposal.accountId;
+  }
+
+  return referendum.submissionDeposit?.who ?? null;
+}
+
 export const referendumService = {
   isOngoing,
   isRejected,
@@ -54,4 +62,5 @@ export const referendumService = {
   getOngoingReferendums,
   getCompletedReferendums,
   getOperationStatus,
+  getProposer,
 };
