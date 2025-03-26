@@ -9,13 +9,13 @@ import { Tooltip } from '@/shared/ui-kit';
 type Props = {
   variant: 'positive' | 'negative';
   icon: IconNames;
-  voted?: boolean;
+  isVoted?: boolean;
   checked?: boolean;
   disabled?: boolean;
   votes?: number | null;
   voteImpact?: number;
   onClick?: MouseEventHandler<HTMLButtonElement>;
-  onHighlight: (arg: 'aye' | 'nay' | null) => void;
+  onHighlight: (arg: 'Aye' | 'Nay' | null) => void;
 };
 
 function categorizeImpact(voteImpact: number): string {
@@ -30,9 +30,9 @@ function categorizeImpact(voteImpact: number): string {
 export const VotingButtonWithTooltip = (args: Props) => {
   const { t } = useI18n();
 
-  const { voted, checked, disabled, votes, variant, voteImpact } = args;
+  const { isVoted, checked, disabled, votes, variant, voteImpact } = args;
 
-  if (checked || voted || disabled || nullable(votes) || nullable(voteImpact)) return <FilledIconButton {...args} />;
+  if (checked || isVoted || disabled || nullable(votes) || nullable(voteImpact)) return <FilledIconButton {...args} />;
 
   const tooltipText = variant === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
   const impact = categorizeImpact(voteImpact);
@@ -59,8 +59,8 @@ export const VotingButtonWithTooltip = (args: Props) => {
   );
 };
 
-const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, onHighlight }: Props) => {
-  const vote = variant === 'positive' ? 'aye' : 'nay';
+const FilledIconButton = ({ variant, disabled, checked, icon, isVoted, onClick, onHighlight }: Props) => {
+  const vote = variant === 'positive' ? 'Aye' : 'Nay';
 
   if (checked) {
     onHighlight(vote);
@@ -73,9 +73,9 @@ const FilledIconButton = ({ variant, disabled, checked, icon, voted, onClick, on
       className={cnTw(
         'flex appearance-none flex-col items-center gap-2 rounded-lg px-4 py-3',
         'disabled:pointer-events-none disabled:bg-secondary-button-background',
-        { 'opacity-30': !voted && !checked },
+        { 'opacity-30': !isVoted && !checked },
         {
-          'pointer-events-none': voted || checked,
+          'pointer-events-none': isVoted || checked,
           'bg-badge-green-background text-text-positive hover:opacity-90 active:opacity-100': variant === 'positive',
           'bg-badge-red-background text-text-negative hover:opacity-90 active:opacity-100': variant === 'negative',
         },

@@ -23,7 +23,7 @@ const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
 
 export const VotingActions = ({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-  const [highlight, setHighlight] = useState<'aye' | 'nay' | null>(null);
+  const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
   const account = useUnit(votingStatus.$votingAccount);
   const maxRank = useUnit(votingStatus.$maxRank);
@@ -73,7 +73,11 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   };
 
   const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
-  const userVotesImpact = tasksService.getUserImportanceScore(totalReferendumVotes, memberVoteWeight) * 100;
+  const userVotesImpact =
+    tasksService.getUserImportanceScore(
+      totalReferendumVotes,
+      referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
+    ) * 100;
 
   return (
     <Box gap={1}>
@@ -82,7 +86,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           variant="negative"
           icon="thumbDown"
           disabled={disabled}
-          voted={referendumVote?.decision === 'Nay'}
+          isVoted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
@@ -93,7 +97,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           variant="positive"
           icon="thumbUp"
           disabled={disabled}
-          voted={referendumVote?.decision === 'Aye'}
+          isVoted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
@@ -105,8 +109,8 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
         <ReferendumVoteChart
           referendum={referendum}
           pending={!!referendum}
-          descriptionPosition="bottom"
           votes={memberVoteWeight}
+          isVotedAye={referendumVote?.decision}
           highlight={highlight}
         />
       </div>

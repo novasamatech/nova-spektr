@@ -55,7 +55,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
-                    <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
+                    <ReferendumVoteChart referendum={referendum} pending={loadingState} />
                     <Threshold referendum={referendum} pending={loadingState} />
                     <Slot id={referendumActionsSlot} props={{ referendumId }} />
                   </Box>
