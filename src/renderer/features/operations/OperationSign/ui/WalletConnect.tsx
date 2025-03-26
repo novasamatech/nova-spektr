@@ -5,9 +5,8 @@ import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors } from '@/shared/lib/utils';
-import { Button, Countdown, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
+import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
@@ -16,21 +15,12 @@ import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
 
-export const WalletConnect = ({
-  apis,
-  signerWallet,
-  signingPayloads,
-  validateBalance,
-  onGoBack,
-  onResult,
-}: SigningProps) => {
+export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, onGoBack, onResult }: SigningProps) => {
   useGate(walletConnectSign.flow, { payloads: signingPayloads });
 
   const { t } = useI18n();
-  const [countdown, resetCountdown] = useCountdown(Object.values(apis));
   const payload = signingPayloads[0];
 
-  const session = useUnit(walletConnectSign.$session);
   const transactions = useUnit(walletConnectSign.$transactions);
   const pairingUri = useUnit(walletConnectSign.$pairingUri);
   const step = useUnit(walletConnectSign.$step);
@@ -45,18 +35,6 @@ export const WalletConnect = ({
   if (!accountUtils.isWcAccount(account)) {
     throw new Error(`Account is not Wallet Connect account, got ${JSON.stringify(account, null, 2)}`);
   }
-
-  useEffect(() => {
-    if (countdown <= 0) {
-      setValidationError(ValidationErrors.EXPIRED);
-    }
-  }, [countdown]);
-
-  useEffect(() => {
-    if (session) {
-      resetCountdown();
-    }
-  }, [session]);
 
   useEffect(() => {
     if (signed.length) {
@@ -88,7 +66,7 @@ export const WalletConnect = ({
     }
   };
 
-  const walletName = session?.peer.metadata.name || t('operation.walletConnect.defaultWalletName');
+  const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
   const getStatusProps = () => {
     if (step === 'rejected') {
@@ -130,8 +108,6 @@ export const WalletConnect = ({
           walletName,
         })}
       </SmallTitleText>
-
-      <Countdown countdown={countdown} />
 
       <div className="relative w-full">
         {!pairingUri && (
