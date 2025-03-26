@@ -32,6 +32,11 @@ const $demotionPeriod = combine(memberProfile.$member, $periods, (member, period
   return evidenceService.getDemotionPeriod(member, periods);
 });
 
+const $endDemotionPeriod = combine(memberProfile.$member, $demotionPeriod, (member, demotionPeriod) => {
+  if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
+  return demotionPeriod + member.lastProof;
+});
+
 const $leftToDemotion = combine(
   { demotionPeriod: $demotionPeriod, currentBlock: block.$currentBlock, member: memberProfile.$member },
   ({ demotionPeriod, currentBlock, member }) => {
@@ -58,6 +63,7 @@ sample({
 });
 
 export const periods = {
+  $endDemotionPeriod,
   $leftToPromotion,
   $leftToDemotion,
 };

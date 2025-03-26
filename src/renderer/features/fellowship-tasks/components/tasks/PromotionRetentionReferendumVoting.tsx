@@ -10,6 +10,7 @@ import { type OngoingReferendum, type Referendum, referendumService, trackServic
 import { evidenceInfo } from '../../model/evidence';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
+import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
 import { taskVotingActionSlot } from './OngoingReferendumVoting';
 
@@ -113,7 +114,8 @@ export const PromotionRetentionReferendumVoting = memo(
             </div>
           </Box>
         </button>
-        <Box alignSelf="flex-end" shrink={0}>
+        <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+          <ReferendumEndTimer endBlock={referendum.ends} referendumType="general" shortDateFormat />
           <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
         </Box>
       </Box>
