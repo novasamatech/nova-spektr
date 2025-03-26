@@ -17,19 +17,16 @@ const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
 const components: Components = {
   h1: ({ node: _, className, ...props }) => (
-    <h1
-      className={cnTw('text-balance border-b pb-2 text-header-title [&:not(:first-child)]:mt-6', className)}
-      {...props}
-    />
+    <h1 className={cnTw('border-b pb-2 text-header-title [&:not(:first-child)]:mt-6', className)} {...props} />
   ),
   h2: ({ node: _, className, ...props }) => (
-    <h2 className={cnTw('text-balance text-header-title [&:not(:first-child)]:mt-4', className)} {...props} />
+    <h2 className={cnTw('text-header-title [&:not(:first-child)]:mt-4', className)} {...props} />
   ),
   h3: ({ node: _, className, ...props }) => (
-    <h3 className={cnTw('text-balance text-footnote [&:not(:first-child)]:mt-2', className)} {...props} />
+    <h3 className={cnTw('text-footnote [&:not(:first-child)]:mt-2', className)} {...props} />
   ),
   h4: ({ node: _, className, ...props }) => (
-    <h4 className={cnTw('text-balance text-small-title [&:not(:first-child)]:mt-2', className)} {...props} />
+    <h4 className={cnTw('text-small-title [&:not(:first-child)]:mt-2', className)} {...props} />
   ),
   ul: ({ node: _, className, ...props }) => (
     <ul
@@ -64,10 +61,7 @@ const components: Components = {
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <div
-      className={cnTw('overflow-hidden overflow-ellipsis text-balance text-start text-inherit', className)}
-      {...props}
-    />
+    <div className={cnTw('overflow-hidden overflow-ellipsis text-start text-inherit', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
   input: ({ node: _, type, ...props }) =>

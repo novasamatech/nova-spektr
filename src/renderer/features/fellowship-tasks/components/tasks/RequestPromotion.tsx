@@ -29,7 +29,7 @@ export const RequestPromotion = () => {
           {t('fellowship.tasks.task.promotion.description', { rank: toRomanNumeral(nextTrack?.id ?? 0) })}
         </FootnoteText>
       </Box>
-      <Box verticalAlign="center" shrink={0}>
+      <Box verticalAlign="center" shrink={0} width="102px">
         <Slot id={requestPromotionActionSlot} />
       </Box>
     </Box>

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { SigningType, WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
@@ -22,7 +22,11 @@ export const polkadotVaultWalletFeature = createFeature({
 
 accountSDK(polkadotVaultWalletFeature, {
   actionPermission({ account }) {
-    return account.signingType === SigningType.POLKADOT_VAULT;
+    return (
+      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isVaultChainAccount(account) ||
+      accountUtils.isVaultShardAccount(account)
+    );
   },
   availableOnChain({ account }) {
     return (
