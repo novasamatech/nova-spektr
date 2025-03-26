@@ -48,13 +48,16 @@ export const ActivityList = memo(() => {
   const now = Date.now();
 
   return (
-    <div className="flex flex-col gap-3 pb-3">
+    <div className="flex flex-col gap-1 py-2">
       {isLoading || nullable(input) ? Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />) : null}
       {list.map(record => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-4 pt-2">
+          <div
+            key={`${record.block}-${record.accountId}-${record.type}`}
+            className="mx-2 flex flex-col gap-1 rounded-xl border border-filter-border px-3 py-2"
+          >
             <div className="flex items-center gap-2 text-button-small">
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
@@ -69,7 +72,7 @@ export const ActivityList = memo(() => {
                 )}
               </div>
               <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                <Duration seconds={(now - record.at.getTime()) / 1000} />
+                <Duration seconds={(now - record.at.getTime()) / 1000} shortFormat />
               </HelpText>
             </div>
             <FootnoteText className="text-text-secondary">
