@@ -74,7 +74,7 @@ const ReferendumTimer = ({ time, referendumType, shortDateFormat }: PropsTimer) 
   const timerColor = getTimerColor(time, referendumType);
 
   return (
-    <div className={cnTw('mr-1 flex items-center gap-x-1', timerColor)}>
+    <div className={cnTw('mr-0.5 flex items-center gap-x-1', timerColor)}>
       <Icon name="clock" size={16} className="text-inherit" />
       <Duration as={FootnoteText} className="text-text-secondary" seconds={countdown} shortFormat={shortDateFormat} />
     </div>

@@ -53,7 +53,12 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, vo
   const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
 
   const chartNode = (
-    <DynamicVoteChart value={aye} disabled={disabled} votesImpact={highlight === 'Nay' ? -votesImpact : votesImpact} />
+    <DynamicVoteChart
+      value={aye}
+      hasVotes={total !== 0}
+      disabled={disabled}
+      votesImpact={highlight === 'Nay' ? -votesImpact : votesImpact}
+    />
   );
 
   return (
