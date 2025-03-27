@@ -3,29 +3,28 @@ import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getCreatedDateFromApi, getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { getCreatedDateFromApi } from '@/shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
-
-const threeDays = 3 * 24 * 3600 * 1000;
+import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
 export const payoutSalaryActionSlot = createSlot();
 
 export const RequestPayout = () => {
   const { t, formatDate } = useI18n();
-  const [timeLeft, setTimeLeft] = useState(0);
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const input = useUnit(fellowshipTasksFeature.input);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const salary = useUnit(memberSalary.$memberSalary);
 
+  const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
+
   useEffect(() => {
-    if (input?.api && currentPeriod && currentPeriod.type !== 'unknown') {
-      getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
+    if (input?.api && currentPeriodExists) {
       getCreatedDateFromApi(currentPeriod.until, input.api).then(setPeriodEnd);
     }
   }, [input?.api, currentPeriod]);
@@ -48,12 +47,9 @@ export const RequestPayout = () => {
         </FootnoteText>
       </Box>
       <Box verticalAlign="center" horizontalAlign="flex-end" shrink={0} gap={8.5} height="100%">
-        <Box direction="row" gap={1} verticalAlign="center">
-          <Icon name="clock" size={16} className={timeLeft <= threeDays ? 'text-icon-negative' : 'text-icon-warning'} />
-          <FootnoteText className="text-text-secondary">
-            <Duration seconds={timeLeft / 1000} />
-          </FootnoteText>
-        </Box>
+        {currentPeriodExists && (
+          <ReferendumEndTimer endBlock={currentPeriod.until} referendumType="personal" shortDateFormat />
+        )}
         <Box width="102px">
           <Slot id={payoutSalaryActionSlot} />
         </Box>

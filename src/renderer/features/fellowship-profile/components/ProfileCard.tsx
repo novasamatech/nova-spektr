@@ -1,28 +1,38 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useEffect, useState } from 'react';
 
-import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
+import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { BodyText, Button, Duration, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank, Hash } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { ERROR } from '../constants';
+import { evidenceInfo } from '../model/evidence';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
 
-export const additionalProfileCardInfoSlot = createSlot();
-
 export const ProfileCard = memo(() => {
+  const pending = useUnit(profile.$pending);
+  const currentMember = useUnit(profile.$member);
+  const isAccountExist = useUnit(profile.$isAccountExist);
+  const featureState = useUnit(fellowshipProfileFeature.state);
+
+  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.NETWORK_DISABLED;
+
+  const shouldRenderLoading = pending || isNetworkDisabled;
+  const shouldRenderEmptyAccount = !isAccountExist && !pending;
+  const shouldRenderEmptyMember = isAccountExist && nullable(currentMember);
+  const shouldRenderMember = nonNullable(currentMember);
+
   return (
-    <ProfileLoader>
-      <NoAccount />
-      <NoProfile />
-      <Member />
+    <ProfileLoader active={shouldRenderLoading}>
+      {shouldRenderEmptyAccount ? <NoAccount /> : null}
+      {shouldRenderEmptyMember ? <NoProfile /> : null}
+      {shouldRenderMember ? <Member /> : null}
     </ProfileLoader>
   );
 });
@@ -43,13 +53,8 @@ const Card = ({ padding = true, children }: PropsWithChildren<CardProps>) => {
   );
 };
 
-const ProfileLoader = ({ children }: PropsWithChildren) => {
-  const pending = useUnit(profile.$pending);
-  const featureState = useUnit(fellowshipProfileFeature.state);
-
-  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.NETWORK_DISABLED;
-
-  if (!pending && !isNetworkDisabled) {
+const ProfileLoader = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
+  if (!active) {
     // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{children}</>;
   }
@@ -69,11 +74,7 @@ const ProfileLoader = ({ children }: PropsWithChildren) => {
 
 const NoAccount = () => {
   const { t } = useI18n();
-
   const input = useUnit(fellowshipProfileFeature.input);
-  const isAccountExist = useUnit(profile.$isAccountExist);
-
-  if (isAccountExist) return null;
 
   return (
     <Card>
@@ -127,12 +128,10 @@ const Member = () => {
   const member = useUnit(profile.$member);
   const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
-  const isAccountExist = useUnit(profile.$isAccountExist);
   const input = useUnit(fellowshipProfileFeature.input);
-  const profileDetails = useUnit(profile.$profileDetails);
   const pendingDetails = useUnit(profile.$pendingDetails);
 
-  if (!isAccountExist || nullable(member)) return null;
+  if (nullable(member)) return null;
 
   return (
     <Card padding={false}>
@@ -181,20 +180,26 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
           {pendingDetails ? (
             <>
-              <Skeleton height={6} width="100%" />
-              <Skeleton height={6} width="100%" />
-              <Skeleton height={6} width="100%" />
+              <SmallTitleText>
+                <Skeleton height="1lh" width="100%" />
+              </SmallTitleText>
+              <SmallTitleText>
+                <Skeleton height="1lh" width="100%" />
+              </SmallTitleText>
+              <SmallTitleText>
+                <Skeleton height="1lh" width="100%" />
+              </SmallTitleText>
             </>
           ) : (
             <>
               <SmallTitleText>
-                {nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : 'N/A'}
+                <Activity />
               </SmallTitleText>
               <SmallTitleText>
-                {nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : 'N/A'}
+                <Aggrement />
               </SmallTitleText>
               <SmallTitleText>
-                <Slot id={additionalProfileCardInfoSlot} />
+                <NextRankTimeout />
               </SmallTitleText>
             </>
           )}
@@ -202,4 +207,44 @@ const Member = () => {
       </Box>
     </Card>
   );
+};
+
+const Activity = () => {
+  const { t } = useI18n();
+  const profileDetails = useUnit(profile.$profileDetails);
+  return <span>{nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : t('fellowship.n/a')}</span>;
+};
+
+const Aggrement = () => {
+  const { t } = useI18n();
+  const profileDetails = useUnit(profile.$profileDetails);
+  return <span>{nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : t('fellowship.n/a')}</span>;
+};
+
+const NextRankTimeout = () => {
+  const { t } = useI18n();
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  const input = useUnit(fellowshipProfileFeature.input);
+  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
+
+  useEffect(() => {
+    if (input?.api && nonNullable(leftToPromotion)) {
+      if (leftToPromotion > 0) {
+        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
+      } else {
+        setTimeLeft(0);
+      }
+    }
+  }, [input?.api, leftToPromotion]);
+
+  if (!input) return null;
+
+  const canPromote = input.member ? memberService.canPromote(input.member) : false;
+
+  if (!canPromote) {
+    return <span>{t('fellowship.n/a')}</span>;
+  }
+
+  return timeLeft === 0 ? <span>0</span> : <Duration seconds={timeLeft / 1000} shortFormat />;
 };
