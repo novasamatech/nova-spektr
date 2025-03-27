@@ -47,7 +47,9 @@ export const EvidencePostConfirmation = ({
           <Hash variant="truncate" value={evidence} />
         </ButtonWebLink>
       </DetailRow>
-      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>{rank}</DetailRow>
+      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>
+        <span className="uppercase">{rank}</span>
+      </DetailRow>
       <Separator />
       <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
     </TransactionDetails>

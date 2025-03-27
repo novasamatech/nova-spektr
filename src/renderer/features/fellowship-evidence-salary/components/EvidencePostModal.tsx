@@ -83,7 +83,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
 
   const relatedTrack = tracks.fellowship?.[input.chainId];
   const getRankTitle = (rank: number) =>
-    toRomanNumeral(rank) + ' ' + relatedTrack?.find(t => t.id === rank)?.name.toUpperCase() || '';
+    toRomanNumeral(rank) + ' ' + relatedTrack?.find(t => t.id === rank)?.name || '';
   const rank = input.member?.rank ?? 0;
   const currentRankTitle = getRankTitle(rank);
   const nextRank = rank + 1;
