@@ -7,7 +7,7 @@ import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { periods } from '../../model/periods';
 import { tracks } from '../../model/tracks';
-import { ReferendumEndTimer } from '../ReferendumEndTimer';
+import { RetentionEndTimer } from '../RetentionEndTimer';
 
 export const requestRetentionActionSlot = createSlot();
 
@@ -25,8 +25,8 @@ export const RequestRetention = () => {
           {t('fellowship.tasks.task.retention.description', { rank: toRomanNumeral(track?.id ?? 0) })}
         </FootnoteText>
       </Box>
-      <Box verticalAlign="center" gap={1.5} horizontalAlign="end" shrink={0} height="100%">
-        <ReferendumEndTimer endBlock={endDemotionPeriod} referendumType="personal" shortDateFormat />
+      <Box verticalAlign="center" gap={3} horizontalAlign="end" shrink={0} height="100%">
+        <RetentionEndTimer endBlock={endDemotionPeriod} shortDateFormat />
         <Slot id={requestRetentionActionSlot} />
       </Box>
     </Box>

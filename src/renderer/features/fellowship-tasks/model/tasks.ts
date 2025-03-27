@@ -134,6 +134,7 @@ const $evidenceTasks = combine(
     evidencePopulated: evidenceInfo.$evidencePopulated,
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
+    demotionPeriod: periods.$demotionPeriod,
     hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
     hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
     operations: $basketOperationsMap,
@@ -145,11 +146,12 @@ const $evidenceTasks = combine(
     hasPromotionEvidence,
     leftToDemotion,
     hasRetentionEvidence,
+    demotionPeriod,
     operations,
   }): TaskDescription[] => {
     if (!evidencePopulated || nullable(member) || !memberService.isCoreMember(member)) return [];
 
-    if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
+    if (nonNullable(leftToDemotion) && demotionPeriod !== 0 && leftToDemotion > 0 && hasRetentionEvidence === false) {
       return [
         {
           id: 'evidence',
