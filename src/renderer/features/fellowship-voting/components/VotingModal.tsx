@@ -22,8 +22,8 @@ type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
   vote: 'aye' | 'nay' | null;
+  onClose: () => void;
 };
 
 export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
@@ -37,6 +37,9 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const maxRank = useUnit(votingStatus.$maxRank);
   const account = useUnit(votingStatus.$votingAccount);
   const member = useUnit(votingStatus.$currentMember);
+  const proposer = useUnit(votingStatus.$proposer);
+  const currentTrack = useUnit(votingStatus.$currentTrack);
+  const nextTrack = useUnit(votingStatus.$nextTrack);
   const fee = useUnit(voting.$fee);
 
   useEffect(() => {
@@ -48,6 +51,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
     nullable(member) ||
     nullable(account) ||
     nullable(vote) ||
+    nullable(currentTrack) ||
     nullable(referendum) ||
     referendumService.isCompleted(referendum)
   ) {
@@ -120,7 +124,10 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
                 account={account}
                 vote={vote}
                 rank={member.rank}
+                currentTrack={currentTrack}
+                nextTrack={nextTrack}
                 referendum={referendum}
+                proposer={proposer}
                 maxRank={maxRank}
                 fee={fee}
               />

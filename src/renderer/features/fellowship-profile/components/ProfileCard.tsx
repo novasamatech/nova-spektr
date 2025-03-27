@@ -181,9 +181,9 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
           {pendingDetails ? (
             <>
-              <Skeleton height={6} width="100%" />
-              <Skeleton height={6} width="100%" />
-              <Skeleton height={6} width="100%" />
+              <Skeleton height={4.5} />
+              <Skeleton height={4.5} />
+              <Skeleton height={4.5} />
             </>
           ) : (
             <>

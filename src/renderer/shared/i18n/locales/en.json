@@ -553,6 +553,11 @@
       "aye": "Aye",
       "confirmation": {
         "fee": "Network fee",
+        "promotionTrack": "Promotion",
+        "rank": "Rank",
+        "referendumID": "Referendum ID",
+        "referendumType": "Referendum type",
+        "retentionTrack": "Retention",
         "salary": "Salary",
         "vote": "Vote"
       },

@@ -3,11 +3,15 @@ import { type TrackId } from '@/shared/pallet/referenda';
 import {
   type ApprovedReferendum,
   type CompletedReferendum,
+  type EvidenceProposal,
   type KilledReferendum,
   type OngoingReferendum,
+  type Proposal,
   type Referendum,
   type RejectedReferendum,
+  type RfcProposal,
   type TimedOutReferendum,
+  type UnknownProposal,
 } from './types';
 
 const isOngoing = (referendum: Referendum): referendum is OngoingReferendum => referendum.type === 'Ongoing';
@@ -19,6 +23,10 @@ const isCompleted = (referendum: Referendum): referendum is CompletedReferendum 
 
 const getOngoingReferendums = (referendums: Referendum[]) => referendums.filter(isOngoing);
 const getCompletedReferendums = (referendums: Referendum[]) => referendums.filter(isCompleted);
+
+const isProposalEvidence = (proposal: Proposal): proposal is EvidenceProposal => proposal.type === 'Evidence';
+const isProposalRfc = (proposal: Proposal): proposal is RfcProposal => proposal.type === 'Rfc';
+const isProposalUnknown = (proposal: Proposal): proposal is UnknownProposal => proposal.type === 'Unknown';
 
 function isReferendumInTrack(selectedTrackIds: TrackId[], referendum: Referendum) {
   if (selectedTrackIds.length === 0) {
@@ -56,6 +64,10 @@ export const referendumService = {
   isCompleted,
   isTimedOut,
   isKilled,
+
+  isProposalEvidence,
+  isProposalRfc,
+  isProposalUnknown,
 
   isReferendumInTrack,
 
