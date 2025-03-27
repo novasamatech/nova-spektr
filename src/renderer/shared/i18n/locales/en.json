@@ -495,7 +495,7 @@
       "labels": {
         "controversial": "Tiebreaker",
         "importantVote": "Kingmaker",
-        "urgent": "Flashpoint"
+        "urgent": "Last call"
       },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
