@@ -14,7 +14,7 @@ export const taskVotingActionSlot = createSlot<{ referendum: OngoingReferendum; 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
     text: 'fellowship.tasks.labels.urgent',
-    color: 'purple',
+    color: 'red',
   },
   controversial: {
     text: 'fellowship.tasks.labels.controversial',
