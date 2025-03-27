@@ -42,7 +42,7 @@ export const RequestPayout = () => {
         <FootnoteText className="text-text-secondary">
           {t('fellowship.tasks.task.requestPayout.until', {
             salary: salaryService.formatSalaryAmount(salary.active),
-            date: formatDate(periodEnd, 'dd.MM.yy'),
+            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yy') : null,
           })}
         </FootnoteText>
       </Box>
