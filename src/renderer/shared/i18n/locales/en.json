@@ -538,7 +538,8 @@
         "retention": {
           "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
           "request": "Submit",
-          "title": "Submit your retention evidence"
+          "title": "Submit your retention evidence",
+          "until": "Submit until {date}"
         },
         "retentionVoting": {
           "title": "Review retention evidence"
