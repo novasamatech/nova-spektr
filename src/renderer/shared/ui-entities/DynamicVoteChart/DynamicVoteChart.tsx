@@ -25,7 +25,7 @@ export const DynamicVoteChart = ({ value, hasVotes, disabled, votesImpact = 0 }:
               />
 
               {!!votesImpact && votesImpact > 0 && (
-                <div className="w-full bg-badge-dark-green-background" style={{ width: `${Math.abs(votesImpact)}%` }} />
+                <div className="bg-badge-dark-green-background" style={{ width: `${Math.abs(votesImpact)}%` }} />
               )}
             </div>
           )}
@@ -36,7 +36,7 @@ export const DynamicVoteChart = ({ value, hasVotes, disabled, votesImpact = 0 }:
                 <div className="bg-badge-dark-red-background" style={{ width: `${Math.abs(votesImpact)}%` }} />
               )}
 
-              <div className="w-full bg-icon-positive" style={{ width: `${Math.min(100, 100 + votesImpact)}%` }} />
+              <div className="bg-icon-positive" style={{ width: `${Math.min(100, 100 + votesImpact)}%` }} />
             </div>
           )}
         </div>
