@@ -57,7 +57,6 @@ export const PromotionRetentionReferendumVoting = memo(
     const firstTag = tags.at(0);
     const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
-    const isRetentionTrack = track ? trackService.isRetentionTrack(track.id) : false;
     const isPromotionTrack = track ? trackService.isPromotionTrack(track.id) : false;
 
     useEffect(() => {
@@ -69,12 +68,7 @@ export const PromotionRetentionReferendumVoting = memo(
       }
     }, [proposerAccountId, isPromotionTrack]);
 
-    let staticTitle = t('fellowship.tasks.task.anyReferendum.title');
-    if (isRetentionTrack) {
-      staticTitle = t('fellowship.tasks.task.retentionVoting.title');
-    } else if (isPromotionTrack) {
-      staticTitle = t('fellowship.tasks.task.promotionVoting.title');
-    }
+    const title = meta?.title ?? t('governance.referendums.referendumTitle');
 
     return (
       <Box direction="row" gap={10} padding={4}>
@@ -82,7 +76,7 @@ export const PromotionRetentionReferendumVoting = memo(
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
-              <SmallTitleText className="truncate">{meta?.title ?? staticTitle}</SmallTitleText>
+              <SmallTitleText className="truncate">{title}</SmallTitleText>
             </Box>
             {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2em" width="85%" />}
             <FootnoteText>
