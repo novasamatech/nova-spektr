@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -26,7 +26,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
+export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
   useGate(voting.flow, { vote });
 
   const { t } = useI18n();
@@ -41,10 +41,6 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const currentTrack = useUnit(votingStatus.$currentTrack);
   const nextTrack = useUnit(votingStatus.$nextTrack);
   const fee = useUnit(voting.$fee);
-
-  useEffect(() => {
-    setStep('confirm');
-  }, [isOpen]);
 
   if (
     nullable(input) ||
@@ -91,7 +87,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
         variant="success"
         autoCloseTimeout={2000}
         title={t('operation.addedToBasket')}
-        onClose={onClose}
+        onClose={() => handleToggle(false)}
       />
     );
   }
@@ -103,7 +99,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
         variant="error"
         autoCloseTimeout={2000}
         title={t('fellowship.voting.errors.noAccount')}
-        onClose={onClose}
+        onClose={() => handleToggle(false)}
       />
     );
   }
@@ -148,4 +144,4 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
       </Modal.Content>
     </Modal>
   );
-};
+});

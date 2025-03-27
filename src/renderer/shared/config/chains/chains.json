@@ -6753,6 +6753,44 @@
     }
   },
   {
+    "name": "Novasama Testnet - Fellowship",
+    "specName": "collectives-westend",
+    "addressPrefix": 42,
+    "chainId": "0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet",
+      "regular_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://westend-collectives-a-parachain.novasama-tech.org",
+        "name": "Novasama node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Westend",
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "type": "native",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+        }
+      }
+    ],
+    "externalApi": {
+      "collectives": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-collectives-testnet-stg.novasama-tech.org"
+        }
+      ]
+    }
+  },
+  {
     "name": "Polimec",
     "specName": "polkadot",
     "addressPrefix": 41,

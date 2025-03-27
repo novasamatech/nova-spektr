@@ -5,7 +5,6 @@ import { Outlet, generatePath, useParams } from 'react-router-dom';
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
@@ -50,25 +49,22 @@ export const Fellowship = () => {
   return (
     <Box height="100%" width="100%">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px] shrink-0">
-        {isDev() && (
+        {true /* isDev() */ && (
           <Box width="200px">
             {/* TODO remove before release */}
-            <div className="flex flex-col justify-center gap-1 rounded-md border border-alert bg-alert-background-warning">
+            <Select
+              placeholder="Select network"
+              value={selectedChain ?? null}
+              onChange={(chainId) =>
+                navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))
+              }
+            >
               {/* eslint-disable i18next/no-literal-string */}
-
-              <Select
-                placeholder="Select network"
-                value={selectedChain ?? null}
-                onChange={(chainId) =>
-                  navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))
-                }
-              >
-                <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot Collectives</Select.Item>
-                <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Westend Collectives</Select.Item>
-                <Select.Item value={COLLECTIVES_NOVASAMA_CHAIN_ID}>Novasama Collectives</Select.Item>
-              </Select>
+              <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot Collectives</Select.Item>
+              <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Westend Collectives</Select.Item>
+              <Select.Item value={COLLECTIVES_NOVASAMA_CHAIN_ID}>Novasama Collectives</Select.Item>
               {/* eslint-enable i18next/no-literal-string */}
-            </div>
+            </Select>
           </Box>
         )}
       </Header>

@@ -1,12 +1,10 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getRelativeTimeFromApi, nonNullable } from '@/shared/lib/utils';
-import { Button, Duration } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
-import { additionalProfileCardInfoSlot, profileInfoSlot } from '@/features/fellowship-profile';
+import { profileInfoSlot } from '@/features/fellowship-profile';
 import {
   payoutSalaryActionSlot,
   requestPromotionActionSlot,
@@ -24,7 +22,6 @@ import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation'
 import { SalaryRegisterConfirmation } from './components/SalaryRegisterConfirmation';
 import { SalaryRegisterModal } from './components/SalaryRegisterModal';
 import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
-import { evidenceInfo } from './model/evidence';
 import { fellowshipSalaryFeature } from './model/feature';
 import { salaryInduct } from './model/salaryInduct';
 import { salaryPayout } from './model/salaryPayout';
@@ -110,32 +107,15 @@ fellowshipSalaryFeature.inject(requestRetentionActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Retention">
-      <Button size="sm">{t('fellowship.tasks.task.retention.request')}</Button>
+      <Button size="sm" className="w-[102px]">
+        {t('fellowship.tasks.task.retention.request')}
+      </Button>
     </EvidencePostFlowModal>
   );
 });
 
 fellowshipSalaryFeature.inject(profileInfoSlot, () => {
   return <PromotionInfo />;
-});
-
-fellowshipSalaryFeature.inject(additionalProfileCardInfoSlot, () => {
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  const input = useUnit(fellowshipSalaryFeature.input);
-  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
-
-  useEffect(() => {
-    if (input?.api && nonNullable(leftToPromotion)) {
-      if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
-      } else {
-        setTimeLeft(0);
-      }
-    }
-  }, [input?.api, leftToPromotion]);
-
-  return timeLeft === 0 ? <span>0</span> : <Duration seconds={timeLeft / 1000} />;
 });
 
 fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {

@@ -7,13 +7,14 @@ import { SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
+import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
 export const taskVotingActionSlot = createSlot<{ referendum: OngoingReferendum; transaction: Transaction | null }>();
 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
     text: 'fellowship.tasks.labels.urgent',
-    color: 'purple',
+    color: 'red',
   },
   controversial: {
     text: 'fellowship.tasks.labels.controversial',
@@ -54,7 +55,8 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
           </SmallTitleText>
         </Box>
       </button>
-      <Box alignSelf="flex-end" shrink={0}>
+      <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+        <ReferendumEndTimer endBlock={referendum.ends} referendumType="general" shortDateFormat />
         <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>

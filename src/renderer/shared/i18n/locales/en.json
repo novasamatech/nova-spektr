@@ -353,6 +353,7 @@
       "toNextRank": "To next rank",
       "viewDetails": "View details"
     },
+    "n/a": "N/A",
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "profile": {
@@ -373,6 +374,7 @@
       "fellow": "Fellow",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
+      "ready": "Ready",
       "setActive": {
         "active": "Active",
         "activeFalse": "No",
@@ -452,10 +454,8 @@
       "promotionRankHelpLabel": "What is expected from Rank {rank} ({name})",
       "promotionReadManifesto": "Read manifesto",
       "promotionReadyToApply": "Ready to apply for a promotion",
-      "promotionTitle": "Request promotion on",
+      "promotionTitle": "Submit evidence on",
       "promotionUntilNext": "Until the promotion opportunity:",
-      "requestPromotion": "Request promotion on",
-      "requestRetention": "Request retention on",
       "retentionAlertDescription": "To retain at your current rank, you must submit an evidence every 90 days. Ensure you submit it at least 15 days before the retention period ends to avoid automatic bump to a lower rank. ",
       "retentionAlertTitle": "Retention",
       "retentionApplied": "Applied for retention:",
@@ -482,7 +482,8 @@
       "salaryRequest": "Request salary on",
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
-        "wish": "Wish"
+        "evidenceType": "Evidence type",
+        "rank": "Rank"
       }
     },
     "tasks": {
@@ -493,8 +494,8 @@
       "general": "General",
       "labels": {
         "controversial": "Tiebreaker",
-        "importantVote": "Important",
-        "urgent": "Flashpoint"
+        "importantVote": "Kingmaker",
+        "urgent": "Last call"
       },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
@@ -537,7 +538,8 @@
         "retention": {
           "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
           "request": "Submit",
-          "title": "Submit your retention evidence"
+          "title": "Submit your retention evidence",
+          "until": "Submit until {date}"
         },
         "retentionVoting": {
           "title": "Review retention evidence"
