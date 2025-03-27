@@ -68,7 +68,7 @@ export const PromotionRetentionReferendumVoting = memo(
       }
     }, [proposerAccountId, isPromotionTrack]);
 
-    const title = meta?.title ?? t('governance.referendums.referendumTitle');
+    const title = meta?.title ?? t('governance.referendums.referendumTitle', { index: referendum.id });
 
     return (
       <Box direction="row" gap={10} padding={4}>
