@@ -8,6 +8,7 @@ export type DataStream<T> = AsyncIterable<T> & {
   fail(error?: Error): void;
   abort(): void;
   aborted(): boolean;
+  response(): Promise<T>;
   on(reason: 'abort', callback: () => void): void;
 };
 
