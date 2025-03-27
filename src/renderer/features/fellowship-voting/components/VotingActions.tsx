@@ -81,7 +81,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
 
   return (
     <Box gap={1}>
-      <Box direction="row" gap={0.5}>
+      <Box direction="row" gap={1} horizontalAlign="center">
         <VotingButtonWithTooltip
           variant="negative"
           icon="thumbDown"
@@ -114,14 +114,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           highlight={highlight}
         />
       </div>
-      <VotingModal
-        isOpen={nonNullable(decision)}
-        vote={decision}
-        onClose={() => {
-          console.log('close');
-          setDecision(null);
-        }}
-      />
+      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
     </Box>
   );
 };
