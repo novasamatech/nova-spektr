@@ -33,9 +33,8 @@ function getSalaryChange(
     passive: BN;
   },
 ) {
-  const totalSalary = salary.active.add(salary.passive);
-  const from = salaryService.formatSalaryAmount(isActive ? salary.passive : totalSalary);
-  const to = salaryService.formatSalaryAmount(isActive ? totalSalary : salary.passive);
+  const from = salaryService.formatSalaryAmount(isActive ? salary.passive : salary.active);
+  const to = salaryService.formatSalaryAmount(isActive ? salary.active : salary.passive);
   return `${from} → ${to}`;
 }
 
