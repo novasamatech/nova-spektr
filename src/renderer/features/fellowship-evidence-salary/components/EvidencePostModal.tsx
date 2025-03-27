@@ -4,9 +4,10 @@ import { type PropsWithChildren, useState } from 'react';
 import { type HexString } from '@/shared/core';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { nonNullable, nullable, toRomanNumeral } from '@/shared/lib/utils';
+import { Button, Icon } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { track } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -35,6 +36,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
   const account = useUnit(evidencePost.$account);
   const wallet = useUnit(evidencePost.$wallet);
   const fee = useUnit(evidencePost.$fee);
+  const tracks = useUnit(track.$list);
 
   const handleToggle = (open: boolean, done: boolean) => {
     onToggle(open, done);
@@ -79,27 +81,39 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
     );
   }
 
-  const title =
-    wish === 'Retention' ? t('fellowship.salary.requestRetention') : t('fellowship.salary.requestPromotion');
+  const relatedTrack = tracks.fellowship?.[input.chainId];
+  const getRankTitle = (rank: number) =>
+    toRomanNumeral(rank) + ' ' + relatedTrack?.find(t => t.id === rank)?.name.toUpperCase() || '';
+  const rank = input.member?.rank ?? 0;
+  const currentRankTitle = getRankTitle(rank);
+  const nextRank = rank + 1;
+  const nextRankTitle = getRankTitle(nextRank);
+
+  const rankTitle = wish === 'Retention' ? `${currentRankTitle}` : `${currentRankTitle} → ${nextRankTitle}`;
 
   return (
     <Modal size="md" isOpen={isOpen} onToggle={open => handleToggle(open, false)}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={title} chainId={input.chain.chainId} />
+        <OperationTitle title={t('fellowship.salary.promotionTitle')} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
+        <Box horizontalAlign="center" padding={6}>
+          <Icon name="fellowshipNav" size={60} />
+        </Box>
+
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
               <EvidencePostConfirmation
-                wish={wish}
+                evidenceType={wish}
                 evidence={evidence}
                 asset={input.asset}
                 chain={input.chain}
                 wallets={input.wallets}
                 account={account}
                 fee={fee}
+                rank={rankTitle}
               />
             </Box>
             <Modal.Footer>
