@@ -36,7 +36,7 @@ export const RequestRetention = () => {
         </FootnoteText>
         <FootnoteText className="text-text-secondary">
           {t('fellowship.tasks.task.retention.until', {
-            date: formatDate(periodEnd, 'dd.MM.yyyy'),
+            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yyyy') : null,
           })}
         </FootnoteText>
       </Box>
