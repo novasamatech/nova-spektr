@@ -50,13 +50,10 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, vo
   const voteDiff = showDiff && (nullable(voted) || voted === highlight ? votes : votes * 2);
   const votesImpact = voteDiff ? (voteDiff / (voted ? total : total + votes)) * 100 : 0;
 
-  const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
-
   const chartNode = (
     <DynamicVoteChart
-      value={aye}
+      value={aye || 0}
       hasVotes={total !== 0}
-      disabled={disabled}
       votesImpact={highlight === 'Nay' ? -votesImpact : votesImpact}
     />
   );
