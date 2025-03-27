@@ -107,8 +107,8 @@ const $profileDetails = combine(
       voted++;
     }
 
-    const activity = Math.round((voted / referendums.length) * 100);
-    const agreement = Math.round((agreementVote / voted) * 100);
+    const activity = referendums.length ? Math.round((voted / referendums.length) * 100) : 0;
+    const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
 
     return { activity, agreement };
   },

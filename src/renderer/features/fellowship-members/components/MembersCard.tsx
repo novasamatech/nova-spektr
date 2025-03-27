@@ -25,7 +25,10 @@ export const MembersCard = memo(() => {
       >
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={4} gap={2}>
           <Skeleton active={pending && !isNetworkDisabled}>
-            {t('fellowship.fellow', { count: members.length })}
+            <Box direction="row" gap={2} verticalAlign="center">
+              <Icon name="members" size={16} />
+              {t('fellowship.fellow', { count: members.length })}
+            </Box>
           </Skeleton>
           <Icon name="right" size={16} />
         </Box>
