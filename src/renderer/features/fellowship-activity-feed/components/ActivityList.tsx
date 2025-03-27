@@ -19,7 +19,7 @@ export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; reco
 
 const ActivityPlaceholder = () => {
   return (
-    <div className="flex flex-col gap-1 px-5 pt-2">
+    <div className="flex flex-col gap-1 px-4 pt-2">
       <div className="flex items-center gap-1 text-button-small">
         <div className="flex min-w-0 grow items-center">
           <BodyText>

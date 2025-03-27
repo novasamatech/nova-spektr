@@ -1,4 +1,4 @@
-import { combine, sample } from 'effector';
+import { attach, combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
@@ -15,12 +15,14 @@ import {
 import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowship } from './fellowship';
 
-const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
-const $referendums = fellowshipModel.$store.map(store => store?.referendumMeta ?? []);
-const $votes = fellowshipModel.$store.map(store => store?.voting ?? []);
-const $maxRank = fellowshipModel.$store.map(store => store?.maxRank ?? 0);
+const requestIdentityFx = attach({ effect: identity.request });
+
+const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+const $referendums = fellowship.$store.map(store => store?.referendumMeta ?? []);
+const $votes = fellowship.$store.map(store => store?.voting ?? []);
+const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipProfileFeature.input.map(store => (store ? store.account : null));
@@ -49,8 +51,6 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $pendingMember = and(member.pending, identity.pending, $member.map(nullable));
-
 const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
 
 sample({
@@ -69,7 +69,7 @@ sample({
     chainId,
     accounts: member ? [member.accountId] : [],
   }),
-  target: identity.request,
+  target: requestIdentityFx,
 });
 
 const $availableReferendumsForMember = combine(
@@ -107,13 +107,14 @@ const $profileDetails = combine(
       voted++;
     }
 
-    const activity = Math.round((voted / referendums.length) * 100);
-    const agreement = Math.round((agreementVote / voted) * 100);
+    const activity = referendums.length ? Math.round((voted / referendums.length) * 100) : 0;
+    const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
 
     return { activity, agreement };
   },
 );
 
+const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
 const $pendingReferendums = or($referendums.map(nullable), referendumMeta.pending);
 const $pendingVotes = or($memberVotes.map(nullable), voting.pending);
 

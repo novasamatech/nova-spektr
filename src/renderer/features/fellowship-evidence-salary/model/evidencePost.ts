@@ -128,7 +128,7 @@ sample({
     return {
       palletType: 'fellowship' as const,
       api: api!,
-      chain: chain!,
+      chainId: chain!.chainId,
       accountId: account!.accountId,
     };
   },

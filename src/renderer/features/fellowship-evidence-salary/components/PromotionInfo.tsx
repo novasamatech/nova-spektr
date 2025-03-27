@@ -43,6 +43,10 @@ export const PromotionInfo = memo(() => {
     }
   }, [input?.api, leftToPromotion]);
 
+  if (currentMember && !memberService.canPromote(currentMember)) {
+    return null;
+  }
+
   const openEvidence = () => {
     if (evidence) {
       window.open(evidenceService.getEvidenceIpfsUrl(evidence.hash), '_blank');

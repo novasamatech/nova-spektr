@@ -14,6 +14,7 @@ export type ReferendumImportance = {
  */
 function getUrgencyScore(referendum: OngoingReferendum, currentBlock: BlockHeight): number {
   const blocksLeft = referendum.ends - currentBlock;
+  // TODO use real block time
   const threeDaysBlocks = (3 * 24 * 3600) / 6;
 
   if (blocksLeft <= 0) {

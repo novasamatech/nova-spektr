@@ -3,7 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { HelpText } from '@/shared/ui';
+import { FootnoteText } from '@/shared/ui';
 import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
@@ -50,22 +50,24 @@ export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, vo
   const voteDiff = showDiff && (nullable(voted) || voted === highlight ? votes : votes * 2);
   const votesImpact = voteDiff ? (voteDiff / (voted ? total : total + votes)) * 100 : 0;
 
-  const disabled = referendum.tally.ayes === 0 && referendum.tally.nays === 0;
-
   const chartNode = (
-    <DynamicVoteChart value={aye} disabled={disabled} votesImpact={highlight === 'Nay' ? -votesImpact : votesImpact} />
+    <DynamicVoteChart
+      value={aye || 0}
+      hasVotes={total !== 0}
+      votesImpact={highlight === 'Nay' ? -votesImpact : votesImpact}
+    />
   );
 
   return (
     <div className="flex w-full flex-col">
       {chartNode}
       <Box direction="row" horizontalAlign="space-between">
-        <HelpText className="text-text-secondary">
+        <FootnoteText className="text-text-secondary">
           {t('voteChart.nay')}: {referendum.tally.nays}
-        </HelpText>
-        <HelpText className="text-text-secondary">
+        </FootnoteText>
+        <FootnoteText className="text-text-secondary">
           {t('voteChart.aye')}: {referendum.tally.ayes}
-        </HelpText>
+        </FootnoteText>
       </Box>
     </div>
   );

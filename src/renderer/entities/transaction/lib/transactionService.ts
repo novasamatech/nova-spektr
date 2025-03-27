@@ -136,6 +136,16 @@ async function signAndSubmit(
             return;
           }
 
+          if (status.isInvalid) {
+            if (unsubscribe) {
+              unsubscribe();
+            }
+            resolve({
+              executed: false,
+              error: 'Invalid transaction',
+            });
+          }
+
           if (status.isInBlock) {
             for (const { event, phase } of events) {
               if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
