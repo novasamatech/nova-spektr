@@ -107,7 +107,9 @@ fellowshipSalaryFeature.inject(requestRetentionActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Retention">
-      <Button size="sm">{t('fellowship.tasks.task.retention.request')}</Button>
+      <Button size="sm" className="w-[102px]">
+        {t('fellowship.tasks.task.retention.request')}
+      </Button>
     </EvidencePostFlowModal>
   );
 });

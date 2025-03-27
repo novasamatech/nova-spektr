@@ -114,7 +114,14 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           highlight={highlight}
         />
       </div>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      <VotingModal
+        isOpen={nonNullable(decision)}
+        vote={decision}
+        onClose={() => {
+          console.log('close');
+          setDecision(null);
+        }}
+      />
     </Box>
   );
 };

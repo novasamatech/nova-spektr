@@ -246,5 +246,5 @@ const NextRankTimeout = () => {
     return <span>{t('fellowship.n/a')}</span>;
   }
 
-  return timeLeft === 0 ? <span>0</span> : <Duration seconds={timeLeft / 1000} />;
+  return timeLeft === 0 ? <span>0</span> : <Duration seconds={timeLeft / 1000} shortFormat />;
 };

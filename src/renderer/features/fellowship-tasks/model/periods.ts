@@ -1,6 +1,7 @@
 import { combine, sample } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
 
 import { block } from './block';
@@ -34,7 +35,7 @@ const $demotionPeriod = combine(memberProfile.$member, $periods, (member, period
 
 const $endDemotionPeriod = combine(memberProfile.$member, $demotionPeriod, (member, demotionPeriod) => {
   if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return demotionPeriod + member.lastProof;
+  return pjsSchema.helpers.toBlockHeight(demotionPeriod + member.lastProof);
 });
 
 const $leftToDemotion = combine(
@@ -43,7 +44,7 @@ const $leftToDemotion = combine(
     if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
 
     const gone = currentBlock - member.lastProof;
-    return Math.max(0, demotionPeriod - gone);
+    return pjsSchema.helpers.toBlockHeight(Math.max(1, demotionPeriod - gone));
   },
 );
 
@@ -66,4 +67,5 @@ export const periods = {
   $endDemotionPeriod,
   $leftToPromotion,
   $leftToDemotion,
+  $demotionPeriod,
 };
