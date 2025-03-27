@@ -374,6 +374,7 @@
       "fellow": "Fellow",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
+      "ready": "Ready",
       "setActive": {
         "active": "Active",
         "activeFalse": "No",
@@ -493,7 +494,7 @@
       "general": "General",
       "labels": {
         "controversial": "Tiebreaker",
-        "importantVote": "Important",
+        "importantVote": "Kingmaker",
         "urgent": "Flashpoint"
       },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
