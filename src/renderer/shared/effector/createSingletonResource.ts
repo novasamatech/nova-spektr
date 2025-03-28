@@ -3,7 +3,7 @@ import { spread } from 'patronum';
 
 import { nonNullable } from '@/shared/lib/utils';
 
-import { type DataStream, createResource } from './createResource';
+import { type DataStream, createResource } from './createStream';
 import { series } from './series';
 
 type Config<Params, Value> = {

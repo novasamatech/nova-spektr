@@ -1,27 +1,58 @@
-import { createEffect } from 'effector';
+import { default as mitt } from 'mitt';
 
 import { type PromiseWithResolvers, promiseWithResolvers } from '@/shared/lib/utils';
 
+type Status = 'opened' | 'closed' | 'paused';
+
 export type DataStream<T> = AsyncIterable<T> & {
-  push(value: T): void;
+  open(): void;
   close(): void;
+  pause(): void;
+  resume(): void;
+  push(value: T): void;
   fail(error?: Error): void;
-  abort(): void;
-  aborted(): boolean;
-  response(): Promise<T>;
-  on(reason: 'abort', callback: () => void): void;
+  on(status: Status, callback: VoidFunction): VoidFunction;
+  pending(): boolean;
 };
 
 export function createStream<T>(): DataStream<T> {
+  const events = mitt<{ [k in Status]: void }>();
+
   const resolved: T[] = [];
   let closed = false;
-  const abortController = new AbortController();
+  let pending = false;
 
   let resolver: PromiseWithResolvers<IteratorResult<T>> | null = null;
 
   return {
+    pending() {
+      return pending;
+    },
+    open() {
+      events.emit('opened', undefined);
+      pending = true;
+    },
+    close() {
+      events.emit('closed', undefined);
+      closed = true;
+      if (resolver) {
+        resolver.reject(new Error('Stream closed.'));
+        resolver = null;
+      }
+    },
+    pause() {
+      pending = false;
+    },
+    resume() {
+      pending = true;
+    },
     push(value) {
-      if (closed) return;
+      if (closed) {
+        throw new Error('Stream should be opened before push');
+      }
+      if (!pending) {
+        throw new Error('Stream should be resumed before push');
+      }
 
       resolved.push(value);
       if (resolver) {
@@ -35,28 +66,10 @@ export function createStream<T>(): DataStream<T> {
         resolver = null;
       }
     },
-    close() {
-      closed = true;
-      if (resolver) {
-        resolver.reject(new Error('Stream closed.'));
-        resolver = null;
-      }
-    },
 
-    abort() {
-      abortController.abort();
-    },
     on(reason, callback) {
-      switch (reason) {
-        case 'abort':
-          abortController.signal.addEventListener('abort', callback, { once: true });
-          break;
-        default:
-          throw new Error(`Event type ${reason} is not supported.`);
-      }
-    },
-    aborted() {
-      return abortController.signal.aborted;
+      events.on(reason, callback);
+      return () => events.off(reason, callback);
     },
 
     [Symbol.asyncIterator]() {
@@ -117,22 +130,4 @@ export async function* zipStreamWithParams<Params, Result>({
   for await (const r of result) {
     yield { params, result: r };
   }
-}
-
-type Config<Params, Value> = {
-  create(params: Params, stream: DataStream<Value>): unknown;
-};
-
-export function createResource<Params, Value>({ create }: Config<Params, Value>) {
-  return {
-    open: createEffect((params: Params) => {
-      const stream = createStream<Value>();
-      create(params, stream);
-
-      return stream;
-    }),
-    close: createEffect((stream: DataStream<Value>) => {
-      stream.abort();
-    }),
-  };
 }
