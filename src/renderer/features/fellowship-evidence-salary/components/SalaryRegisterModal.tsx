@@ -4,14 +4,16 @@ import { type PropsWithChildren, useState } from 'react';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, Icon, LargeTitleText } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { memberService, salaryService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { fellowshipSalaryFeature } from '../model/feature';
+import { memberSalary } from '../model/memberSalary';
 import { salaryRequest } from '../model/salaryRequest';
 
 import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
@@ -32,6 +34,12 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryRequest.$account);
   const wallet = useUnit(salaryRequest.$wallet);
   const fee = useUnit(salaryRequest.$fee);
+  const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
+
+  let salary: string | null = null;
+  if (input?.member && memberService.isCoreMember(input.member)) {
+    salary = salaryService.formatSalaryAmount(input?.member?.isActive ? activeSalary : passiveSalary);
+  }
 
   const handleToggle = (open: boolean) => {
     if (disabled) return;
@@ -84,6 +92,16 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
         <OperationTitle title={t('fellowship.salary.salaryRequest')} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
+        <Box horizontalAlign="center" padding={6}>
+          <Icon name="asset" size={60} />
+        </Box>
+
+        {salary && (
+          <Box horizontalAlign="center">
+            <LargeTitleText className="pb-4">{salary}</LargeTitleText>
+          </Box>
+        )}
+
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
