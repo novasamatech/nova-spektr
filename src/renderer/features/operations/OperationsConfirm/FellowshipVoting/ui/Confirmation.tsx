@@ -46,12 +46,13 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   });
 
   const maxRank = useUnit(votingStatus.$maxRank);
-  const proposer = useUnit(votingStatus.$proposer);
-  const currentTrack = useUnit(votingStatus.$currentTrack);
-  const nextTrack = useUnit(votingStatus.$nextTrack);
+  const memberTrack = useUnit(votingStatus.$memberTrack);
+  const currentTrack = useUnit(votingStatus.$currentProposerTrack);
+  const nextTrack = useUnit(votingStatus.$nextProposerTrack);
 
   if (
     nullable(confirm) ||
+    nullable(memberTrack) ||
     nullable(currentTrack) ||
     nullable(votingReferendum) ||
     referendumService.isCompleted(votingReferendum)
@@ -68,9 +69,9 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         vote={confirm.meta.aye ? 'aye' : 'nay'}
         wallets={confirm.meta.wallets}
         referendum={votingReferendum}
-        proposer={proposer}
-        currentTrack={currentTrack}
-        nextTrack={nextTrack}
+        memberTrack={memberTrack}
+        currentProposerTrack={currentTrack}
+        nextProposerTrack={nextTrack}
         maxRank={maxRank}
         fee={confirm.meta.fee}
         rank={confirm.meta.rank}

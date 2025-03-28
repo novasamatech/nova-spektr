@@ -34,17 +34,32 @@ const $proposer = combine($members, $referendum, (members, referendum) => {
   return members.find(member => member.accountId === proposal.accountId) ?? null;
 });
 
-const $currentTrack = combine($tracks, $referendum, (tracks, referendum) => {
-  if (nullable(referendum) || !referendumService.isOngoing(referendum)) return null;
-  return tracks.find(t => t.id === referendum.track) ?? null;
+const $memberTrack = combine($tracks, $currentMember, (tracks, member) => {
+  if (nullable(member)) return null;
+  return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $nextTrack = combine($tracks, $proposer, (tracks, proposer) => {
+const $currentProposerTrack = combine($tracks, $proposer, (tracks, proposer) => {
   if (nullable(proposer)) return null;
-  const index = tracks.findIndex(t => t.id === proposer.rank);
-
-  return tracks.at(index + 1) ?? null;
+  return tracks.find(t => t.id === proposer?.rank) ?? null;
 });
+
+const $nextProposerTrack = combine(
+  {
+    tracks: $tracks,
+    proposer: $proposer,
+    referendum: $referendum,
+  },
+  ({ tracks, proposer, referendum }) => {
+    if (nullable(referendum) || !referendumService.isOngoing(referendum)) return null;
+    if (nullable(proposer)) return null;
+
+    const index = tracks.findIndex(t => t.id === proposer.rank);
+
+    // HINT: promotion can add more than 1 rank
+    return tracks.at(index + (referendum.track % 10)) ?? null;
+  },
+);
 
 const $hasRequiredRank = combine(
   {
@@ -109,8 +124,9 @@ export const votingStatus = {
   $currentMember,
   $maxRank,
   $proposer,
-  $currentTrack,
-  $nextTrack,
+  $memberTrack,
+  $currentProposerTrack,
+  $nextProposerTrack,
   $canVote,
   $referendum,
   flow,

@@ -37,9 +37,9 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
   const maxRank = useUnit(votingStatus.$maxRank);
   const account = useUnit(votingStatus.$votingAccount);
   const member = useUnit(votingStatus.$currentMember);
-  const proposer = useUnit(votingStatus.$proposer);
-  const currentTrack = useUnit(votingStatus.$currentTrack);
-  const nextTrack = useUnit(votingStatus.$nextTrack);
+  const memberTrack = useUnit(votingStatus.$memberTrack);
+  const currentProposerTrack = useUnit(votingStatus.$currentProposerTrack);
+  const nextProposerTrack = useUnit(votingStatus.$nextProposerTrack);
   const fee = useUnit(voting.$fee);
 
   if (
@@ -47,7 +47,7 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
     nullable(member) ||
     nullable(account) ||
     nullable(vote) ||
-    nullable(currentTrack) ||
+    nullable(memberTrack) ||
     nullable(referendum) ||
     referendumService.isCompleted(referendum)
   ) {
@@ -120,10 +120,10 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
                 account={account}
                 vote={vote}
                 rank={member.rank}
-                currentTrack={currentTrack}
-                nextTrack={nextTrack}
+                memberTrack={memberTrack}
+                currentProposerTrack={currentProposerTrack}
+                nextProposerTrack={nextProposerTrack}
                 referendum={referendum}
-                proposer={proposer}
                 maxRank={maxRank}
                 fee={fee}
               />
