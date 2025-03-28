@@ -1,4 +1,5 @@
 import { type BN } from '@polkadot/util';
+import { capitalize } from 'lodash';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -6,17 +7,17 @@ import { formatAsset, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type Member, type OngoingReferendum, type Track, trackService } from '@/domains/collectives';
+import { type OngoingReferendum, type Track, trackService } from '@/domains/collectives';
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
   account: AnyAccount;
   rank: number;
   maxRank: number;
-  currentTrack: Track;
-  nextTrack: Track | null;
+  memberTrack: Track;
+  currentProposerTrack: Track | null;
+  nextProposerTrack: Track | null;
   referendum: OngoingReferendum;
-  proposer: Member | null;
   wallets: Wallet[];
   chain: Chain;
   asset: Asset;
@@ -28,15 +29,15 @@ export const VotingConfirmation = ({
   fee,
   account,
   wallets,
-  currentTrack,
-  nextTrack,
+  memberTrack,
+  currentProposerTrack,
+  nextProposerTrack,
   chain,
   asset,
   vote,
   rank,
   maxRank,
   referendum,
-  proposer,
 }: Props) => {
   const { t } = useI18n();
 
@@ -61,18 +62,22 @@ export const VotingConfirmation = ({
         <DetailRow label={t('fellowship.voting.confirmation.referendumType')}>
           {isPromotionTrack && t('fellowship.voting.confirmation.promotionTrack')}
           {isRetentionTrack && t('fellowship.voting.confirmation.retentionTrack')}
-          {isAnotherTrack && currentTrack.name}
+          {isAnotherTrack && capitalize(memberTrack.name)}
         </DetailRow>
-        {nonNullable(proposer) && nonNullable(nextTrack) && isPromotionTrack && (
+        {isPromotionTrack && nonNullable(nextProposerTrack) && (
           <DetailRow label={t('fellowship.voting.confirmation.rank')}>
-            {`${toRomanNumeral(proposer.rank)} ${currentTrack.name.replace(/s$/, '')}`}
-            &nbsp;{'→'}&nbsp;
-            {`${toRomanNumeral(proposer.rank + 1)} ${nextTrack.name.replace(/s$/, '')}`}
+            {nonNullable(currentProposerTrack) && (
+              <>
+                {`${toRomanNumeral(currentProposerTrack.id)} ${capitalize(currentProposerTrack.name).replace(/s$/, '')}`}
+                &nbsp;{'→'}&nbsp;
+              </>
+            )}
+            {`${toRomanNumeral(nextProposerTrack.id)} ${capitalize(nextProposerTrack.name).replace(/s$/, '')}`}
           </DetailRow>
         )}
-        {nonNullable(proposer) && isRetentionTrack && (
+        {isRetentionTrack && nonNullable(currentProposerTrack) && (
           <DetailRow label={t('fellowship.voting.confirmation.rank')}>
-            {`${toRomanNumeral(proposer.rank)} ${currentTrack.name.replace(/s$/, '')}`}
+            {`${toRomanNumeral(currentProposerTrack.id)} ${capitalize(currentProposerTrack.name).replace(/s$/, '')}`}
           </DetailRow>
         )}
         <DetailRow label={t('fellowship.voting.confirmation.vote')}>{t(`fellowship.voting.${vote}`)}</DetailRow>
