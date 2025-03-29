@@ -34,9 +34,20 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     const chainId = filteredChain.chainId;
     const url = TransferModalElements.getUrl(chainId, this.assetId);
     // TODO: Update waiting approach, currently it waits until send button is loaded
-    await this.page.getByTestId(TEST_IDS.ASSETS.SEND_ARROW_ICON).first().waitFor();
+    await this.page.getByTestId(TEST_IDS.ASSETS.SHELF_RIGHT_ARROW_ICON).first().waitFor();
     await this.page.goto(url);
     await this.page.getByTestId(TEST_IDS.OPERATIONS.AMOUNT_INPUT).first().waitFor();
+
+    return this;
+  }
+
+  public async openTransferModalByUrl(): Promise<TransferModalWindow> {
+    const config = await readConfig();
+    const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
+    const chainId = filteredChain.chainId;
+    const url = TransferModalElements.getUrl(chainId, this.assetId);
+    // TODO: Update waiting approach, currently it waits until send button is loaded    
+    await this.page.goto(url);    
 
     return this;
   }
@@ -81,5 +92,11 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await this.page.getByRole('button', { name: 'Continue' }).click();
 
     return new ConfirmationModalWindow(this.page, new ConfirmationModalElements(), this.previousPage);
+  }
+
+  public async transferModalIsNotVisible(): Promise<TransferModalWindow> {
+    await expect(this.page.getByTestId(TransferModalElements.amountInputLocator)).not.toBeVisible();
+
+    return this;
   }
 }
