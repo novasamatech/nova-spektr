@@ -8,18 +8,18 @@ import { type Tally } from '../referendum/types';
 
 import { type Track, type VotingCurve, type VotingThreshold } from './types';
 
-const isRetentionTrack = (track: TrackId) => {
+function isRetentionTrack(track: TrackId) {
   return track >= 11 && track <= 16;
-};
+}
 
-const isPromotionTrack = (track: TrackId) => {
+function isPromotionTrack(track: TrackId) {
   return (
     // Promotion
     (track >= 21 && track <= 26) ||
     // Fast promotion
     (track >= 31 && track <= 36)
   );
-};
+}
 
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/master/cumulus/parachains/runtimes/collectives/collectives-westend/src/fellowship/tracks.rs#L63
