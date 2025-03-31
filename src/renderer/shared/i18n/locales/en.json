@@ -311,7 +311,16 @@
   },
   "fellowship": {
     "activityFeed": {
-      "lastActivityCardTitle": "Last activity",
+      "activityModal": {
+        "title": "Events on",
+        "sort": {
+          "placeholder": "Sort by",
+          "date-asc": "Date asc",
+          "date-desc": "Date desc"
+        },
+        "search-placeholder": "Search"
+      },
+      "lastActivityCardTitle": "Last events",
       "record": {
         "activeChanged": "changed his status to {status}",
         "demoted": "has been bumped to rank {rank}",
@@ -320,7 +329,8 @@
         "proven": "proved his rank {rank}",
         "submittedPromotion": "submitted evidence with a wish to promotion",
         "submittedRetention": "submitted evidence with a wish to retention"
-      }
+      },
+      "viewList": "View list"
     },
     "basket": {
       "salaryInduct": "Activate salary",
