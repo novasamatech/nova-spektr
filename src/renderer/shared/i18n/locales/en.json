@@ -312,13 +312,14 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
-        "title": "Events on",
+        "nothing-found": "Nothing found for \"{query}\"",
+        "search-placeholder": "Search",
         "sort": {
-          "placeholder": "Sort by",
           "date-asc": "Date asc",
-          "date-desc": "Date desc"
+          "date-desc": "Date desc",
+          "placeholder": "Sort by"
         },
-        "search-placeholder": "Search"
+        "title": "Events on"
       },
       "lastActivityCardTitle": "Last events",
       "record": {

@@ -4,16 +4,19 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
-import { BodyText, Duration, FootnoteText, HelpText } from '@/shared/ui';
+import { BodyText, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
+import { ChainTitle } from '@/entities/chain';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
 import { activityFeedRecordDescriptionSlot } from './ActivityList';
+import { ActivityPlaceholder } from './ActivityPlaceholder';
 
 type OrderKey = 'date-asc' | 'date-desc';
 
@@ -25,13 +28,16 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
+  const input = useUnit(fellowshipActivityFeedFeature.input);
   const feed = useUnit(activityFeed.$activityFeed);
+  const { list, isLoading } = useDeferredList({ list: feed, isLoading: feed.length === 0 });
+
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
 
-  const records = feed.map(record => {
+  const records = list.map(record => {
     const identity = identities[record.accountId];
     return { ...record, name: identity?.name };
   });
@@ -39,6 +45,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const filteredList = performSearch({
     records,
     query,
+    queryMinLength: 3,
     weights: {
       type: 0.5,
       wish: 0.5,
@@ -46,17 +53,26 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     },
   });
 
+  const isNothingFound = records.length && !filteredList.length;
+
   const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
   const sortedList = orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
 
   const now = Date.now();
-  const input = useUnit(fellowshipActivityFeedFeature.input);
 
   return (
-    <Modal size="md" height="fit">
+    <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
+      <Modal.Title close>
+        <div className="flex gap-2">
+          <span>{t('fellowship.activityFeed.activityModal.title')}</span>
+
+          {input && (
+            <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold"></ChainTitle>
+          )}
+        </div>
+      </Modal.Title>
       <Modal.HeaderContent>
         <div className="flex gap-x-4 px-5">
           <div className="inline grow">
@@ -81,6 +97,12 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       </Modal.HeaderContent>
       <Modal.Content>
         <div className="py-4">
+          {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
+
+          {isNothingFound && (
+            <EmptyList message={t('fellowship.activityFeed.activityModal.nothing-found', { query })} />
+          )}
+
           {sortedList.map(record => {
             const identity = identities[record.accountId];
 
