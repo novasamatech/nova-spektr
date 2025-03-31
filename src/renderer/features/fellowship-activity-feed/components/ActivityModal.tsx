@@ -18,11 +18,13 @@ import { activityFeed } from '../model/list';
 import { activityFeedRecordDescriptionSlot } from './ActivityList';
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 
-type OrderKey = 'date-asc' | 'date-desc';
+type OrderKey = 'date-asc' | 'date-desc' | 'name-asc' | 'name-desc';
 
 const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc' }> = {
   'date-asc': { field: 'at', direction: 'asc' },
   'date-desc': { field: 'at', direction: 'desc' },
+  'name-asc': { field: 'name', direction: 'asc' },
+  'name-desc': { field: 'name', direction: 'desc' },
 };
 
 export const ActivityModal = ({ children }: PropsWithChildren) => {
@@ -91,6 +93,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
             >
               <Select.Item value="date-asc">{t('fellowship.activityFeed.activityModal.sort.date-asc')}</Select.Item>
               <Select.Item value="date-desc">{t('fellowship.activityFeed.activityModal.sort.date-desc')}</Select.Item>
+              <Select.Item value="name-asc">{t('fellowship.activityFeed.activityModal.sort.name-asc')}</Select.Item>
+              <Select.Item value="name-desc">{t('fellowship.activityFeed.activityModal.sort.name-desc')}</Select.Item>
             </Select>
           </div>
         </div>

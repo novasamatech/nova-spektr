@@ -317,6 +317,8 @@
         "sort": {
           "date-asc": "Date asc",
           "date-desc": "Date desc",
+          "name-asc": "Name asc",
+          "name-desc": "Name desc",
           "placeholder": "Sort by"
         },
         "title": "Events on"
