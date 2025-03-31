@@ -24,9 +24,9 @@ const isCompleted = (referendum: Referendum): referendum is CompletedReferendum 
 const getOngoingReferendums = (referendums: Referendum[]) => referendums.filter(isOngoing);
 const getCompletedReferendums = (referendums: Referendum[]) => referendums.filter(isCompleted);
 
-const isProposalEvidence = (proposal: Proposal): proposal is EvidenceProposal => proposal.type === 'Evidence';
-const isProposalRfc = (proposal: Proposal): proposal is RfcProposal => proposal.type === 'Rfc';
-const isProposalUnknown = (proposal: Proposal): proposal is UnknownProposal => proposal.type === 'Unknown';
+const isEvidenceProposal = (proposal: Proposal): proposal is EvidenceProposal => proposal.type === 'Evidence';
+const isRfcProposal = (proposal: Proposal): proposal is RfcProposal => proposal.type === 'Rfc';
+const isUnknownProposal = (proposal: Proposal): proposal is UnknownProposal => proposal.type === 'Unknown';
 
 function isReferendumInTrack(selectedTrackIds: TrackId[], referendum: Referendum) {
   if (selectedTrackIds.length === 0) {
@@ -65,9 +65,9 @@ export const referendumService = {
   isTimedOut,
   isKilled,
 
-  isProposalEvidence,
-  isProposalRfc,
-  isProposalUnknown,
+  isEvidenceProposal,
+  isRfcProposal,
+  isUnknownProposal,
 
   isReferendumInTrack,
 

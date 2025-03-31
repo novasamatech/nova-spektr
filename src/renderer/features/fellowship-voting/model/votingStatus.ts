@@ -29,7 +29,7 @@ const $proposer = combine($members, $referendum, (members, referendum) => {
   if (nullable(referendum) || !referendumService.isOngoing(referendum)) return null;
 
   const proposal = referendum.proposal;
-  if (nullable(proposal) || !referendumService.isProposalEvidence(proposal)) return null;
+  if (nullable(proposal) || !referendumService.isEvidenceProposal(proposal)) return null;
 
   return members.find(member => member.accountId === proposal.accountId) ?? null;
 });
