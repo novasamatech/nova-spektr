@@ -1,2 +1,2 @@
-export { Welcome as Onboarding } from './Welcome/Welcome';
-export { onboardingActionsSlot } from './Welcome/Welcome';
+export { Welcome as Onboarding } from './ui/Welcome';
+export { onboardingActionsSlot } from './ui/Welcome';

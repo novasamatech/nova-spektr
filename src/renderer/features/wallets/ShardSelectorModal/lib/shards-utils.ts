@@ -5,7 +5,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, isStringsMatchQuery, nullable, toAddress } from '@/shared/lib/utils';
+import { entries, isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
@@ -18,7 +18,6 @@ export const shardsUtils = {
   getStructForVault,
   getStructForMultishard,
   getVaultChainsCounter,
-  getMultishardChainsCounter,
   getSelectedShards,
 };
 
@@ -77,33 +76,6 @@ function getVaultChainsCounter(
   }
 
   return root;
-}
-
-function getMultishardChainsCounter(
-  rootAccountId: AccountId,
-  chains: Record<ChainId, Chain>,
-  shards: (VaultChainAccount | VaultShardAccount)[],
-): SelectedStruct {
-  const roots: SelectedStruct = {
-    [rootAccountId]: getChainCounter(chains),
-  };
-
-  roots[rootAccountId].checked = shards.length;
-  roots[rootAccountId].total = shards.length;
-
-  for (const shard of shards) {
-    const root = roots[shard.accountId];
-
-    if (nullable(root)) continue;
-
-    root.checked += 1;
-    root.total += 1;
-    root[shard.chainId].checked += 1;
-    root[shard.chainId].total += 1;
-    root[shard.chainId].accounts[shard.accountId] = true;
-  }
-
-  return roots;
 }
 
 function getChainCounter(chains: Record<ChainId, Chain>) {

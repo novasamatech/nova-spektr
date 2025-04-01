@@ -9,33 +9,27 @@ import { type SeedInfo, VaultFeatures } from '@/entities/transaction';
 import { IDENTITY_CHAIN } from '../lib/constants';
 import { pairingFormModel } from '../model/pairing-form-model';
 
-import { ManageMultishard } from './ManageMultishard/ManageMultishard';
 import { ManageSingleshard } from './ManageSingleshard/ManageSingleshard';
 import { ManageVault } from './ManageVault/ManageVault';
 import { ScanStep } from './ScanStep/ScanStep';
 
-type Step = 'scan' | 'manage';
-type QrCodeType = 'singleshard' | 'multishard' | 'polkadot_vault';
+type QrCodeType = 'singleshard' | 'polkadot_vault';
 
 const isDynamicDerivationSupport = (seedInfo: SeedInfo): boolean => {
   return seedInfo.features?.some(feature => feature.VaultFeatures === VaultFeatures.DYNAMIC_DERIVATIONS) ?? false;
 };
 
-type PairingProps =
-  | ComponentProps<typeof ManageSingleshard>
-  | ComponentProps<typeof ManageMultishard>
-  | ComponentProps<typeof ManageVault>;
+type PairingProps = ComponentProps<typeof ManageSingleshard> | ComponentProps<typeof ManageVault>;
 
 const PairingComponent: Record<QrCodeType, ComponentType<PairingProps>> = {
   singleshard: ManageSingleshard,
-  multishard: ManageMultishard,
   polkadot_vault: ManageVault,
 };
 
 export const PairingModal = ({ children }: PropsWithChildren) => {
   const open = useUnit(pairingFormModel.flow.status);
 
-  const [activeStep, setActiveStep] = useState<Step>('scan');
+  const [activeStep, setActiveStep] = useState<'scan' | 'pair'>('scan');
   const [qrPayload, setQrPayload] = useState<SeedInfo[]>([]);
   const [qrType, setQrType] = useState<QrCodeType | null>(null);
 
@@ -60,9 +54,12 @@ export const PairingModal = ({ children }: PropsWithChildren) => {
     const isSingleQr = qrPayload.length === 1;
     const isPlainQr = withoutDerivedKeys && isEmptyName;
 
-    const isSingleshard = isSingleQr && (isPlainQr || withoutDerivationPaths);
-
-    setQrType(isSingleshard ? 'singleshard' : 'multishard');
+    if (isSingleQr && (isPlainQr || withoutDerivationPaths)) {
+      setQrType('singleshard');
+    } else {
+      // TODO: handle this case
+      console.error('Multishard not supported!');
+    }
   }, [qrPayload]);
 
   useEffect(() => {
@@ -78,7 +75,7 @@ export const PairingModal = ({ children }: PropsWithChildren) => {
 
   const onReceiveQr = (payload: SeedInfo[]) => {
     setQrPayload(payload);
-    setActiveStep('manage');
+    setActiveStep('pair');
   };
 
   const toggleModal = (open: boolean) => {
@@ -100,7 +97,7 @@ export const PairingModal = ({ children }: PropsWithChildren) => {
           <Carousel.Item id="scan" index={0}>
             <ScanStep onBack={() => toggleModal(false)} onComplete={onReceiveQr} />
           </Carousel.Item>
-          <Carousel.Item id="manage" index={1}>
+          <Carousel.Item id="pair" index={1}>
             {nonNullable(Component) ? (
               <Component
                 seedInfo={qrPayload}

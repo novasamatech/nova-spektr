@@ -44,8 +44,6 @@ export const PolkadotVault = ({
     let isVerified = false;
 
     if (signatures.length > 1) {
-      // TODO: Research complex verification
-      // TODO: research multishard signature verification
       isVerified = true;
     } else {
       isVerified = signatures.every((signature, index) => {

@@ -79,26 +79,23 @@ function validateNameExist(value: string, _: unknown, params: SourceParams): boo
 sample({
   clock: $walletForm.formValidated,
   source: $walletToEdit,
-  filter: (walletToEdit) => nonNullable(walletToEdit),
-  fn: (walletToEdit, form) => ({
-    ...walletToEdit!,
-    name: form.name,
-    accounts:
-      walletUtils.isPolkadotVault(walletToEdit!) || walletUtils.isMultiShard(walletToEdit!)
-        ? walletToEdit!.accounts
-        : walletToEdit!.accounts?.map((acc) => ({ ...acc, name: form.name })),
-  }),
+  filter: (walletToEdit: Wallet | null): walletToEdit is Wallet => nonNullable(walletToEdit),
+  fn: (walletToEdit, { name }) => {
+    const accounts = walletUtils.isPolkadotVault(walletToEdit)
+      ? walletToEdit.accounts
+      : walletToEdit.accounts?.map((acc) => ({ ...acc, name }));
+
+    return { ...walletToEdit, name, accounts };
+  },
   target: renameWalletFx,
 });
 
 sample({
   clock: renameWalletFx.doneData,
-  fn: (updatedWallet) => {
-    return {
-      walletId: updatedWallet.id,
-      data: updatedWallet,
-    };
-  },
+  fn: (updatedWallet) => ({
+    walletId: updatedWallet.id,
+    data: updatedWallet,
+  }),
   target: walletModel.events.updateWallet,
 });
 
