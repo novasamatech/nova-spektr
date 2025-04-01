@@ -8,6 +8,7 @@ import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Field, Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
+import { TEST_IDS } from '@/shared/constants/testIds';
 
 type Props = {
   signatory?: AnyAccount | null;
@@ -42,15 +43,20 @@ export const SignatorySelector = ({
       <Select
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         value={signatory?.id.toString() ?? null}
+        testId={TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR}
         invalid={hasError}
         onChange={(value) => selectSigner(value)}
+        
       >
         {signatories.map(({ signer, balance }) => {
           const isShard = accountUtils.isVaultShardAccount(signer);
           const address = toAddress(signer.accountId, { prefix: addressPrefix });
 
           return (
-            <Select.Item key={signer.id} value={signer.id.toString()}>
+            <Select.Item 
+              key={signer.id} 
+              value={signer.id.toString()}              
+            >
               <div className="flex w-full items-center justify-between">
                 <Address
                   showIcon

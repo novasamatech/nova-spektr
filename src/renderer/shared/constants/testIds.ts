@@ -17,6 +17,9 @@ export const TEST_IDS = {
     SEND_ARROW_ICON: 'Icon:sendArrow',
     RECEIVE_ARROW_ICON: 'Icon:receiveArrow',
     SHELF_RIGHT_ARROW_ICON: 'Icon:shelfRight',
+    ASSET_DETAILS: 'assets-asset-details',
+    PORTFOLIO_LIST: 'assets-portfolio-list',
+    TOKEN_PLATE: 'assets-token-plate',
   },
   COMMON: {
     WALLET_BUTTON: 'common-wallet-button',
@@ -30,6 +33,8 @@ export const TEST_IDS = {
     AMOUNT_INPUT: 'operations-amount-input',
     RECIPIENT_INPUT: 'operations-recipient-input',
     QR_CODE_CONTAINER: 'operations-qr-code-container',
+    SIGNATORY_SELECTOR: 'operations-signatory-selector',
+    SIGNATORY_SELECTOR_OPTION: 'operations-signatory-selector-option',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',

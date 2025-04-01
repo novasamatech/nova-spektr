@@ -15,6 +15,7 @@ import { portfolioModel } from '../model/portfolio-model';
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 import { ChainsList } from './ChainsList';
 import { NetworkCard } from './NetworkCard';
+import { TEST_IDS } from '@/shared/constants';
 
 type Props = {
   asset: AssetByChains;
@@ -41,7 +42,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
   return (
     <CardStack>
       <CardStack.Trigger sticky>
-        <div className="flex w-full items-center">
+        <div className="flex w-full items-center" data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}>
           <div className="flex flex-1 items-center gap-x-2 py-0.5">
             <AssetIcon asset={asset} />
             <div className="flex flex-col gap-y-0.5">

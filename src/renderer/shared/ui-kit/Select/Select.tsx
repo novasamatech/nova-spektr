@@ -55,7 +55,7 @@ const Root = <T extends string>({
         onOpenChange={onToggle}
         onValueChange={value => onChange(value as T)}
       >
-        <Button name={name} placeholder={placeholder} />
+        <Button name={name} placeholder={placeholder} testId={testId} />
         <Content>{children}</Content>
       </RadixSelect.Root>
     </Context.Provider>
@@ -65,9 +65,11 @@ const Root = <T extends string>({
   // https://github.com/radix-ui/primitives/issues/1569
 };
 
-type TriggerProps = Pick<ControlledSelectProps<string>, 'name' | 'placeholder'>;
+type TriggerProps = Pick<ControlledSelectProps<string>, 'name' | 'placeholder'> & {
+  testId?: string;
+};
 
-const Button = ({ name, placeholder }: TriggerProps) => {
+const Button = ({ name, placeholder, testId }: TriggerProps) => {
   const { theme } = useTheme();
   const { height, invalid, disabled } = useContext(Context);
 
@@ -88,6 +90,7 @@ const Button = ({ name, placeholder }: TriggerProps) => {
           'border-filter-border-negative': invalid,
         },
       )}
+      data-testid={testId}
     >
       <div className="flex-1 overflow-hidden text-start">
         <RadixSelect.Value
@@ -160,15 +163,15 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 };
 
 type ItemProps = {
-  value: string;
+  value: string;  
 };
 
-const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
+const Item = ({ value,  children }: PropsWithChildren<ItemProps>) => {
   const { theme } = useTheme();
 
   return (
     <RadixSelect.Item
-      value={value}
+      value={value}      
       className={cnTw(
         'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary contain-inline-size',
         'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',

@@ -6,6 +6,7 @@ export class TransferModalElements {
   static feeRowLocator = TEST_IDS.OPERATIONS.ESTIMATE_FEE;
   static amountInputLocator = TEST_IDS.OPERATIONS.AMOUNT_INPUT;
   static recipientInputLocator = TEST_IDS.OPERATIONS.RECIPIENT_INPUT;
+  static signatoryLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR;  
 
   static getUrl(chainId: number, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {

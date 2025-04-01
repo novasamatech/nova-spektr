@@ -15,4 +15,8 @@ export class SigningModalWindow extends BaseModal<SigningModalElements> {
   public async checkQRCode(): Promise<void> {
     expect(this.page.getByTestId(SigningModalElements.qrCodeContainerLocator)).toBeVisible();
   }
+
+  public async checkNovaSigner(): Promise<void> {
+    expect(this.page.getByTestId(SigningModalElements.novaSignerLocator)).toBeVisible();
+  }
 }
