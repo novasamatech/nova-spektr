@@ -10,6 +10,7 @@ export type DataStream<T> = AsyncIterable<T> & {
   pause(): void;
   resume(): void;
   push(value: T): void;
+  pushSingle(value: T): void;
   fail(error?: Error): void;
   on(status: Status, callback: VoidFunction): VoidFunction;
   pending(): boolean;
@@ -24,14 +25,16 @@ export function createStream<T>(): DataStream<T> {
 
   let resolver: PromiseWithResolvers<IteratorResult<T>> | null = null;
 
-  return {
+  const api: DataStream<T> = {
     pending() {
       return pending;
     },
+
     open() {
       events.emit('opened', undefined);
       pending = true;
     },
+
     close() {
       events.emit('closed', undefined);
       closed = true;
@@ -40,12 +43,15 @@ export function createStream<T>(): DataStream<T> {
         resolver = null;
       }
     },
+
     pause() {
       pending = false;
     },
+
     resume() {
       pending = true;
     },
+
     push(value) {
       if (closed) {
         throw new Error('Stream should be opened before push');
@@ -60,6 +66,13 @@ export function createStream<T>(): DataStream<T> {
         resolver = null;
       }
     },
+
+    pushSingle(value) {
+      api.resume();
+      api.push(value);
+      api.pause();
+    },
+
     fail(error) {
       if (resolver) {
         resolver.reject(error);
@@ -118,6 +131,8 @@ export function createStream<T>(): DataStream<T> {
       };
     },
   };
+
+  return api;
 }
 
 export async function* zipStreamWithParams<Params, Result>({
