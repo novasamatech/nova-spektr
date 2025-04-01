@@ -14,12 +14,11 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const proxyWallet = await loginPage.importDatabase('transfers/proxy-base-transfer.json');
     const assetsPage = await proxyWallet.gotoMain();
 
-    const chain = getChainByName(substrateChains, 'Westend');
+    const chain = getChainByName(substrateChains, 'Novasama Testnet - Governance');
     const transferModal = await assetsPage.openTransfer(chain, 0);
 
     await transferModal.fillAmount('0.01');
-    await transferModal.fillRecipient('5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP');
-    await transferModal.chooseSignatory();
+    await transferModal.fillRecipient('5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP');    
 
     const confirmationModal = await transferModal.openConfirmationModal();
     const signingModal = await confirmationModal.confirm();
