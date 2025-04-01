@@ -115,39 +115,37 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
             <EmptyList message={t('fellowship.activityFeed.activityModal.nothing-found', { query })} />
           )}
 
-          {sortedList.map(record => {
-            return (
-              <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pt-2">
-                <div className="flex items-center gap-2 text-button-small">
-                  <div className="min-w-0 grow">
-                    {nonNullable(input?.chain) && (
-                      <BodyText>
-                        <div className="flex items-center gap-2">
-                          <span>
-                            <Address
-                              title={record.name}
-                              hideAddress
-                              showIcon
-                              variant="short"
-                              address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
-                            />
-                          </span>
+          {sortedList.map(record => (
+            <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pt-2">
+              <div className="flex items-center gap-2 text-button-small">
+                <div className="min-w-0 grow">
+                  {nonNullable(input?.chain) && (
+                    <BodyText>
+                      <div className="flex items-center gap-2">
+                        <span>
+                          <Address
+                            title={record.name}
+                            hideAddress
+                            showIcon
+                            variant="short"
+                            address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
+                          />
+                        </span>
 
-                          <AccountExplorers accountId={record.accountId} chain={input.chain} />
-                        </div>
-                      </BodyText>
-                    )}
-                  </div>
-                  <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                    <Duration seconds={record.duration} shortFormat />
-                  </HelpText>
+                        <AccountExplorers accountId={record.accountId} chain={input.chain} />
+                      </div>
+                    </BodyText>
+                  )}
                 </div>
-                <FootnoteText className="text-text-secondary">
-                  <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
-                </FootnoteText>
+                <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+                  <Duration seconds={record.duration} shortFormat />
+                </HelpText>
               </div>
-            );
-          })}
+              <FootnoteText className="text-text-secondary">
+                <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
+              </FootnoteText>
+            </div>
+          ))}
         </div>
       </Modal.Content>
     </Modal>
