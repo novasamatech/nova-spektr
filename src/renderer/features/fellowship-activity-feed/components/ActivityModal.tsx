@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -18,11 +18,11 @@ import { activityFeed } from '../model/list';
 import { activityFeedRecordDescriptionSlot } from './ActivityList';
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 
-type OrderKey = 'date-asc' | 'date-desc' | 'name-asc' | 'name-desc';
+type OrderKey = 'duration-asc' | 'duration-desc' | 'name-asc' | 'name-desc';
 
 const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc' }> = {
-  'date-asc': { field: 'at', direction: 'asc' },
-  'date-desc': { field: 'at', direction: 'desc' },
+  'duration-asc': { field: 'duration', direction: 'asc' },
+  'duration-desc': { field: 'duration', direction: 'desc' },
   'name-asc': { field: 'name', direction: 'asc' },
   'name-desc': { field: 'name', direction: 'desc' },
 };
@@ -39,9 +39,15 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
 
+  const now = Date.now();
+
   const records = list.map(record => {
     const identity = identities[record.accountId];
-    return { ...record, name: identity?.name };
+    return {
+      ...record,
+      name: identity ? identityService.getFullName(identity) : undefined,
+      duration: (now - record.at.getTime()) / 1000,
+    };
   });
 
   const filteredList = performSearch({
@@ -60,8 +66,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
   const sortedList = orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
-
-  const now = Date.now();
 
   return (
     <Modal size="md" height="lg">
@@ -91,8 +95,12 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               value={orderKey}
               onChange={setOrderKey}
             >
-              <Select.Item value="date-asc">{t('fellowship.activityFeed.activityModal.sort.date-asc')}</Select.Item>
-              <Select.Item value="date-desc">{t('fellowship.activityFeed.activityModal.sort.date-desc')}</Select.Item>
+              <Select.Item value="duration-asc">
+                {t('fellowship.activityFeed.activityModal.sort.duration-asc')}
+              </Select.Item>
+              <Select.Item value="duration-desc">
+                {t('fellowship.activityFeed.activityModal.sort.duration-desc')}
+              </Select.Item>
               <Select.Item value="name-asc">{t('fellowship.activityFeed.activityModal.sort.name-asc')}</Select.Item>
               <Select.Item value="name-desc">{t('fellowship.activityFeed.activityModal.sort.name-desc')}</Select.Item>
             </Select>
@@ -108,8 +116,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           )}
 
           {sortedList.map(record => {
-            const identity = identities[record.accountId];
-
             return (
               <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pt-2">
                 <div className="flex items-center gap-2 text-button-small">
@@ -117,19 +123,23 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
                     {nonNullable(input?.chain) && (
                       <BodyText>
                         <div className="flex items-center gap-2">
-                          <Address
-                            title={identity ? identityService.getFullName(identity) : undefined}
-                            hideAddress
-                            showIcon
-                            variant="short"
-                            address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
-                          />
+                          <span>
+                            <Address
+                              title={record.name}
+                              hideAddress
+                              showIcon
+                              variant="short"
+                              address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
+                            />
+                          </span>
+
+                          <AccountExplorers accountId={record.accountId} chain={input.chain} />
                         </div>
                       </BodyText>
                     )}
                   </div>
                   <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                    <Duration seconds={(now - record.at.getTime()) / 1000} shortFormat />
+                    <Duration seconds={record.duration} shortFormat />
                   </HelpText>
                 </div>
                 <FootnoteText className="text-text-secondary">

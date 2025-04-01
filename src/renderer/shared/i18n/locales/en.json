@@ -315,8 +315,8 @@
         "nothing-found": "Nothing found for \"{query}\"",
         "search-placeholder": "Search",
         "sort": {
-          "date-asc": "Date asc",
-          "date-desc": "Date desc",
+          "duration-asc": "Duration asc",
+          "duration-desc": "Duration desc",
           "name-asc": "Name asc",
           "name-desc": "Name desc",
           "placeholder": "Sort by"
