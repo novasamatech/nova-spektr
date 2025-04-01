@@ -38,16 +38,11 @@
 # Key features
 
 1. Hardware wallet (Polkadot Vault) support
-2. Multishard wallet and multishard operations
+2. Dynamic derivations and multishard operations
 3. Show wallet balances for any supported token (assets, ORML, balances)
 4. Token transfer for any supported token (assets, ORML, balances)
 5. Multisig account and transactions without passing callData off-chain
 6. Relay Chain staking
-
-# Changelog
-
-Detailed changelog with releases description is located in the
-[changelog file](https://github.com/novasamatech/nova-spektr/blob/dev/CHANGELOG.md).
 
 # Development
 

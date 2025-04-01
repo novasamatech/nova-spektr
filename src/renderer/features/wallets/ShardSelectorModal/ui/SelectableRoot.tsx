@@ -1,45 +1,18 @@
-import { type Explorer } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { HelpText, IconButton, Identicon, Truncate } from '@/shared/ui';
+import { HelpText, Identicon } from '@/shared/ui';
+import { Hash, RootExplorers } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
-import { ExplorersPopover } from '@/entities/wallet';
 
 type Props = {
   accountId: AccountId;
-  explorers?: Explorer[];
   checked: boolean;
   semiChecked?: boolean;
-  truncate?: boolean;
-  className?: string;
   onChange: (value: boolean) => void;
 };
 
-export const SelectableRoot = ({
-  accountId,
-  explorers,
-  checked,
-  semiChecked,
-  truncate,
-  className,
-  onChange,
-}: Props) => {
+export const SelectableRoot = ({ accountId, checked, semiChecked, onChange }: Props) => {
   const address = toAddress(accountId);
-
-  const content = (
-    <div className="flex items-center gap-x-2">
-      <Identicon address={address} theme="jdenticon" size={20} background={false} canCopy={false} />
-      <div className={cnTw('mr-auto truncate', className)}>
-        {truncate ? (
-          <Truncate text={address} className="text-help-text text-text-tertiary" />
-        ) : (
-          <HelpText className="text-text-tertiary">{address}</HelpText>
-        )}
-      </div>
-
-      <IconButton name="info" size={16} className="shrink-0 group-hover:text-icon-hover" />
-    </div>
-  );
 
   return (
     <div
@@ -48,8 +21,15 @@ export const SelectableRoot = ({
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <Checkbox checked={checked} semiChecked={semiChecked} onChange={(checked) => onChange(checked)} />
-      <ExplorersPopover button={content} address={accountId} explorers={explorers} />
+      <Checkbox checked={checked} semiChecked={semiChecked} onChange={onChange} />
+
+      <div className="grid w-full grid-cols-[20px,1fr,auto] items-center gap-x-2">
+        <Identicon address={address} theme="jdenticon" size={20} background={false} canCopy={false} />
+        <HelpText className="text-text-tertiary">
+          <Hash value={address} variant="full" />
+        </HelpText>
+        <RootExplorers accountId={accountId} />
+      </div>
     </div>
   );
 };

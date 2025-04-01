@@ -1,11 +1,11 @@
 import throttle from 'lodash/throttle';
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { createSlot, useSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, TitleText } from '@/shared/ui';
-import { ScrollArea } from '@/shared/ui-kit';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 
 import PrivacyPolicy from './PrivacyPolicy';
 
@@ -16,7 +16,6 @@ export const onboardingActionsSlot = createSlot();
 
 export const Welcome = () => {
   const { t } = useI18n();
-  const wizards = useSlot(onboardingActionsSlot);
 
   const logo = useRef<HTMLDivElement>(null);
   const [fixed, setFixed] = useState(true);
@@ -42,8 +41,9 @@ export const Welcome = () => {
         <TitleText className="px-10 pb-4 pt-10">{t('onboarding.welcome.title')}</TitleText>
 
         <ScrollArea>
-          {/* TODO: move Cards to WalletPairing feature */}
-          <div className="flex flex-col gap-4 px-10 py-4">{wizards}</div>
+          <Box direction="column" gap={4} padding={[4, 10]}>
+            <Slot id={onboardingActionsSlot} />
+          </Box>
         </ScrollArea>
 
         <div className="flex flex-1 items-end px-10 pb-10 pt-4">

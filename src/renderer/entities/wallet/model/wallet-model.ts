@@ -1,17 +1,14 @@
-import { type UnitValue, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
-  type Account,
   type ID,
   type MultisigAccount,
   type NoID,
   type PolkadotVaultGroup,
   type ProxiedAccount,
   type VaultBaseAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
@@ -27,7 +24,6 @@ import {
   accountService,
   accounts,
 } from '@/domains/network';
-import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
@@ -37,8 +33,6 @@ export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = W
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
-const multishardCreated =
-  createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount, PolkadotVaultGroup>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
@@ -165,61 +159,6 @@ const createWalletsFx = createEffect(
   },
 );
 
-const multishardCreatedFx = createEffect(
-  async ({
-    wallet,
-    accounts: accountDrafts,
-  }: UnitValue<typeof multishardCreated>): Promise<CreateResult | undefined> => {
-    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
-
-    if (!dbWallet) return undefined;
-
-    const { base, chains, shards } = modelUtils.groupAccounts(accountDrafts);
-
-    const multishardAccounts = [];
-
-    for (const [index, baseAccount] of base.entries()) {
-      // TODO fix
-      const [dbBaseAccount] = await accounts.createAccounts([{ ...baseAccount, walletId: dbWallet.id }]);
-      if (!dbBaseAccount) return undefined;
-
-      multishardAccounts.push(dbBaseAccount);
-      let accountPayloads: NoID<Account>[] = [];
-
-      if (chains[index]) {
-        accountPayloads = accountPayloads.concat(
-          chains[index].map((account) => ({
-            ...account,
-            walletId: dbWallet.id,
-            baseAccountId: baseAccount.accountId,
-          })),
-        );
-      }
-
-      if (shards[index]) {
-        accountPayloads = accountPayloads.concat(
-          shards[index].map((account) => ({
-            ...account,
-            walletId: dbWallet.id,
-          })),
-        );
-      }
-
-      if (accountPayloads.length === 0) {
-        continue;
-      }
-
-      // @ts-expect-error fix it later
-      const dbChainAccounts = await accounts.createAccounts(accountPayloads);
-      if (!dbChainAccounts.length) return undefined;
-
-      multishardAccounts.push(...dbChainAccounts);
-    }
-
-    return { wallet: dbWallet, accounts: multishardAccounts };
-  },
-);
-
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   await storageService.wallets.delete(wallet.id);
   await accounts.deleteAccounts(wallet.accounts);
@@ -265,11 +204,11 @@ sample({
 });
 
 const walletCreatedDone = sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
+  clock: walletCreatedFx.doneData,
 }).filter({ fn: nonNullable });
 
 const walletCreationFail = sample({
-  clock: [walletCreatedFx.fail, multishardCreatedFx.fail],
+  clock: walletCreatedFx.fail,
 }).filter({ fn: nonNullable });
 
 sample({
@@ -282,11 +221,6 @@ sample({
     proxiedCreated,
   ],
   target: walletCreatedFx,
-});
-
-sample({
-  clock: multishardCreated,
-  target: multishardCreatedFx,
 });
 
 sample({
@@ -430,7 +364,6 @@ export const walletModel = {
 
   events: {
     watchOnlyCreated,
-    multishardCreated,
     singleshardCreated,
     multisigCreated,
     flexibleMultisigCreated,

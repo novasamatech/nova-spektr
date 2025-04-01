@@ -2,7 +2,7 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import cloneDeep from 'lodash/cloneDeep';
 
 import { type Wallet } from '@/shared/core';
-import { keys, nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
@@ -48,7 +48,7 @@ const $selectedStructure = createStore<SelectedStruct>({});
 sample({ clock: queryChanged, target: $query });
 
 const $isAccessDenied = combine(walletSelect.$selectedWallet, (wallet): boolean => {
-  return nonNullable(wallet) && !walletUtils.isPolkadotVault(wallet) && !walletUtils.isMultiShard(wallet);
+  return nonNullable(wallet) && !walletUtils.isPolkadotVault(wallet);
 });
 
 const $filteredAccounts = combine(
@@ -58,8 +58,7 @@ const $filteredAccounts = combine(
     chains: networkModel.$chains,
   },
   ({ query, wallet, chains }): AnyAccount[] => {
-    if (!wallet) return [];
-    if (!walletUtils.isMultiShard(wallet) && !walletUtils.isPolkadotVault(wallet)) return [];
+    if (nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
 
     return shardsUtils.getFilteredAccounts(wallet.accounts, chains, query);
   },
@@ -73,18 +72,10 @@ const $shardsStructure = combine(
     chains: networkModel.$chains,
   },
   ({ proceed, wallet, accounts, chains }): RootTuple[] => {
-    if (!proceed || !wallet) return [];
+    if (!proceed || nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
 
     const chainsMap = shardsUtils.getChainsMap<AnyAccount>(chains);
-
-    if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getStructForVault(wallet.rootAccountId, accounts, chainsMap);
-    }
-    if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getStructForMultishard(wallet.rootAccountId, accounts, chainsMap);
-    }
-
-    return [];
+    return shardsUtils.getStructForVault(wallet.rootAccountId, accounts, chainsMap);
   },
 );
 
@@ -95,19 +86,10 @@ const $initSelectedStructure = combine(
     chains: networkModel.$chains,
   },
   ({ proceed, wallet, chains }): SelectedStruct => {
-    if (!proceed || !wallet) return {};
-    if (!walletUtils.isMultiShard(wallet) && !walletUtils.isPolkadotVault(wallet)) return {};
+    if (!proceed || nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return {};
 
     const filteredAccounts = shardsUtils.getFilteredAccounts(wallet.accounts, chains);
-
-    if (walletUtils.isPolkadotVault(wallet)) {
-      return shardsUtils.getVaultChainsCounter(wallet.rootAccountId, chains, filteredAccounts);
-    }
-    if (walletUtils.isMultiShard(wallet)) {
-      return shardsUtils.getMultishardChainsCounter(wallet.rootAccountId, chains, filteredAccounts);
-    }
-
-    return {};
+    return shardsUtils.getVaultChainsCounter(wallet.rootAccountId, chains, filteredAccounts);
   },
 );
 
@@ -115,28 +97,6 @@ const $totalSelected = combine($selectedStructure, (selectedStructure): number =
   return Object.values(selectedStructure).reduce((acc, rootData) => {
     return acc + rootData.checked;
   }, 0);
-});
-
-const $isAllChecked = combine($selectedStructure, (struct): boolean => {
-  return keys(struct).every((root) => {
-    const { checked, total } = struct[root];
-
-    return checked === total;
-  });
-});
-
-const $isAllSemiChecked = combine($selectedStructure, (selectedStructure): boolean => {
-  const { checked, total } = Object.values(selectedStructure).reduce<Record<'checked' | 'total', number>>(
-    (acc, rootData) => {
-      acc.checked += rootData.checked;
-      acc.total += rootData.total;
-
-      return acc;
-    },
-    { checked: 0, total: 0 },
-  );
-
-  return checked > 0 && checked !== total;
 });
 
 sample({
@@ -231,8 +191,6 @@ export const shardsModel = {
   $shardsStructure,
   $selectedStructure,
   $totalSelected,
-  $isAllChecked,
-  $isAllSemiChecked,
   events: {
     modalToggled,
     queryChanged,
