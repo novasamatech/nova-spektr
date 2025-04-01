@@ -5,9 +5,9 @@ import { type PropsWithChildren, useState } from 'react';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
-import { BodyText, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
-import { AccountExplorers, Address } from '@/shared/ui-entities';
+import { nonNullable, performSearch } from '@/shared/lib/utils';
+import { Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -27,6 +27,8 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
   'name-desc': { field: 'name', direction: 'desc' },
 };
 
+const now = Date.now();
+
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
@@ -38,8 +40,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
-
-  const now = Date.now();
 
   const records = list.map(record => {
     const identity = identities[record.accountId];
@@ -74,9 +74,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         <div className="flex gap-2">
           <span>{t('fellowship.activityFeed.activityModal.title')}</span>
 
-          {input && (
-            <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold" />
-          )}
+          {input && <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold" />}
         </div>
       </Modal.Title>
       <Modal.HeaderContent>
@@ -117,24 +115,10 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
           {sortedList.map(record => (
             <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pt-2">
-              <div className="flex items-center gap-2 text-button-small">
-                <div className="min-w-0 grow">
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 grow text-button-small">
                   {nonNullable(input?.chain) && (
-                    <BodyText>
-                      <div className="flex items-center gap-2">
-                        <span>
-                          <Address
-                            title={record.name}
-                            hideAddress
-                            showIcon
-                            variant="short"
-                            address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
-                          />
-                        </span>
-
-                        <AccountExplorers accountId={record.accountId} chain={input.chain} />
-                      </div>
-                    </BodyText>
+                    <Account accountId={record.accountId} chain={input.chain} title={record.name} hideAddress />
                   )}
                 </div>
                 <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
