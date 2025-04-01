@@ -14,20 +14,23 @@ export type Deposit = {
   amount: BN;
 };
 
-export type Proposal =
-  | {
-      type: 'Evidence';
-      accountId: AccountId;
-    }
-  | {
-      type: 'Rfc';
-      pullRequest: string;
-      documentHash: string;
-    }
-  | {
-      type: 'Unknown';
-      description: string;
-    };
+export type EvidenceProposal = {
+  type: 'Evidence';
+  accountId: AccountId;
+};
+
+export type RfcProposal = {
+  type: 'Rfc';
+  pullRequest: string;
+  documentHash: string;
+};
+
+export type UnknownProposal = {
+  type: 'Unknown';
+  description: string;
+};
+
+export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal;
 
 export type OngoingReferendum = {
   type: 'Ongoing';
