@@ -1,3 +1,4 @@
+import { u8aToHex } from '@polkadot/util';
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 
@@ -11,7 +12,7 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
@@ -31,7 +32,7 @@ type VaultCreateParams = {
   )[];
 };
 
-const formInitiated = createEvent<SeedInfo[]>();
+const formInitiated = createEvent<SeedInfo>();
 const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
@@ -77,20 +78,25 @@ const $walletForm = createForm({
 
 sample({
   clock: formInitiated,
-  fn: (seedInfo: SeedInfo[]) => ({ name: seedInfo[0].name.trim() }),
+  fn: seedInfo => ({ name: seedInfo.name.trim() }),
   target: $walletForm.setInitialForm,
 });
 
 sample({
   clock: formInitiated,
   source: networkModel.$chains,
-  fn: chains => {
+  fn: (chains, { derivedKeys }) => {
     const defaultChains = networkUtils.getMainRelaychains(Object.values(chains));
+    const derivationPaths = new Set<string>();
 
-    return defaultChains.reduce<DraftAccount<VaultChainAccount>[]>((acc, chain) => {
-      if (!chain.specName) return acc;
+    const keys: DraftAccount<VaultChainAccount>[] = [];
 
-      acc.push({
+    for (const chain of defaultChains) {
+      if (!chain.specName) continue;
+
+      derivationPaths.add(`//${chain.specName}`);
+
+      keys.push({
         chainId: chain.chainId,
         name: KEY_NAMES[KeyType.MAIN],
         derivationPath: `//${chain.specName}`,
@@ -100,9 +106,25 @@ sample({
         keyType: KeyType.MAIN,
         type: 'chain',
       });
+    }
 
-      return acc;
-    }, []);
+    for (const key of derivedKeys) {
+      const chain = chains[u8aToHex(key.genesisHash)];
+      if (nullable(chain) || nullable(key.derivationPath) || derivationPaths.has(key.derivationPath)) continue;
+
+      keys.push({
+        chainId: chain.chainId,
+        name: key.derivationPath,
+        derivationPath: key.derivationPath,
+        cryptoType: networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+        accountType: AccountType.CHAIN,
+        keyType: KeyType.CUSTOM,
+        type: 'chain',
+      });
+    }
+
+    return keys;
   },
   target: $keys,
 });

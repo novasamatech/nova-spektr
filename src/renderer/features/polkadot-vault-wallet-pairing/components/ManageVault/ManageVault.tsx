@@ -1,3 +1,4 @@
+/* eslint-disable import-x/max-dependencies */
 import { u8aToHex } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
@@ -44,7 +45,7 @@ import { manageVaultModel } from './model/manage-vault-model';
 const STATUS_DELAY = 1500;
 
 type Props = {
-  seedInfo: SeedInfo[];
+  seedInfo: SeedInfo;
   onBack: () => void;
   onClose: () => void;
   onComplete: () => void;
@@ -70,7 +71,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     fields: { name },
   } = useForm(manageVaultModel.$walletForm);
 
-  const publicKey = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner.public));
+  const publicKey = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public));
   const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
   const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
 

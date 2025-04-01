@@ -15,6 +15,7 @@ const enum CameraState {
   SELECT,
   UNKNOWN_ERROR,
   INVALID_ERROR,
+  MULTISHARD_ERROR,
   DECODE_ERROR,
   DENY_ERROR,
 }
@@ -23,10 +24,10 @@ const RESULT_DELAY = 250;
 
 type Props = {
   size?: number | [number, number];
-  onComplete(payload: SeedInfo[]): void;
+  onComplete(payload: SeedInfo): void;
 };
 
-const KeyQrReader = ({ size = 300, onComplete }: Props) => {
+export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   const { t } = useI18n();
 
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
@@ -41,6 +42,7 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   const isCameraError = [
     CameraState.UNKNOWN_ERROR,
     CameraState.INVALID_ERROR,
+    CameraState.MULTISHARD_ERROR,
     CameraState.DECODE_ERROR,
     CameraState.DENY_ERROR,
   ].includes(cameraState);
@@ -72,24 +74,28 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
   };
 
   const onScanResult = (qrPayload: SeedInfo[]) => {
+    if (qrPayload.length > 1) {
+      setCameraState(CameraState.MULTISHARD_ERROR);
+      resetCamera();
+      return;
+    }
+
     try {
-      for (const qr of qrPayload) {
-        if (qr.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
-          encodeAddress(qr.multiSigner.public);
-        }
-        if (qr.derivedKeys.length === 0) continue;
+      const qr = qrPayload[0];
 
-        // TODO what is this?
-        // eslint-disable-next-line no-restricted-syntax
-        qr.derivedKeys.forEach(({ address }) => {
-          const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
+      if (qr.multiSigner && qr.multiSigner.MultiSigner !== CryptoTypeString.ECDSA) {
+        encodeAddress(qr.multiSigner.public);
+      }
 
-          return accountId.length === 20 ? address : encodeAddress(accountId);
-        });
+      // Validate each derived key, decodeAddress & encodeAddress can throw
+      for (const { address } of qr.derivedKeys) {
+        const accountId = isHex(address) ? hexToU8a(address) : decodeAddress(address);
+        if (accountId.length === 20) continue;
+        encodeAddress(accountId);
       }
 
       setIsScanComplete(true);
-      setTimeout(() => onComplete(qrPayload), RESULT_DELAY);
+      setTimeout(() => onComplete(qr), RESULT_DELAY);
     } catch {
       setCameraState(CameraState.INVALID_ERROR);
       resetCamera();
@@ -120,6 +126,17 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
               </p>
               <p className="max-w-[395px] text-sm text-neutral-variant">
                 {t('onboarding.paritySigner.wrongQRCodeDescription')}
+              </p>
+            </>
+          )}
+          {cameraState === CameraState.MULTISHARD_ERROR && (
+            <>
+              <Icon className="text-alert" name="warnCutout" size={70} />
+              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+                {t('onboarding.paritySigner.multishardQRCodeLabel')}
+              </p>
+              <p className="max-w-[395px] text-sm text-neutral-variant">
+                {t('onboarding.paritySigner.multishardQRCodeDescription')}
               </p>
             </>
           )}
@@ -234,5 +251,3 @@ const KeyQrReader = ({ size = 300, onComplete }: Props) => {
     </>
   );
 };
-
-export default KeyQrReader;

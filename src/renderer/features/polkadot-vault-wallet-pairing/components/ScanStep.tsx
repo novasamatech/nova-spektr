@@ -4,11 +4,12 @@ import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type SeedInfo } from '@/entities/transaction';
-import KeyQrReader from '../KeyQrReader/KeyQrReader';
+
+import { KeyQrReader } from './KeyQrReader';
 
 type Props = {
   onBack: () => void;
-  onComplete: (payload: SeedInfo[]) => void;
+  onComplete: (payload: SeedInfo) => void;
 };
 
 export const ScanStep = ({ onBack, onComplete }: Props) => {
