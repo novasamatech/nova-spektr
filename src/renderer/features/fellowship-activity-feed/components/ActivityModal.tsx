@@ -75,7 +75,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           <span>{t('fellowship.activityFeed.activityModal.title')}</span>
 
           {input && (
-            <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold"></ChainTitle>
+            <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold" />
           )}
         </div>
       </Modal.Title>
