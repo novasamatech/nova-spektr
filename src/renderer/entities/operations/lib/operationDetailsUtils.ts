@@ -10,16 +10,34 @@ import {
   type HexString,
   type ProxyType,
   type Signatory,
-  TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, isHex, toAccountId, toAddress } from '@/shared/lib/utils';
+import { dictionary, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type AnyDecodedTransaction, type MultisigEvent, accountService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type AnyDecodedTransaction,
+  type MultisigEvent,
+  accountService,
+  transactionService,
+} from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
-import { getTransactionType } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
+import { types } from '@/features/transaction-decoder';
+
+const unwrap = <T extends AnyDecodedTransaction>(
+  t: AnyDecodedTransaction,
+  predicate: (t: AnyDecodedTransaction) => t is T,
+): T | null => {
+  if (transactionService.isBatchTransaction(t)) {
+    return t.args.calls.find(predicate) ?? null;
+  }
+  if (predicate(t)) {
+    return t;
+  }
+  return null;
+};
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -125,125 +143,59 @@ export const getPayee = (transaction: AnyDecodedTransaction) => {
 };
 
 export const getDelegate = (transaction: AnyDecodedTransaction) => {
-  const delegate = transaction.args.delegate;
-  return isString(delegate) ? delegate : null;
+  return unwrap(transaction, (t) => {
+    return types.isAddProxyTransaction(t) || types.isRemoveProxyTransaction(t);
+  })?.args.delegate;
 };
 
-export const getDestinationChain = (transaction: AnyDecodedTransaction) => {
-  const destinationChain = transaction.args?.destinationChain;
-  return isString(destinationChain) && isHex(destinationChain) ? destinationChain : null;
+export const getSpawner = (transaction: AnyDecodedTransaction): AccountId | undefined => {
+  return unwrap(transaction, types.isKillPureProxyTransaction)?.args?.spawner;
 };
 
-export const getSpawner = (tx: AnyDecodedTransaction): AccountId | undefined => {
-  const coreTx = getOperationData(tx);
-  if (!coreTx) return undefined;
-
-  return coreTx.args?.spawner;
-};
-
-export const getProxyType = (tx: AnyDecodedTransaction): ProxyType | undefined => {
-  const coreTx = getOperationData(tx);
-  if (!coreTx) return undefined;
-
-  return coreTx.args?.proxyType;
-};
-
-export const getDelegationVotes = (tx: AnyDecodedTransaction): string | undefined => {
-  const txData = getOperationData(tx);
-  if (!txData || !txData.method || !txData.section) return undefined;
-
-  const transactionType = getTransactionType(txData.method, txData.section);
-  let coreTx;
-
-  if (transactionType === TransactionType.BATCH_ALL) {
-    coreTx = txData.args?.calls?.find(
-      (operationData: AnyDecodedTransactionData) =>
-        operationData.method &&
-        operationData.section &&
-        getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
+export const getProxyType = (transaction: AnyDecodedTransaction): ProxyType | undefined => {
+  return unwrap(transaction, (t) => {
+    return (
+      types.isAddProxyTransaction(t) ||
+      types.isRemoveProxyTransaction(t) ||
+      types.isCreatePureProxyTransaction(t) ||
+      types.isKillPureProxyTransaction(t)
     );
-  } else if (transactionType === TransactionType.DELEGATE) {
-    coreTx = txData;
+  })?.args?.proxyType;
+};
+
+export const getDelegationVotes = (transaction: AnyDecodedTransaction): string | undefined => {
+  const unwrapped = unwrap(transaction, types.isConvictionVotingDelegateTransaction);
+  if (unwrapped) {
+    const balance = new BN(unwrapped.args.balance || 0);
+    const conviction = new BN(votingService.getConvictionMultiplier(unwrapped.args.conviction) || 0);
+    return balance.mul(conviction).toString();
   }
-
-  if (!coreTx) return;
-
-  const balance = new BN(coreTx.args.balance || 0);
-  const conviction = new BN(votingService.getConvictionMultiplier(coreTx.args.conviction) || 0);
-
-  return balance.mul(conviction).toString();
 };
 
-export const getDelegationTarget = (tx: AnyDecodedTransaction): string | undefined => {
-  const txData = getOperationData(tx);
-  if (!txData || !txData.method || !txData.section) return undefined;
-
-  const transactionType = getTransactionType(txData.method, txData.section);
-
-  let coreTx;
-
-  if (transactionType === TransactionType.BATCH_ALL) {
-    coreTx = txData.args?.calls?.find(
-      (operationData: AnyDecodedTransactionData) =>
-        getTransactionType(operationData.method, operationData.section) === TransactionType.DELEGATE,
-    );
-  } else if (transactionType === TransactionType.DELEGATE) {
-    coreTx = txData;
-  }
-
-  return coreTx?.args.target;
+export const getDelegationTarget = (transaction: AnyDecodedTransaction): string | undefined => {
+  const unwrapped = unwrap(
+    transaction,
+    (t) => types.isConvictionVotingDelegateTransaction(t) || types.isConvictionVotingUnlockTransaction(t),
+  );
+  return unwrapped?.args?.target;
 };
 
-export const getDelegationTracks = (tx: AnyDecodedTransaction): string[] | undefined => {
-  const coreTxDelegate = getOperationData(tx);
-  if (!coreTxDelegate) return undefined;
-
-  let coreTxs;
-  const transactionType = getTransactionType(coreTxDelegate.method, coreTxDelegate.section);
-
-  if (transactionType === TransactionType.BATCH_ALL) {
-    const delegateTxs = coreTxDelegate.args?.calls?.filter(
-      (operationData: AnyDecodedTransactionData) =>
-        TransactionType.DELEGATE === getTransactionType(operationData.method, operationData.section),
-    );
-    const undelegateTxs = coreTxDelegate.args?.calls?.filter(
-      (operationData: AnyDecodedTransactionData) =>
-        TransactionType.UNDELEGATE === getTransactionType(operationData.method, operationData.section),
-    );
-
-    coreTxs = delegateTxs?.length > 0 ? delegateTxs : undelegateTxs;
-  } else if (transactionType && [TransactionType.DELEGATE, TransactionType.UNDELEGATE].includes(transactionType)) {
-    coreTxs = [coreTxDelegate];
-  }
-
-  if (!coreTxs || coreTxs.length === 0) return;
-
-  return coreTxs.map((tx: AnyDecodedTransactionData) => tx.args?.track?.toString());
+export const getDelegationTracks = (transaction: AnyDecodedTransaction): string[] => {
+  const unwrappedDelegate = unwrap(transaction, types.isConvictionVotingDelegateTransaction);
+  const unwrappedUndelegate = unwrap(transaction, types.isConvictionVotingDelegateTransaction);
+  return (unwrappedDelegate ? [unwrappedDelegate] : [unwrappedUndelegate])
+    .filter(nonNullable)
+    .map((t) => t.args.track.toString());
 };
 
 export const getUndelegationData = async (
   api: ApiPromise,
   transaction: AnyDecodedTransaction,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
-  if (!transaction || !transaction.method || !transaction.section) return { votes: undefined, target: undefined };
-
-  const transactionType = getTransactionType(transaction.method, transaction.section);
-
-  let coreTx;
-
-  if (transactionType === TransactionType.BATCH_ALL) {
-    coreTx = transaction.args?.calls?.find(
-      (operationData: AnyDecodedTransactionData) =>
-        getTransactionType(operationData.method, operationData.section) === TransactionType.UNDELEGATE,
-    );
-  } else if (transactionType === TransactionType.UNDELEGATE) {
-    coreTx = transaction;
-  }
-
+  const coreTx = unwrap(transaction, types.isConvictionVotingDelegateTransaction);
   if (!coreTx) return { votes: undefined, target: undefined };
 
-  const votes = await convictionVotingPallet.storage.votingFor(api, [[coreTx.address, coreTx.args.track]]);
-
+  const votes = await convictionVotingPallet.storage.votingFor(api, [[coreTx.args.target, coreTx.args.track]]);
   const delegation = votes.find((vote) => vote.type === 'Delegating');
 
   return {
@@ -254,14 +206,13 @@ export const getUndelegationData = async (
 };
 
 export const getReferendumId = (tx: AnyDecodedTransaction): string | undefined => {
-  const coreTx = getOperationData(tx);
+  const coreTx = unwrap(tx, types.isConvictionVotingVoteTransaction);
 
-  return coreTx?.args?.referendum;
+  return coreTx?.args?.referendum.toString();
 };
 
 export const getVote = (tx: AnyDecodedTransaction): TransactionVote | undefined => {
-  const coreTx = getOperationData(tx);
-
+  const coreTx = unwrap(tx, types.isConvictionVotingVoteTransaction);
   return coreTx?.args?.vote;
 };
 

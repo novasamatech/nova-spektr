@@ -4,6 +4,8 @@ import { transactionSDK } from '@/sdk/transaction';
 import { decodeCallData } from './callDataDecoder';
 import { getExtrinsic } from './extrinsicService';
 
+export * as types from './typeCheck';
+
 /**
  * This is temporary solution. Encoding and decoding should be splitted to
  * features.

@@ -5,7 +5,7 @@ import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, Transact
 import { multisigOperationService } from '@/domains/network';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './constants';
-import { hasDestWeight, isControllerMissing } from './utils';
+import { hasDestWeight } from './utils';
 
 export const getExtrinsic: Record<
   string,
@@ -76,12 +76,7 @@ export const getExtrinsic: Record<
 
     return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
   },
-  // controller arg removed from bond but changes not released yet
-  // https://github.com/paritytech/substrate/pull/14039
-  'staking.bond': ({ controller, value, payee }, api) =>
-    isControllerMissing(api)
-      ? api.tx.staking.bond(value, payee) // @ts-expect-error TODO fix
-      : api.tx.staking.bond(controller, value, payee),
+  'staking.bond': ({ value, payee }, api) => api.tx.staking.bond(value, payee),
   'staking.unbond': ({ value }, api) => api.tx.staking.unbond(value),
   'staking.bondExtra': ({ maxAdditional }, api) => api.tx.staking.bondExtra(maxAdditional),
   'staking.rebond': ({ value }, api) => api.tx.staking.rebond(value),
