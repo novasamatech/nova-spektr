@@ -1070,6 +1070,8 @@
       "decodeErrorDescription": "Error occurred while decoding QR code",
       "decodeErrorLabel": "Recognition error!",
       "generateAddressesModalTitle": "Generate accounts addresses",
+      "multishardQRCodeDescription": "Multishard wallets no longer supported",
+      "multishardQRCodeLabel": "Multishard QR not supported!",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
       "scanAgainButton": "Scan again",

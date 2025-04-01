@@ -22,15 +22,15 @@ import { identity as identityModel, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { IDENTITY_CHAIN } from '../../lib/constants';
-import { pairingFormModel } from '../../model/pairing-form-model';
+import { IDENTITY_CHAIN } from '../lib/constants';
+import { pairingFormModel } from '../model/pairing-form-model';
 
 type WalletForm = {
   walletName: string;
 };
 
 type Props = {
-  seedInfo: SeedInfo[];
+  seedInfo: SeedInfo;
   onBack: () => void;
   onClose: () => void;
   onComplete: () => void;
@@ -51,10 +51,10 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     formState: { errors, isValid },
   } = useForm<WalletForm>({
     mode: 'onChange',
-    defaultValues: { walletName: seedInfo[0].name || '' },
+    defaultValues: { walletName: seedInfo.name || '' },
   });
 
-  const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo[0].multiSigner?.public));
+  const accountId = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner?.public));
 
   const accounts = useMemo(() => {
     return chains.map(chain => [chain, accountId] as const);
@@ -72,7 +72,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
     },
   });
 
-  const isEthereumBased = seedInfo[0].multiSigner?.MultiSigner === CryptoTypeString.ECDSA;
+  const isEthereumBased = seedInfo.multiSigner?.MultiSigner === CryptoTypeString.ECDSA;
 
   useEffect(() => {
     const chainList = Object.values(allChains);
