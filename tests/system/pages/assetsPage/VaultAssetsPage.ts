@@ -5,6 +5,7 @@ import { AssetsSettingsModalElements } from '../_elements/AssetsSettingsModalEle
 import { GovernancePageElements } from '../_elements/GovernancePageElements';
 import { GovernancePage } from '../governancePage/GovernancePage';
 import { AssetsSettingsModalWindow } from '../modals/AssetsSettingsModalWindow';
+
 import { BaseAssetsPage } from './BaseAssetsPage';
 
 export class VaultAssetsPage extends BaseAssetsPage {

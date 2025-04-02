@@ -46,8 +46,8 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
     const chainId = filteredChain.chainId;
     const url = TransferModalElements.getUrl(chainId, this.assetId);
-    // TODO: Update waiting approach, currently it waits until send button is loaded    
-    await this.page.goto(url);    
+    // TODO: Update waiting approach, currently it waits until send button is loaded
+    await this.page.goto(url);
 
     return this;
   }
@@ -95,7 +95,10 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   }
 
   public async transferModalIsNotVisible(): Promise<TransferModalWindow> {
-    await expect(this.page.getByTestId(TransferModalElements.amountInputLocator)).not.toBeVisible();
+    await expect(
+      this.page.getByTestId(TransferModalElements.amountInputLocator),
+      'Transfer modal should not be visible',
+    ).not.toBeVisible();
 
     return this;
   }

@@ -41,68 +41,76 @@
         "rowCount": 140
       }
     ],
-    "data": [{
-      "tableName": "wallets",
-      "inbound": true,
-      "rows": [
-        {
-          "name": "Polkadot Vault - root",
-          "type": "wallet_sps",
-          "signingType": "signing_ps",
-          "isActive": true,
-          "id": 1,
-          "accounts": [
-            {
-              "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal",
-              "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
-              "name": "Polkadot Vault - root",
-              "cryptoType": 0,
-              "signingType": "signing_ps",
-              "accountType": "base",
-              "type": "universal",
-              "walletId": 1
+    "data": [
+      {
+        "tableName": "wallets",
+        "inbound": true,
+        "rows": [
+          {
+            "name": "Polkadot Vault - root",
+            "type": "wallet_sps",
+            "signingType": "signing_ps",
+            "isActive": true,
+            "id": 1,
+            "accounts": [
+              {
+                "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal",
+                "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
+                "name": "Polkadot Vault - root",
+                "cryptoType": 0,
+                "signingType": "signing_ps",
+                "accountType": "base",
+                "type": "universal",
+                "walletId": 1
+              }
+            ],
+            "$types": {
+              "accounts": "arrayNonindexKeys"
             }
-          ],
-          "$types": {
-            "accounts": "arrayNonindexKeys"
           }
-        }
-      ]
-    },{
-      "tableName": "accounts",
-      "inbound": true,
-      "rows": []
-    },{
-      "tableName": "contacts",
-      "inbound": true,
-      "rows": []
-    },{
-      "tableName": "multisigTransactions",
-      "inbound": true,
-      "rows": []
-    },{
-      "tableName": "notifications",
-      "inbound": true,
-      "rows": []
-    },{
-      "tableName": "multisigEvents",
-      "inbound": true,
-      "rows": []
-    },{
-      "tableName": "accounts2",
-      "inbound": true,
-      "rows": [
-        {
-          "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
-          "name": "Polkadot Vault - root",
-          "cryptoType": 0,
-          "signingType": "signing_ps",
-          "accountType": "base",
-          "type": "universal",
-          "walletId": 1,
-          "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal"
-        }
-      ]
-    }]
+        ]
+      },
+      {
+        "tableName": "accounts",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "contacts",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "multisigTransactions",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "notifications",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "multisigEvents",
+        "inbound": true,
+        "rows": []
+      },
+      {
+        "tableName": "accounts2",
+        "inbound": true,
+        "rows": [
+          {
+            "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
+            "name": "Polkadot Vault - root",
+            "cryptoType": 0,
+            "signingType": "signing_ps",
+            "accountType": "base",
+            "type": "universal",
+            "walletId": 1,
+            "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal"
+          }
+        ]
+      }
+    ]
   }
 }
