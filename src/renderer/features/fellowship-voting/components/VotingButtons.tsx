@@ -42,6 +42,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
   return (
     <>
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+
       <Box gap={4}>
         <Box direction="row" gap={4}>
           {renderNayButton ? (

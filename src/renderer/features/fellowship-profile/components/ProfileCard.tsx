@@ -178,31 +178,9 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          {pendingDetails ? (
-            <>
-              <SmallTitleText>
-                <Skeleton height="1lh" width="100%" />
-              </SmallTitleText>
-              <SmallTitleText>
-                <Skeleton height="1lh" width="100%" />
-              </SmallTitleText>
-              <SmallTitleText>
-                <Skeleton height="1lh" width="100%" />
-              </SmallTitleText>
-            </>
-          ) : (
-            <>
-              <SmallTitleText>
-                <Activity />
-              </SmallTitleText>
-              <SmallTitleText>
-                <Aggrement />
-              </SmallTitleText>
-              <SmallTitleText>
-                <NextRankTimeout />
-              </SmallTitleText>
-            </>
-          )}
+          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
+          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
+          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <NextRankTimeout />}</SmallTitleText>
         </div>
       </Box>
     </Card>
@@ -212,12 +190,14 @@ const Member = () => {
 const Activity = () => {
   const { t } = useI18n();
   const profileDetails = useUnit(profile.$profileDetails);
+
   return <span>{nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : t('fellowship.n/a')}</span>;
 };
 
-const Aggrement = () => {
+const Agreement = () => {
   const { t } = useI18n();
   const profileDetails = useUnit(profile.$profileDetails);
+
   return <span>{nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : t('fellowship.n/a')}</span>;
 };
 
