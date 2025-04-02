@@ -1,61 +1,71 @@
- # System Tests
+# System Tests
 
-This document provides instructions on how to run system tests for the Nova Spektr project. You can run these tests either directly on your machine or inside a Docker container.
+This document provides instructions on how to run system tests for the Nova Spektr project. You can run these tests
+either directly on your machine or inside a Docker container.
 
- ## Running without docker
+## Running without docker
 
- Follow these steps to run the system tests without Docker:
+Follow these steps to run the system tests without Docker:
 
 1. Install the project dependencies:
- ```bash
- pnpm install
- ```
+
+```bash
+pnpm install
+```
 
 2. Install the required browsers:
- ```bash
- pnpm run pretest:system
- ```
+
+```bash
+pnpm run pretest:system
+```
 
 3. Start the application:
- ```bash
- pnpm run start:renderer
- ```
+
+```bash
+pnpm run start:renderer
+```
 
 4. Run the system tests:
- ```bash
- pnpm run test:system
- ```
+
+```bash
+pnpm run test:system
+```
 
 5. To view the test results, use:
- ```bash
- pnpm exec playwright show-report
- ```
+
+```bash
+pnpm exec playwright show-report
+```
 
 You can also run the tests in UI mode or test generation mode:
 
 - For UI mode:
+
 ```bash
 pnpm test:system:ui-mod
 ```
 
 - For test generation mode:
+
 ```bash
 pnpm test:system-generator
 ```
 
- ## Running with docker
+## Running with docker
 
 If you prefer to run the system tests inside a Docker container, follow these steps:
 
 1. Build and start the Docker container:
- ```bash
- docker-compose up -d --build
- ```
+
+```bash
+docker-compose up -d --build
+```
 
 2. Run the system tests:
- ```bash
- pnpm run test:system
- ```
+
+```bash
+pnpm run test:system
+```
 
 Future Improvements
 
