@@ -1,7 +1,8 @@
+import { type DecodedXcmPayload } from '@/shared/api/xcm';
 import { type Address, type Conviction, type HexString, type ProxyType, type Timepoint } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyDecodedTransaction, type DecodedTransaction } from '@/domains/network';
-import { type TransactionVote } from '../../entities/governance';
+import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from '@/domains/network';
+import { type TransactionVote } from '@/entities/governance';
 
 // system
 
@@ -22,26 +23,23 @@ export function isTransferTransaction(t: AnyDecodedTransaction): t is TransferTr
   return t.section === 'balances' && ['transferKeepAlive', 'transfer', 'transferAll'].includes(t.method);
 }
 
-export type AssetTransferTransaction = DecodedTransaction<{
-  assetId: string;
-  dest: Address;
-  value: string;
-}>;
-export function isAssetTransferTransaction(t: AnyDecodedTransaction): t is TransferTransaction {
+export type AssetTransferTransaction = DecodedTransaction<DecodedXcmPayload>;
+export function isAssetTransferTransaction(t: AnyDecodedTransaction): t is AssetTransferTransaction {
   return ['assets', 'currencies'].includes(t.section) && t.method === 'transfer';
 }
 
-export type XcmTransferTransaction = DecodedTransaction<{
-  dest: unknown;
-  beneficiary: Address;
-  assets: unknown;
-}>;
-export function isXcmTransferTranasction(t: AnyDecodedTransaction): t is TransferTransaction {
+export type XcmTransferTransaction = DecodedTransaction<DecodedXcmPayload>;
+export function isXcmTransferTranasction(t: AnyDecodedTransaction): t is XcmTransferTransaction {
   return (
     (t.section === 'xcmPallet' && ['limitedReserveTransferAssets', 'limitedTeleportAssets'].includes(t.method)) ||
     (t.section === 'polkadotXcm' &&
       ['limitedReserveTransferAssets', 'limitedTeleportAssets', 'transferAssets'].includes(t.method))
   );
+}
+
+export type MultiAssetTransferTransaction = DecodedTransaction<DecodedXcmPayload>;
+export function isMultiAssetTransferTranasction(t: AnyDecodedTransaction): t is MultiAssetTransferTransaction {
+  return t.section === 'xTokens' && t.method === 'transferMultiasset';
 }
 
 // multisig
@@ -129,6 +127,15 @@ export function isStakingChillTransaction(t: AnyDecodedTransaction): t is Stakin
 }
 
 // proxy
+
+export type ProxyProxyTransaction = DecodedTransaction<{
+  real: AccountId;
+  forceProxyType: ProxyType | '';
+  call: EncodedTransaction;
+}>;
+export function isProxyProxyTransaction(t: AnyDecodedTransaction): t is ProxyProxyTransaction {
+  return t.section === 'proxy' && t.method === 'proxy';
+}
 
 export type AddProxyTransaction = DecodedTransaction<{
   delegate: Address;

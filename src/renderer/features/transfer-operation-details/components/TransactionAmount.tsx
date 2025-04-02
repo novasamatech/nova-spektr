@@ -3,8 +3,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount } from '@/entities/transaction';
-import { useTransactionAsset } from '../hooks/useTransactionAsset';
+import { getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
@@ -15,7 +14,7 @@ type Props = {
 export const TransactionAmount = ({ operation, className }: Props) => {
   const transaction = operationDetailsUtils.getOperationData(operation);
   const value = transaction ? getTransactionAmount(transaction) : null;
-  const asset = useTransactionAsset(operation);
+  const asset = useTransactionAsset(operation.transaction, operation.chainId);
 
   if (!asset || !value) {
     return null;

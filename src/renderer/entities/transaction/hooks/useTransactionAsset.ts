@@ -24,11 +24,12 @@ export const useTransactionAsset = (transaction: AnyTransaction | null, chainId:
 
   if (decodedTransaction && chain) {
     const assetId = operationDetailsUtils.getAssetId(decodedTransaction);
-    const asset = operationDetailsUtils.getAsset(decodedTransaction);
 
     if (assetId && api) {
       return getAssetByTypeExtras(api, chain.assets, assetId);
     }
+
+    const asset = chain.assets.at(0);
 
     if (asset) {
       return getAssetById(asset, chain?.assets) ?? null;

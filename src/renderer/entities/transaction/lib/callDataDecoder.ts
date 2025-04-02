@@ -186,7 +186,7 @@ const getCallDataParser: Record<
   (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId) => Record<string, any>
 > = {
   [TransactionType.TRANSFER]: (decoded): Record<string, any> => {
-    return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() } satisfies typ;
+    return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
   },
   [TransactionType.TRANSFER_ALL]: (decoded): Record<string, any> => {
     return { dest: decoded.args[0].toString() };

@@ -23,8 +23,8 @@ import {
   transactionService,
 } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
+import { types } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { types } from '@/features/transaction-decoder';
 
 const unwrap = <T extends AnyDecodedTransaction>(
   t: AnyDecodedTransaction,
@@ -118,13 +118,17 @@ export const getSignatoryAccounts = (
 };
 
 export const getAssetId = (transaction: AnyDecodedTransaction) => {
-  const asset = transaction.args.assetId;
+  const coreTx = unwrap(transaction, types.isAssetTransferTransaction);
+  const asset = coreTx?.args.assetId;
   return isString(asset) ? asset : null;
 };
 
-export const getAsset = (transaction: AnyDecodedTransaction) => {
-  const asset = transaction.args.asset;
-  return isString(asset) ? asset : null;
+export const getDestinationChain = (transaction: AnyDecodedTransaction) => {
+  const coreTx = unwrap(transaction, (t) => {
+    return types.isXcmTransferTranasction(t) || types.isMultiAssetTransferTranasction(t);
+  });
+
+  return coreTx?.args?.destinationChain;
 };
 
 export const getDestinationAddress = (transaction: AnyDecodedTransaction, chain: Chain) => {
@@ -133,13 +137,19 @@ export const getDestinationAddress = (transaction: AnyDecodedTransaction, chain:
 };
 
 export const getDestinationAccountId = (transaction: AnyDecodedTransaction) => {
-  const dest = transaction.args.dest;
+  const unwrapped = unwrap(transaction, (t) => {
+    return types.isTransferTransaction(t) || types.isAssetTransferTransaction(t);
+  });
+  const dest = unwrapped?.args.dest;
   return isString(dest) ? toAccountId(dest) : null;
 };
 
 export const getPayee = (transaction: AnyDecodedTransaction) => {
-  const payee = transaction.args.payee;
-  return isString(payee) ? payee : null;
+  const coreTx = unwrap(transaction, (t) => {
+    return types.isStakingBondTransaction(t) || types.isStakingSetPayeeTransaction(t);
+  });
+
+  return coreTx?.args.payee;
 };
 
 export const getDelegate = (transaction: AnyDecodedTransaction) => {
@@ -148,19 +158,32 @@ export const getDelegate = (transaction: AnyDecodedTransaction) => {
   })?.args.delegate;
 };
 
+export const getStakingTargets = (transaction: AnyDecodedTransaction) => {
+  return unwrap(transaction, types.isStakingNominateTransaction)?.args?.targets ?? null;
+};
+
 export const getSpawner = (transaction: AnyDecodedTransaction): AccountId | undefined => {
   return unwrap(transaction, types.isKillPureProxyTransaction)?.args?.spawner;
 };
 
 export const getProxyType = (transaction: AnyDecodedTransaction): ProxyType | undefined => {
-  return unwrap(transaction, (t) => {
+  const proxyProxyType = unwrap(transaction, types.isProxyProxyTransaction);
+  if (proxyProxyType) {
+    return proxyProxyType.args.forceProxyType || undefined;
+  }
+
+  const otherProxyOperation = unwrap(transaction, (t) => {
     return (
       types.isAddProxyTransaction(t) ||
       types.isRemoveProxyTransaction(t) ||
       types.isCreatePureProxyTransaction(t) ||
       types.isKillPureProxyTransaction(t)
     );
-  })?.args?.proxyType;
+  });
+
+  if (otherProxyOperation) {
+    return otherProxyOperation.args.proxyType;
+  }
 };
 
 export const getDelegationVotes = (transaction: AnyDecodedTransaction): string | undefined => {

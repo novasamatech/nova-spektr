@@ -15,7 +15,7 @@ const Operation = memo(({ operation }: Props) => {
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
-        <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
+        <div className="flex h-[52px] w-full min-w-0 items-center gap-x-4 overflow-hidden">
           <OperationTitleDate operation={operation} />
           <OperationTitle operation={operation} variant="long" />
           <OperationTitleStatus operation={operation} />

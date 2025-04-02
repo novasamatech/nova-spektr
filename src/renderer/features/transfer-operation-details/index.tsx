@@ -1,26 +1,34 @@
-import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
+import {
+  isTransferTransaction,
+  isXcmTransaction,
+  useDecodedTransaction,
+  useTransactionAsset,
+} from '@/entities/transaction';
 import { multisigOperationSDK } from '@/sdk/multisig-operation';
-import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
-import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
-import { TransferOperationTitle } from './components/TransferOperationTitle';
-import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
-import { useDecodedTransaction } from './hooks/useDecodedTransaction';
-import { useTransactionAsset } from './hooks/useTransactionAsset';
 import { transferOperationDetailFeature } from './model/feature';
 
 export { transferOperationDetailFeature, useTransactionAsset, useDecodedTransaction };
 
 multisigOperationSDK(transferOperationDetailFeature, {
-  title({ transaction, chainId, variant }) {
-    if (isTransferTransaction(transaction)) {
-      return <TransferOperationTitle chainId={chainId} transaction={transaction} variant={variant} />;
+  icon({ operation }) {
+    if (isTransferTransaction(operation)) {
+      return 'transferMst';
     }
-    if (isXcmTransaction(transaction)) {
-      return <XcmTransferOperationTitle chainId={chainId} transaction={transaction} variant={variant} />;
+    if (isXcmTransaction(operation)) {
+      return 'crossChain';
     }
-
+  },
+  title({ operation }) {
+    if (isTransferTransaction(operation)) {
+      return 'operations.titles.transfer';
+    }
+    if (isXcmTransaction(operation)) {
+      return 'operations.titles.crossChainTransfer';
+    }
+  },
+  additionalInfo() {
     return null;
   },
   details({ transaction, multisigAccountId, chainId }) {
@@ -48,9 +56,9 @@ multisigOperationSDK(transferOperationDetailFeature, {
 //   return null;
 // });
 
-transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
-  return <TransactionAmount operation={operation} />;
-});
+// transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+//   return <TransactionAmount operation={operation} />;
+// });
 
 // transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
 //   const { t } = useI18n();

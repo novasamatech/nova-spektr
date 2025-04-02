@@ -7,7 +7,7 @@ import { type XcmConfig, xcmService } from '@/shared/api/xcm';
 import { type Asset } from '@/shared/core';
 import { toLocalChainId } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
-import { type MultisigOperationData } from '@/domains/network';
+import { type AnyDecodedTransaction, type MultisigOperationData } from '@/domains/network';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -16,7 +16,7 @@ type Props = {
   multiply?: number;
   asset: Asset;
   config: XcmConfig;
-  transaction?: MultisigOperationData | null;
+  transaction?: MultisigOperationData | AnyDecodedTransaction | null;
   className?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
@@ -52,6 +52,7 @@ export const XcmFee = memo(
       }
 
       const originChainId = toLocalChainId(api.genesisHash.toHex());
+      // @ts-expect-error no types in AnyDecodedTransaction
       const destinationChainId = toLocalChainId(transaction.args?.destinationChain);
       const configChain = config.chains.find((c) => c.chainId === originChainId);
       const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);

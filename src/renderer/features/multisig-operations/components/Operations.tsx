@@ -8,13 +8,13 @@ import { FootnoteText } from '@/shared/ui';
 import { ScrollArea } from '@/shared/ui-kit';
 import { priceProviderModel } from '@/entities/price';
 import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
-import { OperationsFilter } from '@/features/operations';
 import { operationsContextModel } from '../model/context';
-import { operations } from '../model/model';
+import { list } from '../model/list';
 
 import EmptyOperations from './EmptyState/EmptyOperations';
 import { FlexibleMultisigShell } from './FlexibleMultisigShell';
 import Operation from './Operation';
+import { OperationsFilter } from './OperationsFilter';
 
 export const Operations = memo(() => {
   const { formatDate } = useI18n();
@@ -22,7 +22,7 @@ export const Operations = memo(() => {
   const account = useUnit(operationsContextModel.$account);
   const txs = useUnit(accountMultisigOperations.$accountOperations);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
-  const filteredTxs = useUnit(operations.$filteredTxs);
+  const filteredTxs = useUnit(list.$filteredTxs);
 
   const groupedTxs = useMemo(() => {
     const sortedTxs = Array.from(filteredTxs).sort((a, b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));

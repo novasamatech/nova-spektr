@@ -1,3 +1,5 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { type AnyDecodedTransaction, transactionService } from '@/domains/network';
@@ -57,7 +59,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 // TODO remove
-export const getIconName = (transaction?: AnyDecodedTransaction): IconNames => {
+export const getIconName = (api: ApiPromise, transaction?: AnyDecodedTransaction): IconNames => {
   const operationType = getTransactionType(transaction?.method, transaction?.section);
 
   if (!operationType) return 'unknownConfirm';
@@ -67,8 +69,8 @@ export const getIconName = (transaction?: AnyDecodedTransaction): IconNames => {
   }
 
   if (transaction && transactionService.isBatchTransaction(transaction)) {
-    const unwrapped = transactionService.unwrapTransaction(transaction.args.calls[0]).at(-1);
-    return getIconName(unwrapped);
+    const unwrapped = transactionService.unwrapTransaction(transaction.args.calls[0], api).at(-1);
+    return getIconName(api, unwrapped);
   }
 
   return TransactionIcons[operationType];

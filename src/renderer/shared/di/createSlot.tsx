@@ -24,7 +24,11 @@ export type SlotProps = Record<string, unknown> | void;
 export const isSlotIdentifier = (v: unknown): v is SlotIdentifier<any> => isIdentifier(v) && v.type === 'slot';
 
 export const normalizeSlotHandler = <Props,>(body: SlotHandler<Props>): SlotHandlerExtended<Props> => {
-  return isFunction(body) ? { render: body } : body;
+  if (isFunction(body)) {
+    body.displayName = 'Slot(Item)';
+    return { render: body };
+  }
+  return body;
 };
 
 export const createSlot = <Props extends SlotProps = void>(config?: { name: string }): SlotIdentifier<Props> => {

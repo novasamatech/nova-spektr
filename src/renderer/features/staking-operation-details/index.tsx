@@ -1,7 +1,9 @@
+import { type ReactNode } from 'react';
+
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { type IconNames } from '@/shared/ui';
-import { getTransactionType } from '@/entities/transaction';
+import { getTransactionType, types } from '@/entities/transaction';
 import { multisigOperationSDK } from '@/sdk/multisig-operation';
 
 import { PayeeOperationDetails } from './components/PayeeOperationDetails';
@@ -40,15 +42,34 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 };
 
 multisigOperationSDK(stakingOperationDetailFeature, {
-  icon(transaction) {
-    const type = getTransactionType(transaction?.method, transaction?.section);
+  icon({ operation }) {
+    const type = getTransactionType(operation.method, operation.section);
     if (type) {
       return getOperationIcon(type);
     }
   },
-  details({ transaction }) {
+  additionalInfo() {
+    return null;
+  },
+  details({ transaction, chainId }) {
     const transactionType = getTransactionType(transaction?.method, transaction?.section);
     if (!transactionType) return null;
+
+    const nodes: ReactNode[] = [];
+
+    if (
+      types.isStakingBondTransaction(transaction) ||
+      types.isStakingBondExtraTransaction(transaction) ||
+      types.isStakingUnbondTransaction(transaction) ||
+      types.isStakingRebondTransaction(transaction) ||
+      types.isStakingWithdrawUnbondedTransaction(transaction)
+    ) {
+      nodes.push(<PayeeOperationDetails key="payee" transaction={transaction} chainId={chainId} />);
+    }
+
+    if (types.isStakingBondTransaction(transaction) || types.isStakingNominateTransaction(transaction)) {
+      nodes.push(<ValidatorsOperationDetails key="validators" transaction={transaction} chainId={chainId} />);
+    }
 
     const shouldRenderPeyee = [
       TransactionType.BOND,
@@ -60,11 +81,6 @@ multisigOperationSDK(stakingOperationDetailFeature, {
 
     const shouldRenderValidators = [TransactionType.BOND, TransactionType.NOMINATE].includes(transactionType);
 
-    return (
-      <>
-        {shouldRenderPeyee && <PayeeOperationDetails operation={transaction} />}
-        {shouldRenderValidators && <ValidatorsOperationDetails operation={transaction} />}
-      </>
-    );
+    return <>{nodes}</>;
   },
 });

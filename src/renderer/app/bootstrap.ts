@@ -30,6 +30,7 @@ import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceBasketFeature } from '@/features/governance-basket';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
 import { importDBFeature } from '@/features/import-db';
 import { ledgerWalletPairingFeature } from '@/features/ledger-wallet-pairing';
 import { multisigOperationsFeature } from '@/features/multisig-operations';
@@ -42,6 +43,7 @@ import { polkadotVaultWalletPairingFeature } from '@/features/polkadot-vault-wal
 import { proxiedWalletFeature } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { proxyBasketFeature } from '@/features/proxy-basket';
+import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingBasketFeature } from '@/features/staking-basket';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
@@ -56,8 +58,6 @@ import { walletPairingFeature } from '@/features/wallet-pairing';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { watchOnlyWalletFeature } from '@/features/watch-only-wallet';
 import { watchOnlyWalletPairingFeature } from '@/features/watch-only-wallet-pairing';
-import { governanceOperationDetailFeature } from '../features/governance-operation-details';
-import { proxyOperationDetailFeature } from '../features/proxy-operation-details';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });

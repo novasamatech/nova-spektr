@@ -15,7 +15,7 @@ export const OperationTitleDate = ({ operation }: Props) => {
   const date = Number(operation.timestamp) || Number(initEvent?.timestamp) || Date.now();
 
   return (
-    <div className="w-[58px] pr-1">
+    <div className="w-[58px] shrink-0 pr-1">
       <FootnoteText className="text-text-tertiary" align="right">
         {formatDate(date, 'p')}
       </FootnoteText>

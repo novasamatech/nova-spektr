@@ -1,49 +1,41 @@
-import { useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
-import { type ChainId } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
+import { Slot, createSlot, createTransformer, useTransformer } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type AnyDecodedTransaction, type MultisigOperation, transactionService } from '@/domains/network';
-import { networkModel } from '@/entities/network';
+import { type IconNames } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
+import { TransactionTitle } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
   variant: 'long' | 'short';
 };
 
-export const operationTitleSlot = createSlot<{
-  transaction: AnyDecodedTransaction;
-  chainId: ChainId;
-  variant: 'long' | 'short';
-}>();
-export const operationAdditionalInfoSlot = createSlot<{ transaction: AnyDecodedTransaction | null }>();
+export const operationIconNameTransformer = createTransformer<{ operation: MultisigOperation }, IconNames>();
+export const operationTitleTransformer = createTransformer<{ operation: MultisigOperation }, string>();
+export const operationAdditionalInfoSlot = createSlot<{ operation: MultisigOperation }>();
 
 export const OperationTitle = memo(({ operation, variant }: Props) => {
-  const apis = useUnit(networkModel.$apis);
-  const api = apis[operation.chainId];
-  const unwrappedPath = useMemo(() => {
-    if (!api || !operation.transaction) return [];
-    try {
-      return transactionService.unwrapTransaction(operation.transaction, api);
-    } catch {
-      return [];
-    }
-  }, [api, operation]);
-  const decodedTransaction = unwrappedPath.at(-1) ?? null;
+  const { t } = useI18n();
+  const iconName = useTransformer(operationIconNameTransformer, { operation });
+  const externalTitle = useTransformer(operationTitleTransformer, { operation });
+  // const apis = useUnit(networkModel.$apis);
+  // const api = apis[operation.chainId];
 
-  const methodTitle = decodedTransaction
-    ? formatSectionAndMethod(decodedTransaction.section, decodedTransaction.method)
-    : null;
+  const methodTitle =
+    operation.section && operation.method ? formatSectionAndMethod(operation.section, operation.method) : null;
 
-  if (!decodedTransaction) {
-    return null;
-  }
+  const title = externalTitle ? t(externalTitle) : (methodTitle ?? t('operations.titles.unknown'));
 
   return (
-    <div>
-      <Slot id={operationTitleSlot} props={{ transaction: decodedTransaction, chainId: operation.chainId, variant }} />
+    <Box verticalAlign="center" width="100%">
+      <Box direction="row" verticalAlign="center" gap={3}>
+        <TransactionTitle className="flex-1 overflow-hidden" title={title} icon={iconName ?? 'unknownMst'} />
+        {variant === 'long' && <Slot id={operationAdditionalInfoSlot} props={{ operation }} />}
+      </Box>
       <span className="hidden [*:empty~&]:flex">{methodTitle}</span>
-    </div>
+    </Box>
   );
 });

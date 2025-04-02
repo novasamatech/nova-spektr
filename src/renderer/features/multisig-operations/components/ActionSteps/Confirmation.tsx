@@ -11,9 +11,17 @@ import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton, operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@/entities/transaction';
+import {
+  Fee,
+  FeeLoader,
+  MultisigDepositWithLabel,
+  XcmFee,
+  isXcmTransaction,
+  types,
+  useDecodedTransaction,
+  useTransactionAsset,
+} from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { useDecodedTransaction, useTransactionAsset } from '@/features/transfer-operation-details';
 import { xcmTransferModel } from '@/widgets/Transfer';
 import { OperationDetails } from '../OperationDetails';
 
@@ -44,7 +52,6 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const transaction = operation.transaction;
 
   const decoded = useDecodedTransaction(operation.transaction, chain.chainId);
   const asset = useTransactionAsset(operation.transaction, chain.chainId);
@@ -71,9 +78,9 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
       <div className="mb-6 flex flex-col items-center gap-y-3">
-        {decoded ? <Icon className="text-icon-default" name={getIconName(decoded)} size={60} /> : null}
+        {decoded ? <Icon className="text-icon-default" name={getIconName(api, decoded)} size={60} /> : null}
 
-        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: operation }} />}
+        {decoded && <Slot id={confirmTransactionInfoSlot} props={{ operation: operation }} />}
       </div>
 
       <TransactionDetails chain={chain} wallets={wallets} initiator={[account]} signatory={signAccount ?? null}>
@@ -102,9 +109,9 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
           )}
         </DetailRow>
 
-        {isXcmTransaction(transaction) && xcmConfig && xcmApi && asset && (
+        {decoded && types.isXcmTransferTranasction(decoded) && xcmConfig && xcmApi && asset && (
           <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
-            <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
+            <XcmFee api={xcmApi} transaction={decoded} asset={asset} config={xcmConfig} />
           </DetailRow>
         )}
       </TransactionDetails>

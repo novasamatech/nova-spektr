@@ -5,8 +5,7 @@ import { Box } from '@/shared/ui-kit';
 import { type AnyDecodedTransaction } from '@/domains/network';
 import { XcmChains } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
-import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
-import { useTransactionAsset } from '../hooks/useTransactionAsset';
+import { TransactionTitle, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 
 type Props = {
   transaction: AnyDecodedTransaction;

@@ -1,16 +1,14 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { type CallData, type ChainId } from '@/shared/core';
-import { createSlot } from '@/shared/di';
+import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, DetailRow, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type AnyDecodedTransaction, type MultisigOperation, multisigOperations } from '@/domains/network';
+import { type MultisigOperation, multisigOperations } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
@@ -26,12 +24,6 @@ import RejectTxModal from './modals/RejectTx';
 type Props = {
   operation: MultisigOperation;
 };
-
-export const operationDetailsSlot = createSlot<{
-  transaction: AnyDecodedTransaction;
-  multisigAccountId: AccountId;
-  chainId: ChainId;
-}>();
 
 export const OperationFullInfo = memo(({ operation }: Props) => {
   const { t } = useI18n();

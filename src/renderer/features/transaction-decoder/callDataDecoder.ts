@@ -2,11 +2,15 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type Type } from '@polkadot/types';
 
 import { xcmService } from '@/shared/api/xcm';
+import { type ChainId } from '@/shared/core';
 import { type AnyDecodedTransaction } from '@/domains/network';
 
 import { BOND_WITH_CONTROLLER_ARGS_AMOUNT } from './constants';
 
-export const decodeCallData = (extrinsic: SubmittableExtrinsic<'promise'>): AnyDecodedTransaction | null => {
+export const decodeCallData = (
+  extrinsic: SubmittableExtrinsic<'promise'>,
+  chainId: ChainId,
+): AnyDecodedTransaction | null => {
   const { section, method } = extrinsic.method;
 
   const parser = getCallDataParser[`${section}.${method}`];
@@ -16,11 +20,14 @@ export const decodeCallData = (extrinsic: SubmittableExtrinsic<'promise'>): AnyD
     type: 'decoded',
     section,
     method,
-    args: parser(extrinsic),
+    args: parser(extrinsic, chainId),
   };
 };
 
-export const getCallDataParser: Record<string, (decoded: SubmittableExtrinsic<'promise'>) => Record<string, any>> = {
+export const getCallDataParser: Record<
+  string,
+  (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId) => Record<string, any>
+> = {
   'balances.transferKeepAlive': (decoded): Record<string, any> => {
     return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
   },
@@ -58,32 +65,36 @@ export const getCallDataParser: Record<string, (decoded: SubmittableExtrinsic<'p
       assets: decoded.args[2].toHuman(),
     });
   },
-  'polkadotXcm.limitedReserveTransferAssets': (decoded): Record<string, any> => {
-    return xcmService.parseXcmPalletExtrinsic({
+  'polkadotXcm.limitedReserveTransferAssets': (decoded, chainId): Record<string, any> => {
+    const parsed = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
+    return xcmService.decodeXcm(chainId, parsed);
   },
-  'polkadotXcm.limitedTeleportAssets': (decoded): Record<string, any> => {
-    return xcmService.parseXcmPalletExtrinsic({
+  'polkadotXcm.limitedTeleportAssets': (decoded, chainId): Record<string, any> => {
+    const parsed = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
+    return xcmService.decodeXcm(chainId, parsed);
   },
-  'polkadotXcm.transferAssets': (decoded): Record<string, any> => {
-    return xcmService.parseXcmPalletExtrinsic({
+  'polkadotXcm.transferAssets': (decoded, chainId): Record<string, any> => {
+    const parsed = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
+    return xcmService.decodeXcm(chainId, parsed);
   },
-  'xTokens.transferMultiasset': (decoded): Record<string, any> => {
-    return xcmService.parseXTokensExtrinsic({
+  'xTokens.transferMultiasset': (decoded, chainId): Record<string, any> => {
+    const parsed = xcmService.parseXTokensExtrinsic({
       asset: decoded.args[0].toHuman(),
       dest: decoded.args[1].toHuman(),
     });
+    return xcmService.decodeXcm(chainId, parsed);
   },
   'staking.bond': (decoded): Record<string, any> => {
     const args: Record<string, any> = {};

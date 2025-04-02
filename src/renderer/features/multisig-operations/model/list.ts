@@ -41,7 +41,7 @@ sample({
   target: multisigOperations.removeTransactions,
 });
 
-export const operations = {
+export const list = {
   $pending: multisigOperationsFeature.isStarting,
   $fulfilled: multisigOperationsFeature.isRunning,
   $filteredTxs,

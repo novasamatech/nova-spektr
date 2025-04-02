@@ -35,12 +35,12 @@ import {
   OperationResult,
   isXcmTransaction,
   transactionService as oldTransactionService,
+  useTransactionAsset,
   validateBalance,
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { type SigningPayload } from '@/features/operations/OperationSign';
-import { useTransactionAsset } from '@/features/transfer-operation-details';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 

@@ -1,7 +1,18 @@
 import { createSDK } from '@/shared/di';
-import { operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import {
+  operationAdditionalInfoSlot,
+  operationDetailsSlot,
+  operationIconNameTransformer,
+  operationTitleTransformer,
+} from '@/features/multisig-operations';
 
 export const multisigOperationSDK = createSDK({
-  title: operationTitleSlot,
-  details: operationDetailsSlot,
+  required: {
+    icon: operationIconNameTransformer,
+    additionalInfo: operationAdditionalInfoSlot,
+    details: operationDetailsSlot,
+  },
+  optional: {
+    title: operationTitleTransformer,
+  },
 });

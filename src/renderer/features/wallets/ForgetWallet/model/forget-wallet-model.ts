@@ -2,14 +2,13 @@ import { attach, createApi, createEffect, createEvent, createStore, sample, spli
 import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
-import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel } from '@/entities/balance';
 import { proxyModel } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 // TODO: fix circular dependencies
 // eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
 import { proxiesModel } from '@/features/proxies';
 
 export type Callbacks = {
@@ -24,14 +23,6 @@ const forgetWcWallet = createEvent<Wallet>();
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
-
-const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
-  try {
-    await operations.removeAccountTransactions(account.accountId);
-  } catch (e) {
-    console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
-  }
 });
 
 type CheckForProxiedWalletsParams = {
@@ -119,12 +110,6 @@ sample({
   clock: [forgetSimpleWallet, forgetMultisigWallet],
   fn: (wallet) => wallet.accounts.map((a) => a.accountId),
   target: balanceModel.events.balancesRemoved,
-});
-
-sample({
-  clock: forgetMultisigWallet,
-  fn: (wallet) => wallet.accounts[0] as MultisigAccount,
-  target: deleteMultisigOperationsFx,
 });
 
 sample({

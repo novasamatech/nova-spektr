@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
-import { spread } from 'patronum';
+import { debug, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString, type NoID } from '@/shared/core';
@@ -19,6 +19,8 @@ import { type MultisigEvent, type MultisigOperation, type MultisigOperationData 
 
 const $buffer = createStore<MultisigOperation[]>([]);
 const $list = createStore<MultisigOperation[]>([]);
+
+debug($list);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(transformDepositToBN)),

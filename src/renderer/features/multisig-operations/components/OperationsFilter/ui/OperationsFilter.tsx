@@ -7,9 +7,7 @@ import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type MultisigOperation } from '@/domains/network';
 import { TransferTypes, XcmTypes, getTransactionType } from '@/entities/transaction';
-// TODO: Fix circular dependencies
-// eslint-disable-next-line boundaries/entry-point
-import { operations } from '@/features/multisig-operations/model/model';
+import { list } from '../../../model/list';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
 
 type FilterName = 'status' | 'network' | 'type';
@@ -58,15 +56,15 @@ export const OperationsFilter = ({ txs }: Props) => {
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(txs));
-    operations.changeFilteredTxs(txs);
+    list.changeFilteredTxs(txs);
   }, [txs, availableChains]);
 
-  const getFilterableTxType = (tx: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
-    if (!tx.method || !tx.section) {
+  const getFilterableTxType = (operation: MultisigOperation): TransactionType | 'UNKNOWN_TYPE' => {
+    if (!operation.method || !operation.section) {
       return 'UNKNOWN_TYPE';
     }
 
-    const transactionType = getTransactionType(tx.method, tx.section);
+    const transactionType = getTransactionType(operation.method, operation.section);
 
     if (!transactionType) {
       return 'UNKNOWN_TYPE';
@@ -95,10 +93,10 @@ export const OperationsFilter = ({ txs }: Props) => {
         const txType = getFilterableTxType(tx);
         const xcmDestination = tx.args?.destinationChain;
 
-        const statusOption = StatusOptions.find((s) => s.value === tx.status);
-        const originNetworkOption = NetworkOptions.find((s) => s.value === tx.chainId);
-        const destNetworkOption = NetworkOptions.find((s) => s.value === xcmDestination);
-        const typeOption = TransactionOptions.find((s) => s.value === txType);
+        const statusOption = StatusOptions.find(s => s.value === tx.status);
+        const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
+        const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
+        const typeOption = TransactionOptions.find(s => s.value === txType);
 
         if (statusOption) {
           acc.status.add(statusOption);
@@ -123,28 +121,35 @@ export const OperationsFilter = ({ txs }: Props) => {
     );
   };
 
-  const filterTx = (tx: MultisigOperation, filters: SelectedFilters) => {
-    const xcmDestination = tx.args?.destinationChain;
+  const filterTx = (operation: MultisigOperation, filters: SelectedFilters) => {
+    const hasStatus = !filters.status.length || filters.status.map(mapValues).includes(operation.status);
+    const hasOrigin = !filters.network.length || filters.network.map(mapValues).includes(operation.chainId);
 
-    const hasStatus = !filters.status.length || filters.status.map(mapValues).includes(tx.status);
-    const hasOrigin = !filters.network.length || filters.network.map(mapValues).includes(tx.chainId);
-    const hasDestination = !filters.network.length || filters.network.map(mapValues).includes(xcmDestination);
-    const hasTxType = !filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(tx));
+    const hasTxType = !filters.type.length || filters.type.map(mapValues).includes(getFilterableTxType(operation));
 
-    return hasStatus && (hasOrigin || hasDestination) && hasTxType;
+    if (hasStatus && hasTxType) {
+      if (hasOrigin) {
+        return true;
+      }
+      const xcmDestination = operation.args?.destinationChain;
+      const hasDestination = !filters.network.length || filters.network.map(mapValues).includes(xcmDestination);
+      return hasDestination;
+    }
+
+    return false;
   };
 
   const handleFilterChange = (values: DropdownResult[], filterName: FilterName) => {
     const newSelectedOptions = { ...selectedOptions, [filterName]: values };
     setSelectedOptions(newSelectedOptions);
 
-    const filteredTxs = txs.filter((tx) => filterTx(tx, newSelectedOptions));
-    operations.changeFilteredTxs(filteredTxs);
+    const filteredTxs = txs.filter(tx => filterTx(tx, newSelectedOptions));
+    list.changeFilteredTxs(filteredTxs);
   };
 
   const clearFilters = () => {
     setSelectedOptions(EmptySelected);
-    operations.changeFilteredTxs(txs);
+    list.changeFilteredTxs(txs);
   };
 
   const filtersSelected =
@@ -157,21 +162,21 @@ export const OperationsFilter = ({ txs }: Props) => {
         placeholder={t('operations.filters.statusPlaceholder')}
         selectedIds={selectedOptions.status.map(({ id }) => id)}
         options={[...filtersOptions.status]}
-        onChange={(value) => handleFilterChange(value, 'status')}
+        onChange={value => handleFilterChange(value, 'status')}
       />
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.networkPlaceholder')}
         selectedIds={selectedOptions.network.map(({ id }) => id)}
         options={[...filtersOptions.network]}
-        onChange={(value) => handleFilterChange(value, 'network')}
+        onChange={value => handleFilterChange(value, 'network')}
       />
       <MultiSelect
         className="w-[200px]"
         placeholder={t('operations.filters.operationTypePlaceholder')}
         selectedIds={selectedOptions.type.map(({ id }) => id)}
         options={[...filtersOptions.type]}
-        onChange={(value) => handleFilterChange(value, 'type')}
+        onChange={value => handleFilterChange(value, 'type')}
       />
 
       {Boolean(filtersSelected) && (

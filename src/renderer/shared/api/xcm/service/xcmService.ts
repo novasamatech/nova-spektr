@@ -3,12 +3,12 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
+import { localStorageService } from '@/shared/api/local-storage';
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
-import { localStorageService } from '../../local-storage';
-import { chainsService } from '../../network';
 import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
@@ -201,13 +201,13 @@ type ParsedPayload = {
   toRelayChain: boolean;
 };
 
-type XcmPalletPayload = ParsedPayload & {
+export type XcmPalletPayload = ParsedPayload & {
   assetGeneralIndex: string;
   assetParachain?: number;
   type: 'xcmPallet';
 };
 
-type XTokensPayload = ParsedPayload & {
+export type XTokensPayload = ParsedPayload & {
   assetGeneralKey: string;
   assetParachain: number;
   type: 'xTokens';
@@ -299,16 +299,16 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
   return parsedPayload;
 }
 
-type DecodedPayload = {
+export type DecodedXcmPayload = {
   assetId?: number | string;
   destinationChain?: HexString;
   value: string;
   dest: string;
 };
 
-function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload {
+function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedXcmPayload {
   const config = getXcmConfig();
-  if (!config) return {} as DecodedPayload;
+  if (!config) return {} as DecodedXcmPayload;
 
   let destinationChain: HexString | undefined;
   if (data.toRelayChain) {

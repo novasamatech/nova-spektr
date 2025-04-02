@@ -71,6 +71,7 @@ export const getModalTransactionTitle = (
   transaction?: MultisigOperationData,
 ): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
+  return '';
 
   const coreTx = operationDetailsUtils.getOperationData(transaction);
   if (!coreTx) return TRANSACTION_UNKNOWN;
@@ -99,11 +100,11 @@ export const getMultisigSignOperationTitle = (
   crossChain: boolean,
   t: TFunction,
   type?: TransactionType,
-  transaction?: MultisigOperation,
+  operation?: MultisigOperation,
 ) => {
-  if (!transaction) return;
+  if (!operation) return;
 
-  const coreTx = operationDetailsUtils.getOperationData(transaction);
+  const coreTx = operation ? operation.transaction : null;
   const innerTxTitle = getModalTransactionTitle(crossChain, t, coreTx);
 
   if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
