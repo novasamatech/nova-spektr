@@ -32,6 +32,7 @@ export const PayeeOperationDetails = ({ transaction, chainId }: Props) => {
         {typeof payee === 'string' ? (
           t('staking.confirmation.restakeRewards')
         ) : (
+          // @ts-expect-error This is result of .toHuman() call, no correct types for now
           <Account accountId={payee.Account as AccountId} variant="short" chain={chains[chainId]} />
         )}
       </DetailRow>,

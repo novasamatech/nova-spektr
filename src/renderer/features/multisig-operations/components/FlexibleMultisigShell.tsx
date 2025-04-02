@@ -73,7 +73,7 @@ export const FlexibleMultisigShell = memo(({ operation, account }: Props) => {
             </ConfirmReject>
           )}
           {connection && (
-            <ApproveTxModal api={api} tx={operation} account={account} chain={chain}>
+            <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}
@@ -232,7 +232,7 @@ const ConfirmReject = ({ api, operation, account, chain, children }: ConfirmReje
           >
             {t('general.button.cancelButton')}
           </Button>
-          <RejectTxModal api={api} tx={operation} account={account} chain={chain}>
+          <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
             <Button size="sm" className="w-full" pallet="error" variant="fill">
               {t('operation.rejectButton')}
             </Button>

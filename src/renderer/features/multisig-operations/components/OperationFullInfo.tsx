@@ -100,14 +100,14 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (
-            <RejectTxModal api={api} tx={operation} account={account} chain={chain}>
+            <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
           {account && isApproveAvailable && connection && (
-            <ApproveTxModal api={api} tx={operation} account={account} chain={chain}>
+            <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}

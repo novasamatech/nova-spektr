@@ -8,6 +8,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { type AnyDecodedTransaction } from '@/domains/network';
 import { voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 
 type Props = {
   transaction: AnyDecodedTransaction;
@@ -23,8 +24,8 @@ export const GovernanceVoteDetails = ({ transaction, chainId }: Props) => {
 
   const result = [];
 
-  const referendumId = transaction.args.referendum;
-  const vote = transaction.args.vote;
+  const referendumId = operationDetailsUtils.getReferendumId(transaction);
+  const vote = operationDetailsUtils.getVote(transaction);
 
   if (referendumId) {
     result.push(

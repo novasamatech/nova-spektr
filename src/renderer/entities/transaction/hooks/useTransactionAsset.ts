@@ -1,7 +1,7 @@
 import { useStoreMap } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
-import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
+import { getAssetByTypeExtras } from '@/shared/lib/utils';
 import { type AnyTransaction } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -32,7 +32,7 @@ export const useTransactionAsset = (transaction: AnyTransaction | null, chainId:
     const asset = chain.assets.at(0);
 
     if (asset) {
-      return getAssetById(asset, chain?.assets) ?? null;
+      return asset;
     }
   }
 

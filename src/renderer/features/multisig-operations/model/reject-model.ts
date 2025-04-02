@@ -16,7 +16,7 @@ import { operationsContextModel } from './context';
 type GetMultisigType = {
   signerAccountId: AccountId;
   chain: Chain;
-  tx: MultisigOperation;
+  operation: MultisigOperation;
 };
 
 const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>({
@@ -82,7 +82,7 @@ sample({
     wrappedTx: $wrappedTx,
   },
   filter: ({ account }) => nonNullable(account),
-  fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, tx }) => {
+  fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, operation }) => {
     const otherSignatories = multisigOperationService.getOtherSignatories(account!, signerAccountId);
 
     if (walletUtils.isFlexibleMultisig(wallet) && !wallet.activated && wrappedTx) {
@@ -93,7 +93,7 @@ sample({
         accountId: account!.accountId,
         transaction: wrappedTx.wrappedTx,
         otherSignatories,
-        tx,
+        tx: operation,
       });
     }
 
@@ -102,7 +102,7 @@ sample({
       signerAccountId,
       threshold: account!.threshold,
       otherSignatories,
-      tx,
+      tx: operation,
     });
   },
   target: $transaction,

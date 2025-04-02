@@ -53,9 +53,9 @@ async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIn
     if (nullable(extrinsic)) return null;
     if (!extrinsic.argsDef['call']) return null;
 
-    const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX].toHex();
+    const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX]?.toHex();
 
-    if (!validateCallData(callData, callHash)) return null;
+    if (!callData || !validateCallData(callData, callHash)) return null;
 
     return transactionService.createSubmittableExtrinsic({ type: 'encoded', callData }, api);
   } catch (e) {

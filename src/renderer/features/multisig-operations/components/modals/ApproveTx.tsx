@@ -48,7 +48,7 @@ import { SignatorySelectModal } from './SignatorySelectModal';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
-  tx: MultisigOperation;
+  operation: MultisigOperation;
   account: MultisigAccount;
   chain: Chain;
   api: ApiPromise;
@@ -63,7 +63,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
+const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
@@ -82,8 +82,8 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const [txWeight, setTxWeight] = useState<Weight>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transaction = tx.transaction;
-  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(tx), t, feeTx?.type, tx);
+  const transaction = operation.transaction;
+  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(operation), t, feeTx?.type, operation);
 
   const nativeAsset = getNativeAsset(chain.assets);
   const asset = useTransactionAsset(transaction, chain.chainId);
@@ -99,9 +99,9 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const unsignedAccounts = operationDetailsUtils.getSignatoryAccounts(
     availableAccounts,
     wallets,
-    tx.events,
+    operation.events,
     account.signatories,
-    tx.chainId,
+    operation.chainId,
   );
 
   useEffect(() => {
@@ -114,14 +114,14 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
     if (!signAccount?.accountId) return;
 
     setApproveTx(getMultisigTx(signAccount?.accountId));
-  }, [tx, signAccount?.accountId, txWeight]);
+  }, [operation, signAccount?.accountId, txWeight]);
 
   const initWeight = async () => {
     let weight;
     try {
-      if (!tx.transaction || !api) return;
+      if (!operation.transaction || !api) return;
 
-      const transaction = transactionService.createSubmittableExtrinsic(tx.transaction, api);
+      const transaction = transactionService.createSubmittableExtrinsic(operation.transaction, api);
 
       weight = await transactionService.getExtrinsicWeight(transaction);
     } catch {
@@ -133,7 +133,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
 
   useEffect(() => {
     initWeight();
-  }, [tx, api]);
+  }, [operation, api]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -151,10 +151,10 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
 
   const getMultisigTx = (signer: AccountId): Transaction => {
     const otherSignatories = multisigOperationService.getOtherSignatories(account, signer);
-    const hasCallData = tx.transaction && validateCallData(tx.transaction.callData, tx.callHash);
+    const hasCallData = operation.transaction && validateCallData(operation.transaction.callData, operation.callHash);
 
     return {
-      chainId: tx.chainId,
+      chainId: operation.chainId,
       accountId: signer,
       type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
       args: {
@@ -162,11 +162,11 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
         otherSignatories,
         maxWeight: txWeight,
         maybeTimepoint: {
-          height: tx.blockCreated,
-          index: tx.indexCreated,
+          height: operation.blockCreated,
+          index: operation.indexCreated,
         } satisfies Timepoint,
-        callData: tx.transaction?.callData,
-        callHash: tx.callHash,
+        callData: operation.transaction?.callData,
+        callHash: operation.callHash,
       },
     };
   };
@@ -216,18 +216,18 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
   const checkBalance = () =>
     validateBalance({
       api,
-      chainId: tx.chainId,
+      chainId: operation.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId.toString(),
       getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: oldTransactionService.getTransactionFee,
     });
 
-  const thresholdReached = tx.events.filter(e => e.status === 'approve').length === account.threshold - 1;
+  const thresholdReached = operation.events.filter(e => e.status === 'approve').length === account.threshold - 1;
 
-  const readyForSign = tx.status === 'pending' && unsignedAccounts.length > 0;
+  const readyForSign = operation.status === 'pending' && unsignedAccounts.length > 0;
   const readyForNonFinalSign = readyForSign && !thresholdReached;
-  const readyForFinalSign = readyForSign && thresholdReached && !!tx.transaction;
+  const readyForFinalSign = readyForSign && thresholdReached && !!operation.transaction;
 
   const signingPayloads = useMemo<SigningPayload[]>(() => {
     if (nullable(approveTx) || nullable(signAccount)) return [];
@@ -251,7 +251,7 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
       <Submit
         tx={approveTx}
         api={api}
-        multisigTx={tx}
+        multisigTx={operation}
         account={signAccount}
         txPayload={txPayload}
         signature={signature}
@@ -264,12 +264,12 @@ const ApproveTxModal = memo(({ tx, account, api, chain, children }: Props) => {
     <Modal size="md" onToggle={handleClose}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={tx.chainId} />
+        <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
       </Modal.Title>
       <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
-            operation={tx}
+            operation={operation}
             account={account}
             api={api}
             chain={chain}
