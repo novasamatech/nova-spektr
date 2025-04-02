@@ -5,7 +5,7 @@ import { type PropsWithChildren, useState } from 'react';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable, performSearch } from '@/shared/lib/utils';
+import { nonNullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
@@ -58,10 +58,11 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       type: 0.5,
       wish: 0.5,
       name: 1,
+      accountId: 1,
     },
   });
 
-  const isNothingFound = records.length && !filteredList.length;
+  const isNothingFound = !!records.length && !filteredList.length;
 
   const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
@@ -110,7 +111,9 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
-            <EmptyList message={t('fellowship.activityFeed.activityModal.nothing-found', { query })} />
+            <EmptyList
+              message={t('fellowship.activityFeed.activityModal.nothing-found', { query: truncate(query, 10, 10) })}
+            />
           )}
 
           {sortedList.map(record => (
