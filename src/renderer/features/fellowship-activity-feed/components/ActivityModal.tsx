@@ -61,7 +61,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     },
   });
 
-  const isNothingFound = records.length && !filteredList.length;
+  const isNothingFound = !!records.length && !filteredList.length;
 
   const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
