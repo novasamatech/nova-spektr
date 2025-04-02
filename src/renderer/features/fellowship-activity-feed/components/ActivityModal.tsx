@@ -50,7 +50,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     };
   });
 
-
   const filteredList = performSearch({
     records,
     query,
