@@ -57,5 +57,11 @@ function getMergeBalances(oldBalances: Balance[], newBalances: Balance[]): Balan
     return balance;
   });
 
+  console.log('getMergeBalances', {
+    oldBalances,
+    newBalances,
+    result: updatedBalances.concat(Object.values(newBalancesMap)),
+  });
+
   return updatedBalances.concat(Object.values(newBalancesMap));
 }

@@ -262,6 +262,8 @@ const Amount = () => {
   const accountBalance = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
 
+  console.log({ accountBalance });
+
   if (!network) {
     return null;
   }

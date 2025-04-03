@@ -2,7 +2,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { camelCase, isEmpty } from 'lodash';
-import { spread } from 'patronum';
+import { debug, spread } from 'patronum';
 
 import {
   type Account,
@@ -514,12 +514,21 @@ sample({
   target: $transferForm.fields.destination.reset,
 });
 
+debug({ trace: true }, balanceModel.$balances);
+balanceModel.$balances.watch((balances) => {
+  console.log('balances for selectedAccount', balances);
+});
+
 sample({
   source: {
     accounts: $accounts,
     selectedAccount: $transferForm.fields.account.$value,
   },
-  filter: ({ selectedAccount }) => nonNullable(selectedAccount),
+  filter: ({ accounts, selectedAccount }) => {
+    // console.log({ accounts, selectedAccount });
+
+    return nonNullable(selectedAccount);
+  },
   fn: ({ accounts, selectedAccount }) => {
     const match = accounts.find((a) => a.account.id === selectedAccount?.id);
 
