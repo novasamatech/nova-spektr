@@ -163,7 +163,8 @@ const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
 });
 
 const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(wallet.id, wallet);
+  const { accounts: _, ...rest } = wallet;
+  await storageService.wallets.update(rest.id, rest);
 
   return wallet;
 });

@@ -23,9 +23,11 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = () => {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
+
+  const [open, setOpen] = useState(false);
 
   if (!selectedWallet) {
     return <Skeleton width={52} height={16} />;
