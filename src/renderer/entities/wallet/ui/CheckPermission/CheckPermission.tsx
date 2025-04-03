@@ -7,7 +7,7 @@ import { getOperationTypeFn } from '../../common/utils';
 
 type Props = {
   operationType: OperationType;
-  wallet?: Wallet;
+  wallet: Wallet | null;
   redirectPath?: string;
 };
 

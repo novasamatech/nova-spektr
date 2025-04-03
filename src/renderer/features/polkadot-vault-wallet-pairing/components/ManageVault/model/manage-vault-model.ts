@@ -38,7 +38,7 @@ const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<Va
 const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
-const createWalletsFx = attach({ effect: walletModel.createWallets });
+const createWalletFx = attach({ effect: walletModel.createWallet });
 
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
@@ -153,14 +153,11 @@ sample({ clock: derivationsImported, target: $keys });
 
 sample({
   clock: vaultCreated,
-  fn(params) {
-    return [params];
-  },
-  target: createWalletsFx,
+  target: createWalletFx,
 });
 
 sample({
-  clock: createWalletsFx,
+  clock: createWalletFx,
   target: attach({
     source: $callbacks,
     effect: state => state?.onSubmit(),
