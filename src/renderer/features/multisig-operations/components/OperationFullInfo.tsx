@@ -5,7 +5,7 @@ import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
-import { Button, DetailRow, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
+import { Button, DetailRow, Icon, InfoLink, Separator, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation, multisigOperations } from '@/domains/network';
@@ -13,6 +13,7 @@ import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { useDecodedTransaction } from '../../../entities/transaction';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
@@ -33,6 +34,7 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
   const account = selectedAccounts.find(accountUtils.isMultisigAccount);
+  const decoded = useDecodedTransaction(operation.transaction, operation.chainId);
 
   const events = operation.events;
 
@@ -93,7 +95,9 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
             </DetailRow>
           )}
 
-          <OperationDetails operation={operation} />
+          <Separator />
+
+          {decoded ? <OperationDetails transaction={decoded} chainId={operation.chainId} /> : null}
 
           <OperationAdvancedDetails operation={operation} chain={chain} wallets={wallets} />
         </Box>

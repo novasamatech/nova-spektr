@@ -84,7 +84,7 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
       </div>
 
       <TransactionDetails chain={chain} wallets={wallets} initiator={[account]} signatory={signAccount ?? null}>
-        <OperationDetails operation={operation} />
+        {decoded ? <OperationDetails transaction={decoded} chainId={operation.chainId} /> : null}
 
         {signAccount && api && (
           <MultisigDepositWithLabel

@@ -8,7 +8,7 @@ type Props = {
   isEmptyFromFilters: boolean;
 };
 
-const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
+export const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
   const { t } = useI18n();
 
   const emptyText = multisigAccount
@@ -26,5 +26,3 @@ const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
     </div>
   );
 };
-
-export default EmptyOperations;

@@ -9,10 +9,10 @@ import {
 export const multisigOperationSDK = createSDK({
   required: {
     icon: operationIconNameTransformer,
-    additionalInfo: operationAdditionalInfoSlot,
     details: operationDetailsSlot,
   },
   optional: {
     title: operationTitleTransformer,
+    additionalInfo: operationAdditionalInfoSlot,
   },
 });

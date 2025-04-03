@@ -1,9 +1,9 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type TFunction } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type MultisigOperation, type MultisigOperationData } from '@/domains/network';
-import { operationDetailsUtils } from '@/entities/operations';
+import { type MultisigOperation, type MultisigOperationData, transactionService } from '@/domains/network';
 import { findCoreBatchAll, getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
@@ -71,12 +71,8 @@ export const getModalTransactionTitle = (
   transaction?: MultisigOperationData,
 ): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
-  return '';
 
-  const coreTx = operationDetailsUtils.getOperationData(transaction);
-  if (!coreTx) return TRANSACTION_UNKNOWN;
-
-  const transactionType = getTransactionType(coreTx.method, coreTx.section);
+  const transactionType = getTransactionType(transaction.method, transaction.section);
 
   if (!transactionType && transaction.section && transaction.method) {
     return formatSectionAndMethod(transaction.section, transaction.method);
@@ -99,21 +95,26 @@ export const getModalTransactionTitle = (
 export const getMultisigSignOperationTitle = (
   crossChain: boolean,
   t: TFunction,
+  api: ApiPromise,
   type?: TransactionType,
   operation?: MultisigOperation,
 ) => {
   if (!operation) return;
 
-  const coreTx = operation ? operation.transaction : null;
-  const innerTxTitle = getModalTransactionTitle(crossChain, t, coreTx);
+  try {
+    const coreTx = operation.transaction ? transactionService.decodeTransaction(operation.transaction, api) : undefined;
+    const innerTxTitle = getModalTransactionTitle(crossChain, t, coreTx);
 
-  if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
-    return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;
+    if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
+      return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;
+    }
+
+    if (type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
+      return `${t('operations.modalTitles.reject')} ${t(innerTxTitle)}`;
+    }
+  } catch {
+    return;
   }
 
-  if (type === TransactionType.MULTISIG_CANCEL_AS_MULTI) {
-    return `${t('operations.modalTitles.reject')} ${t(innerTxTitle)}`;
-  }
-
-  return '';
+  return;
 };

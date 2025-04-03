@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
-import { debug, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainId, type HexString, type NoID } from '@/shared/core';
@@ -10,17 +10,15 @@ import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
-import { getDataFromCallData } from '@/entities/transaction';
+import { transactionService } from '../transaction/service';
 
 import { transformDepositToBN, transformDepositToString } from './helpers';
 import { fetchOperations, multisigEvent } from './resource';
 import { multisigOperationService } from './service';
-import { type MultisigEvent, type MultisigOperation, type MultisigOperationData } from './types';
+import { type MultisigEvent, type MultisigOperation } from './types';
 
 const $buffer = createStore<MultisigOperation[]>([]);
 const $list = createStore<MultisigOperation[]>([]);
-
-debug($list);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(transformDepositToBN)),
@@ -55,13 +53,22 @@ const updateCallDataFx = attach({
     if (!api) {
       throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
-    const { decoded } = getDataFromCallData(api, callData);
-    const newOperation = {
-      ...operation,
-      ...(decoded.method.toHuman() as MultisigOperationData),
-    };
+    try {
+      const decoded = transactionService.decodeTransaction({ type: 'encoded', callData }, api);
+      const newOperation: MultisigOperation = {
+        ...operation,
+        section: decoded.section,
+        method: decoded.method,
+        transaction: {
+          type: 'encoded',
+          callData,
+        },
+      };
 
-    return update([newOperation]);
+      return update([newOperation]);
+    } catch (error) {
+      console.error(error);
+    }
   },
 });
 
@@ -290,7 +297,12 @@ sample({
       const existingOperation = operations.find(o => o.id === newOperation.id);
       if (existingOperation) {
         if (!isEqual(existingOperation, newOperation)) {
-          toUpdate.push(newOperation);
+          toUpdate.push({
+            ...newOperation,
+            section: newOperation.section || existingOperation.section,
+            method: newOperation.method || existingOperation.method,
+            transaction: newOperation.transaction || existingOperation.transaction,
+          });
         }
       } else {
         toAdd.push(newOperation);

@@ -1,5 +1,7 @@
 import { createEvent, restore, sample } from 'effector';
+import groupBy from 'lodash/groupBy';
 
+import { sortByDateDesc } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation, multisigOperations } from '@/domains/network';
 import { accountMultisigOperations } from '@/aggregates/account-multisig-operations';
@@ -12,10 +14,11 @@ const removeAccountTransactions = createEvent<AccountId>();
 
 const $filteredTxs = restore(changeFilteredTxs, []).reset(accountMultisigOperations.$accountOperations);
 
-// sample({
-//   clock: multisigOperationsFeature.running,
-//   target: series(multisigOperations.requestOperations),
-// });
+const $groupedTxs = $filteredTxs.map(filteredTxs => {
+  const sortedTxs = Array.from(filteredTxs).sort((a, b) => b.timestamp - a.timestamp);
+  const groups = groupBy(sortedTxs, tx => new Date(tx.timestamp).toUTCString());
+  return Object.entries(groups).sort(sortByDateDesc);
+});
 
 sample({
   clock: multisigOperationsFeature.running,
@@ -45,6 +48,7 @@ export const list = {
   $pending: multisigOperationsFeature.isStarting,
   $fulfilled: multisigOperationsFeature.isRunning,
   $filteredTxs,
+  $groupedTxs,
 
   changeFilteredTxs,
   removeAccountTransactions,

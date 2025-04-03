@@ -229,7 +229,9 @@ export const getUndelegationData = async (
 };
 
 export const getReferendumId = (tx: AnyDecodedTransaction): string | undefined => {
-  const coreTx = unwrap(tx, types.isConvictionVotingVoteTransaction);
+  const coreTx = unwrap(tx, (t) => {
+    return types.isConvictionVotingVoteTransaction(t) || types.isConvictionVotingRemoveVoteTransaction(t);
+  });
 
   return coreTx?.args?.referendum.toString();
 };

@@ -30,9 +30,6 @@ multisigOperationSDK(governanceOperationDetailFeature, {
     const transactionType = getTransactionType(operation.method, operation.section);
     return transactionType ? getOperationIcon(transactionType) : undefined;
   },
-  additionalInfo({ operation }) {
-    return null;
-  },
   details({ transaction, chainId }) {
     const transactionType = getTransactionType(transaction.method, transaction.section);
 

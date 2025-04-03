@@ -48,6 +48,12 @@ multisigOperationSDK(stakingOperationDetailFeature, {
       return getOperationIcon(type);
     }
   },
+  title({ operation }) {
+    const type = getTransactionType(operation.method, operation.section);
+    if (type) {
+      return getOperationTitle(type);
+    }
+  },
   additionalInfo() {
     return null;
   },
@@ -71,16 +77,7 @@ multisigOperationSDK(stakingOperationDetailFeature, {
       nodes.push(<ValidatorsOperationDetails key="validators" transaction={transaction} chainId={chainId} />);
     }
 
-    const shouldRenderPeyee = [
-      TransactionType.BOND,
-      TransactionType.STAKE_MORE,
-      TransactionType.UNSTAKE,
-      TransactionType.RESTAKE,
-      TransactionType.REDEEM,
-    ].includes(transactionType);
-
-    const shouldRenderValidators = [TransactionType.BOND, TransactionType.NOMINATE].includes(transactionType);
-
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     return <>{nodes}</>;
   },
 });

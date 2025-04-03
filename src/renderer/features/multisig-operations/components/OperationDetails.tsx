@@ -5,15 +5,18 @@ import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText } from '@/shared/ui';
-import { type AnyDecodedTransaction, type MultisigOperation, transactionService } from '@/domains/network';
+import { BodyText, Separator } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
+import { type AnyDecodedTransaction, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { useDecodedTransaction } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
-  operation: MultisigOperation;
+  transaction: AnyDecodedTransaction;
+  chainId: ChainId;
+  titled?: boolean;
 };
 
 export const operationDetailsSlot = createSlot<{
@@ -22,13 +25,13 @@ export const operationDetailsSlot = createSlot<{
   chainId: ChainId;
 }>();
 
-export const OperationDetails = memo(({ operation }: Props) => {
+export const OperationDetails = memo(({ transaction, titled, chainId }: Props) => {
   const apis = useUnit(networkModel.$apis);
-  const api = apis[operation.chainId];
+  const api = apis[chainId];
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
   const account = selectedAccounts.find(accountUtils.isMultisigAccount);
 
-  const decodedTransaction = useDecodedTransaction(operation.transaction, operation.chainId);
+  const decodedTransaction = useDecodedTransaction(transaction, chainId);
 
   const allDecodedTransactions = useMemo(() => {
     if (!decodedTransaction) return [];
@@ -48,25 +51,47 @@ export const OperationDetails = memo(({ operation }: Props) => {
     return null;
   }
 
+  const firstTransaction = allDecodedTransactions.at(0);
+
+  if (allDecodedTransactions.length === 0) {
+    return null;
+  }
+
+  if (!titled && firstTransaction && allDecodedTransactions.length === 1) {
+    return (
+      <div className="flex w-full flex-col gap-y-1">
+        <Slot
+          id={operationDetailsSlot}
+          props={{
+            transaction: firstTransaction,
+            multisigAccountId: account.accountId,
+            chainId,
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       {allDecodedTransactions.map((transaction, index) => {
         return (
-          <div className="flex w-full flex-col gap-y-1" key={index}>
-            {allDecodedTransactions.length > 1 ? (
-              <BodyText>
-                {transaction.section}: {transaction.method}
-              </BodyText>
-            ) : null}
-            <Slot
-              id={operationDetailsSlot}
-              props={{
-                transaction,
-                multisigAccountId: account.accountId,
-                chainId: operation.chainId,
-              }}
-            />
-          </div>
+          <Box gap={1} key={index}>
+            <BodyText>
+              {transaction.section}: {transaction.method}
+            </BodyText>
+            <Box gap={1} padding={[0, 0, 0, 2]}>
+              <Slot
+                id={operationDetailsSlot}
+                props={{
+                  transaction,
+                  multisigAccountId: account.accountId,
+                  chainId,
+                }}
+              />
+            </Box>
+            <Separator />
+          </Box>
         );
       })}
     </>

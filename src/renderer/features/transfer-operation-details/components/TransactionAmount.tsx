@@ -1,9 +1,8 @@
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
-import { operationDetailsUtils } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import { getTransactionAmount, useDecodedTransaction, useTransactionAsset } from '@/entities/transaction';
 
 type Props = {
   operation: MultisigOperation;
@@ -12,9 +11,9 @@ type Props = {
 
 // TODO it should be separated into multiple components for each set of operations (transfer/staking)
 export const TransactionAmount = ({ operation, className }: Props) => {
-  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transaction = useDecodedTransaction(operation.transaction, operation.chainId);
   const value = transaction ? getTransactionAmount(transaction) : null;
-  const asset = useTransactionAsset(operation.transaction, operation.chainId);
+  const asset = useTransactionAsset(transaction, operation.chainId);
 
   if (!asset || !value) {
     return null;

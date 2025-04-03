@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
 
 import { TransactionType } from '@/shared/core';
-import { Slot } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
@@ -21,7 +21,7 @@ import {
   types,
 } from '@/entities/transaction';
 import { multisigOperationSDK } from '@/sdk/multisig-operation';
-import { operationDetailsSlot } from '@/features/multisig-operations';
+import { OperationDetails } from '@/features/multisig-operations';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -73,21 +73,20 @@ multisigOperationSDK(proxyOperationDetailFeature, {
     const chain = chains[chainId];
     const api = apis[chainId];
 
-    const result = [];
+    let result: ReactNode[] = [];
 
     if (types.isProxyProxyTransaction(transaction) && api) {
       try {
-        const decoded = transactionService.decodeTransaction(transaction.args.call, api);
-        result.push(
-          <Slot
-            id={operationDetailsSlot}
-            props={{
-              transaction: decoded,
-              chainId,
-              multisigAccountId,
-            }}
-          />,
-        );
+        const unwrapped = transactionService.decodeTransaction(transaction.args.call, api);
+        if (transactionService.isBatchTransaction(unwrapped)) {
+          const nodes = unwrapped.args.calls.map((transaction, index) => (
+            <OperationDetails key={index} titled transaction={transaction} chainId={chainId} />
+          ));
+
+          result = result.concat(nodes);
+        } else {
+          result.push(<OperationDetails titled transaction={unwrapped} chainId={chainId} />);
+        }
       } catch (e) {
         console.error(e);
       }

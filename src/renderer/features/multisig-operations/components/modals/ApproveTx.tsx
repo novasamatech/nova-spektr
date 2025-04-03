@@ -83,7 +83,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const [signature, setSignature] = useState<HexString>();
 
   const transaction = operation.transaction;
-  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(operation), t, feeTx?.type, operation);
+  const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(operation), t, api, feeTx?.type, operation);
 
   const nativeAsset = getNativeAsset(chain.assets);
   const asset = useTransactionAsset(transaction, chain.chainId);

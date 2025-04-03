@@ -11,7 +11,7 @@ type Props = {
   operation: MultisigOperation;
 };
 
-const Operation = memo(({ operation }: Props) => {
+export const Operation = memo(({ operation }: Props) => {
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
@@ -27,5 +27,3 @@ const Operation = memo(({ operation }: Props) => {
     </Accordion>
   );
 });
-
-export default Operation;

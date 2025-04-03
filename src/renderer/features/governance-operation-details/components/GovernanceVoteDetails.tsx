@@ -64,5 +64,6 @@ export const GovernanceVoteDetails = ({ transaction, chainId }: Props) => {
     );
   }
 
-  return <>{result.map((e) => e)}</>;
+  // eslint-disable-next-line react/jsx-no-useless-fragment
+  return <>{result}</>;
 };
