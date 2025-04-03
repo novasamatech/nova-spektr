@@ -1,8 +1,20 @@
 import { type Transaction } from 'dexie';
 
-import { type PolkadotVaultWallet, SigningType, type Wallet, WalletType } from '@/shared/core';
+import {
+  type PolkadotVaultWallet,
+  SigningType,
+  type VaultBaseAccount,
+  type VaultChainAccount,
+  type Wallet,
+  WalletType,
+} from '@/shared/core';
+import { dictionary } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type ChainAccount, type UniversalAccount } from '@/domains/network';
+import { type AnyAccount, type ChainAccount } from '@/domains/network';
+
+type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };
+type OldVaultAccount = VaultBaseAccount | OldChainAccount;
 
 /**
  * Convert all Multishard wallets to PV wallets
@@ -15,46 +27,73 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
   const accounts = await t.db.table<AnyAccount>('accounts2').toArray();
   const wallets = await t.db.table<Wallet>('wallets').toArray();
 
-  // @ts-expect-error old types
-  const walletsMap = new Set(wallets.filter((w) => w.type === 'multishard').map((w) => w.id));
+  const walletsMap = dictionary(
+    // @ts-expect-error old types
+    wallets.filter((w) => w.type === 'wallet_mps'),
+    'id',
+    (w) => w as PolkadotVaultWallet,
+  );
 
-  const walletsToAdd: Omit<PolkadotVaultWallet, 'id'>[] = [];
-  const accountsToDelete: UniversalAccount[] = [];
-  const accountsToUpdate: ChainAccount[] = [];
+  const walletsToAdd: Omit<PolkadotVaultWallet, 'id' | 'accounts'>[] = [];
+  const accountToDelete: string[] = [];
+  const chainAccounts: ChainAccount[] = [];
+  const accountsToRecreate: OldChainAccount[] = [];
 
   for (const account of accounts) {
-    if (!walletsMap.has(account.walletId)) continue;
+    const wallet = walletsMap[account.walletId];
+    if (!wallet) continue;
 
-    if (account.type === 'universal') {
-      accountsToDelete.push(account);
+    const typedAccount = account as OldVaultAccount;
+
+    if (typedAccount.type === 'universal') {
+      accountToDelete.push(typedAccount.id);
 
       walletsToAdd.push({
-        name: account.name ?? 'Polkadot Vault',
+        name: typedAccount.name ?? 'Polkadot Vault',
         type: WalletType.POLKADOT_VAULT,
-        rootAccountId: account.accountId,
-        isHidden: false,
-        isActive: false,
-        accounts: [],
+        rootAccountId: typedAccount.accountId,
         signingType: SigningType.POLKADOT_VAULT,
+        isActive: false,
       });
+    } else if (typedAccount.derivationPath === '') {
+      accountToDelete.push(typedAccount.id);
+    } else if (typedAccount.baseAccountId === wallet.rootAccountId) {
+      delete typedAccount.baseAccountId;
+      chainAccounts.push(typedAccount);
     } else {
-      // Remove redundant property
-      // @ts-expect-error old types
-      delete account.baseAccountId;
-      accountsToUpdate.push(account);
+      accountsToRecreate.push(typedAccount);
     }
   }
 
-  await t.table('accounts2').bulkDelete(accountsToDelete.map((a) => a.id));
+  const walletToUpdate = wallets.map((w) => {
+    // @ts-expect-error By accident wallet may contain accounts inside IndexedDB
+    delete w.accounts;
+
+    // @ts-expect-error old types
+    return w.type === 'wallet_mps' ? { ...w, type: WalletType.POLKADOT_VAULT } : w;
+  });
+
+  await t.table('wallets').bulkPut(walletToUpdate);
+
+  await t.table('accounts2').bulkDelete(accountToDelete);
+  await t.table('accounts2').bulkPut(chainAccounts);
+  // Remove Chain accounts, need to recreate ID
+  await t.table('accounts2').bulkDelete(accountsToRecreate.map((a) => a.id));
+
   const walletIds = await t.table('wallets').bulkAdd(walletsToAdd, { allKeys: true });
 
-  for (const [index, wallet] of walletsToAdd.entries()) {
-    for (const account of accountsToUpdate) {
-      if (account.accountId !== wallet.rootAccountId) continue;
+  const newWalletsMap = new Map(walletsToAdd.map((w, i) => [w.rootAccountId, walletIds[i]]));
 
-      account.walletId = walletIds[index];
-    }
-  }
+  const x = accountsToRecreate.map((a) => {
+    const { baseAccountId: _, ...rest } = a;
 
-  await t.table('accounts2').bulkPut(accountsToUpdate);
+    if (!a.baseAccountId) return rest;
+
+    const walletId = newWalletsMap.get(a.baseAccountId);
+    if (!walletId) return rest;
+
+    return { ...rest, id: `${walletId} ${a.accountId} ${a.chainId}`, walletId };
+  });
+
+  await t.table('accounts2').bulkAdd(x);
 }
