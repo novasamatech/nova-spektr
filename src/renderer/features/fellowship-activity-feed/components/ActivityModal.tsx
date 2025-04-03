@@ -5,7 +5,7 @@ import { type PropsWithChildren, useState } from 'react';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable, performSearch, truncate } from '@/shared/lib/utils';
+import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
 import { Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
@@ -45,6 +45,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     const identity = identities[record.accountId];
     return {
       ...record,
+      address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
       name: identity ? identityService.getFullName(identity) : undefined,
       duration: (now - record.at.getTime()) / 1000,
     };
@@ -59,6 +60,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       wish: 0.5,
       name: 1,
       accountId: 1,
+      address: 1,
     },
   });
 
