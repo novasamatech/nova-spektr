@@ -15,6 +15,8 @@ export const TEST_IDS = {
   ASSETS: {
     SETTINGS_WIDGET: 'assets-settings-widget',
     SEND_ARROW_ICON: 'Icon:sendArrow',
+    RECEIVE_ARROW_ICON: 'Icon:receiveArrow',
+    SHELF_RIGHT_ARROW_ICON: 'Icon:shelfRight',
   },
   COMMON: {
     WALLET_BUTTON: 'common-wallet-button',

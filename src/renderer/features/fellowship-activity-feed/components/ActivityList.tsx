@@ -8,34 +8,15 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
-export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
+import { ActivityPlaceholder } from './ActivityPlaceholder';
 
-const ActivityPlaceholder = () => {
-  return (
-    <div className="flex flex-col gap-1 px-4 pt-2">
-      <div className="flex items-center gap-1 text-button-small">
-        <div className="flex min-w-0 grow items-center">
-          <BodyText>
-            <Skeleton width="10ch" height="1lh" />
-          </BodyText>
-        </div>
-        <HelpText className="h-fit">
-          <Skeleton height="1em" width="5ch" />
-        </HelpText>
-      </div>
-      <FootnoteText>
-        <Skeleton width="100%" height="1lh" />
-      </FootnoteText>
-    </div>
-  );
-};
+export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
 export const ActivityList = memo(() => {
   const { t } = useI18n();
