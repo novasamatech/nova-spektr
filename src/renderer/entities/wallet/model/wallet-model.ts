@@ -58,13 +58,9 @@ const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden)
 const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
 // TODO: ideally it should be a feature
-const $activeWallet = combine(
-  $wallets,
-  (wallets) => {
-    return wallets.find((wallet) => wallet.isActive);
-  },
-  { skipVoid: false },
-);
+const $activeWallet = combine($wallets, (wallets) => {
+  return wallets.find((wallet) => wallet.isActive) ?? null;
+});
 
 // TODO: ideally it should be a feature
 const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts) => {
@@ -74,8 +70,8 @@ const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts
 });
 
 // Workaround - select event recreates wallet array every time, serialized ids are more stable.
-const $walletIdsSerialized = $wallets.map((l) =>
-  l
+const $walletIdsSerialized = $wallets.map((wallets) =>
+  wallets
     .map((w) => w.id)
     .sort()
     .join(','),
@@ -118,7 +114,7 @@ type CreateResult = {
   wallet: DbWallet;
   accounts: AnyAccount[];
 };
-const walletCreatedFx = createEffect(
+const createWalletFx = createEffect(
   async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
@@ -174,14 +170,14 @@ const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
 
 const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
   const walletIds: ID[] = [];
-  let accountstoRemove: AnyAccount[] = [];
+  const accountsToRemove: AnyAccount[] = [];
 
   for (const wallet of wallets) {
     walletIds.push(wallet.id);
-    accountstoRemove = accountstoRemove.concat(wallet.accounts);
+    accountsToRemove.push(...wallet.accounts);
   }
 
-  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountstoRemove)]);
+  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountsToRemove)]);
 
   return walletIds;
 });
@@ -203,13 +199,9 @@ sample({
   target: $rawWallets,
 });
 
-const walletCreatedDone = sample({
-  clock: walletCreatedFx.doneData,
-}).filter({ fn: nonNullable });
+const walletCreatedDone = sample({ clock: createWalletFx.doneData }).filter({ fn: nonNullable });
 
-const walletCreationFail = sample({
-  clock: walletCreatedFx.fail,
-}).filter({ fn: nonNullable });
+const walletCreationFail = sample({ clock: createWalletFx.fail }).filter({ fn: nonNullable });
 
 sample({
   clock: [
@@ -220,13 +212,13 @@ sample({
     singleshardCreated,
     proxiedCreated,
   ],
-  target: walletCreatedFx,
+  target: createWalletFx,
 });
 
 sample({
   clock: walletCreatedDone,
   source: $rawWallets,
-  fn(wallets, data) {
+  fn: (wallets, data) => {
     return wallets.concat(data.wallet);
   },
   target: $rawWallets,
@@ -235,7 +227,7 @@ sample({
 sample({
   clock: createWalletsFx.doneData,
   source: $rawWallets,
-  fn(wallets, results) {
+  fn: (wallets, results) => {
     return wallets.concat(results.map((r) => r.wallet));
   },
   target: $rawWallets,
@@ -357,7 +349,7 @@ export const walletModel = {
   $availableAccounts,
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
-  createWallet: walletCreatedFx,
+  createWallet: createWalletFx,
   createWallets: createWalletsFx,
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
@@ -384,7 +376,7 @@ export const walletModel = {
 
   __test: {
     $rawWallets,
-    walletCreatedFx,
+    walletCreatedFx: createWalletFx,
     removeWalletFx,
   },
 };

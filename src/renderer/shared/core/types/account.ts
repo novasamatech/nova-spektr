@@ -17,7 +17,6 @@ export interface VaultBaseAccount extends UniversalAccount {
 
 export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
-  baseAccountId?: AccountId;
   keyType: KeyType;
   derivationPath: string;
 }

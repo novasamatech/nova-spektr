@@ -27,7 +27,6 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
   {
     id: '2',
     walletId: 1,
-    baseAccountId: createAccountId('1'),
     name: 'My chain account',
     type: 'chain',
     accountType: AccountType.CHAIN,
@@ -52,7 +51,6 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     type: 'chain',
     id: '4',
     walletId: 2,
-    baseAccountId: createAccountId('3'),
     name: 'My chain account',
     accountType: AccountType.CHAIN,
     accountId: createAccountId('4'),
@@ -126,7 +124,6 @@ const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
   {
     id: '5',
     walletId: 3,
-    baseAccountId: createAccountId('4'),
     type: 'chain',
     name: 'My chain account',
     accountType: AccountType.CHAIN,
