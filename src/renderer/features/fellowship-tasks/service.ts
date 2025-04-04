@@ -64,11 +64,11 @@ function getControversyScore(referendum: OngoingReferendum, maximumAvailableVoti
  */
 function getUserImportanceScore(maximumAvailableVotingWeight: number, userVotingPower: number) {
   if (maximumAvailableVotingWeight <= 0) {
-    return 0;
+    return 1;
   }
 
   const importance = userVotingPower / maximumAvailableVotingWeight;
-  return Math.max(0.0, Math.min(1.0, importance));
+  return Math.max(0, Math.min(1, importance));
 }
 
 /**

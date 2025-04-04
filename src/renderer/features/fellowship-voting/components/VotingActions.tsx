@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
@@ -21,7 +21,7 @@ type Props = {
 
 const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
 
-export const VotingActions = ({ referendum, transaction }: Props) => {
+export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
   const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
@@ -49,6 +49,12 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   });
 
   const aye = () => {
+    if (decision === 'aye') {
+      votingStatus.flow.close({ referendumId: null });
+      setDecision(null);
+      return;
+    }
+
     votingStatus.flow.open({ referendumId: referendum?.id });
 
     if (canAddToBasket) {
@@ -61,6 +67,12 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   };
 
   const nay = () => {
+    if (decision === 'nay') {
+      votingStatus.flow.close({ referendumId: null });
+      setDecision(null);
+      return;
+    }
+
     votingStatus.flow.open({ referendumId: referendum?.id });
 
     if (canAddToBasket) {
@@ -114,7 +126,9 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           highlight={highlight}
         />
       </div>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      {decision ? (
+        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      ) : null}
     </Box>
   );
-};
+});
