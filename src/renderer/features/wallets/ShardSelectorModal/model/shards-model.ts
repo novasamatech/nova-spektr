@@ -2,7 +2,7 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import cloneDeep from 'lodash/cloneDeep';
 
 import { type Wallet } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
@@ -48,7 +48,7 @@ const $selectedStructure = createStore<SelectedStruct>({});
 sample({ clock: queryChanged, target: $query });
 
 const $isAccessDenied = combine(walletSelect.$selectedWallet, (wallet): boolean => {
-  return nonNullable(wallet) && !walletUtils.isPolkadotVault(wallet);
+  return nullable(wallet) || !walletUtils.isPolkadotVault(wallet);
 });
 
 const $filteredAccounts = combine(

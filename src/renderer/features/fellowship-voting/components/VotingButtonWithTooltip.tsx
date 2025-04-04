@@ -1,4 +1,4 @@
-import { type MouseEventHandler } from 'react';
+import { type MouseEventHandler, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
@@ -27,12 +27,12 @@ function categorizeImpact(voteImpact: number): string {
   return 'moderate';
 }
 
-export const VotingButtonWithTooltip = (args: Props) => {
+export const VotingButtonWithTooltip = memo((props: Props) => {
   const { t } = useI18n();
 
-  const { isVoted, checked, disabled, votes, variant, voteImpact } = args;
+  const { isVoted, checked, disabled, votes, variant, voteImpact } = props;
 
-  if (checked || isVoted || disabled || nullable(votes) || nullable(voteImpact)) return <FilledIconButton {...args} />;
+  if (checked || isVoted || disabled || nullable(votes) || nullable(voteImpact)) return <FilledIconButton {...props} />;
 
   const tooltipText = variant === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
   const impact = categorizeImpact(voteImpact);
@@ -41,7 +41,7 @@ export const VotingButtonWithTooltip = (args: Props) => {
     <Tooltip>
       <Tooltip.Trigger>
         <div>
-          <FilledIconButton {...args} />
+          <FilledIconButton {...props} />
         </div>
       </Tooltip.Trigger>
       <Tooltip.Content>
@@ -57,7 +57,7 @@ export const VotingButtonWithTooltip = (args: Props) => {
       </Tooltip.Content>
     </Tooltip>
   );
-};
+});
 
 const FilledIconButton = ({ variant, disabled, checked, icon, isVoted, onClick, onHighlight }: Props) => {
   const vote = variant === 'positive' ? 'Aye' : 'Nay';
