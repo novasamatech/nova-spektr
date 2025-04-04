@@ -16,14 +16,16 @@ const $populated = restore(
 
 const populateFx = createEffect((): Promise<AnyAccount[]> => storageService.accounts2.readAll());
 
-const createAccountsFx = createEffect((accounts: AnyAccountDraft[]): Promise<AnyAccount[]> => {
-  return storageService.accounts2
-    .createAll(accounts.map(a => ({ ...a, id: accountService.uniqId(a) })))
-    .then(a => a ?? []);
+const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<AnyAccount[]> => {
+  const dbAccounts = await storageService.accounts2.createAll(
+    accounts.map(a => ({ ...a, id: accountService.uniqId(a) })),
+  );
+
+  return dbAccounts ?? [];
 });
 
-const updateAccountsFx = createEffect((accounts: AnyAccountDraft[]): Promise<boolean> => {
-  if (accounts.length === 0) return Promise.resolve(false);
+const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<boolean> => {
+  if (accounts.length === 0) return false;
 
   const drafts = accounts.map(a => ({ ...a, id: accountService.uniqId(a) }));
 
