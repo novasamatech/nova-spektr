@@ -33,17 +33,15 @@ const updateAccountsFx = createEffect((accounts: AnyAccountDraft[]): Promise<boo
 const updateAccount = attach({
   source: $accounts,
   mapParams: (draft: AnyAccountDraft, accounts) => {
-    if (accounts.find(a => accountService.uniqId(a) === accountService.uniqId(draft))) {
-      return [draft];
-    }
+    const match = accounts.some(a => accountService.uniqId(a) === accountService.uniqId(draft));
 
-    return [];
+    return match ? [draft] : [];
   },
   effect: updateAccountsFx,
 });
 
 const deleteAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
-  // TODO set correct id
+  // TODO: set correct id
   await storageService.accounts2.deleteAll(accounts.map(accountService.uniqId));
 
   return accounts;

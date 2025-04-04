@@ -111,11 +111,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   };
 
   const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
-    vaultDetailsModel.events.accountsCreated({
-      walletId: wallet.id,
-      rootAccountId: wallet.rootAccountId,
-      accounts,
-    });
+    vaultDetailsModel.events.accountsCreated({ walletId: wallet.id, accounts });
     toggleScanModal();
   };
 
