@@ -270,7 +270,6 @@ function subscribeLockNativeAssetChange(
   const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
   return api.query.balances.locks.multi(addresses, (data) => {
-
     const newLocks: NoIdBalance[] = [];
 
     for (const [index, balanceLocks] of data.entries()) {
