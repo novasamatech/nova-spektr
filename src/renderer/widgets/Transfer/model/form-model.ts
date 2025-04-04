@@ -2,7 +2,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { camelCase, isEmpty } from 'lodash';
-import { debug, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import {
   type Account,
@@ -513,9 +513,6 @@ sample({
   clock: $transferForm.fields.xcmChain.onChange,
   target: $transferForm.fields.destination.reset,
 });
-
-// ToDo: decide if we want to keep this log for autotests for now
-debug({ trace: true }, balanceModel.$balances);
 
 sample({
   source: {
