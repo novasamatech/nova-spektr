@@ -1,11 +1,12 @@
 import { gql } from '@apollo/client';
+import { type ApiPromise } from '@polkadot/api';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type ChainId } from '@/shared/core';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
-import { type EncodedTransaction } from '../transaction/types';
+import { transactionService } from '../transaction/service';
+import { type AnyDecodedTransaction } from '../transaction/types';
 
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
@@ -62,7 +63,7 @@ const operationsQuery = gql`
   }
 `;
 
-function mapSubqueryOperationRecord(node: unknown, chainId: ChainId): MultisigOperation | null {
+function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
   const operationId = multisigOperationService.getOperationId(
     response.callHash,
@@ -71,12 +72,15 @@ function mapSubqueryOperationRecord(node: unknown, chainId: ChainId): MultisigOp
     response.indexCreated,
   );
 
-  const transaction: EncodedTransaction | null = response.callData
-    ? {
-        type: 'encoded',
-        callData: response.callData,
-      }
-    : null;
+  let transaction: AnyDecodedTransaction | null = null;
+
+  try {
+    if (response.callData) {
+      transaction = transactionService.decodeTransaction({ type: 'encoded', callData: response.callData }, api);
+    }
+  } catch {
+    // do nothing
+  }
 
   return {
     id: operationId,
@@ -86,6 +90,7 @@ function mapSubqueryOperationRecord(node: unknown, chainId: ChainId): MultisigOp
     timestamp: response.timestamp,
     accountId: response.accountId,
     callHash: response.callHash,
+    callData: response.callData ?? null,
     blockCreated: response.blockCreated,
     indexCreated: response.indexCreated,
     status: response.status,
@@ -96,19 +101,19 @@ function mapSubqueryOperationRecord(node: unknown, chainId: ChainId): MultisigOp
         id: multisigOperationService.getEventId(operationId, event.accountId, event.status),
       };
     }),
-    chainId,
+    chainId: api.genesisHash.toHex(),
   };
 }
 
 export async function fetchOperations(
   url: string,
   accountId: AccountId,
-  chainId: ChainId,
+  api: ApiPromise,
 ): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
   const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
 
-  return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, chainId));
+  return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, api));
 }
 
 export const multisigEvent = z.union([

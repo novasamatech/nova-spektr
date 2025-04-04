@@ -3,9 +3,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Address, type MultisigAccount, type Transaction } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
+  type AnyDecodedTransaction,
   type MultisigEvent,
   type MultisigOperation,
-  type MultisigOperationData,
   multisigOperationService,
 } from '@/domains/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
@@ -31,7 +31,7 @@ export const getPendingMultisigTxs = async (
 };
 
 export const buildMultisigTx = (
-  tx: MultisigOperationData,
+  tx: AnyDecodedTransaction,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
   account: MultisigAccount,
@@ -59,13 +59,9 @@ export const buildMultisigTx = (
     accountId: account.accountId,
     depositor: multisigTx.accountId,
     chainId: multisigTx.chainId,
-    transaction: multisigTx.args.callData
-      ? {
-          type: 'encoded',
-          callData: multisigTx.args.callData,
-        }
-      : null,
+    transaction: tx,
     callHash: multisigTx.args.callHash,
+    callData: multisigTx.args.callData ?? null,
     status: 'pending',
     blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
     indexCreated: params.timepoint.index,

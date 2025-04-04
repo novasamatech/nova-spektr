@@ -151,7 +151,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
 
   const getMultisigTx = (signer: AccountId): Transaction => {
     const otherSignatories = multisigOperationService.getOtherSignatories(account, signer);
-    const hasCallData = operation.transaction && validateCallData(operation.transaction.callData, operation.callHash);
+    const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
     return {
       chainId: operation.chainId,
@@ -165,7 +165,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
           height: operation.blockCreated,
           index: operation.indexCreated,
         } satisfies Timepoint,
-        callData: operation.transaction?.callData,
+        callData: operation.callData,
         callHash: operation.callHash,
       },
     };

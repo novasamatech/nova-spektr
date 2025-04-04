@@ -13,7 +13,6 @@ import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { useDecodedTransaction } from '../../../entities/transaction';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
@@ -34,7 +33,6 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
   const account = selectedAccounts.find(accountUtils.isMultisigAccount);
-  const decoded = useDecodedTransaction(operation.transaction, operation.chainId);
 
   const events = operation.events;
 
@@ -59,7 +57,7 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
 
   const isFinalSigning = account && events.length === account.threshold - 1;
   const isApproveAvailable =
-    !isFinalSigning || (operation.transaction && validateCallData(operation.transaction.callData, operation.callHash));
+    !isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash));
 
   return (
     <div className="flex flex-1">
@@ -69,7 +67,7 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
 
           {(!operation.transaction || explorerLink) && (
             <div className="flex items-center">
-              {!operation.transaction?.callData && (
+              {!operation.callData && (
                 <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
                 </Button>
@@ -97,7 +95,9 @@ export const OperationFullInfo = memo(({ operation }: Props) => {
 
           <Separator />
 
-          {decoded ? <OperationDetails transaction={decoded} chainId={operation.chainId} /> : null}
+          {operation.transaction ? (
+            <OperationDetails transaction={operation.transaction} chainId={operation.chainId} />
+          ) : null}
 
           <OperationAdvancedDetails operation={operation} chain={chain} wallets={wallets} />
         </Box>

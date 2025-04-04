@@ -23,7 +23,7 @@ export const TransferOperationDetails = ({ transaction, chainId, multisigAccount
 
   const result = [];
 
-  const destination = operationDetailsUtils.getDestinationAccountId(transaction);
+  const destination = operationDetailsUtils.getDestination(transaction);
   const sender = multisigAccountId;
   const destinationChain = operationDetailsUtils.getDestinationChain(transaction);
 

@@ -66,6 +66,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
   const transactionTitle = getMultisigSignOperationTitle(
     isXcmTransaction(operation),
     t,
+    api,
     TransactionType.MULTISIG_CANCEL_AS_MULTI,
     operation,
   );

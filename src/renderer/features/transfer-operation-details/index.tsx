@@ -1,6 +1,7 @@
 import {
   isTransferTransaction,
   isXcmTransaction,
+  types,
   useDecodedTransaction,
   useTransactionAsset,
 } from '@/entities/transaction';
@@ -12,19 +13,21 @@ import { transferOperationDetailFeature } from './model/feature';
 export { transferOperationDetailFeature, useTransactionAsset, useDecodedTransaction };
 
 multisigOperationSDK(transferOperationDetailFeature, {
-  icon({ operation }) {
-    if (isTransferTransaction(operation)) {
+  icon({ transaction }) {
+    if (!transaction) return;
+    if (types.isTransferTransaction(transaction)) {
       return 'transferMst';
     }
-    if (isXcmTransaction(operation)) {
+    if (types.isXcmTransferTransaction(transaction)) {
       return 'crossChain';
     }
   },
-  title({ operation }) {
-    if (isTransferTransaction(operation)) {
+  title({ transaction }) {
+    if (!transaction) return;
+    if (types.isTransferTransaction(transaction)) {
       return 'operations.titles.transfer';
     }
-    if (isXcmTransaction(operation)) {
+    if (types.isXcmTransferTransaction(transaction)) {
       return 'operations.titles.crossChainTransfer';
     }
   },
@@ -41,20 +44,6 @@ multisigOperationSDK(transferOperationDetailFeature, {
     return null;
   },
 });
-
-// transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-//   const transaction = operationDetailsUtils.getOperationData(operation);
-//
-//   if (isTransferTransaction(transaction)) {
-//     return <TransferOperationTitle operation={operation} />;
-//   }
-//
-//   if (isXcmTransaction(transaction)) {
-//     return <XcmTransferOperationTitle operation={operation} />;
-//   }
-//
-//   return null;
-// });
 
 // transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
 //   return <TransactionAmount operation={operation} />;

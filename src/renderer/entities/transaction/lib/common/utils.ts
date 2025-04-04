@@ -2,8 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type DispatchError } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
-import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
-import { type AnyDecodedTransaction, type MultisigOperationData } from '@/domains/network';
+import { type Transaction, TransactionType } from '@/shared/core';
+import { type AnyDecodedTransaction } from '@/domains/network';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 import { getTransactionType } from '../callDataDecoder';
 
@@ -49,7 +49,7 @@ export const hasDestWeight = (api: ApiPromise): boolean => {
 };
 
 export const getType = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData | AnyDecodedTransaction,
+  transaction?: Transaction | AnyDecodedTransaction | AnyDecodedTransaction,
 ): TransactionType | undefined => {
   if (!transaction) return;
 
@@ -64,34 +64,28 @@ export const getType = (
   return type;
 };
 
-export const isXcmTransaction = (transaction?: Transaction | DecodedTransaction | MultisigOperationData): boolean => {
+export const isXcmTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return XcmTypes.includes(type);
 };
 
-export const isTransferTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isTransferTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return TransferTypes.includes(type);
 };
 
-export const isManageProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isManageProxyTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return ManageProxyTypes.includes(type);
 };
 
-export const isProxyTypeTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isProxyTypeTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   return (
     isProxyTransaction(transaction) ||
     isAddProxyTransaction(transaction) ||
@@ -102,7 +96,7 @@ export const isProxyTypeTransaction = (
 };
 
 export const isAddProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData | AnyDecodedTransaction,
+  transaction?: Transaction | AnyDecodedTransaction | AnyDecodedTransaction,
 ): boolean => {
   const type = getType(transaction);
   if (!type) return false;
@@ -110,43 +104,35 @@ export const isAddProxyTransaction = (
   return type === TransactionType.ADD_PROXY;
 };
 
-export const isCreatePureProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isCreatePureProxyTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return type === TransactionType.CREATE_PURE_PROXY;
 };
 
-export const isRemoveProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isRemoveProxyTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return type === TransactionType.REMOVE_PROXY;
 };
 
-export const isRemovePureProxyTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isRemovePureProxyTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return type === TransactionType.REMOVE_PURE_PROXY;
 };
 
-export const isProxyTransaction = (transaction?: Transaction | DecodedTransaction | MultisigOperationData): boolean => {
+export const isProxyTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
   return type === TransactionType.PROXY;
 };
 
-export const isEditDelegationTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isEditDelegationTransaction = (transaction?: Transaction): boolean => {
   const type = getType(transaction);
   if (!type) return false;
 
@@ -160,28 +146,19 @@ export const isEditDelegationTransaction = (
   return false;
 };
 
-export const isDelegateTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isDelegateTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   return !!transaction && hasTransaction(transaction, (tx) => getType(tx) === TransactionType.DELEGATE);
 };
 
-export const isUndelegateTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isUndelegateTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   return !!transaction && hasTransaction(transaction, (tx) => getType(tx) === TransactionType.UNDELEGATE);
 };
 
-export const isUnlockTransaction = (
-  transaction?: Transaction | DecodedTransaction | MultisigOperationData,
-): boolean => {
+export const isUnlockTransaction = (transaction?: Transaction | AnyDecodedTransaction): boolean => {
   return !!transaction && hasTransaction(transaction, (tx) => getType(tx) === TransactionType.UNLOCK);
 };
 
-export const hasTransaction = (
-  transaction: { args?: any },
-  filter: (transaction: Transaction | DecodedTransaction | MultisigOperationData) => boolean,
-): boolean => {
+export const hasTransaction = (transaction: Transaction, filter: (transaction: Transaction) => boolean): boolean => {
   const type = getType(transaction);
   if (type === TransactionType.BATCH_ALL) {
     const transactions = transaction.args?.transactions || transaction.args?.calls;
@@ -205,9 +182,7 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
   return batchAllOperations.has(type);
 };
 
-export const findCoreBatchAll = (
-  coreTx: Transaction | DecodedTransaction | MultisigOperationData,
-): Transaction | MultisigOperationData => {
+export const findCoreBatchAll = (coreTx: Transaction): Transaction => {
   if (isUnlockTransaction(coreTx)) {
     return coreTx.args?.transactions?.find((t: Transaction) => t.type === TransactionType.UNLOCK) || coreTx;
   }
@@ -217,9 +192,9 @@ export const findCoreBatchAll = (
   return supportedTransaction || coreTx.args?.transactions?.[0] || findCoreBatchAllFromOperation(coreTx);
 };
 
-export const findCoreBatchAllFromOperation = (coreTx: MultisigOperationData): Transaction => {
+export const findCoreBatchAllFromOperation = (coreTx: Transaction): Transaction => {
   if (isUnlockTransaction(coreTx)) {
-    return coreTx.args?.calls?.find((t: MultisigOperationData) => getType(t) === TransactionType.UNLOCK) || coreTx;
+    return coreTx.args?.calls?.find((t: Transaction) => getType(t) === TransactionType.UNLOCK) || coreTx;
   }
 
   const supportedTransaction = coreTx.args?.calls?.find((tx: Transaction) => {
@@ -230,7 +205,7 @@ export const findCoreBatchAllFromOperation = (coreTx: MultisigOperationData): Tr
   return supportedTransaction || coreTx.args?.calls?.[0];
 };
 
-export const getTransactionAmount = (tx: Transaction | DecodedTransaction | MultisigOperationData): string | null => {
+export const getTransactionAmount = (tx: Transaction | AnyDecodedTransaction): string | null => {
   const txType = getType(tx);
   if (!txType) return null;
 

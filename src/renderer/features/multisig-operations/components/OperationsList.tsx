@@ -8,7 +8,7 @@ import { accountMultisigOperations } from '@/aggregates/account-multisig-operati
 import { operationsContextModel } from '../model/context';
 import { list } from '../model/list';
 
-import { EmptyOperations } from './EmptyState/EmptyOperations';
+import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 

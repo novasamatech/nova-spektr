@@ -65,8 +65,9 @@ export type SigningStatus =
   | 'ERROR_SIGNED'
   | 'ERROR_CANCELLED';
 
-// TODO: extend args for all Transaction types
-// TODO: use it for send transaction
+/**
+ * @deprecated Use AnyDecodedTransaction instead.
+ */
 export type Transaction<Args extends NonNullable<unknown> = Record<string, any>> = {
   chainId: ChainId;
   accountId: AccountId;

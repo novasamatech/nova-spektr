@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type MultisigOperation } from '@/domains/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { TransferTypes, XcmTypes, getTransactionType } from '@/entities/transaction';
 import { list } from '../../../model/list';
 import { getStatusOptions, getTransactionOptions } from '../lib/utils';
@@ -87,14 +88,16 @@ export const OperationsFilter = ({ txs }: Props) => {
     return transactionType;
   };
 
-  const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
-    return transactions.reduce(
-      (acc, tx) => {
-        const txType = getFilterableTxType(tx);
-        const xcmDestination = tx.args?.destinationChain;
+  const getAvailableFiltersOptions = (operations: MultisigOperation[]) => {
+    return operations.reduce(
+      (acc, operation) => {
+        const txType = getFilterableTxType(operation);
+        const xcmDestination = operation.transaction
+          ? operationDetailsUtils.getDestinationChain(operation.transaction)
+          : null;
 
-        const statusOption = StatusOptions.find(s => s.value === tx.status);
-        const originNetworkOption = NetworkOptions.find(s => s.value === tx.chainId);
+        const statusOption = StatusOptions.find(s => s.value === operation.status);
+        const originNetworkOption = NetworkOptions.find(s => s.value === operation.chainId);
         const destNetworkOption = NetworkOptions.find(s => s.value === xcmDestination);
         const typeOption = TransactionOptions.find(s => s.value === txType);
 
@@ -131,7 +134,9 @@ export const OperationsFilter = ({ txs }: Props) => {
       if (hasOrigin) {
         return true;
       }
-      const xcmDestination = operation.args?.destinationChain;
+      const xcmDestination = operation.transaction
+        ? operationDetailsUtils.getDestinationChain(operation.transaction)
+        : null;
       const hasDestination = !filters.network.length || filters.network.map(mapValues).includes(xcmDestination);
       return hasDestination;
     }

@@ -245,4 +245,29 @@ describe('Transaction service', () => {
       `);
     });
   });
+
+  describe('extrinsic', () => {
+    it('should create submittable extrinsic', async () => {
+      const api = await createMockApi();
+      const transaction = transactionService.createSubmittableExtrinsic(
+        {
+          type: 'encoded',
+          callData: '0x1e0100379b3f5dc547e92c7bf2b9837b8801954b9a68f7deadb3411400511f66adbe140000000000',
+        },
+        api,
+      );
+
+      expect(transaction.method.toHuman()).toEqual({
+        args: {
+          delay: '0',
+          delegate: {
+            Id: 'DqEGbAJBJGuDAMN2feH4GsufAYvmYJhNAkiPxs9S4StwJ7j',
+          },
+          proxy_type: 'Any',
+        },
+        method: 'addProxy',
+        section: 'proxy',
+      });
+    });
+  });
 });

@@ -130,17 +130,11 @@ function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): Encode
   };
 }
 
-function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDecodedTransaction {
-  if (isDecodedTransaction(transaction)) {
-    return transaction;
-  }
-
-  const decoded = createSubmittableExtrinsic(transaction, api);
-
+function decodeExtrinsic(extrinsic: SubmittableExtrinsic<'promise'>, api: ApiPromise): AnyDecodedTransaction {
   // Batched extrinsics are supported out of the box.
-  const { section, method } = decoded.method;
+  const { section, method } = extrinsic.method;
   if (section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(method)) {
-    const callsArg = decoded.args[0]?.toHex();
+    const callsArg = extrinsic.args[0]?.toHex();
     if (callsArg) {
       const calls = api.createType('Vec<Call>', callsArg);
       const batchedTransactions = calls.map(call => {
@@ -156,14 +150,23 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
     }
   }
 
-  const result = decodeTransactionTransformer(decoded, { api });
+  const result = decodeTransactionTransformer(extrinsic, { api });
   if (nullable(result)) {
     const error = new Error("Can't decode extrinsic");
-    error.cause = transaction;
+    error.cause = extrinsic;
     throw error;
   }
 
   return result;
+}
+
+function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDecodedTransaction {
+  if (isDecodedTransaction(transaction)) {
+    return transaction;
+  }
+
+  const extrinsic = createSubmittableExtrinsic(transaction, api);
+  return decodeExtrinsic(extrinsic, api);
 }
 
 async function getExtrinsicFee(extrinsic: SubmittableExtrinsic<'promise'>) {
@@ -190,6 +193,7 @@ export const transactionService = {
   unwrapTransaction,
   encodeTransaction,
   decodeTransaction,
+  decodeExtrinsic,
 
   createSubmittableExtrinsic,
 

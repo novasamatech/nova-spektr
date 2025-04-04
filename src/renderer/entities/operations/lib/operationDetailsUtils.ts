@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { isString } from 'lodash';
 
 import {
-  type Chain,
   type ChainId,
   type Contact,
   type Explorer,
@@ -12,7 +11,7 @@ import {
   type Signatory,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { dictionary, nonNullable, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -125,23 +124,17 @@ export const getAssetId = (transaction: AnyDecodedTransaction) => {
 
 export const getDestinationChain = (transaction: AnyDecodedTransaction) => {
   const coreTx = unwrap(transaction, (t) => {
-    return types.isXcmTransferTranasction(t) || types.isMultiAssetTransferTranasction(t);
+    return types.isXcmTransferTransaction(t) || types.isMultiAssetTransferTranasction(t);
   });
 
   return coreTx?.args?.destinationChain;
 };
 
-export const getDestinationAddress = (transaction: AnyDecodedTransaction, chain: Chain) => {
-  const accountId = getDestinationAccountId(transaction);
-  return accountId ? toAddress(accountId, { prefix: chain.addressPrefix }) : null;
-};
-
-export const getDestinationAccountId = (transaction: AnyDecodedTransaction) => {
+export const getDestination = (transaction: AnyDecodedTransaction) => {
   const unwrapped = unwrap(transaction, (t) => {
-    return types.isTransferTransaction(t) || types.isAssetTransferTransaction(t);
+    return types.isTransferTransaction(t) || types.isAssetTransferTransaction(t) || types.isXcmTransferTransaction(t);
   });
-  const dest = unwrapped?.args.dest;
-  return isString(dest) ? toAccountId(dest) : null;
+  return unwrapped?.args.dest ?? null;
 };
 
 export const getPayee = (transaction: AnyDecodedTransaction) => {

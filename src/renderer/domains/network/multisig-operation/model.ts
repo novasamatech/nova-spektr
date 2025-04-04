@@ -11,6 +11,7 @@ import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '../transaction/service';
+import { type AnyDecodedTransaction } from '../transaction/types';
 
 import { transformDepositToBN, transformDepositToString } from './helpers';
 import { fetchOperations, multisigEvent } from './resource';
@@ -59,10 +60,7 @@ const updateCallDataFx = attach({
         ...operation,
         section: decoded.section,
         method: decoded.method,
-        transaction: {
-          type: 'encoded',
-          callData,
-        },
+        transaction: decoded,
       };
 
       return update([newOperation]);
@@ -118,12 +116,20 @@ const { request: requestOperations } = createDataSource({
 
       const callData = transaction?.method.toHex() || null;
 
+      let decodedTransaction: AnyDecodedTransaction | null = null;
+      try {
+        decodedTransaction = transaction ? transactionService.decodeExtrinsic(transaction, api) : null;
+      } catch {
+        // do nothing
+      }
+
       operations.push({
         id: operationId,
         chainId,
         status: 'pending',
         accountId: key.accountId,
         callHash: key.callHash,
+        callData,
         depositor: multisig.depositor,
         blockCreated: multisig.when.height,
         indexCreated: multisig.when.index,
@@ -133,12 +139,7 @@ const { request: requestOperations } = createDataSource({
         section: null,
         timestamp,
         events,
-        transaction: callData
-          ? {
-              type: 'encoded',
-              callData,
-            }
-          : null,
+        transaction: decodedTransaction,
       });
     }
 
@@ -158,14 +159,14 @@ const { subscribe: subscribeIndexer, unsubscribe: unsubscribeIndexer } = createD
   fn(params: RequestParams[], callback) {
     const unsubscribeFns = [];
 
-    for (const { chain, accountId } of params) {
+    for (const { chain, accountId, api } of params) {
       const url = chain.externalApi?.proxy.find(x => x.type === 'subquery')?.url;
       if (nullable(url)) {
         throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
       }
 
       const fn = () => {
-        fetchOperations(url, accountId, chain.chainId).then(value => {
+        fetchOperations(url, accountId, api).then(value => {
           callback({ done: true, value });
         });
       };

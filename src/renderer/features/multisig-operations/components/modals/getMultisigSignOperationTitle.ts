@@ -3,7 +3,7 @@ import { type TFunction } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
-import { type MultisigOperation, type MultisigOperationData, transactionService } from '@/domains/network';
+import { type AnyDecodedTransaction, type MultisigOperation, transactionService } from '@/domains/network';
 import { findCoreBatchAll, getTransactionType, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
@@ -68,7 +68,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
 export const getModalTransactionTitle = (
   crossChain: boolean,
   t: TFunction,
-  transaction?: MultisigOperationData,
+  transaction?: AnyDecodedTransaction,
 ): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 

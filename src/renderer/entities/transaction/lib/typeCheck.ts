@@ -29,7 +29,7 @@ export function isAssetTransferTransaction(t: AnyDecodedTransaction): t is Asset
 }
 
 export type XcmTransferTransaction = DecodedTransaction<DecodedXcmPayload>;
-export function isXcmTransferTranasction(t: AnyDecodedTransaction): t is XcmTransferTransaction {
+export function isXcmTransferTransaction(t: AnyDecodedTransaction): t is XcmTransferTransaction {
   return (
     (t.section === 'xcmPallet' && ['limitedReserveTransferAssets', 'limitedTeleportAssets'].includes(t.method)) ||
     (t.section === 'polkadotXcm' &&

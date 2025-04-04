@@ -1,4 +1,4 @@
-import { type MultisigOperationData } from '@/domains/network';
+import { type AnyDecodedTransaction } from '@/domains/network';
 import {
   isAddProxyTransaction,
   isManageProxyTransaction,
@@ -8,21 +8,29 @@ import {
 
 describe('entities/transaction/lib/onChainUtils', () => {
   test('should return true for a transfer transactions', () => {
-    const transferTransaction: MultisigOperationData = {
+    const transferTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'transfer',
       section: 'balances',
+      args: {},
     };
-    const currenciesTransferTransaction: MultisigOperationData = {
+    const currenciesTransferTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'transfer',
       section: 'currencies',
+      args: {},
     };
-    const tokensTransferTransaction: MultisigOperationData = {
+    const tokensTransferTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'transfer',
       section: 'tokens',
+      args: {},
     };
-    const assetTransferTransaction: MultisigOperationData = {
+    const assetTransferTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'transfer',
       section: 'assets',
+      args: {},
     };
 
     expect(isTransferTransaction(transferTransaction)).toEqual(true);
@@ -32,40 +40,50 @@ describe('entities/transaction/lib/onChainUtils', () => {
   });
 
   test('should return false for an other transaction', () => {
-    const transaction: MultisigOperationData = {
+    const transaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'bond',
       section: 'staking',
+      args: {},
     };
 
     expect(isTransferTransaction(transaction)).toEqual(false);
   });
 
   test('should return true for add proxy transaction', () => {
-    const transaction: MultisigOperationData = {
+    const transaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'addProxy',
       section: 'proxy',
+      args: {},
     };
 
     expect(isAddProxyTransaction(transaction)).toEqual(true);
   });
 
   test('should return true for remove proxy transaction', () => {
-    const transaction: MultisigOperationData = {
+    const transaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'removeProxy',
       section: 'proxy',
+      args: {},
     };
 
     expect(isRemoveProxyTransaction(transaction)).toEqual(true);
   });
 
   test('should return true for manage proxy transaction', () => {
-    const addProxyTransaction: MultisigOperationData = {
+    const addProxyTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'addProxy',
       section: 'proxy',
+      args: {},
     };
-    const removeProxyTransaction: MultisigOperationData = {
+    const removeProxyTransaction: AnyDecodedTransaction = {
+      type: 'decoded',
       method: 'removeProxy',
       section: 'proxy',
+      args: {},
     };
 
     expect(isManageProxyTransaction(addProxyTransaction)).toEqual(true);

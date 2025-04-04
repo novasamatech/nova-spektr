@@ -51,20 +51,20 @@ const getOperationIcon = (type: TransactionType): IconNames | undefined => {
 };
 
 multisigOperationSDK(proxyOperationDetailFeature, {
-  icon({ operation }) {
-    const type = getTransactionType(operation.method, operation.section);
+  icon({ method, section }) {
+    const type = getTransactionType(method, section);
     if (type) {
       return getOperationIcon(type);
     }
   },
-  title({ operation }) {
-    const type = getTransactionType(operation.method, operation.section);
+  title({ method, section }) {
+    const type = getTransactionType(method, section);
     if (type) {
       return getOperationTitle(type);
     }
   },
-  additionalInfo({ operation }) {
-    return <ChainTitle chainId={operation.chainId} className="w-[114px]" />;
+  additionalInfo({ chainId }) {
+    return <ChainTitle chainId={chainId} className="w-[114px]" />;
   },
   details({ transaction, chainId, multisigAccountId }) {
     const { t } = useI18n();

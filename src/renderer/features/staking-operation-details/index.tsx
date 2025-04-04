@@ -42,14 +42,14 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 };
 
 multisigOperationSDK(stakingOperationDetailFeature, {
-  icon({ operation }) {
-    const type = getTransactionType(operation.method, operation.section);
+  icon({ section, method }) {
+    const type = getTransactionType(method, section);
     if (type) {
       return getOperationIcon(type);
     }
   },
-  title({ operation }) {
-    const type = getTransactionType(operation.method, operation.section);
+  title({ section, method }) {
+    const type = getTransactionType(method, section);
     if (type) {
       return getOperationTitle(type);
     }

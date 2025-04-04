@@ -11,14 +11,13 @@ import {
   TransactionType,
 } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
-import { type AnyAccount, type MultisigOperationData } from '@/domains/network';
+import { type AnyAccount, transactionService } from '@/domains/network';
 import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import {
   type ExtrinsicResultParams,
-  getTxFromCallData,
+  transactionService as deprecatedTransactionService,
   transactionBuilder,
-  transactionService,
 } from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
@@ -78,7 +77,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
-      transactionService
+      deprecatedTransactionService
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {
           if (result.executed) {
@@ -104,13 +103,12 @@ const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, a
   for (const multisigTx of multisigTxs) {
     if (!api) continue;
 
-    const transaction = getTxFromCallData(api, multisigTx.args.callData);
-    const tx = {
-      ...(transaction.method.toHuman() as MultisigOperationData),
-      callData: transaction.toHex(),
-    };
+    const transaction = transactionService.decodeTransaction(
+      { type: 'encoded', callData: multisigTx.args.callData },
+      api,
+    );
 
-    const multisigOperation = buildMultisigTx(tx, multisigTx, params, multisigAccount);
+    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, multisigAccount);
     result.push(multisigOperation);
 
     console.log(`New transaction was created with call hash ${multisigOperation.callHash}`);

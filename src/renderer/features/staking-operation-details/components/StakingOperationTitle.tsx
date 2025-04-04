@@ -6,7 +6,6 @@ import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
@@ -17,7 +16,7 @@ type Props = {
 
 export const StakingOperationTitle = ({ operation, title, icon }: Props) => {
   const { t } = useI18n();
-  const transaction = operationDetailsUtils.getOperationData(operation);
+  const transaction = operation.transaction;
 
   const asset =
     transaction && getAssetById(transaction.args?.asset, chainsService.getChainById(operation.chainId)?.assets);

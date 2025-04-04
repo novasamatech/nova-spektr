@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { type CallHash, type ChainId, type HexString } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
-import { type EncodedTransaction } from '../transaction/types';
+import { type AnyDecodedTransaction } from '../transaction/types';
 
 export type MultisigEvent = {
   id: string;
@@ -14,19 +14,14 @@ export type MultisigEvent = {
   extrinsicHash?: HexString;
 };
 
-export type MultisigOperationData = {
-  method?: string | null;
-  section?: string | null;
-  args?: Record<string, any> | null;
-};
-
 export type MultisigOperation = {
   id: string;
   status: 'pending' | 'cancelled' | 'executed' | 'error';
-  transaction: EncodedTransaction | null;
+  transaction: AnyDecodedTransaction | null;
   method: string | null;
   section: string | null;
   callHash: CallHash;
+  callData: HexString | null;
   chainId: ChainId;
   accountId: AccountId;
   depositor: AccountId;
