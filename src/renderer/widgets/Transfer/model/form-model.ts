@@ -514,21 +514,15 @@ sample({
   target: $transferForm.fields.destination.reset,
 });
 
+// ToDo: decide if we want to keep this log for autotests for now
 debug({ trace: true }, balanceModel.$balances);
-balanceModel.$balances.watch((balances) => {
-  console.log('balances for selectedAccount', balances);
-});
 
 sample({
   source: {
     accounts: $accounts,
     selectedAccount: $transferForm.fields.account.$value,
   },
-  filter: ({ accounts, selectedAccount }) => {
-    // console.log({ accounts, selectedAccount });
-
-    return nonNullable(selectedAccount);
-  },
+  filter: ({ selectedAccount }) => nonNullable(selectedAccount),
   fn: ({ accounts, selectedAccount }) => {
     const match = accounts.find((a) => a.account.id === selectedAccount?.id);
 

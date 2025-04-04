@@ -27,18 +27,12 @@ const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {
 sample({
   clock: balancesSet,
   source: $balancesBuffer,
-  fn: (bufferBalances, newBalances) => {
-    console.log(`write ${newBalances.length} balances by balancesSet event to $balancesBuffer`);
-    return balanceUtils.getMergeBalances(bufferBalances, newBalances);
-  },
+  fn: balanceUtils.getMergeBalances,
   target: $balancesBuffer,
 });
 
 sample({
-  clock: balancesUpdated.map((balances) => {
-    console.log(`add ${balances.length} balances updates by balancesUpdated event to $balancesBuffer`);
-    return balances;
-  }),
+  clock: balancesUpdated,
   source: $balancesBuffer,
   filter: (_, newBalances) => newBalances.length > 0,
   fn: balanceUtils.getMergeBalances,

@@ -237,7 +237,6 @@ function subscribeOrmlAssetsChange(
   const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
 
   return method.multi(assetsTuples, (data) => {
-    console.log({ data });
     const newBalances: NoIdBalance[] = [];
 
     for (const [index, accountInfo] of (data as unknown as OrmlAccountData[]).entries()) {
@@ -271,7 +270,6 @@ function subscribeLockNativeAssetChange(
   const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
 
   return api.query.balances.locks.multi(addresses, (data) => {
-    console.log({ data });
 
     const newLocks: NoIdBalance[] = [];
 
@@ -306,7 +304,6 @@ function subscribeLockOrmlAssetChange(
   const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
 
   return method.multi(assetsTuples, (data: Vec<PalletBalancesBalanceLock>[]) => {
-    console.log({ data });
     const newLocks: NoIdBalance[] = [];
 
     for (const [index, balanceLocks] of data.entries()) {
