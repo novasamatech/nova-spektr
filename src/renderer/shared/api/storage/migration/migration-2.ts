@@ -39,8 +39,7 @@ async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Pro
     .modify((wallet) => {
       const isWatchOnly = wallet.type === WalletType.WATCH_ONLY;
       const isMultisig = wallet.type === WalletType.MULTISIG;
-      const isParitySigner =
-        wallet.type === WalletType.SINGLE_PARITY_SIGNER || wallet.type === WalletType.MULTISHARD_PARITY_SIGNER;
+      const isParitySigner = wallet.type === WalletType.SINGLE_PARITY_SIGNER || wallet.type === 'wallet_mps';
 
       wallet.isActive = activeAccount?.walletId === wallet.id;
       wallet.signingType =

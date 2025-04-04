@@ -44,12 +44,6 @@ export interface SingleShardWallet extends Wallet {
   accounts: VaultBaseAccount[];
 }
 
-export interface MultiShardWallet extends Wallet {
-  type: WalletType.MULTISHARD_PARITY_SIGNER;
-  rootAccountId: AccountId;
-  accounts: (VaultBaseAccount | VaultChainAccount)[];
-}
-
 export interface WatchOnlyWallet extends Wallet {
   type: WalletType.WATCH_ONLY;
   accounts: VaultBaseAccount[];
@@ -95,9 +89,6 @@ export const enum WalletType {
   POLKADOT_EXTENSION = 'wallet_polkadot_ext',
   TALISMAN_EXTENSION = 'wallet_talisman_ext',
   SUBWALLET_EXTENSION = 'wallet_subwallet_ext',
-
-  // Legacy
-  MULTISHARD_PARITY_SIGNER = 'wallet_mps',
   SINGLE_PARITY_SIGNER = 'wallet_sps',
 }
 
@@ -108,7 +99,6 @@ export type SignableWalletFamily =
   | WalletType.SUBWALLET_EXTENSION
   | WalletType.WALLET_CONNECT
   | WalletType.NOVA_WALLET
-  | WalletType.MULTISHARD_PARITY_SIGNER
   | WalletType.SINGLE_PARITY_SIGNER;
 
 export type WalletFamily =
@@ -125,7 +115,7 @@ export type WalletFamily =
 
 export type WalletConnectGroup = WalletConnectWallet | NovaWalletWallet;
 
-export type PolkadotVaultGroup = PolkadotVaultWallet | SingleShardWallet | MultiShardWallet;
+export type PolkadotVaultGroup = PolkadotVaultWallet | SingleShardWallet;
 
 export const enum SigningType {
   WATCH_ONLY = 'signing_wo',

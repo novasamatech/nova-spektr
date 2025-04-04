@@ -1,6 +1,6 @@
-import Dexie from 'dexie';
+import { Dexie } from 'dexie';
 
-import { migrateWallets } from '../../../src/renderer/shared/api/storage/migration/migration-2';
+import { migrateWallets } from '@/shared/api/storage/migration';
 import { MockDataBuilder } from '../utils';
 
 class MyDatabase extends Dexie {
@@ -27,11 +27,7 @@ async function pushDataToDB(db: MyDatabase, table: Dexie.Table<any, any>, pushDa
   });
 }
 
-async function getAndAssertFromTable(
-  db: MyDatabase,
-  expectedLength: number,
-  table: Dexie.Table<any>,
-): Promise<Array<any>> {
+async function getAndAssertFromTable(db: MyDatabase, expectedLength: number, table: Dexie.Table<any>): Promise<any[]> {
   const tableRows = await table.toArray();
   expect(tableRows).toHaveLength(expectedLength);
 
