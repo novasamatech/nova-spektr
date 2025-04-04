@@ -11,7 +11,6 @@ export type {
   WalletsMap,
   PolkadotVaultWallet,
   SingleShardWallet,
-  MultiShardWallet,
   MultisigWallet,
   FlexibleMultisigWallet,
   WatchOnlyWallet,

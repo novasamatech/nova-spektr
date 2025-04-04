@@ -10,8 +10,6 @@ const WalletIcon: Record<SignableWalletFamily, IconNames> = {
   [WalletType.SUBWALLET_EXTENSION]: 'subwalletExtension',
   [WalletType.WALLET_CONNECT]: 'walletConnect',
   [WalletType.NOVA_WALLET]: 'novaWallet',
-  // legacy
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'vault',
 };
 
@@ -22,8 +20,6 @@ const WalletText: Record<SignableWalletFamily, string> = {
   [WalletType.SUBWALLET_EXTENSION]: 'operation.sign.subWalletExtension',
   [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
   [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',
-  // legacy
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'operation.sign.polkadotVault',
   [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
 };
 

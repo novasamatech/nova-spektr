@@ -1,6 +1,5 @@
 import {
   AccountType,
-  type MultiShardWallet,
   type MultisigWallet,
   type NovaWalletWallet,
   type PolkadotVaultWallet,
@@ -42,12 +41,6 @@ const singleParitySignerWallet = {
   accounts: [{ name: '1' }],
   type: WalletType.SINGLE_PARITY_SIGNER,
 } as SingleShardWallet;
-
-const multishardWallet = {
-  name: 'multishard wallet',
-  accounts: [{ name: '1' }],
-  type: WalletType.MULTISHARD_PARITY_SIGNER,
-} as MultiShardWallet;
 
 const multisigWallet = {
   name: 'multisig wallet',
@@ -109,7 +102,6 @@ export const permissionMocks = {
     novaWallet,
     walletConnectWallet,
     singleParitySignerWallet,
-    multishardWallet,
     multisigWallet,
     proxiedWallet,
   },

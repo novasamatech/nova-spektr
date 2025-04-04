@@ -8,7 +8,6 @@ export { RootAccountMd } from './Cards/RootAccountMd';
 export { DerivedAccount } from './Cards/DerivedAccount';
 export { DeliveryFeeAlert } from './DeliveryFeeAlert/DeliveryFeeAlert';
 export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
-export { MultishardAccountsList } from './MultishardAccountsList/MultishardAccountsList';
 export { VaultAccountsList } from './VaultAccountsList/VaultAccountsList';
 export { ContactItem } from './ContactItem/ContactItem';
 export { ExplorersPopover } from './ExplorersPopover/ExplorersPopover';
