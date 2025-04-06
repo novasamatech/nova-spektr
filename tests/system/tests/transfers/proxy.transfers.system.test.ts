@@ -23,6 +23,6 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const confirmationModal = await transferModal.openConfirmationModal();
     const signingModal = await confirmationModal.confirm();
 
-    await signingModal.checkQRCode();
+    await signingModal.checkQRCodeWalletConnect();
   });
 });

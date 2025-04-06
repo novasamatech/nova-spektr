@@ -21,7 +21,7 @@ export class WatchOnlyAssetsPage extends BaseAssetsPage {
   }
   
   public override async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
-      return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModalByUrl();
+      return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModal(false);
   }
   
 }

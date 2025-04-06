@@ -47,7 +47,7 @@ export const WalletConnectQrCode = ({ uri, type, size = 300 }: Props) => {
         <Loader color="primary" size={24} />
       </div>
 
-      <div key="wallet-connect" className="z-10" ref={setRef} />
+      <div key="wallet-connect" className="z-10" ref={setRef} data-testid="operations-qr-code-wallet-connect" />
     </div>
   );
 };
