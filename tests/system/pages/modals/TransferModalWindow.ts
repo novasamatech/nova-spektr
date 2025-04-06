@@ -32,10 +32,10 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     const config = await readConfig();
     const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
     const chainId = filteredChain.chainId;
-    const url = TransferModalElements.getUrl(chainId, this.assetId);    
+    const url = TransferModalElements.getUrl(chainId, this.assetId);
     await this.page.getByTestId(TEST_IDS.ASSETS.TOKEN_PLATE).first().waitFor();
     await this.page.goto(url);
-    
+
     if (waitForModal) {
       await this.page.getByTestId(TEST_IDS.OPERATIONS.AMOUNT_INPUT).first().waitFor();
     }
