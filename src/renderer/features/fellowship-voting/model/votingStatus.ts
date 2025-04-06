@@ -14,14 +14,52 @@ const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: n
 
 const $referendumId = flow.state.map(({ referendumId }) => referendumId);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
-const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
-const $voting = fellowship.$store.map(x => x?.voting ?? []);
+const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
+const $voting = fellowship.$store.map(store => store?.voting ?? []);
+const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+const $members = fellowship.$store.map(store => store?.members ?? []);
 const $currentMember = fellowshipVotingFeature.input.map(input => input?.member ?? null);
 const $votingAccount = fellowshipVotingFeature.input.map(input => input?.account ?? null);
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   return referendums.find(referendum => referendum.id === referendumId) ?? null;
 });
+
+const $proposer = combine($members, $referendum, (members, referendum) => {
+  if (nullable(referendum) || !referendumService.isOngoing(referendum)) return null;
+
+  const proposal = referendum.proposal;
+  if (nullable(proposal) || !referendumService.isEvidenceProposal(proposal)) return null;
+
+  return members.find(member => member.accountId === proposal.accountId) ?? null;
+});
+
+const $memberTrack = combine($tracks, $currentMember, (tracks, member) => {
+  if (nullable(member)) return null;
+  return tracks.find(t => t.id === member.rank) ?? null;
+});
+
+const $currentProposerTrack = combine($tracks, $proposer, (tracks, proposer) => {
+  if (nullable(proposer)) return null;
+  return tracks.find(t => t.id === proposer?.rank) ?? null;
+});
+
+const $nextProposerTrack = combine(
+  {
+    tracks: $tracks,
+    proposer: $proposer,
+    referendum: $referendum,
+  },
+  ({ tracks, proposer, referendum }) => {
+    if (nullable(referendum) || !referendumService.isOngoing(referendum)) return null;
+    if (nullable(proposer)) return null;
+
+    const index = tracks.findIndex(t => t.id === proposer.rank);
+
+    // HINT: promotion can add more than 1 rank
+    return tracks.at(index + (referendum.track % 10)) ?? null;
+  },
+);
 
 const $hasRequiredRank = combine(
   {
@@ -53,28 +91,23 @@ const $referendumVoting = combine($accountsVotes, $referendumId, (voting, refere
 
 sample({
   clock: attachToFeatureInput(fellowshipVotingFeature, $referendumId),
-  fn({ data: referendumId, input: { api, chainId, palletType } }) {
-    return {
-      api,
-      chainId,
-      palletType,
-      referendums: [referendumId].filter(nonNullable),
-    };
-  },
+  fn: ({ data: referendumId, input: { api, chainId, palletType } }) => ({
+    api,
+    chainId,
+    palletType,
+    referendums: [referendumId].filter(nonNullable),
+  }),
   target: referendum.request,
 });
 
 sample({
   clock: fellowshipVotingFeature.running,
-  fn: ({ palletType, api, chain, account }) => {
-    return {
-      palletType,
-      api,
-      chainId: chain.chainId,
-      accounts: account ? [account.accountId] : [],
-    };
-  },
-
+  fn: ({ palletType, api, chain, account }) => ({
+    palletType,
+    api,
+    chainId: chain.chainId,
+    accounts: account ? [account.accountId] : [],
+  }),
   target: voting.subscribeAccountsVoting,
 });
 
@@ -90,6 +123,10 @@ export const votingStatus = {
   $votingAccount,
   $currentMember,
   $maxRank,
+  $proposer,
+  $memberTrack,
+  $currentProposerTrack,
+  $nextProposerTrack,
   $canVote,
   $referendum,
   flow,

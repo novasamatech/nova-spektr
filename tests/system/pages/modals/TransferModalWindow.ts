@@ -91,7 +91,10 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   }
 
   public async transferModalIsNotVisible(): Promise<TransferModalWindow> {
-    await expect(this.page.getByTestId(TransferModalElements.amountInputLocator)).not.toBeVisible();
+    await expect(
+      this.page.getByTestId(TransferModalElements.amountInputLocator),
+      'Transfer modal should not be visible',
+    ).not.toBeVisible();
 
     return this;
   }

@@ -23,4 +23,4 @@ export const transferTestCases = [
     amount: '0.01',
     recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
   },
-]; 
+];
