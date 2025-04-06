@@ -24,7 +24,7 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
       await transferModal.fillRecipient(recipient);
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
-      
+
       await signingModal.checkQRCodeWalletConnect();
     });
   }

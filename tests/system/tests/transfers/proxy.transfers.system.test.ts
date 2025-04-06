@@ -18,7 +18,7 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const transferModal = await assetsPage.openTransfer(chain, 0);
 
     await transferModal.fillAmount('0.01');
-    await transferModal.fillRecipient('5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP');    
+    await transferModal.fillRecipient('5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP');
 
     const confirmationModal = await transferModal.openConfirmationModal();
     const signingModal = await confirmationModal.confirm();
