@@ -338,7 +338,7 @@ module.exports = {
               },
               {
                 from: 'shared',
-                allow: ['app', 'shared', /* TODO fix */ 'entities'],
+                allow: ['app', 'shared', 'domains', 'entities'],
               },
               {
                 from: 'sdk',

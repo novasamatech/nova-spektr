@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipTasksFeature } from '../model/feature';
+import { fellowshipSalaryFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -20,8 +20,8 @@ type Props = {
   shortDateFormat?: boolean;
 };
 
-export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
-  const input = useUnit(fellowshipTasksFeature.input);
+export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
+  const input = useUnit(fellowshipSalaryFeature.input);
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {

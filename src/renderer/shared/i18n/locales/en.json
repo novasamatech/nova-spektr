@@ -520,6 +520,10 @@
         "anyReferendum": {
           "title": "Review referendum"
         },
+        "evidence": {
+          "promotionTitle": "{identity} request promotion at rank {rank}",
+          "retentionTitle": "{identity} request retention at rank {rank}"
+        },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
           "request": "Submit",

@@ -4,13 +4,13 @@ import { memo, useEffect } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { evidenceInfo } from '../../model/evidence';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
-import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
 import { taskVotingActionSlot } from './OngoingReferendumVoting';
 
@@ -87,7 +87,7 @@ export const PromotionRetentionReferendumVoting = memo(
             </FootnoteText>
 
             <div className="flex gap-16 text-left">
-              {evidenceSummary?.github?.pullRequests && (
+              {nonNullable(evidenceSummary?.github?.pullRequests) && (
                 <div className="w-15">
                   <FootnoteText className="inline text-text-secondary">
                     {t('fellowship.tasks.task.promotionVoting.pullRequests')}
@@ -96,7 +96,7 @@ export const PromotionRetentionReferendumVoting = memo(
                   <span className="text-black">{evidenceSummary?.github?.pullRequests}</span>
                 </div>
               )}
-              {evidenceSummary?.github?.mergedPullRequests && (
+              {nonNullable(evidenceSummary?.github?.mergedPullRequests) && (
                 <div className="w-15">
                   <FootnoteText className="inline text-text-secondary">
                     {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
@@ -109,7 +109,6 @@ export const PromotionRetentionReferendumVoting = memo(
           </Box>
         </button>
         <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
-          <ReferendumEndTimer endBlock={referendum.ends} referendumType="general" shortDateFormat />
           <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
         </Box>
       </Box>

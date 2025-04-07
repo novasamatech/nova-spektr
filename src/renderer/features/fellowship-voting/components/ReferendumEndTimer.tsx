@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipTasksFeature } from '../model/feature';
+import { fellowshipVotingFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
 function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
-  if (days <= 15) return 'urgent';
-  if (days <= 30) return 'warning';
+  if (days <= 7) return 'urgent';
+  if (days <= 3) return 'warning';
   return 'idle';
 }
 
@@ -20,8 +20,8 @@ type Props = {
   shortDateFormat?: boolean;
 };
 
-export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
-  const input = useUnit(fellowshipTasksFeature.input);
+export const ReferendumEndTimer = ({ endBlock, shortDateFormat }: Props) => {
+  const input = useUnit(fellowshipVotingFeature.input);
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {

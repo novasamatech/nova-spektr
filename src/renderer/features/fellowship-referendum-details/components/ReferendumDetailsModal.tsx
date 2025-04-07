@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
+import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { details } from '../model/details';
@@ -13,7 +14,6 @@ import { details } from '../model/details';
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
 import { Threshold } from './Threshold';
-import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
 import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
 const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
@@ -55,7 +55,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
-                    <ReferendumVoteChart referendum={referendum} pending={loadingState} />
+                    <CollectiveReferendumVoteChart referendum={referendum} pending={loadingState} />
                     <Threshold referendum={referendum} pending={loadingState} />
                     <Slot id={referendumActionsSlot} props={{ referendumId }} />
                   </Box>

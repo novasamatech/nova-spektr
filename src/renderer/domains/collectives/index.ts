@@ -50,3 +50,5 @@ export type { Member, CoreMember } from './member/types';
 export type { Vote } from './votingHistory/types';
 
 export type { FeedRecord } from './feed/types';
+
+export type { Evidence } from './evidence/types';

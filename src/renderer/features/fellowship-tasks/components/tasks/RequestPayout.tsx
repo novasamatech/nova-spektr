@@ -9,7 +9,6 @@ import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
-import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
 export const payoutSalaryActionSlot = createSlot();
 
@@ -21,10 +20,8 @@ export const RequestPayout = () => {
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const salary = useUnit(memberSalary.$memberSalary);
 
-  const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
-
   useEffect(() => {
-    if (input?.api && currentPeriodExists) {
+    if (input?.api && currentPeriod && currentPeriod.type !== 'unknown') {
       getCreatedDateFromApi(currentPeriod.until, input.api).then(setPeriodEnd);
     }
   }, [input?.api, currentPeriod]);
@@ -47,9 +44,6 @@ export const RequestPayout = () => {
         </FootnoteText>
       </Box>
       <Box verticalAlign="center" horizontalAlign="flex-end" shrink={0} gap={8.5} height="100%">
-        {currentPeriodExists && (
-          <ReferendumEndTimer endBlock={currentPeriod.until} referendumType="personal" shortDateFormat />
-        )}
         <Box width="102px">
           <Slot id={payoutSalaryActionSlot} />
         </Box>

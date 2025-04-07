@@ -16,6 +16,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
 import { PromotionRetentionReferendumVoting } from '../components/tasks/PromotionRetentionReferendumVoting';
+import { PromotionRetentionVoting } from '../components/tasks/PromotionRetentionVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
@@ -128,7 +129,7 @@ const $salaryTasks = combine(
   },
 );
 
-const $evidenceTasks = combine(
+const $evidenceReferendumsTasks = combine(
   {
     member: memberProfile.$member,
     evidencePopulated: evidenceInfo.$evidencePopulated,
@@ -178,6 +179,29 @@ const $evidenceTasks = combine(
           meta: { transaction: operations['evidence'] ?? null, tags: [] },
         },
       ];
+    }
+
+    return [];
+  },
+);
+
+const $evidenceTasks = combine(
+  {
+    evidences: evidenceInfo.$evidences,
+    evidencePopulated: evidenceInfo.$evidencePopulated,
+    operations: $basketOperationsMap,
+  },
+  ({ evidences, evidencePopulated, operations }): TaskDescription[] => {
+    if (evidencePopulated) {
+      return evidences.map<TaskDescription>(evidence => {
+        return {
+          id: 'evidence_request',
+          weight: 1,
+          group: 'general',
+          body: PromotionRetentionVoting,
+          meta: { evidence, transaction: operations['evidence_request'] ?? null, tags: [] },
+        };
+      });
     }
 
     return [];
@@ -269,14 +293,28 @@ const $completedReferendumsTasks = combine(referendums.$completed, referendums =
 const $list = combine(
   {
     salaryTasks: $salaryTasks,
+    evidenceTasks: $evidenceTasks,
     referendumTasks: $ongoingReferendumsTasks,
     completedReferendumsTasks: $completedReferendumsTasks,
-    evidenceTasks: $evidenceTasks,
+    evidenceReferendumTasks: $evidenceReferendumsTasks,
     hasPermission: memberProfile.$hasPermission,
   },
-  ({ salaryTasks, referendumTasks, completedReferendumsTasks, evidenceTasks, hasPermission }) => {
+  ({
+    salaryTasks,
+    evidenceTasks,
+    referendumTasks,
+    completedReferendumsTasks,
+    evidenceReferendumTasks,
+    hasPermission,
+  }) => {
     if (hasPermission) {
-      const list = [...salaryTasks, ...referendumTasks, ...evidenceTasks, ...completedReferendumsTasks];
+      const list = [
+        ...salaryTasks,
+        ...evidenceTasks,
+        ...referendumTasks,
+        ...evidenceReferendumTasks,
+        ...completedReferendumsTasks,
+      ];
       return list.sort((a, b) => b.weight - a.weight);
     }
 
