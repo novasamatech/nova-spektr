@@ -78,42 +78,6 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
   },
 ];
 
-const multishardAccounts = [
-  {
-    id: '2',
-    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
-    walletId: 2,
-    name: 'Main KSM key',
-    type: 'chain',
-    accountType: AccountType.CHAIN,
-    accountId: '0x04b42c45250880695e6cec68c5adce35a0e2ec60ed46b77b734ad6020b991658',
-    chainId: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
-    derivationPath: '//kusama//pub',
-  },
-  {
-    id: '3',
-    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
-    walletId: 2,
-    name: 'Main DOT key',
-    type: 'chain',
-    accountType: AccountType.CHAIN,
-    accountId: '0x661127faa225949b1c1a48f834f43fa626c9f58fa0c7e522551d4b9616e18c37',
-    chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-    derivationPath: '//polkadot//main',
-  },
-  {
-    id: '5',
-    baseAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
-    walletId: 2,
-    name: 'Second WND key',
-    type: 'chain',
-    accountType: AccountType.CHAIN,
-    accountId: '0xa8ceab88b82d857d3e64a8d67db0d3e476054a42572522ae359b962b2818305f',
-    chainId: '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e',
-    derivationPath: '//westend//pub',
-  },
-] as unknown as (VaultBaseAccount | VaultChainAccount)[];
-
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,
   isActive: true,
@@ -154,6 +118,5 @@ const chainsMap = {
 export const shardsMock = {
   vaultWallet,
   vaultAccounts,
-  multishardAccounts,
   chainsMap,
 };

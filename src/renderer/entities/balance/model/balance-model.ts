@@ -26,6 +26,8 @@ const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {
 
 sample({
   clock: balancesSet,
+  source: $balancesBuffer,
+  fn: balanceUtils.getMergeBalances,
   target: $balancesBuffer,
 });
 

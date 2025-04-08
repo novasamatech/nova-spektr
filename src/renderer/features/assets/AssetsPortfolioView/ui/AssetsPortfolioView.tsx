@@ -14,7 +14,7 @@ import { portfolioModel } from '../model/portfolio-model';
 import { TokenBalance } from './TokenBalance';
 import { TokenBalanceList } from './TokenBalanceList';
 
-const getColStyle = (wallet?: Wallet): string => {
+const getColStyle = (wallet: Wallet | null): string => {
   if (!wallet) {
     return '';
   }
