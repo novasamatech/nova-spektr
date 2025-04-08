@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
@@ -15,7 +16,6 @@ import { portfolioModel } from '../model/portfolio-model';
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 import { ChainsList } from './ChainsList';
 import { NetworkCard } from './NetworkCard';
-import { TEST_IDS } from '@/shared/constants';
 
 type Props = {
   asset: AssetByChains;
