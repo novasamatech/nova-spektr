@@ -1,26 +1,33 @@
 import { combine, createEvent, createStore, restore } from 'effector';
 import { once } from 'patronum';
 
-import { type Account, type AssetByChains } from '@/shared/core';
+import { type AssetByChains } from '@/shared/core';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
+import { accountService, accounts } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { tokensService } from '../lib/tokensService';
 
 const DEFAULT_LIST: never[] = [];
 
 const activeViewChanged = createEvent<AssetsListView>();
-const accountsChanged = createEvent<Account[]>();
 const hideZeroBalancesChanged = createEvent<boolean>();
 const queryChanged = createEvent<string>();
 const transferStarted = createEvent<AssetByChains>();
 const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
-const $accounts = restore<Account[]>(accountsChanged, []);
+const $accounts = combine(
+  {
+    accountsList: accounts.$list,
+    activeWallet: walletModel.$activeWallet,
+  },
+  ({ accountsList, activeWallet }) =>
+    activeWallet ? accountService.filterAccountsByWallet(accountsList, activeWallet.id) : [],
+);
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
@@ -32,8 +39,9 @@ const $tokens = combine(
     activeView: $activeView,
     wallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
+    accounts: $accounts,
   },
-  ({ defaultTokens, activeView, wallet, chains }) => {
+  ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
     if (nullable(wallet)) return DEFAULT_LIST;
 
@@ -41,12 +49,7 @@ const $tokens = combine(
 
     for (const token of defaultTokens) {
       const filteredChains = token.chains.filter((chain) => {
-        return wallet.accounts.some((account) => {
-          return (
-            accountUtils.isNonBaseVaultAccount(account, wallet) &&
-            accountUtils.isChainAndCryptoMatch(account, chains[chain.chainId])
-          );
-        });
+        return accountService.filterAccountOnChain(accounts, chains[chain.chainId]);
       });
 
       if (filteredChains.length === 0) continue;
@@ -184,7 +187,6 @@ export const portfolioModel = {
   $tokensPopulated,
   events: {
     activeViewChanged,
-    accountsChanged,
     hideZeroBalancesChanged,
     queryChanged,
     transferStarted,

@@ -54,17 +54,12 @@ sample({
       return wallet.accounts.filter(accountUtils.isProxiedAccount);
     }
     if (!walletUtils.isPolkadotVault(wallet)) {
-      return wallet.accounts;
+      return wallet?.accounts;
     }
 
     return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   },
   target: $activeShards,
-});
-
-sample({
-  clock: $activeShards,
-  target: portfolioModel.events.accountsChanged,
 });
 
 export const assetsModel = {
