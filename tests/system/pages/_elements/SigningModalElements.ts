@@ -2,5 +2,5 @@ import { TEST_IDS } from '@/shared/constants';
 
 export class SigningModalElements {
   static qrCodeContainerLocator = TEST_IDS.OPERATIONS.QR_CODE_CONTAINER;
-  static qrCodeWalletConnectLocator = 'Scan with Nova Wallet';
+  static signReadyWalletConnectLocator = 'Scan with Nova Wallet';
 }
