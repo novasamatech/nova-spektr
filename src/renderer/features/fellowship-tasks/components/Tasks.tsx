@@ -31,7 +31,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   if (nullable(input) || pending) {
     return (
       <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
-        <Loader color="primary" />
+        <Loader color="primary" size={24} />
       </div>
     );
   }

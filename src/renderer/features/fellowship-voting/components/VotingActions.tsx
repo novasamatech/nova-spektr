@@ -47,6 +47,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   });
 
   const aye = () => {
+    if (referendumVote?.decision === 'Aye') return;
+
     if (decision === 'aye') {
       votingStatus.flow.close({ referendumId: null });
       setDecision(null);
@@ -65,6 +67,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   };
 
   const nay = () => {
+    if (referendumVote?.decision === 'Nay') return;
+
     if (decision === 'nay') {
       votingStatus.flow.close({ referendumId: null });
       setDecision(null);

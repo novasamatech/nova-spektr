@@ -8,7 +8,7 @@ import { fellowshipTasksFeature } from './feature';
 const requestIdentityFx = attach({ effect: identity.request });
 const $identities = combine(fellowshipTasksFeature.input, identity.$list, (input, identities) => {
   if (!input) return {};
-  return identities[input.chainId];
+  return identities[input.chainId] ?? {};
 });
 
 const request = createEvent<{ accountId: AccountId }>();

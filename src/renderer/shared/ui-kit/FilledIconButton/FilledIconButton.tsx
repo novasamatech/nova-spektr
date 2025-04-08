@@ -7,6 +7,7 @@ type Props = {
   variant: 'positive' | 'negative';
   icon: IconNames;
   checked?: boolean;
+  marked?: boolean;
   disabled?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onMouseOver?: MouseEventHandler<HTMLButtonElement>;
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export const FilledIconButton = memo(
-  ({ variant, disabled, checked, icon, onClick, onMouseOver, onMouseLeave }: Props) => {
+  ({ variant, disabled, checked, marked, icon, onClick, onMouseOver, onMouseLeave }: Props) => {
     return (
       <button
         type="button"
@@ -24,7 +25,7 @@ export const FilledIconButton = memo(
           'disabled:pointer-events-none disabled:bg-secondary-button-background',
           { 'opacity-30': !checked },
           {
-            'pointer-events-none': checked,
+            'pointer-events-auto': !checked,
             'bg-badge-green-background text-text-positive hover:opacity-90 active:opacity-100': variant === 'positive',
             'bg-badge-red-background text-text-negative hover:opacity-90 active:opacity-100': variant === 'negative',
           },
@@ -33,7 +34,7 @@ export const FilledIconButton = memo(
         onMouseOver={onMouseOver}
         onMouseLeave={onMouseLeave}
       >
-        {checked && (
+        {marked && (
           <div
             className={cnTw('absolute top-1 h-1.5 w-1.5 rounded-full', {
               'right-2 bg-icon-positive': variant === 'positive',
