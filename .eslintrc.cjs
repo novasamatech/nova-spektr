@@ -243,7 +243,7 @@ module.exports = {
         'import-x/max-dependencies': [
           'warn',
           {
-            max: 20,
+            max: 25,
             ignoreTypeImports: true,
           },
         ],
