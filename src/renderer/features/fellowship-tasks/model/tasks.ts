@@ -6,6 +6,7 @@ import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
   type OngoingReferendum,
+  evidence,
   evidenceService,
   memberService,
   salaryService,
@@ -36,6 +37,7 @@ import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
+const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
@@ -132,7 +134,7 @@ const $salaryTasks = combine(
 const $evidenceReferendumsTasks = combine(
   {
     member: memberProfile.$member,
-    evidencePopulated: evidenceInfo.$evidencePopulated,
+    evidencePopulated: evidence.$populated,
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
     demotionPeriod: periods.$demotionPeriod,
@@ -190,8 +192,8 @@ const $evidenceTasks = combine(
     referendums: referendums.$ongoing,
     member: $member,
     members: $members,
-    evidences: evidenceInfo.$evidences,
-    evidencePopulated: evidenceInfo.$evidencePopulated,
+    evidences: $evidences,
+    evidencePopulated: evidence.$populated,
     operations: $basketOperationsMap,
   },
   ({ referendums, member, members, evidences, evidencePopulated, operations }) => {
