@@ -163,15 +163,15 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 };
 
 type ItemProps = {
-  value: string;  
+  value: string;
 };
 
-const Item = ({ value,  children }: PropsWithChildren<ItemProps>) => {
+const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
   const { theme } = useTheme();
 
   return (
     <RadixSelect.Item
-      value={value}      
+      value={value}
       className={cnTw(
         'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary contain-inline-size',
         'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',
