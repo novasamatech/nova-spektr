@@ -187,24 +187,41 @@ const $evidenceReferendumsTasks = combine(
 
 const $evidenceTasks = combine(
   {
+    referendums: referendums.$ongoing,
+    member: $member,
+    members: $members,
     evidences: evidenceInfo.$evidences,
     evidencePopulated: evidenceInfo.$evidencePopulated,
     operations: $basketOperationsMap,
   },
-  ({ evidences, evidencePopulated, operations }): TaskDescription[] => {
-    if (evidencePopulated) {
-      return evidences.map<TaskDescription>(evidence => {
-        return {
-          id: 'evidence_request',
-          weight: 1,
-          group: 'general',
-          body: PromotionRetentionVoting,
-          meta: { evidence, transaction: operations['evidence_request'] ?? null, tags: [] },
-        };
-      });
+  ({ referendums, member, members, evidences, evidencePopulated, operations }) => {
+    if (!evidencePopulated || nullable(member)) {
+      return [];
     }
 
-    return [];
+    return evidences
+      .map<TaskDescription | null>(evidence => {
+        const referendum = referendums.find(r => {
+          return r.proposal?.type === 'Evidence' && r.proposal.accountId === evidence.accountId;
+        });
+        if (nonNullable(referendum)) return null;
+
+        const proposer = members.find(m => m.accountId === evidence.accountId);
+        if (nullable(proposer)) return null;
+
+        if (memberService.canVoteForProposal(member, proposer.rank)) {
+          return {
+            id: 'evidence_request',
+            weight: 1,
+            group: 'general',
+            body: PromotionRetentionVoting,
+            meta: { evidence, transaction: operations['evidence_request'] ?? null, tags: [] },
+          };
+        }
+
+        return null;
+      })
+      .filter(nonNullable);
   },
 );
 

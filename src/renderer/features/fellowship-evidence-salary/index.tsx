@@ -148,7 +148,7 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
   }
 });
 
-fellowshipSalaryFeature.inject(evidenceVotingActionSlot, ({ evidence }) => {
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <>{evidence.wish}</>;
+fellowshipSalaryFeature.inject(evidenceVotingActionSlot, () => {
+  // TODO implement
+  return null;
 });

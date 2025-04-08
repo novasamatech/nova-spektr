@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import orderBy from 'lodash/orderBy';
 import { type PropsWithChildren, useState } from 'react';
 
@@ -7,20 +7,18 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
-import { votingHistoryFeatureStatus } from '../model/feature';
+import { fellowshipVotingHistoryFeature } from '../model/feature';
 import { votesModel } from '../model/votes';
 
 import { VotingHistoryList } from './VotingHistoryList';
 
 export const VotesModal = ({ children }: PropsWithChildren) => {
-  useGate(votingHistoryFeatureStatus.gate);
-
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState(0);
 
   const votes = useUnit(votesModel.$votesList);
-  const input = useUnit(votingHistoryFeatureStatus.input);
+  const input = useUnit(fellowshipVotingHistoryFeature.input);
   const isLoading = useUnit(votesModel.$pending);
 
   const chain = input?.chain ?? null;

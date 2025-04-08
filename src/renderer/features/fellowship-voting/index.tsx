@@ -1,4 +1,7 @@
-import { additionalInfoSlot, referendumActionsSlot } from '@/features/fellowship-referendum-details';
+import {
+  referendumActionsSlot,
+  referendumAdditionalHighPriorityInfoSlot,
+} from '@/features/fellowship-referendum-details';
 import { taskVotingActionSlot } from '@/features/fellowship-tasks';
 
 import { ReferendumEndTimer } from './components/ReferendumEndTimer';
@@ -21,7 +24,7 @@ fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction 
   );
 });
 
-fellowshipVotingFeature.inject(additionalInfoSlot, ({ referendumId }) => {
+fellowshipVotingFeature.inject(referendumAdditionalHighPriorityInfoSlot, ({ referendumId }) => {
   return <WalletVotingInfo referendumId={referendumId} />;
 });
 

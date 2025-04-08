@@ -49,6 +49,10 @@ function canPromote(member: Member) {
   return member.rank < 7;
 }
 
+function canVoteForProposal(member: Member, rank: number) {
+  return member.rank >= rank + 2;
+}
+
 type SetActiveTransactionParams = {
   pallet: CollectivePalletsType;
   account: AnyAccount;
@@ -80,6 +84,7 @@ export const memberService = {
   isCoreMember,
   canChangeActiveState,
   canPromote,
+  canVoteForProposal,
 
   createSetActiveTransaction,
   isSetActiveTransaction,

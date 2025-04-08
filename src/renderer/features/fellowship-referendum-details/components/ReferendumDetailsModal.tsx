@@ -8,17 +8,16 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
 import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { details } from '../model/details';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
+import { ReferendumVotingStatusBadge } from './ReferendumVotingStatusBadge';
 import { Threshold } from './Threshold';
-import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
-const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
+export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumAdditionalLowPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 
-export const additionalInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumActionsSlot = createSlot<{ referendumId: ReferendumId }>();
 
 type Props = {
@@ -50,7 +49,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 </Card>
               </Box>
               <Box width="350px" shrink={0} gap={4}>
-                <Slot id={additionalInfoSlot} props={{ referendumId }} />
+                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
                 <Card>
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
@@ -60,17 +59,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                     <Slot id={referendumActionsSlot} props={{ referendumId }} />
                   </Box>
                 </Card>
-                <Card>
-                  <Box padding={6} gap={4}>
-                    <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                      <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
-
-                      <VotingHistory referendumId={referendumId} />
-                    </Box>
-
-                    <VotingSummary />
-                  </Box>
-                </Card>
+                <Slot id={referendumAdditionalLowPriorityInfoSlot} props={{ referendumId }} />
               </Box>
             </Box>
           </ScrollArea>
