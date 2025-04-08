@@ -10,7 +10,7 @@ import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
 
-export const payoutSalaryActionSlot = createSlot();
+export const payoutSalaryTaskActionSlot = createSlot();
 
 export const RequestPayout = () => {
   const { t, formatDate } = useI18n();
@@ -45,7 +45,7 @@ export const RequestPayout = () => {
       </Box>
       <Box verticalAlign="center" horizontalAlign="flex-end" shrink={0} gap={8.5} height="100%">
         <Box width="102px">
-          <Slot id={payoutSalaryActionSlot} />
+          <Slot id={payoutSalaryTaskActionSlot} />
         </Box>
       </Box>
     </Box>

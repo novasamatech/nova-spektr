@@ -8,7 +8,10 @@ import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 
-export const taskVotingActionSlot = createSlot<{ referendum: OngoingReferendum; transaction: Transaction | null }>();
+export const referendumVotingTaskActionSlot = createSlot<{
+  referendum: OngoingReferendum;
+  transaction: Transaction | null;
+}>();
 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
@@ -55,7 +58,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
-        <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
+        <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
       </Box>
     </Box>
   );

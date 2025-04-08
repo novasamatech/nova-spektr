@@ -12,7 +12,7 @@ import { evidenceInfo } from '../../model/evidence';
 import { referendums } from '../../model/referendums';
 import { tracks } from '../../model/tracks';
 
-import { taskVotingActionSlot } from './OngoingReferendumVoting';
+import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
@@ -109,7 +109,7 @@ export const PromotionRetentionReferendumVoting = memo(
           </Box>
         </button>
         <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
-          <Slot id={taskVotingActionSlot} props={{ referendum, transaction }} />
+          <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
         </Box>
       </Box>
     );

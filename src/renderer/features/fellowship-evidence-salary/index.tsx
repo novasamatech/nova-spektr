@@ -6,11 +6,11 @@ import { basketUtils } from '@/entities/basket';
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { profileInfoSlot } from '@/features/fellowship-profile';
 import {
-  evidenceVotingActionSlot,
-  payoutSalaryActionSlot,
-  requestPromotionActionSlot,
-  requestRetentionActionSlot,
-  requestSalaryInductActionSlot,
+  evidenceVotingTaskActionSlot,
+  payoutSalaryTaskActionSlot,
+  requestPromotionTaskActionSlot,
+  requestRetentionATaskActionSlot,
+  requestSalaryInductTaskActionSlot,
   requestSalaryTaskActionSlot,
 } from '@/features/fellowship-tasks';
 import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
@@ -65,7 +65,7 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   }
 });
 
-fellowshipSalaryFeature.inject(requestSalaryInductActionSlot, () => {
+fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryInduct.$account);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
@@ -85,7 +85,7 @@ fellowshipSalaryFeature.inject(requestSalaryInductActionSlot, () => {
   }
 });
 
-fellowshipSalaryFeature.inject(payoutSalaryActionSlot, () => {
+fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryPayout.$account);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
@@ -105,7 +105,7 @@ fellowshipSalaryFeature.inject(payoutSalaryActionSlot, () => {
   }
 });
 
-fellowshipSalaryFeature.inject(requestPromotionActionSlot, () => {
+fellowshipSalaryFeature.inject(requestPromotionTaskActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Promotion">
@@ -114,7 +114,7 @@ fellowshipSalaryFeature.inject(requestPromotionActionSlot, () => {
   );
 });
 
-fellowshipSalaryFeature.inject(requestRetentionActionSlot, () => {
+fellowshipSalaryFeature.inject(requestRetentionATaskActionSlot, () => {
   const { t } = useI18n();
   return (
     <EvidencePostFlowModal wish="Retention">
@@ -148,7 +148,7 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
   }
 });
 
-fellowshipSalaryFeature.inject(evidenceVotingActionSlot, () => {
+fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, () => {
   // TODO implement
   return null;
 });

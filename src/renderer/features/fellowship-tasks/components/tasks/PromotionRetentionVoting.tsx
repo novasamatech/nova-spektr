@@ -13,7 +13,7 @@ import { evidenceInfo } from '../../model/evidence';
 import { identities } from '../../model/identity';
 import { members } from '../../model/members';
 
-export const evidenceVotingActionSlot = createSlot<{ evidence: Evidence; transaction: Transaction | null }>();
+export const evidenceVotingTaskActionSlot = createSlot<{ evidence: Evidence; transaction: Transaction | null }>();
 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
@@ -119,7 +119,7 @@ export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: P
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
-        <Slot id={evidenceVotingActionSlot} props={{ evidence, transaction }} />
+        <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction }} />
       </Box>
     </Box>
   );

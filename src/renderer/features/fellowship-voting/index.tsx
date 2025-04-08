@@ -2,7 +2,7 @@ import {
   referendumActionsSlot,
   referendumAdditionalHighPriorityInfoSlot,
 } from '@/features/fellowship-referendum-details';
-import { taskVotingActionSlot } from '@/features/fellowship-tasks';
+import { referendumVotingTaskActionSlot } from '@/features/fellowship-tasks';
 
 import { ReferendumEndTimer } from './components/ReferendumEndTimer';
 import { VotingActions } from './components/VotingActions';
@@ -15,7 +15,7 @@ import { votingStatus } from './model/votingStatus';
 
 export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
 
-fellowshipVotingFeature.inject(taskVotingActionSlot, ({ referendum, transaction }) => {
+fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, transaction }) => {
   return (
     <>
       <ReferendumEndTimer endBlock={referendum.ends} shortDateFormat />

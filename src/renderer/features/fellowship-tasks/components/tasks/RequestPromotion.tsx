@@ -8,7 +8,7 @@ import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { tracks } from '../../model/tracks';
 
-export const requestPromotionActionSlot = createSlot();
+export const requestPromotionTaskActionSlot = createSlot();
 
 export const RequestPromotion = () => {
   const { t } = useI18n();
@@ -32,7 +32,7 @@ export const RequestPromotion = () => {
         </FootnoteText>
       </Box>
       <Box verticalAlign="center" shrink={0} width="102px">
-        <Slot id={requestPromotionActionSlot} />
+        <Slot id={requestPromotionTaskActionSlot} />
       </Box>
     </Box>
   );
