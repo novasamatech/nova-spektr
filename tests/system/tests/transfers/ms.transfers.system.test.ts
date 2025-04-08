@@ -26,7 +26,7 @@ test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regr
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
 
-      await signingModal.checkQRCodeWalletConnect();
+      await signingModal.checkSignReadyWalletConnect();
     });
   }
 });

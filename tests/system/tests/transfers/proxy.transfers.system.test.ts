@@ -1,7 +1,8 @@
 import * as allure from 'allure-js-commons';
+
+import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
-import { substrateChains } from 'tests/system/data/chains/chainsList';
-import { getChainByName } from 'tests/system/utils/readConfig';
+import { getChainByName } from '../../utils/readConfig';
 
 const feature = 'Wallets. Proxy wallets';
 const story = 'Transfers';
@@ -23,6 +24,6 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const confirmationModal = await transferModal.openConfirmationModal();
     const signingModal = await confirmationModal.confirm();
 
-    await signingModal.checkQRCodeWalletConnect();
+    await signingModal.checkSignReadyWalletConnect();
   });
 });
