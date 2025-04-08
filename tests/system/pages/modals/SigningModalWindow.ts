@@ -17,6 +17,6 @@ export class SigningModalWindow extends BaseModal<SigningModalElements> {
   }
 
   public async checkQRCodeWalletConnect(): Promise<void> {
-    expect(this.page.getByTestId(SigningModalElements.qrCodeWalletConnectLocator)).toBeVisible();
+    expect(this.page.getByText(SigningModalElements.qrCodeWalletConnectLocator)).toBeVisible();
   }
 }

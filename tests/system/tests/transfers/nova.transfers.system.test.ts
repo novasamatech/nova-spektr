@@ -4,7 +4,6 @@ import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
 import { transferTestCases } from '../../utils/transferTestCases';
-import { sleep } from '@walletconnect/utils';
 
 const feature = 'Wallets. Nova. Single wallet';
 const story = 'Transfers';
