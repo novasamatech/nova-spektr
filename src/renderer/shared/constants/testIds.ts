@@ -34,7 +34,7 @@ export const TEST_IDS = {
     RECIPIENT_INPUT: 'operations-recipient-input',
     QR_CODE_CONTAINER: 'operations-qr-code-container',
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
-    SIGNATORY_SELECTOR_OPTION: 'operations-signatory-selector-option',
+    SIGNATORY_SELECTOR_OPTION: 'Address',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
