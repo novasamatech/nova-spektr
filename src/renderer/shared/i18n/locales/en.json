@@ -353,6 +353,10 @@
         "title": "You are not connected to this network"
       }
     },
+    "evidenceModal": {
+      "titlePromotion": "Promote to rank",
+      "titleRetention": "Retain on rank"
+    },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": {
