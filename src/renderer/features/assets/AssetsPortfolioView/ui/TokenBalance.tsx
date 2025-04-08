@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, CaptionText, FootnoteText, Icon, Plate } from '@/shared/ui';
@@ -10,7 +11,6 @@ import { AssetLinks } from '@/entities/asset';
 import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
-import { TEST_IDS } from '@/shared/constants';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 
@@ -26,10 +26,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
 
   return (
     <Plate className="z-10 flex h-[52px] w-full items-center p-0 pl-[36px] pr-2">
-      <div 
-        className="flex flex-1 gap-x-2"
-        data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}
-      >
+      <div className="flex flex-1 gap-x-2" data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}>
         <div className="flex items-center gap-x-2">
           <AssetIcon asset={asset} />
           <div className="flex flex-col gap-y-0.5">

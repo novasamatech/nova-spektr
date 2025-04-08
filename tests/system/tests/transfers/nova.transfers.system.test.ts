@@ -4,7 +4,6 @@ import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
 import { transferTestCases } from '../../utils/transferTestCases';
-import { sleep } from '@walletconnect/utils';
 
 const feature = 'Wallets. Nova. Single wallet';
 const story = 'Transfers';
@@ -25,7 +24,7 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
 
-      await signingModal.checkQRCodeWalletConnect();
+      await signingModal.checkSignReadyWalletConnect();
     });
   }
 });
