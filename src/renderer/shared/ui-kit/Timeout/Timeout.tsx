@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Duration, FootnoteText, Icon } from '@/shared/ui';
+import { Duration, FootnoteText, Icon, type IconNames } from '@/shared/ui';
 
 function getTimerColor(variant: Props['variant']) {
   switch (variant) {
@@ -16,11 +16,12 @@ function getTimerColor(variant: Props['variant']) {
 
 type Props = {
   at: number;
+  icon?: IconNames;
   variant: 'urgent' | 'warning' | 'idle';
   shortDateFormat?: boolean;
 };
 
-export const Timeout = memo(({ at, variant, shortDateFormat }: Props) => {
+export const Timeout = memo(({ at, icon = 'clock', variant, shortDateFormat }: Props) => {
   const [countdown, setCountdown] = useState(at);
 
   const countdownUnit =
@@ -44,7 +45,7 @@ export const Timeout = memo(({ at, variant, shortDateFormat }: Props) => {
 
   return (
     <div className={cnTw('mr-0.5 flex items-center gap-x-1', timerColor)}>
-      <Icon name="clock" size={16} className="text-inherit" />
+      <Icon name={icon} size={16} className="text-inherit" />
       <Duration as={FootnoteText} className="text-text-secondary" seconds={countdown} shortFormat={shortDateFormat} />
     </div>
   );
