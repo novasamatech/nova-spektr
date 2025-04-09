@@ -49,8 +49,12 @@ sample({
 
 sample({
   clock: removeTransactionsFx.doneData,
+  source: $list,
   filter: result => result.length > 0,
-  target: populateFx,
+  fn(list, ids) {
+    return list.filter(t => !ids.includes(t.id));
+  },
+  target: $list,
 });
 
 // select
