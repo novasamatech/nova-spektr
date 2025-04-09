@@ -59,7 +59,7 @@ function createEvidenceVotingTransaction({
   pallet,
   proposal,
 }: VoteEvidenceTransactionParams): EvidenceVotingTransaction {
-  const at = track.decisionPeriod;
+  const at = track.minEnactmentPeriod;
   return {
     accountId: account.accountId,
     chainId: chain.chainId,
