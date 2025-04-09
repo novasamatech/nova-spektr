@@ -4,9 +4,9 @@ import { type PropsWithChildren, memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeaderTitleText, HelpText, Identicon, Markdown } from '@/shared/ui';
-import { Account, Address, CollectiveRank } from '@/shared/ui-entities';
+import { Account, Address, BlockTime, CollectiveRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence } from '@/domains/collectives';
+import { type Evidence, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { activity } from '../../model/activity';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -28,6 +28,12 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
     fn: store => store?.chain ?? null,
   });
 
+  const api = useStoreMap({
+    store: fellowshipTasksFeature.input,
+    keys: [],
+    fn: store => store?.api ?? null,
+  });
+
   const member = useStoreMap({
     store: members.$list,
     keys: [evidence.accountId],
@@ -38,6 +44,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
     keys: [evidence.accountId],
     fn: (list, [accountId]) => list[accountId] ?? null,
   });
+
   const promoteEvent = useStoreMap({
     store: activity.$list,
     keys: [evidence.accountId],
@@ -46,6 +53,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
       return accountEvents.find(a => a.type === 'promoted') ?? null;
     },
   });
+
   const inductEvent = useStoreMap({
     store: activity.$list,
     keys: [evidence.accountId],
@@ -55,11 +63,14 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
     },
   });
 
+  const isPromotion = evidence.wish === 'Promotion';
+  const isRetention = evidence.wish === 'Retention';
+
   let title = '';
-  if (evidence.wish === 'Promotion') {
+  if (isPromotion) {
     title = t('fellowship.evidenceModal.titlePromotion');
   }
-  if (evidence.wish === 'Retention') {
+  if (isRetention) {
     title = t('fellowship.evidenceModal.titleRetention');
   }
 
@@ -88,6 +99,10 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
                       <CollectiveRank rank={member.rank} />
                     </Box>
                   </Box>
+                  <Box gap={0.5}>
+                    <HelpText className="text-text-secondary">Reporting period:</HelpText>
+                    <FootnoteText>Test</FootnoteText>
+                  </Box>
                 </Box>
               )}
             </Card>
@@ -108,7 +123,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
                   )}
                   {nonNullable(member) && nonNullable(chain) && (
                     <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Polkadot address</HelpText>
+                      <HelpText className="text-text-secondary">Polkadot address:</HelpText>
                       <FootnoteText>
                         <Address
                           address={toAddress(member.accountId, { prefix: chain.addressPrefix })}
@@ -119,10 +134,24 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
                   )}
                   {nonNullable(member) && (
                     <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Rank</HelpText>
+                      <HelpText className="text-text-secondary">Current rank:</HelpText>
                       <FootnoteText>
                         <CollectiveRank rank={member.rank} />
                         {nonNullable(promoteEvent) && promoteEvent.block}
+                      </FootnoteText>
+                    </Box>
+                  )}
+                  {nonNullable(inductEvent) && (
+                    <Box gap={0.5}>
+                      <HelpText className="text-text-secondary">Date of initial induction:</HelpText>
+                      <FootnoteText>{inductEvent.block}</FootnoteText>
+                    </Box>
+                  )}
+                  {nonNullable(api) && nonNullable(member) && memberService.isCoreMember(member) && (
+                    <Box gap={0.5}>
+                      <HelpText className="text-text-secondary">Date of last report:</HelpText>
+                      <FootnoteText>
+                        <BlockTime block={isPromotion ? member.lastPromotion : member.lastProof} api={api} />
                       </FootnoteText>
                     </Box>
                   )}

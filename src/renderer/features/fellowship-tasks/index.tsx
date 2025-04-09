@@ -1,29 +1,20 @@
 import { fellowshipContentSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { Tasks } from './components/Tasks';
-import { referendumVotingTaskActionSlot } from './components/tasks/OngoingReferendumVoting';
-import { evidenceVotingTaskActionSlot } from './components/tasks/PromotionRetentionVoting';
-import { payoutSalaryTaskActionSlot } from './components/tasks/RequestPayout';
-import { requestPromotionTaskActionSlot } from './components/tasks/RequestPromotion';
-import { requestRetentionATaskActionSlot } from './components/tasks/RequestRetention';
-import { requestSalaryTaskActionSlot } from './components/tasks/RequestSalary';
-import { requestSalaryInductTaskActionSlot } from './components/tasks/RequestSalaryInduct';
 import { fellowshipTasksFeature } from './model/feature';
-import { votes } from './model/voting';
-import { tasksService } from './service';
 
-export {
-  fellowshipTasksFeature,
-  requestSalaryTaskActionSlot,
-  requestSalaryInductTaskActionSlot,
-  requestPromotionTaskActionSlot,
-  requestRetentionATaskActionSlot,
-  referendumVotingTaskActionSlot,
-  payoutSalaryTaskActionSlot,
-  evidenceVotingTaskActionSlot,
-  tasksService,
-  votes,
-};
+export { Tasks } from './components/Tasks';
+export { referendumVotingTaskActionSlot } from './components/tasks/OngoingReferendumVoting';
+export { evidenceVotingTaskActionSlot } from './components/tasks/PromotionRetentionVoting';
+export { payoutSalaryTaskActionSlot } from './components/tasks/RequestPayout';
+export { requestPromotionTaskActionSlot } from './components/tasks/RequestPromotion';
+export { requestRetentionATaskActionSlot } from './components/tasks/RequestRetention';
+export { requestSalaryTaskActionSlot } from './components/tasks/RequestSalary';
+export { requestSalaryInductTaskActionSlot } from './components/tasks/RequestSalaryInduct';
+export { votes } from './model/voting';
+export { tasksService } from './service';
+
+export { fellowshipTasksFeature };
 
 fellowshipTasksFeature.inject(fellowshipContentSlot, {
   order: 1,

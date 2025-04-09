@@ -4,6 +4,7 @@ export { Hash } from './Hash/Hash';
 export { Address } from './Address/Address';
 export { Account } from './Account/Account';
 export { AssetIcon } from './AssetIcon/AssetIcon';
+export { BlockTime } from './BlockTime/BlockTime';
 export { AssetBalance } from './AssetBalance/AssetBalance';
 export { AccountSelectModal } from './AccountSelectModal/AccountSelectModal';
 export { AccountExplorers } from './AccountExplorers/AccountExplorers';
