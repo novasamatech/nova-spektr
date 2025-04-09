@@ -1,7 +1,6 @@
 import { combine, sample } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
 
 import { block } from './block';
@@ -13,38 +12,24 @@ import { memberProfile } from './memberProfile';
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
-const $promotionPeriod = combine(memberProfile.$member, $periods, (member, periods) => {
-  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return evidenceService.getPromotionPeriod(member, periods);
-});
-
 const $leftToPromotion = combine(
-  { promotionPeriod: $promotionPeriod, currentBlock: block.$currentBlock, member: memberProfile.$member },
-  ({ promotionPeriod, currentBlock, member }) => {
-    if (nullable(promotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    const gone = currentBlock - member.lastPromotion;
-    return Math.max(0, promotionPeriod - gone);
+  { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
+  ({ periods, currentBlock, member }) => {
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
   },
 );
 
-const $demotionPeriod = combine(memberProfile.$member, $periods, (member, periods) => {
+const $endDemotionPeriod = combine(memberProfile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return evidenceService.getDemotionPeriod(member, periods);
-});
-
-const $endDemotionPeriod = combine(memberProfile.$member, $demotionPeriod, (member, demotionPeriod) => {
-  if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return pjsSchema.helpers.toBlockHeight(demotionPeriod + member.lastProof);
+  return evidenceService.getEndDemotionBlock(member, periods);
 });
 
 const $leftToDemotion = combine(
-  { demotionPeriod: $demotionPeriod, currentBlock: block.$currentBlock, member: memberProfile.$member },
-  ({ demotionPeriod, currentBlock, member }) => {
-    if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    const gone = currentBlock - member.lastProof;
-    return pjsSchema.helpers.toBlockHeight(Math.max(1, demotionPeriod - gone));
+  { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
+  ({ periods, currentBlock, member }) => {
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    return evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
   },
 );
 
@@ -67,5 +52,4 @@ export const periods = {
   $endDemotionPeriod,
   $leftToPromotion,
   $leftToDemotion,
-  $demotionPeriod,
 };

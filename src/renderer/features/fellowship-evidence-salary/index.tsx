@@ -25,6 +25,7 @@ import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation'
 import { SalaryRegisterConfirmation } from './components/SalaryRegisterConfirmation';
 import { SalaryRegisterModal } from './components/SalaryRegisterModal';
 import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
+import { VotingActions } from './components/VotingActions';
 import { fellowshipSalaryFeature } from './model/feature';
 import { memberSalary } from './model/memberSalary';
 import { salaryInduct } from './model/salaryInduct';
@@ -149,12 +150,10 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
   }
 });
 
-fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, () => {
-  // TODO implement
-  return null;
+fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, ({ evidence }) => {
+  return <VotingActions evidence={evidence} variant="small" />;
 });
 
-fellowshipSalaryFeature.inject(evidenceActionsSlot, () => {
-  // TODO implement
-  return null;
+fellowshipSalaryFeature.inject(evidenceActionsSlot, ({ evidence }) => {
+  return <VotingActions evidence={evidence} variant="large" />;
 });

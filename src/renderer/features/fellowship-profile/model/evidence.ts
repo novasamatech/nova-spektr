@@ -23,18 +23,11 @@ const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
-const $promotionPeriod = combine(profile.$member, $periods, (member, periods) => {
-  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return evidenceService.getPromotionPeriod(member, periods);
-});
-
 const $leftToPromotion = combine(
-  { promotionPeriod: $promotionPeriod, currentBlock: block.$currentBlock, member: profile.$member },
-  ({ promotionPeriod, currentBlock, member }) => {
-    if (nullable(promotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    const gone = currentBlock - member.lastPromotion;
-    return Math.max(0, promotionPeriod - gone);
+  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
+  ({ periods, currentBlock, member }) => {
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
   },
 );
 

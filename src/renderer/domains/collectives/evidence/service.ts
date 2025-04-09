@@ -3,6 +3,7 @@ import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 import { type CoreMember } from '../member/types';
@@ -30,13 +31,33 @@ function getEvidenceUploadIpfsUrl() {
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = periods.minPromotionPeriod.at(member.rank) ?? 1;
+  const period = periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
   return period;
 }
 
+function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  const promotionPeriod = getPromotionPeriod(member, periods);
+  const gone = currentBlock - member.lastPromotion;
+  return Math.max(0, promotionPeriod - gone);
+}
+
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = member.rank === 0 ? periods.offboardTimeout : (periods.demotionPeriod.at(member.rank - 1) ?? 0);
+  const period =
+    member.rank === 0
+      ? periods.offboardTimeout
+      : (periods.demotionPeriod.at(member.rank - 1) ?? pjsSchema.helpers.toBlockHeight(1));
   return period;
+}
+
+function getBlockUntilDemotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  const demotionPeriod = getDemotionPeriod(member, periods);
+  const gone = currentBlock - member.lastProof;
+  return Math.max(0, demotionPeriod - gone);
+}
+
+function getEndDemotionBlock(member: CoreMember, periods: EvidencePeriods) {
+  const demotionPeriod = getDemotionPeriod(member, periods);
+  return pjsSchema.helpers.toBlockHeight(demotionPeriod + member.lastProof);
 }
 
 type EvidenceTransactionParams = {
@@ -72,7 +93,10 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
+  getBlockUntilNextPropotion,
   getDemotionPeriod,
+  getBlockUntilDemotion,
+  getEndDemotionBlock,
 
   createEvidenceTransaction,
   isEvidenceTransaction,
