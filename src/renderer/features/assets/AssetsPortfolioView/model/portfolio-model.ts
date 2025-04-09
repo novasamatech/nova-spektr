@@ -3,12 +3,13 @@ import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
-import { accountService, accounts } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { tokensService } from '../lib/tokensService';
 
 const DEFAULT_LIST: never[] = [];
@@ -20,14 +21,7 @@ const transferStarted = createEvent<AssetByChains>();
 const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
-const $accounts = combine(
-  {
-    accountsList: accounts.$list,
-    activeWallet: walletModel.$activeWallet,
-  },
-  ({ accountsList, activeWallet }) =>
-    activeWallet ? accountService.filterAccountsByWallet(accountsList, activeWallet.id) : [],
-);
+const $accounts = walletSelect.$selectedAccounts;
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
@@ -39,7 +33,7 @@ const $tokens = combine(
     activeView: $activeView,
     wallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
-    accounts: $accounts,
+    accounts: walletSelect.$selectedAccounts,
   },
   ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
