@@ -1,19 +1,14 @@
-import { useStoreMap } from 'effector-react';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HeaderTitleText, HelpText, Identicon, Markdown } from '@/shared/ui';
-import { Account, Address, BlockTime, CollectiveRank } from '@/shared/ui-entities';
+import { Button, Markdown } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, memberService } from '@/domains/collectives';
-import { identityService } from '@/domains/network';
-import { activity } from '../../model/activity';
-import { fellowshipTasksFeature } from '../../model/feature';
-import { identities } from '../../model/identity';
-import { members } from '../../model/members';
+import { type Evidence } from '@/domains/collectives';
 
 import { Card } from './Card';
+import { MemberInfo } from './MemberInfo';
+import { MemberProfile } from './MemberProfile';
+import { VotingRecord } from './VotingRecord';
 
 type Props = PropsWithChildren<{
   evidence: Evidence;
@@ -22,46 +17,7 @@ type Props = PropsWithChildren<{
 export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
   const { t } = useI18n();
 
-  const chain = useStoreMap({
-    store: fellowshipTasksFeature.input,
-    keys: [],
-    fn: store => store?.chain ?? null,
-  });
-
-  const api = useStoreMap({
-    store: fellowshipTasksFeature.input,
-    keys: [],
-    fn: store => store?.api ?? null,
-  });
-
-  const member = useStoreMap({
-    store: members.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
-  });
-  const identity = useStoreMap({
-    store: identities.$identities,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list[accountId] ?? null,
-  });
-
-  const promoteEvent = useStoreMap({
-    store: activity.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => {
-      const accountEvents = list.filter(a => a.accountId === accountId);
-      return accountEvents.find(a => a.type === 'promoted') ?? null;
-    },
-  });
-
-  const inductEvent = useStoreMap({
-    store: activity.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => {
-      const accountEvents = list.filter(a => a.accountId === accountId);
-      return accountEvents.find(a => a.type === 'imported') ?? null;
-    },
-  });
+  const [open, setOpen] = useState(false);
 
   const isPromotion = evidence.wish === 'Promotion';
   const isRetention = evidence.wish === 'Retention';
@@ -75,89 +31,15 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
   }
 
   return (
-    <Modal size="xl" height="full">
+    <Modal size="xl" height="full" isOpen={open} onToggle={setOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title>{title}</Modal.Title>
       <Modal.Content>
         <div className="grid h-full grid-cols-[293px,1fr] bg-main-app-background ps-5">
           <Box gap={4} padding={[5, 0]} shrink={0}>
-            <Card>
-              {nonNullable(member) && nonNullable(chain) && (
-                <Box gap={4}>
-                  <Box direction="row" gap={2.25}>
-                    <Identicon address={member.accountId} size={48} />
-                    <Box gap={2}>
-                      <HeaderTitleText>
-                        <Account
-                          hideIcon
-                          hideAddress
-                          accountId={member.accountId}
-                          title={identity ? identityService.getFullName(identity) : undefined}
-                          chain={chain}
-                        />
-                      </HeaderTitleText>
-                      <CollectiveRank rank={member.rank} />
-                    </Box>
-                  </Box>
-                  <Box gap={0.5}>
-                    <HelpText className="text-text-secondary">Reporting period:</HelpText>
-                    <FootnoteText>Test</FootnoteText>
-                  </Box>
-                </Box>
-              )}
-            </Card>
-            <Card>
-              <Box gap={4}>
-                <HeaderTitleText>Voting record</HeaderTitleText>
-              </Box>
-            </Card>
-            <Card>
-              {nonNullable(identity) && (
-                <Box gap={4}>
-                  <HeaderTitleText>Member details</HeaderTitleText>
-                  {nonNullable(identity.matrix) && (
-                    <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Matrix username:</HelpText>
-                      <FootnoteText>{identity.matrix}</FootnoteText>
-                    </Box>
-                  )}
-                  {nonNullable(member) && nonNullable(chain) && (
-                    <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Polkadot address:</HelpText>
-                      <FootnoteText>
-                        <Address
-                          address={toAddress(member.accountId, { prefix: chain.addressPrefix })}
-                          variant="full"
-                        />
-                      </FootnoteText>
-                    </Box>
-                  )}
-                  {nonNullable(member) && (
-                    <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Current rank:</HelpText>
-                      <FootnoteText>
-                        <CollectiveRank rank={member.rank} />
-                        {nonNullable(promoteEvent) && promoteEvent.block}
-                      </FootnoteText>
-                    </Box>
-                  )}
-                  {nonNullable(inductEvent) && (
-                    <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Date of initial induction:</HelpText>
-                      <FootnoteText>{inductEvent.block}</FootnoteText>
-                    </Box>
-                  )}
-                  {nonNullable(api) && nonNullable(member) && memberService.isCoreMember(member) && (
-                    <Box gap={0.5}>
-                      <HelpText className="text-text-secondary">Date of last report:</HelpText>
-                      <FootnoteText>
-                        <BlockTime block={isPromotion ? member.lastPromotion : member.lastProof} api={api} />
-                      </FootnoteText>
-                    </Box>
-                  )}
-                </Box>
-              )}
-            </Card>
+            <MemberProfile evidence={evidence} />
+            <VotingRecord evidence={evidence} />
+            <MemberInfo evidence={evidence} />
           </Box>
           <Box padding={5}>
             <Card>
@@ -166,6 +48,11 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
           </Box>
         </div>
       </Modal.Content>
+      <Modal.Footer align="between">
+        <Button variant="text" onClick={() => setOpen(false)}>
+          {t('general.button.closeButton')}
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 });

@@ -354,8 +354,15 @@
       }
     },
     "evidenceModal": {
+      "currentRank": "Current rank:",
+      "dateOfInitialInduction": "Date of initial induction:",
+      "dateOfLastReport": "Date of last report:",
+      "matrixUsername": "Matrix username:",
+      "memberDetails": "Member details",
+      "polkadotAddress": "Polkadot address:",
       "titlePromotion": "Promote to rank",
-      "titleRetention": "Retain on rank"
+      "titleRetention": "Retain on rank",
+      "votingRecord": "Voting record"
     },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",

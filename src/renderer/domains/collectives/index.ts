@@ -20,6 +20,7 @@ export type {
 
 export { referendumMeta } from './referendumMeta/model';
 export { referendumMetaService } from './referendumMeta/service';
+export type { ReferendumMeta } from './referendumMeta/types';
 
 export { member } from './member/model';
 export { memberService } from './member/service';
