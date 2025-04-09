@@ -148,6 +148,17 @@ export const getExtrinsic: Record<
   [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
     return api.tx[`${pallet}Core`].setActive(isActive);
   },
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye }, api) => {
+    const transactions: SubmittableExtrinsic<'promise'>[] = [
+      api.tx[`${pallet}Referenda`].submit(
+        { FellowshipOrigins: { [track]: null } },
+        { Inline: proposal.method.toHex() },
+        { At: 2_000_000 },
+      ),
+      api.tx[`${pallet}Collective`].vote(poll, aye),
+    ];
+    return api.tx.utility.batchAll(transactions.map((call) => call.method));
+  },
   /**
    * Provide evidence that a rank is deserved.
    *
