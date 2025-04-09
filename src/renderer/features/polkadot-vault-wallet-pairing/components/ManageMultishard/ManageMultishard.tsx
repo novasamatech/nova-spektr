@@ -52,7 +52,7 @@ export const ManageMultishard = ({ seedInfo, onBack, onClose, onComplete }: Prop
   const [accounts, setAccounts] = useState<CompactSeedInfo[]>([]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData({ sort: true });
+    const chains = chainsService.getChainsData();
     const chainsMap = keyBy(chains, 'chainId');
     setChainsObject(chainsMap);
 

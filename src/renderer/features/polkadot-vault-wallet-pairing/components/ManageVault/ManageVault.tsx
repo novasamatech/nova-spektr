@@ -83,7 +83,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [onComplete]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData({ sort: true });
+    const chains = chainsService.getChainsData();
     const chainsMap = dictionary(chains, 'chainId', () => [] as (VaultChainAccount | VaultShardAccount[])[]);
 
     for (const account of keysGroups) {
