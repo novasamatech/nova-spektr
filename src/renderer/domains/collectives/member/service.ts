@@ -47,7 +47,7 @@ function canChangeActiveState(member: Member | CoreMember) {
 
 /**
  * Despite the fact that technically the maximum rank is 9, in real world no one
- * can achieve it (Gavin rank is 7).
+ * can achieve it (Gavin's rank is 7).
  */
 function canPromote(member: Member) {
   return member.rank < 7;
