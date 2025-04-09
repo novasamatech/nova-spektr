@@ -64,39 +64,30 @@ export const VaultQrReader = ({
   const isComplete = useRef(false);
 
   const isQrErrorObject = (error: unknown): boolean => {
-    if (!error) {
-      return false;
-    }
+    if (!error) return false;
 
     return typeof error === 'object' && ErrorFields.CODE in error && ErrorFields.MESSAGE in error;
   };
 
-  const makeResultPayload = <T extends ScanResult>(data: T): (SeedInfo | DdSeedInfo)[] => {
-    if (Array.isArray(data)) {
-      return data;
-    }
+  const makeResultPayload = (data: ScanResult): (SeedInfo | DdSeedInfo)[] => {
+    if (Array.isArray(data)) return data;
 
-    if (typeof data !== 'string') {
-      const payload = { ...data.addr };
-      if ('features' in (data as WithFeatures)) {
-        (payload as SeedInfo).features = (data as WithFeatures).features;
-      }
+    if (typeof data === 'string') {
+      const [cryptoType, address] = data.split(':');
 
-      return [payload];
-    }
-
-    const [cryptoType, address] = data.split(':');
-
-    return [
-      {
-        name: '',
-        derivedKeys: [],
-        multiSigner: {
-          MultiSigner: CryptoTypes[cryptoType],
-          public: decodeAddress(address),
+      return [
+        {
+          name: '',
+          derivedKeys: [],
+          multiSigner: {
+            MultiSigner: CryptoTypes[cryptoType],
+            public: decodeAddress(address),
+          },
         },
-      },
-    ];
+      ];
+    }
+
+    return 'features' in data ? [{ ...data.addr, features: data.features }] : [data.addr];
   };
 
   const handleSimpleQr = (signerAddress: string): boolean => {

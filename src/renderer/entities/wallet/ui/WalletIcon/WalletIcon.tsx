@@ -13,7 +13,6 @@ const WalletIconNames: Record<WalletIconTypes, IconNames> = {
   [WalletType.WATCH_ONLY]: 'watchOnlyBackground',
   [WalletType.MULTISIG]: 'multisigBackground',
   [WalletType.FLEXIBLE_MULTISIG]: 'flexibleMultisigBackground',
-  [WalletType.MULTISHARD_PARITY_SIGNER]: 'vaultBackground',
   [WalletType.WALLET_CONNECT]: 'walletConnectBackground',
   [WalletType.NOVA_WALLET]: 'novaWalletBackground',
   [WalletType.PROXIED]: 'proxiedBackground',

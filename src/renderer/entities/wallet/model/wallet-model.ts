@@ -1,17 +1,14 @@
-import { type UnitValue, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
-  type Account,
   type ID,
   type MultisigAccount,
   type NoID,
   type PolkadotVaultGroup,
   type ProxiedAccount,
   type VaultBaseAccount,
-  type VaultChainAccount,
-  type VaultShardAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
@@ -27,7 +24,6 @@ import {
   accountService,
   accounts,
 } from '@/domains/network';
-import { modelUtils } from '../lib/model-utils';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
@@ -37,8 +33,6 @@ export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = W
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
-const multishardCreated =
-  createEvent<CreateParams<VaultBaseAccount | VaultChainAccount | VaultShardAccount, PolkadotVaultGroup>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
@@ -64,13 +58,9 @@ const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden)
 const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
 // TODO: ideally it should be a feature
-const $activeWallet = combine(
-  $wallets,
-  (wallets) => {
-    return wallets.find((wallet) => wallet.isActive);
-  },
-  { skipVoid: false },
-);
+const $activeWallet = combine($wallets, (wallets) => {
+  return wallets.find((wallet) => wallet.isActive) ?? null;
+});
 
 // TODO: ideally it should be a feature
 const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts) => {
@@ -80,8 +70,8 @@ const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts
 });
 
 // Workaround - select event recreates wallet array every time, serialized ids are more stable.
-const $walletIdsSerialized = $wallets.map((l) =>
-  l
+const $walletIdsSerialized = $wallets.map((wallets) =>
+  wallets
     .map((w) => w.id)
     .sort()
     .join(','),
@@ -124,7 +114,7 @@ type CreateResult = {
   wallet: DbWallet;
   accounts: AnyAccount[];
 };
-const walletCreatedFx = createEffect(
+const createWalletFx = createEffect(
   async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
 
@@ -165,61 +155,6 @@ const createWalletsFx = createEffect(
   },
 );
 
-const multishardCreatedFx = createEffect(
-  async ({
-    wallet,
-    accounts: accountDrafts,
-  }: UnitValue<typeof multishardCreated>): Promise<CreateResult | undefined> => {
-    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
-
-    if (!dbWallet) return undefined;
-
-    const { base, chains, shards } = modelUtils.groupAccounts(accountDrafts);
-
-    const multishardAccounts = [];
-
-    for (const [index, baseAccount] of base.entries()) {
-      // TODO fix
-      const [dbBaseAccount] = await accounts.createAccounts([{ ...baseAccount, walletId: dbWallet.id }]);
-      if (!dbBaseAccount) return undefined;
-
-      multishardAccounts.push(dbBaseAccount);
-      let accountPayloads: NoID<Account>[] = [];
-
-      if (chains[index]) {
-        accountPayloads = accountPayloads.concat(
-          chains[index].map((account) => ({
-            ...account,
-            walletId: dbWallet.id,
-            baseAccountId: baseAccount.accountId,
-          })),
-        );
-      }
-
-      if (shards[index]) {
-        accountPayloads = accountPayloads.concat(
-          shards[index].map((account) => ({
-            ...account,
-            walletId: dbWallet.id,
-          })),
-        );
-      }
-
-      if (accountPayloads.length === 0) {
-        continue;
-      }
-
-      // @ts-expect-error fix it later
-      const dbChainAccounts = await accounts.createAccounts(accountPayloads);
-      if (!dbChainAccounts.length) return undefined;
-
-      multishardAccounts.push(...dbChainAccounts);
-    }
-
-    return { wallet: dbWallet, accounts: multishardAccounts };
-  },
-);
-
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   await storageService.wallets.delete(wallet.id);
   await accounts.deleteAccounts(wallet.accounts);
@@ -228,21 +163,22 @@ const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
 });
 
 const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(wallet.id, wallet);
+  const { accounts: _, ...rest } = wallet;
+  await storageService.wallets.update(rest.id, rest);
 
   return wallet;
 });
 
 const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
   const walletIds: ID[] = [];
-  let accountstoRemove: AnyAccount[] = [];
+  const accountsToRemove: AnyAccount[] = [];
 
   for (const wallet of wallets) {
     walletIds.push(wallet.id);
-    accountstoRemove = accountstoRemove.concat(wallet.accounts);
+    accountsToRemove.push(...wallet.accounts);
   }
 
-  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountstoRemove)]);
+  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountsToRemove)]);
 
   return walletIds;
 });
@@ -264,13 +200,9 @@ sample({
   target: $rawWallets,
 });
 
-const walletCreatedDone = sample({
-  clock: [walletCreatedFx.doneData, multishardCreatedFx.doneData],
-}).filter({ fn: nonNullable });
+const walletCreatedDone = sample({ clock: createWalletFx.doneData }).filter({ fn: nonNullable });
 
-const walletCreationFail = sample({
-  clock: [walletCreatedFx.fail, multishardCreatedFx.fail],
-}).filter({ fn: nonNullable });
+const walletCreationFail = sample({ clock: createWalletFx.fail }).filter({ fn: nonNullable });
 
 sample({
   clock: [
@@ -281,18 +213,13 @@ sample({
     singleshardCreated,
     proxiedCreated,
   ],
-  target: walletCreatedFx,
-});
-
-sample({
-  clock: multishardCreated,
-  target: multishardCreatedFx,
+  target: createWalletFx,
 });
 
 sample({
   clock: walletCreatedDone,
   source: $rawWallets,
-  fn(wallets, data) {
+  fn: (wallets, data) => {
     return wallets.concat(data.wallet);
   },
   target: $rawWallets,
@@ -301,7 +228,7 @@ sample({
 sample({
   clock: createWalletsFx.doneData,
   source: $rawWallets,
-  fn(wallets, results) {
+  fn: (wallets, results) => {
     return wallets.concat(results.map((r) => r.wallet));
   },
   target: $rawWallets,
@@ -423,14 +350,13 @@ export const walletModel = {
   $availableAccounts,
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 
-  createWallet: walletCreatedFx,
+  createWallet: createWalletFx,
   createWallets: createWalletsFx,
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
 
   events: {
     watchOnlyCreated,
-    multishardCreated,
     singleshardCreated,
     multisigCreated,
     flexibleMultisigCreated,
@@ -451,7 +377,7 @@ export const walletModel = {
 
   __test: {
     $rawWallets,
-    walletCreatedFx,
+    walletCreatedFx: createWalletFx,
     removeWalletFx,
   },
 };

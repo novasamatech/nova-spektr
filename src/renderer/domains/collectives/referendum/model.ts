@@ -99,6 +99,7 @@ const { request } = createDataSource<CollectivesStruct<Referendum[]>, Referendum
         b: result,
         mergeBy: x => x.id,
         sort: (a, b) => b.id - a.id,
+        filter: (a, b) => !isEqual(a, b),
       }),
     );
   },

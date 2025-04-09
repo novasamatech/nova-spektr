@@ -17,7 +17,6 @@ export interface VaultBaseAccount extends UniversalAccount {
 
 export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
-  baseAccountId?: AccountId;
   keyType: KeyType;
   derivationPath: string;
 }
@@ -59,7 +58,7 @@ export interface ProxiedAccount extends ChainAccount {
  */
 export type Account = AnyAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId' | 'baseAccountId'>;
+export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
   WATCH_ONLY = 'watch_only',
