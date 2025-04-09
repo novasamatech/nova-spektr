@@ -189,14 +189,14 @@ const Member = () => {
 
 const Activity = () => {
   const { t } = useI18n();
-  const profileDetails = useUnit(profile.$profileDetails);
+  const profileDetails = useUnit(profile.$activityInfo);
 
   return <span>{nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : t('fellowship.n/a')}</span>;
 };
 
 const Agreement = () => {
   const { t } = useI18n();
-  const profileDetails = useUnit(profile.$profileDetails);
+  const profileDetails = useUnit(profile.$activityInfo);
 
   return <span>{nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : t('fellowship.n/a')}</span>;
 };

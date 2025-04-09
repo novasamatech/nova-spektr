@@ -2,7 +2,7 @@ import { type TrackId } from '@/shared/pallet/referenda';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type Member, type OngoingReferendum, trackService } from '@/domains/collectives';
 
-export type ReferendumImportance = {
+type ReferendumImportance = {
   sortingScore: number;
   tags: string[];
 };

@@ -243,7 +243,7 @@ module.exports = {
         'import-x/max-dependencies': [
           'warn',
           {
-            max: 20,
+            max: 25,
             ignoreTypeImports: true,
           },
         ],
@@ -338,7 +338,7 @@ module.exports = {
               },
               {
                 from: 'shared',
-                allow: ['app', 'shared', /* TODO fix */ 'entities'],
+                allow: ['app', 'shared', 'domains', 'entities'],
               },
               {
                 from: 'sdk',

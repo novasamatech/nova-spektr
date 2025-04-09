@@ -1,6 +1,7 @@
 export { useResizeObserver } from './hooks/useResizeObserver';
 export { useTheme } from './Theme/useTheme';
 
+export { FilledIconButton } from './FilledIconButton/FilledIconButton';
 export { EmptyMessage } from './EmptyMessage/EmptyMessage';
 export { SearchInput } from './SearchInput/SearchInput';
 export { ThemeProvider } from './Theme/ThemeProvider';
@@ -19,6 +20,7 @@ export { Graphics } from './Graphics/Graphics';
 export { Tooltip } from './Tooltip/Tooltip';
 export { Popover } from './Popover/Popover';
 export { Surface } from './Surface/Surface';
+export { Timeout } from './Timeout/Timeout';
 export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { Label, type LabelVariant } from './Label/Label';
