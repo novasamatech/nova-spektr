@@ -4,6 +4,7 @@ import { Tasks } from './components/Tasks';
 import { fellowshipTasksFeature } from './model/feature';
 
 export { Tasks } from './components/Tasks';
+export { evidenceActionsSlot } from './components/EvidenceDetailsModal/EvidenceDetailsModal';
 export { referendumVotingTaskActionSlot } from './components/tasks/OngoingReferendumVoting';
 export { evidenceVotingTaskActionSlot } from './components/tasks/PromotionRetentionVoting';
 export { payoutSalaryTaskActionSlot } from './components/tasks/RequestPayout';

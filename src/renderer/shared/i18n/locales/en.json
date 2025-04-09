@@ -360,6 +360,7 @@
       "matrixUsername": "Matrix username:",
       "memberDetails": "Member details",
       "polkadotAddress": "Polkadot address:",
+      "promotedAt": "(promotion executed on <time/>)",
       "titlePromotion": "Promote to rank",
       "titleRetention": "Retain on rank",
       "votingRecord": "Voting record"
@@ -532,7 +533,7 @@
           "title": "Review referendum"
         },
         "evidence": {
-          "promotionTitle": "{identity} request promotion at rank {rank}",
+          "promotionTitle": "{identity} request promotion to rank {rank}",
           "retentionTitle": "{identity} request retention at rank {rank}"
         },
         "promotion": {

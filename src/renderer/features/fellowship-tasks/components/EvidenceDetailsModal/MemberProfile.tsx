@@ -10,6 +10,7 @@ import { identityService } from '@/domains/network';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { identities } from '../../model/identity';
 import { members } from '../../model/members';
+import { tracks } from '../../model/tracks';
 
 import { Card } from './Card';
 
@@ -27,6 +28,11 @@ export const MemberProfile = memo(({ evidence }: Props) => {
     store: members.$list,
     keys: [evidence.accountId],
     fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
+  });
+  const track = useStoreMap({
+    store: tracks.$tracks,
+    keys: [member?.rank],
+    fn: (list, [rank]) => list.find(m => m.id === rank) ?? null,
   });
   const identity = useStoreMap({
     store: identities.$identities,
@@ -51,7 +57,7 @@ export const MemberProfile = memo(({ evidence }: Props) => {
                 chain={chain}
               />
             </HeaderTitleText>
-            <CollectiveRank rank={member.rank} />
+            <CollectiveRank rank={member.rank}>{track?.name.replace(/s$/, '')}</CollectiveRank>
           </Box>
         </Box>
         {/*<Box gap={0.5}>*/}

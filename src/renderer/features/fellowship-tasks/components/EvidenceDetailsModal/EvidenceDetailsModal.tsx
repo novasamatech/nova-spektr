@@ -1,5 +1,6 @@
 import { type PropsWithChildren, memo, useState } from 'react';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Button, Markdown } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -9,6 +10,8 @@ import { Card } from './Card';
 import { MemberInfo } from './MemberInfo';
 import { MemberProfile } from './MemberProfile';
 import { VotingRecord } from './VotingRecord';
+
+export const evidenceActionsSlot = createSlot<{ evidence: Evidence }>();
 
 type Props = PropsWithChildren<{
   evidence: Evidence;
@@ -52,6 +55,9 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
         <Button variant="text" onClick={() => setOpen(false)}>
           {t('general.button.closeButton')}
         </Button>
+        <Box direction="row" gap={2}>
+          <Slot id={evidenceActionsSlot} props={{ evidence }} />
+        </Box>
       </Modal.Footer>
     </Modal>
   );

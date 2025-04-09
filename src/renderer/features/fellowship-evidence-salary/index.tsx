@@ -6,6 +6,7 @@ import { basketUtils } from '@/entities/basket';
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { profileInfoSlot } from '@/features/fellowship-profile';
 import {
+  evidenceActionsSlot,
   evidenceVotingTaskActionSlot,
   payoutSalaryTaskActionSlot,
   requestPromotionTaskActionSlot,
@@ -149,6 +150,11 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
 });
 
 fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, () => {
+  // TODO implement
+  return null;
+});
+
+fellowshipSalaryFeature.inject(evidenceActionsSlot, () => {
   // TODO implement
   return null;
 });

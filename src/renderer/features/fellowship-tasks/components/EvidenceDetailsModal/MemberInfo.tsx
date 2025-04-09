@@ -1,5 +1,6 @@
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
@@ -41,14 +42,6 @@ export const MemberInfo = memo(({ evidence }: Props) => {
     keys: [evidence.accountId],
     fn: (list, [accountId]) => list[accountId] ?? null,
   });
-  const promoteEvent = useStoreMap({
-    store: activity.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => {
-      const accountEvents = list.filter(a => a.accountId === accountId);
-      return accountEvents.find(a => a.type === 'promoted') ?? null;
-    },
-  });
   const inductEvent = useStoreMap({
     store: activity.$list,
     keys: [evidence.accountId],
@@ -57,8 +50,14 @@ export const MemberInfo = memo(({ evidence }: Props) => {
       return accountEvents.find(a => a.type === 'imported') ?? null;
     },
   });
-
-  const isPromotion = evidence.wish === 'Promotion';
+  const evidenceEvent = useStoreMap({
+    store: activity.$list,
+    keys: [evidence.accountId, evidence.wish],
+    fn: (list, [accountId, wish]) => {
+      const accountEvents = list.filter(a => a.accountId === accountId);
+      return accountEvents.filter(a => a.type === 'requested' && a.wish === wish).at(1) ?? null;
+    },
+  });
 
   return (
     <Card>
@@ -82,9 +81,19 @@ export const MemberInfo = memo(({ evidence }: Props) => {
           {nonNullable(api) && nonNullable(member) && (
             <Box gap={0.5}>
               <HelpText className="text-text-secondary">{t('fellowship.evidenceModal.currentRank')}</HelpText>
-              <FootnoteText>
-                <CollectiveRank rank={member.rank} />{' '}
-                {nonNullable(promoteEvent) && <BlockTime block={promoteEvent.block} api={api} />}
+              <FootnoteText className="flex gap-2">
+                <CollectiveRank rank={member.rank} />
+                {memberService.isCoreMember(member) && member.lastPromotion > 0 && (
+                  <span>
+                    <Trans
+                      t={t}
+                      i18nKey="fellowship.evidenceModal.promotedAt"
+                      components={{
+                        time: <BlockTime block={member.lastPromotion} api={api} />,
+                      }}
+                    />
+                  </span>
+                )}
               </FootnoteText>
             </Box>
           )}
@@ -98,11 +107,11 @@ export const MemberInfo = memo(({ evidence }: Props) => {
               </FootnoteText>
             </Box>
           )}
-          {nonNullable(api) && nonNullable(member) && memberService.isCoreMember(member) && (
+          {nonNullable(api) && nonNullable(evidenceEvent) && (
             <Box gap={0.5}>
               <HelpText className="text-text-secondary">{t('fellowship.evidenceModal.dateOfLastReport')}</HelpText>
               <FootnoteText>
-                <BlockTime block={isPromotion ? member.lastPromotion : member.lastProof} api={api} />
+                <BlockTime block={evidenceEvent.block} api={api} />
               </FootnoteText>
             </Box>
           )}
