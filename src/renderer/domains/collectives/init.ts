@@ -2,22 +2,15 @@ import { combine } from 'effector';
 
 import { combineStores } from './_lib/helpers';
 import { evidence } from './evidence/model';
-import { evidenceService } from './evidence/service';
 import { feed } from './feed/model';
 import { member } from './member/model';
-import { memberService } from './member/service';
 import { referendum } from './referendum/model';
-import { referendumService } from './referendum/service';
 import { referendumMeta } from './referendumMeta/model';
-import { referendumMetaService } from './referendumMeta/service';
 import { salary } from './salary/model';
-import { salaryService } from './salary/service';
 import { track } from './tracks/model';
-import { trackService } from './tracks/service';
-import { votingService } from './voting/service';
 import { voting } from './votingHistory/model';
 
-const $store = combine(
+export const $collectiveStore = combine(
   {
     members: member.$list,
     referendums: referendum.$list,
@@ -34,22 +27,3 @@ const $store = combine(
   },
   combineStores,
 );
-
-export {
-  $store as $collectiveStore,
-  member,
-  track,
-  referendum,
-  referendumMeta,
-  voting,
-  salary,
-  feed,
-  evidence,
-  evidenceService,
-  trackService,
-  memberService,
-  referendumService,
-  referendumMetaService,
-  votingService,
-  salaryService,
-};

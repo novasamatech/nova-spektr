@@ -9,9 +9,8 @@ import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
-import { ReferendumEndTimer } from '../ReferendumEndTimer';
 
-export const requestSalaryActionSlot = createSlot();
+export const requestSalaryTaskActionSlot = createSlot();
 
 export const RequestSalary = () => {
   const { t, formatDate } = useI18n();
@@ -45,10 +44,7 @@ export const RequestSalary = () => {
         </FootnoteText>
       </Box>
       <Box verticalAlign="center" gap={8.5} horizontalAlign="end" shrink={0}>
-        {currentPeriodExists && (
-          <ReferendumEndTimer endBlock={currentPeriod.until} referendumType="personal" shortDateFormat />
-        )}
-        <Slot id={requestSalaryActionSlot} />
+        <Slot id={requestSalaryTaskActionSlot} />
       </Box>
     </Box>
   );

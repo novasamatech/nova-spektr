@@ -1,18 +1,18 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { cnTw, getTimeToBlock } from '@/shared/lib/utils';
-import { Duration, FootnoteText, Icon } from '@/shared/ui';
+import { getTimeToBlock } from '@/shared/lib/utils';
+import { Timeout } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
-function getTimerColor(time: number) {
+function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
-  if (days <= 15) return 'text-icon-negative';
-  if (days <= 30) return 'text-text-warning';
-  return 'text-text-secondary';
+  if (days <= 15) return 'urgent';
+  if (days <= 30) return 'warning';
+  return 'idle';
 }
 
 type Props = {
@@ -32,42 +32,8 @@ export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
     }
   }, [endBlock, input]);
 
-  if (!endBlock || !endTime || !input) return null;
+  if (!endTime || !input) return null;
+  const variant = getTimerColor(endTime);
 
-  return <Timer time={endTime} shortDateFormat={shortDateFormat} />;
-};
-
-type PropsTimer = {
-  time: number;
-  shortDateFormat?: boolean;
-};
-
-const Timer = ({ time, shortDateFormat }: PropsTimer) => {
-  const [countdown, setCountdown] = useState(time);
-
-  const countdownUnit =
-    countdown < 60
-      ? 1 // if less then a minute, countdown each second
-      : countdown < 3600
-        ? 60 // if less then an hour, countdown each minute
-        : 3600; // countdown each hour
-
-  useEffect(() => {
-    if (countdown === 0) return;
-
-    const timer = setTimeout(() => setCountdown(countdown - countdownUnit), countdownUnit * 1000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [countdown, countdownUnit]);
-
-  const timerColor = getTimerColor(countdown);
-
-  return (
-    <div className={cnTw('mr-1 flex items-center gap-x-1', timerColor)}>
-      <Icon name="clock" size={16} className="text-inherit" />
-      <Duration as={FootnoteText} className="text-text-secondary" seconds={countdown} shortFormat={shortDateFormat} />
-    </div>
-  );
+  return <Timeout at={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
 };

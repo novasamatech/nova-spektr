@@ -1,7 +1,8 @@
 import { format } from 'date-fns/format';
 import { attach, combine, sample } from 'effector';
 
-import { populated } from '@/shared/effector';
+import { series } from '@/shared/effector';
+import { attachToFeatureInput } from '@/shared/feature';
 import { getCreatedDateFromApi } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { evidence, memberService } from '@/domains/collectives';
@@ -58,9 +59,9 @@ const requestEvidenceSummaryFx = attach({
   },
 });
 
+const $members = fellowship.$store.map(s => s?.members ?? []);
 const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 const $evidenceSummaries = fellowship.$store.map(s => s?.evidenceSummary ?? []);
-const $evidencePopulated = populated(requestEvidenceFx);
 
 const $memberEvidence = combine(memberProfile.$member, $evidences, (member, evidences) => {
   return member ? (evidences.find(e => e.accountId === member.accountId) ?? null) : null;
@@ -75,25 +76,22 @@ const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 // requesting data
 
-const evendenceRequested = fellowshipTasksFeature.running.filterMap(({ api, palletType, chainId, member }) => {
-  if (!member) return;
-  return {
-    api,
-    palletType,
-    chainId,
-    accountId: member.accountId,
-  };
-});
-
 sample({
-  clock: evendenceRequested,
-  target: requestEvidenceFx,
+  clock: attachToFeatureInput(fellowshipTasksFeature, $members),
+  fn({ input, data: members }) {
+    return members.map(m => ({
+      api: input.api,
+      palletType: input.palletType,
+      chainId: input.chainId,
+      accountId: m.accountId,
+    }));
+  },
+  target: series(requestEvidenceFx, { parallel: true, skipErrors: true }),
 });
 
 export const evidenceInfo = {
   $evidences,
   $evidenceSummaries,
-  $evidencePopulated,
   $memberEvidence,
   $memberEvidenceSummary,
   $hasRetentionEvidence,
