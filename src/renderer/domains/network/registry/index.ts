@@ -1,1 +1,2 @@
-export { Registry as ChainRegistry } from './service/chain-registry';
+export { Registry as ChainRegistry } from './service/chainRegistry';
+export { createWsPapiProvider } from './service/wsPapiProvider';
