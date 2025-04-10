@@ -2,6 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
+import { collectivePallet } from '@/shared/pallet/collective';
+import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { multisigUtils } from '@/entities/multisig';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
@@ -143,10 +145,10 @@ export const getExtrinsic: Record<
     return api.tx.convictionVoting.undelegate(track);
   },
   [TransactionType.COLLECTIVE_VOTE]: ({ pallet, poll, aye }, api) => {
-    return api.tx[`${pallet}Collective`].vote(poll, aye);
+    return collectivePallet.extrinsic.vote(pallet, api, poll, aye);
   },
   [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
-    return api.tx[`${pallet}Core`].setActive(isActive);
+    return collectiveCorePallet.extrinsic.setActive(pallet, api, isActive);
   },
   [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye, at }, api) => {
     const transactions: SubmittableExtrinsic<'promise'>[] = [
@@ -174,7 +176,7 @@ export const getExtrinsic: Record<
    *   IPFS.
    */
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: ({ pallet, wish, evidence }, api) => {
-    return api.tx[`${pallet}Core`].submitEvidence(wish, evidence);
+    return collectiveCorePallet.extrinsic.submitEvidence(pallet, api, wish, evidence);
   },
   [TransactionType.COLLECTIVE_SALARY_INDUCT]: ({ pallet }, api) => {
     return api.tx[`${pallet}Salary`].induct();
