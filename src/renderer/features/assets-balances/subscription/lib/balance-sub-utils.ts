@@ -1,6 +1,6 @@
 import { type Chain, type ChainId, type ID } from '@/shared/core';
 import { dictionary } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type SubAccounts } from './types';
@@ -55,10 +55,10 @@ function formSubAccounts(
 ): SubAccounts {
   const chainIds = Object.keys(subAccounts) as ChainId[];
 
-  const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    const chainsToUpdate = chainIds.filter((chainId) => accountUtils.isChainAndCryptoMatch(account, chains[chainId]));
+  const newSubAccounts = chainIds.reduce<SubAccounts>((acc, chainId) => {
+    const accounts = accountService.filterAccountOnChain(accountsToSub, chains[chainId]);
 
-    for (const chainId of chainsToUpdate) {
+    for (const account of accounts) {
       if (!acc[chainId]) {
         acc[chainId] = { [walletId]: [account.accountId] };
       } else if (acc[chainId][walletId]) {
