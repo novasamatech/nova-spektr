@@ -148,12 +148,12 @@ export const getExtrinsic: Record<
   [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
     return api.tx[`${pallet}Core`].setActive(isActive);
   },
-  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye }, api) => {
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye, at }, api) => {
     const transactions: SubmittableExtrinsic<'promise'>[] = [
       api.tx[`${pallet}Referenda`].submit(
         { FellowshipOrigins: { [track]: null } },
         { Inline: proposal.method.toHex() },
-        { At: 2_000_000 },
+        { At: at },
       ),
       api.tx[`${pallet}Collective`].vote(poll, aye),
     ];
