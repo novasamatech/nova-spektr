@@ -1,3 +1,5 @@
+import { type ReactNode } from 'react';
+
 import { type Asset, type Explorer, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -13,7 +15,7 @@ const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
 type TableProps = {
   validators: Validator[];
   listClassName?: string;
-  children: (validator: Validator, rowStyle: string) => JSX.Element;
+  children: (validator: Validator, rowStyle: string) => ReactNode;
 };
 
 const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps) => {
