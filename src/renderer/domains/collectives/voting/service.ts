@@ -1,7 +1,13 @@
+import { type ApiPromise } from '@polkadot/api';
+
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendumId } from '@/shared/pallet/referenda';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
+import { type Evidence } from '../evidence/types';
+import { type Member } from '../member/types';
 import { type Track } from '../tracks/types';
 
 import { type EvidenceVotingTransaction, type VotingTransaction } from './types';
@@ -42,26 +48,26 @@ function isVotingTransaction(transaction: Transaction): transaction is VotingTra
 
 type VoteEvidenceTransactionParams = {
   pallet: CollectivePalletsType;
-  account: AnyAccount;
+  accountId: AccountId;
   chain: Chain;
   proposal: HexString;
   track: Track;
-  referendumId: ReferendumId;
+  poll: ReferendumId;
   aye: boolean;
 };
 
 function createEvidenceVotingTransaction({
-  account,
+  accountId,
   chain,
   track,
-  referendumId,
+  poll,
   aye,
   pallet,
   proposal,
 }: VoteEvidenceTransactionParams): EvidenceVotingTransaction {
   const at = track.minEnactmentPeriod;
   return {
-    accountId: account.accountId,
+    accountId: accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_VOTE,
     args: {
@@ -69,7 +75,7 @@ function createEvidenceVotingTransaction({
       track: track.name,
       pallet,
       proposal,
-      poll: referendumId,
+      poll,
       aye,
     },
   };
@@ -79,10 +85,23 @@ function isEvidenceVotingTransaction(transaction: Transaction): transaction is E
   return transaction.type === TransactionType.COLLECTIVE_EVIDENCE_VOTE;
 }
 
+function createProposal(palletType: CollectivePalletsType, evidence: Evidence, member: Member, api: ApiPromise) {
+  if (evidence.wish === 'Promotion') {
+    return collectiveCorePallet.extrinsic.promote(palletType, api, member.accountId, member.rank + 1).method.toHex();
+  }
+  if (evidence.wish === 'Retention') {
+    api.tx.coreFellowship.approve;
+    return collectiveCorePallet.extrinsic.approve(palletType, api, member.accountId, member.rank).method.toHex();
+  }
+  return null;
+}
+
 export const votingService = {
   createVoteTransaction,
   isVotingTransaction,
 
   createEvidenceVotingTransaction,
   isEvidenceVotingTransaction,
+
+  createProposal,
 };
