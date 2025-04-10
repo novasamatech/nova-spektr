@@ -69,7 +69,7 @@ function createEvidenceVotingTransaction({
   return {
     accountId: accountId,
     chainId: chain.chainId,
-    type: TransactionType.COLLECTIVE_VOTE,
+    type: TransactionType.COLLECTIVE_EVIDENCE_VOTE,
     args: {
       at,
       track: track.name,
