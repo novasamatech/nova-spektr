@@ -269,7 +269,7 @@ importers:
         version: 1.49.1
       '@storybook/addon-a11y':
         specifier: 8.5.3
-        version: 8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5)
+        version: 8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@storybook/addon-essentials':
         specifier: ^8.5.3
         version: 8.5.3(@types/react@18.0.14)(storybook@8.5.3(prettier@3.3.3))
@@ -338,7 +338,7 @@ importers:
         version: 3.7.2(@swc/helpers@0.5.15)(vite@6.1.0(@types/node@20.17.12)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@vitest/coverage-v8':
         specifier: 3.0.5
-        version: 3.0.5(vitest@3.0.5)
+        version: 3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
       '@vitest/ui':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5)
@@ -377,7 +377,7 @@ importers:
         version: 33.3.1
       electron-builder:
         specifier: 25.1.8
-        version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
+        version: 25.1.8(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       electron-devtools-installer:
         specifier: 3.2.1
         version: 3.2.1
@@ -10114,7 +10114,7 @@ snapshots:
       '@types/node': 20.5.1
       chalk: 4.1.2
       cosmiconfig: 8.3.6(typescript@5.7.3)
-      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3))(typescript@5.7.3)
+      cosmiconfig-typescript-loader: 4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3))(typescript@5.7.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -12236,13 +12236,13 @@ snapshots:
       ignore: 5.3.2
       p-map: 4.0.0
 
-  '@storybook/addon-a11y@8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5)':
+  '@storybook/addon-a11y@8.5.3(storybook@8.5.3(prettier@3.3.3))(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))':
     dependencies:
       '@storybook/addon-highlight': 8.5.3(storybook@8.5.3(prettier@3.3.3))
       '@storybook/test': 8.5.3(storybook@8.5.3(prettier@3.3.3))
       axe-core: 4.10.2
       storybook: 8.5.3(prettier@3.3.3)
-      vitest-axe: 0.1.0(vitest@3.0.5)
+      vitest-axe: 0.1.0(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))
     transitivePeerDependencies:
       - vitest
 
@@ -13033,7 +13033,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitest/coverage-v8@3.0.5(vitest@3.0.5)':
+  '@vitest/coverage-v8@3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -13525,7 +13525,7 @@ snapshots:
 
   app-builder-bin@5.0.0-alpha.10: {}
 
-  app-builder-lib@25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8):
+  app-builder-lib@25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8)):
     dependencies:
       '@develar/schema-utils': 2.6.5
       '@electron/notarize': 2.5.0
@@ -14385,11 +14385,11 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3))(typescript@5.7.3):
+  cosmiconfig-typescript-loader@4.4.0(@types/node@20.5.1)(cosmiconfig@8.3.6(typescript@5.7.3))(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3))(typescript@5.7.3):
     dependencies:
       '@types/node': 20.5.1
       cosmiconfig: 8.3.6(typescript@5.7.3)
-      ts-node: 10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.17.12)(typescript@5.7.3)
+      ts-node: 10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@20.5.1)(typescript@5.7.3)
       typescript: 5.7.3
 
   cosmiconfig@8.3.6(typescript@5.7.3):
@@ -14766,7 +14766,7 @@ snapshots:
 
   dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       builder-util: 25.1.7
       builder-util-runtime: 9.2.10
       fs-extra: 10.1.0
@@ -14893,7 +14893,7 @@ snapshots:
 
   electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       archiver: 5.3.2
       builder-util: 25.1.7
       fs-extra: 10.1.0
@@ -14902,9 +14902,9 @@ snapshots:
       - dmg-builder
       - supports-color
 
-  electron-builder@25.1.8(electron-builder-squirrel-windows@25.1.8):
+  electron-builder@25.1.8(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8)):
     dependencies:
-      app-builder-lib: 25.1.8(dmg-builder@25.1.8)(electron-builder-squirrel-windows@25.1.8)
+      app-builder-lib: 25.1.8(dmg-builder@25.1.8(electron-builder-squirrel-windows@25.1.8))(electron-builder-squirrel-windows@25.1.8(dmg-builder@25.1.8))
       builder-util: 25.1.7
       builder-util-runtime: 9.2.10
       chalk: 4.1.2
@@ -20466,7 +20466,7 @@ snapshots:
     optionalDependencies:
       vite: 6.1.0(@types/node@20.17.12)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1)
 
-  vitest-axe@0.1.0(vitest@3.0.5):
+  vitest-axe@0.1.0(vitest@3.0.5(@types/debug@4.1.12)(@types/node@20.17.12)(@vitest/ui@3.0.5)(happy-dom@16.3.0)(jiti@2.4.2)(jsdom@20.0.3)(terser@5.37.0)(tsx@4.19.2)(yaml@2.5.1)):
     dependencies:
       aria-query: 5.3.2
       axe-core: 4.10.2

@@ -11,6 +11,16 @@
       "chain": "ksmcc3",
       "metadata": ".papi/metadata/ksm.scale",
       "genesis": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe"
+    },
+    "dot_ppl": {
+      "chain": "polkadot_people",
+      "metadata": ".papi/metadata/dot_ppl.scale",
+      "genesis": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008"
+    },
+    "dot_col": {
+      "chain": "polkadot_collectives",
+      "metadata": ".papi/metadata/dot_col.scale",
+      "genesis": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2"
     }
   }
 }
