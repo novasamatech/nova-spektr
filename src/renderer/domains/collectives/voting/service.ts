@@ -90,7 +90,6 @@ function createProposal(palletType: CollectivePalletsType, evidence: Evidence, m
     return collectiveCorePallet.extrinsic.promote(palletType, api, member.accountId, member.rank + 1).method.toHex();
   }
   if (evidence.wish === 'Retention') {
-    api.tx.coreFellowship.approve;
     return collectiveCorePallet.extrinsic.approve(palletType, api, member.accountId, member.rank).method.toHex();
   }
   return null;
