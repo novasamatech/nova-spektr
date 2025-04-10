@@ -273,6 +273,7 @@ module.exports = {
         'effector/strict-effect-handlers': 'off',
         // Takes 500ms seconds for nothing
         'effector/no-unnecessary-duplication': 'off',
+        'effector/require-pickup-in-persist': 'off',
 
         // Boundaries setup
         'boundaries/entry-point': [

@@ -20,11 +20,11 @@ export default defineConfig({
         light: resolve(assetsDir, 'logo-black.svg'),
         dark: resolve(assetsDir, 'logo-white.svg'),
       },
-      social: {
-        github: pkg.repository,
-        telegram: 'https://t.me/NovaSpektr',
-        'x.com': 'https://x.com/NovaSpektr',
-      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: pkg.repository },
+        { icon: 'telegram', label: 'Telegram', href: 'https://t.me/NovaSpektr' },
+        { icon: 'twitter', label: 'Twitter', href: 'https://x.com/NovaSpektr' },
+      ],
       editLink: {
         baseUrl: `${pkg.repository}/edit/dev`,
       },
