@@ -39,7 +39,7 @@ watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   const isEthereum = isEthereumAccountId(address);
   const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

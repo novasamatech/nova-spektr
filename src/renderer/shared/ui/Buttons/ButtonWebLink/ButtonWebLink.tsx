@@ -38,7 +38,12 @@ export const ButtonWebLink = ({
   const content = (
     <>
       {prefixElement && <div data-testid="prefix">{prefixElement}</div>}
-      <div className={cnTw('overflow-hidden', prefixElement && 'ml-auto', suffixElement && 'ml-0 mr-auto')}>
+      <div
+        className={cnTw('overflow-hidden', {
+          'ml-auto': prefixElement,
+          'ml-0 mr-auto': suffixElement,
+        })}
+      >
         {children}
       </div>
       {suffixElement && <div data-testid="suffix">{suffixElement}</div>}

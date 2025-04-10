@@ -19,9 +19,7 @@ export const NotificationsList = () => {
           <FootnoteText className="ml-2 flex h-8 items-center text-text-tertiary">{date}</FootnoteText>
           <ul className="flex flex-col gap-y-1.5">
             {notifications.map((notification) => (
-              <li key={notification.id}>
-                <NotificationRow notification={notification} />
-              </li>
+              <NotificationRow key={notification.id} notification={notification} />
             ))}
           </ul>
         </section>
