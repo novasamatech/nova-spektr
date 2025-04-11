@@ -8,8 +8,6 @@ import { CONFIG } from '../lib/constants';
 import { type ChainApi } from '../lib/types';
 
 class ChainRegistry {
-  static #instance: ChainRegistry;
-
   // TODO: support Light Clients in future
   #storage: Map<
     ChainId,
@@ -25,14 +23,6 @@ class ChainRegistry {
   constructor(chains: Chain[]) {
     this.#chainsList = chains;
     this.#chainsMap = new Map(chains.map(c => [c.chainId, c]));
-  }
-
-  static init(chains: Chain[]) {
-    if (!ChainRegistry.#instance) {
-      ChainRegistry.#instance = new ChainRegistry(chains);
-    }
-
-    return ChainRegistry.#instance;
   }
 
   getApi(chainId: ChainId): ChainApi {
@@ -116,6 +106,20 @@ class ChainRegistry {
   }
 }
 
+// Singleton instance
+let instance: ChainRegistry | undefined;
+
 export function getChainRegistry(): ChainRegistry {
-  return ChainRegistry.init(chainsService.getChainsData());
+  if (nullable(instance)) {
+    instance = new ChainRegistry(chainsService.getChainsData());
+  }
+
+  return instance;
+}
+
+/**
+ * Tests only. Allows to reset singleton instance
+ */
+export function __reset() {
+  instance = undefined;
 }
