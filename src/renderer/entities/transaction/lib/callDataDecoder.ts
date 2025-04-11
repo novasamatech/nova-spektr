@@ -468,6 +468,9 @@ const getCallDataParser: Record<
       evidence: decoded.args[1].toString(),
     };
   },
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: (): Record<string, any> => {
+    return {};
+  },
 };
 
 const isBatchExtrinsic = (method: string, section: string): boolean => {

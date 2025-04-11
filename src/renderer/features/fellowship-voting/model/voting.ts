@@ -57,6 +57,7 @@ const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, a
 });
 
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+  $active: flow.status,
   $api,
   $activeWallet: $votingWallet,
   $wallets,

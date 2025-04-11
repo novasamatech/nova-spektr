@@ -509,6 +509,12 @@
         "evidence": "Evidence",
         "evidenceType": "Evidence type",
         "rank": "Rank"
+      },
+      "submitEvidenceVoteConfirm": {
+        "evidence": "Evidence",
+        "evidenceType": "Evidence type",
+        "rank": "Rank",
+        "vote": "Vote"
       }
     },
     "tasks": {

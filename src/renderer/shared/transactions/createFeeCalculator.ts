@@ -8,11 +8,12 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/entities/transaction';
 
 type Params = {
+  $active?: Store<boolean>;
   $transaction: Store<Transaction | null>;
   $api: Store<ApiPromise | null>;
 };
 
-export const createFeeCalculator = ({ $transaction, $api }: Params) => {
+export const createFeeCalculator = ({ $active = createStore(true), $transaction, $api }: Params) => {
   type RequestParams = {
     api: ApiPromise;
     transaction: Transaction;
@@ -42,9 +43,16 @@ export const createFeeCalculator = ({ $transaction, $api }: Params) => {
     target: $fee,
   });
 
+  const feeRequested = sample({
+    clock: [$source.updates, $active.updates],
+    source: { active: $active, source: $source },
+  }).filterMap(({ active, source }) => {
+    if (!active) return undefined;
+    if (source) return source;
+  });
+
   sample({
-    clock: $source,
-    filter: nonNullable,
+    clock: feeRequested,
     target: fetchFeeFx,
   });
 

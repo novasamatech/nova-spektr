@@ -16,7 +16,7 @@ const getBlockFx = createEffect(getCurrentBlockNumber);
 const { tick } = interval({
   start: startBlockListening,
   stop: stopBlockListening,
-  timeout: 60 * 1000,
+  timeout: 6 * 1000,
   leading: true,
 });
 
