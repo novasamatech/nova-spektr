@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
-import { fellowshipReferendumDetails } from '@/features/fellowship-referendum-details';
 import { tasksService } from '@/features/fellowship-tasks';
 import { voting } from '../model/voting';
 import { votingStatus } from '../model/votingStatus';
@@ -19,9 +19,7 @@ type Props = {
   transaction: Transaction | null;
 };
 
-const { ReferendumVoteChart } = fellowshipReferendumDetails.views;
-
-export const VotingActions = ({ referendum, transaction }: Props) => {
+export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
   const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
@@ -49,6 +47,14 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   });
 
   const aye = () => {
+    if (referendumVote?.decision === 'Aye') return;
+
+    if (decision === 'aye') {
+      votingStatus.flow.close({ referendumId: null });
+      setDecision(null);
+      return;
+    }
+
     votingStatus.flow.open({ referendumId: referendum?.id });
 
     if (canAddToBasket) {
@@ -61,6 +67,14 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
   };
 
   const nay = () => {
+    if (referendumVote?.decision === 'Nay') return;
+
+    if (decision === 'nay') {
+      votingStatus.flow.close({ referendumId: null });
+      setDecision(null);
+      return;
+    }
+
     votingStatus.flow.open({ referendumId: referendum?.id });
 
     if (canAddToBasket) {
@@ -106,7 +120,7 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
         />
       </Box>
       <div className="w-[102px]">
-        <ReferendumVoteChart
+        <CollectiveReferendumVoteChart
           referendum={referendum}
           pending={!!referendum}
           votes={memberVoteWeight}
@@ -114,7 +128,9 @@ export const VotingActions = ({ referendum, transaction }: Props) => {
           highlight={highlight}
         />
       </div>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      {decision ? (
+        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+      ) : null}
     </Box>
   );
-};
+});

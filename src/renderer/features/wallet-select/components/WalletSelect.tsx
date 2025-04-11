@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
-import { Slot, createSlot, useSlot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
@@ -23,19 +23,11 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = () => {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
 
-  const walletGroups = useSlot(walletGroupSlot, {
-    props: {
-      query: filterQuery,
-      onSelect: w => {
-        walletSelect.select(w.id);
-        setOpen(false);
-      },
-    },
-  });
+  const [open, setOpen] = useState(false);
 
   if (!selectedWallet) {
     return <Skeleton width={52} height={16} />;
@@ -81,7 +73,18 @@ export const WalletSelect = () => {
           </div>
 
           <ScrollArea>
-            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">{walletGroups}</div>
+            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
+              <Slot
+                id={walletGroupSlot}
+                props={{
+                  query: filterQuery,
+                  onSelect: ({ id }) => {
+                    walletSelect.select(id);
+                    setOpen(false);
+                  },
+                }}
+              />
+            </div>
             <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
               <Graphics name="emptyList" size={64} />
               <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>

@@ -16,6 +16,7 @@ type Props = {
 };
 export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
   const selectedStructure = useUnit(shardsModel.$selectedStructure);
+
   const account = accounts.at(0);
   if (!account) return null;
 
@@ -62,11 +63,8 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
         {accounts.map((shard) => (
           <li key={shard.accountId} className="ml-6">
             <SelectableShard
-              truncate
-              className="w-[240px]"
               account={shard}
-              addressPrefix={chain.addressPrefix}
-              explorers={chain.explorers}
+              chain={chain}
               checked={shardedGroup[shard.accountId]}
               onChange={(value) => toggleShard(shard, value)}
             />

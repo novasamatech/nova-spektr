@@ -8,6 +8,7 @@ export type AccountIdentity = {
   email: string;
   image: string;
   github?: string;
+  matrix?: string;
 };
 
 export type IdentityMap = Record<ChainId, Record<AccountId, AccountIdentity>>;

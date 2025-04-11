@@ -1,9 +1,10 @@
 import { Loader } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 
 export const PageLoadingState = () => {
   return (
-    <div className="flex h-full w-full items-center justify-center p-6">
+    <Box width="100%" height="100%" horizontalAlign="center" verticalAlign="center" padding={6}>
       <Loader color="primary" size={32} />
-    </div>
+    </Box>
   );
 };

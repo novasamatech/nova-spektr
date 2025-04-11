@@ -1,6 +1,5 @@
 import {
   KeyType,
-  type MultiShardWallet,
   type PolkadotVaultWallet,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -11,7 +10,7 @@ import { accountUtils } from '@/entities/wallet';
 import { downloadFiles, exportKeysUtils } from '@/features/wallets/ExportKeys';
 
 import { ForgetStep, ReconnectStep } from './constants';
-import { type MultishardMap, type VaultMap } from './types';
+import { type VaultMap } from './types';
 
 export const wcDetailsUtils = {
   isNotStarted,
@@ -24,8 +23,6 @@ export const wcDetailsUtils = {
 export const walletDetailsUtils = {
   isForgetModalOpen,
   getVaultAccountsMap,
-  getMultishardMap,
-  exportMultishardWallet,
   exportVaultWallet,
   getMainAccounts,
 };
@@ -69,42 +66,6 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
 
     return acc;
   }, {});
-}
-
-function getMultishardMap(rootAcountId: AccountId, accounts: MultiShardWallet['accounts']): MultishardMap {
-  const map: MultishardMap = new Map([[rootAcountId, {}]]);
-
-  return accounts.reduce<MultishardMap>((acc, account) => {
-    if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
-      for (const [rootAcountId, chainMap] of acc.entries()) {
-        if (rootAcountId !== account.baseAccountId) continue;
-
-        if (chainMap[account.chainId]) {
-          chainMap[account.chainId].push(account);
-        } else {
-          chainMap[account.chainId] = [account];
-        }
-        break;
-      }
-    }
-
-    return acc;
-  }, map);
-}
-
-function exportMultishardWallet(wallet: Wallet, accounts: MultishardMap) {
-  const rootsAndAccounts = Array.from(accounts, ([root, accounts]) => ({ root, accounts }));
-  const downloadData = rootsAndAccounts.map(({ root, accounts }, index) => {
-    const accountsFlat = Object.values(accounts).flat();
-    const exportStructure = exportKeysUtils.getExportStructure(root, accountsFlat);
-
-    return {
-      blob: new Blob([exportStructure], { type: 'text/plain' }),
-      fileName: wallet.name + (rootsAndAccounts.length > 1 ? ` ${index}` : '') + '.txt',
-    };
-  });
-
-  downloadFiles(downloadData);
 }
 
 function exportVaultWallet(wallet: Wallet, rootAccountId: AccountId, accounts: VaultMap) {

@@ -1,13 +1,11 @@
-import { useGate } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService } from '@/domains/collectives';
-import { fellowshipReferendumsDetailsFeature } from '../../model/feature';
+import { DynamicVoteChart } from '../DynamicVoteChart/DynamicVoteChart';
 
 type Props = {
   referendum: Referendum | null;
@@ -17,9 +15,7 @@ type Props = {
   voted?: 'Aye' | 'Nay';
 };
 
-export const ReferendumVoteChart = memo<Props>(({ referendum, voted, pending, votes, highlight }) => {
-  useGate(fellowshipReferendumsDetailsFeature.gate);
-
+export const CollectiveReferendumVoteChart = memo<Props>(({ referendum, voted, pending, votes, highlight }) => {
   const { t } = useI18n();
 
   if (nullable(referendum)) {

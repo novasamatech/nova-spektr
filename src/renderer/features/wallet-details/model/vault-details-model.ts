@@ -9,14 +9,11 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accounts } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { accounts } from '@/domains/network';
 import { proxiesModel } from '@/features/proxies';
 
 type AccountsCreatedParams = {
   walletId: ID;
-  rootAccountId: AccountId;
   accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
 };
 const shardsSelected = createEvent<VaultShardAccount[]>();
@@ -69,16 +66,10 @@ sample({
 });
 
 sample({
+  // @ts-expect-error some types misalignment (no accountId)
   clock: accountsCreated,
-  fn: ({ accounts, walletId, rootAccountId }) => {
-    // @ts-expect-error some types missaligment (no accountId)
-    const accountsToCreate: AnyAccount[] = accounts.map(account =>
-      accountUtils.isVaultChainAccount(account)
-        ? { ...account, baseAccountId: rootAccountId, walletId }
-        : { ...account, walletId },
-    );
-
-    return accountsToCreate;
+  fn: ({ accounts, walletId }) => {
+    return accounts.map(account => ({ ...account, walletId }));
   },
   target: createAccountsFx,
 });

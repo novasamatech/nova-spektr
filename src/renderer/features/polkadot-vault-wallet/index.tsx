@@ -55,7 +55,7 @@ polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   const isEthereum = isEthereumAccountId(address);
   const theme: IconTheme = isEthereum ? 'ethereum' : isMultishard ? 'jdenticon' : 'polkadot';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme}></WalletAccountIcon>;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });
 
 polkadotVaultWalletFeature.inject(walletGroupSlot, {

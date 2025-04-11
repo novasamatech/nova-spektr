@@ -77,7 +77,7 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
   };
 
   if (step === 'submit') {
-    return <OperationSubmit isOpen={isOpen} onClose={onClose} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false)} />;
   }
 
   if (step === 'basket') {

@@ -7,7 +7,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { voting } from '@/domains/collectives';
 
-import { votingHistoryFeatureStatus } from './feature';
+import { fellowshipVotingHistoryFeature } from './feature';
 import { fellowshipModel } from './fellowship';
 
 const gate = createGate<{ referendumId: ReferendumId }>();
@@ -20,7 +20,7 @@ const $votesList = combine($voting, gate.state, (votes, { referendumId }) => {
 });
 
 sample({
-  clock: attachToFeatureInput(votingHistoryFeatureStatus, gate.open),
+  clock: attachToFeatureInput(fellowshipVotingHistoryFeature, gate.open),
   filter: ({ data: { referendumId } }) => nonNullable(referendumId),
   fn: ({ data: { referendumId }, input }) => ({ ...input, referendums: [referendumId] }),
   target: voting.request,
@@ -33,7 +33,7 @@ const $hasPendingRequest = and(
 
 export const votesModel = {
   $votesList,
-  $pending: or($hasPendingRequest, votingHistoryFeatureStatus.isStarting),
+  $pending: or($hasPendingRequest, fellowshipVotingHistoryFeature.isStarting),
 
   gate,
 };

@@ -27,11 +27,13 @@ function getExportStructure(rootAccountId: AccountId, accounts: (VaultChainAccou
 }
 
 function accountToDerivationExport(account: VaultChainAccount | VaultShardAccount[]): string {
-  const isSharded = accountUtils.isAccountWithShards(account);
-  const data = isSharded ? account[0] : account;
-  const derivationPath = isSharded
-    ? `${data.derivationPath}...${account.length}`
-    : data.derivationPath || `//${chainsService.getChainById(data.chainId)?.specName}`; // legacy multishards has empty derivation path for chain account
+  if (accountUtils.isAccountWithShards(account)) {
+    const derivationPath = `${account[0].derivationPath}...${account.length}`;
 
-  return `${derivationPath}: ${data.name} [${data.keyType}]\n`;
+    return `${derivationPath}: ${account[0].name} [${account[0].keyType}]\n`;
+  }
+
+  const derivationPath = account.derivationPath || `//${chainsService.getChainById(account.chainId)?.specName}`;
+
+  return `${derivationPath}: ${account.name} [${account.keyType}]\n`;
 }

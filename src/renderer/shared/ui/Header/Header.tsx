@@ -1,6 +1,6 @@
 import { type PropsWithChildren } from 'react';
 
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { TitleText } from '../Typography';
 
 type Props = {
@@ -13,7 +13,9 @@ export const Header = ({ title, children, titleClass, headerClass }: PropsWithCh
   <header
     className={cnTw(
       'w-full border-b border-container-border bg-top-nav-bar-background px-6 pb-4.5 pt-[19px]',
-      children && 'flex justify-between',
+      {
+        'flex justify-between': nonNullable(children),
+      },
       headerClass,
     )}
   >

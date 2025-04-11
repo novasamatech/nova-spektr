@@ -353,6 +353,18 @@
         "title": "You are not connected to this network"
       }
     },
+    "evidenceModal": {
+      "currentRank": "Current rank:",
+      "dateOfInitialInduction": "Date of initial induction:",
+      "dateOfLastReport": "Date of last report:",
+      "matrixUsername": "Matrix username:",
+      "memberDetails": "Member details",
+      "polkadotAddress": "Polkadot address:",
+      "promotedAt": "(promotion executed on <time/>)",
+      "titlePromotion": "Promote to rank",
+      "titleRetention": "Retain on rank",
+      "votingRecord": "Voting record"
+    },
     "fellow_one": "{ count } Fellow",
     "fellow_other": "{ count } Fellows",
     "members": {
@@ -519,6 +531,10 @@
       "task": {
         "anyReferendum": {
           "title": "Review referendum"
+        },
+        "evidence": {
+          "promotionTitle": "{identity} request promotion to rank {rank}",
+          "retentionTitle": "{identity} request retention at rank {rank}"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
@@ -1088,6 +1104,8 @@
       "decodeErrorDescription": "Error occurred while decoding QR code",
       "decodeErrorLabel": "Recognition error!",
       "generateAddressesModalTitle": "Generate accounts addresses",
+      "multishardQRCodeDescription": "Multishard wallets no longer supported",
+      "multishardQRCodeLabel": "Multishard QR not supported!",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
       "scanAgainButton": "Scan again",

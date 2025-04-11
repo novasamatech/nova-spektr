@@ -42,7 +42,7 @@ export const ConfirmDialogProvider = ({ children }: PropsWithChildren) => {
 
   const [dialogState, setDialogState] = useState<ConfirmDialogProps>(defaultState);
 
-  const fn = useRef<(choice: boolean) => void>();
+  const fn = useRef<((choice: boolean) => void) | null>(null);
 
   const confirm = useCallback((data: ConfirmDialogProps): Promise<boolean> => {
     return new Promise((resolve) => {

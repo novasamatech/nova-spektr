@@ -10,7 +10,6 @@ type Props = {
   meta?: ReactNode;
   address: Address | undefined;
   theme: IconTheme;
-  isMultishard?: boolean;
   onClick: () => void;
 };
 
@@ -37,7 +36,7 @@ export const WalletManagement = ({
           <div className="row-span-2 h-5 w-5 shrink-0" />
         )}
 
-        <Identicon address={address} size={16} background={false} theme={theme} />
+        <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />
 
         <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">

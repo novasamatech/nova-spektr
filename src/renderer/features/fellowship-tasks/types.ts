@@ -9,6 +9,7 @@ export type OperationType =
   | 'salary_payout'
   | 'salary_induct'
   | 'evidence'
+  | 'evidence_request'
   | `referendum_${number}`
   | `referendum_completed_${number}`;
 

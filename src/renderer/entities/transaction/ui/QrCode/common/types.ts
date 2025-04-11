@@ -26,11 +26,6 @@ export type SeedInfo = {
   features?: VaultFeature[];
 };
 
-export type CompactSeedInfo = {
-  address: Address;
-  derivedKeys: Record<ChainId, AddressInfo[]>;
-};
-
 export type DdSeedInfo = {
   multiSigner: MultiSigner<Uint8Array>;
   dynamicDerivations: DdAddressInfo[];
