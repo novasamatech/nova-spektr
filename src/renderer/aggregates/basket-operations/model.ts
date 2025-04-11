@@ -1,9 +1,10 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { uniq } from 'lodash';
-import { readonly } from 'patronum';
+import { and, not, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type BasketTransaction, type ID } from '@/shared/core';
+import { populated } from '@/shared/effector';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/element-types
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -14,38 +15,46 @@ const $list = createStore<BasketTransaction[]>([]);
 
 const populateFx = createEffect(() => storageService.basketTransactions.readAll());
 
-const addTransactionsFx = createEffect(
-  async (transactions: Omit<BasketTransaction, 'id'>[]): Promise<BasketTransaction[]> => {
-    return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
-  },
-);
+const $populated = populated(populateFx);
 
-const updateTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[]> => {
+const addTransactionsFx = createEffect(async (transactions: Omit<BasketTransaction, 'id'>[]) => {
+  return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
+});
+
+const updateTransactionsFx = createEffect((transactions: BasketTransaction[]) => {
   return storageService.basketTransactions.updateAll(transactions).then(result => result ?? []);
 });
 
-const removeTransactionsFx = createEffect((transactions: BasketTransaction[]): Promise<number[] | undefined> => {
+const removeTransactionsFx = createEffect((transactions: BasketTransaction[]) => {
   return storageService.basketTransactions.deleteAll(transactions.map(t => t.id)).then(result => result ?? []);
 });
 
 sample({
   clock: populateFx.doneData,
+  filter: result => result.length > 0,
   target: $list,
 });
 
 sample({
   clock: addTransactionsFx,
+  filter: result => result.length > 0,
   target: populateFx,
 });
 
 sample({
   clock: updateTransactionsFx,
+  filter: result => result.length > 0,
   target: populateFx,
 });
 
 sample({
-  clock: removeTransactionsFx,
-  target: populateFx,
+  clock: removeTransactionsFx.doneData,
+  source: $list,
+  filter: result => result.length > 0,
+  fn(list, ids) {
+    return list.filter(t => !ids.includes(t.id));
+  },
+  target: $list,
 });
 
 // select
@@ -102,7 +111,7 @@ sample({
 export const basketOperations = {
   $list: readonly($list),
   $selected: readonly($selected),
-  pending: populateFx.pending,
+  pending: and(populateFx.pending, not($populated)),
 
   populate: populateFx,
   addTransactions: addTransactionsFx,

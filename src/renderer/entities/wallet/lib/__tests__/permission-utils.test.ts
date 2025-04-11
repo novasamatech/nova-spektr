@@ -33,11 +33,6 @@ describe('shared/api/permission/permission-utils', () => {
         result: true,
       },
       {
-        testName: 'should return correct values for transfer available for multishardWallet',
-        wallet: wallets.multishardWallet,
-        result: true,
-      },
-      {
         testName: 'should return correct values for transfer available for multisigWallet',
         wallet: wallets.multisigWallet,
         result: true,
@@ -115,11 +110,6 @@ describe('shared/api/permission/permission-utils', () => {
         result: true,
       },
       {
-        testName: 'should return correct values for receive available for multishardWallet',
-        wallet: wallets.multishardWallet,
-        result: true,
-      },
-      {
         testName: 'should return correct values for receive available for multisigWallet',
         wallet: wallets.multisigWallet,
         result: true,
@@ -159,11 +149,6 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for stake available for singleParitySignerWallet',
         wallet: wallets.singleParitySignerWallet,
-        result: true,
-      },
-      {
-        testName: 'should return correct values for stake available for multishardWallet',
-        wallet: wallets.multishardWallet,
         result: true,
       },
       {
@@ -244,11 +229,6 @@ describe('shared/api/permission/permission-utils', () => {
         result: true,
       },
       {
-        testName: 'should return correct values for create multisig tx for multishardWallet',
-        wallet: wallets.multishardWallet,
-        result: true,
-      },
-      {
         testName: 'should return correct values for create multisig tx for multisigWallet',
         wallet: wallets.multisigWallet,
         result: false,
@@ -323,11 +303,6 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for approve multisig tx for singleParitySignerWallet',
         wallet: wallets.singleParitySignerWallet,
-        result: true,
-      },
-      {
-        testName: 'should return correct values for approve multisig tx for multishardWallet',
-        wallet: wallets.multishardWallet,
         result: true,
       },
       {
@@ -408,11 +383,6 @@ describe('shared/api/permission/permission-utils', () => {
         result: true,
       },
       {
-        testName: 'should return correct values for reject multisig tx for multishardWallet',
-        wallet: wallets.multishardWallet,
-        result: true,
-      },
-      {
         testName: 'should return correct values for reject multisig tx for multisigWallet',
         wallet: wallets.multisigWallet,
         result: false,
@@ -490,11 +460,6 @@ describe('shared/api/permission/permission-utils', () => {
         result: true,
       },
       {
-        testName: 'should return correct values for create any proxy for multishardWallet',
-        wallet: wallets.multishardWallet,
-        result: true,
-      },
-      {
         testName: 'should return correct values for create any proxy for multisigWallet',
         wallet: wallets.multisigWallet,
         result: true,
@@ -559,11 +524,6 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for create non any proxy for singleParitySignerWallet',
         wallet: wallets.singleParitySignerWallet,
-        result: true,
-      },
-      {
-        testName: 'should return correct values for create non any proxy for multishardWallet',
-        wallet: wallets.multishardWallet,
         result: true,
       },
       {
@@ -641,11 +601,6 @@ describe('shared/api/permission/permission-utils', () => {
       {
         testName: 'should return correct values for remove proxy for singleParitySignerWallet',
         wallet: wallets.singleParitySignerWallet,
-        result: true,
-      },
-      {
-        testName: 'should return correct values for remove proxy for multishardWallet',
-        wallet: wallets.multishardWallet,
         result: true,
       },
       {

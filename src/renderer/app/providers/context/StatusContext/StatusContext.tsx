@@ -36,7 +36,7 @@ export const StatusModalProvider = ({ children }: PropsWithChildren) => {
 
   const [dialogState, setDialogState] = useState<StatusModalProps>(defaultState);
 
-  const fn = useRef<() => void>();
+  const fn = useRef<(() => void) | null>(null);
 
   const showStatus = useCallback((data: StatusModalProps): Promise<void> => {
     return new Promise((resolve) => {

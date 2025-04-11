@@ -59,7 +59,7 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
 
         try {
           if (handler.available()) {
-            node = <SlotWrapper key={index} component={handler.body.render} props={props} />;
+            node = <SlotWrapper key={handler.key || index} component={handler.body.render} props={props} />;
             result.push(node);
             order.set(node, handler.body.order ?? index);
 

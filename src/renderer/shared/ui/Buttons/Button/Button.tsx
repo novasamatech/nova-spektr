@@ -54,7 +54,9 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       disabled={disabled}
       className={cnTw(
         'flex select-none items-center justify-center gap-x-2 outline-offset-1 transition-colors',
-        (prefixElement || suffixElement || isLoading) && 'justify-between',
+        {
+          'justify-between': prefixElement || suffixElement || isLoading,
+        },
         SizeClass[size],
         variant !== 'text' && Padding[size],
         ViewClass[`${variant}_${pallet}`](disabled),

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { createDataSource } from '@/shared/effector';
+import { createDataSource, populated } from '@/shared/effector';
 import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -56,6 +56,8 @@ const { $: $list, request } = createDataSource({
     return setNestedValue(source, params.palletType, params.chainId, merged);
   },
 });
+
+const $populated = populated(request);
 
 type PeriodsStore = CollectivesStruct<EvidencePeriods>;
 
@@ -138,6 +140,7 @@ const { $: $summary, request: requestSummary } = createDataSource({
 
 export const evidence = {
   $list,
+  $populated,
   $periods,
   $summary,
   request,

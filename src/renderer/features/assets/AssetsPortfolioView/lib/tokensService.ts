@@ -37,7 +37,7 @@ function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalan
 
   return {
     verified: firstBalance.verified && secondBalance.verified,
-    free: sumValues(firstBalance.free, secondBalance.free),
+    free: firstBalance.free || secondBalance.free ? sumValues(firstBalance.free, secondBalance.free) : undefined,
     reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
     frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
     locked: (firstBalance.locked || []).concat(secondBalance.locked || []),

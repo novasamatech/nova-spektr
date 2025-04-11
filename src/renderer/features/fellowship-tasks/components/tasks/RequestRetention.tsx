@@ -11,7 +11,7 @@ import { periods } from '../../model/periods';
 import { tracks } from '../../model/tracks';
 import { RetentionEndTimer } from '../RetentionEndTimer';
 
-export const requestRetentionActionSlot = createSlot();
+export const requestRetentionATaskActionSlot = createSlot();
 
 export const RequestRetention = () => {
   const { t, formatDate } = useI18n();
@@ -42,7 +42,7 @@ export const RequestRetention = () => {
       </Box>
       <Box verticalAlign="center" gap={8} horizontalAlign="end" shrink={0} height="100%">
         <RetentionEndTimer endBlock={endDemotionPeriod} shortDateFormat />
-        <Slot id={requestRetentionActionSlot} />
+        <Slot id={requestRetentionATaskActionSlot} />
       </Box>
     </Box>
   );

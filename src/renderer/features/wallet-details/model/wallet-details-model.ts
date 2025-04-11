@@ -5,18 +5,11 @@ import { type ChainId, type ProxyAccount, type ProxyGroup, type Wallet } from '@
 import { nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { permissionUtils, walletUtils } from '@/entities/wallet';
-import { walletDetailsUtils } from '../lib/utils';
+import { permissionUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
-
-const $multiShardAccounts = $wallet.map(wallet => {
-  if (nullable(wallet) || !walletUtils.isMultiShard(wallet)) return new Map();
-
-  return walletDetailsUtils.getMultishardMap(wallet.rootAccountId, wallet.accounts);
-});
 
 const $canCreateProxy = $wallet.map(wallet => {
   if (nullable(wallet) || wallet.accounts.length === 0) return false;
@@ -74,8 +67,6 @@ const $hasProxies = combine($chainsProxies, chainsProxies => {
 
 export const walletDetailsModel = {
   flow,
-
-  $multiShardAccounts,
 
   $chainsProxies,
   $walletProxyGroups,

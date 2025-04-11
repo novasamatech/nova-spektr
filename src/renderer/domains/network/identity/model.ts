@@ -69,6 +69,7 @@ const {
         email: parentIdentity.info.email,
         image: parentIdentity.info.image,
         github: parentIdentity.info.github,
+        matrix: parentIdentity.info.matrix,
       };
 
       if (sub.account !== parent.account) {
@@ -78,6 +79,7 @@ const {
           name: parentIdentity.info.display,
           email: parentIdentity.info.email,
           image: parentIdentity.info.image,
+          matrix: parentIdentity.info.matrix,
         };
       }
     }

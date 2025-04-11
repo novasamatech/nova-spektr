@@ -4,13 +4,14 @@ import { memo, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { groupBy, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { Accordion, Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
+import { Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../model/feature';
 import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
 
 import { Basket } from './Basket';
+import { TasksGroup } from './TasksGroup';
 import { Title } from './Title';
 
 type Props = {
@@ -30,7 +31,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   if (nullable(input) || pending) {
     return (
       <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
-        <Loader color="primary" />
+        <Loader color="primary" size={24} />
       </div>
     );
   }
@@ -40,56 +41,29 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
       <Title />
       {hasAccount && hasPermission && activeTasks.length ? (
         <ScrollArea>
-          {groups.personal && groups.personal.length > 0 ? (
-            <Accordion initialOpen>
-              <Accordion.Trigger>
-                <Box direction="row" gap={2} padding={[0, 2]}>
-                  <span>{t('fellowship.tasks.personal')}</span>
-                  <span className="text-text-tertiary">{groups.personal.length}</span>
-                </Box>
-              </Accordion.Trigger>
-              <Accordion.Content>
-                <div className="divide-y divide-filter-border bg-card-background">
-                  {groups.personal.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
-                  ))}
-                </div>
-              </Accordion.Content>
-            </Accordion>
+          {groups.personal ? (
+            <TasksGroup
+              key="pesonal"
+              title={t('fellowship.tasks.personal')}
+              group={groups.personal}
+              onReferendumSelect={onReferendumSelect}
+            />
           ) : null}
-          {groups.general && groups.general.length > 0 ? (
-            <Accordion initialOpen>
-              <Accordion.Trigger>
-                <Box direction="row" gap={2} padding={[0, 2]}>
-                  <span>{t('fellowship.tasks.general')}</span>
-                  <span className="text-text-tertiary">{groups.general.length}</span>
-                </Box>
-              </Accordion.Trigger>
-              <Accordion.Content>
-                <div className="divide-y divide-filter-border bg-card-background">
-                  {groups.general.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
-                  ))}
-                </div>
-              </Accordion.Content>
-            </Accordion>
+          {groups.general ? (
+            <TasksGroup
+              key="general"
+              title={t('fellowship.tasks.general')}
+              group={groups.general}
+              onReferendumSelect={onReferendumSelect}
+            />
           ) : null}
-          {groups.completed && groups.completed.length > 0 ? (
-            <Accordion initialOpen>
-              <Accordion.Trigger>
-                <Box direction="row" gap={2} padding={[0, 2]}>
-                  <span>{t('fellowship.tasks.completed')}</span>
-                  <span className="text-text-tertiary">{groups.completed.length}</span>
-                </Box>
-              </Accordion.Trigger>
-              <Accordion.Content>
-                <div className="divide-y divide-filter-border bg-card-background">
-                  {groups.completed.map(({ id, body: Component, meta }) => (
-                    <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
-                  ))}
-                </div>
-              </Accordion.Content>
-            </Accordion>
+          {groups.completed ? (
+            <TasksGroup
+              key="completed"
+              title={t('fellowship.tasks.completed')}
+              group={groups.completed}
+              onReferendumSelect={onReferendumSelect}
+            />
           ) : null}
         </ScrollArea>
       ) : null}
