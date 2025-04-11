@@ -71,7 +71,7 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
     <Modal size="md" isOpen={open} onToggle={open => handleToggle(open)}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t('fellowship.salary.promotionTitle')} chainId={input.chain.chainId} />
+        <OperationTitle title={t('fellowship.voting.title')} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
         <Carousel item={step}>
