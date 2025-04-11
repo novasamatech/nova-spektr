@@ -65,13 +65,12 @@ function createEvidenceVotingTransaction({
   pallet,
   proposal,
 }: VoteEvidenceTransactionParams): EvidenceVotingTransaction {
-  const at = track.minEnactmentPeriod;
   return {
     accountId: accountId,
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_EVIDENCE_VOTE,
     args: {
-      at,
+      at: track.minEnactmentPeriod,
       track: track.name,
       pallet,
       proposal,

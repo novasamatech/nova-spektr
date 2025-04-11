@@ -46,7 +46,7 @@ export const EvidenceVotingConfirmation = memo(
         if (currentTrack) {
           rankTitle = `${currentTrack.name} → ${nextTrack.name}`;
         } else {
-          rankTitle = `→ ${nextTrack.name}`;
+          rankTitle = nextTrack.name;
         }
       }
     }
