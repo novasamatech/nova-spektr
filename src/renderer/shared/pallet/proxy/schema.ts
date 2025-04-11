@@ -3,7 +3,7 @@ import { type z } from 'zod';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export type KitchensinkRuntimeProxyType = z.infer<typeof kitchensinkRuntimeProxyType>;
-export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
+export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'Any',
   'NonTransfer',
   'NonCritical',
@@ -34,6 +34,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumType(
   'RootWeights',
   'SudoUncheckedSetCode',
   'Owner',
+  'ParaRegistration',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;

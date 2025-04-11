@@ -10,6 +10,7 @@ export type Track = {
   decisionDeposit: BN;
   preparePeriod: BlockHeight;
   decisionPeriod: BlockHeight;
+  minEnactmentPeriod: BlockHeight;
   minApproval: VotingCurve;
   minSupport: VotingCurve;
 };
