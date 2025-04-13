@@ -42,7 +42,7 @@ const components: Components = {
   ),
   li: ({ node: _, children, className, ...props }) => (
     <li className={className} {...props}>
-      <div className={cnTw({ 'flex items-center gap-2': className?.includes('task-list-item') })}>{children}</div>
+      <span className={cnTw({ 'flex items-center gap-2': className?.includes('task-list-item') })}>{children}</span>
     </li>
   ),
   ol: ({ node: _, className, ...props }) => (
@@ -61,7 +61,7 @@ const components: Components = {
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <div className={cnTw('overflow-hidden overflow-ellipsis text-start text-inherit', className)} {...props} />
+    <span className={cnTw('overflow-hidden overflow-ellipsis text-start text-inherit', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
   input: ({ node: _, type, ...props }) =>

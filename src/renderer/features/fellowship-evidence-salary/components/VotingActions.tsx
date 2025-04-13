@@ -4,16 +4,23 @@ import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 
+import { EvidenceVotingModal } from './EvidenceVotingModal';
+
 type Props = {
   evidence: Evidence;
   variant: 'large' | 'small';
 };
 
-export const VotingActions = memo(({ variant }: Props) => {
+export const VotingActions = memo(({ evidence, variant }: Props) => {
   const buttonNodes = (
     <Box direction="row" gap={0.5}>
-      <FilledIconButton variant="negative" icon="thumbDown" />
-      <FilledIconButton variant="positive" icon="thumbUp" />
+      <EvidenceVotingModal evidence={evidence} aye={false}>
+        <FilledIconButton variant="negative" icon="thumbDown" />
+      </EvidenceVotingModal>
+
+      <EvidenceVotingModal evidence={evidence} aye={true}>
+        <FilledIconButton variant="positive" icon="thumbUp" />
+      </EvidenceVotingModal>
     </Box>
   );
 

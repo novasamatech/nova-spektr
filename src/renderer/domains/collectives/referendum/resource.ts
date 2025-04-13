@@ -50,7 +50,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
     if (struct.method === 'remark' || struct.method === 'remarkWithEvent') {
       const parsed = pjsSchema.uint8String.safeParse(struct.args.at(0));
       if (parsed.success) {
-        const regexp = /RFC_APPROVE\(([0-9]+),(.+)\)/;
+        const regexp = /RFC_APPROVE\(0*?([1-9]+),(.+)\)/;
         const match = regexp.exec(parsed.data);
         if (match) {
           const pullRequest = match[1];

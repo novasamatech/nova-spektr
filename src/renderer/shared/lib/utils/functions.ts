@@ -20,6 +20,23 @@ export function nullable(value: unknown): value is null | undefined {
   return value === null || value === undefined;
 }
 
+type NonNullableMap<T extends Record<PropertyKey, unknown>> = {
+  [K in keyof T]: NonNullable<T[K]>;
+};
+
+/**
+ * Type guard that checks every value in record. If any field is null or
+ * undefined - returns false.
+ */
+export function nonNullableMap<T extends Record<PropertyKey, unknown>>(values: T): values is NonNullableMap<T> {
+  for (const item of Object.values(values)) {
+    if (nullable(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Type guard that checks is value nullable
  *
