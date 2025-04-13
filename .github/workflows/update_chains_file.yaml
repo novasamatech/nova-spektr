@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
       - name: Set spektr config version
@@ -32,14 +32,14 @@ jobs:
             echo "CHAINS_VERSION=${{ secrets.SPEKTR_CONFIG_VERSION }}" >> $GITHUB_ENV
           fi
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: 📝 Update chains file
-        run: pnpm update:chains-file
+        run: bun update:chains-file
 
       - name: 📝 Update tokens file
-        run: pnpm update:tokens-file
+        run: bun update:tokens-file
 
       - name: ➡️ Make pull request
         uses: ./.github/workflows/make-pull-request

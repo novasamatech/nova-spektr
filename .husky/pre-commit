@@ -1,1 +1,1 @@
-pnpm githook:pre-commit
+bun githook:pre-commit

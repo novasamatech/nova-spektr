@@ -50,53 +50,53 @@
 
 Minimum version of `Node.js` is `v20.x`.
 
-Minimum version of `pnpm` is `v9.x`.
+Minimum version of `bun` is `v1.2`.
 
 ## Commands
 
 ```sh
 # Setup dev environment.
-pnpm install
+bun install
 ```
 
 ```sh
 # Start Electron and prebuild app in staging mode. You can also access app with browser.
-pnpm preview
+bun preview
 ```
 
 ```sh
 # Start Electron app in dev mode. You can also access app with browser.
-pnpm start
+bun start
 ```
 
 ```sh
 # Start renderer without Electron (not recommended).
-pnpm start:renderer
+bun start:renderer
 ```
 
 ```sh
 # Run unit tests for renderer.
-pnpm test
+bun test
 ```
 
 ```sh
 # Run linter.
-pnpm lint
+bun lint
 ```
 
 ```sh
 # Run typescript typechecker.
-pnpm types
+bun types
 ```
 
 ```sh
 # Build app in staging mode.
-pnpm staging:sequence
+bun staging:sequence
 ```
 
 ```sh
 # Build app in production mode.
-pnpm prod:sequence
+bun prod:sequence
 ```
 
 ## Difference between environments

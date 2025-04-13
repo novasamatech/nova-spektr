@@ -6,7 +6,7 @@ sidebar:
 import { Icon } from '@astrojs/starlight/components'
 import packageJson from '../../../../package.json'
 
-## Prerequirements
+## Pre-requirements
 
 <p>
   <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -18,7 +18,7 @@ import packageJson from '../../../../package.json'
   </span>
 
   <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-    <Icon name='pnpm'/><span>pnpm: **{packageJson.engines.pnpm}**</span>
+    <Icon name='bun'/><span>bun: **{packageJson.engines.bun}**</span>
   </span>
 </p>
 
@@ -26,78 +26,78 @@ import packageJson from '../../../../package.json'
 
 ```sh
 # Setup dev environment
-pnpm install
+bun install
 ```
 
 ## Development
 
 ```sh
 # Start Electron app in dev mode. You can also access app with browser
-pnpm start
+bun start
 ```
 
 ```sh
 # Start renderer without Electron (not recommended)
-pnpm start:renderer
+bun start:renderer
 ```
 
 ### Testing
 
 ```sh
 # Run unit tests for renderer
-pnpm test
+bun test
 ```
 
 ```sh
 # Watch unit tests with vite ui plugin
-pnpm test:ui
+bun test:ui
 ```
 
 ```sh
 # Collect coverage from unit tests
-pnpm test:coverage
+bun test:coverage
 ```
 
 ```sh
 # Run e2e tests
-pnpm test:system
+bun test:system
 ```
 
 ### Linting
 
 ```sh
 # Run linter
-pnpm lint
+bun lint
 ```
 
 ```sh
 # Run formatter
-pnpm fmt
+bun fmt
 ```
 
 ```sh
 # Run linter and formatter with autofix
-pnpm lint:fix
+bun lint:fix
 ```
 
 ```sh
 # Run typescript typechecker
-pnpm types
+bun types
 ```
 
 ## Building
 
 ```sh
 # Start Electron and prebuild app in staging mode. You can also access app with browser
-pnpm preview
+bun preview
 ```
 
 ```sh
 # Build app in staging mode
-pnpm staging:sequence
+bun staging:sequence
 ```
 
 ```sh
 # Build app in production mode
-pnpm prod:sequence
+bun prod:sequence
 ```

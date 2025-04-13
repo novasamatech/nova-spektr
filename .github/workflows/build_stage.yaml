@@ -21,7 +21,7 @@ jobs:
     if: contains(github.event.label.name, 'internal-build')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
       - name: Get version from package.json
@@ -73,7 +73,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
       - name: Download build artifacts
@@ -86,8 +86,8 @@ jobs:
         run: |
           echo "::set-output name=version::$(cat internal_version.txt)"
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Add MacOS certs
         if: startsWith(matrix.os, 'macos')
@@ -109,7 +109,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
-          pnpm staging:sequence
+          bun staging:sequence
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
       - name: Download build artifacts
         uses: actions/download-artifact@v4

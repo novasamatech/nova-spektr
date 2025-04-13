@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -20,11 +20,11 @@ jobs:
           git checkout -b dev origin/dev
           git checkout -
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: 🧪 Run tests with coverage
-        run: pnpm test:coverage-new-files
+        run: bun test:coverage-new-files
 
       - name: Jest coverage comment
         id: coverage-report

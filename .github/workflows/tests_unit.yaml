@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: 🧪 Run tests
-        run: pnpm test
+        run: bun test
 
       - name: 📄 Post results
         if: always()

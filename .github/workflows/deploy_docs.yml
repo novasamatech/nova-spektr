@@ -17,15 +17,15 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Build docs
         run: |
-          pnpm docs:build
+          bun docs:build
 
       - name: 🤌 Upload to s3
         uses: ./.github/workflows/upload-to-s3

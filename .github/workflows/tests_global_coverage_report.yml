@@ -23,13 +23,14 @@ jobs:
     name: Update Coverage on Readme
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: 🏃🏻‍♀️Checkout
+        uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Run Tests
-        run: pnpm test:coverage
+        run: bun test:coverage
 
       - name: Jest coverage comment
         id: coverageComment

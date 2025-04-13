@@ -1,7 +1,7 @@
 src/renderer/shared/i18n/locales/*.json
 node_modules
 package.json
-pnpm-lock.yaml
+bun.lock
 coverage
 release
 .swc

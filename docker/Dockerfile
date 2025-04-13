@@ -1,12 +1,11 @@
-FROM node:20
+FROM oven/bun:1.2
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json bun.lock ./
 
-RUN npm install -g pnpm
-RUN pnpm install
+RUN bun install --frozen-lockfile
 
 COPY . .
 
-CMD [ "pnpm", "start:renderer", "--host", "0.0.0.0" ]
+CMD ["bun", "run", "start:renderer", "--host", "0.0.0.0"]

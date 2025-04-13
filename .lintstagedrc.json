@@ -1,4 +1,4 @@
 {
-  "src/**/*.{ts,tsx}": "pnpm types:files globals.d.ts vite-env.d.ts src/main/preload.ts",
-  "*.{js,ts,tsx}": ["pnpm fmt:generic --check","pnpm lint:generic"]
+  "src/**/*.{ts,tsx}": "bun types:files globals.d.ts vite-env.d.ts src/main/preload.ts",
+  "*.{js,ts,tsx}": ["bun fmt:generic --check","bun lint:generic"]
 }

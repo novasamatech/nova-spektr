@@ -34,9 +34,11 @@ jobs:
   system-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🏃🏻‍♀️Checkout
+        uses: actions/checkout@v4
+
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: ⚙️ Install test dependencies
         uses: ./.github/workflows/install-test

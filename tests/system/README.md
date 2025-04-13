@@ -10,31 +10,31 @@ Follow these steps to run the system tests without Docker:
 1. Install the project dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 2. Install the required browsers:
 
 ```bash
-pnpm run pretest:system
+bun run pretest:system
 ```
 
 3. Start the application:
 
 ```bash
-pnpm run start:renderer
+bun run start:renderer
 ```
 
 4. Run the system tests:
 
 ```bash
-pnpm run test:system
+bun run test:system
 ```
 
 5. To view the test results, use:
 
 ```bash
-pnpm exec playwright show-report
+bun exec playwright show-report
 ```
 
 You can also run the tests in UI mode or test generation mode:
@@ -42,13 +42,13 @@ You can also run the tests in UI mode or test generation mode:
 - For UI mode:
 
 ```bash
-pnpm test:system:ui-mod
+bun test:system:ui-mod
 ```
 
 - For test generation mode:
 
 ```bash
-pnpm test:system-generator
+bun test:system-generator
 ```
 
 ## Running with docker
@@ -64,7 +64,7 @@ docker-compose up -d --build
 2. Run the system tests:
 
 ```bash
-pnpm run test:system
+bun run test:system
 ```
 
 Future Improvements

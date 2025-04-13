@@ -27,10 +27,10 @@ To contribute code to the project, please follow these steps:
 
 1. Fork the repository
 2. Clone your forked repository
-3. Install the development dependencies with `pnpm install`
+3. Install the development dependencies with `bun install`
 4. Make your changes on a new branch, preferably with a name that describes the changes you are making
-5. Run the tests with `pnpm test` to make sure that your changes did not introduce any regressions
-6. Test your changes. Use `pnpm start` for running the application
+5. Run the tests with `bun test` to make sure that your changes did not introduce any regressions
+6. Test your changes. Use `bun start` for running the application
 7. Push your changes to your forked repository
 8. Open a pull request against the dev branch of the Nova Spektr repository
 9. Wait for feedback from the maintainers

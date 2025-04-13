@@ -12,17 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: 🏃🏻‍♀️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
-        uses: ./.github/workflows/install-pnpm
+      - name: 🥟 Use Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: 🔪 Check by typescript
-        run: pnpm types
+        run: bun types
 
       - name: 🤞 Check by formatter
-        run: pnpm fmt:check
+        run: bun fmt:check
 
       - name: 📝 Check by linter
-        run: TIMING=1 pnpm lint
+        run: TIMING=1 bun lint
