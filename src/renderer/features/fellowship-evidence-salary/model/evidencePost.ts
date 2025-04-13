@@ -49,6 +49,7 @@ const $coreTx = combine(
 );
 
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+  $active: flow.status,
   $api,
   $activeWallet: $wallet,
   $wallets,
