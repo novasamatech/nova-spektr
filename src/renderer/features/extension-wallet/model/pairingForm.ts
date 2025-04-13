@@ -10,7 +10,12 @@ import { type AnyAccountDraft } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
-import { type ExtensionAccount, type ExtensionType } from '../types';
+import {
+  type ExtensionAccount,
+  type ExtensionChainAccount,
+  type ExtensionType,
+  type ExtensionUniversalAccount,
+} from '../types';
 
 import { wallets } from './wallets';
 
@@ -18,6 +23,7 @@ type Step = 'idle' | 'pairing' | 'select' | 'rejected' | 'success';
 
 type ConnectedAccount = WalletAccount & {
   type: 'sr25519' | 'ed25519' | 'ecdsa' | 'ethereum';
+  genesisHash?: `0x${string}` | '';
 };
 
 type AccountDraft = AnyAccountDraft<ExtensionAccount>;
@@ -57,17 +63,32 @@ const WalletTypeFromExtension = (extension: ExtensionType) => {
 const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType) => {
   if (nullable(extensionType)) return [];
 
-  return accounts.map<AccountDraft>(({ address, type, name }) => {
-    return {
+  return accounts.map<AccountDraft>(({ address, type, name, genesisHash }) => {
+    const isChainAccount = !!genesisHash;
+
+    const baseAccount = {
       walletId: 0,
-      accountType: 'extension',
+      accountType: 'extension' as const,
       extension: extensionType,
       accountId: toAccountId(address),
       cryptoType: type ? (cryptoTypeMap[type] ?? CryptoType.SR25519) : CryptoType.SR25519,
       name: name ?? toShortAddress(address),
-      type: 'universal',
+      type: isChainAccount ? 'chain' : 'universal',
       signingType: SigningType.EXTENSION,
     };
+
+    if (isChainAccount) {
+      return {
+        ...baseAccount,
+        type: 'chain',
+        chainId: genesisHash,
+      } satisfies AnyAccountDraft<ExtensionChainAccount>;
+    }
+
+    return {
+      ...baseAccount,
+      type: 'universal',
+    } satisfies AnyAccountDraft<ExtensionUniversalAccount>;
   });
 });
 
