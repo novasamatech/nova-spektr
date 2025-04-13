@@ -12,7 +12,7 @@ import { nullable } from '@/shared/lib/utils';
  *
  * @returns {Object}
  */
-export function createWsPapiProvider(...args: Parameters<typeof createUniversalProvider>): WsJsonRpcProvider {
+export function createWsPapi(...args: Parameters<typeof createUniversalProvider>): WsJsonRpcProvider {
   const provider = createUniversalProvider(...args);
 
   const send = (message: string) => {
