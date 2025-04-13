@@ -1,11 +1,19 @@
+import mitt, { type Emitter } from 'mitt';
 import { type PolkadotClient, createClient } from 'polkadot-api';
-import { WsEvent, type WsJsonRpcProvider, getWsProvider } from 'polkadot-api/ws-provider/web';
+import { type WsEvent, type WsJsonRpcProvider, getWsProvider } from 'polkadot-api/ws-provider/web';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { CONFIG } from '../lib/constants';
 import { type ChainApi } from '../lib/types';
+
+type RegistryEvents = {
+  status: {
+    chainId: ChainId;
+    type: WsEvent;
+  };
+};
 
 class ChainRegistry {
   // TODO: support Light Clients in future
@@ -17,8 +25,12 @@ class ChainRegistry {
     }
   > = new Map();
 
+  #subscribers: Map<ChainId, VoidFunction[]> = new Map();
+
   #chainsList: Chain[];
   #chainsMap: Map<ChainId, Chain>;
+
+  #events: Emitter<RegistryEvents> = mitt();
 
   constructor(chains: Chain[]) {
     this.#chainsList = chains;
@@ -39,48 +51,18 @@ class ChainRegistry {
     return CONFIG[chainId](connector.client);
   }
 
-  connect(
-    chainId: ChainId,
-    endpoints: string[],
-    handlers?: {
-      connecting: VoidFunction;
-      connected: VoidFunction;
-      error: VoidFunction;
-      closed: VoidFunction;
-    },
-  ) {
+  connect(chainId: ChainId, endpoints: string[]) {
     if (this.#storage.has(chainId)) {
-      throw new Error(`Provider for ${chainId} already exist, use switch to change rpc node`);
+      throw new Error(`Connection for ${chainId} already exist`);
     }
 
     const provider = getWsProvider({
       endpoints,
-      onStatusChanged: status => {
-        if (nullable(handlers)) return;
-
-        const fn = {
-          [WsEvent.CONNECTING]: handlers.connecting,
-          [WsEvent.CONNECTED]: handlers.connected,
-          [WsEvent.ERROR]: handlers.error,
-          [WsEvent.CLOSE]: handlers.closed,
-        };
-
-        fn[status.type]();
-      },
+      onStatusChanged: ({ type }) => this.#events.emit('status', { chainId, type }),
     });
 
     this.#storage.set(chainId, { provider, client: createClient(provider) });
   }
-
-  // switch(chainId: ChainId, endpoints: string[]) {
-  //   if (!this.#providers.has(chainId)) {
-  //     throw new Error(`Provider for ${chainId} does not exist, use connect first`);
-  //   }
-  //
-  //   if (!this.#providers.has(chainId)) {
-  //     throw new Error(`Provider for ${chainId} does not exist, use connect first`);
-  //   }
-  // }
 
   disconnect(chainId: ChainId) {
     const connector = this.#storage.get(chainId);
@@ -90,7 +72,33 @@ class ChainRegistry {
     }
 
     connector.client.destroy();
+
     this.#storage.delete(chainId);
+    this.#subscribers.delete(chainId);
+  }
+
+  on<K extends keyof RegistryEvents>(chainId: ChainId, key: K, cb: (value: RegistryEvents[K]) => void) {
+    this.#events.on(key, cb);
+    const unsub = () => this.#events.off(key, cb);
+
+    const subscriber = this.#subscribers.get(chainId);
+
+    if (nullable(subscriber)) {
+      this.#subscribers.set(chainId, [unsub]);
+    } else {
+      subscriber.push(unsub);
+    }
+  }
+
+  off<K extends keyof RegistryEvents>(chainId: ChainId, key: K, listener: VoidFunction) {
+    const subscriber = this.#subscribers.get(chainId);
+
+    if (nullable(subscriber)) {
+      throw new Error("Doesn't contain this event listener");
+    }
+
+    this.#events.off(key, listener);
+    subscriber.filter(fn => fn !== listener);
   }
 
   get chainsMap() {
