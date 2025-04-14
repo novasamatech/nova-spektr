@@ -23,6 +23,9 @@ import { type WatchOnlyAssetsPage } from '../assetsPage/WatchOnlyAssetsPage';
 
 import { PolkadotVaultLoginPage } from './PolkadotVaultLoginPage';
 import { WatchOnlyOnboardingPage } from './WatchOnlyLoginPage';
+import { PolkadotJSOnboardingPage } from './PolkadotJSLoginPage';
+import { PjsNotificationPage } from '../polkadotJSPage/polkadotJSNotificationPage';
+import { PolkadotJSElements } from '../_elements/PolkadotJSElements';
 
 export class BaseLoginPage extends BasePage<LoginPageElements> {
   public async gotoOnboarding(): Promise<BaseLoginPage> {
@@ -44,6 +47,12 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
     return new PolkadotVaultLoginPage(this.page, this.pageElements);
   }
 
+  public async clickPolkadotJSButton(): Promise<PolkadotJSOnboardingPage> {
+    await this.click(this.pageElements.polkadotJSButton);
+
+    return new PolkadotJSOnboardingPage(this.page, this.pageElements);
+  }
+
   public async createBaseWatchOnlyWallet(): Promise<WatchOnlyAssetsPage> {
     await this.gotoOnboarding();
 
@@ -63,6 +72,13 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
 
   public async createVaultEthWallet(): Promise<VaultAssetsPage> {
     return this.injectWalletInDatabase(vaultAndEthereumWallet, vaultAndEthereumAccount);
+  } 
+  
+  public async createPolkadotJSWallet(): Promise<PjsNotificationPage> {
+    await this.gotoOnboarding();
+    await this.click(this.pageElements.polkadotJSButton);
+
+    return new PjsNotificationPage(this.page, new PolkadotJSElements());
   }
 
   public async importDatabase(dbFileName: string): Promise<VaultAssetsPage> {

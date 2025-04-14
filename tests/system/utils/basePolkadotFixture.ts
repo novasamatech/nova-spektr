@@ -5,7 +5,8 @@ import { fileURLToPath } from 'url';
 
 import { LoginPageElements } from '../pages/_elements/LoginPageElements';
 import { BaseLoginPage } from '../pages/loginPage/BaseLoginPage';
-
+import { PjsNotificationPage } from '../pages/polkadotJSPage/polkadotJSNotificationPage';
+import { PolkadotJSElements } from '../pages/_elements/PolkadotJSElements';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,6 +14,7 @@ type PolkadotFixture = {
   context: BrowserContext;
   page: Page;
   loginPage: BaseLoginPage;
+  pjsNotificationPage: PjsNotificationPage;
 };
 
 export const test = base.extend<PolkadotFixture>({
@@ -52,6 +54,11 @@ export const test = base.extend<PolkadotFixture>({
   loginPage: async ({ page }, use) => {
     const loginPage = new BaseLoginPage(page, new LoginPageElements());
     await use(loginPage);
+  },
+
+  pjsNotificationPage: async ({ page }, use) => {
+    const pjsNotificationPage = new PjsNotificationPage(page, new PolkadotJSElements());
+    await use(pjsNotificationPage);
   },
 });
 

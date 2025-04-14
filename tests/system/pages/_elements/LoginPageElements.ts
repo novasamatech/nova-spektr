@@ -8,6 +8,7 @@ export class LoginPageElements implements BasePageElements {
   accountNameField = TEST_IDS.ONBOARDING.WALLET_NAME_INPUT;
   watchOnlyButton = TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON;
   polkadotVaultButton = TEST_IDS.ONBOARDING.VAULT_BUTTON;
+  polkadotJSButton = TEST_IDS.ONBOARDING.POLKADOT_EXTENSION_BUTTON;
   continueButton = TEST_IDS.COMMON.CONTINUE_BUTTON;
   accessDeniedText = 'text=Access denied!';
   firstInfoButton = TEST_IDS.COMMON.INFO_BUTTON;
