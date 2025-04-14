@@ -9,7 +9,7 @@ import { polkadotChainId } from '@/shared/mocks';
 
 import { __reset, getChainRegistry } from './chainRegistry';
 
-const MockedChains = [{ chainId: polkadotChainId, name: 'Polkadot' }];
+const MockedChains = [{ chainId: polkadotChainId, specName: 'polkadot', name: 'Polkadot' }];
 
 vi.mock('polkadot-api');
 vi.mock('polkadot-api/ws-provider/web');
@@ -123,7 +123,7 @@ describe('ChainRegistry', () => {
     }).toThrow(expect.any(Error));
   });
 
-  it('should return chain API for a connected chain', () => {
+  it('should return general chain API for connected chain', () => {
     const registry = getChainRegistry();
 
     registry.connect(polkadotChainId, ['wss://rpc.polkadot.io']);
