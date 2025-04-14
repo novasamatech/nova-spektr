@@ -12,7 +12,7 @@ interface DexieParams<Data extends { id: any }> {
   onReceive?(data: NoID<Data>[], storage: Data[]): { create: Data[]; update: Data[] };
 }
 
-export interface CreateDexieResource<Data extends { id: any }> extends Resource<NoID<Data>[], Data[]> {
+export interface DexieResource<Data extends { id: any }> extends Resource<NoID<Data>[], Data[]> {
   create: Effect<NoID<Data>[], Data[]>;
   read: Effect<void, Data[]>;
   update: Effect<Data[], Data[]>;
@@ -22,7 +22,7 @@ export interface CreateDexieResource<Data extends { id: any }> extends Resource<
 export const createDexieResource = <Data extends { id: any }>({
   storage,
   onReceive,
-}: DexieParams<Data>): CreateDexieResource<Data> => {
+}: DexieParams<Data>): DexieResource<Data> => {
   const receive = createEvent<NoID<Data>[]>();
   const push = createEvent<Data[]>();
 

@@ -5,7 +5,6 @@ export { series } from './series';
 export { waitFor } from './waitFor';
 export { populated } from './populated';
 export { createBuffer } from './createBuffer';
-export { createResource, createStream, zipStreamWithParams } from './createStream';
-export { createSingletonResource } from './createSingletonResource';
+export { createStream, zipStreamWithParams } from './createStream';
 export { createFlow, useFlow } from './createFlow';
 export { createQueuedEffect } from './createQueuedEffect';

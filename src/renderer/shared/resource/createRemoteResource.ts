@@ -12,7 +12,7 @@ type RemoteParams<Params, Response> = {
   retryDelay?: number;
 };
 
-interface CreateRemoteResource<Params, Response> extends Resource<Response, Response> {
+interface RemoteResource<Params, Response> extends Resource<Response, Response> {
   request(params: Params): Promise<Response>;
 }
 
@@ -21,7 +21,7 @@ export const createRemoteResource = <Params, Response>({
   retryCount,
   retryDelay,
   fn,
-}: RemoteParams<Params, Response>): CreateRemoteResource<Params, Response> => {
+}: RemoteParams<Params, Response>): RemoteResource<Params, Response> => {
   const receive = createEvent<Response>();
   const push = createEvent<Response>();
   const requestFx = createQueuedEffect(fn, { pool, retryCount, retryDelay });
