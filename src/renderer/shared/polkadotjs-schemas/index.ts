@@ -28,6 +28,7 @@ import {
 } from './primitives';
 import {
   complexSchema,
+  enumTypeLooseSchema,
   enumTypeSchema,
   enumValueLooseSchema,
   enumValueSchema,
@@ -67,6 +68,7 @@ export const pjsSchema = {
   object: objectSchema,
   optional: optionalSchema,
   enumType: enumTypeSchema,
+  enumTypeLoose: enumTypeLooseSchema,
   enumValue: enumValueSchema,
   enumValueLoose: enumValueLooseSchema,
   tupleMap: tupleMapSchema,
