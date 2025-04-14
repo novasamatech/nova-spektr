@@ -6,7 +6,7 @@ import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { CONFIG } from '../lib/constants';
-import { type ChainApi } from '../lib/types';
+import { type PolkadotApi } from '../lib/types';
 
 type RegistryEvents = {
   status: {
@@ -17,38 +17,44 @@ type RegistryEvents = {
 
 class ChainRegistry {
   // TODO: support Light Clients in future
-  #storage: Map<
+  readonly #storage = new Map<
     ChainId,
     {
       provider: WsJsonRpcProvider;
       client: PolkadotClient;
     }
-  > = new Map();
+  >();
 
-  #subscribers: Map<ChainId, VoidFunction[]> = new Map();
+  readonly #subscribers = new Map<ChainId, VoidFunction[]>();
 
-  #chainsList: Chain[];
-  #chainsMap: Map<ChainId, Chain>;
+  readonly #chainsList: Chain[];
+  readonly #chainsMap: Map<ChainId, Chain>;
 
-  #events: Emitter<RegistryEvents> = mitt();
+  readonly #events: Emitter<RegistryEvents> = mitt();
 
   constructor(chains: Chain[]) {
     this.#chainsList = chains;
     this.#chainsMap = new Map(chains.map(c => [c.chainId, c]));
   }
 
-  getApi(chainId: ChainId): ChainApi {
+  getApi(chainId: ChainId): PolkadotApi {
     const connector = this.#storage.get(chainId);
 
     if (nullable(connector)) {
       throw new Error(`Provider and Client for ${chainId} is absent, need to establish connect first`);
     }
 
-    if (nullable(CONFIG[chainId])) {
+    const chain = this.#chainsMap.get(chainId);
+    if (nullable(chain)) {
       throw new Error(`Chain ${chainId} is not supported`);
     }
 
-    return CONFIG[chainId](connector.client);
+    const config = CONFIG[chain.specName];
+    if (nullable(config)) {
+      throw new Error(`Chain spec ${chain.specName} is not supported`);
+    }
+
+    return config(chain.chainId, connector.client);
   }
 
   connect(chainId: ChainId, endpoints: string[]) {
