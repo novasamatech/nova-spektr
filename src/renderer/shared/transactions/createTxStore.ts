@@ -11,6 +11,7 @@ import { walletUtils } from '@/entities/wallet';
 import { createFeeCalculator } from './createFeeCalculator';
 
 type Params = {
+  $active?: Store<boolean>;
   $api: Store<ApiPromise | null>;
   $chain: Store<Chain | null>;
   $coreTx: Store<Transaction | null>;
@@ -20,16 +21,27 @@ type Params = {
   $signatory?: Store<AnyAccount | null>;
 };
 
-export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, $account, $signatory }: Params) => {
+export const createTxStore = ({
+  $active = createStore(true),
+  $api,
+  $chain,
+  $coreTx,
+  $activeWallet,
+  $wallets,
+  $account,
+  $signatory,
+}: Params) => {
   const $txWrappers = combine(
     {
+      active: $active,
       wallet: $activeWallet,
       wallets: $wallets,
       chain: $chain,
       account: $account,
       signatory: $signatory ?? createStore(null),
     },
-    ({ wallet, account, wallets, signatory, chain }) => {
+    ({ active, wallet, account, wallets, signatory, chain }) => {
+      if (!active) return [];
       if (nullable(wallet) || nullable(chain) || nullable(account)) return [];
 
       const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
@@ -45,20 +57,25 @@ export const createTxStore = ({ $api, $chain, $coreTx, $activeWallet, $wallets, 
     },
   );
 
-  const $wrappedTx = combine({ api: $api, coreTx: $coreTx, txWrappers: $txWrappers }, ({ api, coreTx, txWrappers }) => {
-    if (nullable(api) || nullable(coreTx)) return null;
+  const $wrappedTx = combine(
+    { active: $active, api: $api, coreTx: $coreTx, txWrappers: $txWrappers },
+    ({ active, api, coreTx, txWrappers }) => {
+      if (!active) return null;
+      if (nullable(api) || nullable(coreTx)) return null;
 
-    return transactionService.getWrappedTransaction({
-      api,
-      transaction: coreTx,
-      txWrappers,
-    });
-  });
+      return transactionService.getWrappedTransaction({
+        api,
+        transaction: coreTx,
+        txWrappers,
+      });
+    },
+  );
 
   const $isMultisig = $txWrappers.map(transactionService.hasMultisig);
   const $isProxy = $txWrappers.map(transactionService.hasProxy);
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+    $active,
     $api,
     $transaction: $wrappedTx.map((x) => x?.wrappedTx ?? null),
   });
