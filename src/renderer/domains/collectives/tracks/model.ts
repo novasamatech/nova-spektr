@@ -1,80 +1,55 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
+import { produce } from 'immer';
 
 import { type ChainId } from '@/shared/core';
-import { createDataSource } from '@/shared/effector';
-import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { referendaPallet } from '@/shared/pallet/referenda';
+import { deriveFromResources } from '@/shared/resource';
+import { mergeNested } from '../_lib/helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { mapCurve } from './mapper';
+import { maxRankResource, tracksResource } from './resource';
 import { type Track } from './types';
 
-type RequestTracksParams = {
+const $list = createStore<CollectivesStruct<Track[]>>({});
+const $maxRank = createStore<CollectivesStruct<number>>({});
+
+const request = createEvent<{
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chainId: ChainId;
-};
+}>();
 
-const request = createEvent<RequestTracksParams>();
-
-const {
-  $: $list,
-  fulfilled,
-  pending,
-  request: requestTracks,
-} = createDataSource<CollectivesStruct<Track[]>, RequestTracksParams, Track[]>({
-  initial: {},
-  cache({ chainId, palletType }, store) {
-    const value = pickNestedValue(store, palletType, chainId);
-
-    return nullable(value) || value.length === 0 ? false : value;
-  },
-  fn({ api, palletType }) {
-    const tracks = referendaPallet.consts.tracks(palletType, api);
-
-    return tracks.map(({ track, info }) => {
-      const minApproval = mapCurve(info.minApproval);
-      const minSupport = mapCurve(info.minSupport);
-
-      return {
-        id: track,
-        name: info.name,
-        maxDeciding: info.maxDeciding,
-        decisionDeposit: info.decisionDeposit,
-        preparePeriod: info.preparePeriod,
-        decisionPeriod: info.decisionPeriod,
-        minEnactmentPeriod: info.minEnactmentPeriod,
-        minApproval,
-        minSupport,
-      };
-    });
-  },
-  map(store, { params, result }) {
-    return setNestedValue(store, params.palletType, params.chainId, result);
+deriveFromResources({
+  store: $list,
+  resources: [tracksResource],
+  map(state, tracks) {
+    return mergeNested(state, tracks, t => t.id);
   },
 });
 
-const { $: $maxRank, request: requestMaxRank } = createDataSource<
-  CollectivesStruct<number>,
-  RequestTracksParams,
-  number
->({
-  initial: {},
-  fn: ({ api, palletType }) => collectiveCorePallet.consts.maxRank(palletType, api),
-  map: (store, { params, result }) => setNestedValue(store, params.palletType, params.chainId, result),
+deriveFromResources({
+  store: $maxRank,
+  resources: [maxRankResource],
+  map(state, { palletType, chainId, maxRank }) {
+    return produce(state, draft => {
+      let pallet = draft[palletType];
+      if (!pallet) {
+        pallet = {};
+        draft[palletType] = pallet;
+      }
+      pallet[chainId] = maxRank;
+    });
+  },
 });
 
 sample({
   clock: request,
-  target: [requestTracks, requestMaxRank],
+  target: [tracksResource.request, maxRankResource.request],
 });
 
 export const track = {
   $list,
   $maxRank,
-  fulfilled,
-  pending,
+  pending: tracksResource.request.pending,
   request,
 };

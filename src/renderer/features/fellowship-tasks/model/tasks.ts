@@ -150,9 +150,8 @@ const $evidenceTasks = combine(
     members: $members,
     evidences: $evidences,
     evidencePopulated: evidence.$populated,
-    operations: $basketOperationsMap,
   },
-  ({ referendums, member, members, evidences, evidencePopulated, operations }) => {
+  ({ referendums, member, members, evidences, evidencePopulated }) => {
     if (!evidencePopulated || nullable(member)) {
       return [];
     }
@@ -169,11 +168,11 @@ const $evidenceTasks = combine(
 
         if (memberService.canVoteForProposal(member, proposer.rank)) {
           return {
-            id: 'evidence_request',
+            id: `evidence_request_${proposer.accountId}`,
             weight: 1,
             group: 'general',
             body: PromotionRetentionVoting,
-            meta: { evidence, transaction: operations['evidence_request'] ?? null, tags: [] },
+            meta: { evidence, transaction: null, tags: [] },
           };
         }
 
@@ -359,5 +358,5 @@ export const tasks = {
   $chainName,
   $basketOperations: $memberBasketOperations,
   $list,
-  pending: or(basketOperations.pending, member.pending, evidenceInfo.pending),
+  pending: or(basketOperations.pending, member.pending),
 };
