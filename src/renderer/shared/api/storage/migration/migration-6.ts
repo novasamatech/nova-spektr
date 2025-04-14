@@ -34,10 +34,10 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
     (w) => w as PolkadotVaultWallet,
   );
 
-  const walletsToAdd: Omit<PolkadotVaultWallet, 'id' | 'accounts'>[] = [];
-  const accountToDelete: string[] = [];
-  const chainAccounts: ChainAccount[] = [];
-  const accountsToRecreate: OldChainAccount[] = [];
+  const walletsToAdd = new Map<AccountId, Omit<PolkadotVaultWallet, 'id' | 'accounts'>>();
+  const accountsToDelete: string[] = [];
+  const accountsToUpdate: ChainAccount[] = [];
+  const accountsToRecreate = new Map<AccountId, OldChainAccount>();
 
   for (const account of accounts) {
     const wallet = walletsMap[account.walletId];
@@ -46,9 +46,10 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
     const typedAccount = account as OldVaultAccount;
 
     if (typedAccount.type === 'universal') {
-      accountToDelete.push(typedAccount.id);
+      accountsToDelete.push(typedAccount.id);
+      if (walletsToAdd.has(typedAccount.accountId)) continue;
 
-      walletsToAdd.push({
+      walletsToAdd.set(typedAccount.accountId, {
         name: typedAccount.name ?? 'Polkadot Vault',
         type: WalletType.POLKADOT_VAULT,
         rootAccountId: typedAccount.accountId,
@@ -56,12 +57,17 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
         isActive: false,
       });
     } else if (typedAccount.derivationPath === '') {
-      accountToDelete.push(typedAccount.id);
+      accountsToDelete.push(typedAccount.id);
     } else if (typedAccount.baseAccountId === wallet.rootAccountId) {
       delete typedAccount.baseAccountId;
-      chainAccounts.push(typedAccount);
+      accountsToUpdate.push(typedAccount);
     } else {
-      accountsToRecreate.push(typedAccount);
+      // Same account can be in another wallet, remove the duplicate
+      if (accountsToRecreate.has(typedAccount.accountId)) {
+        accountsToDelete.push(typedAccount.id);
+      }
+
+      accountsToRecreate.set(typedAccount.accountId, typedAccount);
     }
   }
 
@@ -75,16 +81,19 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
 
   await t.table('wallets').bulkPut(walletToUpdate);
 
-  await t.table('accounts2').bulkDelete(accountToDelete);
-  await t.table('accounts2').bulkPut(chainAccounts);
+  await t.table('accounts2').bulkDelete(accountsToDelete);
+  await t.table('accounts2').bulkPut(accountsToUpdate);
+
   // Remove Chain accounts, need to recreate ID
-  await t.table('accounts2').bulkDelete(accountsToRecreate.map((a) => a.id));
+  const accountsToRecreateValues = Array.from(accountsToRecreate.values());
+  await t.table('accounts2').bulkDelete(accountsToRecreateValues.map((a) => a.id));
 
-  const walletIds = await t.table('wallets').bulkAdd(walletsToAdd, { allKeys: true });
+  const walletsToAddValues = Array.from(walletsToAdd.values());
+  const walletIds = await t.table('wallets').bulkAdd(walletsToAddValues, { allKeys: true });
 
-  const newWalletsMap = new Map(walletsToAdd.map((w, i) => [w.rootAccountId, walletIds[i]]));
+  const newWalletsMap = new Map(walletsToAddValues.map((w, i) => [w.rootAccountId, walletIds[i]]));
 
-  const x = accountsToRecreate.map((a) => {
+  const newAccounts = accountsToRecreateValues.map((a) => {
     const { baseAccountId: _, ...rest } = a;
 
     if (!a.baseAccountId) return rest;
@@ -95,5 +104,5 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
     return { ...rest, id: `${walletId} ${a.accountId} ${a.chainId}`, walletId };
   });
 
-  await t.table('accounts2').bulkAdd(x);
+  await t.table('accounts2').bulkAdd(newAccounts);
 }
