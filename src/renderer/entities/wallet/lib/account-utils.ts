@@ -121,19 +121,14 @@ function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accoun
   return Array.isArray(accounts) && isVaultShardAccount(accounts[0]);
 }
 
-function isChainDependant(account: AnyAccountDraft): boolean {
+function isChainDependant(account: AnyAccountDraft) {
   return accountService.isChainAccount(account);
 }
 
 function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   if (!isChainDependant(account)) return true;
 
-  const chainAccountMatch = isVaultChainAccount(account) && account.chainId === chainId;
-  const shardAccountMatch = isVaultShardAccount(account) && account.chainId === chainId;
-  const wcAccountMatch = isWcAccount(account) && account.chainId === chainId;
-  const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
-
-  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch;
+  return account.chainId === chainId;
 }
 
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
