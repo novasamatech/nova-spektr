@@ -28,7 +28,7 @@ const testAccounts: AnyAccount[] = [
   },
 ];
 
-describe('accounts model', () => {
+describe('accounts store', () => {
   it('should populate accounts', async () => {
     const scope = fork({
       handlers: [[accounts.populate, () => testAccounts]],
