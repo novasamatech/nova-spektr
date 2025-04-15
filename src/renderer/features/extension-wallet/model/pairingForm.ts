@@ -2,7 +2,7 @@ import { type Wallet as ConnectWallet, type WalletAccount } from '@talismn/conne
 import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { CryptoType, SigningType, WalletType } from '@/shared/core';
+import { CryptoType, type HexString, SigningType, WalletType } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
@@ -23,7 +23,7 @@ type Step = 'idle' | 'pairing' | 'select' | 'rejected' | 'success';
 
 type ConnectedAccount = WalletAccount & {
   type: 'sr25519' | 'ed25519' | 'ecdsa' | 'ethereum';
-  genesisHash?: `0x${string}` | '';
+  genesisHash?: HexString;
 };
 
 type AccountDraft = AnyAccountDraft<ExtensionAccount>;
