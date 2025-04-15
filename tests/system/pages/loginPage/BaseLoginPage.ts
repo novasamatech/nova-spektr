@@ -76,8 +76,7 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
   
   public async createPolkadotJSWallet(): Promise<PjsNotificationPage> {
     await this.gotoOnboarding();
-    await this.click(this.pageElements.polkadotJSButton);
-
+    await this.clickPolkadotJSButton();
     return new PjsNotificationPage(this.page, new PolkadotJSElements());
   }
 
