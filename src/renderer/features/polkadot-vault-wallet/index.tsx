@@ -23,21 +23,21 @@ export const polkadotVaultWalletFeature = createFeature({
 accountSDK(polkadotVaultWalletFeature, {
   actionPermission({ account }) {
     return (
-      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isBaseAccount(account) ||
       accountUtils.isVaultChainAccount(account) ||
       accountUtils.isVaultShardAccount(account)
     );
   },
   availableOnChain({ account }) {
     return (
-      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isBaseAccount(account) ||
       accountUtils.isVaultChainAccount(account) ||
       accountUtils.isVaultShardAccount(account)
     );
   },
   canSignMultipleTransactions({ account }) {
     return (
-      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isBaseAccount(account) ||
       accountUtils.isVaultChainAccount(account) ||
       accountUtils.isVaultShardAccount(account)
     );

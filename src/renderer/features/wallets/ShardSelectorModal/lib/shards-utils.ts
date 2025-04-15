@@ -1,7 +1,7 @@
 import {
+  type BaseAccount,
   type Chain,
   type ChainId,
-  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
@@ -21,7 +21,7 @@ export const shardsUtils = {
 };
 
 function getFilteredAccounts(
-  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[],
+  accounts: (BaseAccount | VaultChainAccount | VaultShardAccount)[],
   chains: Record<ChainId, Chain>,
   query = '',
 ): (VaultChainAccount | VaultShardAccount)[] {

@@ -271,7 +271,7 @@ const $destinationAccounts = combine(
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
       if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);

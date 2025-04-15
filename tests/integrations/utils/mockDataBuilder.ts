@@ -33,7 +33,7 @@ export class MockDataBuilder {
     rootId?: number,
     chainAccount?: boolean,
   ) {
-    const account = {
+    return {
       id: this.accountIdCounter++,
       name: `Account ${this.accountIdCounter}`,
       accountId: accountIds[this.accountIdCounter],
@@ -47,11 +47,9 @@ export class MockDataBuilder {
       rootId: rootId,
       chainId: chainAccount ? chainIds[0] : undefined,
     };
-
-    return account;
   }
 
-  generateSignatories(num: number): Array<any> {
+  generateSignatories(num: number): any[] {
     const signatories: any[] = [];
     for (let i = 0; i < num; i++) {
       signatories.push({
