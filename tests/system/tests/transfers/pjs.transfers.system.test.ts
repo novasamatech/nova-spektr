@@ -1,5 +1,5 @@
 import { substrateChains } from 'tests/system/data/chains/chainsList';
-import { test, expect } from '../../utils/basePolkadotFixture';
+import { test, expect } from '../../utils/polkadotExtensionFixture';
 import { getChainByName } from 'tests/system/utils/readConfig';
 import * as allure from 'allure-js-commons';
 const feature = 'Wallets. Polkadot.js extension';
