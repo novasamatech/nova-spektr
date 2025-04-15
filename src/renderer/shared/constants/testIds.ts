@@ -33,9 +33,8 @@ export const TEST_IDS = {
     AMOUNT_INPUT: 'operations-amount-input',
     RECIPIENT_INPUT: 'operations-recipient-input',
     QR_CODE_CONTAINER: 'operations-qr-code-container',
-    QR_CODE_WALLET_CONNECT: 'operations-qr-code-wallet-connect',
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
-    SIGNATORY_SELECTOR_OPTION: 'operations-signatory-selector-option',
+    SIGNATORY_SELECTOR_OPTION: 'Address',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
