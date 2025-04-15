@@ -19,7 +19,8 @@ test.describe('Polkadot.js extension transfer tests', { tag: ['@pjs-transfers', 
     await transferModal.fillRecipient('5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP');
 
     const confirmationModal = await transferModal.openConfirmationModal();
-    const signingModal = await confirmationModal.confirm();
-    await Promise.all([context.waitForEvent('page')]);
+    await confirmationModal.confirm();
+    const newPage = await context.waitForEvent('page');
+    await expect(newPage.url()).toContain('chrome-extension://oilnimemehfpjhcilcpbidmlfbmahckk/notification.html');
   });
 });
