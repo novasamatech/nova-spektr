@@ -80,13 +80,7 @@ const $activeTokens = combine(
           return networkUtils.isMultisigSupported(chains[c.chainId].options);
         }
 
-        return selectedAccounts.some((acc) => {
-          if (accountService.isUniversalAccount(acc)) {
-            return true;
-          }
-
-          return acc.chainId === c.chainId;
-        });
+        return selectedAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
       });
 
       if (filteredChains.length === 0) continue;
