@@ -45,7 +45,6 @@ export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>
   once: true,
   pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
   fn({ api, palletType, chainId }) {
-    console.log('tracks request');
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
     return tracks.map<Track>(({ track, info }) => {

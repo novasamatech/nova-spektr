@@ -1,4 +1,5 @@
 import { createStore } from 'effector';
+import { readonly } from 'patronum';
 
 import { populated } from '@/shared/effector';
 import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
@@ -55,10 +56,10 @@ deriveFromResources({
 });
 
 export const evidence = {
-  $list,
-  $populated,
-  $periods,
-  $summary,
+  $list: readonly($list),
+  $populated: readonly($populated),
+  $periods: readonly($periods),
+  $summary: readonly($summary),
   request: evidenceResource.request,
   requestPeriods: evidencePeriodResource.request,
   requestSummary: evidenceSummaryResource.request,

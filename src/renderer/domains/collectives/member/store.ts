@@ -1,4 +1,5 @@
 import { createStore } from 'effector';
+import { readonly } from 'patronum';
 
 import { deriveFromResources } from '@/shared/resource';
 import { mergeNested } from '../_lib/helpers';
@@ -18,7 +19,7 @@ deriveFromResources({
 });
 
 export const member = {
-  $list,
+  $list: readonly($list),
 
   pending: membersSubscription.pending,
   subscribe: membersSubscription.subscribe,

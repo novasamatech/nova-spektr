@@ -172,7 +172,7 @@ async function mapReferendum({
   }
 }
 
-export async function mapReferendums(
+async function mapReferendums(
   list: { id: ReferendumId; info: ReferendaReferendumInfoConvictionVotingTally | null }[],
   api: ApiPromise,
   pallet: CollectivePalletsType,

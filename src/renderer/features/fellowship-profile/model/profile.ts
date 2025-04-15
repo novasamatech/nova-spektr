@@ -83,7 +83,7 @@ const $activityInfo = combine(
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
 const $pendingReferendums = or($referendumMeta.map(nullable), referendumMeta.pending);
-const $pendingVotes = or($memberVotes.map(nullable), voting.pending);
+const $pendingVotes = or($memberVotes.map(nullable), voting.request.pending);
 
 export const profile = {
   $member,

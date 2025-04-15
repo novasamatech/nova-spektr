@@ -28,7 +28,7 @@ sample({
 
 const $hasPendingRequest = and(
   $votesList.map(v => v.length === 0),
-  voting.pending,
+  voting.request.pending,
 );
 
 export const votesModel = {
