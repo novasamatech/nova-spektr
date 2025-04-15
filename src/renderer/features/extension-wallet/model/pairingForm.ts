@@ -23,7 +23,7 @@ type Step = 'idle' | 'pairing' | 'select' | 'rejected' | 'success';
 
 type ConnectedAccount = WalletAccount & {
   type: 'sr25519' | 'ed25519' | 'ecdsa' | 'ethereum';
-  genesisHash?: HexString;
+  genesisHash?: HexString | '';
 };
 
 type AccountDraft = AnyAccountDraft<ExtensionAccount>;
