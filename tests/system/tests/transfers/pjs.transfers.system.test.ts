@@ -10,7 +10,7 @@ test.describe('Polkadot.js extension transfer tests', { tag: ['@pjs-transfers', 
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
-    const pjsWallet = await loginPage.importDatabase('transfers/spektr-database.json');
+    const pjsWallet = await loginPage.importDatabase('transfers/pjs-base-transfers.json');
     const assetsPage = await pjsWallet.gotoMain();
     const chain = getChainByName(substrateChains, 'Westend');
 
