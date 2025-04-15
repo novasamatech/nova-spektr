@@ -12,10 +12,10 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
-    const proxyWallet = await loginPage.importDatabase('transfers/proxy-base-transfer.json');
+    const proxyWallet = await loginPage.importDatabase('transfers/proxy-transfer-wallet.json');
     const assetsPage = await proxyWallet.gotoMain();
 
-    const chain = getChainByName(substrateChains, 'Novasama Testnet - Governance');
+    const chain = getChainByName(substrateChains, 'Westend');
     const transferModal = await assetsPage.openTransfer(chain, 0);
 
     await transferModal.fillAmount('0.01');
@@ -24,6 +24,6 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const confirmationModal = await transferModal.openConfirmationModal();
     const signingModal = await confirmationModal.confirm();
 
-    await signingModal.checkSignReadyWalletConnect();
+    await signingModal.checkQRCode();
   });
 });
