@@ -61,8 +61,9 @@ const $activeTokens = combine(
     connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,
+    selectedAccounts: walletSelect.$selectedAccounts,
   },
-  ({ connections, chains, tokens, wallet }) => {
+  ({ connections, chains, tokens, wallet, selectedAccounts }) => {
     if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
 
     const isMultisigWallet = walletUtils.isMultisig(wallet);
@@ -75,9 +76,11 @@ const $activeTokens = combine(
         if (nullable(connection)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
         if (nullable(chains[c.chainId])) return false;
-        if (!isMultisigWallet) return true;
+        if (isMultisigWallet) {
+          return networkUtils.isMultisigSupported(chains[c.chainId].options);
+        }
 
-        return networkUtils.isMultisigSupported(chains[c.chainId].options);
+        return selectedAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
       });
 
       if (filteredChains.length === 0) continue;
