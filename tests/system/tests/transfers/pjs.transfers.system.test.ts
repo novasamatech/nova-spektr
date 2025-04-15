@@ -6,7 +6,7 @@ const feature = 'Wallets. Polkadot.js extension';
 const story = 'Transfers';
 
 test.describe('Polkadot.js extension transfer tests', { tag: ['@pjs-transfers', '@regress'] }, () => {
-  test('should successfully install Polkadot.js extension', async ({ loginPage, context }) => {
+  test('Polkadot.js extension can make regular transfer', async ({ loginPage, context }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
