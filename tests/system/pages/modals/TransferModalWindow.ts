@@ -80,7 +80,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async chooseSignatory(): Promise<void> {
     await this.page.getByTestId(TransferModalElements.signatoryLocator).click();
-    await this.page.getByTestId(TransferModalElements.signatoryOptionLocator).click();
+    await this.page.getByTestId(TransferModalElements.signatoryOptionLocator).first().click();
   }
 
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
