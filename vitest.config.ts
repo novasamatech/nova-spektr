@@ -35,7 +35,7 @@ const config: UserConfigFnPromise = async (options) => {
     cacheDir: resolve(folders.root, 'node_modules/.cache/vitest'),
     test: {
       root: folders.root,
-      dir: folders.source,
+      include: ['src/**/*.test.{ts,tsx}', 'tests/integrations/**/*.test.{ts,tsx}'],
       globals: true,
       environmentMatchGlobs: [
         // This list should dissapear over time, simple logic tests shouldn't depend on environment.
