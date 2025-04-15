@@ -18,8 +18,6 @@ export type SubWalletExtensionWallet = Wallet & {
   extension: ExtensionType;
 };
 
-export type ExtensionAccount = ExtensionUniversalAccount | ExtensionChainAccount;
-
 export interface ExtensionUniversalAccount extends UniversalAccount {
   accountType: 'extension';
   extension: ExtensionType;
@@ -29,3 +27,5 @@ export interface ExtensionChainAccount extends ChainAccount {
   accountType: 'extension';
   extension: ExtensionType;
 }
+
+export type ExtensionAccount = ExtensionUniversalAccount | ExtensionChainAccount;
