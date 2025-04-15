@@ -1,8 +1,6 @@
 import {
-  type Account,
   type FlexibleMultisigWallet,
   type ID,
-  type MultiShardWallet,
   type MultisigWallet,
   type NovaWalletWallet,
   type PolkadotVaultGroup,
@@ -15,6 +13,7 @@ import {
   WalletType,
   type WatchOnlyWallet,
 } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 import {
   type PolkadotExtensionWallet,
   type SubWalletExtensionWallet,
@@ -23,7 +22,6 @@ import {
 
 export const walletUtils = {
   isPolkadotVault,
-  isMultiShard,
   isSingleShard,
   isMultisig,
   isFlexibleMultisig,
@@ -52,11 +50,6 @@ export const walletUtils = {
 
 function isPolkadotVault(wallet?: Wallet | null): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
-}
-
-// TODO: remove because MULTISHARD_PARITY_SIGNER is legacy
-function isMultiShard(wallet?: Wallet | null): wallet is MultiShardWallet {
-  return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
 }
 
 function isSingleShard(wallet?: Wallet | null): wallet is SingleShardWallet {
@@ -106,7 +99,7 @@ function isSubWalletExtension(wallet?: Wallet | null): wallet is SubWalletExtens
 // Groups
 
 function isPolkadotVaultGroup(wallet?: Wallet): wallet is PolkadotVaultGroup {
-  return isPolkadotVault(wallet) || isMultiShard(wallet) || isSingleShard(wallet);
+  return isPolkadotVault(wallet) || isSingleShard(wallet);
 }
 
 function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
@@ -119,7 +112,6 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.TALISMAN_EXTENSION,
   WalletType.SUBWALLET_EXTENSION,
   WalletType.SINGLE_PARITY_SIGNER,
-  WalletType.MULTISHARD_PARITY_SIGNER,
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
@@ -140,15 +132,18 @@ function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
 }
 
-function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account[] {
-  return wallets.reduce<Account[]>((acc, wallet) => {
+function getAccountsBy(wallets: Wallet[], accountFn: (account: AnyAccount, wallet: Wallet) => boolean): AnyAccount[] {
+  return wallets.reduce<AnyAccount[]>((acc, wallet) => {
     acc.push(...wallet.accounts.filter((account) => accountFn(account, wallet)));
 
     return acc;
   }, []);
 }
 
-function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {
+function getAccountBy(
+  wallets: Wallet[],
+  accountFn: (account: AnyAccount, wallet: Wallet) => boolean,
+): AnyAccount | null {
   for (const wallet of wallets) {
     const account = wallet.accounts.find((account) => accountFn(account, wallet));
 
@@ -176,7 +171,7 @@ function getWalletFilteredAccounts(
   wallets: Wallet[],
   predicates: {
     walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account, wallet: Wallet) => boolean;
+    accountFn?: (account: AnyAccount, wallet: Wallet) => boolean;
   },
 ): Wallet | null {
   if (!predicates.walletFn && !predicates.accountFn) return null;
@@ -212,7 +207,7 @@ function getWalletsFilteredAccounts(
   wallets: Wallet[],
   predicates: {
     walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account, wallet: Wallet) => boolean;
+    accountFn?: (account: AnyAccount, wallet: Wallet) => boolean;
   },
 ): Wallet[] | null {
   if (!predicates.walletFn && !predicates.accountFn) return null;

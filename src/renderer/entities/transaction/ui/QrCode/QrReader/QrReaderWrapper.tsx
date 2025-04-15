@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ComponentProps, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -21,7 +21,7 @@ const ValidationErrorLabels = {
 };
 
 type ScanResult = HexString | HexString[];
-type QrReaderProps = Omit<React.ComponentProps<typeof QrSignatureReader>, 'onResult'>;
+type QrReaderProps = Omit<ComponentProps<typeof QrSignatureReader>, 'onResult'>;
 
 type Props = {
   countdown: number;

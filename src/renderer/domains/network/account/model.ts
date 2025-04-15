@@ -17,19 +17,17 @@ const $populated = restore(
 const populateFx = createEffect((): Promise<AnyAccount[]> => storageService.accounts2.readAll());
 
 const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<AnyAccount[]> => {
-  return storageService.accounts2
-    .createAll(accounts.map(a => ({ ...a, id: accountService.uniqId(a) })))
-    .then(x => x ?? []);
+  const dbAccounts = await storageService.accounts2.createAll(
+    accounts.map(a => ({ ...a, id: accountService.uniqId(a) })),
+  );
+
+  return dbAccounts ?? [];
 });
 
 const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promise<boolean> => {
   if (accounts.length === 0) return false;
 
-  const drafts = accounts.map(a => {
-    const id = accountService.uniqId(a);
-
-    return { ...a, id };
-  });
+  const drafts = accounts.map(a => ({ ...a, id: accountService.uniqId(a) }));
 
   return storageService.accounts2.updateAll(drafts).then(nonNullable);
 });
@@ -37,17 +35,15 @@ const updateAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promi
 const updateAccount = attach({
   source: $accounts,
   mapParams: (draft: AnyAccountDraft, accounts) => {
-    if (accounts.find(a => accountService.uniqId(a) === accountService.uniqId(draft))) {
-      return [draft];
-    }
+    const match = accounts.some(a => accountService.uniqId(a) === accountService.uniqId(draft));
 
-    return [];
+    return match ? [draft] : [];
   },
   effect: updateAccountsFx,
 });
 
 const deleteAccountsFx = createEffect(async (accounts: AnyAccount[]) => {
-  // TODO set correct id
+  // TODO: set correct id
   await storageService.accounts2.deleteAll(accounts.map(accountService.uniqId));
 
   return accounts;
@@ -117,9 +113,9 @@ export const accounts = {
 
   populate: populateFx,
   createAccounts: createAccountsFx,
-  updateAccount,
   updateAccounts: updateAccountsFx,
   deleteAccounts: deleteAccountsFx,
+  updateAccount,
 
   __test: {
     $list: $accounts,

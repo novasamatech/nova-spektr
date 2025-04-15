@@ -10,7 +10,6 @@ type Props = {
   meta?: ReactNode;
   address: Address | undefined;
   theme: IconTheme;
-  isMultishard?: boolean;
   onClick: () => void;
 };
 
