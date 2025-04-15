@@ -41,7 +41,7 @@ sample({
   fn: (wallet, accounts) => {
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
-    return accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
+    return accounts.filter((account) => !accountUtils.isBaseAccount(account));
   },
   target: $activeShards,
 });
@@ -57,7 +57,7 @@ sample({
       return wallet?.accounts;
     }
 
-    return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
+    return wallet.accounts.filter((account) => !accountUtils.isBaseAccount(account));
   },
   target: $activeShards,
 });

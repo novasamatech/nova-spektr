@@ -28,7 +28,7 @@ export { AccountType, KeyType } from './types/account';
 export type {
   Account,
   WatchOnlyAccount,
-  VaultBaseAccount,
+  BaseAccount,
   VaultChainAccount,
   MultisigAccount,
   WcAccount,

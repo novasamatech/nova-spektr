@@ -8,6 +8,7 @@ import { spread } from 'patronum';
 import { proxyService } from '@/shared/api/proxy';
 import {
   type Address,
+  type BaseAccount,
   type Chain,
   type MultisigTxWrapper,
   type ProxiedAccount,
@@ -15,7 +16,6 @@ import {
   type ProxyType,
   type Transaction,
   TransactionType,
-  type VaultBaseAccount,
   type Wallet,
 } from '@/shared/core';
 import {
@@ -117,7 +117,7 @@ const $proxyForm = createForm<FormParams>({
       ],
     },
     account: {
-      init: {} as VaultBaseAccount,
+      init: {} as BaseAccount,
       rules: [
         {
           name: 'notEnoughTokens',
@@ -222,7 +222,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
+        const isBase = accountUtils.isBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
@@ -281,7 +281,7 @@ const $proxyChains = combine(
 
     return proxyChains.filter((chain) => {
       return wallet.accounts.some((account) => {
-        if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
+        if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
         return accountUtils.isChainAndCryptoMatch(account, chain);
       });
@@ -300,7 +300,7 @@ const $proxiedAccounts = combine(
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = wallet.accounts.filter((account) => {
-      if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
+      if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
 
       return accountUtils.isChainAndCryptoMatch(account, chain);
     });
@@ -365,7 +365,7 @@ const $proxyAccounts = combine(
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
       if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);

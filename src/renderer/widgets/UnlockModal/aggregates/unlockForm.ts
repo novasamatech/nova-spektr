@@ -178,7 +178,7 @@ const $shards = combine(
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
-        const isBaseAccount = accountUtils.isVaultBaseAccount(account);
+        const isBaseAccount = accountUtils.isBaseAccount(account);
         const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
         const hasManyAccounts = collection.length > 1;
 
@@ -206,7 +206,7 @@ const $txWrappers = combine(
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
       accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
+        const isBase = accountUtils.isBaseAccount(a);
         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);

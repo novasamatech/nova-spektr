@@ -36,6 +36,7 @@ export const substrateChains = [
   { name: 'Polkadot Bridge Hub' },
   { name: 'Kusama Bridge Hub' },
   { name: 'Polkadot Collectives' },
+  { name: 'Novasama Testnet - Fellowship' },
   { name: 'Polimec' },
   { name: 'Avail' },
   { name: 'Westend' },

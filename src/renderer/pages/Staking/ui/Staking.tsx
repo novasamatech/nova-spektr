@@ -78,7 +78,7 @@ export const Staking = () => {
     activeWallet?.accounts.filter((account, _, collection) => {
       if (!chainId) return false;
 
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
+      const isBaseAccount = accountUtils.isBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
 

@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { ConnectionStatus, type Transaction, type VaultBaseAccount } from '@/shared/core';
+import { type BaseAccount, ConnectionStatus, type Transaction } from '@/shared/core';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -56,7 +56,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: { accountId: '0x00' } as unknown as VaultBaseAccount,
+          account: { accountId: '0x00' } as unknown as BaseAccount,
           delegate: '0x00',
           proxyType: 'Any',
           proxyDeposit: '1',

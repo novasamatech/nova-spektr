@@ -1,11 +1,11 @@
 import {
   AccountType,
+  type BaseAccount,
   ChainType,
   CryptoType,
   type ID,
   KeyType,
   SigningType,
-  type VaultBaseAccount,
   type VaultChainAccount,
   type Wallet,
   WalletType,
@@ -13,7 +13,7 @@ import {
 import { TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 
-const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
+const accounts: (VaultChainAccount | BaseAccount)[] = [
   {
     id: '1',
     walletId: 1,
@@ -23,7 +23,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('1'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies VaultBaseAccount,
+  } satisfies BaseAccount,
   {
     id: '2',
     walletId: 1,
@@ -46,7 +46,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('3'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies VaultBaseAccount,
+  } satisfies BaseAccount,
   {
     type: 'chain',
     id: '4',
@@ -69,7 +69,7 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
     accountId: createAccountId('5'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies VaultBaseAccount,
+  } satisfies BaseAccount,
 ];
 
 function getWallets(activeId: ID): Wallet[] {
@@ -110,7 +110,7 @@ const newWallet = {
   isActive: false,
 };
 
-const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
+const newAccounts: (BaseAccount | VaultChainAccount)[] = [
   {
     id: '4',
     walletId: 3,
@@ -120,7 +120,7 @@ const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
     accountId: createAccountId('4'),
     signingType: SigningType.POLKADOT_VAULT,
     cryptoType: CryptoType.SR25519,
-  } satisfies VaultBaseAccount,
+  } satisfies BaseAccount,
   {
     id: '5',
     walletId: 3,

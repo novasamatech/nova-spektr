@@ -6,8 +6,8 @@ import {
   type Account,
   type Address,
   type Asset,
+  type BaseAccount,
   type Chain,
-  type VaultBaseAccount,
   type VaultShardAccount,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -23,7 +23,7 @@ import { ShardedList } from './ShardedList';
 import { TimeToEra } from './TimeToEra';
 
 type Props = {
-  nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
+  nominators: (NominatorInfo<BaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
   api?: ApiPromise;
   era?: number;

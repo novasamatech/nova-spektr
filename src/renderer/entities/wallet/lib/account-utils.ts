@@ -4,20 +4,22 @@ import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
 import {
+  AccountType,
+  type BaseAccount,
   type Chain,
   type ChainId,
+  CryptoType,
   type ID,
   type MultisigAccount,
   type MultisigThreshold,
   type ProxiedAccount,
-  type VaultBaseAccount,
+  ProxyVariant,
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
@@ -29,7 +31,7 @@ import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isWatchOnlyAccount,
-  isVaultBaseAccount,
+  isBaseAccount,
   isVaultChainAccount,
   isVaultShardAccount,
   isMultisigAccount,
@@ -70,7 +72,7 @@ function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyA
   );
 }
 
-function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {
+function isBaseAccount(account: Partial<AnyAccount>): account is BaseAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.BASE
@@ -164,7 +166,7 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
   const shardsIndexes: Record<string, number> = {};
 
   return accounts.reduce<(VaultChainAccount | VaultShardAccount[])[]>((acc, account) => {
-    if (isVaultBaseAccount(account)) return acc;
+    if (isBaseAccount(account)) return acc;
 
     if (!isVaultShardAccount(account)) {
       // @ts-expect-error TODO fix
@@ -185,15 +187,15 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
   }, []);
 }
 
-function getBaseAccount(accounts: AnyAccount[], walletId?: ID): VaultBaseAccount | undefined {
+function getBaseAccount(accounts: AnyAccount[], walletId?: ID): BaseAccount | undefined {
   return accounts.find((a) => {
     const walletMatch = !walletId || walletId === a.walletId;
 
-    return walletMatch && isVaultBaseAccount(a);
-  }) as VaultBaseAccount;
+    return walletMatch && isBaseAccount(a);
+  }) as BaseAccount;
 }
 
-function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
+function getSignatoryAccounts<T extends BaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
   const accountsMap = keyBy(accounts, 'accountId');
 
   return accountIds.map((id) => accountsMap[id]);
@@ -231,10 +233,10 @@ function isGovernanceProxyType(account: ProxiedAccount): boolean {
  * @deprecated This predicate exists only because both "watch only" and PV
  *   "root" accounts implemented with BaseAccount interface. After introducing
  *   `WatchOnly` account type this check can be reduced to
- *   `!accountUtils.isVaultBaseAccount(account)`.
+ *   `!accountUtils.isBaseAccount(account)`.
  */
 function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
-  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
 }
 
 function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {

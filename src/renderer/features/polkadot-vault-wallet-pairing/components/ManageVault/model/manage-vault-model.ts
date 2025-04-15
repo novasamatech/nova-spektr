@@ -3,11 +3,11 @@ import { attach, combine, createApi, createEvent, createStore, sample } from 'ef
 import { createForm } from 'effector-forms';
 
 import {
+  type BaseAccount,
   type DraftAccount,
   type NoID,
   type PolkadotVaultGroup,
   SigningType,
-  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
@@ -26,7 +26,7 @@ export type Callbacks = {
 type VaultCreateParams = {
   wallet: Omit<NoID<PolkadotVaultGroup>, 'isActive' | 'accounts'>;
   accounts: (
-    | Omit<NoID<VaultBaseAccount>, 'walletId'>
+    | Omit<NoID<BaseAccount>, 'walletId'>
     | Omit<NoID<VaultChainAccount>, 'walletId'>
     | Omit<NoID<VaultShardAccount>, 'walletId'>
   )[];
