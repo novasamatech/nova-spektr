@@ -45,8 +45,21 @@ function canChangeActiveState(member: Member | CoreMember) {
   return isCoreMember(member) && member.rank > 0;
 }
 
+/**
+ * Despite the fact that technically the maximum rank is 9, in real world no one
+ * can achieve it (Gavin's rank is 7).
+ */
 function canPromote(member: Member) {
   return member.rank < 7;
+}
+
+/**
+ * Case when evidence is posted but the referendum has not been created yet.
+ * This check validates the user's ability to vote in this potential
+ * referendum.
+ */
+function canVoteForProposal(member: Member, rank: number) {
+  return member.rank >= rank + 2;
 }
 
 type SetActiveTransactionParams = {
@@ -80,6 +93,7 @@ export const memberService = {
   isCoreMember,
   canChangeActiveState,
   canPromote,
+  canVoteForProposal,
 
   createSetActiveTransaction,
   isSetActiveTransaction,

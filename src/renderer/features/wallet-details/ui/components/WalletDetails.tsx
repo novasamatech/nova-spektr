@@ -3,7 +3,6 @@ import { nullable } from '@/shared/lib/utils';
 import { walletUtils } from '@/entities/wallet';
 import { polkadotExtensionService } from '@/features/extension-wallet';
 import { FlexibleWalletDetails } from '../wallets/FlexibleWalletDetails';
-import { MultishardWalletDetails } from '../wallets/MultishardWalletDetails';
 import { MultisigWalletDetails } from '../wallets/MultisigWalletDetails';
 import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
 import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
@@ -23,10 +22,6 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
 
   if (walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) {
     return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
-  }
-
-  if (walletUtils.isMultiShard(wallet)) {
-    return <MultishardWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isRegularMultisig(wallet)) {

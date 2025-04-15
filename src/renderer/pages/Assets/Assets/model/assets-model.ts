@@ -1,14 +1,16 @@
 import { createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { type Account, type Wallet } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { priceProviderModel } from '@/entities/price';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
-const activeShardsSet = createEvent<Account[]>();
+const activeShardsSet = createEvent<AnyAccount[]>();
 
-const $activeShards = createStore<Account[]>([]);
+const $activeShards = createStore<AnyAccount[]>([]);
 
 sample({
   clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
@@ -35,7 +37,7 @@ sample({
 sample({
   clock: activeShardsSet,
   source: walletModel.$activeWallet,
-  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
+  filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet, accounts) => {
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
 
@@ -46,19 +48,18 @@ sample({
 
 sample({
   clock: walletModel.$activeWallet,
-  filter: (wallet: Wallet | undefined): wallet is Wallet => Boolean(wallet),
+  filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet) => {
-    if (walletUtils.isFlexibleMultisig(wallet)) return wallet.accounts.filter(accountUtils.isProxiedAccount);
-    if (!walletUtils.isPolkadotVault(wallet)) return wallet.accounts;
+    if (walletUtils.isFlexibleMultisig(wallet)) {
+      return wallet.accounts.filter(accountUtils.isProxiedAccount);
+    }
+    if (!walletUtils.isPolkadotVault(wallet)) {
+      return wallet?.accounts;
+    }
 
     return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   },
   target: $activeShards,
-});
-
-sample({
-  clock: $activeShards,
-  target: portfolioModel.events.accountsChanged,
 });
 
 export const assetsModel = {

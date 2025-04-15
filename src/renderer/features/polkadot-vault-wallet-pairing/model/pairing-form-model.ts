@@ -16,7 +16,7 @@ const requestIdentityFx = attach({ effect: identity.request });
 // TODO form should react on actual wallet create flow,
 sample({
   // @ts-expect-error This type error will be addressed when the pairing logic is refactored out of the component
-  clock: [walletModel.events.singleshardCreated, walletModel.events.multishardCreated],
+  clock: walletModel.events.singleshardCreated,
   fn: ({ accounts }) => accounts,
   target: [proxiesModel.findAllProxies, multisigsModel.request],
 });

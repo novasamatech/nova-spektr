@@ -53,6 +53,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.COLLECTIVE_SALARY_INDUCT]: 'unknownMst',
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'unknownMst',
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: 'voteMst',
 };
 
 // TODO remove

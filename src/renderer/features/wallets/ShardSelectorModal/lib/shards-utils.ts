@@ -5,7 +5,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, isStringsMatchQuery, nullable, toAddress } from '@/shared/lib/utils';
+import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
@@ -16,9 +16,7 @@ export const shardsUtils = {
   getFilteredAccounts,
   getChainsMap,
   getStructForVault,
-  getStructForMultishard,
   getVaultChainsCounter,
-  getMultishardChainsCounter,
   getSelectedShards,
 };
 
@@ -79,33 +77,6 @@ function getVaultChainsCounter(
   return root;
 }
 
-function getMultishardChainsCounter(
-  rootAccountId: AccountId,
-  chains: Record<ChainId, Chain>,
-  shards: (VaultChainAccount | VaultShardAccount)[],
-): SelectedStruct {
-  const roots: SelectedStruct = {
-    [rootAccountId]: getChainCounter(chains),
-  };
-
-  roots[rootAccountId].checked = shards.length;
-  roots[rootAccountId].total = shards.length;
-
-  for (const shard of shards) {
-    const root = roots[shard.accountId];
-
-    if (nullable(root)) continue;
-
-    root.checked += 1;
-    root.total += 1;
-    root[shard.chainId].checked += 1;
-    root[shard.chainId].total += 1;
-    root[shard.chainId].accounts[shard.accountId] = true;
-  }
-
-  return roots;
-}
-
 function getChainCounter(chains: Record<ChainId, Chain>) {
   return Object.keys(chains).reduce<any>((acc, chainId) => {
     acc[chainId as ChainId] = {
@@ -156,42 +127,6 @@ function getStructForVault(
   }, []);
 
   return [[rootAccountId, chainsTuples]];
-}
-
-function getStructForMultishard(
-  rootAccountId: AccountId,
-  accounts: AnyAccount[],
-  chainsMap: ChainsMap<AnyAccount, AccountId>,
-): RootTuple[] {
-  const roots: Map<AccountId, ChainTuple[]> = new Map();
-
-  roots.set(rootAccountId, []);
-
-  for (const account of accounts) {
-    if (accountUtils.isVaultChainAccount(account)) {
-      const existingChain = chainsMap[account.chainId];
-      if (existingChain[account.baseAccountId!]) {
-        existingChain[account.baseAccountId!].push(account);
-      } else {
-        chainsMap[account.chainId][account.baseAccountId!] = [account];
-      }
-    }
-  }
-
-  for (const [chainId, rootTuples] of entries(chainsMap)) {
-    const tuples = entries(rootTuples);
-
-    if (tuples.length === 0) continue;
-
-    for (const [baseId, accounts] of tuples) {
-      const chainTuples = roots.get(baseId);
-      if (chainTuples) {
-        chainTuples.push([chainId as ChainId, accounts as never]);
-      }
-    }
-  }
-
-  return [...roots.entries()];
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {

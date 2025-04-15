@@ -45,6 +45,7 @@ const {
         decisionDeposit: info.decisionDeposit,
         preparePeriod: info.preparePeriod,
         decisionPeriod: info.decisionPeriod,
+        minEnactmentPeriod: info.minEnactmentPeriod,
         minApproval,
         minSupport,
       };

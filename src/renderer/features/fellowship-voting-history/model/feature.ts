@@ -5,7 +5,7 @@ import { createFeature } from '@/shared/feature';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
 
-export const votingHistoryFeatureStatus = createFeature({
+export const fellowshipVotingHistoryFeature = createFeature({
   name: 'fellowship/voting history',
   enable: $features.map(({ fellowship }) => fellowship),
   input: fellowshipNetwork.$network,
@@ -23,5 +23,5 @@ export const votingHistoryFeatureStatus = createFeature({
 sample({
   clock: fellowshipNetwork.$isConnected,
   filter: fellowshipNetwork.$isConnected,
-  target: votingHistoryFeatureStatus.restore,
+  target: fellowshipVotingHistoryFeature.restore,
 });
