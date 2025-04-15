@@ -22,7 +22,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type AnyAccountDraft, accountService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
 import { walletUtils } from './wallet-utils';
@@ -37,7 +37,6 @@ export const accountUtils = {
   isProxiedAccount,
   isPureProxiedAccount,
 
-  isChainDependant,
   isChainIdMatch,
   isChainAndCryptoMatch,
   isAccountWithShards,
@@ -121,23 +120,16 @@ function isAccountWithShards(accounts: AnyAccount | VaultShardAccount[]): accoun
   return Array.isArray(accounts) && isVaultShardAccount(accounts[0]);
 }
 
-function isChainDependant(account: AnyAccountDraft): boolean {
-  return accountService.isChainAccount(account);
-}
-
 function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
-  if (!isChainDependant(account)) return true;
+  if (!accountService.isChainAccount(account)) return true;
 
-  const chainAccountMatch = isVaultChainAccount(account) && account.chainId === chainId;
-  const shardAccountMatch = isVaultShardAccount(account) && account.chainId === chainId;
-  const wcAccountMatch = isWcAccount(account) && account.chainId === chainId;
-  const proxiedAccountMatch = isProxiedAccount(account) && account.chainId === chainId;
-
-  return chainAccountMatch || wcAccountMatch || shardAccountMatch || proxiedAccountMatch;
+  return account.chainId === chainId;
 }
 
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
-  return isChainDependant(account) ? isChainIdMatch(account, chain.chainId) : isCryptoTypeMatch(account, chain);
+  return accountService.isChainAccount(account)
+    ? isChainIdMatch(account, chain.chainId)
+    : isCryptoTypeMatch(account, chain);
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {

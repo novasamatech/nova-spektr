@@ -4,7 +4,7 @@ import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
-import { accountService } from '@/domains/network';
+import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
@@ -21,12 +21,15 @@ import { type PolkadotExtensionWallet, type SubWalletExtensionWallet, type Talis
 export { extensionWalletFeature, walletActionsSlot, polkadotExtensionService };
 export type { PolkadotExtensionWallet, TalismanExtensionWallet, SubWalletExtensionWallet };
 
-extensionWalletFeature.inject(accountService.accountAvailabilityOnChainAnyOf, ({ account }) => {
-  return polkadotExtensionService.isExtensionAccount(account);
-});
-
-extensionWalletFeature.inject(accountService.accountActionPermissionAnyOf, ({ account }) => {
-  return polkadotExtensionService.isExtensionAccount(account);
+accountSDK(extensionWalletFeature, {
+  availableOnChain: ({ account }) => {
+    return polkadotExtensionService.isExtensionAccount(account);
+  },
+  actionPermission: ({ account }) => {
+    return polkadotExtensionService.isExtensionAccount(account);
+  },
+  canSignMultipleTransactions: () => false,
+  collectAccountChildren: () => [],
 });
 
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
