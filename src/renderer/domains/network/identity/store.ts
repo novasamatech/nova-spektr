@@ -4,12 +4,14 @@ import { isEmpty, zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
 import { createDataSource } from '@/shared/effector';
-import { nullable } from '@/shared/lib/utils';
+import { nullable, withTimeout } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
 import { type AccountIdentity, type IdentityMap } from './types';
+
+const LOADING_TIMEOUT = 10_000;
 
 type IdentityData = Record<AccountId, AccountIdentity>;
 type RequestParams = {
@@ -20,7 +22,7 @@ type RequestParams = {
 type InnerRequestParams = {
   accounts: AccountId[];
   chainId: ChainId;
-  api: ApiPromise;
+  api?: ApiPromise;
 };
 
 const {
@@ -48,12 +50,22 @@ const {
     return cachedData;
   },
   async fn({ api, accounts }) {
-    if (accounts.length === 0) return {};
+    if (accounts.length === 0 || nullable(api)) return {};
 
     await api.isReady;
-    const subIdentities = await identityPallet.storage.superOf(api, accounts);
+
+    const subIdentities = await withTimeout(identityPallet.storage.superOf(api, accounts), LOADING_TIMEOUT, null);
+    if (nullable(subIdentities)) return {};
+
     const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
-    const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
+    const parentIdentities = await withTimeout(
+      identityPallet.storage.identityOf(api, parentAccounts),
+      LOADING_TIMEOUT,
+      null,
+    );
+
+    if (nullable(parentIdentities)) return {};
+
     const identities = zipWith(subIdentities, parentIdentities, (sub, parent) => ({ sub, parent }));
 
     const result: IdentityData = {};
@@ -106,9 +118,6 @@ const request = attach({
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
 
     const api = apis[identityChainId];
-    if (nullable(api)) {
-      throw new Error(`ApiPromise for chain ${identityChainId} not found`);
-    }
 
     return { accounts, chainId, api };
   },

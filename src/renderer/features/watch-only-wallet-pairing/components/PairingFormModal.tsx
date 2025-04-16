@@ -153,7 +153,6 @@ export const PairingFormModal = ({ children }: Props) => {
               <EmptyState />
             )}
           </div>
-          ;
         </Box>
       </Modal.Content>
     </Modal>
