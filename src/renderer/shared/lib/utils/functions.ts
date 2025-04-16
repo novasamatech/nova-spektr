@@ -149,3 +149,7 @@ export const promiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
 export function delay(ttl: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ttl));
 }
+
+export function withTimeout<T>(promise: Promise<T>, ttl: number, fallback: T): Promise<T> {
+  return Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ttl))]);
+}
