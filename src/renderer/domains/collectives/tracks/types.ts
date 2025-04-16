@@ -1,10 +1,14 @@
 import { type BN } from '@polkadot/util';
 
+import { type ChainId } from '@/shared/core';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type CollectivePalletsType } from '../_lib/types';
 
 export type Track = {
   id: TrackId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   name: string;
   maxDeciding: BlockHeight;
   decisionDeposit: BN;

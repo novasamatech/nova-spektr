@@ -1,14 +1,14 @@
 import { combine } from 'effector';
 
 import { combineStores } from './_lib/helpers';
-import { evidence } from './evidence/model';
-import { feed } from './feed/model';
-import { member } from './member/model';
-import { referendum } from './referendum/model';
-import { referendumMeta } from './referendumMeta/model';
-import { salary } from './salary/model';
-import { track } from './tracks/model';
-import { voting } from './votingHistory/model';
+import { evidence } from './evidence/store';
+import { feed } from './feed/store';
+import { member } from './member/store';
+import { referendum } from './referendum/store';
+import { referendumMeta } from './referendumMeta/store';
+import { salary } from './salary/store';
+import { track } from './tracks/store';
+import { voting } from './votingHistory/store';
 
 export const $collectiveStore = combine(
   {

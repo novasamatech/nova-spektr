@@ -24,7 +24,8 @@ sample({
   fn({ input, data }) {
     return {
       palletType: input.palletType,
-      chainId: input.chainId,
+      api: input.api,
+      chain: input.chain,
       referendums: data.map(r => r.id),
     };
   },

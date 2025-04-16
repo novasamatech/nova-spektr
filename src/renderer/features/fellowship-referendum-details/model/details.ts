@@ -81,7 +81,7 @@ const $description = combine({ referendum: $referendum, metadata: $referendumMet
   return metadata?.description ?? null;
 });
 
-const $pendingReferendum = and($referendum.map(nullable), referendum.pending);
+const $pendingReferendum = and($referendum.map(nullable), referendum.request.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
 
 const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(

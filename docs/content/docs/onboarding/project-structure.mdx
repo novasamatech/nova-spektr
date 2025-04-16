@@ -52,8 +52,8 @@ Domains encapsulate core business logic while providing a clean, intuitive contr
       - helpers.ts
       - types.ts
     - entity
-      - model.spec.ts
-      - model.ts effector storage with related logic
+      - store.spec.ts
+      - store.ts effector storage with related logic
       - resource.ts (optional) transport + mappings
       - service.spec.ts
       - service.ts stateless service
@@ -77,20 +77,21 @@ import networkDomainEntrypointExample from '@/domains/network/index.ts?raw';
 
 <Code title="domains/network/index.ts" code={networkDomainEntrypointExample} lang="ts" />
 
-### model
+### store
 
-Domain's model **must**:
-- Export single object without `Model` suffix (`accounts`, not `accountsModel`).
-- Provide storage logic.
+Domain's store **must**:
+- Export single object without `Store` or `Model` suffix (`accounts`, not `accountsStore`).
+- Provide stores and methods.
 - Create integrations with data sources.
-- Be isolated, no other models in dependencies.
+- Be isolated, no other stores in dependencies.
 - Be testable.
 
-Model file should export single object with same name as entity.
-Public API should be as simplest as possible and consist mostly from storages and effects. All storages should be readonly.
+Store file should export single object with same name as entity.
+Public API should be as simplest as possible and consist mostly from storages and effects.
+All effector storages should be readonly.
 Exported effects should be named as meaningful actions (with CRUD prefixes or verbs).
 
-```ts title="model.ts" frame="code"
+```ts title="store.ts" frame="code"
 export const accounts = {
   $list: readonly($list),
   $populated: readonly($populated),
@@ -103,7 +104,7 @@ export const accounts = {
   __test: {
     /**
      *  In case of complex internal flows
-     *  some storages/effects can be exposed for mocking in unit tests
+     *  some stores/effects can be exposed for mocking in unit tests
      **/
   },
 }
