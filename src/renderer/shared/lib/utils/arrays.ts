@@ -112,6 +112,10 @@ const createMergeKey = (key: PropertyKey | (PropertyKey | undefined)[]) => {
 
 export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>) => {
   if (a.length === 0) {
+    if (b.length === 0) {
+      return a;
+    }
+
     if (sort) {
       return [...b].sort(sort);
     }

@@ -91,7 +91,7 @@ export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: P
               <SmallTitleText className="truncate">{title}</SmallTitleText>
             </Box>
             {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2em" width="85%" />}
-            <FootnoteText>
+            <FootnoteText as="div">
               {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
               {!evidenceSummary?.summary && !evidenceSummaryPending
                 ? t('fellowship.tasks.task.promotionVoting.noEvidence')

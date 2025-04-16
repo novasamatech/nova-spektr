@@ -48,5 +48,5 @@ export const referendums = {
   $ongoing,
   $completed,
   $metadata,
-  pending: referendum.pending,
+  pending: referendum.request.pending,
 };
