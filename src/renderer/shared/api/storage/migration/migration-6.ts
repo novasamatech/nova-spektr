@@ -113,7 +113,10 @@ async function getWalletsAndAccounts(t: Transaction) {
       toDelete.push(typedAccount.id);
       if (toWalletDraft.has(typedAccount.accountId)) continue;
 
-      toWalletDraft.set(typedAccount.accountId, typedAccount);
+      toWalletDraft.set(typedAccount.accountId, {
+        ...typedAccount,
+        name: `${wallet.name} - ${typedAccount.name}`,
+      });
 
       // Vault Chain account:
     } else if (typedAccount.baseAccountId === wallet.rootAccountId) {
@@ -143,7 +146,7 @@ async function getWalletsAndAccounts(t: Transaction) {
       toRegroup.set(accountId, chainAccounts);
     } else {
       toRegroup.set(accountId, {
-        name: 'Base account',
+        name: baseAccounts[0].name ?? 'Base Account',
         accountId: baseAccounts[0].accountId,
         cryptoType: baseAccounts[0].cryptoType,
         type: 'universal',
