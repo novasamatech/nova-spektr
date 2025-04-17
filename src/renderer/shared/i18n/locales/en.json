@@ -317,7 +317,7 @@
           "title": "Nothing found",
           "description": "“{query}” did not match any event address or identity. Please try searching with another term."
         },
-        "search-placeholder": "Search",
+        "search-placeholder": "Search by event, address or identity",
         "sort": {
           "duration-asc": "Newest",
           "duration-desc": "Oldest",
