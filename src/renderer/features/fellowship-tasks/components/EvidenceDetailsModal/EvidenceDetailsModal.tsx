@@ -1,10 +1,11 @@
-import { type PropsWithChildren, memo, useState } from 'react';
+import { type PropsWithChildren, memo, useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
+import { identities } from '../../model/identity';
 
 import { Content } from './Content';
 import { MemberInfo } from './MemberInfo';
@@ -21,6 +22,10 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
   const { t } = useI18n();
 
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    identities.request({ accountId: evidence.accountId });
+  }, [evidence.accountId]);
 
   const isPromotion = evidence.wish === 'Promotion';
   const isRetention = evidence.wish === 'Retention';

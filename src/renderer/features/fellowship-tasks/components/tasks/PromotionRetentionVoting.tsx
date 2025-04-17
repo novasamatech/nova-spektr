@@ -8,7 +8,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
-import { evidenceInfo } from '../../model/evidence';
+import { evidenceModel } from '../../model/evidence';
 import { EvidenceDetailsModal } from '../EvidenceDetailsModal/EvidenceDetailsModal';
 
 export const evidenceVotingTaskActionSlot = createSlot<{ evidence: Evidence; transaction: Transaction | null }>();
@@ -37,8 +37,8 @@ type Props = {
 export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: Props) => {
   const { t } = useI18n();
 
-  const evidenceSummaryPending = useUnit(evidenceInfo.requestEvidenceSummary.pending);
-  const evidenceSummaries = useUnit(evidenceInfo.$evidencesSummary);
+  const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
+  const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
   const evidenceSummary = evidenceSummaries.find(e => e.accountId === evidence.accountId);
 
   const firstTag = tags.at(0);

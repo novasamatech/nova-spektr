@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Alert, Markdown } from '@/shared/ui';
 import { type Evidence } from '@/domains/collectives';
-import { evidenceInfo } from '../../model/evidence';
+import { evidenceModel } from '../../model/evidence';
 
 import { Card } from './Card';
 
@@ -17,10 +17,10 @@ type Props = {
 export const Content = memo(({ evidence }: Props) => {
   const { t } = useI18n();
 
-  useFlow(evidenceInfo.evidenceContentFlow, { evidence });
+  useFlow(evidenceModel.evidenceContentFlow, { evidence });
 
   const content = useStoreMap({
-    store: evidenceInfo.$evidencesContent,
+    store: evidenceModel.$evidencesContent,
     keys: [evidence],
     fn(content, [evidence]) {
       return content.find(c => c.accountId === evidence.accountId && c.chainId === evidence.chainId);

@@ -103,7 +103,7 @@ sample({
   target: series(requestEvidenceSummaryFx, { parallel: true, skipErrors: true }),
 });
 
-export const evidenceInfo = {
+export const evidenceModel = {
   evidenceContentFlow,
 
   $evidences,

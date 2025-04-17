@@ -29,7 +29,7 @@ import { tasksService } from '../service';
 import { type OperationType, type TaskDescription } from '../types';
 
 import { block } from './block';
-import { evidenceInfo } from './evidence';
+import { evidenceModel } from './evidence';
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberSalary } from './memberSalary';
@@ -144,7 +144,7 @@ const $salaryTasks = combine(
 
 const $evidenceTasks = combine(
   {
-    evidences: evidenceInfo.$evidencesWithoutReferendums,
+    evidences: evidenceModel.$evidencesWithoutReferendums,
     member: $member,
     members: $members,
     evidencePopulated: evidence.$populated,
@@ -183,8 +183,8 @@ const $evidenceReferendumsTasks = combine(
     evidencePopulated: evidence.$populated,
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
-    hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
-    hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
+    hasPromotionEvidence: evidenceModel.$hasPromotionEvidence,
+    hasRetentionEvidence: evidenceModel.$hasRetentionEvidence,
     operations: $basketOperationsMap,
   },
   ({

@@ -8,7 +8,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { evidenceInfo } from '../../model/evidence';
+import { evidenceModel } from '../../model/evidence';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
@@ -38,9 +38,9 @@ export const PromotionRetentionReferendumVoting = memo(
   ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
     const { t } = useI18n();
 
-    const evidenceSummaryPending = useUnit(evidenceInfo.requestEvidenceSummary.pending);
-    const evidenceSummaryPopulated = useUnit(evidenceInfo.$summaryPopulated);
-    const evidenceSummaries = useUnit(evidenceInfo.$evidencesSummary);
+    const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
+    const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
+    const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
 
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
