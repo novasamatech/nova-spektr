@@ -13,10 +13,14 @@ import {
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, type ChainAccount } from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, type ChainAccount } from '@/domains/network';
 
 type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };
 type OldVaultAccount = BaseAccount | OldChainAccount;
+
+type WalletDraft<T = Wallet> = Omit<T, 'id' | 'accounts'>;
+
+type AccountDraft<T extends AnyAccount> = Omit<AnyAccountDraft<T>, 'walletId'>;
 
 /**
  * Convert all Multishard wallets to PolkadotVault or SingleShard wallets
@@ -42,10 +46,12 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
     if (!walletId) return [];
 
     if (Array.isArray(accounts)) {
-      return accounts.map((a) => ({ ...a, walletId, id: `${walletId} ${a.accountId} ${a.chainId}` }) as ChainAccount);
+      return accounts.map((a) => {
+        return { ...a, walletId, id: `${walletId} ${a.accountId} ${a.chainId}` } satisfies ChainAccount;
+      });
     }
 
-    return [{ ...accounts, walletId, id: `${walletId} ${accounts.accountId} universal` } as BaseAccount];
+    return [{ ...accounts, walletId, id: `${walletId} ${accounts.accountId} universal` } satisfies BaseAccount];
   });
 
   await t.table('accounts2').bulkAdd(newAccounts.flat());
@@ -54,7 +60,7 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
 async function updateWallets(t: Transaction) {
   const wallets = await t.table<Wallet>('wallets').toArray();
 
-  const toUpdate: Wallet[] = [];
+  const toUpdate: WalletDraft[] = [];
   const toDelete: number[] = [];
 
   for (const wallet of wallets) {
@@ -63,13 +69,13 @@ async function updateWallets(t: Transaction) {
 
     // @ts-expect-error old types
     if (wallet.type !== 'wallet_mps') {
-      toUpdate.push(cleanWallet as Wallet);
+      toUpdate.push(cleanWallet satisfies WalletDraft);
     } else if ('rootAccountId' in wallet) {
       toUpdate.push({
         ...cleanWallet,
         type: WalletType.POLKADOT_VAULT,
         signingType: SigningType.POLKADOT_VAULT,
-      } as Wallet);
+      } satisfies WalletDraft);
     } else {
       toDelete.push(wallet.id);
     }
@@ -84,19 +90,21 @@ async function getWalletsAndAccounts(t: Transaction) {
   const wallets = await t.table<Wallet>('wallets').toArray();
 
   const walletsMap = new Map(
-    // @ts-expect-error old types
-    wallets.filter((w) => w.type === 'wallet_mps').map((w) => [w.id, w as PolkadotVaultWallet]),
+    wallets
+      // @ts-expect-error old types
+      .filter((w) => w.type === 'wallet_mps')
+      .map((w) => [w.id, w as PolkadotVaultWallet]),
   );
 
   // Drafts that require more details to become PV or SS
   const toWalletDraft = new Map<AccountId, BaseAccount>();
   // Will become new wallets
-  const toWallet = new Map<AccountId, PolkadotVaultWallet | SingleShardWallet>();
+  const toWallet = new Map<AccountId, WalletDraft<PolkadotVaultWallet | SingleShardWallet>>();
 
   // Draft that require more details to become BaseAccount or ChainAccount
   const toRegroupDraft = new Map<AccountId, OldChainAccount[]>();
   // Will be become BaseAccount or ChainAccount
-  const toRegroup = new Map<AccountId, BaseAccount | ChainAccount[]>();
+  const toRegroup = new Map<AccountId, AccountDraft<BaseAccount> | AccountDraft<ChainAccount>[]>();
 
   // Delete "baseAccountId"
   const toUpdate: ChainAccount[] = [];
@@ -152,7 +160,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: 'universal',
         accountType: AccountType.BASE,
         signingType: SigningType.POLKADOT_VAULT,
-      } as BaseAccount);
+      } satisfies AccountDraft<BaseAccount>);
     }
   }
 
@@ -165,7 +173,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         rootAccountId: account.accountId,
         signingType: SigningType.POLKADOT_VAULT,
         isActive: false,
-      } as PolkadotVaultWallet);
+      } satisfies WalletDraft<PolkadotVaultWallet>);
 
       // Singleshard
     } else {
@@ -175,7 +183,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         rootAccountId: account.accountId,
         signingType: SigningType.POLKADOT_VAULT,
         isActive: false,
-      } as SingleShardWallet);
+      } satisfies WalletDraft<SingleShardWallet>);
     }
   }
 

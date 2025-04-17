@@ -20,7 +20,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
@@ -188,11 +188,9 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
 }
 
 function getBaseAccount(accounts: AnyAccount[], walletId?: ID): BaseAccount | undefined {
-  return accounts.find((a) => {
-    const walletMatch = !walletId || walletId === a.walletId;
+  const match = accounts.find((a) => !walletId || walletId === a.walletId);
 
-    return walletMatch && isBaseAccount(a);
-  }) as BaseAccount;
+  return nonNullable(match) && isBaseAccount(match) ? match : undefined;
 }
 
 function getSignatoryAccounts<T extends BaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
