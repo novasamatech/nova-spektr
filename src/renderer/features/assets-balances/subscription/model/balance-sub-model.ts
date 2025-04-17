@@ -6,11 +6,13 @@ import { combineEvents, once, previous, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
-import { isFulfilled } from '@/shared/lib/utils';
+import { isFulfilled, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
 
@@ -220,17 +222,19 @@ sample({
 });
 
 sample({
-  clock: [walletToSubSet, walletModel.$activeWallet],
+  clock: [walletSelect.$selectedWallet.updates, walletToSubSet],
   source: {
     subAccounts: $subAccounts,
-    wallets: walletModel.$wallets,
+    selectedAccounts: walletSelect.$selectedAccounts,
     chains: networkModel.$chains,
+    acccounts: accounts.$list,
   },
-  filter: (_, wallet) => Boolean(wallet),
-  fn: ({ subAccounts, wallets, chains }, wallet) => {
-    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets, chains);
+  filter: ({ selectedAccounts }, wallet) => nonNullable(wallet) && selectedAccounts.length > 0,
+  fn: ({ subAccounts, acccounts, chains, selectedAccounts }) => {
+    const walletId = selectedAccounts.at(0)!.walletId;
+    const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
 
-    return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
+    return balanceSubUtils.formSubAccounts(walletId, accountsToSub, subAccounts, chains);
   },
   target: $subAccounts,
 });
