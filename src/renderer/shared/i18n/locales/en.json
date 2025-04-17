@@ -315,10 +315,10 @@
         "nothing-found": "Nothing found for \"{query}\"",
         "search-placeholder": "Search",
         "sort": {
-          "duration-asc": "Duration asc",
-          "duration-desc": "Duration desc",
-          "name-asc": "Name asc",
-          "name-desc": "Name desc",
+          "duration-asc": "Newest",
+          "duration-desc": "Oldest",
+          "name-asc": "Name: A-Z",
+          "name-desc": "Name: Z-A",
           "placeholder": "Sort by"
         },
         "title": "Events on"
