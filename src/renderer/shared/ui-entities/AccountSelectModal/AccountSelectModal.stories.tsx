@@ -6,7 +6,12 @@ import { createBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/s
 
 import { AccountSelectModal } from './AccountSelectModal';
 
-const accounts = [createBaseAccount('1'), createWcAccount('2'), createBaseAccount('3'), createBaseAccount('4')];
+const accounts = [
+  createBaseAccount('1', { walletId: 1 }),
+  createWcAccount('2'),
+  createBaseAccount('3', { walletId: 2 }),
+  createBaseAccount('4', { walletId: 3 }),
+];
 
 const meta: Meta<typeof AccountSelectModal> = {
   title: 'Design System/entities/AccountSelectModal',

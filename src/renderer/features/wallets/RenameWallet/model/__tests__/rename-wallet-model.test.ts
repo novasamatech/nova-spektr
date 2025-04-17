@@ -2,7 +2,7 @@ import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { AccountType, type BaseAccount } from '@/shared/core';
+import { createBaseAccount } from '@/shared/mocks';
 import * as networkDomain from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { renameWalletModel } from '../rename-wallet-model';
@@ -35,14 +35,12 @@ describe('entities/wallet/model/wallet-model', () => {
     expect(scope.getState(renameWalletModel.$walletForm.$isValid)).toEqual(false);
   });
 
-  test.skip('should updated wallet name after form submit', async () => {
+  test('should updated wallet name after form submit', async () => {
     const newName = 'New wallet name';
     const updatedWallet = {
       ...walletMock.wallet1,
       name: newName,
-      accounts: [
-        { cryptoType: 0, name: 'New wallet name', accountType: AccountType.BASE, type: 'universal', walletId: 1 },
-      ] as BaseAccount[],
+      accounts: [createBaseAccount('1', { walletId: 1, name: 'New wallet name' })],
     };
 
     jest.spyOn(storageService.wallets, 'update').mockResolvedValue(updatedWallet.id);

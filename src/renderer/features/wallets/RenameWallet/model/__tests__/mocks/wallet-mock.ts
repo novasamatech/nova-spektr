@@ -1,10 +1,9 @@
-import { AccountType, type BaseAccount, CryptoType, SigningType, WalletType } from '@/shared/core';
+import { SigningType, WalletType } from '@/shared/core';
+import { createBaseAccount } from '@/shared/mocks';
 
 const wallet1 = {
   id: 1,
-  accounts: [
-    { walletId: 1, cryptoType: CryptoType.SR25519, type: 'universal', accountType: AccountType.BASE },
-  ] as BaseAccount[],
+  accounts: [createBaseAccount('1', { walletId: 1, name: 'New wallet name' })],
   name: 'My first wallet',
   isActive: false,
   type: WalletType.MULTISIG,
@@ -13,9 +12,7 @@ const wallet1 = {
 
 const wallet2 = {
   id: 2,
-  accounts: [
-    { walletId: 2, cryptoType: CryptoType.SR25519, type: 'universal', accountType: AccountType.BASE },
-  ] as BaseAccount[],
+  accounts: [createBaseAccount('2', { walletId: 2, name: 'New wallet name' })],
   name: 'My second wallet',
   isActive: false,
   type: WalletType.WATCH_ONLY,
