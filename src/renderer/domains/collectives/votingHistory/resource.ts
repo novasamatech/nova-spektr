@@ -118,7 +118,6 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
   },
   async fn({ palletType, api, chain, referendums, accounts }) {
     if (referendums.length === 0) return [];
-    console.log('voting', referendums);
 
     if (api) {
       try {
