@@ -1,17 +1,25 @@
-import { type Effect, attach, createEvent, createStore, sample } from 'effector';
+import { type Effect, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { readonly } from 'patronum';
 
 import { createQueuedEffect } from '@/shared/effector';
-import { nonNullable } from '@/shared/lib/utils';
 
 import { type Resource } from './deriveFromResources';
+
+type CacheParams<Params> = {
+  key?(params: Params): string;
+  ttl: number;
+};
+
+export const defaultRemoteCacheKey = (params: unknown) => {
+  return JSON.stringify(params);
+};
 
 type RemoteParams<Params, Response> = {
   fn(params: Params): Response | Promise<Response>;
   pool?(params: Params): string;
+  cache?: CacheParams<Params>;
   retryCount?: number;
   retryDelay?: number;
-  once?: boolean;
 };
 
 interface RemoteResource<Params, Response> extends Resource<Response, Response> {
@@ -20,59 +28,65 @@ interface RemoteResource<Params, Response> extends Resource<Response, Response> 
 
 export const createRemoteResource = <Params, Response>({
   pool = () => '_',
-  once = false,
+  cache,
   retryCount,
   retryDelay,
   fn,
 }: RemoteParams<Params, Response>): RemoteResource<Params, Response> => {
-  const $lastResponses = createStore<Record<string, Response>>({});
-  const $once = createStore(once);
-  const receive = createEvent<Response>();
+  const cached: Record<string, { response: Response; ts: number }> = {};
+
+  const getCacheKey = (params: Params) => {
+    return cache?.key?.(params) ?? defaultRemoteCacheKey(params);
+  };
+
+  const pull = createEvent<Response>();
   const push = createEvent<Response>();
-  const requestFx = createQueuedEffect<Params, Response>(fn, { pool, retryCount, retryDelay });
+  const queuedFx = createQueuedEffect<Params, Response>(fn, { pool, retryCount, retryDelay });
 
-  const wrappedFx = attach({
-    source: $lastResponses,
-    async effect(lastResponses, params: Params) {
-      const key = pool(params);
-      const last = lastResponses[key];
-      if (once && nonNullable(last)) {
-        return last as Response;
+  const requestFx = createEffect(async (params: Params) => {
+    const binded = scopeBind(queuedFx, { safe: true });
+
+    if (cache) {
+      const cacheKey = getCacheKey(params);
+      const cachedValue = cached[cacheKey];
+      if (cachedValue) {
+        if (cachedValue.ts + cache.ttl < Date.now()) {
+          return cachedValue.response;
+        } else {
+          delete cached[cacheKey];
+        }
       }
-      return requestFx(params);
-    },
-  });
+    }
 
-  sample({
-    clock: requestFx.doneData,
-    target: push,
-  });
+    const request = binded(params);
+    const response = await request;
 
-  sample({
-    clock: requestFx.done,
-    source: $lastResponses,
-    filter: $once,
-    fn(last, { params, result }) {
-      const key = pool(params);
-
-      return {
-        ...last,
-        [key]: result,
+    if (cache) {
+      const cacheKey = getCacheKey(params);
+      cached[cacheKey] = {
+        response,
+        ts: Date.now(),
       };
-    },
-    target: $lastResponses,
+    }
+
+    return response;
+  });
+
+  sample({
+    clock: queuedFx.doneData,
+    target: push,
   });
 
   // redirecting data
   sample({
-    clock: receive,
+    clock: pull,
     target: push,
   });
 
   return {
-    receive,
+    pull,
     push: readonly(push),
     // @ts-expect-error weird Awaited type error
-    request: wrappedFx,
+    request: requestFx,
   };
 };

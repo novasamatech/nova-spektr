@@ -14,8 +14,8 @@ interface SubscriptionResource<Params, Data> extends Resource<Data, Data> {
   subscribe: EventCallable<Params>;
   unsubscribe: EventCallable<void>;
   pending: Store<boolean>;
+  receive: Event<{ params: Params; result: Data }>;
   fulfilled: Store<boolean>;
-  callback: Event<{ params: Params; result: Data }>;
 }
 
 type SubscriptionParams<Params, Data> = {
@@ -34,7 +34,7 @@ export const createSubscriptionResource = <Params, Data>({
 }: SubscriptionParams<Params, Data>): SubscriptionResource<Params, Data> => {
   const domain = createDomain({ name: `${name}/subscription` });
 
-  const receive = domain.createEvent<Data>();
+  const pull = domain.createEvent<Data>();
   const push = domain.createEvent<Data>();
 
   const subscribe = domain.createEvent<Params>({ name: 'subscribe' });
@@ -76,7 +76,7 @@ export const createSubscriptionResource = <Params, Data>({
 
   // redirecting data
   sample({
-    clock: receive,
+    clock: pull,
     target: push,
   });
 
@@ -178,10 +178,10 @@ export const createSubscriptionResource = <Params, Data>({
   });
 
   return {
-    receive,
+    pull,
     push: readonly(push),
 
-    callback,
+    receive: callback,
     subscribed: readonly($subscribed),
     subscribe,
     unsubscribe,

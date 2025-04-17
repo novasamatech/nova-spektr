@@ -13,8 +13,13 @@ const $list = createStore<CollectivesStruct<Member[]>>({});
 deriveFromResources({
   store: $list,
   resources: [membersSubscription],
-  map(store, response) {
-    return mergeNested(store, response, m => m.accountId);
+  map(store, members) {
+    return mergeNested(
+      store,
+      members,
+      m => m.accountId,
+      (a, b) => b.rank - a.rank,
+    );
   },
 });
 
@@ -24,5 +29,6 @@ export const member = {
   pending: membersSubscription.pending,
   subscribe: membersSubscription.subscribe,
   unsubscribe: membersSubscription.unsubscribe,
+  receive: membersSubscription.receive,
   fulfilled: membersSubscription.fulfilled,
 };

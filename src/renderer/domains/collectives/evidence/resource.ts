@@ -2,36 +2,73 @@ import { type ApiPromise } from '@polkadot/api';
 import { z } from 'zod';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createRemoteResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { evidenceService } from './service';
-import { type Evidence, type EvidencePeriods, type EvidenceSummary } from './types';
+import { type Evidence, type EvidenceContent, type EvidencePeriods, type EvidenceSummary } from './types';
 
 type EvidenceRequestParams = {
+  palletType: CollectivePalletsType;
+  api: ApiPromise;
+  chainId: ChainId;
+  accounts: AccountId[];
+};
+
+export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evidence[]>({
+  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+  cache: {
+    key: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
+    ttl: 30 * 1000,
+  },
+  async fn({ palletType, api, chainId, accounts }) {
+    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, accounts);
+    return evidences
+      .map(({ account, evidence }) => {
+        if (nullable(evidence)) return null;
+
+        return {
+          pallet: palletType,
+          chainId,
+          wish: evidence.wish,
+          accountId: account,
+          hash: evidence.value,
+        };
+      })
+      .filter(nonNullable);
+  },
+});
+
+type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chainId: ChainId;
   accountId: AccountId;
 };
 
-export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evidence | null>({
+export const evidenceContentResource = createRemoteResource<EvidenceContentRequestParams, EvidenceContent | null>({
   pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+  cache: {
+    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+    ttl: 30 * 1000,
+  },
   async fn({ palletType, api, chainId, accountId }) {
-    const evidence = await collectiveCorePallet.storage.memberEvidence(palletType, api, accountId);
+    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, [accountId]);
+    const evidence = evidences.at(0);
 
-    if (evidence) {
-      const content = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.value)).then(r => r.text());
+    if (evidence?.evidence) {
+      const content = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.evidence.value)).then(r => r.text());
 
       return {
         pallet: palletType,
         chainId,
-        wish: evidence.wish,
+        wish: evidence.evidence.wish,
         accountId,
-        cid: evidenceService.getCidByEvidence(evidence.value),
-        hash: evidence.value,
+        cid: evidenceService.getCidByEvidence(evidence.evidence.value),
+        hash: evidence.evidence.value,
         content,
       };
     }
@@ -48,6 +85,10 @@ type PeriodsRequestParams = {
 
 export const evidencePeriodResource = createRemoteResource<PeriodsRequestParams, EvidencePeriods>({
   pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+    ttl: 60 * 1000,
+  },
   async fn({ palletType, api, chain }) {
     const params = await collectiveCorePallet.storage.params(palletType, api);
 
@@ -61,39 +102,11 @@ export const evidencePeriodResource = createRemoteResource<PeriodsRequestParams,
   },
 });
 
-function fetchEvidenceSummary(
-  evidence: HexString,
-  chainId: ChainId,
-  languageIsoCode: string,
-  githubHandle?: string,
-  evidencePeriodStart?: string | null,
-) {
-  const schema = z.object({
-    summary: z.string(),
-    numberOfPullRequests: z.number().nullable(),
-    numberOfMergedPullRequests: z.number().nullable(),
-  });
-
-  const evidenceId = evidenceService.getCidByEvidence(evidence);
-  const url = new URL('/api/v1/evidence-summaries/single', 'https://opengov-backend-dev.novasama-tech.org');
-
-  const request = fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    mode: 'cors',
-    body: JSON.stringify({
-      chainId: chainId.replace(/^0x/, 'x'),
-      evidenceId,
-      languageIsoCode,
-      githubHandle,
-      evidencePeriodStart,
-    }),
-  });
-
-  return request.then(r => r.json()).then(schema.parse);
-}
+const summaryResponseSchema = z.object({
+  summary: z.string(),
+  numberOfPullRequests: z.number().nullable(),
+  numberOfMergedPullRequests: z.number().nullable(),
+});
 
 type EvidenceSummaryRequestParams = {
   palletType: CollectivePalletsType;
@@ -112,8 +125,27 @@ type EvidenceSummaryRequestParams = {
 
 export const evidenceSummaryResource = createRemoteResource<EvidenceSummaryRequestParams, EvidenceSummary>({
   pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+  cache: { ttl: 60 * 1000 },
   async fn({ palletType, accountId, evidence, chainId, githubHandle, evidencePeriodStart }) {
-    const evidenceSummary = await fetchEvidenceSummary(evidence, chainId, 'en', githubHandle, evidencePeriodStart);
+    const evidenceId = evidenceService.getCidByEvidence(evidence);
+    const url = new URL('/api/v1/evidence-summaries/single', 'https://opengov-backend-dev.novasama-tech.org');
+
+    const request = fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      body: JSON.stringify({
+        chainId: chainId.replace(/^0x/, 'x'),
+        evidenceId,
+        languageIsoCode: 'en',
+        githubHandle,
+        evidencePeriodStart,
+      }),
+    });
+
+    const evidenceSummary = await request.then(r => r.json()).then(summaryResponseSchema.parse);
 
     return {
       pallet: palletType,

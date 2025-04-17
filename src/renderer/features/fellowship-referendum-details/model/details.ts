@@ -11,13 +11,13 @@ import { identity } from '@/domains/network';
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowship } from './fellowship';
 
-const requestEvidenceFx = attach({ effect: evidence.request });
+const requestEvidenceFx = attach({ effect: evidence.requestContent });
 
 const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
 
 const $referendumId = flow.state.map(state => state.referendumId);
 
-const $evidences = fellowship.$store.map(store => store?.evidence ?? []);
+const $evidences = fellowship.$store.map(store => store?.evidenceContent ?? []);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 
@@ -113,7 +113,7 @@ export const details = {
   $referendumMeta,
 
   $pendingEvidence: requestEvidenceFx.pending,
-  $pendingProposer: identity.pending,
+  $pendingProposer: identity.request.pending,
   $pendingMeta: or($pendingReferendumMeta, fellowshipReferendumsDetailsFeature.isStarting),
   $pending: or($pendingReferendum, fellowshipReferendumsDetailsFeature.isStarting),
   $fulfilled: and(referendum.fulfilled, fellowshipReferendumsDetailsFeature.isRunning),
