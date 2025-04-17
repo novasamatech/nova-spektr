@@ -313,6 +313,7 @@
     "activityFeed": {
       "activityModal": {
         "nothing-found": {
+          "clear": "Clear search",
           "title": "Nothing found",
           "description": "“{query}” did not match any event address or identity. Please try searching with another term."
         },

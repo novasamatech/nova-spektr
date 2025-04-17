@@ -6,7 +6,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
-import { Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
+import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
@@ -39,6 +39,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
+  const clearSearch = () => setQuery('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
 
   const records = list.map(record => {
@@ -113,14 +114,16 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
-            <div className="flex h-full justify-center">
-              <EmptyList
-                title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
-                message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
-                  query: truncate(query, 5, 5),
-                })}
-              />
-            </div>
+            <EmptyList
+              title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
+              message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
+                query: truncate(query, 5, 5),
+              })}
+            >
+              <Button pallet="primary" variant="text" onClick={clearSearch}>
+                {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
+              </Button>
+            </EmptyList>
           )}
 
           {sortedList.map(record => (
