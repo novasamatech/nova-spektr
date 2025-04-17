@@ -6,7 +6,7 @@ import { combineEvents, once, previous, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
-import { isFulfilled, nonNullable } from '@/shared/lib/utils';
+import { isFulfilled } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -222,14 +222,14 @@ sample({
 });
 
 sample({
-  clock: [walletSelect.$selectedWallet.updates, walletToSubSet],
+  clock: [walletToSubSet, walletSelect.$selectedWallet],
   source: {
     subAccounts: $subAccounts,
     selectedAccounts: walletSelect.$selectedAccounts,
     chains: networkModel.$chains,
     acccounts: accounts.$list,
   },
-  filter: ({ selectedAccounts }, wallet) => nonNullable(wallet) && selectedAccounts.length > 0,
+  filter: ({ selectedAccounts }) => selectedAccounts.length > 0,
   fn: ({ subAccounts, acccounts, chains, selectedAccounts }) => {
     const walletId = selectedAccounts.at(0)!.walletId;
     const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
