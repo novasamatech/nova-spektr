@@ -17,9 +17,11 @@ import { type AnyAccount } from '@/domains/network';
 type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };
 
 describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or SingleShard wallets', () => {
+  const WALLET_NAME = 'Old wallet';
+
   const BASE_ACCOUNT_1 = TEST_ACCOUNTS[0];
   const BASE_ACCOUNT_2 = TEST_ACCOUNTS[1];
-  const WALLET_NAME = 'Old wallet';
+  const TEST_ACCOUNT = TEST_ACCOUNTS[3];
 
   const db = {
     wallets: [] as Wallet[],
@@ -116,14 +118,101 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createBaseAccount('3', { walletId: 1, accountId: BASE_ACCOUNT_1 }),
 
       {
-        ...createVaultChainAccount('4', { walletId: 1, derivationPath: '' }),
+        ...createVaultChainAccount('4', { walletId: 1, derivationPath: '', accountId: BASE_ACCOUNT_1 }),
         baseAccountId: BASE_ACCOUNT_1,
       } as OldChainAccount,
 
       {
-        ...createVaultChainAccount('5', { walletId: 1, derivationPath: '' }),
+        ...createVaultChainAccount('5', { walletId: 1, derivationPath: '', accountId: BASE_ACCOUNT_1 }),
         baseAccountId: BASE_ACCOUNT_1,
       } as OldChainAccount,
+    ];
+
+    const newWallets = [
+      createPolkadotWallet(5000, {
+        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        rootAccountId: BASE_ACCOUNT_1,
+        isActive: false,
+      }),
+    ];
+
+    const newAccounts = [
+      createVaultChainAccount('1', { walletId: 5000, derivationPath: '//dot/1' }),
+      createVaultChainAccount('2', { walletId: 5000, derivationPath: '//dot/2' }),
+    ];
+
+    await migrateMultishardAccounts(transactionMock);
+
+    expect(db.wallets).toEqual(newWallets);
+    expect(db.accounts2).toEqual(newAccounts);
+  });
+
+  it('should convert Pure Multishard to Polkadot Vault (same derivation path)', async () => {
+    db.wallets = [createLegacyMultishardWallet(1, { name: WALLET_NAME })];
+
+    db.accounts2 = [
+      {
+        ...createVaultChainAccount('1', { walletId: 1, derivationPath: '//dot/1', accountId: TEST_ACCOUNT }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+      {
+        ...createVaultChainAccount('2', { walletId: 1, derivationPath: '//dot/1', accountId: TEST_ACCOUNT }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+
+      createBaseAccount('3', { walletId: 1, accountId: BASE_ACCOUNT_1 }),
+    ];
+
+    const newWallets = [
+      createPolkadotWallet(5000, {
+        name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
+        rootAccountId: BASE_ACCOUNT_1,
+        isActive: false,
+      }),
+    ];
+
+    const newAccounts = [
+      createVaultChainAccount('1', {
+        walletId: 5000,
+        derivationPath: '//dot/1',
+        accountId: TEST_ACCOUNT,
+      }),
+    ];
+
+    await migrateMultishardAccounts(transactionMock);
+
+    expect(db.wallets).toEqual(newWallets);
+    expect(db.accounts2).toEqual(newAccounts);
+  });
+
+  it('should convert 2 Pure Multishards to Polkadot Vault (duplicated accounts)', async () => {
+    db.wallets = [
+      createLegacyMultishardWallet(1, { name: WALLET_NAME }),
+      createLegacyMultishardWallet(2, { name: 'Duplicated accounts' }),
+    ];
+
+    db.accounts2 = [
+      {
+        ...createVaultChainAccount('1', { walletId: 1, derivationPath: '//dot/1' }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+      {
+        ...createVaultChainAccount('2', { walletId: 1, derivationPath: '//dot/2' }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+
+      createBaseAccount('3', { walletId: 1, accountId: BASE_ACCOUNT_1 }),
+
+      {
+        ...createVaultChainAccount('4', { walletId: 2, derivationPath: '', accountId: BASE_ACCOUNT_1 }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+      {
+        ...createVaultChainAccount('5', { walletId: 2, derivationPath: '', accountId: BASE_ACCOUNT_1 }),
+        baseAccountId: BASE_ACCOUNT_1,
+      } as OldChainAccount,
+
+      createBaseAccount('6', { walletId: 2, accountId: BASE_ACCOUNT_1 }),
     ];
 
     const newWallets = [
