@@ -539,8 +539,8 @@
           "title": "Review referendum"
         },
         "evidence": {
-          "promotionTitle": "{identity} request promotion to rank {rank}",
-          "retentionTitle": "{identity} request retention at rank {rank}"
+          "promotionTitle": "Review promotion",
+          "retentionTitle": "Review retention"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",

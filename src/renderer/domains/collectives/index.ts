@@ -28,7 +28,14 @@ export type { Member, CoreMember } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
-export type { Evidence } from './evidence/types';
+export type {
+  Evidence,
+  EvidenceContent,
+  EvidencePeriods,
+  EvidenceSummary,
+  EvidenceTransaction,
+  CurrentMemberPeriod,
+} from './evidence/types';
 
 export { feed } from './feed/store';
 export type { FeedRecord } from './feed/types';

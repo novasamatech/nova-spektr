@@ -198,6 +198,10 @@ export const entries = <K extends string | number, T>(values: Record<K, T>): [ke
   return Object.entries(values) as [key: K, value: T][];
 };
 
+export const fromEntries = <Key extends PropertyKey, Value>(values: [key: Key, value: Value][]): Record<Key, Value> => {
+  return Object.fromEntries(values) as Record<Key, Value>;
+};
+
 export function allEqual<T>(array: T[], compareFn?: (a: T, b: T) => boolean): boolean {
   return array.every((item: T) => (compareFn ? compareFn(item, array[0]) : item === array[0]));
 }
