@@ -204,7 +204,7 @@ export const subscriptionResource = createSubscriptionResource<ReferendumSubscri
     await api.isReady;
 
     const fetchPages = createPagesHandler({
-      fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 200),
+      fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 400),
       map: record => mapReferendums(record, api, palletType, chainId),
     });
 
