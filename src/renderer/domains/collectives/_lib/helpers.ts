@@ -40,7 +40,8 @@ export const mergeNested = <
 >(
   store: Store,
   records: Item[],
-  mergeBy: (a: Item) => string | number,
+  mergeBy: (a: Item) => string | number | string[],
+  sort?: (a: Item, b: Item) => number,
 ): Store => {
   const palletGroups = groupBy(records, m => m.pallet);
   let next = store;
@@ -54,6 +55,7 @@ export const mergeNested = <
         b: items ?? [],
         mergeBy,
         filter: (a, b) => !isEqual(a, b),
+        sort,
       });
 
       // @ts-expect-error weird type error

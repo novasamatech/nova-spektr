@@ -1,19 +1,30 @@
 import { createStore } from 'effector';
-import { readonly } from 'patronum';
+import { not, or, readonly } from 'patronum';
 
 import { populated } from '@/shared/effector';
 import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { deriveFromResources } from '@/shared/resource';
+import { mergeNested } from '../_lib/helpers';
 import { type CollectivesStruct } from '../_lib/types';
 
-import { evidencePeriodResource, evidenceResource, evidenceSummaryResource } from './resource';
-import { type Evidence, type EvidencePeriods, type EvidenceSummary } from './types';
+import { evidenceContentResource, evidencePeriodResource, evidenceResource, evidenceSummaryResource } from './resource';
+import { type Evidence, type EvidenceContent, type EvidencePeriods, type EvidenceSummary } from './types';
 
 const $list = createStore<CollectivesStruct<Evidence[]>>({});
 
 deriveFromResources({
   store: $list,
   resources: [evidenceResource],
+  map(state, evidences) {
+    return mergeNested(state, evidences, e => e.accountId);
+  },
+});
+
+const $content = createStore<CollectivesStruct<EvidenceContent[]>>({});
+
+deriveFromResources({
+  store: $content,
+  resources: [evidenceContentResource],
   map(state, evidence) {
     if (evidence === null) return state;
     const prev = pickNestedValue(state, evidence.pallet, evidence.chainId) ?? [];
@@ -55,12 +66,18 @@ deriveFromResources({
   },
 });
 
+const summaryFulfilled = or(not(populated(evidenceResource.request)), evidenceSummaryResource.request.pending);
+
 export const evidence = {
   $list: readonly($list),
+  $content: readonly($content),
   $populated: readonly($populated),
   $periods: readonly($periods),
   $summary: readonly($summary),
   request: evidenceResource.request,
+  requestContent: evidenceContentResource.request,
   requestPeriods: evidencePeriodResource.request,
   requestSummary: evidenceSummaryResource.request,
+  summaryFulfilled,
+  pendingSummary: evidenceSummaryResource.request,
 };

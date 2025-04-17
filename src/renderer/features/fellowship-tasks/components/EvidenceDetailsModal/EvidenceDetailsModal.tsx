@@ -2,11 +2,11 @@ import { type PropsWithChildren, memo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Button, Markdown } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 
-import { Card } from './Card';
+import { Content } from './Content';
 import { MemberInfo } from './MemberInfo';
 import { MemberProfile } from './MemberProfile';
 import { VotingRecord } from './VotingRecord';
@@ -45,9 +45,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
             <MemberInfo evidence={evidence} />
           </Box>
           <Box padding={5}>
-            <Card>
-              <Markdown>{evidence.content}</Markdown>
-            </Card>
+            <Content evidence={evidence} />
           </Box>
         </div>
       </Modal.Content>
