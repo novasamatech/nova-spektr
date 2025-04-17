@@ -109,13 +109,18 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="py-4">
+        <div className="h-full py-4">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
-            <EmptyList
-              message={t('fellowship.activityFeed.activityModal.nothing-found', { query: truncate(query, 10, 10) })}
-            />
+            <div className="flex h-full justify-center">
+              <EmptyList
+                title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
+                message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
+                  query: truncate(query, 5, 5),
+                })}
+              />
+            </div>
           )}
 
           {sortedList.map(record => (

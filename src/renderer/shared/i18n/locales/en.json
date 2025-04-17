@@ -312,7 +312,10 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
-        "nothing-found": "Nothing found for \"{query}\"",
+        "nothing-found": {
+          "title": "Nothing found",
+          "description": "“{query}” did not match any event address or identity. Please try searching with another term."
+        },
         "search-placeholder": "Search",
         "sort": {
           "duration-asc": "Newest",
