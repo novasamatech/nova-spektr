@@ -4,7 +4,6 @@ import { memo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -58,34 +57,13 @@ export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: P
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
             </Box>
-            {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2em" width="85%" />}
+            {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2.5lh" width="85%" />}
             <FootnoteText as="div">
               {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
               {!evidenceSummary?.summary && !evidenceSummaryPending
                 ? t('fellowship.tasks.task.promotionVoting.noEvidence')
                 : null}
             </FootnoteText>
-
-            <div className="flex gap-16 text-left">
-              {nonNullable(evidenceSummary?.github?.pullRequests) && (
-                <div className="w-15">
-                  <FootnoteText className="inline text-text-secondary">
-                    {t('fellowship.tasks.task.promotionVoting.pullRequests')}
-                  </FootnoteText>
-                  &nbsp;
-                  <span className="text-black">{evidenceSummary?.github?.pullRequests}</span>
-                </div>
-              )}
-              {nonNullable(evidenceSummary?.github?.mergedPullRequests) && (
-                <div className="w-15">
-                  <FootnoteText className="inline text-text-secondary">
-                    {t('fellowship.tasks.task.promotionVoting.mergedPullRequests')}
-                  </FootnoteText>
-                  &nbsp;
-                  <span className="text-black">{evidenceSummary?.github?.mergedPullRequests}</span>
-                </div>
-              )}
-            </div>
           </Box>
         </button>
       </EvidenceDetailsModal>
