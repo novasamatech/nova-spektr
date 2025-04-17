@@ -12,7 +12,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: '2',
+    id: '1',
     walletId: 1,
     name: 'Shard_1 WND key',
     groupId: 'shard_1',
@@ -26,7 +26,7 @@ const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//hot//0',
   },
   {
-    id: '3',
+    id: '2',
     walletId: 1,
     name: 'Shard_2 WND key',
     groupId: 'shard_1',
@@ -40,7 +40,7 @@ const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//westend//hot//1',
   },
   {
-    id: '4',
+    id: '3',
     walletId: 1,
     name: 'Main KSM key',
     type: 'chain',
@@ -53,7 +53,7 @@ const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
     derivationPath: '//kusama//pub',
   },
   {
-    id: '5',
+    id: '4',
     walletId: 1,
     name: 'Main DOT key',
     type: 'chain',

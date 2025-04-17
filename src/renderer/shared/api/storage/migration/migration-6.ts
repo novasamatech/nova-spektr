@@ -2,6 +2,7 @@ import { type Transaction } from 'dexie';
 import uniqBy from 'lodash/uniqBy';
 
 import {
+  AccountType,
   type BaseAccount,
   type PolkadotVaultWallet,
   SigningType,
@@ -25,10 +26,9 @@ type OldVaultAccount = BaseAccount | OldChainAccount;
  * @returns {Promise}
  */
 export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
-  await removeRedundantAccounts(t);
-
   const { toWallet, toRegroup, toUpdate, toDelete } = await getWalletsAndAccounts(t);
 
+  await updateWallets(t);
   await t.table('accounts2').bulkDelete(toDelete);
   await t.table('accounts2').bulkPut(toUpdate);
 
@@ -37,37 +37,51 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
 
   const walletIdsMap = new Map(toWalletValues.map((w, i) => [w.rootAccountId, walletIds[i]]));
 
-  const newAccounts = Array.from(toRegroup).flatMap(([baseAccountId, accounts]) => {
+  const newAccounts = Array.from(toRegroup).map(([baseAccountId, accounts]) => {
     const walletId = walletIdsMap.get(baseAccountId);
-    if (!walletId) return accounts;
+    if (!walletId) return [];
 
-    return accounts.map((a) => ({
-      ...a,
-      walletId,
-      id: `${walletId} ${a.accountId} ${a.chainId}`,
-    }));
+    if (Array.isArray(accounts)) {
+      return accounts.map((a) => ({ ...a, walletId, id: `${walletId} ${a.accountId} ${a.chainId}` }) as ChainAccount);
+    }
+
+    return [{ ...accounts, walletId, id: `${walletId} ${accounts.accountId} universal` } as BaseAccount];
   });
 
-  await t.table('accounts2').bulkAdd(newAccounts);
+  await t.table('accounts2').bulkAdd(newAccounts.flat());
 }
 
-async function removeRedundantAccounts(t: Transaction) {
-  const wallets = await t.db.table<Wallet>('wallets').toArray();
+async function updateWallets(t: Transaction) {
+  const wallets = await t.table<Wallet>('wallets').toArray();
 
-  const walletToUpdate = wallets.map((w) => {
-    // @ts-expect-error By accident wallet may contain accounts inside IndexedDB
-    delete w.accounts;
+  const toUpdate: Wallet[] = [];
+  const toDelete: number[] = [];
+
+  for (const wallet of wallets) {
+    // Always remove accounts if they exist
+    const { accounts: _, ...cleanWallet } = wallet;
 
     // @ts-expect-error old types
-    return w.type === 'wallet_mps' ? { ...w, type: WalletType.POLKADOT_VAULT } : w;
-  });
+    if (wallet.type !== 'wallet_mps') {
+      toUpdate.push(cleanWallet as Wallet);
+    } else if ('rootAccountId' in wallet) {
+      toUpdate.push({
+        ...cleanWallet,
+        type: WalletType.POLKADOT_VAULT,
+        signingType: SigningType.POLKADOT_VAULT,
+      } as Wallet);
+    } else {
+      toDelete.push(wallet.id);
+    }
+  }
 
-  await t.table('wallets').bulkPut(walletToUpdate);
+  await t.table('wallets').bulkDelete(toDelete);
+  await t.table('wallets').bulkPut(toUpdate);
 }
 
 async function getWalletsAndAccounts(t: Transaction) {
-  const accounts = await t.db.table<AnyAccount>('accounts2').toArray();
-  const wallets = await t.db.table<Wallet>('wallets').toArray();
+  const accounts = await t.table<AnyAccount>('accounts2').toArray();
+  const wallets = await t.table<Wallet>('wallets').toArray();
 
   const walletsMap = new Map(
     // @ts-expect-error old types
@@ -75,11 +89,15 @@ async function getWalletsAndAccounts(t: Transaction) {
   );
 
   // Drafts that require more details to become PV or SS
-  const toDraftWallet = new Map<AccountId, BaseAccount>();
+  const toWalletDraft = new Map<AccountId, BaseAccount>();
   // Will become new wallets
   const toWallet = new Map<AccountId, PolkadotVaultWallet | SingleShardWallet>();
-  // Move to new wallets
-  const toRegroup = new Map<AccountId, OldChainAccount[]>();
+
+  // Draft that require more details to become BaseAccount or ChainAccount
+  const toRegroupDraft = new Map<AccountId, OldChainAccount[]>();
+  // Will be become BaseAccount or ChainAccount
+  const toRegroup = new Map<AccountId, BaseAccount | ChainAccount[]>();
+
   // Delete "baseAccountId"
   const toUpdate: ChainAccount[] = [];
   // Empty derivation path
@@ -93,9 +111,9 @@ async function getWalletsAndAccounts(t: Transaction) {
 
     if (typedAccount.type === 'universal') {
       toDelete.push(typedAccount.id);
-      if (toDraftWallet.has(typedAccount.accountId)) continue;
+      if (toWalletDraft.has(typedAccount.accountId)) continue;
 
-      toDraftWallet.set(typedAccount.accountId, typedAccount);
+      toWalletDraft.set(typedAccount.accountId, typedAccount);
 
       // Vault Chain account:
     } else if (typedAccount.baseAccountId === wallet.rootAccountId) {
@@ -106,22 +124,38 @@ async function getWalletsAndAccounts(t: Transaction) {
     } else {
       toDelete.push(typedAccount.id);
 
-      const regroup = toRegroup.get(typedAccount.baseAccountId!) || [];
-      toRegroup.set(typedAccount.baseAccountId!, regroup.concat(typedAccount));
+      const regroup = toRegroupDraft.get(typedAccount.baseAccountId!) || [];
+      toRegroupDraft.set(typedAccount.baseAccountId!, regroup.concat(typedAccount));
       delete typedAccount.baseAccountId;
     }
   }
 
-  for (const [accountId, accounts] of toRegroup.entries()) {
-    toRegroup.set(accountId, uniqBy(accounts, ['accountId', 'chainId']));
+  for (const [accountId, accounts] of toRegroupDraft.entries()) {
+    const baseAccounts: VaultChainAccount[] = [];
+    const chainAccounts: VaultChainAccount[] = [];
+
+    for (const account of uniqBy(accounts, 'accountId')) {
+      const array = account.derivationPath ? chainAccounts : baseAccounts;
+      array.push(account);
+    }
+
+    if (chainAccounts.length) {
+      toRegroup.set(accountId, chainAccounts);
+    } else {
+      toRegroup.set(accountId, {
+        name: 'Base account',
+        accountId: baseAccounts[0].accountId,
+        cryptoType: baseAccounts[0].cryptoType,
+        type: 'universal',
+        accountType: AccountType.BASE,
+        signingType: SigningType.POLKADOT_VAULT,
+      } as BaseAccount);
+    }
   }
 
-  for (const [accountId, account] of toDraftWallet.entries()) {
-    const regroup = toRegroup.get(accountId) || [];
-    const hasDerivedAccounts = regroup.filter((a) => a.derivationPath).length > 0;
-
+  for (const [accountId, account] of toWalletDraft.entries()) {
     // Polkadot Vault
-    if (hasDerivedAccounts) {
+    if (Array.isArray(toRegroup.get(accountId))) {
       toWallet.set(accountId, {
         name: account.name ?? 'Polkadot Vault',
         type: WalletType.POLKADOT_VAULT,
@@ -136,7 +170,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         name: account.name ?? 'Polkadot Singleshard',
         type: WalletType.SINGLE_PARITY_SIGNER,
         rootAccountId: account.accountId,
-        signingType: SigningType.PARITY_SIGNER,
+        signingType: SigningType.POLKADOT_VAULT,
         isActive: false,
       } as SingleShardWallet);
     }
