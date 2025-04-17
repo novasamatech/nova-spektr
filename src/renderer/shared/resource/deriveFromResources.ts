@@ -5,7 +5,7 @@ import { nonNullable } from '@/shared/lib/utils';
 // resource
 
 export interface Resource<Input, Output> {
-  receive: EventCallable<Input>;
+  pull: EventCallable<Input>;
   push: Event<Output>;
 }
 
@@ -41,7 +41,7 @@ export function deriveFromResources<State, const Resources extends Resource<any,
     if (nonNullable(resource) && nonNullable(nextResource)) {
       sample({
         clock: resource.push,
-        target: nextResource.receive,
+        target: nextResource.pull,
       });
     }
   }

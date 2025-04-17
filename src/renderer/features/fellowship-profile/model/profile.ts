@@ -43,8 +43,6 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
-
 sample({
   clock: fellowshipProfileFeature.running,
   target: [member.subscribe, track.request],
@@ -56,7 +54,7 @@ sample({
 });
 
 sample({
-  clock: memberUpdate,
+  clock: attachToFeatureInput(fellowshipProfileFeature, $member),
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,
     accounts: member ? [member.accountId] : [],

@@ -8,6 +8,14 @@ export type Evidence = {
   wish: 'Promotion' | 'Retention';
   accountId: AccountId;
   hash: HexString;
+};
+
+export type EvidenceContent = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
+  wish: 'Promotion' | 'Retention';
+  accountId: AccountId;
+  hash: HexString;
   cid: string;
   content: string;
 };

@@ -21,6 +21,7 @@ export const $collectiveStore = combine(
     salaryStatus: salary.$status,
     claimantStatus: salary.$claimantStatus,
     evidence: evidence.$list,
+    evidenceContent: evidence.$content,
     evidencePeriods: evidence.$periods,
     evidenceSummary: evidence.$summary,
     feed: feed.$list,

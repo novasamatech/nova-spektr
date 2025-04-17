@@ -13,9 +13,9 @@ type BufferParams<Data> = {
 export type BufferResource<Data> = Resource<Data, Data>;
 
 export const createBufferResource = <Data>({ timeframe, merge }: BufferParams<Data>): BufferResource<Data> => {
-  const receive = createEvent<Data>();
+  const pull = createEvent<Data>();
   const push = createEvent<Data>();
-  const buffer = createBuffer({ source: receive, timeframe });
+  const buffer = createBuffer({ source: pull, timeframe });
 
   sample({
     clock: buffer,
@@ -24,7 +24,7 @@ export const createBufferResource = <Data>({ timeframe, merge }: BufferParams<Da
   });
 
   return {
-    receive,
+    pull,
     push: readonly(push),
   };
 };

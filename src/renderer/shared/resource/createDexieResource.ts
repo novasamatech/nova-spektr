@@ -23,7 +23,7 @@ export const createDexieResource = <Data extends { id: any }>({
   storage,
   onReceive,
 }: DexieParams<Data>): DexieResource<Data> => {
-  const receive = createEvent<NoID<Data>[]>();
+  const pull = createEvent<NoID<Data>[]>();
   const push = createEvent<Data[]>();
 
   const createFx = createEffect<NoID<Data>[], Data[]>((drafts) => {
@@ -49,7 +49,7 @@ export const createDexieResource = <Data extends { id: any }>({
   });
 
   sample({
-    clock: receive,
+    clock: pull,
     target: calculateUpdateFx,
   });
 
@@ -67,7 +67,7 @@ export const createDexieResource = <Data extends { id: any }>({
   });
 
   return {
-    receive,
+    pull,
     push: readonly(push),
 
     create: createFx,

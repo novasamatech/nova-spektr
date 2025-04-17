@@ -31,9 +31,14 @@ const mapChainVote = (
   };
 };
 
-const requestFromChain = async (api: ApiPromise, pallet: CollectivePalletsType, referendums: ReferendumId[]) => {
-  const requests = referendums.map(referendum => collectivePallet.storage.voting(pallet, api, referendum));
-  const votes = await Promise.all(requests).then(l => l.flat());
+const requestFromChain = async (
+  api: ApiPromise,
+  pallet: CollectivePalletsType,
+  referendums: ReferendumId[],
+  accounts: AccountId[],
+) => {
+  const keys = referendums.map(r => accounts.map(a => [r, a] as const)).flat();
+  const votes = await collectivePallet.storage.voting(pallet, api, keys);
   const chainId = api.genesisHash.toHex();
   return votes.map(vote => mapChainVote(pallet, chainId, vote)).filter(nonNullable);
 };
@@ -100,15 +105,23 @@ type RequestVotesParams = {
   chain: Chain;
   api: ApiPromise;
   referendums: ReferendumId[];
+  accounts: AccountId[];
 };
 
 export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>({
-  async fn({ palletType, api, chain, referendums }) {
+  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ palletType, chain, referendums, accounts }) => {
+      return `${palletType}:${chain.chainId}:${accounts.join(',')}:${referendums.join(',')}`;
+    },
+    ttl: 60 * 1000,
+  },
+  async fn({ palletType, api, chain, referendums, accounts }) {
     if (referendums.length === 0) return [];
 
     if (api) {
       try {
-        return await requestFromChain(api, palletType, referendums);
+        return await requestFromChain(api, palletType, referendums, accounts);
       } catch (e) {
         /* skip */
         console.error(e);
