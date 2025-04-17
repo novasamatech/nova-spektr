@@ -115,6 +115,7 @@ export const evidenceModel = {
   $hasRetentionEvidence,
   $hasPromotionEvidence,
   requestEvidence: requestEvidenceFx,
+  requestEvidenceContent: requestEvidenceContentFx,
   requestEvidenceSummary: requestEvidenceSummaryFx,
   $summaryPopulated,
 };

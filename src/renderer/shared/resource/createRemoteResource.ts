@@ -50,7 +50,7 @@ export const createRemoteResource = <Params, Response>({
       const cacheKey = getCacheKey(params);
       const cachedValue = cached[cacheKey];
       if (cachedValue) {
-        if (cachedValue.ts + cache.ttl < Date.now()) {
+        if (cache.ttl === Number.POSITIVE_INFINITY || cachedValue.ts + cache.ttl < Date.now()) {
           return cachedValue.response;
         } else {
           delete cached[cacheKey];
