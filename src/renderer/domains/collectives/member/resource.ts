@@ -72,6 +72,7 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
 
     return () => {
       unsubscribe.then(fns => () => {
+        console.log('unsubscribe members on chain', api.genesisHash.toHex());
         for (const fn of fns) {
           fn();
         }

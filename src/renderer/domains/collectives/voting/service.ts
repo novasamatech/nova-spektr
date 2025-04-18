@@ -8,7 +8,6 @@ import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 import { type Evidence } from '../evidence/types';
 import { type Member } from '../member/types';
-import { type Track } from '../tracks/types';
 
 import { type EvidenceVotingTransaction, type VotingTransaction } from './types';
 
@@ -51,7 +50,7 @@ type VoteEvidenceTransactionParams = {
   accountId: AccountId;
   chain: Chain;
   proposal: HexString;
-  track: Track;
+  originName: string;
   poll: ReferendumId;
   aye: boolean;
 };
@@ -59,7 +58,7 @@ type VoteEvidenceTransactionParams = {
 function createEvidenceVotingTransaction({
   accountId,
   chain,
-  track,
+  originName,
   poll,
   aye,
   pallet,
@@ -70,8 +69,8 @@ function createEvidenceVotingTransaction({
     chainId: chain.chainId,
     type: TransactionType.COLLECTIVE_EVIDENCE_VOTE,
     args: {
-      at: track.minEnactmentPeriod,
-      track: track.name,
+      after: 0,
+      track: originName,
       pallet,
       proposal,
       poll,

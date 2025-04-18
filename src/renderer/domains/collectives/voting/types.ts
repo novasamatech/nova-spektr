@@ -12,7 +12,7 @@ export type EvidenceVotingTransaction = Transaction<{
   pallet: CollectivePalletsType;
   proposal: HexString;
   track: string;
-  at: number;
+  after: number;
   poll: number;
   aye: boolean;
 }>;

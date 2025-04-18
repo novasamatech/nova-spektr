@@ -1,5 +1,7 @@
 import { BN, BN_BILLION, BN_ONE, bnMax, bnMin } from '@polkadot/util';
+import { capitalize } from 'lodash';
 
+import { fromRomanNumeral } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType } from '../_lib/types';
 import { calculateVoteWeightPipeline } from '../configuration/inject';
@@ -15,10 +17,12 @@ function isRetentionTrack(track: TrackId) {
 function isPromotionTrack(track: TrackId) {
   return (
     // Promotion
-    (track >= 21 && track <= 26) ||
-    // Fast promotion
-    (track >= 31 && track <= 36)
+    (track >= 21 && track <= 26) || isFastPromotionTrack(track)
   );
+}
+
+function isFastPromotionTrack(track: TrackId) {
+  return track >= 31 && track <= 36;
 }
 
 /**
@@ -169,6 +173,55 @@ const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, track: Trac
   return getExcessRank(rank, maxRank, track) >= 0;
 };
 
+const getReferendumTrackFromRank = (tracks: Track[], rank: number, wish: 'Promotion' | 'Retention') => {
+  if (wish === 'Retention') {
+    // retention range
+    const retentionTrack = rank + 10;
+    return tracks.find(track => track.id === retentionTrack) ?? null;
+  }
+  if (wish === 'Promotion') {
+    // promotion track range + 1
+    const promotionTrack = rank + 21;
+    return tracks.find(track => track.id === promotionTrack) ?? null;
+  }
+  return null;
+};
+
+const originNameFromTrack = (track: Track): string => {
+  if (isRetentionTrack(track.id)) {
+    const match = track.name.match(/retain at ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `RetainAt${num}Dan`;
+      }
+    }
+  }
+  if (isFastPromotionTrack(track.id)) {
+    const match = track.name.match(/fast promote to ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `Fellowship${num}Dan`;
+      }
+    }
+  }
+  if (isPromotionTrack(track.id)) {
+    const match = track.name.match(/promote to ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `PromoteTo${num}Dan`;
+      }
+    }
+  }
+
+  return capitalize(track.name);
+};
+
 export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
@@ -181,4 +234,6 @@ export const trackService = {
   supportThreshold,
   approvalThreshold,
   rankSatisfiesVotingThreshold,
+  getReferendumTrackFromRank,
+  originNameFromTrack,
 };
