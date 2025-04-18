@@ -6,7 +6,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
-import { Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
+import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
@@ -40,6 +40,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
+
+  const clearSearch = () => setQuery('');
 
   const records = list.map(record => {
     const identity = identities[record.accountId];
@@ -109,13 +111,20 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="py-4">
+        <div className="h-full py-4">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
             <EmptyList
-              message={t('fellowship.activityFeed.activityModal.nothing-found', { query: truncate(query, 10, 10) })}
-            />
+              title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
+              message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
+                query: truncate(query, 6, 6),
+              })}
+            >
+              <Button pallet="primary" variant="text" onClick={clearSearch}>
+                {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
+              </Button>
+            </EmptyList>
           )}
 
           {sortedList.map(record => (
@@ -123,7 +132,13 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               <div className="flex items-center gap-2">
                 <div className="min-w-0 grow text-button-small">
                   {nonNullable(input?.chain) && (
-                    <Account accountId={record.accountId} chain={input.chain} title={record.name} hideAddress />
+                    <Account
+                      accountId={record.accountId}
+                      chain={input.chain}
+                      title={record.name}
+                      variant="short"
+                      hideAddress
+                    />
                   )}
                 </div>
                 <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
