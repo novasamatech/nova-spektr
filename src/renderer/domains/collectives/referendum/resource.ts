@@ -117,7 +117,7 @@ async function mapReferendum({
         throw new Error(`Collective tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`);
       }
 
-      const track = tracks.find(({ track }) => track === info.data.track);
+      const track = tracks.find(({ id }) => id === info.data.track);
       if (!track) {
         throw new Error(`Track ${info.data.track} not found in referenda pallet`);
       }

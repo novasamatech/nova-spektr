@@ -6,7 +6,7 @@ import { reshape } from 'patronum';
 import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { createTxStore } from '@/shared/transactions';
-import { type Evidence, votingService } from '@/domains/collectives';
+import { type Evidence, trackService, votingService } from '@/domains/collectives';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -51,10 +51,7 @@ const $nextTrack = combine($member, $tracks, (member, tracks) => {
 const $nextReferendum = createStore<ReferendumId | null>(null);
 
 const requestNextReferendumFx = createEffect(({ api }: { api: ApiPromise }) => {
-  return referendaPallet.storage
-    .referendumCount('fellowship', api)
-    .then(c => c + 1)
-    .then(referendaPallet.helpers.toReferendumId);
+  return referendaPallet.storage.referendumCount('fellowship', api).then(referendaPallet.helpers.toReferendumId);
 });
 
 sample({
@@ -74,22 +71,28 @@ const $proposal = combine({ api: $api, evidence: $evidence, member: $member }, (
 
 const $coreTx = combine(
   {
+    open: flow.status,
     chain: $chain,
-    currentTrack: $currentTrack,
-    nextTrack: $nextTrack,
+    member: $member,
+    tracks: $tracks,
     evidence: $evidence,
     proposal: $proposal,
     aye: $aye,
     nextReferendum: $nextReferendum,
   },
-  ({ currentTrack, nextTrack, ...params }) => {
+  ({ open, tracks, ...params }) => {
     if (nonNullableMap(params)) {
-      const track = params.evidence.wish === 'Promotion' ? nextTrack : currentTrack;
+      if (!open) return null;
+
+      const track = trackService.getReferendumTrackFromRank(tracks, params.member.rank, params.evidence.wish);
       if (nullable(track)) return null;
+      const originName = trackService.originNameFromTrack(track);
+
+      console.log(originName);
 
       return votingService.createEvidenceVotingTransaction({
         pallet: 'fellowship',
-        track: track,
+        originName,
         accountId: params.evidence.accountId,
         chain: params.chain,
         proposal: params.proposal,

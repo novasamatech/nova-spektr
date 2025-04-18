@@ -91,12 +91,6 @@ export const createSubscriptionResource = <Params, Data>({
     target: subscribeFx,
   });
 
-  sample({
-    clock: subscribe,
-    fn: (params) => pool(params),
-    target: $currentKey,
-  });
-
   // unsubscribe and pass param down for resubscription later
   sample({
     clock: subscribe,
@@ -104,6 +98,12 @@ export const createSubscriptionResource = <Params, Data>({
     filter: ({ sub, key }, params) => nonNullable(sub) && key !== pool(params),
     fn: ({ sub }, resubscribe) => ({ fn: sub?.unsubscribe ?? null, resubscribe }),
     target: unsubscribeFx,
+  });
+
+  sample({
+    clock: subscribe,
+    fn: (params) => pool(params),
+    target: $currentKey,
   });
 
   // save unsubscribe fn
