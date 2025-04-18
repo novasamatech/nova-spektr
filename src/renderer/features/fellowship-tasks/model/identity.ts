@@ -1,5 +1,6 @@
 import { attach, combine, createEvent, sample } from 'effector';
 
+import { attachToFeatureInput } from '@/shared/feature';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
 
@@ -13,24 +14,14 @@ const $identities = combine(fellowshipTasksFeature.input, identity.$list, (input
 
 const request = createEvent<{ accountId: AccountId }>();
 
-const identityRequested = sample({
-  clock: request,
-  source: fellowshipTasksFeature.input,
-  fn(input, { accountId }) {
-    if (!input) return null;
+sample({
+  clock: attachToFeatureInput(fellowshipTasksFeature, request),
+  fn({ input, data: { accountId } }) {
     return {
       accounts: [accountId],
       chainId: input.chainId,
     };
   },
-}).filterMap(params => {
-  if (params !== null) {
-    return params;
-  }
-});
-
-sample({
-  clock: identityRequested,
   target: requestIdentityFx,
 });
 

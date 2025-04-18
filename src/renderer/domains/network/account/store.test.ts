@@ -3,7 +3,7 @@ import { allSettled, fork } from 'effector';
 import { CryptoType, SigningType } from '@/shared/core';
 import { createAccountId } from '@/shared/mocks';
 
-import { accounts } from './model';
+import { accounts } from './store';
 import { type AnyAccount, type AnyAccountDraft } from './types';
 
 const testAccounts: AnyAccount[] = [
@@ -28,7 +28,7 @@ const testAccounts: AnyAccount[] = [
   },
 ];
 
-describe('accounts model', () => {
+describe('accounts store', () => {
   it('should populate accounts', async () => {
     const scope = fork({
       handlers: [[accounts.populate, () => testAccounts]],

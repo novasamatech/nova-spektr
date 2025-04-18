@@ -1,5 +1,5 @@
 import { type Wallet, WalletType } from '@/shared/core';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 
 import {
   type ExtensionAccount,
@@ -27,9 +27,7 @@ function isExtensionWallet(
 }
 
 function isExtensionAccount(account: AnyAccount): account is ExtensionAccount {
-  return (
-    accountService.isUniversalAccount(account) && 'accountType' in account && account['accountType'] === 'extension'
-  );
+  return 'accountType' in account && account.accountType === 'extension';
 }
 
 export const polkadotExtensionService = {

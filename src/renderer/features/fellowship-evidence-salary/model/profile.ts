@@ -23,7 +23,7 @@ const $identity = combine($member, $identities, (member, identities) => {
   return identities[member.accountId] ?? null;
 });
 
-const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
+const $pendingMember = and(or(member.pending, identity.request.pending), $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipSalaryFeature, $member);
 

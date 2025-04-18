@@ -10,7 +10,6 @@ import {
 import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
 import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '../account-utils';
 
 const accounts: (VaultChainAccount | VaultShardAccount)[] = [
@@ -196,16 +195,5 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     const result = accountUtils.getBaseAccount(accounts, walletId);
 
     expect(result).toEqual(accounts[2]);
-  });
-});
-
-describe('entities/wallet/lib/account-utils#isChainDependant', () => {
-  test.each([
-    [{ type: 'universal', accountType: AccountType.BASE }, false], // BaseAccount
-    [{ type: 'chain', accountType: AccountType.CHAIN, chainId: '0x00' }, true], // ChainAccount
-    [{ type: 'chain', accountType: AccountType.WALLET_CONNECT, chainId: '0x00' }, true], // WalletConnectAccount
-    [{ type: 'chain', accountType: AccountType.PROXIED, chainId: '0x00' }, true], // ProxiedAccount
-  ])('%s should be chain dependant or not', (account, expected) => {
-    expect(accountUtils.isChainDependant(account as never as AnyAccount)).toEqual(expected);
   });
 });

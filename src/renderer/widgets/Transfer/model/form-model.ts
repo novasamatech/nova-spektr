@@ -515,6 +515,11 @@ sample({
 });
 
 sample({
+  clock: $transferForm.fields.account.onChange,
+  target: $transferForm.resetErrors,
+});
+
+sample({
   source: {
     accounts: $accounts,
     selectedAccount: $transferForm.fields.account.$value,

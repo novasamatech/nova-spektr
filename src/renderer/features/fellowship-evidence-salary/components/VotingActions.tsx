@@ -1,5 +1,7 @@
 import { memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
+import { FootnoteText } from '@/shared/ui';
 import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -12,8 +14,10 @@ type Props = {
 };
 
 export const VotingActions = memo(({ evidence, variant }: Props) => {
+  const { t } = useI18n();
+
   const buttonNodes = (
-    <Box direction="row" gap={0.5}>
+    <Box direction="row" gap={1}>
       <EvidenceVotingModal evidence={evidence} aye={false}>
         <FilledIconButton variant="negative" icon="thumbDown" />
       </EvidenceVotingModal>
@@ -24,7 +28,7 @@ export const VotingActions = memo(({ evidence, variant }: Props) => {
     </Box>
   );
 
-  const chartNode = <DynamicVoteChart value={50} hasVotes />;
+  const chartNode = <DynamicVoteChart disabled value={50} hasVotes />;
 
   if (variant === 'large') {
     return (
@@ -37,9 +41,19 @@ export const VotingActions = memo(({ evidence, variant }: Props) => {
 
   if (variant === 'small') {
     return (
-      <Box verticalAlign="center" gap={1} width="102px">
+      <Box verticalAlign="center" gap={1.5} width="102px">
         {buttonNodes}
-        {chartNode}
+        <Box gap={1.5}>
+          {chartNode}
+          <Box direction="row" horizontalAlign="space-between">
+            <FootnoteText className="text-text-secondary">
+              {t('voteChart.nay')}: {0}
+            </FootnoteText>
+            <FootnoteText className="text-text-secondary">
+              {t('voteChart.aye')}: {0}
+            </FootnoteText>
+          </Box>
+        </Box>
       </Box>
     );
   }
