@@ -73,6 +73,7 @@ const $coreTx = combine(
   {
     open: flow.status,
     chain: $chain,
+    account: $votingAccount,
     member: $member,
     tracks: $tracks,
     evidence: $evidence,
@@ -88,12 +89,10 @@ const $coreTx = combine(
       if (nullable(track)) return null;
       const originName = trackService.originNameFromTrack(track);
 
-      console.log(originName);
-
       return votingService.createEvidenceVotingTransaction({
         pallet: 'fellowship',
         originName,
-        accountId: params.evidence.accountId,
+        accountId: params.account.accountId,
         chain: params.chain,
         proposal: params.proposal,
         aye: params.aye,
