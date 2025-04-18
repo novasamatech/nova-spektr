@@ -1,4 +1,4 @@
-import { dot, dot_ppl, ksm, ksm_ppl } from '@polkadot-api/descriptors';
+import { dot, dot_col, dot_ppl, ksm, ksm_ppl } from '@polkadot-api/descriptors';
 import { type PolkadotClient } from 'polkadot-api';
 
 import { type Chain, type ChainId } from '@/shared/core';
@@ -10,6 +10,11 @@ const POLKADOT_OVERRIDES: Record<ChainId, (client: PolkadotClient) => DotApi> = 
   '0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008': client => ({
     type: 'dot_ppl',
     api: client.getTypedApi(dot_ppl),
+  }),
+  // Polkadot Collectives
+  '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2': client => ({
+    type: 'dot_col',
+    api: client.getTypedApi(dot_col),
   }),
 };
 

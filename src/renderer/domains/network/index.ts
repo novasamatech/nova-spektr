@@ -13,3 +13,6 @@ export type { AnyAccount, AnyAccountDraft, ChainAccount, UniversalAccount } from
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
 export type { AccountIdentity, IdentityMap } from './identity/types';
+
+export { registry } from './registry/store';
+export { getChainRegistry } from './registry/service/chainRegistry';

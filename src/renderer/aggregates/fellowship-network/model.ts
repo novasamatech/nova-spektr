@@ -30,9 +30,9 @@ const $isConnected = $connectionStatus.map(networkUtils.isConnectedStatus);
 const $isActive = or($isConnecting, $isConnected);
 const $isDisconnected = $connectionStatus.map(networkUtils.isDisconnectedStatus);
 
-const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chainId, apis) =>
-  chainId ? (apis[chainId] ?? null) : null,
-);
+const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chainId, apis) => {
+  return chainId ? (apis[chainId] ?? null) : null;
+});
 
 const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, ({ chain, api }) => {
   if (nullable(chain) || nullable(api)) return null;

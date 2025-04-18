@@ -21,6 +21,11 @@
       "chain": "ksmcc3_people",
       "metadata": ".papi/metadata/ksm_ppl.scale",
       "genesis": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f"
+    },
+    "dot_col": {
+      "chain": "polkadot_collectives",
+      "metadata": ".papi/metadata/dot_col.scale",
+      "genesis": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2"
     }
   }
 }

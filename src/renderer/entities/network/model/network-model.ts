@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
@@ -41,7 +40,7 @@ const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 
 const $metadata = createStore<ChainMetadata[]>([]);
-const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
+const $metadataSubscriptions = createStore<Record<ChainId, VoidFunction>>({});
 
 const $populated = createStore(false);
 
@@ -63,7 +62,7 @@ const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Reco
 
 type MetadataSubResult = {
   chainId: ChainId;
-  unsubscribe: VoidFn;
+  unsubscribe: VoidFunction;
 };
 const subscribeRuntimeVersionFx = createEffect(
   async ({ api, cachedVersion }: { api: ApiPromise; cachedVersion: number | null }): Promise<MetadataSubResult> => {
@@ -77,7 +76,7 @@ const subscribeRuntimeVersionFx = createEffect(
   },
 );
 
-const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFn) => {
+const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFunction) => {
   unsubscribe();
 });
 
@@ -212,9 +211,7 @@ sample({
 });
 
 sample({
-  clock: combineEvents({
-    events: [createProvidersFx.done],
-  }),
+  clock: createProvidersFx.done,
   fn: () => true,
   target: $populated,
 });

@@ -4,7 +4,7 @@ import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
-import { accounts } from '@/domains/network';
+import { accounts, registry } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -76,6 +76,7 @@ const configureDomains = () => {
 };
 
 const populate = async () => {
+  registry.startNetworks();
   await networkModel.startNetworks();
   await accounts.populate();
   await walletModel.populate();
