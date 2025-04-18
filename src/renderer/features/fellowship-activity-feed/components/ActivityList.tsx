@@ -16,11 +16,13 @@ import { activityFeed } from '../model/list';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 
+const $feed = activityFeed.$activityFeed.map(feed => feed.slice(0, 20));
+
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
 export const ActivityList = memo(() => {
   const { t } = useI18n();
-  const feed = useUnit(activityFeed.$activityFeed);
+  const feed = useUnit($feed);
   const input = useUnit(fellowshipActivityFeedFeature.input);
   const identities = useUnit(identityModel.$list);
 
