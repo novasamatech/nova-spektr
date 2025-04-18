@@ -1,8 +1,18 @@
-import { type HexString, type Transaction } from '@/shared/core';
+import { type ChainId, type HexString, type Transaction } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
 
 export type Evidence = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
+  wish: 'Promotion' | 'Retention';
+  accountId: AccountId;
+  hash: HexString;
+};
+
+export type EvidenceContent = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
   wish: 'Promotion' | 'Retention';
   accountId: AccountId;
   hash: HexString;
@@ -11,6 +21,8 @@ export type Evidence = {
 };
 
 export type EvidenceSummary = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
   hash: HexString;
   summary: string;
   accountId: AccountId;
@@ -21,6 +33,8 @@ export type EvidenceSummary = {
 };
 
 export type EvidencePeriods = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
   minPromotionPeriod: BlockHeight[];
   demotionPeriod: BlockHeight[];
   offboardTimeout: BlockHeight;

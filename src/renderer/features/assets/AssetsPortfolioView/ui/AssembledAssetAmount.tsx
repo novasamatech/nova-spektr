@@ -21,7 +21,7 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
 
   if (!balance?.free) {
     return (
-      <div className="flex flex-col items-end gap-y-1">
+      <div className="flex w-[100px] flex-col items-end gap-y-1">
         <Skeleton width={20} height={4} />
         {fiatFlag && <Skeleton width={14} height={4} />}
       </div>

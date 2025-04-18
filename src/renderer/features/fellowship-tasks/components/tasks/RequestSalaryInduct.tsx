@@ -7,7 +7,7 @@ import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { memberSalary } from '../../model/memberSalary';
 
-export const requestSalaryInductActionSlot = createSlot();
+export const requestSalaryInductTaskActionSlot = createSlot();
 
 export const RequestSalaryInduct = () => {
   const { t } = useI18n();
@@ -25,7 +25,7 @@ export const RequestSalaryInduct = () => {
         </FootnoteText>
       </Box>
       <Box height="100%" width="102px" shrink={0}>
-        <Slot id={requestSalaryInductActionSlot} />
+        <Slot id={requestSalaryInductTaskActionSlot} />
       </Box>
     </Box>
   );

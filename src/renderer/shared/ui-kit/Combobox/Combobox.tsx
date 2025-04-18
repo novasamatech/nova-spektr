@@ -28,9 +28,9 @@ type ContextProps = {
 };
 
 type ExpandedContextProps = {
-  comboboxRef?: RefObject<HTMLInputElement>;
-  listboxRef?: RefObject<HTMLDivElement>;
-  anchorRef?: RefObject<HTMLDivElement>;
+  comboboxRef?: RefObject<HTMLInputElement | null>;
+  listboxRef?: RefObject<HTMLDivElement | null>;
+  anchorRef?: RefObject<HTMLDivElement | null>;
 };
 
 const Context = createContext<ContextProps & ExpandedContextProps>({});
@@ -49,9 +49,9 @@ type ControlledPopoverProps = {
 type RootProps = PropsWithChildren<ControlledPopoverProps & ContextProps & InputProps>;
 
 const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inputProps }: RootProps) => {
-  const comboboxRef = useRef<HTMLInputElement>(null);
-  const listboxRef = useRef<HTMLDivElement>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const comboboxRef = useRef<HTMLInputElement | null>(null);
+  const listboxRef = useRef<HTMLDivElement | null>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
 
   const [open, onOpenChange] = useState(false);
 

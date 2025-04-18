@@ -35,7 +35,7 @@ export const QrReader = memo(({ size = 300, cameraId, onCameraList, onResult, on
     });
   }, []);
 
-  const controlsRef = useRef<Promise<IScannerControls>>();
+  const controlsRef = useRef<Promise<IScannerControls> | null>(null);
 
   const [video, setVideo] = useState<HTMLVideoElement | null>(null);
   const [bgVideo, setBgVideo] = useState<HTMLVideoElement | null>(null);

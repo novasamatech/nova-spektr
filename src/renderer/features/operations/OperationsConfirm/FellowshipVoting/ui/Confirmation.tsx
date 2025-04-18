@@ -53,7 +53,6 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   if (
     nullable(confirm) ||
     nullable(memberTrack) ||
-    nullable(currentTrack) ||
     nullable(votingReferendum) ||
     referendumService.isCompleted(votingReferendum)
   ) {

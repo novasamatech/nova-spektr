@@ -1,3 +1,5 @@
+import { type ReactNode } from 'react';
+
 import { SigningType } from '@/shared/core';
 import { type SigningProps } from '../lib/types';
 
@@ -6,7 +8,7 @@ import { PolkadotVault } from './PolkadotVault';
 import { WalletConnect } from './WalletConnect';
 import { WatchOnly } from './WatchOnly';
 
-const SigningFlow: Record<SigningType, (props: SigningProps) => JSX.Element | null> = {
+const SigningFlow: Record<SigningType, (props: SigningProps) => ReactNode | null> = {
   [SigningType.MULTISIG]: (props) => <PolkadotVault {...props} />,
   [SigningType.POLKADOT_VAULT]: (props) => <PolkadotVault {...props} />,
   [SigningType.EXTENSION]: (props) => <Extension {...props} />,

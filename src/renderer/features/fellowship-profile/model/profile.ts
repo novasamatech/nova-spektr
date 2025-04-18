@@ -2,16 +2,8 @@ import { attach, combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
-import {
-  member,
-  memberService,
-  referendumMeta,
-  referendumMetaService,
-  track,
-  trackService,
-  voting,
-} from '@/domains/collectives';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { member, memberService, referendumMeta, referendumMetaService, track, voting } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
@@ -20,7 +12,7 @@ import { fellowship } from './fellowship';
 const requestIdentityFx = attach({ effect: identity.request });
 
 const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
-const $referendums = fellowship.$store.map(store => store?.referendumMeta ?? []);
+const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
@@ -51,8 +43,6 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
-
 sample({
   clock: fellowshipProfileFeature.running,
   target: [member.subscribe, track.request],
@@ -64,7 +54,7 @@ sample({
 });
 
 sample({
-  clock: memberUpdate,
+  clock: attachToFeatureInput(fellowshipProfileFeature, $member),
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,
     accounts: member ? [member.accountId] : [],
@@ -72,55 +62,30 @@ sample({
   target: requestIdentityFx,
 });
 
-const $availableReferendumsForMember = combine(
+const $referendumsSinceLastProof = combine(
   {
-    referendums: $referendums,
+    referendums: $referendumMeta,
     maxRank: $maxRank,
     member: $member,
   },
   ({ referendums, maxRank, member }) => {
     if (!member || !memberService.isCoreMember(member)) return [];
-
-    return Object.values(referendums).filter(ref => {
-      return (
-        ref.created >= member.lastProof && trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, ref.track)
-      );
-    });
+    return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member, maxRank);
   },
 );
 
-const $profileDetails = combine(
-  { referendums: $availableReferendumsForMember, memberVotes: $memberVotes },
-  ({ referendums, memberVotes }) => {
-    if (referendums.length === 0) return { activity: null, agreement: null };
-
-    let voted = 0;
-    let agreementVote = 0;
-
-    const memberVotesMap = dictionary(memberVotes, 'referendumId');
-
-    for (const referendum of referendums) {
-      const memberVote = memberVotesMap[referendum.referendumId];
-
-      if (!memberVote) continue;
-      if (referendumMetaService.getReferendumVotingFromStatus(referendum) === memberVote.decision) agreementVote++;
-      voted++;
-    }
-
-    const activity = referendums.length ? Math.round((voted / referendums.length) * 100) : 0;
-    const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
-
-    return { activity, agreement };
-  },
+const $activityInfo = combine(
+  { referendums: $referendumsSinceLastProof, votes: $memberVotes },
+  ({ referendums, votes }) => referendumMetaService.getActivityInfo(referendums, votes),
 );
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
-const $pendingReferendums = or($referendums.map(nullable), referendumMeta.pending);
-const $pendingVotes = or($memberVotes.map(nullable), voting.pending);
+const $pendingReferendums = or($referendumMeta.map(nullable), referendumMeta.pending);
+const $pendingVotes = or($memberVotes.map(nullable), voting.request.pending);
 
 export const profile = {
   $member,
-  $profileDetails,
+  $activityInfo,
   $pendingDetails: or($pendingReferendums, $pendingVotes),
   $account,
   $track,

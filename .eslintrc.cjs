@@ -243,7 +243,7 @@ module.exports = {
         'import-x/max-dependencies': [
           'warn',
           {
-            max: 20,
+            max: 25,
             ignoreTypeImports: true,
           },
         ],
@@ -273,6 +273,7 @@ module.exports = {
         'effector/strict-effect-handlers': 'off',
         // Takes 500ms seconds for nothing
         'effector/no-unnecessary-duplication': 'off',
+        'effector/require-pickup-in-persist': 'off',
 
         // Boundaries setup
         'boundaries/entry-point': [
@@ -338,7 +339,7 @@ module.exports = {
               },
               {
                 from: 'shared',
-                allow: ['app', 'shared', /* TODO fix */ 'entities'],
+                allow: ['app', 'shared', 'domains', 'entities'],
               },
               {
                 from: 'sdk',
