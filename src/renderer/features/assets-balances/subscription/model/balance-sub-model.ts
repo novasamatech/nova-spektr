@@ -6,9 +6,9 @@ import { combineEvents, once, previous, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
-import { isFulfilled } from '@/shared/lib/utils';
+import { isFulfilled, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accounts } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -135,7 +135,7 @@ sample({
 });
 
 sample({
-  clock: once(combineEvents([walletModel.$activeWallet.updates, networkModel.$chains.updates])),
+  clock: once(combineEvents([walletSelect.$selectedWallet.updates, networkModel.$chains.updates])),
   filter: ([wallet]) => Boolean(wallet),
   fn: ([wallet, chains]) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
@@ -225,22 +225,21 @@ sample({
   clock: [walletToSubSet, walletSelect.$selectedWallet],
   source: {
     subAccounts: $subAccounts,
-    selectedAccounts: walletSelect.$selectedAccounts,
     chains: networkModel.$chains,
     acccounts: accounts.$list,
   },
-  filter: ({ selectedAccounts }) => selectedAccounts.length > 0,
-  fn: ({ subAccounts, acccounts, chains, selectedAccounts }) => {
-    const walletId = selectedAccounts.at(0)!.walletId;
+  filter: ( wallet) =>  nonNullable(wallet), 
+  fn: ({ subAccounts, acccounts, chains }, wallet) => {
+    const selectedAccounts = accountService.filterAccountsByWallet(acccounts, wallet!.id);
     const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
 
-    return balanceSubUtils.formSubAccounts(walletId, accountsToSub, subAccounts, chains);
+    return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
   },
   target: $subAccounts,
 });
 
 sample({
-  clock: [walletToSubSet, walletModel.$activeWallet],
+  clock: [walletToSubSet, walletSelect.$selectedWallet],
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
