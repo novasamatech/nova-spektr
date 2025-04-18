@@ -1,6 +1,12 @@
 import mitt, { type Emitter } from 'mitt';
 import { type PolkadotClient, createClient } from 'polkadot-api';
-import { type WsEvent, type WsJsonRpcProvider, getWsProvider } from 'polkadot-api/ws-provider/web';
+import {
+  type JsonRpcProvider,
+  type WsEvent,
+  type WsJsonRpcProvider,
+  type WsProviderConfig,
+  getWsProvider,
+} from 'polkadot-api/ws-provider/web';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
@@ -15,7 +21,7 @@ type RegistryEvents = {
   };
 };
 
-class ChainRegistry {
+export class ChainRegistry {
   // TODO: support Light Clients in future
   readonly #storage = new Map<
     ChainId,
@@ -32,9 +38,20 @@ class ChainRegistry {
 
   readonly #events: Emitter<RegistryEvents> = mitt();
 
-  constructor(chains: Chain[]) {
+  readonly #createWcProvider: (wsProviderConfig: WsProviderConfig) => WsJsonRpcProvider;
+  readonly #createClient: (provider: JsonRpcProvider) => PolkadotClient;
+
+  constructor(
+    chains: Chain[],
+    papi: {
+      createWcProvider: (wsProviderConfig: WsProviderConfig) => WsJsonRpcProvider;
+      createClient: (provider: JsonRpcProvider) => PolkadotClient;
+    },
+  ) {
     this.#chainsList = chains;
     this.#chainsMap = new Map(chains.map(c => [c.chainId, c]));
+    this.#createWcProvider = papi.createWcProvider;
+    this.#createClient = papi.createClient;
   }
 
   getApi(chainId: ChainId): PolkadotApi {
@@ -62,12 +79,12 @@ class ChainRegistry {
       throw new Error(`Connection for ${chainId} already exist`);
     }
 
-    const provider = getWsProvider({
+    const provider = this.#createWcProvider({
       endpoints,
       onStatusChanged: ({ type }) => this.#events.emit('status', { chainId, type }),
     });
 
-    this.#storage.set(chainId, { provider, client: createClient(provider) });
+    this.#storage.set(chainId, { provider, client: this.#createClient(provider) });
   }
 
   disconnect(chainId: ChainId) {
@@ -125,15 +142,11 @@ let instance: ChainRegistry | undefined;
 
 export function getChainRegistry(): ChainRegistry {
   if (nullable(instance)) {
-    instance = new ChainRegistry(chainsService.getChainsData());
+    instance = new ChainRegistry(chainsService.getChainsData(), {
+      createWcProvider: getWsProvider,
+      createClient,
+    });
   }
 
   return instance;
-}
-
-/**
- * Tests only. Allows to reset singleton instance
- */
-export function __reset() {
-  instance = undefined;
 }
