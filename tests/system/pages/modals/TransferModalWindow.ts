@@ -28,26 +28,17 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     this.assetId = assetId;
   }
 
-  public async openTransferModal(): Promise<TransferModalWindow> {
+  public async openTransferModal(waitForModal = true): Promise<TransferModalWindow> {
     const config = await readConfig();
     const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
     const chainId = filteredChain.chainId;
     const url = TransferModalElements.getUrl(chainId, this.assetId);
-    // TODO: Update waiting approach, currently it waits until send button is loaded
-    await this.page.getByTestId(TEST_IDS.ASSETS.SHELF_RIGHT_ARROW_ICON).first().waitFor();
+    await this.page.getByTestId(TEST_IDS.ASSETS.TOKEN_PLATE).first().waitFor();
     await this.page.goto(url);
-    await this.page.getByTestId(TEST_IDS.OPERATIONS.AMOUNT_INPUT).first().waitFor();
 
-    return this;
-  }
-
-  public async openTransferModalByUrl(): Promise<TransferModalWindow> {
-    const config = await readConfig();
-    const filteredChain = config.filter((config_chain: any) => config_chain.name === this.chain.name)[0];
-    const chainId = filteredChain.chainId;
-    const url = TransferModalElements.getUrl(chainId, this.assetId);
-    // TODO: Update waiting approach, currently it waits until send button is loaded
-    await this.page.goto(url);
+    if (waitForModal) {
+      await this.page.getByTestId(TEST_IDS.OPERATIONS.AMOUNT_INPUT).first().waitFor();
+    }
 
     return this;
   }
@@ -85,6 +76,11 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async fillRecipient(recipient: string): Promise<void> {
     await this.page.getByTestId(TransferModalElements.recipientInputLocator).fill(recipient);
+  }
+
+  public async chooseSignatory(): Promise<void> {
+    await this.page.getByTestId(TransferModalElements.signatoryLocator).click();
+    await this.page.getByTestId(TransferModalElements.signatoryOptionLocator).first().click();
   }
 
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
