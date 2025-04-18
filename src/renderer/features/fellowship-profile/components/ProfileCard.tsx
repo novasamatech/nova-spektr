@@ -180,7 +180,9 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
           <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
           <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
-          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <NextRankTimeout />}</SmallTitleText>
+          <SmallTitleText>
+            <NextRankTimeout />
+          </SmallTitleText>
         </div>
       </Box>
     </Card>
