@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { z } from 'zod';
 
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
@@ -55,8 +56,15 @@ export const consts = {
    * Information concerning the different referendum tracks.
    */
   tracks(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(pjsSchema.tupleMap(['track', trackId], ['info', referendaTrackInfo]));
-
-    return schema.parse(getPallet(type, api)['tracks']);
+    const union = z.union([
+      pjsSchema.tupleMap(['id', trackId], ['info', referendaTrackInfo]),
+      pjsSchema.object({
+        id: trackId,
+        info: referendaTrackInfo,
+      }),
+    ]);
+    const schema = pjsSchema.vec(union);
+    const tracks = getPallet(type, api)['tracks'];
+    return schema.parse(tracks);
   },
 };
