@@ -9,7 +9,6 @@ import {
   type Chain,
   type ChainId,
   CryptoType,
-  type ID,
   type MultisigAccount,
   type MultisigThreshold,
   type ProxiedAccount,
@@ -20,7 +19,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
 // eslint-disable-next-line boundaries/element-types
@@ -52,7 +51,6 @@ export const accountUtils = {
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
-  getBaseAccount,
   getDerivationPath,
 
   isAnyProxyType,
@@ -185,12 +183,6 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
 
     return acc;
   }, []);
-}
-
-function getBaseAccount(accounts: AnyAccount[], walletId?: ID): BaseAccount | undefined {
-  const match = accounts.find((a) => !walletId || walletId === a.walletId);
-
-  return nonNullable(match) && isBaseAccount(match) ? match : undefined;
 }
 
 function getSignatoryAccounts<T extends BaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
