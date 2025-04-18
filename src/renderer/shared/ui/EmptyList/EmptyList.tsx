@@ -15,7 +15,7 @@ export const EmptyList = ({ title, message, iconAlt = '', children }: PropsWithC
       <Graphics name="emptyList" alt={iconAlt} size={178} />
 
       <div className="flex flex-col items-center gap-3">
-        {title && <SmallTitleText>{title}</SmallTitleText>}
+        <SmallTitleText>{title}</SmallTitleText>
         <BodyText className="w-[300px] text-center text-text-tertiary">{message}</BodyText>
       </div>
 

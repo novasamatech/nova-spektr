@@ -39,8 +39,9 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
-  const clearSearch = () => setQuery('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
+
+  const clearSearch = () => setQuery('');
 
   const records = list.map(record => {
     const identity = identities[record.accountId];
