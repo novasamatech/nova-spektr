@@ -43,8 +43,6 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
-
 sample({
   clock: fellowshipProfileFeature.running,
   target: [member.subscribe, track.request],
@@ -56,7 +54,7 @@ sample({
 });
 
 sample({
-  clock: memberUpdate,
+  clock: attachToFeatureInput(fellowshipProfileFeature, $member),
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,
     accounts: member ? [member.accountId] : [],
@@ -83,7 +81,7 @@ const $activityInfo = combine(
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
 const $pendingReferendums = or($referendumMeta.map(nullable), referendumMeta.pending);
-const $pendingVotes = or($memberVotes.map(nullable), voting.pending);
+const $pendingVotes = or($memberVotes.map(nullable), voting.request.pending);
 
 export const profile = {
   $member,

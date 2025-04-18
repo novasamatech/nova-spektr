@@ -1,23 +1,29 @@
 import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
 import { GraphQLClient } from 'graphql-request';
+import { z } from 'zod';
 
-import { type ArrayElement } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { type ArrayElement, type Chain, type ChainId, ExternalType } from '@/shared/core';
+import { nonNullable, toAccountId } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
-import { type ReferendumId } from '@/shared/pallet/referenda';
+import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Vote } from './types';
 
-const mapChainVote = ({
-  vote,
-  key,
-}: ArrayElement<Awaited<ReturnType<typeof collectivePallet.storage.voting>>>): Vote | undefined => {
+const mapChainVote = (
+  pallet: CollectivePalletsType,
+  chainId: ChainId,
+  { vote, key }: ArrayElement<Awaited<ReturnType<typeof collectivePallet.storage.voting>>>,
+): Vote | undefined => {
   if (!vote) return;
 
   return {
+    pallet,
+    chainId,
     accountId: key.accountId,
     referendumId: key.referendumId,
     votes: vote.data,
@@ -25,11 +31,16 @@ const mapChainVote = ({
   };
 };
 
-export const requestFromChain = async (api: ApiPromise, pallet: CollectivePalletsType, referendums: ReferendumId[]) => {
-  const requests = referendums.map(referendum => collectivePallet.storage.voting(pallet, api, referendum));
-  const votes = await Promise.all(requests).then(l => l.flat());
-
-  return votes.map(mapChainVote).filter(nonNullable);
+const requestFromChain = async (
+  api: ApiPromise,
+  pallet: CollectivePalletsType,
+  referendums: ReferendumId[],
+  accounts: AccountId[],
+) => {
+  const keys = referendums.map(r => accounts.map(a => [r, a] as const)).flat();
+  const votes = await collectivePallet.storage.voting(pallet, api, keys);
+  const chainId = api.genesisHash.toHex();
+  return votes.map(vote => mapChainVote(pallet, chainId, vote)).filter(nonNullable);
 };
 
 const GET_VOTES_QUERY = gql`
@@ -60,8 +71,14 @@ type SubqueryResponse = {
   };
 };
 
-const mapSubqueryVote = (vote: ArrayElement<SubqueryResponse['votes']['nodes']>): Vote => {
+const mapSubqueryVote = (
+  pallet: CollectivePalletsType,
+  chainId: ChainId,
+  vote: ArrayElement<SubqueryResponse['votes']['nodes']>,
+): Vote => {
   return {
+    pallet,
+    chainId,
     accountId: vote.accountId,
     referendumId: vote.referendum.index,
     votes: vote.votes,
@@ -69,11 +86,99 @@ const mapSubqueryVote = (vote: ArrayElement<SubqueryResponse['votes']['nodes']>)
   };
 };
 
-export const requestFromSubQuery = async (url: string, pallet: CollectivePalletsType, referendums: ReferendumId[]) => {
+const requestFromSubQuery = async (
+  url: string,
+  pallet: CollectivePalletsType,
+  chainId: ChainId,
+  referendums: ReferendumId[],
+) => {
   const client = new GraphQLClient(url);
   const result = await client.request<SubqueryResponse, { referendums: string[] }>(GET_VOTES_QUERY, {
     referendums: referendums.map(r => `${pallet}:${r}`),
   });
 
-  return result.votes.nodes.map(mapSubqueryVote);
+  return result.votes.nodes.map(vote => mapSubqueryVote(pallet, chainId, vote));
 };
+
+type RequestVotesParams = {
+  palletType: CollectivePalletsType;
+  chain: Chain;
+  api: ApiPromise;
+  referendums: ReferendumId[];
+  accounts: AccountId[];
+};
+
+export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>({
+  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ palletType, chain, referendums, accounts }) => {
+      return `${palletType}:${chain.chainId}:${accounts.join(',')}:${referendums.join(',')}`;
+    },
+    ttl: 60 * 1000,
+  },
+  async fn({ palletType, api, chain, referendums, accounts }) {
+    if (referendums.length === 0) return [];
+
+    if (api) {
+      try {
+        return await requestFromChain(api, palletType, referendums, accounts);
+      } catch (e) {
+        /* skip */
+        console.error(e);
+      }
+    }
+
+    const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
+    const sourceUrl = externalApi?.url;
+
+    if (!sourceUrl) return [];
+
+    return requestFromSubQuery(sourceUrl, palletType, chain.chainId, referendums);
+  },
+});
+
+type VotingSubscribeParams = {
+  palletType: CollectivePalletsType;
+  api: ApiPromise;
+  chainId: ChainId;
+  accounts: AccountId[];
+};
+
+export const subscribeResource = createSubscriptionResource<VotingSubscribeParams, Vote[]>({
+  pool: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
+  async fn({ palletType, api, chainId, accounts }, callback) {
+    const number = z.string().transform(v => parseInt(v));
+    const eventSchema = z.object({
+      who: z.string(),
+      poll: number.transform(referendaPallet.helpers.toReferendumId),
+      vote: z.object({ Aye: number }).or(z.object({ Nay: number })),
+    });
+
+    const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
+      { api, section: `${palletType}Collective`, methods: ['Voted'] },
+      event => {
+        const data = eventSchema.parse(event.data.toHuman());
+        const accountId = toAccountId(data.who);
+        if (!accounts.some(a => a === accountId)) {
+          return;
+        }
+
+        const vote: Vote = {
+          pallet: palletType,
+          chainId,
+          accountId,
+          referendumId: data.poll,
+          decision: 'Aye' in data.vote ? 'Aye' : 'Nay',
+          votes: 'Aye' in data.vote ? data.vote.Aye : data.vote.Nay,
+        };
+
+        callback({
+          value: [vote],
+          done: true,
+        });
+      },
+    );
+
+    return unsubscribe;
+  },
+});

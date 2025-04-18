@@ -29,7 +29,7 @@ import { tasksService } from '../service';
 import { type OperationType, type TaskDescription } from '../types';
 
 import { block } from './block';
-import { evidenceInfo } from './evidence';
+import { evidenceModel } from './evidence';
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberSalary } from './memberSalary';
@@ -39,7 +39,6 @@ import { referendums } from './referendums';
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
 const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
-const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
@@ -145,35 +144,28 @@ const $salaryTasks = combine(
 
 const $evidenceTasks = combine(
   {
-    referendums: referendums.$ongoing,
+    evidences: evidenceModel.$evidencesWithoutReferendums,
     member: $member,
     members: $members,
-    evidences: $evidences,
     evidencePopulated: evidence.$populated,
-    operations: $basketOperationsMap,
   },
-  ({ referendums, member, members, evidences, evidencePopulated, operations }) => {
+  ({ evidences, member, members, evidencePopulated }) => {
     if (!evidencePopulated || nullable(member)) {
       return [];
     }
 
     return evidences
       .map<TaskDescription | null>(evidence => {
-        const referendum = referendums.find(r => {
-          return r.proposal?.type === 'Evidence' && r.proposal.accountId === evidence.accountId;
-        });
-        if (nonNullable(referendum)) return null;
-
         const proposer = members.find(m => m.accountId === evidence.accountId);
         if (nullable(proposer)) return null;
 
         if (memberService.canVoteForProposal(member, proposer.rank)) {
           return {
-            id: 'evidence_request',
+            id: `evidence_request_${proposer.accountId}`,
             weight: 1,
             group: 'general',
             body: PromotionRetentionVoting,
-            meta: { evidence, transaction: operations['evidence_request'] ?? null, tags: [] },
+            meta: { evidence, transaction: null, tags: [] },
           };
         }
 
@@ -191,8 +183,8 @@ const $evidenceReferendumsTasks = combine(
     evidencePopulated: evidence.$populated,
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
-    hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
-    hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
+    hasPromotionEvidence: evidenceModel.$hasPromotionEvidence,
+    hasRetentionEvidence: evidenceModel.$hasRetentionEvidence,
     operations: $basketOperationsMap,
   },
   ({
@@ -359,5 +351,5 @@ export const tasks = {
   $chainName,
   $basketOperations: $memberBasketOperations,
   $list,
-  pending: or(basketOperations.pending, member.pending, evidenceInfo.pending),
+  pending: or(basketOperations.pending, member.pending, evidence.request.pending),
 };

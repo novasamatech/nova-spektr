@@ -1,32 +1,22 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type ChainId } from '@/shared/core';
-import { createDataSubscription } from '@/shared/effector';
-import { isEqual, merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
+import { createSubscriptionResource } from '@/shared/resource';
+import { type CollectivePalletsType } from '../_lib/types';
 
 import { type CoreMember, type Member } from './types';
 
-export type RequestParams = {
+type RequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chainId: ChainId;
 };
 
-const {
-  $: $list,
-  pending,
-  subscribe,
-  unsubscribe,
-  fulfilled,
-  received,
-} = createDataSubscription<CollectivesStruct<(Member | CoreMember)[]>, RequestParams, (Member | CoreMember)[]>({
-  key: ({ palletType, chainId }) => `${palletType}-${chainId}`,
-  initial: {},
-  fn: ({ api, palletType }, callback) => {
+export const membersSubscription = createSubscriptionResource<RequestParams, Member[]>({
+  pool: ({ api, palletType }) => `${api.genesisHash.toHex()}:${palletType}`,
+  fn({ api, palletType }, callback) {
     const fn = async () => {
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
@@ -39,6 +29,8 @@ const {
 
         if (nonNullable(coreMember?.status)) {
           result.push({
+            pallet: palletType,
+            chainId: api.genesisHash.toHex(),
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,
             isActive: coreMember.status.isActive,
@@ -47,6 +39,8 @@ const {
           });
         } else {
           result.push({
+            pallet: palletType,
+            chainId: api.genesisHash.toHex(),
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,
           });
@@ -84,31 +78,4 @@ const {
       });
     };
   },
-  map: (store, { params, result }) => {
-    const prev = pickNestedValue(store, params.palletType, params.chainId);
-    let list;
-    if (nullable(prev) || prev.length > result.length) {
-      list = result.sort((a, b) => b.rank - a.rank);
-    } else {
-      list = merge({
-        a: prev,
-        b: result,
-        sort: (a, b) => b.rank - a.rank,
-        mergeBy: m => m.accountId,
-        filter: (a, b) => !isEqual(a, b),
-      });
-    }
-
-    return setNestedValue(store, params.palletType, params.chainId, list);
-  },
 });
-
-export const member = {
-  $list,
-
-  pending,
-  subscribe,
-  unsubscribe,
-  fulfilled,
-  received,
-};

@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { zipWith } from 'lodash';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -47,9 +48,12 @@ export const storage = {
   /**
    * Some evidence together with the desired outcome for which it was presented.
    */
-  memberEvidence(type: PalletType, api: ApiPromise, account: AccountId) {
-    const schema = pjsSchema.optional(collectiveCoreMemberEvidence);
+  memberEvidence(type: PalletType, api: ApiPromise, accounts: AccountId[]) {
+    const schema = pjsSchema.vec(pjsSchema.optional(collectiveCoreMemberEvidence));
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'memberEvidence')(account)).then(schema.parse);
+    return substrateRpcPool
+      .call(() => getQuery(type, api, 'memberEvidence').multi(accounts))
+      .then(schema.parse)
+      .then(evidences => zipWith(accounts, evidences, (account, evidence) => ({ account, evidence })));
   },
 };

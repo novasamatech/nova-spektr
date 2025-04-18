@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
@@ -41,7 +42,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
   return (
     <CardStack>
       <CardStack.Trigger sticky>
-        <div className="flex w-full items-center">
+        <div className="flex w-full items-center" data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}>
           <div className="flex flex-1 items-center gap-x-2 py-0.5">
             <AssetIcon asset={asset} />
             <div className="flex flex-col gap-y-0.5">
