@@ -3,7 +3,7 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { member, memberService, referendumMeta, referendumMetaService, track, voting } from '@/domains/collectives';
+import { member, memberService, referendumMetaService, track } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
@@ -21,7 +21,7 @@ const $account = fellowshipProfileFeature.input.map(store => (store ? store.acco
 const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
 const $memberVotes = combine($member, $votes, (member, voting) => {
-  if (nullable(member)) return [];
+  if (nullable(member)) return null;
   return voting.filter(v => v.accountId === member.accountId);
 });
 
@@ -69,24 +69,27 @@ const $referendumsSinceLastProof = combine(
     member: $member,
   },
   ({ referendums, maxRank, member }) => {
-    if (!member || !memberService.isCoreMember(member)) return [];
+    if (!member || !memberService.isCoreMember(member)) return null;
     return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member, maxRank);
   },
 );
 
 const $activityInfo = combine(
   { referendums: $referendumsSinceLastProof, votes: $memberVotes },
-  ({ referendums, votes }) => referendumMetaService.getActivityInfo(referendums, votes),
+  ({ referendums, votes }) =>
+    !referendums || !votes ? null : referendumMetaService.getActivityInfo(referendums, votes),
 );
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
-const $pendingReferendums = or($referendumMeta.map(nullable), referendumMeta.pending);
-const $pendingVotes = or($memberVotes.map(nullable), voting.request.pending);
+const $pendingReferendums = $referendumsSinceLastProof.map(
+  referendumsList => nullable(referendumsList) || !referendumsList.length,
+);
+const $pendingVotes = $memberVotes.map(memberVotes => nullable(memberVotes) || !memberVotes.length);
 
 export const profile = {
   $member,
   $activityInfo,
-  $pendingDetails: or($pendingReferendums, $pendingVotes),
+  $pendingActivityInfo: or($pendingReferendums, $pendingVotes),
   $account,
   $track,
   $identity,
