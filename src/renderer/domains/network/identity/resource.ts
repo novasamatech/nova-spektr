@@ -11,20 +11,20 @@ import { type AccountIdentity } from './types';
 
 const LOADING_TIMEOUT = 15_000;
 
-export type ResourceParams = {
+export type FetchParams = {
   accounts: AccountId[];
   chainId: ChainId;
   api: ApiPromise;
 };
 
-export const resource = createRemoteResource<ResourceParams, Record<AccountId, AccountIdentity>>({
+export const fetchIdentity = createRemoteResource<FetchParams, Record<AccountId, AccountIdentity>>({
   pool: ({ chainId }) => chainId,
   cache: {
     key: ({ chainId, accounts }) => `${chainId}:${accounts.join(',')}`,
     ttl: Number.POSITIVE_INFINITY,
   },
   async fn({ api, chainId, accounts }) {
-    if (accounts.length === 0 || nullable(api)) return {};
+    if (accounts.length === 0) return {};
 
     const subIdentities = await withTimeout(identityPallet.storage.superOf(api, accounts), LOADING_TIMEOUT, null);
     if (nullable(subIdentities)) return {};
