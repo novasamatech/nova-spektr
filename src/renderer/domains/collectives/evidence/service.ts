@@ -56,6 +56,7 @@ function getBlockUntilDemotion(member: Member, periods: EvidencePeriods, current
     const gone = currentBlock - member.lastProof;
     return Math.max(0, demotionPeriod - gone);
   }
+
   return Number.POSITIVE_INFINITY;
 }
 
@@ -64,6 +65,7 @@ function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
     const demotionPeriod = getDemotionPeriod(member, periods);
     return demotionPeriod + member.lastProof;
   }
+
   return Number.POSITIVE_INFINITY;
 }
 

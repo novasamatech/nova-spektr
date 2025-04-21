@@ -211,27 +211,27 @@ const $evidenceTasks = combine(
       return [];
     }
 
-    return evidences
-      .map<TaskDescription | null>(evidence => {
-        const proposer = members.find(m => m.accountId === evidence.accountId);
-        if (nullable(proposer)) return null;
+    const tasks: TaskDescription[] = [];
 
-        if (memberService.canVoteForProposal(member, proposer.rank)) {
-          const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(member, periods) : null;
-          const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, member, periods, currentBlock);
+    for (const evidence of evidences) {
+      const proposer = members.find(m => m.accountId === evidence.accountId);
+      if (nullable(proposer)) continue;
 
-          return {
-            id: `evidence_request_${proposer.accountId}`,
-            weight: sortingScore,
-            group: 'general',
-            body: PromotionRetentionVoting,
-            meta: { evidence, transaction: null, endBlock, tags },
-          };
-        }
+      if (memberService.canVoteForProposal(member, proposer.rank)) {
+        const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(member, periods) : null;
+        const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, member, periods, currentBlock);
 
-        return null;
-      })
-      .filter(nonNullable);
+        tasks.push({
+          id: `evidence_request_${proposer.accountId}`,
+          weight: sortingScore,
+          group: 'general',
+          body: PromotionRetentionVoting,
+          meta: { evidence, transaction: null, endBlock, tags },
+        });
+      }
+    }
+
+    return tasks;
   },
 );
 
