@@ -166,7 +166,7 @@ function getEvidenceImportance(
   if (evidence.wish === 'Promotion') {
     return {
       tags: [],
-      sortingScore: 0,
+      sortingScore: -0.1,
     };
   }
 
