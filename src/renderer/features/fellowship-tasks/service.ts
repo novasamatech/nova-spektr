@@ -21,8 +21,7 @@ type Importance = {
  * value of 1 indicates maximum urgency (referendum is about to end), and a
  * value of 0 indicates minimum urgency (more than 3 days remain).
  */
-function getReferendumUrgencyScore(referendum: OngoingReferendum, currentBlock: BlockHeight): number {
-  const blocksLeft = referendum.ends - currentBlock;
+function getUrgencyScore(blocksLeft: number): number {
   // TODO use real block time
   const threeDaysBlocks = (3 * 24 * 3600) / 6;
   const sevenDaysBlocks = (7 * 24 * 3600) / 6;
@@ -36,7 +35,7 @@ function getReferendumUrgencyScore(referendum: OngoingReferendum, currentBlock: 
     return 1.0 - blocksLeft / threeDaysBlocks;
   }
 
-  return (1.0 - blocksLeft / sevenDaysBlocks) * 0.1;
+  return (1.0 - blocksLeft / sevenDaysBlocks) * 0.5;
 }
 
 /**
@@ -89,7 +88,20 @@ function getSortingScope(urgencyScore: number, controversyScore: number, userImp
   const isControversial = controversyScore > 0.5;
   const isImportantVote = userImportanceScore > 0.5;
 
-  const sortingScore = urgencyScore + controversyScore + userImportanceScore;
+  let sortingScore = urgencyScore * 0.1;
+
+  if (isUrgent && isImportantVote) {
+    sortingScore += 0.9;
+  }
+  if (isUrgent && isControversial) {
+    sortingScore += 0.75;
+  }
+  if (isImportantVote || isUrgent) {
+    sortingScore += 0.5;
+  }
+  if (isControversial) {
+    sortingScore += 0.25;
+  }
 
   return {
     sortingScore,
@@ -115,7 +127,7 @@ function getReferendumImportance({
   memberVotingWeight: number;
   currentBlock: BlockHeight;
 }): Importance {
-  const urgencyScore = getReferendumUrgencyScore(referendum, currentBlock);
+  const urgencyScore = getUrgencyScore(referendum.ends - currentBlock);
   const controversyScore = getReferendumControversyScore(referendum, maximumAvailableVotingWeight);
   const userImportanceScore = getReferendumUserImportanceScore(maximumAvailableVotingWeight, memberVotingWeight);
 
@@ -144,21 +156,6 @@ function getReferendumImportance({
 
 // evidence sorting
 
-function getEvidenceUrgencyScore(blocksLeft: number): number {
-  // TODO use real block time
-  const threeDaysBlocks = (3 * 24 * 3600) / 6;
-
-  if (blocksLeft <= 0) {
-    return 1;
-  }
-
-  if (blocksLeft >= threeDaysBlocks) {
-    return 0;
-  }
-
-  return 1.0 - blocksLeft / threeDaysBlocks;
-}
-
 function getEvidenceImportance(
   evidence: Evidence,
   member: Member,
@@ -175,16 +172,18 @@ function getEvidenceImportance(
 
   if (evidence.wish === 'Retention') {
     const blocksLeft = evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
-    const urgencyScore = getEvidenceUrgencyScore(blocksLeft);
-    const isUrgent = urgencyScore > 0.3;
+    const urgencyScore = getUrgencyScore(blocksLeft);
+    const isUrgent = urgencyScore > 0.4;
     const tags: string[] = [];
+
+    const sortingScore = isUrgent ? 0.9 + urgencyScore * 0.1 : urgencyScore;
 
     if (isUrgent) {
       tags.push('urgent');
     }
 
     return {
-      sortingScore: urgencyScore,
+      sortingScore,
       tags,
     };
   }

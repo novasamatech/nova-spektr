@@ -342,8 +342,8 @@ const $list = combine(
       const list = [
         ...memberSalaryTasks,
         ...memberEvidenceTasks,
-        ...referendumTasks,
         ...evidenceTasks,
+        ...referendumTasks,
         ...completedReferendumsTasks,
       ];
       return list.sort((a, b) => b.weight - a.weight);
