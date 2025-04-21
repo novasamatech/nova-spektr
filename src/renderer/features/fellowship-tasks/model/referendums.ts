@@ -1,9 +1,17 @@
-import { sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { createStore, sample } from 'effector';
 
+import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable } from '@/shared/lib/utils';
-import { referendum, referendumMeta, referendumService, track } from '@/domains/collectives';
-import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { shallowEqual } from '@/shared/lib/utils';
+import {
+  type CollectivePalletsType,
+  referendum,
+  referendumMeta,
+  referendumService,
+  track,
+} from '@/domains/collectives';
+import { type GovernanceApiSource, governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -28,20 +36,28 @@ sample({
   target: referendum.unsubscribe,
 });
 
-const metadataProviderUpdated = attachToFeatureInput(fellowshipTasksFeature, governanceMetaProvider.$metaProvider);
+const $metadataRequestParams = createStore<{
+  provider: GovernanceApiSource;
+  api: ApiPromise;
+  chainId: ChainId;
+  palletType: CollectivePalletsType;
+} | null>(null);
 
-sample({
-  clock: metadataProviderUpdated,
-  filter({ data }) {
-    return nonNullable(data);
-  },
-  fn: ({ input: { chainId, palletType, api }, data: apiSource }) => ({
+const metadataProviderUpdated = attachToFeatureInput(fellowshipTasksFeature, governanceMetaProvider.$metaProvider).map(
+  ({ input: { chainId, palletType, api }, data: apiSource }) => ({
     provider: apiSource!.type,
     api,
     chainId,
     palletType,
   }),
-  target: referendumMeta.request,
+);
+
+sample({
+  clock: metadataProviderUpdated,
+  source: $metadataRequestParams,
+  filter: (prev, next) => !shallowEqual(prev, next),
+  fn: (_, next) => next,
+  target: [$metadataRequestParams, referendumMeta.request],
 });
 
 export const referendums = {
