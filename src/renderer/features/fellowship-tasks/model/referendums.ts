@@ -56,10 +56,7 @@ sample({
   clock: metadataProviderUpdated,
   source: $metadataRequestParams,
   filter: (prev, next) => !shallowEqual(prev, next),
-  fn: (_, next) => {
-    console.log('clock [$metadataRequestParams, referendumMeta.request]');
-    return next;
-  },
+  fn: (_, next) => next,
   target: [$metadataRequestParams, referendumMeta.request],
 });
 

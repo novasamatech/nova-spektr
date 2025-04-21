@@ -1,8 +1,11 @@
-import { attach, combine, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { attach, combine, createStore, sample } from 'effector';
 import { and, or } from 'patronum';
 
+import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable, shallowEqual } from '@/shared/lib/utils';
+import { type PalletType } from '@/shared/pallet/collective/types';
 import { member, memberService, referendumMetaService, track } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
@@ -43,9 +46,22 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
+const $fellowshipParams = createStore<{
+  api: ApiPromise;
+  chainId: ChainId;
+  palletType: PalletType;
+} | null>(null);
+
+const fellowshipProviderUpdated = fellowshipProfileFeature.running.map(({ api, chainId, palletType }) => {
+  return { api, chainId, palletType };
+});
+
 sample({
-  clock: fellowshipProfileFeature.running,
-  target: [member.subscribe, track.request],
+  clock: fellowshipProviderUpdated,
+  source: $fellowshipParams,
+  filter: (prev, next) => !shallowEqual(prev, next),
+  fn: (_, next) => next,
+  target: [$fellowshipParams, member.subscribe, track.request],
 });
 
 sample({
