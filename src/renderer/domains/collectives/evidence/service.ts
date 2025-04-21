@@ -6,7 +6,8 @@ import { type Chain, type HexString, type Transaction, TransactionType } from '@
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
-import { type CoreMember } from '../member/types';
+import { memberService } from '../member/service';
+import { type CoreMember, type Member } from '../member/types';
 
 import { type EvidencePeriods, type EvidenceTransaction } from './types';
 
@@ -49,15 +50,21 @@ function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
-function getBlockUntilDemotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
-  const demotionPeriod = getDemotionPeriod(member, periods);
-  const gone = currentBlock - member.lastProof;
-  return Math.max(0, demotionPeriod - gone);
+function getBlockUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  if (memberService.isCoreMember(member)) {
+    const demotionPeriod = getDemotionPeriod(member, periods);
+    const gone = currentBlock - member.lastProof;
+    return Math.max(0, demotionPeriod - gone);
+  }
+  return Number.POSITIVE_INFINITY;
 }
 
-function getEndDemotionBlock(member: CoreMember, periods: EvidencePeriods) {
-  const demotionPeriod = getDemotionPeriod(member, periods);
-  return pjsSchema.helpers.toBlockHeight(demotionPeriod + member.lastProof);
+function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
+  if (memberService.isCoreMember(member)) {
+    const demotionPeriod = getDemotionPeriod(member, periods);
+    return demotionPeriod + member.lastProof;
+  }
+  return Number.POSITIVE_INFINITY;
 }
 
 type EvidenceTransactionParams = {

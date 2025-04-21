@@ -39,6 +39,7 @@ import { referendums } from './referendums';
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
 const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
+const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
@@ -87,9 +88,9 @@ const $basketOperationsMap = $memberBasketOperations.map(operations => {
   return map;
 });
 
-// salary
+// personal
 
-const $salaryTasks = combine(
+const $memberSalaryTasks = combine(
   {
     member: $member,
     period: memberSalary.$currentPeriod,
@@ -140,44 +141,7 @@ const $salaryTasks = combine(
   },
 );
 
-// evidences
-
-const $evidenceTasks = combine(
-  {
-    evidences: evidenceModel.$evidencesWithoutReferendums,
-    member: $member,
-    members: $members,
-    evidencePopulated: evidence.$populated,
-  },
-  ({ evidences, member, members, evidencePopulated }) => {
-    if (!evidencePopulated || nullable(member)) {
-      return [];
-    }
-
-    return evidences
-      .map<TaskDescription | null>(evidence => {
-        const proposer = members.find(m => m.accountId === evidence.accountId);
-        if (nullable(proposer)) return null;
-
-        if (memberService.canVoteForProposal(member, proposer.rank)) {
-          return {
-            id: `evidence_request_${proposer.accountId}`,
-            weight: 1,
-            group: 'general',
-            body: PromotionRetentionVoting,
-            meta: { evidence, transaction: null, tags: [] },
-          };
-        }
-
-        return null;
-      })
-      .filter(nonNullable);
-  },
-);
-
-// referendums
-
-const $evidenceReferendumsTasks = combine(
+const $memberEvidenceTasks = combine(
   {
     member: $member,
     evidencePopulated: evidence.$populated,
@@ -228,6 +192,46 @@ const $evidenceReferendumsTasks = combine(
     }
 
     return [];
+  },
+);
+
+// general
+
+const $evidenceTasks = combine(
+  {
+    evidences: evidenceModel.$evidencesWithoutReferendums,
+    periods: $evidencePeriods,
+    member: $member,
+    members: $members,
+    evidencePopulated: evidence.$populated,
+    currentBlock: block.$currentBlock,
+  },
+  ({ evidences, periods, member, members, evidencePopulated, currentBlock }) => {
+    if (!evidencePopulated || nullable(member) || nullable(periods)) {
+      return [];
+    }
+
+    return evidences
+      .map<TaskDescription | null>(evidence => {
+        const proposer = members.find(m => m.accountId === evidence.accountId);
+        if (nullable(proposer)) return null;
+
+        if (memberService.canVoteForProposal(member, proposer.rank)) {
+          const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(member, periods) : null;
+          const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, member, periods, currentBlock);
+
+          return {
+            id: `evidence_request_${proposer.accountId}`,
+            weight: sortingScore,
+            group: 'general',
+            body: PromotionRetentionVoting,
+            meta: { evidence, transaction: null, endBlock, tags },
+          };
+        }
+
+        return null;
+      })
+      .filter(nonNullable);
   },
 );
 
@@ -301,6 +305,8 @@ const $ongoingReferendumsTasks = combine(
   },
 );
 
+// completed
+
 const $completedReferendumsTasks = combine(referendums.$completed, referendums => {
   return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
     return {
@@ -317,27 +323,27 @@ const $completedReferendumsTasks = combine(referendums.$completed, referendums =
 
 const $list = combine(
   {
-    salaryTasks: $salaryTasks,
-    evidenceTasks: $evidenceTasks,
+    memberSalaryTasks: $memberSalaryTasks,
+    memberEvidenceTasks: $memberEvidenceTasks,
     referendumTasks: $ongoingReferendumsTasks,
     completedReferendumsTasks: $completedReferendumsTasks,
-    evidenceReferendumTasks: $evidenceReferendumsTasks,
+    evidenceTasks: $evidenceTasks,
     hasPermission: $hasPermission,
   },
   ({
-    salaryTasks,
+    memberSalaryTasks,
+    memberEvidenceTasks,
     evidenceTasks,
     referendumTasks,
     completedReferendumsTasks,
-    evidenceReferendumTasks,
     hasPermission,
   }) => {
     if (hasPermission) {
       const list = [
-        ...salaryTasks,
-        ...evidenceTasks,
+        ...memberSalaryTasks,
+        ...memberEvidenceTasks,
         ...referendumTasks,
-        ...evidenceReferendumTasks,
+        ...evidenceTasks,
         ...completedReferendumsTasks,
       ];
       return list.sort((a, b) => b.weight - a.weight);

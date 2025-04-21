@@ -1,8 +1,17 @@
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
-import { type Member, type OngoingReferendum, trackService } from '@/domains/collectives';
+import {
+  type Evidence,
+  type EvidencePeriods,
+  type Member,
+  type OngoingReferendum,
+  evidenceService,
+  trackService,
+} from '@/domains/collectives';
 
-type ReferendumImportance = {
+// referendum sorting
+
+type Importance = {
   sortingScore: number;
   tags: string[];
 };
@@ -12,21 +21,22 @@ type ReferendumImportance = {
  * value of 1 indicates maximum urgency (referendum is about to end), and a
  * value of 0 indicates minimum urgency (more than 3 days remain).
  */
-function getUrgencyScore(referendum: OngoingReferendum, currentBlock: BlockHeight): number {
+function getReferendumUrgencyScore(referendum: OngoingReferendum, currentBlock: BlockHeight): number {
   const blocksLeft = referendum.ends - currentBlock;
   // TODO use real block time
   const threeDaysBlocks = (3 * 24 * 3600) / 6;
+  const sevenDaysBlocks = (7 * 24 * 3600) / 6;
 
   if (blocksLeft <= 0) {
     // Referendum ends imminently or already ended
     return 1;
   }
 
-  if (blocksLeft >= threeDaysBlocks) {
-    return 0;
+  if (blocksLeft <= threeDaysBlocks) {
+    return 1.0 - blocksLeft / threeDaysBlocks;
   }
 
-  return 1.0 - blocksLeft / threeDaysBlocks;
+  return (1.0 - blocksLeft / sevenDaysBlocks) * 0.1;
 }
 
 /**
@@ -35,7 +45,7 @@ function getUrgencyScore(referendum: OngoingReferendum, currentBlock: BlockHeigh
  * potential votes have been cast), 0 means no votes are cast yet or the vote is
  * not close.
  */
-function getControversyScore(referendum: OngoingReferendum, maximumAvailableVotingWeight: number): number {
+function getReferendumControversyScore(referendum: OngoingReferendum, maximumAvailableVotingWeight: number): number {
   const totalCast = referendum.tally.ayes + referendum.tally.nays;
 
   if (totalCast == 0) {
@@ -62,7 +72,7 @@ function getControversyScore(referendum: OngoingReferendum, maximumAvailableVoti
  * 1 indicates that the user alone holds all (or nearly all) the voting power, 0
  * indicates the user has no effective voting power relative to the total.
  */
-function getUserImportanceScore(maximumAvailableVotingWeight: number, userVotingPower: number) {
+function getReferendumUserImportanceScore(maximumAvailableVotingWeight: number, userVotingPower: number) {
   if (maximumAvailableVotingWeight <= 0) {
     return 1;
   }
@@ -74,26 +84,24 @@ function getUserImportanceScore(maximumAvailableVotingWeight: number, userVoting
 /**
  * Weights are adjustable and can be changed after feedback
  */
-function getSortingScope(isUrgent: boolean, isControversial: boolean, isImportantVote: boolean) {
-  if (isUrgent && isImportantVote) {
-    return 1;
-  }
-  if (isUrgent && isControversial) {
-    return 0.75;
-  }
-  if (isImportantVote || isUrgent) {
-    return 0.5;
-  }
-  if (isControversial) {
-    return 0.25;
-  }
+function getSortingScope(urgencyScore: number, controversyScore: number, userImportanceScore: number) {
+  const isUrgent = urgencyScore > 0.3;
+  const isControversial = controversyScore > 0.5;
+  const isImportantVote = userImportanceScore > 0.5;
 
-  return 0;
+  const sortingScore = urgencyScore + controversyScore + userImportanceScore;
+
+  return {
+    sortingScore,
+    isUrgent,
+    isImportantVote,
+    isControversial,
+  };
 }
 
 /**
- * Computes an overall importance (sorting_score) for a given referendum, along
- * with a set of tags for UI to display The sorting_score is a simple linear
+ * Computes an overall importance (sorting score) for a given referendum, along
+ * with a set of tags for UI to display The sortingScore is a simple linear
  * combination of the three sub-scores
  */
 function getReferendumImportance({
@@ -106,17 +114,17 @@ function getReferendumImportance({
   maximumAvailableVotingWeight: number;
   memberVotingWeight: number;
   currentBlock: BlockHeight;
-}): ReferendumImportance {
-  const urgencyScore = getUrgencyScore(referendum, currentBlock);
-  const controversyScore = getControversyScore(referendum, maximumAvailableVotingWeight);
-  const userImportanceScore = getUserImportanceScore(maximumAvailableVotingWeight, memberVotingWeight);
-
-  const isUrgent = urgencyScore > 0.3;
-  const isControversial = controversyScore > 0.5;
-  const isImportantVote = userImportanceScore > 0.5;
+}): Importance {
+  const urgencyScore = getReferendumUrgencyScore(referendum, currentBlock);
+  const controversyScore = getReferendumControversyScore(referendum, maximumAvailableVotingWeight);
+  const userImportanceScore = getReferendumUserImportanceScore(maximumAvailableVotingWeight, memberVotingWeight);
 
   const tags: string[] = [];
-  const sortingScore = getSortingScope(isUrgent, isControversial, isImportantVote);
+  const { sortingScore, isUrgent, isImportantVote, isControversial } = getSortingScope(
+    urgencyScore,
+    controversyScore,
+    userImportanceScore,
+  );
 
   if (isUrgent) {
     tags.push('urgent');
@@ -133,6 +141,61 @@ function getReferendumImportance({
     tags,
   };
 }
+
+// evidence sorting
+
+function getEvidenceUrgencyScore(blocksLeft: number): number {
+  // TODO use real block time
+  const threeDaysBlocks = (3 * 24 * 3600) / 6;
+
+  if (blocksLeft <= 0) {
+    return 1;
+  }
+
+  if (blocksLeft >= threeDaysBlocks) {
+    return 0;
+  }
+
+  return 1.0 - blocksLeft / threeDaysBlocks;
+}
+
+function getEvidenceImportance(
+  evidence: Evidence,
+  member: Member,
+  periods: EvidencePeriods,
+  currentBlock: BlockHeight,
+): Importance {
+  // Promotion evidences are not critical and doesn't have expiration date.
+  if (evidence.wish === 'Promotion') {
+    return {
+      tags: [],
+      sortingScore: 0,
+    };
+  }
+
+  if (evidence.wish === 'Retention') {
+    const blocksLeft = evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
+    const urgencyScore = getEvidenceUrgencyScore(blocksLeft);
+    const isUrgent = urgencyScore > 0.3;
+    const tags: string[] = [];
+
+    if (isUrgent) {
+      tags.push('urgent');
+    }
+
+    return {
+      sortingScore: urgencyScore,
+      tags,
+    };
+  }
+
+  return {
+    sortingScore: 0,
+    tags: [],
+  };
+}
+
+// voting weight
 
 function getMaximumAvailableVotingWeight(members: Member[], maxRank: number, track: TrackId): number {
   let max = 0;
@@ -152,9 +215,8 @@ function getMaximumAvailableVotingWeight(members: Member[], maxRank: number, tra
 }
 
 export const tasksService = {
-  getUrgencyScore,
-  getControversyScore,
-  getUserImportanceScore,
+  getReferendumUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
+  getEvidenceImportance,
 };
