@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Transaction } from '@/shared/core';
@@ -7,7 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { VoteBadge } from '@/features/governance';
 import { evidenceModel } from '../../model/evidence';
+import { votes } from '../../model/voting';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
@@ -40,7 +42,13 @@ export const PromotionRetentionReferendumVoting = memo(
     const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
     const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
     const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
+    const vote = useStoreMap({
+      store: votes.$memberVotes,
+      keys: [referendum.id],
+      fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
+    });
 
+    const voted = Boolean(vote);
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
@@ -61,6 +69,7 @@ export const PromotionRetentionReferendumVoting = memo(
             <Box direction="row" gap={3}>
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
+              <VoteBadge voted={voted} />
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
             <FootnoteText as="div">
