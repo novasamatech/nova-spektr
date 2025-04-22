@@ -38,7 +38,7 @@ type Props = {
   tags: string[];
 };
 
-export const PromotionRetentionVoting = memo(({ evidence, tags, endBlock, transaction }: Props) => {
+export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock, transaction }: Props) => {
   const { t } = useI18n();
 
   const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
