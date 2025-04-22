@@ -150,10 +150,10 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
   }
 });
 
-fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, ({ evidence }) => {
-  return <VotingActions evidence={evidence} variant="small" />;
+fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endBlock }) => {
+  return <VotingActions evidence={evidence} endBlock={endBlock} variant="small" />;
 });
 
 fellowshipSalaryFeature.inject(evidenceActionsSlot, ({ evidence }) => {
-  return <VotingActions evidence={evidence} variant="large" />;
+  return <VotingActions evidence={evidence} endBlock={null} variant="large" />;
 });

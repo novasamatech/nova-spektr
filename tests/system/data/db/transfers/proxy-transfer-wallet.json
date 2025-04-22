@@ -1,0 +1,228 @@
+{
+  "formatName": "dexie",
+  "formatVersion": 1,
+  "data": {
+    "databaseName": "spektr",
+    "databaseVersion": 29,
+    "tables": [
+      {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "wallets",
+        "schema": "++id",
+        "rowCount": 3
+      },
+      {
+        "name": "accounts",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "contacts",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
+        "name": "multisigTransactions",
+        "schema": "[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash",
+        "rowCount": 0
+      },
+      {
+        "name": "notifications",
+        "schema": "++id",
+        "rowCount": 1
+      },
+      {
+        "name": "multisigEvents",
+        "schema": "++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId",
+        "rowCount": 0
+      },
+      {
+        "name": "accounts2",
+        "schema": "id",
+        "rowCount": 7
+      }
+    ],
+    "data": [{
+      "tableName": "connections",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "wallets",
+      "inbound": true,
+      "rows": [
+        {
+          "name": "omni",
+          "rootAccountId": "0xac3d3ae62929639dab401091d8d89dfe7db077584acf679e4b5e252db031c606",
+          "type": "wallet_pv",
+          "signingType": "signing_pv",
+          "isActive": false,
+          "id": 1
+        },
+        {
+          "name": "Any for 5D5Re9...HZVUfa",
+          "type": "wallet_pxd",
+          "signingType": "signing_wo",
+          "isHidden": false,
+          "isActive": true,
+          "id": 2
+        },
+        {
+          "name": "5CT2r...ba2aj",
+          "type": "wallet_ms",
+          "signingType": "signing_ms",
+          "isActive": false,
+          "id": 3
+        }
+      ]
+    },{
+      "tableName": "accounts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "contacts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "multisigTransactions",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "notifications",
+      "inbound": true,
+      "rows": [
+        {
+          "read": false,
+          "type": "MultisigCreatedNotification",
+          "dateCreated": 1744181278793,
+          "multisigAccountId": "0x11075d21a63ebdc6a4e91839772c7662757fba2512579b81ead7e8e31032e2bc",
+          "multisigAccountName": "5CT2r...ba2aj",
+          "signatories": [
+            "0x2cc8e43c103518e9f982e9498e64b87c4d393e14582324dfab2a293244e104e9",
+            "0xc40d39636ae277ff3f09aab9696788acbbde192bc2b2ef1b83d859e2cc1b2b17"
+          ],
+          "threshold": 2,
+          "id": 1,
+          "$types": {
+            "signatories": "arrayNonindexKeys"
+          }
+        }
+      ]
+    },{
+      "tableName": "multisigEvents",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "accounts2",
+      "inbound": true,
+      "rows": [
+        {
+          "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+          "name": "Main",
+          "derivationPath": "//polkadot",
+          "cryptoType": 0,
+          "signingType": "signing_pv",
+          "accountType": "chain",
+          "keyType": "main",
+          "type": "chain",
+          "accountId": "0x048d66baefae0a72c2ec9aa2e1f6dbc3f69164c122dadff09c3ba8b008324a69",
+          "walletId": 1,
+          "id": "1 0x048d66baefae0a72c2ec9aa2e1f6dbc3f69164c122dadff09c3ba8b008324a69 0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"
+        },
+        {
+          "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+          "name": "Main",
+          "derivationPath": "//kusama",
+          "cryptoType": 0,
+          "signingType": "signing_pv",
+          "accountType": "chain",
+          "keyType": "main",
+          "type": "chain",
+          "accountId": "0x50862e68e4c78dd7ccd0c6d704239a17986e020d8063306d8796eb3cc833a22d",
+          "walletId": 1,
+          "id": "1 0x50862e68e4c78dd7ccd0c6d704239a17986e020d8063306d8796eb3cc833a22d 0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe"
+        },
+        {
+          "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+          "name": "Main",
+          "derivationPath": "//westend",
+          "cryptoType": 0,
+          "signingType": "signing_pv",
+          "accountType": "chain",
+          "keyType": "main",
+          "type": "chain",
+          "accountId": "0x7011eac7954d5b945a088d587bc6d8a90944418fcf5c06ec5f7660cf6cb80e79",
+          "walletId": 1,
+          "id": "1 0x7011eac7954d5b945a088d587bc6d8a90944418fcf5c06ec5f7660cf6cb80e79 0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
+        },
+        {
+          "type": "chain",
+          "name": "Hot wallet account",
+          "keyType": "hot",
+          "chainId": "0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442",
+          "accountType": "chain",
+          "cryptoType": 0,
+          "signingType": "signing_pv",
+          "derivationPath": "//collectives-westend//hot",
+          "accountId": "0x96d2e1269ea9e1a271a07d44a336c4661b15127ce0b07197c5cc3d1a27feee21",
+          "walletId": 1,
+          "id": "1 0x96d2e1269ea9e1a271a07d44a336c4661b15127ce0b07197c5cc3d1a27feee21 0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442"
+        },
+        {
+          "type": "chain",
+          "name": "Main",
+          "keyType": "main",
+          "chainId": "0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442",
+          "accountType": "chain",
+          "cryptoType": 0,
+          "signingType": "signing_pv",
+          "derivationPath": "//collectives-westend",
+          "accountId": "0xc410d28f49f5b454b1db63e4bad95a8497004dbfd4dd14d95cbd517b3fb9996b",
+          "walletId": 1,
+          "id": "1 0xc410d28f49f5b454b1db63e4bad95a8497004dbfd4dd14d95cbd517b3fb9996b 0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442"
+        },
+        {
+          "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+          "proxiedAccountId": "0x2cc8e43c103518e9f982e9498e64b87c4d393e14582324dfab2a293244e104e9",
+          "accountId": "0x2cc8e43c103518e9f982e9498e64b87c4d393e14582324dfab2a293244e104e9",
+          "proxyType": "Any",
+          "delay": 0,
+          "proxyAccountId": "0x7011eac7954d5b945a088d587bc6d8a90944418fcf5c06ec5f7660cf6cb80e79",
+          "proxyVariant": "regular",
+          "type": "chain",
+          "name": "Any for 5D5Re9...HZVUfa",
+          "accountType": "proxied",
+          "signingType": "signing_wo",
+          "cryptoType": 0,
+          "walletId": 2,
+          "id": "2 0x2cc8e43c103518e9f982e9498e64b87c4d393e14582324dfab2a293244e104e9 0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e"
+        },
+        {
+          "threshold": 2,
+          "accountId": "0x11075d21a63ebdc6a4e91839772c7662757fba2512579b81ead7e8e31032e2bc",
+          "signatories": [
+            {
+              "accountId": "0x2cc8e43c103518e9f982e9498e64b87c4d393e14582324dfab2a293244e104e9"
+            },
+            {
+              "accountId": "0xc40d39636ae277ff3f09aab9696788acbbde192bc2b2ef1b83d859e2cc1b2b17"
+            }
+          ],
+          "name": "5CT2r...ba2aj",
+          "cryptoType": 0,
+          "signingType": "signing_ms",
+          "accountType": "multisig",
+          "type": "universal",
+          "walletId": 3,
+          "id": "3 0x11075d21a63ebdc6a4e91839772c7662757fba2512579b81ead7e8e31032e2bc universal",
+          "$types": {
+            "signatories": "arrayNonindexKeys"
+          }
+        }
+      ]
+    }]
+  }
+}
