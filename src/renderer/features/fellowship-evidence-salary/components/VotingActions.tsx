@@ -1,19 +1,22 @@
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { DynamicVoteChart } from '@/shared/ui-entities';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
+import { PeriodEndTimer } from './PeriodEndTimer';
 
 type Props = {
   evidence: Evidence;
+  endBlock: number | null;
   variant: 'large' | 'small';
 };
 
-export const VotingActions = memo(({ evidence, variant }: Props) => {
+export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
   const { t } = useI18n();
 
   const buttonNodes = (
@@ -41,9 +44,10 @@ export const VotingActions = memo(({ evidence, variant }: Props) => {
 
   if (variant === 'small') {
     return (
-      <Box verticalAlign="center" gap={1.5} width="102px">
+      <Box verticalAlign="center" horizontalAlign="flex-end" gap={2} width="102px">
+        {nonNullable(endBlock) && <PeriodEndTimer endBlock={endBlock} shortDateFormat />}
         {buttonNodes}
-        <Box gap={1.5}>
+        <Box gap={1.5} width="100%">
           {chartNode}
           <Box direction="row" horizontalAlign="space-between">
             <FootnoteText className="text-text-secondary">

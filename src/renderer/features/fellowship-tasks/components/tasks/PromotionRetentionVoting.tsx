@@ -10,7 +10,11 @@ import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { EvidenceDetailsModal } from '../EvidenceDetailsModal/EvidenceDetailsModal';
 
-export const evidenceVotingTaskActionSlot = createSlot<{ evidence: Evidence; transaction: Transaction | null }>();
+export const evidenceVotingTaskActionSlot = createSlot<{
+  evidence: Evidence;
+  transaction: Transaction | null;
+  endBlock: number | null;
+}>();
 
 const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   urgent: {
@@ -29,11 +33,12 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
 
 type Props = {
   evidence: Evidence;
+  endBlock: number | null;
   transaction: Transaction | null;
   tags: string[];
 };
 
-export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: Props) => {
+export const PromotionRetentionVoting = memo(({ evidence, tags, endBlock, transaction }: Props) => {
   const { t } = useI18n();
 
   const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
@@ -69,7 +74,7 @@ export const PromotionRetentionVoting = memo(({ evidence, tags, transaction }: P
       </EvidenceDetailsModal>
 
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
-        <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction }} />
+        <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction, endBlock }} />
       </Box>
     </Box>
   );
