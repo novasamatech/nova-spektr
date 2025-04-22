@@ -28,7 +28,7 @@ const $query = restore<string>(queryChanged, '');
 
 const $defaultTokens = createStore(tokensService.getTokensData());
 
-const $activeShards = createStore<AnyAccount[]>([]);
+const $activeShards = createStore<AnyAccount[] | null>(null);
 
 sample({
   clock: [shardsModel.events.shardsConfirmed, walletSelect.$selectedAccounts],
@@ -79,7 +79,7 @@ const $activeTokens = combine(
     isShardsAccessDenied: shardsModel.$isAccessDenied,
   },
   ({ connections, chains, tokens, wallet, selectedAccounts, activeShards, isShardsAccessDenied }) => {
-    if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
+    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(activeShards)) return DEFAULT_LIST;
 
     const filteredAccounts = isShardsAccessDenied ? selectedAccounts : activeShards;
 
