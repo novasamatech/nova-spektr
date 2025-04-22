@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ChainId } from '@/shared/core';
@@ -38,13 +38,16 @@ export const Fellowship = () => {
     }
   }, [chainId]);
 
-  const selectReferendum = (referendum: Referendum) => {
-    if (chainId) {
-      navigationModel.events.navigateTo(
-        generatePath(Paths.FELLOWSHIP_REFERENDUM, { chainId, referendumId: referendum.id.toString() }),
-      );
-    }
-  };
+  const selectReferendum = useCallback(
+    (referendum: Referendum) => {
+      if (chainId) {
+        navigationModel.events.navigateTo(
+          generatePath(Paths.FELLOWSHIP_REFERENDUM, { chainId, referendumId: referendum.id.toString() }),
+        );
+      }
+    },
+    [chainId],
+  );
 
   return (
     <Box height="100%" width="100%">
