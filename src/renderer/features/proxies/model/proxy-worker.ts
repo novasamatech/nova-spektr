@@ -119,9 +119,7 @@ async function getProxies({
             }
 
             existingProxiedAccounts.push(proxiedAccount);
-          }
 
-          if (needToAddProxiedAccount) {
             deposits.deposits[account] = value.deposit.toString();
           }
         }
@@ -146,9 +144,7 @@ async function getProxies({
             }
 
             existingProxies.push(newProxy);
-          }
 
-          if (needToAddProxyAccount) {
             deposits.deposits[account] = value.deposit.toString();
           }
         }

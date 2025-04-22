@@ -13,8 +13,8 @@ import { type AccountIdentity } from './types';
 
 const fetchPool = createAsyncTaskPool({
   poolSize: 1,
-  retryCount: 5,
-  retryDelay: 2000,
+  retryCount: 3,
+  retryDelay: 1000,
 });
 
 const $list = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
@@ -64,8 +64,12 @@ const requestFx = attach({
 
 const requestWithRetryFx = createEffect<Omit<FetchParams, 'api'>, Record<AccountId, AccountIdentity>>(
   ({ chainId, accounts }) => {
-    const binded = scopeBind(requestFx, { safe: true });
-    return fetchPool.call(() => binded({ chainId, accounts }));
+    try {
+      const binded = scopeBind(requestFx, { safe: true });
+      return fetchPool.call(() => binded({ chainId, accounts }));
+    } catch {
+      return {};
+    }
   },
 );
 
