@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
@@ -48,7 +49,7 @@ export const PromotionRetentionReferendumVoting = memo(
       fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
     });
 
-    const voted = Boolean(vote);
+    const voted = nonNullable(vote);
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
