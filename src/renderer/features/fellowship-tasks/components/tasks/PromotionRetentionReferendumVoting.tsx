@@ -22,7 +22,7 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
   importantVote: {
     text: 'fellowship.tasks.labels.importantVote',
-    color: 'orange',
+    color: 'purple',
   },
 };
 
