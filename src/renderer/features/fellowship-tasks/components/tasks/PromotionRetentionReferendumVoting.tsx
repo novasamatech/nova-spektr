@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import {
@@ -18,6 +18,8 @@ import {
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { members } from '../../model/members';
+import { votes } from '../../model/voting';
+import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
@@ -55,7 +57,13 @@ export const PromotionRetentionReferendumVoting = memo(
     const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
     const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
     const tracks = useUnit(track.$list);
+    const vote = useStoreMap({
+      store: votes.$memberVotes,
+      keys: [referendum.id],
+      fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
+    });
 
+    const voted = nonNullable(vote);
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
@@ -87,6 +95,7 @@ export const PromotionRetentionReferendumVoting = memo(
             <Box direction="row" gap={3}>
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
+              {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
             <FootnoteText as="div">
