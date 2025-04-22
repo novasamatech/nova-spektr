@@ -27,16 +27,21 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
 
   const [gotFirstCalculation, setGotFirstCalculation] = useState(false);
   const [truncatedText, setTruncatedText] = useState(text);
+  const [measurements, setMeasurements] = useState<{ container: number; ellipsis: number; text: number }>({
+    container: 0,
+    ellipsis: 0,
+    text: 0,
+  });
 
-  const calculateMeasurements = () => {
-    return {
-      container: container?.offsetWidth ?? 0,
-      ellipsis: ellipsisRef.current?.offsetWidth ?? 0,
-      text: textRef.current?.offsetWidth ?? 0,
-    };
-  };
+  useResizeObserver(container, entry => setMeasurements({ ...measurements, container: entry.contentRect.width }));
+  useResizeObserver(ellipsisRef.current, entry =>
+    setMeasurements({ ...measurements, ellipsis: entry.contentRect.width }),
+  );
+  useResizeObserver(textRef.current, entry => setMeasurements({ ...measurements, text: entry.contentRect.width }));
 
-  const truncateText = (measurements: ReturnType<typeof calculateMeasurements>, text: string) => {
+  console.log({ measurements });
+
+  const truncateText = (measurements: { container: number; ellipsis: number; text: number }, text: string) => {
     const containerWidth = measurements.container;
     const ellipsisWidth = measurements.ellipsis;
     const textWidth = measurements.text;
@@ -65,7 +70,6 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
   };
 
   const parseTextForTruncation = (text: string) => {
-    const measurements = calculateMeasurements();
     if (!measurements.text || !measurements.container) {
       return;
     }
@@ -75,10 +79,6 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     setTruncatedText(truncatedText);
     setGotFirstCalculation(true);
   };
-
-  useResizeObserver(container, () => {
-    parseTextForTruncation(text);
-  });
 
   useEffect(() => {
     parseTextForTruncation(text);

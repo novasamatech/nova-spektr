@@ -48,7 +48,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     return {
       ...record,
       address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
-      name: identity ? identityService.getFullName(identity) : undefined,
+      name: undefined,
       duration: (now - record.at.getTime()) / 1000,
     };
   });
@@ -136,7 +136,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
                       accountId={record.accountId}
                       chain={input.chain}
                       title={record.name}
-                      variant="short"
+                      variant="truncate"
                       hideAddress
                     />
                   )}
