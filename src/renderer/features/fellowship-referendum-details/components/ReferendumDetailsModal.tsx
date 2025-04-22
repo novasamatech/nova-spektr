@@ -52,7 +52,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
                 <Card>
                   <Box padding={6} gap={6}>
-                    <SmallTitleText>{t('fellowship.voting.votingStatus1')}</SmallTitleText>
+                    <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
                     <CollectiveReferendumVoteChart referendum={referendum} pending={loadingState} />
                     <Threshold referendum={referendum} pending={loadingState} />
