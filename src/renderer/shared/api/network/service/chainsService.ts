@@ -28,33 +28,28 @@ export const chainsService = {
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
-  searchChain,
 };
 
-function getChainsData(params = { sort: false }): Chain[] {
+function getChainsData(): Chain[] {
   const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
 
   if (nullable(chains)) {
     throw new Error(`Chains config named "${process.env.CHAINS_FILE}" not found`);
   }
 
-  return params.sort ? sortChains(chains) : chains;
+  return sortChains(chains);
 }
 
-function getChainsMap(params = { sort: false }): Record<ChainId, Chain> {
-  return keyBy(getChainsData(params), 'chainId');
+function getChainsMap(): Record<ChainId, Chain> {
+  return keyBy(getChainsData(), 'chainId');
 }
 
 function getChainById(chainId: ChainId): Chain | undefined {
   return getChainsData().find((chain) => chain.chainId === chainId);
 }
 
-function searchChain(query: string): Chain | undefined {
-  return getChainsData().find((chain) => chain.chainId.includes(query));
-}
-
-function getStakingChainsData(params = { sort: false }): Chain[] {
-  return getChainsData(params).reduce<Chain[]>((acc, chain) => {
+function getStakingChainsData(): Chain[] {
+  return getChainsData().reduce<Chain[]>((acc, chain) => {
     if (getRelaychainAsset(chain.assets)) {
       acc.push(chain);
     }

@@ -52,18 +52,26 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
   };
 
   if (step === 'submit') {
-    return <OperationSubmit isOpen onClose={() => handleToggle(false)} />;
+    return (
+      <>
+        <OperationSubmit isOpen onClose={() => handleToggle(false)} />
+        {children}
+      </>
+    );
   }
 
   if (nullable(account) || nullable(input)) {
     return (
-      <OperationResult
-        isOpen
-        variant="error"
-        autoCloseTimeout={2000}
-        title={t('fellowship.voting.errors.noAccount')}
-        onClose={() => handleToggle(false)}
-      />
+      <>
+        <OperationResult
+          isOpen
+          variant="error"
+          autoCloseTimeout={2000}
+          title={t('fellowship.voting.errors.noAccount')}
+          onClose={() => handleToggle(false)}
+        />
+        {children}
+      </>
     );
   }
 

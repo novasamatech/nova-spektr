@@ -1,19 +1,21 @@
 import { memo } from 'react';
 
-import { DynamicVoteChart } from '@/shared/ui-entities';
+import { nonNullable } from '@/shared/lib/utils';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
+import { PeriodEndTimer } from './PeriodEndTimer';
 
 type Props = {
   evidence: Evidence;
+  endBlock: number | null;
   variant: 'large' | 'small';
 };
 
-export const VotingActions = memo(({ evidence, variant }: Props) => {
+export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
   const buttonNodes = (
-    <Box direction="row" gap={0.5}>
+    <Box direction="row" gap={1}>
       <EvidenceVotingModal evidence={evidence} aye={false}>
         <FilledIconButton variant="negative" icon="thumbDown" />
       </EvidenceVotingModal>
@@ -24,22 +26,15 @@ export const VotingActions = memo(({ evidence, variant }: Props) => {
     </Box>
   );
 
-  const chartNode = <DynamicVoteChart value={50} hasVotes />;
-
   if (variant === 'large') {
-    return (
-      <Box direction="row" verticalAlign="center" gap={8}>
-        <Box width="280px">{chartNode}</Box>
-        {buttonNodes}
-      </Box>
-    );
+    return buttonNodes;
   }
 
   if (variant === 'small') {
     return (
-      <Box verticalAlign="center" gap={1} width="102px">
+      <Box verticalAlign="center" horizontalAlign="flex-end" gap={2} width="102px">
+        {nonNullable(endBlock) && <PeriodEndTimer endBlock={endBlock} shortDateFormat />}
         {buttonNodes}
-        {chartNode}
       </Box>
     );
   }

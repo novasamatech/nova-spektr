@@ -64,7 +64,22 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
 
 // requesting data
 
-const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
+const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (!member) return;
+  return {
+    api,
+    palletType,
+    chainId,
+    accounts: [member.accountId],
+  };
+});
+
+sample({
+  clock: evendenceRequested,
+  target: evidence.request,
+});
+
+const evendencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
   return {
     api,
@@ -75,8 +90,8 @@ const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, pal
 });
 
 sample({
-  clock: evendenceRequested,
-  target: [evidence.request, evidence.requestPeriods],
+  clock: evendencePeriodsRequested,
+  target: evidence.requestPeriods,
 });
 
 // attention message

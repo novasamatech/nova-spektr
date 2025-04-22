@@ -16,16 +16,20 @@ const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => 
   return voting.filter(v => v.accountId === member.accountId);
 });
 
+const votesRequested = attachToFeatureInput(
+  fellowshipTasksFeature,
+  combine({ referendums: $referendums, member: memberProfile.$member }),
+);
+
 sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, $referendums),
-  filter({ data: referendums }) {
-    return referendums.length > 0;
-  },
-  fn({ input, data }) {
+  clock: votesRequested,
+  fn({ input, data: { referendums, member } }) {
     return {
       palletType: input.palletType,
-      chainId: input.chainId,
-      referendums: data.map(r => r.id),
+      api: input.api,
+      chain: input.chain,
+      referendums: referendums.map(r => r.id),
+      accounts: member?.accountId ? [member.accountId] : [],
     };
   },
   target: voting.request,

@@ -5,5 +5,6 @@ export { series } from './series';
 export { waitFor } from './waitFor';
 export { populated } from './populated';
 export { createBuffer } from './createBuffer';
+export { createStream, zipStreamWithParams } from './createStream';
 export { createFlow, useFlow } from './createFlow';
 export { createQueuedEffect } from './createQueuedEffect';

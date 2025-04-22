@@ -112,6 +112,10 @@ const createMergeKey = (key: PropertyKey | (PropertyKey | undefined)[]) => {
 
 export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>) => {
   if (a.length === 0) {
+    if (b.length === 0) {
+      return a;
+    }
+
     if (sort) {
       return [...b].sort(sort);
     }
@@ -192,6 +196,10 @@ export const keys = <K extends PropertyKey>(values: Record<K, unknown>): K[] => 
 
 export const entries = <K extends string | number, T>(values: Record<K, T>): [key: K, value: T][] => {
   return Object.entries(values) as [key: K, value: T][];
+};
+
+export const fromEntries = <Key extends PropertyKey, Value>(values: [key: Key, value: Value][]): Record<Key, Value> => {
+  return Object.fromEntries(values) as Record<Key, Value>;
 };
 
 export function allEqual<T>(array: T[], compareFn?: (a: T, b: T) => boolean): boolean {
