@@ -12,16 +12,16 @@ type SubscribeParams = {
 };
 
 async function subscribeRuntimeVersion({ api, cachedRuntimeVersion, callback }: SubscribeParams): UnsubscribePromise {
-  let currectVersion = cachedRuntimeVersion ?? null;
+  let currentVersion = cachedRuntimeVersion ?? null;
 
   await api.isReady;
 
   return api.rpc.state.subscribeRuntimeVersion((version) => {
     const receivedVersion = version.specVersion.toNumber();
-    if (!currectVersion || receivedVersion > currectVersion) {
-      console.info(`Runtime version upgrade: ${currectVersion ?? 'empty'} -> ${receivedVersion}`);
+    if (!currentVersion || receivedVersion > currentVersion) {
+      console.info(`Runtime version upgrade: ${currentVersion ?? 'empty'} -> ${receivedVersion}`);
 
-      currectVersion = receivedVersion;
+      currentVersion = receivedVersion;
       callback(api);
     }
   });

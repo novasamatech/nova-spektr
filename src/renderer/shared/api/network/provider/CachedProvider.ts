@@ -8,6 +8,7 @@ import { type ProviderMetadata, type ProviderWithMetadata } from '../lib/types';
 
 const LEGACY_METADATA_VERSION = 14;
 const STATE_CALL_METHOD = 'state_call';
+const STATE_METADATA_METHOD = 'state_getMetadata';
 
 export function createCachedProvider(Provider: new (...args: any[]) => ProviderInterface, metadata?: ChainMetadata) {
   class CachedProvider extends Provider implements ProviderWithMetadata {
@@ -36,7 +37,7 @@ export function createCachedProvider(Provider: new (...args: any[]) => ProviderI
     async send(method: string, params: unknown[], ...args: any[]): Promise<any> {
       const hasParams = params.length > 0;
 
-      if (method === 'state_getMetadata' && !hasParams) {
+      if (method === STATE_METADATA_METHOD && !hasParams) {
         if (this.metadata) {
           return Promise.resolve(this.metadata.metadata);
         }
