@@ -17,9 +17,10 @@ import { VotingModal } from './VotingModal';
 
 type Props = {
   referendumId: ReferendumId;
+  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
 };
 
-export const VotingButtons = memo(({ referendumId }: Props) => {
+export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
   useFlow(votingStatus.flow, { referendumId });
 
   const { t } = useI18n();
@@ -76,6 +77,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               onClick={() => setDecision('nay')}
+              onHighlight={onHighlight}
             >
               {t('fellowship.voting.nay')}
             </ButtonWithTooltip>
@@ -89,6 +91,7 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               onClick={() => setDecision('aye')}
+              onHighlight={onHighlight}
             >
               {t('fellowship.voting.aye')}
             </ButtonWithTooltip>
@@ -110,12 +113,14 @@ type ButtonTooltips = {
   voteImpact: number;
   icon: IconNames;
   onClick: () => void;
+  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
 };
 
 export const ButtonWithTooltip = ({
   pallet,
   disabled,
   onClick,
+  onHighlight,
   votes,
   voteImpact,
   icon,
@@ -129,7 +134,11 @@ export const ButtonWithTooltip = ({
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <div className="w-full">
+        <div
+          className="w-full"
+          onMouseOver={() => onHighlight(pallet === 'positive' ? 'Aye' : 'Nay')}
+          onMouseLeave={() => onHighlight(null)}
+        >
           <ButtonCard pallet={pallet} icon={icon} disabled={disabled} fullWidth onClick={onClick}>
             {children}
           </ButtonCard>
