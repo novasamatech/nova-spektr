@@ -57,7 +57,7 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
             {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
           </SmallTitleText>
 
-          <VoteBadge voted={voted} />
+          {voted && <VoteBadge active={false} />}
         </Box>
         <Box direction="row" verticalAlign="center" gap={1}>
           <Icon className="text-icon-hover" name={label.icon} size={16} />

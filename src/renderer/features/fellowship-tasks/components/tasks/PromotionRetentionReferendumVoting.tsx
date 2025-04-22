@@ -70,7 +70,7 @@ export const PromotionRetentionReferendumVoting = memo(
             <Box direction="row" gap={3}>
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
-              <VoteBadge voted={voted} />
+              {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
             <FootnoteText as="div">
