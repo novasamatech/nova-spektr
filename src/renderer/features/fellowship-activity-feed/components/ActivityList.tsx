@@ -37,7 +37,10 @@ export const ActivityList = memo(() => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-4 pt-2">
+          <div
+            key={`${record.block}-${record.accountId}-${record.type}`}
+            className="flex flex-col gap-1 pe-4 ps-6 pt-2"
+          >
             <div className="flex items-center gap-2 text-button-small">
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
@@ -52,7 +55,7 @@ export const ActivityList = memo(() => {
                 )}
               </div>
               <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                <Duration seconds={(now - record.at.getTime()) / 1000} />
+                <Duration seconds={(now - record.at.getTime()) / 1000} shortFormat />
               </HelpText>
             </div>
             <FootnoteText className="text-text-secondary">

@@ -3,7 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { SmallTitleText } from '@/shared/ui';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
@@ -49,12 +49,15 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
 
   return (
     <Box direction="row" gap={10} padding={4}>
-      <button className="block w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
-        <Box direction="row" fillContainer gap={3} grow={1}>
-          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
-          <SmallTitleText className="truncate">
-            {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-          </SmallTitleText>
+      <button className="flex w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
+        <Box gap={3}>
+          <Box direction="row" gap={3} grow={1}>
+            {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
+            <SmallTitleText className="truncate">
+              {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+            </SmallTitleText>
+          </Box>
+          <FootnoteText>{t('fellowship.tasks.task.anyReferendum.noDescription')}</FootnoteText>
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>

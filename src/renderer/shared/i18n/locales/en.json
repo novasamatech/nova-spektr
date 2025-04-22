@@ -326,8 +326,8 @@
       "titleRetention": "Retain on rank",
       "votingRecord": "Voting record"
     },
-    "fellow_one": "{ count } Fellow",
-    "fellow_other": "{ count } Fellows",
+    "fellow_one": "{ count } Member",
+    "fellow_other": "{ count } Members",
     "members": {
       "active": "Active",
       "activity": "Activity",
@@ -497,6 +497,7 @@
       "reviewBasketTitle_other": "Decisions",
       "task": {
         "anyReferendum": {
+          "noDescription": "No description provided",
           "title": "Review referendum"
         },
         "evidence": {
@@ -510,7 +511,7 @@
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
-          "noEvidence": "Evidence not provided",
+          "noEvidence": "No evidence provided",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
@@ -561,6 +562,7 @@
         "referendumType": "Referendum type",
         "retentionTrack": "Retention",
         "salary": "Salary",
+        "submissionDeposit": "Decision deposit",
         "vote": "Vote"
       },
       "errors": {
