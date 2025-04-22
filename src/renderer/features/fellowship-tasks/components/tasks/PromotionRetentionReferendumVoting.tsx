@@ -1,13 +1,23 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
-import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import {
+  type OngoingReferendum,
+  type Referendum,
+  type Track,
+  referendumService,
+  track,
+  trackService,
+} from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
+import { fellowshipTasksFeature } from '../../model/feature';
+import { members } from '../../model/members';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
@@ -26,6 +36,9 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
 };
 
+const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) =>
+  toRomanNumeral(rank) + ' ' + relatedTrack?.find(t => t.id === rank)?.name || '';
+
 type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
@@ -37,22 +50,35 @@ export const PromotionRetentionReferendumVoting = memo(
   ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
     const { t } = useI18n();
 
+    const input = useUnit(fellowshipTasksFeature.input);
     const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
     const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
     const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
+    const tracks = useUnit(track.$list);
 
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
+    const member = useStoreMap({
+      store: members.$list,
+      keys: [evidenceSummary?.accountId],
+      fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
+    });
 
     const firstTag = tags.at(0);
     const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
     const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
 
+    const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
+
     const title = isPromotionTrack
-      ? t('fellowship.tasks.task.evidence.promotionTitle')
-      : t('fellowship.tasks.task.evidence.retentionTitle');
+      ? t('fellowship.tasks.task.referendum.promotionTitle', {
+          rank: member ? getRankTitle(member.rank + 1, relatedTrack) : '',
+        })
+      : t('fellowship.tasks.task.referendum.retentionTitle', {
+          rank: member ? getRankTitle(member.rank, relatedTrack) : '',
+        });
 
     return (
       <Box direction="row" gap={10} padding={4}>

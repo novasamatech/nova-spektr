@@ -514,6 +514,10 @@
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
+        "referendum": {
+          "promotionTitle": "Promote to { rank }",
+          "retentionTitle": "Retain at { rank }"
+        },
         "requestPayout": {
           "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
           "request": "Withdraw",
