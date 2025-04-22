@@ -4,11 +4,11 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { useDebounce, useDeferredList } from '@/shared/lib/hooks';
-import { AsyncItem, nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
+import { useDeferredList } from '@/shared/lib/hooks';
+import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { AsyncItem, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { fellowshipActivityFeedFeature } from '../model/feature';
@@ -41,8 +41,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
 
-  const debouncedQuery = useDebounce(query, 100);
-
   const clearSearch = () => setQuery('');
 
   const records = list.map(record => {
@@ -57,7 +55,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const filteredList = performSearch({
     records,
-    query: debouncedQuery,
+    query,
     queryMinLength: 3,
     weights: {
       type: 0.5,
@@ -120,7 +118,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
             <EmptyList
               title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
               message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
-                query: truncate(debouncedQuery, 6, 6),
+                query: truncate(query, 6, 6),
               })}
             >
               <Button pallet="primary" variant="text" onClick={clearSearch}>

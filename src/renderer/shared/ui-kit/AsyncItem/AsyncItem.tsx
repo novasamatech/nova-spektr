@@ -1,7 +1,7 @@
 import type * as CSS from 'csstype';
 import { type PropsWithChildren, useEffect, useState } from 'react';
 
-import { Box } from '@/shared/ui-kit';
+import { Box } from '../Box/Box';
 
 type AsyncItemProps = PropsWithChildren<{
   delay?: number;
