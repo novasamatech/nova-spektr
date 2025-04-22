@@ -3,11 +3,13 @@ import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
-import { Box, Label } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
+import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon: IconNames; label: string } => {
   switch (type) {
@@ -42,17 +44,20 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
     keys: [referendum.id],
     fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
   });
+
+  const voted = nonNullable(vote);
   const type = referendum.type;
   const label = getStatusLabel(type, t);
 
   return (
     <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
       <Box direction="row" fillContainer padding={4} gap={3}>
-        {vote ? <Label variant="gray">{t('governance.voted')}</Label> : null}
-        <Box grow={1}>
+        <Box grow={1} direction="row" gap={3}>
           <SmallTitleText>
             {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
           </SmallTitleText>
+
+          <VoteBadge voted={voted} />
         </Box>
         <Box direction="row" verticalAlign="center" gap={1}>
           <Icon className="text-icon-hover" name={label.icon} size={16} />
