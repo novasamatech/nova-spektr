@@ -27,7 +27,6 @@ export { Search, Filters } from './components/ReferendumFilter';
 export { OffChainDataSource } from './components/OffChainDataSource';
 export { CompletedReferendums, OngoingReferendums } from './components/ReferendumList';
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';
-export { VoteBadge } from '@/features/governance/components/VoteBadge/VoteBadge';
 
 export { listService } from './lib/listService';
 

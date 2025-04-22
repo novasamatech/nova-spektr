@@ -8,9 +8,9 @@ import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { VoteBadge } from '@/features/governance';
 import { evidenceModel } from '../../model/evidence';
 import { votes } from '../../model/voting';
+import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
