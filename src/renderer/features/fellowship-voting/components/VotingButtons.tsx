@@ -1,15 +1,17 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { type PropsWithChildren, memo, useState } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { ButtonCard, FootnoteText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
-import { referendumService } from '@/domains/collectives';
+import { ButtonCard, FootnoteText, type IconNames } from '@/shared/ui';
+import { Box, Tooltip } from '@/shared/ui-kit';
+import { referendumService, trackService } from '@/domains/collectives';
+import { tasksService } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '../model/feature';
 import { votingStatus } from '../model/votingStatus';
+import { categorizeImpact } from '../utils';
 
 import { VotingModal } from './VotingModal';
 
@@ -27,17 +29,38 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
   const canVote = useUnit(votingStatus.$canVote);
   const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
   const voting = useUnit(votingStatus.$referendumVoting);
+  const currentMember = useUnit(votingStatus.$currentMember);
+  const accountsVotes = useUnit(votingStatus.$accountsVotes);
+  const maxRank = useUnit(votingStatus.$maxRank);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
-  if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum)) {
+  if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum) || nullable(currentMember)) {
     return null;
   }
+
+  const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
+  const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
 
   const buttonDiabled = !canVote || !hasRequiredRank;
 
   const renderAyeButton = nullable(voting) || voting.decision !== 'Aye';
   const renderNayButton = nullable(voting) || voting.decision !== 'Nay';
+
+  const memberVoteWeight = trackService.getVoteWeight({
+    pallet: 'fellowship',
+    rank: currentMember.rank,
+    maxRank,
+    track: referendum.track,
+  });
+
+  const userVotesImpact =
+    tasksService.getReferendumUserImportanceScore(
+      totalReferendumVotes,
+      referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
+    ) * 100;
+
+  console.log({ memberVoteWeight, userVotesImpact });
 
   return (
     <>
@@ -46,27 +69,29 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
       <Box gap={4}>
         <Box direction="row" gap={4}>
           {renderNayButton ? (
-            <ButtonCard
+            <ButtonWithTooltip
               pallet="negative"
               icon="thumbDown"
               disabled={buttonDiabled}
-              fullWidth
+              votes={memberVoteWeight}
+              voteImpact={userVotesImpact}
               onClick={() => setDecision('nay')}
             >
               {t('fellowship.voting.nay')}
-            </ButtonCard>
+            </ButtonWithTooltip>
           ) : null}
 
           {renderAyeButton ? (
-            <ButtonCard
+            <ButtonWithTooltip
               pallet="positive"
               icon="thumbUp"
               disabled={buttonDiabled}
-              fullWidth
+              votes={memberVoteWeight}
+              voteImpact={userVotesImpact}
               onClick={() => setDecision('aye')}
             >
               {t('fellowship.voting.aye')}
-            </ButtonCard>
+            </ButtonWithTooltip>
           ) : null}
         </Box>
 
@@ -77,3 +102,50 @@ export const VotingButtons = memo(({ referendumId }: Props) => {
     </>
   );
 });
+
+type ButtonTooltips = {
+  pallet: 'positive' | 'negative';
+  disabled: boolean;
+  votes: number;
+  voteImpact: number;
+  icon: IconNames;
+  onClick: () => void;
+};
+
+export const ButtonWithTooltip = ({
+  pallet,
+  disabled,
+  onClick,
+  votes,
+  voteImpact,
+  icon,
+  children,
+}: PropsWithChildren<ButtonTooltips>) => {
+  const { t } = useI18n();
+
+  const tooltipText = pallet === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
+  const impact = categorizeImpact(voteImpact);
+
+  return (
+    <Tooltip>
+      <Tooltip.Trigger>
+        <div className="w-full">
+          <ButtonCard pallet={pallet} icon={icon} disabled={disabled} fullWidth onClick={onClick}>
+            {children}
+          </ButtonCard>
+        </div>
+      </Tooltip.Trigger>
+      <Tooltip.Content>
+        <p>
+          <span>
+            {tooltipText}: {t('fellowship.votingHistory.votes', { count: votes })}
+          </span>
+          <br />
+          <span>
+            {t('fellowship.voting.voteImpact.impact')} {t(`fellowship.voting.voteImpact.${impact}`)}
+          </span>
+        </p>
+      </Tooltip.Content>
+    </Tooltip>
+  );
+};
