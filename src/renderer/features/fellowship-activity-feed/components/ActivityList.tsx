@@ -1,24 +1,21 @@
 import { useUnit } from 'effector-react';
-import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
-import { Slot, createSlot } from '@/shared/di';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
+import { activityFeedRecordDescriptionSlot } from './EventRecord';
 
 const $feed = activityFeed.$activityFeed.map(feed => feed.slice(0, 20));
-
-export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
 export const ActivityList = memo(() => {
   const { t } = useI18n();
