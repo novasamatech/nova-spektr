@@ -123,11 +123,11 @@ const fetchProxiesFx = createEffect(
       networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
     if (proxiedAccountsToAdd.length) {
-      const bindedRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
+      const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
 
       await withTimeout(
-        bindedRequestIdentities({
-          accounts: proxiedAccountsToAdd.map((x) => x.accountId),
+        boundRequestIdentities({
+          accounts: proxiedAccountsToAdd.map((a) => a.accountId),
           chainId: chain.chainId,
         }),
         LOADING_TIMEOUT,

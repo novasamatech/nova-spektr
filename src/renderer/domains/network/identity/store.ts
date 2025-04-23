@@ -13,8 +13,8 @@ import { type AccountIdentity } from './types';
 
 const fetchPool = createAsyncTaskPool({
   poolSize: 1,
-  retryCount: 3,
-  retryDelay: 1000,
+  retryCount: 5,
+  retryDelay: 2000,
 });
 
 const $list = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
@@ -50,7 +50,7 @@ const requestFx = attach({
     apis: networkModel.$apis,
   },
   effect({ chains, apis }, { chainId, accounts }: Omit<FetchParams, 'api'>) {
-    const binded = scopeBind(fetchIdentity.request, { safe: true });
+    const bound = scopeBind(fetchIdentity.request, { safe: true });
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
     const api = apis[identityChainId];
 
@@ -58,18 +58,14 @@ const requestFx = attach({
       throw new Error(`Api for chain ${identityChainId} not found`);
     }
 
-    return binded({ accounts, chainId, api });
+    return bound({ accounts, chainId, api });
   },
 });
 
 const requestWithRetryFx = createEffect<Omit<FetchParams, 'api'>, Record<AccountId, AccountIdentity>>(
   ({ chainId, accounts }) => {
-    try {
-      const binded = scopeBind(requestFx, { safe: true });
-      return fetchPool.call(() => binded({ chainId, accounts }));
-    } catch {
-      return {};
-    }
+    const bound = scopeBind(requestFx, { safe: true });
+    return fetchPool.call(() => bound({ chainId, accounts }));
   },
 );
 

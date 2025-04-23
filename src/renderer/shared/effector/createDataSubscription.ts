@@ -84,17 +84,17 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   const $subscribed = $currentSubscription.map(nonNullable);
 
   const subscribeFx = domain.createEffect<Params, UnsubscribeFn>(params => {
-    const bindedReceived = scope ? scopeBind(received, { scope }) : received;
-    const bindedDone = scope ? scopeBind(done, { scope }) : done;
+    const boundReceived = scope ? scopeBind(received, { scope }) : received;
+    const boundDone = scope ? scopeBind(done, { scope }) : done;
 
     return fn(params, result => {
       if (result.done) {
         if (result.value !== undefined) {
-          bindedReceived({ params, result: result.value });
+          boundReceived({ params, result: result.value });
         }
-        bindedDone();
+        boundDone();
       } else {
-        bindedReceived({ params, result: result.value });
+        boundReceived({ params, result: result.value });
       }
     });
   });
