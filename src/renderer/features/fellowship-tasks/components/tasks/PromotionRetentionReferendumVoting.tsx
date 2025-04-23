@@ -30,8 +30,13 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
 };
 
-const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) =>
-  relatedTrack?.find(t => t.id === rank)?.name || '';
+const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
+  const name = relatedTrack?.find(t => t.id === rank)?.name;
+
+  if (!name) return '';
+
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 
 type Props = {
   referendum: OngoingReferendum;
@@ -73,7 +78,7 @@ export const PromotionRetentionReferendumVoting = memo(
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
-              <SmallTitleText className="truncate capitalize">{title}</SmallTitleText>
+              <SmallTitleText className="truncate">{title}</SmallTitleText>
               {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
