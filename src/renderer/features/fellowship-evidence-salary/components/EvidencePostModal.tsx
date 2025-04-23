@@ -99,7 +99,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
       </Modal.Title>
       <Modal.Content>
         <Box horizontalAlign="center" padding={6}>
-          <Icon name="fellowshipNav" size={60} />
+          <Icon name="evidence" size={60} />
         </Box>
 
         <Carousel item={step}>
