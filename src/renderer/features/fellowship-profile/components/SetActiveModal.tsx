@@ -114,7 +114,7 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
               <Box horizontalAlign="center">
-                <Icon name={isActive ? 'activateConfirm' : 'deactivateConfirm'} size={60} />
+                <Icon name="switch" size={60} />
               </Box>
               <Box horizontalAlign="center">
                 <LargeTitleText className="py-[16px]">
