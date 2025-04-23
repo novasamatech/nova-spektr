@@ -218,6 +218,13 @@ const $evidenceTasks = combine(
       if (nullable(proposer)) continue;
 
       if (memberService.canVoteForProposal(member, proposer.rank)) {
+        const leftToDemotion =
+          evidence.wish === 'Retention'
+            ? evidenceService.getBlocksUntilDemotion(proposer, periods, currentBlock)
+            : null;
+
+        if (nonNullable(leftToDemotion) && leftToDemotion <= 0) continue;
+
         const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(proposer, periods) : null;
         const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, proposer, periods, currentBlock);
 
