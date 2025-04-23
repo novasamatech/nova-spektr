@@ -38,7 +38,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
-  const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
+  const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
 
   const clearSearch = () => setQuery('');
 
@@ -76,7 +76,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="flex gap-x-4 px-5">
+        <div className="flex gap-x-2 px-5">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
