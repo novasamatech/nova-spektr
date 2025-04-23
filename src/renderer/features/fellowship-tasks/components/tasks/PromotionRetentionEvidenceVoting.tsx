@@ -45,9 +45,6 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
   const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
   const evidenceSummary = evidenceSummaries.find(e => e.accountId === evidence.accountId);
 
-  const firstTag = tags.at(0);
-  const labelConfig = firstTag ? tagLabels[firstTag] : null;
-
   const title =
     evidence.wish === 'Promotion'
       ? t('fellowship.tasks.task.evidence.promotionTitle')
@@ -59,8 +56,15 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
         <button className="block w-full appearance-none">
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
-              {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
+              {tags.map(tag => {
+                const labelConfig = tagLabels[tag];
+                return (
+                  <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+                    {t(labelConfig?.text ?? tag)}
+                  </Label>
+                );
+              })}
             </Box>
             {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2.5lh" width="85%" />}
             <FootnoteText as="div">

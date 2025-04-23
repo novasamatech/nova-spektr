@@ -17,7 +17,7 @@ const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] =>
   return rankVariants[rank] ?? (rank > 7 ? 'blue' : 'gray');
 };
 
-const getTitle = (rank: number) => {
+export const getRankTitle = (rank: number) => {
   const titles: Record<number, string> = {
     2: 'fellowship.rank.2',
     3: 'fellowship.rank.3',
@@ -43,7 +43,7 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
   return (
     <Label variant={pickRankColor(rank)}>
       <Box direction="row" gap={1}>
-        {showName ? t(getTitle(rank)) : null}
+        {showName ? t(getRankTitle(rank)) : null}
         <span>{rank ? toRomanNumeral(rank) : '0'}</span>
       </Box>
     </Label>

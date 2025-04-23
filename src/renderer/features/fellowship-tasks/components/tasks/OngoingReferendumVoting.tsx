@@ -44,18 +44,22 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
     fn: (meta, [id]) => meta[id] ?? null,
   });
 
-  const firstTag = tags.at(0);
-  const labelConfig = firstTag ? tagLabels[firstTag] : null;
-
   return (
     <Box direction="row" gap={10} padding={4}>
       <button className="flex w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
         <Box gap={3}>
           <Box direction="row" gap={3} grow={1}>
-            {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
             <SmallTitleText className="truncate">
               {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
             </SmallTitleText>
+            {tags.map(tag => {
+              const labelConfig = tagLabels[tag];
+              return (
+                <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+                  {t(labelConfig?.text ?? tag)}
+                </Label>
+              );
+            })}
           </Box>
           <FootnoteText>{t('fellowship.tasks.task.anyReferendum.noDescription')}</FootnoteText>
         </Box>

@@ -65,9 +65,6 @@ export const PromotionRetentionReferendumVoting = memo(
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
 
-    const firstTag = tags.at(0);
-    const labelConfig = firstTag ? tagLabels[firstTag] : null;
-
     const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
 
     const title = getRankTitle(referendum.track, relatedTrack);
@@ -77,8 +74,15 @@ export const PromotionRetentionReferendumVoting = memo(
         <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
-              {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
+              {tags.map(tag => {
+                const labelConfig = tagLabels[tag];
+                return (
+                  <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+                    {t(labelConfig?.text ?? tag)}
+                  </Label>
+                );
+              })}
               {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}

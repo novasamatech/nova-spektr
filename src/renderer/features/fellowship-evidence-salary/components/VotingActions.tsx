@@ -32,7 +32,13 @@ export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
 
   if (variant === 'small') {
     return (
-      <Box verticalAlign="center" horizontalAlign="flex-end" gap={2} width="102px">
+      <Box
+        verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}
+        horizontalAlign="flex-end"
+        gap={2}
+        height="92px"
+        width="102px"
+      >
         {nonNullable(endBlock) && <PeriodEndTimer endBlock={endBlock} shortDateFormat />}
         {buttonNodes}
       </Box>
