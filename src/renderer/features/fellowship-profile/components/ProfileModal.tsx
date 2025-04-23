@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, HeaderTitleText, Identicon, Separator, Switch } from '@/shared/ui';
 import { Account, CollectiveRank } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -24,7 +24,6 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   const featureInput = useUnit(fellowshipProfileFeature.input);
   const member = useUnit(profile.$member);
   const account = useUnit(profile.$account);
-  const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
   const salary = useUnit(memberSalary.$memberSalary);
 
@@ -63,7 +62,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                 />
               </HeaderTitleText>
               <Box direction="row" gap={2}>
-                <CollectiveRank rank={member.rank}>{nonNullable(track) && track.name.replace(/s$/, '')}</CollectiveRank>
+                <CollectiveRank rank={member.rank} showName />
               </Box>
             </Box>
             <Box direction="row" verticalAlign="center" gap={2}>

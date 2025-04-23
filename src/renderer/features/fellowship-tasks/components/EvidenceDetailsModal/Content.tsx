@@ -1,7 +1,6 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Alert, Markdown } from '@/shared/ui';
@@ -16,9 +15,9 @@ type Props = {
 };
 
 export const Content = memo(({ evidence }: Props) => {
-  const { t } = useI18n();
+  useGate(evidenceModel.evidenceContentFlow, { evidence });
 
-  useFlow(evidenceModel.evidenceContentFlow, { evidence });
+  const { t } = useI18n();
 
   const content = useStoreMap({
     store: evidenceModel.$evidencesContent,

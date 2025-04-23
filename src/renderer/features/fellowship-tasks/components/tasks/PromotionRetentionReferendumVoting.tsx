@@ -11,6 +11,7 @@ import { type OngoingReferendum, type Referendum, type Track, referendumService,
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { votes } from '../../model/voting';
+import { MemberActivity } from '../MemberActivity';
 import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
@@ -65,9 +66,6 @@ export const PromotionRetentionReferendumVoting = memo(
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
 
-    const firstTag = tags.at(0);
-    const labelConfig = firstTag ? tagLabels[firstTag] : null;
-
     const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
 
     const title = getRankTitle(referendum.track, relatedTrack);
@@ -77,8 +75,15 @@ export const PromotionRetentionReferendumVoting = memo(
         <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
-              {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
               <SmallTitleText className="truncate">{title}</SmallTitleText>
+              {tags.map(tag => {
+                const labelConfig = tagLabels[tag];
+                return (
+                  <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+                    {t(labelConfig?.text ?? tag)}
+                  </Label>
+                );
+              })}
               {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
@@ -86,6 +91,7 @@ export const PromotionRetentionReferendumVoting = memo(
               {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
               {!evidenceSummary?.summary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
             </FootnoteText>
+            {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
           </Box>
         </button>
         <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>

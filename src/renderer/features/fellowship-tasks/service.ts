@@ -171,9 +171,9 @@ function getEvidenceImportance(
   }
 
   if (evidence.wish === 'Retention') {
-    const blocksLeft = evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
+    const blocksLeft = evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
     const urgencyScore = getUrgencyScore(blocksLeft);
-    const isUrgent = urgencyScore > 0.4;
+    const isUrgent = urgencyScore > 0.3;
     const tags: string[] = [];
 
     const sortingScore = isUrgent ? 0.9 + urgencyScore * 0.1 : urgencyScore;
@@ -213,9 +213,34 @@ function getMaximumAvailableVotingWeight(members: Member[], maxRank: number, tra
   return max;
 }
 
+function cutMarkdown(markdown: string) {
+  const MAX_SIZE = 200;
+
+  if (markdown.length <= MAX_SIZE) {
+    return markdown;
+  }
+
+  let totalLength = 0;
+  const chunks = markdown.split(' ');
+  const result: string[] = [];
+  for (const chunk of chunks) {
+    if (chunk.startsWith('<img')) continue;
+    if (chunk.startsWith('<br>')) continue;
+
+    result.push(chunk);
+    totalLength += chunk.length;
+    if (totalLength > MAX_SIZE) {
+      break;
+    }
+  }
+
+  return result.join(' ') + '...';
+}
+
 export const tasksService = {
   getReferendumUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
   getEvidenceImportance,
+  cutMarkdown,
 };

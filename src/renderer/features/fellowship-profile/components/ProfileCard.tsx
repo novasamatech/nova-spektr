@@ -126,7 +126,6 @@ const Member = () => {
   const { t } = useI18n();
 
   const member = useUnit(profile.$member);
-  const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
   const input = useUnit(fellowshipProfileFeature.input);
   const pendingActivityInfo = useUnit(profile.$pendingActivityInfo);
@@ -170,7 +169,7 @@ const Member = () => {
               ) : null}
             </Box>
 
-            <CollectiveRank rank={member.rank ?? 0}>{track?.name.replace(/s$/, '')}</CollectiveRank>
+            <CollectiveRank rank={member.rank ?? 0} showName />
           </Box>
         </Box>
 

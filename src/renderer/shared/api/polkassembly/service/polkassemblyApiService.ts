@@ -185,13 +185,14 @@ async function* fetchFellowshipReferendumsList({
   const firstPage = await request(1);
   yield firstPage.posts;
 
-  if (firstPage.totalCount < pageSize) {
-    return;
-  }
-
-  const totalRequests = Math.ceil(firstPage.totalCount / pageSize) + 1;
-  for (let pageNumber = 2; pageNumber < totalRequests; pageNumber++) {
-    yield request(pageNumber).then((x) => x.posts);
+  let pageNumber = 2;
+  while (true) {
+    const page = await request(pageNumber);
+    pageNumber++;
+    yield page.posts;
+    if (page.posts.length < pageSize) {
+      break;
+    }
   }
 }
 
