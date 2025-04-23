@@ -76,7 +76,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="flex gap-x-2 px-5">
+        <div className="flex gap-x-2 bg-main-app-background px-5 pt-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
@@ -104,7 +104,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="flex h-full flex-col gap-y-5 py-6">
+        <div className="flex h-full flex-col gap-y-5 bg-main-app-background py-6">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
