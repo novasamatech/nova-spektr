@@ -247,7 +247,11 @@ const $ongoingReferendumsTasks = combine(
   ({ referendums, operations, maxRank, members, member, currentBlock }) => {
     if (nullable(member)) return [];
 
-    const groups = groupBy(referendums, referendum => {
+    const possibleReferendums = referendums.filter(referendum => {
+      return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
+    });
+
+    const groups = groupBy(possibleReferendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
         ? 'evidence'
         : 'other';
@@ -357,5 +361,5 @@ export const tasks = {
   $chainName,
   $basketOperations: $memberBasketOperations,
   $list,
-  pending: or(basketOperations.pending, member.pending, evidence.request.pending),
+  pending: or(basketOperations.pending, member.pending, evidenceModel.requestEvidence.pending),
 };
