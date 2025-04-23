@@ -50,6 +50,7 @@ import VotedIcon from '@/shared/assets/images/functionals/voted.svg?jsx';
 import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-filled.svg?jsx';
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
 import WhitelistVotingIcon from '@/shared/assets/images/functionals/whitelist-voting.svg?jsx';
+import WithdrawIcon from '@/shared/assets/images/functionals/withdraw.svg?jsx';
 
 const FunctionalImages = {
   copy: { svg: CopyIcon },
@@ -102,6 +103,7 @@ const FunctionalImages = {
   switch: { svg: SwitchIcon },
   evidence: { svg: EvidenceIcon },
   salary: { svg: SalaryIcon },
+  withdraw: { svg: WithdrawIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
