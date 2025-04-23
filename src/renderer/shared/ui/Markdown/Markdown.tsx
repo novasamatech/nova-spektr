@@ -56,6 +56,7 @@ const components: Components = {
       className="text-primary-button-background-default hover:underline focus:w-full"
       url={props.href ?? ''}
       size="inherit"
+      onClick={(e) => e.stopPropagation()}
     >
       {props.children}
     </InfoLink>

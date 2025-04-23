@@ -1,14 +1,15 @@
 import { useStoreMap } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Icon, type IconNames, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
+import { tasksService } from '../../service';
 import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon: IconNames; label: string } => {
@@ -49,9 +50,19 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
   const type = referendum.type;
   const label = getStatusLabel(type, t);
 
+  const content = useMemo(
+    () =>
+      meta?.description ? (
+        <Markdown>{tasksService.cutMarkdown(meta.description)}</Markdown>
+      ) : (
+        t('fellowship.tasks.task.anyReferendum.noDescription')
+      ),
+    [meta],
+  );
+
   return (
-    <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
-      <Box direction="row" fillContainer padding={4} gap={3}>
+    <button className="flex w-full appearance-none flex-col gap-3 p-4" onClick={() => onReferendumSelect(referendum)}>
+      <Box direction="row" fillContainer gap={3}>
         <Box grow={1} direction="row" gap={3}>
           <SmallTitleText>
             {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
@@ -63,6 +74,9 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
           <Icon className="text-icon-hover" name={label.icon} size={16} />
           <FootnoteText className="text-text-secondary">{label.label}</FootnoteText>
         </Box>
+      </Box>
+      <Box width="80%">
+        <FootnoteText>{content}</FootnoteText>
       </Box>
     </button>
   );

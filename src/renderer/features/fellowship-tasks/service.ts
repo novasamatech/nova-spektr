@@ -213,9 +213,31 @@ function getMaximumAvailableVotingWeight(members: Member[], maxRank: number, tra
   return max;
 }
 
+function cutMarkdown(markdown: string) {
+  const MAX_SIZE = 200;
+
+  if (markdown.length <= MAX_SIZE) {
+    return markdown;
+  }
+
+  let totalLength = 0;
+  const chunks = markdown.split(' ');
+  const result: string[] = [];
+  for (const chunk of chunks) {
+    result.push(chunk);
+    totalLength += chunk.length;
+    if (totalLength > MAX_SIZE) {
+      break;
+    }
+  }
+
+  return result.join(' ') + '...';
+}
+
 export const tasksService = {
   getReferendumUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
   getEvidenceImportance,
+  cutMarkdown,
 };
