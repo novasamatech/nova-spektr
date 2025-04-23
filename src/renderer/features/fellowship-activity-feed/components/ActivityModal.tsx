@@ -104,7 +104,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="h-full py-4">
+        <div className="flex h-full flex-col gap-y-5 py-6">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
@@ -125,7 +125,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               key={`${record.block}-${record.accountId}-${record.type}`}
               spaceToReserve={{ width: '100%', height: '48px' }}
             >
-              <div className="flex flex-col gap-1 px-5 pt-2">
+              <div className="flex flex-col gap-1 px-5">
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 grow text-button-small">
                     {nonNullable(input?.chain) && (
