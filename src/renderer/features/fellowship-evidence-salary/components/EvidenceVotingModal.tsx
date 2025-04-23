@@ -78,12 +78,14 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
   return (
     <Modal size="md" isOpen={open} onToggle={open => handleToggle(open)}>
       <Modal.Trigger>
-        <Tooltip>
-          <Tooltip.Trigger>
-            <div className="w-full">{children}</div>
-          </Tooltip.Trigger>
-          <Tooltip.Content>{t('fellowship.voting.tooltip', { vote: aye ? 'Aye' : 'Nay' })}</Tooltip.Content>
-        </Tooltip>
+        <div className="w-full">
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div className="w-full">{children}</div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('fellowship.voting.tooltip', { vote: aye ? 'Aye' : 'Nay' })}</Tooltip.Content>
+          </Tooltip>
+        </div>
       </Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={t('fellowship.voting.title')} chainId={input.chain.chainId} />
@@ -94,7 +96,6 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
             <Box padding={[4, 5]}>
               {nonNullable(votingMember) && (
                 <EvidenceVotingConfirmation
-                  api={input.api}
                   evidence={evidence}
                   asset={input.asset}
                   chain={input.chain}

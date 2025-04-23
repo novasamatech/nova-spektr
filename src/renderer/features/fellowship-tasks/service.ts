@@ -171,9 +171,9 @@ function getEvidenceImportance(
   }
 
   if (evidence.wish === 'Retention') {
-    const blocksLeft = evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
+    const blocksLeft = evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
     const urgencyScore = getUrgencyScore(blocksLeft);
-    const isUrgent = urgencyScore > 0.4;
+    const isUrgent = urgencyScore > 0.3;
     const tags: string[] = [];
 
     const sortingScore = isUrgent ? 0.9 + urgencyScore * 0.1 : urgencyScore;

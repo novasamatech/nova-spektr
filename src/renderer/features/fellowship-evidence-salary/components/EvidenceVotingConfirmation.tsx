@@ -1,12 +1,10 @@
-import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 import { capitalize } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, toRomanNumeral } from '@/shared/lib/utils';
-import { referendaPallet } from '@/shared/pallet/referenda';
+import { formatAsset, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -14,7 +12,6 @@ import { type Evidence, type Member, type Track, trackService } from '@/domains/
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
-  api: ApiPromise;
   account: AnyAccount;
   wallets: Wallet[];
   chain: Chain;
@@ -29,20 +26,7 @@ type Props = {
 };
 
 export const EvidenceVotingConfirmation = memo(
-  ({
-    api,
-    fee,
-    account,
-    wallets,
-    chain,
-    asset,
-    vote,
-    votingMember,
-    currentTrack,
-    nextTrack,
-    maxRank,
-    evidence,
-  }: Props) => {
+  ({ fee, account, wallets, chain, asset, vote, votingMember, currentTrack, nextTrack, maxRank, evidence }: Props) => {
     const { t } = useI18n();
     const votes = trackService.getVoteWeight({
       pallet: 'fellowship',
@@ -64,7 +48,7 @@ export const EvidenceVotingConfirmation = memo(
       }
     }
 
-    const submissionDeposit = useMemo(() => referendaPallet.consts.submissionDeposit('fellowship', api), [api]);
+    const decisionDeposit = useMemo(() => (currentTrack ? currentTrack.decisionDeposit : null), [currentTrack]);
 
     return (
       <Box gap={6}>
@@ -84,9 +68,11 @@ export const EvidenceVotingConfirmation = memo(
             </DetailRow>
           )}
           <Separator />
-          <DetailRow label={t('fellowship.voting.confirmation.submissionDeposit')}>
-            {formatAsset(submissionDeposit, asset)}
-          </DetailRow>
+          {nonNullable(decisionDeposit) && (
+            <DetailRow label={t('fellowship.voting.confirmation.submissionDeposit')}>
+              {formatAsset(decisionDeposit, asset)}
+            </DetailRow>
+          )}
           <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
         </TransactionDetails>
       </Box>
