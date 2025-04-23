@@ -15,8 +15,8 @@ type BoxMargin = BoxPadding;
 type BoxProps = PropsWithChildren<{
   width?: CSS.Property.Width | number;
   height?: CSS.Property.Height | number;
-  verticalAlign?: CSS.Property.AlignItems;
-  horizontalAlign?: CSS.Property.JustifyContent;
+  verticalAlign?: CSS.Property.AlignItems | CSS.Property.JustifyContent;
+  horizontalAlign?: CSS.Property.AlignItems | CSS.Property.JustifyContent;
   alignSelf?: CSS.Property.AlignSelf;
   direction?: CSS.Property.FlexDirection;
   shrink?: CSS.Property.FlexShrink;

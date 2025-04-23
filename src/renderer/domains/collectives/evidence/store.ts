@@ -31,7 +31,7 @@ deriveFromResources({
     const merged = merge({
       a: prev,
       b: [evidence],
-      mergeBy: e => [e.chainId, e.accountId],
+      mergeBy: e => [e.pallet, e.chainId, e.accountId],
     });
     return setNestedValue(state, evidence.pallet, evidence.chainId, merged);
   },

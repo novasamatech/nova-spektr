@@ -3,7 +3,7 @@ import { type PropsWithChildren, memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { Box, Carousel, Modal, Tooltip } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -77,7 +77,16 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
 
   return (
     <Modal size="md" isOpen={open} onToggle={open => handleToggle(open)}>
-      <Modal.Trigger>{children}</Modal.Trigger>
+      <Modal.Trigger>
+        <div className="w-full">
+          <Tooltip>
+            <Tooltip.Trigger>
+              <div className="w-full">{children}</div>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('fellowship.voting.tooltip', { vote: aye ? 'Aye' : 'Nay' })}</Tooltip.Content>
+          </Tooltip>
+        </div>
+      </Modal.Trigger>
       <Modal.Title close>
         <OperationTitle title={t('fellowship.voting.title')} chainId={input.chain.chainId} />
       </Modal.Title>
@@ -87,7 +96,6 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
             <Box padding={[4, 5]}>
               {nonNullable(votingMember) && (
                 <EvidenceVotingConfirmation
-                  api={input.api}
                   evidence={evidence}
                   asset={input.asset}
                   chain={input.chain}
