@@ -8,7 +8,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { AsyncItem, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { fellowshipActivityFeedFeature } from '../model/feature';
@@ -128,27 +128,32 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           )}
 
           {sortedList.map(record => (
-            <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 px-5 pt-2">
-              <div className="flex items-center gap-2">
-                <div className="min-w-0 grow text-button-small">
-                  {nonNullable(input?.chain) && (
-                    <Account
-                      accountId={record.accountId}
-                      chain={input.chain}
-                      title={record.name}
-                      variant="short"
-                      hideAddress
-                    />
-                  )}
+            <AsyncItem
+              key={`${record.block}-${record.accountId}-${record.type}`}
+              spaceToReserve={{ width: '100%', height: '48px' }}
+            >
+              <div className="flex flex-col gap-1 px-5 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="min-w-0 grow text-button-small">
+                    {nonNullable(input?.chain) && (
+                      <Account
+                        accountId={record.accountId}
+                        chain={input.chain}
+                        title={record.name}
+                        variant="short"
+                        hideAddress
+                      />
+                    )}
+                  </div>
+                  <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+                    <Duration seconds={record.duration} shortFormat />
+                  </HelpText>
                 </div>
-                <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                  <Duration seconds={record.duration} shortFormat />
-                </HelpText>
+                <FootnoteText className="text-text-secondary">
+                  <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
+                </FootnoteText>
               </div>
-              <FootnoteText className="text-text-secondary">
-                <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
-              </FootnoteText>
-            </div>
+            </AsyncItem>
           ))}
         </div>
       </Modal.Content>

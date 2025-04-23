@@ -18,8 +18,8 @@ import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
+import { PromotionRetentionEvidenceVoting } from '../components/tasks/PromotionRetentionEvidenceVoting';
 import { PromotionRetentionReferendumVoting } from '../components/tasks/PromotionRetentionReferendumVoting';
-import { PromotionRetentionVoting } from '../components/tasks/PromotionRetentionVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
@@ -225,7 +225,7 @@ const $evidenceTasks = combine(
           id: `evidence_request_${proposer.accountId}`,
           weight: sortingScore,
           group: 'general',
-          body: PromotionRetentionVoting,
+          body: PromotionRetentionEvidenceVoting,
           meta: { evidence, transaction: null, endBlock, tags },
         });
       }

@@ -500,8 +500,8 @@
           "title": "Review referendum"
         },
         "evidence": {
-          "promotionTitle": "Review promotion",
-          "retentionTitle": "Review retention"
+          "promotionTitle": "Review promotion evidence",
+          "retentionTitle": "Review retention evidence"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
@@ -513,6 +513,10 @@
           "noEvidence": "Evidence not provided",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
+        },
+        "referendum": {
+          "promotionTitle": "Promote to { rank }",
+          "retentionTitle": "Retain at { rank }"
         },
         "requestPayout": {
           "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
