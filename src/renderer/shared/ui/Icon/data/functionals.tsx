@@ -29,12 +29,12 @@ import MultisigOutlineIcon from '@/shared/assets/images/functionals/multisig-out
 import OpenGovDelegationsIcon from '@/shared/assets/images/functionals/opengov-delegations.svg?jsx';
 import OpenGovLockIcon from '@/shared/assets/images/functionals/opengov-lock.svg?jsx';
 import OpenGovVotingLockIcon from '@/shared/assets/images/functionals/opengov-voting-lock.svg?jsx';
-import PromoteVotingIcon from '@/shared/assets/images/functionals/promote-voting.svg?jsx';
+import PromoteIcon from '@/shared/assets/images/functionals/promote.svg?jsx';
 import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
 import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?jsx';
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
-import RetainVotingIcon from '@/shared/assets/images/functionals/retain-voting.svg?jsx';
+import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
 import SearchIcon from '@/shared/assets/images/functionals/search.svg?jsx';
 import SettingsLiteIcon from '@/shared/assets/images/functionals/settings-lite.svg?jsx';
@@ -94,8 +94,8 @@ const FunctionalImages = {
   details: { svg: DetailsIcon },
   whitelistVoting: { svg: WhitelistVotingIcon },
   rfcVoting: { svg: RFCVotingIcon },
-  promoteVoting: { svg: PromoteVotingIcon },
-  retainVoting: { svg: RetainVotingIcon },
+  promote: { svg: PromoteIcon },
+  retain: { svg: RetainIcon },
   approveFellowshipVoting: { svg: ApproveFellowshipVotingIcon },
   switch: { svg: SwitchIcon },
 } as const;
