@@ -10,7 +10,6 @@ import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui
 import { Account } from '@/shared/ui-entities';
 import { AsyncItem, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
@@ -39,7 +38,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
-  const [orderKey, setOrderKey] = useState<OrderKey | null>(null);
+  const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
 
   const clearSearch = () => setQuery('');
 
@@ -75,15 +74,9 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>
-        <div className="flex gap-2">
-          <span>{t('fellowship.activityFeed.activityModal.title')}</span>
-
-          {input && <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold" />}
-        </div>
-      </Modal.Title>
+      <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="flex gap-x-4 px-5">
+        <div className="flex gap-x-2 bg-main-app-background px-5 pt-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
@@ -111,7 +104,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="h-full py-4">
+        <div className="flex h-full flex-col gap-y-5 bg-main-app-background py-6">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
@@ -132,7 +125,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               key={`${record.block}-${record.accountId}-${record.type}`}
               spaceToReserve={{ width: '100%', height: '48px' }}
             >
-              <div className="flex flex-col gap-1 px-5 pt-2">
+              <div className="flex flex-col gap-1 px-5">
                 <div className="flex items-center gap-2">
                   <div className="min-w-0 grow text-button-small">
                     {nonNullable(input?.chain) && (

@@ -1,9 +1,12 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
-import { memo } from 'react';
+import { capitalize } from 'lodash';
+import { memo, useMemo } from 'react';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset } from '@/shared/lib/utils';
+import { formatAsset, toRomanNumeral } from '@/shared/lib/utils';
+import { referendaPallet } from '@/shared/pallet/referenda';
 import { DetailRow, Icon, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -11,6 +14,7 @@ import { type Evidence, type Member, type Track, trackService } from '@/domains/
 import { type AnyAccount } from '@/domains/network';
 
 type Props = {
+  api: ApiPromise;
   account: AnyAccount;
   wallets: Wallet[];
   chain: Chain;
@@ -25,7 +29,20 @@ type Props = {
 };
 
 export const EvidenceVotingConfirmation = memo(
-  ({ fee, account, wallets, chain, asset, vote, votingMember, currentTrack, nextTrack, maxRank, evidence }: Props) => {
+  ({
+    api,
+    fee,
+    account,
+    wallets,
+    chain,
+    asset,
+    vote,
+    votingMember,
+    currentTrack,
+    nextTrack,
+    maxRank,
+    evidence,
+  }: Props) => {
     const { t } = useI18n();
     const votes = trackService.getVoteWeight({
       pallet: 'fellowship',
@@ -38,18 +55,16 @@ export const EvidenceVotingConfirmation = memo(
 
     if (evidence.wish === 'Retention') {
       if (currentTrack) {
-        rankTitle = currentTrack.name;
+        rankTitle = `${toRomanNumeral(currentTrack.id)} ${capitalize(currentTrack.name).replace(/s$/, '')}`;
       }
     }
     if (evidence.wish === 'Promotion') {
       if (nextTrack) {
-        if (currentTrack) {
-          rankTitle = `${currentTrack.name} → ${nextTrack.name}`;
-        } else {
-          rankTitle = nextTrack.name;
-        }
+        rankTitle = `${toRomanNumeral(nextTrack.id)} ${capitalize(nextTrack.name).replace(/s$/, '')}`;
       }
     }
+
+    const submissionDeposit = useMemo(() => referendaPallet.consts.submissionDeposit('fellowship', api), [api]);
 
     return (
       <Box gap={6}>
@@ -65,10 +80,13 @@ export const EvidenceVotingConfirmation = memo(
           <DetailRow label={t('fellowship.salary.submitEvidenceVoteConfirm.vote')}>{vote}</DetailRow>
           {rankTitle && (
             <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>
-              <span className="uppercase">{rankTitle}</span>
+              <span>{rankTitle}</span>
             </DetailRow>
           )}
           <Separator />
+          <DetailRow label={t('fellowship.voting.confirmation.submissionDeposit')}>
+            {formatAsset(submissionDeposit, asset)}
+          </DetailRow>
           <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
         </TransactionDetails>
       </Box>

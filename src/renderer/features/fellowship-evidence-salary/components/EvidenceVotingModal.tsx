@@ -87,6 +87,7 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
             <Box padding={[4, 5]}>
               {nonNullable(votingMember) && (
                 <EvidenceVotingConfirmation
+                  api={input.api}
                   evidence={evidence}
                   asset={input.asset}
                   chain={input.chain}
