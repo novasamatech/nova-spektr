@@ -3,7 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
@@ -61,7 +61,13 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
               );
             })}
           </Box>
-          <FootnoteText>{t('fellowship.tasks.task.anyReferendum.noDescription')}</FootnoteText>
+          <FootnoteText>
+            {meta?.description ? (
+              <Markdown>{meta.description.slice(0, 255)}</Markdown>
+            ) : (
+              t('fellowship.tasks.task.anyReferendum.noDescription')
+            )}
+          </FootnoteText>
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
