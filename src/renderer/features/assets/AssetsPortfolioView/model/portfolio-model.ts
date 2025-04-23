@@ -1,15 +1,16 @@
-import { combine, createEvent, createStore, restore } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
-import { accountService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { shardsModel, shardsUtils } from '@/features/wallets';
 import { tokensService } from '../lib/tokensService';
 
 const DEFAULT_LIST: never[] = [];
@@ -26,6 +27,18 @@ const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
 const $defaultTokens = createStore(tokensService.getTokensData());
+
+const $activeShards = createStore<AnyAccount[] | null>(null);
+
+sample({
+  clock: [shardsModel.events.shardsConfirmed, walletSelect.$selectedAccounts],
+  source: {
+    struct: shardsModel.$selectedStructure,
+    selectedAccounts: walletSelect.$selectedAccounts,
+  },
+  fn: ({ struct, selectedAccounts }) => shardsUtils.getSelectedShards(struct, selectedAccounts),
+  target: $activeShards,
+});
 
 const $tokens = combine(
   {
@@ -62,9 +75,13 @@ const $activeTokens = combine(
     chains: networkModel.$chains,
     tokens: $tokens,
     selectedAccounts: walletSelect.$selectedAccounts,
+    activeShards: $activeShards,
+    isShardsAccessDenied: shardsModel.$isAccessDenied,
   },
-  ({ connections, chains, tokens, wallet, selectedAccounts }) => {
-    if (nullable(wallet) || Object.keys(connections).length === 0) return DEFAULT_LIST;
+  ({ connections, chains, tokens, wallet, selectedAccounts, activeShards, isShardsAccessDenied }) => {
+    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(activeShards)) return DEFAULT_LIST;
+
+    const filteredAccounts = isShardsAccessDenied ? selectedAccounts : activeShards;
 
     const isMultisigWallet = walletUtils.isMultisig(wallet);
     const activeTokens: AssetByChains[] = [];
@@ -80,7 +97,7 @@ const $activeTokens = combine(
           return networkUtils.isMultisigSupported(chains[c.chainId].options);
         }
 
-        return selectedAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
+        return filteredAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
       });
 
       if (filteredChains.length === 0) continue;
