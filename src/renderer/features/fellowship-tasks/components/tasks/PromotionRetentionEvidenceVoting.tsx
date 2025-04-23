@@ -9,6 +9,7 @@ import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { EvidenceDetailsModal } from '../EvidenceDetailsModal/EvidenceDetailsModal';
+import { MemberActivity } from '../MemberActivity';
 
 export const evidenceVotingTaskActionSlot = createSlot<{
   evidence: Evidence;
@@ -73,6 +74,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
                 ? t('fellowship.tasks.task.promotionVoting.noEvidence')
                 : null}
             </FootnoteText>
+            <MemberActivity accountId={evidence.accountId} />
           </Box>
         </button>
       </EvidenceDetailsModal>

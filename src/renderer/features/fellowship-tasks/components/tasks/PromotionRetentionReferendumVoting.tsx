@@ -11,6 +11,7 @@ import { type OngoingReferendum, type Referendum, type Track, referendumService,
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { votes } from '../../model/voting';
+import { MemberActivity } from '../MemberActivity';
 import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
@@ -90,6 +91,7 @@ export const PromotionRetentionReferendumVoting = memo(
               {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
               {!evidenceSummary?.summary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
             </FootnoteText>
+            {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
           </Box>
         </button>
         <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
