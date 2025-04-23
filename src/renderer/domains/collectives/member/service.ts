@@ -59,7 +59,7 @@ function canPromote(member: Member) {
  * referendum.
  */
 function canVoteForProposal(member: Member, rank: number) {
-  return member.rank >= rank + 2;
+  return member.rank > rank + 2;
 }
 
 type SetActiveTransactionParams = {

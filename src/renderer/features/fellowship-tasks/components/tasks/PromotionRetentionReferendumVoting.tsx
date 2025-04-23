@@ -4,20 +4,12 @@ import { memo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
-import {
-  type OngoingReferendum,
-  type Referendum,
-  type Track,
-  referendumService,
-  track,
-  trackService,
-} from '@/domains/collectives';
+import { type OngoingReferendum, type Referendum, type Track, referendumService, track } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
-import { members } from '../../model/members';
 import { votes } from '../../model/voting';
 import { VoteBadge } from '../VoteBadge/VoteBadge';
 
@@ -38,8 +30,13 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
 };
 
-const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) =>
-  toRomanNumeral(rank) + ' ' + relatedTrack?.find(t => t.id === rank)?.name || '';
+const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
+  const name = relatedTrack?.find(t => t.id === rank)?.name;
+
+  if (!name) return '';
+
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 
 type Props = {
   referendum: OngoingReferendum;
@@ -67,26 +64,13 @@ export const PromotionRetentionReferendumVoting = memo(
     const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
     const proposerAccountId = referendumService.getProposer(referendum);
     const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
-    const member = useStoreMap({
-      store: members.$list,
-      keys: [evidenceSummary?.accountId],
-      fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
-    });
 
     const firstTag = tags.at(0);
     const labelConfig = firstTag ? tagLabels[firstTag] : null;
 
-    const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
-
     const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
 
-    const title = isPromotionTrack
-      ? t('fellowship.tasks.task.referendum.promotionTitle', {
-          rank: member ? getRankTitle(member.rank + 1, relatedTrack) : '',
-        })
-      : t('fellowship.tasks.task.referendum.retentionTitle', {
-          rank: member ? getRankTitle(member.rank, relatedTrack) : '',
-        });
+    const title = getRankTitle(referendum.track, relatedTrack);
 
     return (
       <Box direction="row" gap={10} padding={4}>
