@@ -640,6 +640,9 @@
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
+    "timeout": {
+      "expired": "Expired"
+    },
     "title": {
       "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"
