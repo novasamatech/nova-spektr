@@ -3,14 +3,16 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, Icon, LargeTitleText } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
+import { memberService, salaryService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { fellowshipSalaryFeature } from '../model/feature';
+import { memberSalary } from '../model/memberSalary';
 import { salaryInduct } from '../model/salaryInduct';
 
 import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
@@ -29,6 +31,12 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryInduct.$account);
   const wallet = useUnit(salaryInduct.$wallet);
   const fee = useUnit(salaryInduct.$fee);
+  const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
+
+  let salary: string | null = null;
+  if (input?.member && memberService.isCoreMember(input.member)) {
+    salary = salaryService.formatSalaryAmount(input?.member?.isActive ? activeSalary : passiveSalary);
+  }
 
   const handleToggle = (open: boolean) => {
     if (disabled) return;
@@ -88,6 +96,10 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
         <OperationTitle title={t('fellowship.salary.salaryInduct')} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
+        <Box horizontalAlign="center" gap={3} padding={4}>
+          <Icon name="salary" size={60} />
+          <LargeTitleText>{salary}</LargeTitleText>
+        </Box>
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>

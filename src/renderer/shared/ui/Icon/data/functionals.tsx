@@ -36,6 +36,7 @@ import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
+import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
 import SearchIcon from '@/shared/assets/images/functionals/search.svg?jsx';
 import SettingsLiteIcon from '@/shared/assets/images/functionals/settings-lite.svg?jsx';
 import SwitchIcon from '@/shared/assets/images/functionals/switch.svg?jsx';
@@ -98,6 +99,7 @@ const FunctionalImages = {
   retain: { svg: RetainIcon },
   approveFellowshipVoting: { svg: ApproveFellowshipVotingIcon },
   switch: { svg: SwitchIcon },
+  salary: { svg: SalaryIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
