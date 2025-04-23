@@ -1,5 +1,6 @@
 import { type ComponentProps, memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { toRomanNumeral } from '@/shared/lib/utils';
 import { Box, Label } from '@/shared/ui-kit';
 
@@ -37,10 +38,12 @@ type Props = {
 };
 
 export const CollectiveRank = memo(({ rank, showName }: Props) => {
+  const { t } = useI18n();
+
   return (
     <Label variant={pickRankColor(rank)}>
       <Box direction="row" gap={1}>
-        {showName ? getTitle(rank) : null}
+        {showName ? t(getTitle(rank)) : null}
         <span>{rank ? toRomanNumeral(rank) : '0'}</span>
       </Box>
     </Label>
