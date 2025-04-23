@@ -44,7 +44,7 @@ export const createRemoteResource = <Params, Response>({
   const queuedFx = createQueuedEffect<Params, Response>(fn, { pool, retryCount, retryDelay });
 
   const requestFx = createEffect(async (params: Params) => {
-    const binded = scopeBind(queuedFx, { safe: true });
+    const bound = scopeBind(queuedFx, { safe: true });
 
     if (cache) {
       const cacheKey = getCacheKey(params);
@@ -58,7 +58,7 @@ export const createRemoteResource = <Params, Response>({
       }
     }
 
-    const request = binded(params);
+    const request = bound(params);
     const response = await request;
 
     if (cache) {

@@ -49,10 +49,10 @@ export const createSubscriber = <P = void, V = void>(fn: SubscribeFn<P, V>, scop
   const $unsubscribeFn = domain.createStore<UnsubscribeFn | null>(null);
 
   const subscribeFx = domain.createEffect<P, UnsubscribeFn>((params) => {
-    const binded = scope ? scopeBind(received, { scope }) : received;
+    const bound = scope ? scopeBind(received, { scope }) : received;
 
     return fn(params, (result) => {
-      binded({ params, result });
+      bound({ params, result });
     });
   });
 
