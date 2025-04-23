@@ -1,60 +1,33 @@
 import { createStore } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Chain } from '@/shared/core';
-import { createDataSubscription } from '@/shared/effector';
-import { merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
+import { merge, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { deriveFromResources } from '@/shared/resource';
+import { type CollectivesStruct } from '../_lib/types';
 
-import { fetchAllActivities } from './resource';
+import { feedSubscriptionResource } from './resource';
 import { type FeedRecord } from './types';
 
 const $feed = createStore<CollectivesStruct<FeedRecord[]>>({});
 
-type SubscriptionParams = {
-  palletType: CollectivePalletsType;
-  chain: Chain;
-};
-
-const {
-  $: $list,
-  subscribe,
-  unsubscribe,
-} = createDataSubscription<CollectivesStruct<FeedRecord[]>, SubscriptionParams, FeedRecord[]>({
-  key: ({ palletType, chain }) => `${palletType}-${chain.chainId}`,
-  initial: $feed,
-  fn({ chain, palletType }: SubscriptionParams, callback) {
-    const url = chain.externalApi?.collectives.find(x => x.type === 'subquery')?.url;
-    if (nullable(url)) {
-      throw new Error(`Collectives indexer doesn't support ${chain.name} chain`);
-    }
-
-    const fn = () => {
-      fetchAllActivities(url, palletType).then(value => {
-        callback({ done: true, value });
-      });
-    };
-
-    fn();
-
-    const interval = setInterval(fn, 60000);
-    return () => clearInterval(interval);
-  },
-  map(store, { params, result }) {
-    const prev = pickNestedValue(store, params.palletType, params.chain.chainId) ?? [];
+deriveFromResources({
+  store: $feed,
+  resources: [feedSubscriptionResource],
+  map(state, feed) {
+    const prev = pickNestedValue(state, feed.pallet, feed.chainId) ?? [];
     const newList = merge({
       a: prev,
-      b: result,
+      b: feed.data,
       mergeBy: a => [a.accountId, a.block, a.type],
       sort: (a, b) => b.block - a.block,
     });
 
-    return setNestedValue(store, params.palletType, params.chain.chainId, newList);
+    return setNestedValue(state, feed.pallet, feed.chainId, newList);
   },
 });
 
 export const feed = {
-  $list: readonly($list),
-  subscribe,
-  unsubscribe,
+  $list: readonly($feed),
+  unsubscribe: feedSubscriptionResource.unsubscribe,
+  subscribe: feedSubscriptionResource.subscribe,
 };

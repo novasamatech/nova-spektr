@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type Transaction } from '@/shared/core';
+import { type ChainId, type Transaction } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
 
@@ -17,6 +17,8 @@ export type SalaryCycle = {
   budget: BN;
   totalRegistrations: BN;
   totalUnregisteredPaid: BN;
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
 };
 
 export type SalaryCyclePeriod =
@@ -40,6 +42,8 @@ export type SalaryCyclePeriod =
 export type Salaries = {
   active: BN[];
   passive: BN[];
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
 };
 
 export type ClaimStatus =

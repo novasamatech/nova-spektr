@@ -19,7 +19,7 @@ const $referendumId = flow.state.map(state => state.referendumId);
 
 const $evidences = fellowship.$store.map(store => store?.evidenceContent ?? []);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
-const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
+const $meta = fellowship.$store.map(store => store?.referendumMeta ?? []);
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
   if (referendums.length === 0 || referendumId === null) return null;
@@ -36,7 +36,7 @@ const $identities = combine(identity.$list, fellowshipReferendumsDetailsFeature.
 const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
   if (referendumId === null) return null;
 
-  return meta[referendumId] ?? null;
+  return meta.find(x => x.referendumId === referendumId) ?? null;
 });
 
 const $proposer = $referendum.map(referendum => {
@@ -82,7 +82,7 @@ const $description = combine({ referendum: $referendum, metadata: $referendumMet
 });
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.request.pending);
-const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
+const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.request.pending);
 
 const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(
   ({ input, data }) => {
