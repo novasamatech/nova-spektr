@@ -75,6 +75,22 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
     );
   }
 
+  let title: string | null = null;
+
+  if (evidence.wish === 'Retention') {
+    if (currentTrack) {
+      const rankId = currentTrack.id;
+      title = t('fellowship.salary.submitEvidenceConfirm.retain', { rank: t(`fellowship.rank.${rankId}`) });
+    }
+  }
+
+  if (evidence.wish === 'Promotion') {
+    if (nextTrack) {
+      const rankId = nextTrack.id;
+      title = t('fellowship.salary.submitEvidenceConfirm.promote', { rank: t(`fellowship.rank.${rankId}`) });
+    }
+  }
+
   return (
     <Modal size="md" isOpen={open} onToggle={open => handleToggle(open)}>
       <Modal.Trigger>
@@ -87,9 +103,7 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
           </Tooltip>
         </div>
       </Modal.Trigger>
-      <Modal.Title close>
-        <OperationTitle title={t('fellowship.voting.title')} chainId={input.chain.chainId} />
-      </Modal.Title>
+      <Modal.Title close>{title && <OperationTitle title={title} chainId={input.chain.chainId} />}</Modal.Title>
       <Modal.Content>
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>

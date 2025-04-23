@@ -481,7 +481,9 @@
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
         "evidenceType": "Evidence type",
-        "rank": "Rank"
+        "rank": "Rank",
+        "promote": "Promote to { rank }",
+        "retain": "Retain at { rank }"
       },
       "submitEvidenceVoteConfirm": {
         "evidence": "Evidence",
