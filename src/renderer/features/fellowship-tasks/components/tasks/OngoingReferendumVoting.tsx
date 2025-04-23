@@ -49,7 +49,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
   const content = useMemo(
     () =>
       meta?.description ? (
-        <Markdown>{tasksService.cutMarkdown(meta.description)}</Markdown>
+        <Markdown compact>{tasksService.cutMarkdown(meta.description)}</Markdown>
       ) : (
         t('fellowship.tasks.task.anyReferendum.noDescription')
       ),

@@ -1,5 +1,5 @@
 import noop from 'lodash/noop';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -125,14 +125,17 @@ const components: Components = {
   ),
 };
 
-export const Markdown = ({ children }: { children: string }) => {
+export const Markdown = memo(({ compact, children }: { compact?: boolean; children: string }) => {
   if (!children) {
     return null;
   }
 
   return (
     <ReactMarkdown
-      className="flex flex-col gap-3 overflow-hidden whitespace-pre-line text-body"
+      className={cnTw('flex flex-col overflow-hidden whitespace-pre-line text-body', {
+        'gap-3': !compact,
+        'gap-0.5': compact,
+      })}
       remarkRehypeOptions={rehypeOptions}
       remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}
@@ -141,4 +144,4 @@ export const Markdown = ({ children }: { children: string }) => {
       {children}
     </ReactMarkdown>
   );
-};
+});

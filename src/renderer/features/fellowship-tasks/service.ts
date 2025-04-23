@@ -224,6 +224,9 @@ function cutMarkdown(markdown: string) {
   const chunks = markdown.split(' ');
   const result: string[] = [];
   for (const chunk of chunks) {
+    if (chunk.startsWith('<img')) continue;
+    if (chunk.startsWith('<br>')) continue;
+
     result.push(chunk);
     totalLength += chunk.length;
     if (totalLength > MAX_SIZE) {
