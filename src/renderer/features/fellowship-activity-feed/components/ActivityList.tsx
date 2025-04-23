@@ -37,7 +37,7 @@ export const ActivityList = memo(() => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 pe-4 ps-6">
+          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 pe-4 ps-4">
             <div className="flex items-center gap-2 text-button-small">
               <div className="min-w-0 grow">
                 {nonNullable(input?.chain) && (
