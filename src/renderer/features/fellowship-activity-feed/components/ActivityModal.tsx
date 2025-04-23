@@ -10,7 +10,6 @@ import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui
 import { Account } from '@/shared/ui-entities';
 import { AsyncItem, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
@@ -75,13 +74,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>
-        <div className="flex gap-2">
-          <span>{t('fellowship.activityFeed.activityModal.title')}</span>
-
-          {input && <ChainTitle chainId={input.chainId} fontClass="text-text-primary text-header-title font-bold" />}
-        </div>
-      </Modal.Title>
+      <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="flex gap-x-4 px-5">
           <div className="inline grow">
