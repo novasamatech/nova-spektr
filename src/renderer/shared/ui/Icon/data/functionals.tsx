@@ -35,6 +35,7 @@ import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
 import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?jsx';
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
+import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
 import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
@@ -104,6 +105,7 @@ const FunctionalImages = {
   evidence: { svg: EvidenceIcon },
   salary: { svg: SalaryIcon },
   withdraw: { svg: WithdrawIcon },
+  requestSalary: { svg: RequestSalaryIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
