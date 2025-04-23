@@ -616,6 +616,7 @@
       "summary": "Summary",
       "threshold": "Threshold",
       "title": "Vote on",
+      "tooltip": "This will create a referendum with a { vote } vote pre-cast",
       "voteImpact": {
         "huge": "Huge",
         "impact": "Vote impact:",
