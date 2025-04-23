@@ -4,7 +4,7 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, nonNullable, nullable } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, DetailRow, Icon, LargeTitleText } from '@/shared/ui';
+import { Alert, BodyText, Button, DetailRow, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
@@ -113,18 +113,16 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <Box horizontalAlign="center">
+              <Box horizontalAlign="center" padding={[0, 0, 6, 0]}>
                 <Icon name="switch" size={60} />
-              </Box>
-              <Box horizontalAlign="center">
-                <LargeTitleText className="py-[16px]">
-                  {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
-                  &nbsp;{'→'}&nbsp;
-                  {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
-                </LargeTitleText>
               </Box>
 
               <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
+                <DetailRow label={t('fellowship.voting.confirmation.status')}>
+                  {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
+                  &nbsp;{'→'}&nbsp;
+                  {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
+                </DetailRow>
                 <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
                 <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
               </TransactionDetails>

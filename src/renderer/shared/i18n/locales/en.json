@@ -573,6 +573,7 @@
         "referendumType": "Referendum type",
         "retentionTrack": "Retention",
         "salary": "Salary",
+        "status": "Status",
         "submissionDeposit": "Decision deposit",
         "vote": "Vote"
       },
