@@ -18,25 +18,27 @@ function getReferendumVotingFromStatus(referendum: ReferendumMeta) {
   }
 }
 
-function getReferendumsSinceLastProof(
-  referendums: ReferendumMeta[],
-  member: CoreMember,
-  maxRank: number,
-): ReferendumMeta[] {
-  return referendums.filter(r => {
-    return r.created >= member.lastProof && trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track);
-  });
+function getReferendumsSinceLastProof(referendums: ReferendumMeta[], member: CoreMember): ReferendumMeta[] {
+  return referendums.filter(r => r.created >= member.lastProof);
 }
 
-function getActivityInfo(referendums: ReferendumMeta[], member: Member, votes: Vote[]) {
-  if (referendums.length === 0 && member.rank === 0) return { activity: null, agreement: null };
+function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank: number, votes: Vote[]) {
+  if (referendums.length === 0) return { activity: null, agreement: null };
+
+  const possibleReferendums = referendums.filter(r =>
+    trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track),
+  );
+
+  if (referendums.length > 0 && possibleReferendums.length === 0) {
+    return { activity: 100, agreement: null };
+  }
 
   let voted = 0;
   let agreementVote = 0;
 
   const memberVotesMap = dictionary(votes, 'referendumId');
 
-  for (const referendum of referendums) {
+  for (const referendum of possibleReferendums) {
     const memberVote = memberVotesMap[referendum.referendumId];
 
     if (!memberVote) continue;
@@ -44,7 +46,7 @@ function getActivityInfo(referendums: ReferendumMeta[], member: Member, votes: V
     voted++;
   }
 
-  const activity = referendums.length ? Math.round((voted / referendums.length) * 100) : 0;
+  const activity = possibleReferendums.length ? Math.round((voted / possibleReferendums.length) * 100) : 0;
   const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
 
   return { activity, agreement };

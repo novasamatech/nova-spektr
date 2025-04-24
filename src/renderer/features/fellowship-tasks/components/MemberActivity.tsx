@@ -36,11 +36,11 @@ export const MemberActivity = memo(({ accountId }: Props) => {
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
   const referendums = useMemo(() => {
-    return referendumMetaService.getReferendumsSinceLastProof(meta, member, maxRank);
-  }, [meta, member, maxRank]);
+    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  }, [meta, member]);
   const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, member, votes);
-  }, [referendums, member, votes]);
+    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
+  }, [referendums, member, maxRank, votes]);
 
   const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
     member.rank,
