@@ -1,9 +1,9 @@
 import { SigningType, WalletType } from '@/shared/core';
-import { createBaseAccount } from '@/shared/mocks';
+import { createVaultBaseAccount } from '@/shared/mocks';
 
 const wallet1 = {
   id: 1,
-  accounts: [createBaseAccount('1', { walletId: 1, name: 'New wallet name' })],
+  accounts: [createVaultBaseAccount('1', { walletId: 1, name: 'New wallet name' })],
   name: 'My first wallet',
   isActive: false,
   type: WalletType.MULTISIG,
@@ -12,7 +12,7 @@ const wallet1 = {
 
 const wallet2 = {
   id: 2,
-  accounts: [createBaseAccount('2', { walletId: 2, name: 'New wallet name' })],
+  accounts: [createVaultBaseAccount('2', { walletId: 2, name: 'New wallet name' })],
   name: 'My second wallet',
   isActive: false,
   type: WalletType.WATCH_ONLY,

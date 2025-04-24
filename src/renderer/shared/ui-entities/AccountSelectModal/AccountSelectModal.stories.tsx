@@ -2,15 +2,15 @@ import { BN_MILLION } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 
-import { createBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/shared/mocks';
+import { createVaultBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/shared/mocks';
 
 import { AccountSelectModal } from './AccountSelectModal';
 
 const accounts = [
-  createBaseAccount('1', { walletId: 1 }),
+  createVaultBaseAccount('1', { walletId: 1 }),
   createWcAccount('2'),
-  createBaseAccount('3', { walletId: 2 }),
-  createBaseAccount('4', { walletId: 3 }),
+  createVaultBaseAccount('3', { walletId: 2 }),
+  createVaultBaseAccount('4', { walletId: 3 }),
 ];
 
 const meta: Meta<typeof AccountSelectModal> = {
