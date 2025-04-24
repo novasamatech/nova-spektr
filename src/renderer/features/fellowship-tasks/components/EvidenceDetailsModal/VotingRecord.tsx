@@ -13,12 +13,12 @@ type Props = {
   evidence: Evidence;
 };
 
-interface DanRankInfo {
+interface RankMetric {
   activity: number | null;
   agreement: number | null;
 }
 
-const danRanks: Record<number, DanRankInfo> = {
+const rankMetrics: Record<number, RankMetric> = {
   0: { activity: null, agreement: null },
   1: { activity: 90, agreement: null },
   2: { activity: 80, agreement: null },
@@ -32,7 +32,7 @@ const danRanks: Record<number, DanRankInfo> = {
 };
 
 function getActivityAndAgreement(rank: number) {
-  return danRanks[rank] ?? { activity: null, agreement: null };
+  return rankMetrics[rank] ?? { activity: null, agreement: null };
 }
 
 export const VotingRecord = memo(({ evidence }: Props) => {
@@ -62,15 +62,16 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     return referendumMetaService.getActivityInfo(referendums, votes);
   }, [referendums, votes]);
 
-  const isActivityFit =
-    nonNullable(activity.activity) && activity.activity >= (getActivityAndAgreement(maxRank).activity ?? 0);
-  const isAgreementFit =
-    nonNullable(activity.agreement) && activity.agreement >= (getActivityAndAgreement(maxRank).agreement ?? 0);
+  const activityMetric = getActivityAndAgreement(member.rank).activity;
+  const agreementMetric = getActivityAndAgreement(member.rank).agreement;
+
+  const isActivityFit = nonNullable(activity.activity) && activity.activity >= (activityMetric ?? 0);
+  const isAgreementFit = nonNullable(activity.agreement) && activity.agreement >= (agreementMetric ?? 0);
 
   return (
     <Box direction="row" width="100%">
       <Box width="100%" grow={1} gap={1.5}>
-        {nonNullable(activity.activity) && nonNullable(getActivityAndAgreement(maxRank).activity) ? (
+        {nonNullable(activity.activity) && nonNullable(activityMetric) ? (
           <Box direction="row" verticalAlign="start" gap={2}>
             <Icon
               size={32}
@@ -81,9 +82,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
               <HelpText>{t('fellowship.members.activity')}</HelpText>
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>{activity.activity}</SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">
-                  {getActivityAndAgreement(maxRank).activity}%
-                </CaptionText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{activityMetric}%</CaptionText>
               </Box>
             </Box>
           </Box>
@@ -96,7 +95,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
       </Box>
 
       <Box width="100%" grow={1} gap={1.5}>
-        {nonNullable(activity.agreement) && nonNullable(getActivityAndAgreement(maxRank).agreement) ? (
+        {nonNullable(activity.agreement) && nonNullable(agreementMetric) ? (
           <Box direction="row" verticalAlign="start" gap={2}>
             <Icon
               size={32}
@@ -107,9 +106,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
               <HelpText>{t('fellowship.members.agreement')}</HelpText>
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>{activity.agreement}</SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">
-                  {getActivityAndAgreement(maxRank).agreement}%
-                </CaptionText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{agreementMetric}%</CaptionText>
               </Box>
             </Box>
           </Box>
