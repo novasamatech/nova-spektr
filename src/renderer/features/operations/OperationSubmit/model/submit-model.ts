@@ -249,6 +249,12 @@ sample({
   target: formSubmitted,
 });
 
+sample({
+  clock: formSubmitted,
+  fn: () => null,
+  target: $submitStore,
+});
+
 export const submitModel = {
   $submitStore,
   $submitStep,
