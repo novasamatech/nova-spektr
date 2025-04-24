@@ -117,7 +117,7 @@ export const createAccountId = (seed: string | number = '0') => {
   return pjsSchema.helpers.toAccountId(toAccountId(testKeyring.addFromUri(`//${derivationPathSeed * 1000}`).address));
 };
 
-export const createBaseAccount = (
+export const createVaultBaseAccount = (
   id = createRandomId(),
   params: Partial<Pick<VaultBaseAccount, 'accountId' | 'name'>> & {
     walletId: number;

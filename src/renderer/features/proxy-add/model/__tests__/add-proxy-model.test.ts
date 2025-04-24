@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 import { storageService } from '@/shared/api/storage';
 import { ConnectionStatus, type Transaction } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
-import { createBaseAccount } from '@/shared/mocks';
+import { createVaultBaseAccount } from '@/shared/mocks';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -58,7 +58,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: createBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
+          account: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
           delegate: TEST_ACCOUNTS[0],
           proxyType: 'Any',
           proxyDeposit: '1',
