@@ -81,20 +81,24 @@ sample({
 const $referendumsSinceLastProof = combine(
   {
     referendums: $referendumMeta,
-    maxRank: $maxRank,
     member: $member,
   },
-  ({ referendums, maxRank, member }) => {
+  ({ referendums, member }) => {
     if (!member || !memberService.isCoreMember(member)) return null;
-    return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member, maxRank);
+    return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member);
   },
 );
 
 const $activityInfo = combine(
-  { referendums: $referendumsSinceLastProof, member: $member, votes: $memberVotes },
-  ({ referendums, member, votes }) => {
+  {
+    referendums: $referendumsSinceLastProof,
+    member: $member,
+    maxRank: $maxRank,
+    votes: $memberVotes,
+  },
+  ({ referendums, member, maxRank, votes }) => {
     if (nullable(referendums) || nullable(member) || nullable(votes)) return null;
-    return referendumMetaService.getActivityInfo(referendums, member, votes);
+    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   },
 );
 
