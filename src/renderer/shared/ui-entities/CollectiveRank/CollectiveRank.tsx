@@ -19,6 +19,7 @@ const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] =>
 
 export const getRankTitle = (rank: number) => {
   const titles: Record<number, string> = {
+    0: 'fellowship.rank.0',
     1: 'fellowship.rank.1',
     2: 'fellowship.rank.2',
     3: 'fellowship.rank.3',
@@ -45,7 +46,7 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
     <Label variant={pickRankColor(rank)}>
       <Box direction="row" gap={1}>
         {showName ? t(getRankTitle(rank)) : null}
-        <span>{rank ? toRomanNumeral(rank) : '0'}</span>
+        <span>{rank ? toRomanNumeral(rank) : null}</span>
       </Box>
     </Label>
   );

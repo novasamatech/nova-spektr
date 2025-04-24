@@ -6,30 +6,16 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum, type Track, referendumService, track } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { votes } from '../../model/voting';
 import { MemberActivity } from '../MemberActivity';
-import { VoteBadge } from '../VoteBadge/VoteBadge';
+import { TaskLabels } from '../TaskLabels';
+import { VoteBadge } from '../VoteBadge';
 
 import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
-
-const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
-  urgent: {
-    text: 'fellowship.tasks.labels.urgent',
-    color: 'red',
-  },
-  controversial: {
-    text: 'fellowship.tasks.labels.controversial',
-    color: 'blue',
-  },
-  importantVote: {
-    text: 'fellowship.tasks.labels.importantVote',
-    color: 'purple',
-  },
-};
 
 const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
   const name = relatedTrack?.find(t => t.id === rank)?.name;
@@ -76,14 +62,7 @@ export const PromotionRetentionReferendumVoting = memo(
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               <SmallTitleText className="truncate">{title}</SmallTitleText>
-              {tags.map(tag => {
-                const labelConfig = tagLabels[tag];
-                return (
-                  <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
-                    {t(labelConfig?.text ?? tag)}
-                  </Label>
-                );
-              })}
+              <TaskLabels tags={tags} />
               {voted && <VoteBadge active />}
             </Box>
             {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}

@@ -7,7 +7,7 @@ import { fellowshipSalaryFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
-function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
+function getTimerColor(wish: 'Promotion' | 'Retention', time: number): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
   if (days <= 15) return 'urgent';
@@ -17,10 +17,11 @@ function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
 
 type Props = {
   endBlock: number | null;
+  wish: 'Promotion' | 'Retention';
   shortDateFormat?: boolean;
 };
 
-export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
+export const PeriodEndTimer = ({ wish, endBlock, shortDateFormat }: Props) => {
   const input = useUnit(fellowshipSalaryFeature.input);
   const [endTime, setEndTime] = useState<number>();
 
@@ -33,7 +34,7 @@ export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
   }, [endBlock, input]);
 
   if (!endTime || !input) return null;
-  const variant = getTimerColor(endTime);
+  const variant = getTimerColor(wish, endTime);
 
   return <Timeout at={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
 };
