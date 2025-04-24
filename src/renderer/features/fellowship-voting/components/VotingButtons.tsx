@@ -61,8 +61,6 @@ export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
       referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
     ) * 100;
 
-  console.log({ memberVoteWeight, userVotesImpact });
-
   return (
     <>
       <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />

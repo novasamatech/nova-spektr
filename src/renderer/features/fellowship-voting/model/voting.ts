@@ -153,6 +153,8 @@ sample({
       return coreTx.args.poll === o.coreTx.args.poll;
     });
 
+    const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
+
     // @ts-expect-error TODO fix id field
     const newTransaction: BasketTransaction = {
       initiatorAccountId: account.accountId,
@@ -161,7 +163,7 @@ sample({
     };
 
     return {
-      add: [newTransaction],
+      add: isSameTransaction ? [] : [newTransaction],
       remove: existingTransactions,
     };
   },
@@ -170,6 +172,7 @@ sample({
     remove: basketOperations.removeTransactions,
   }),
 });
+
 sample({
   clock: removeFromBasket,
   source: {
