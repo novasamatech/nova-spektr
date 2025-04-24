@@ -19,6 +19,7 @@ const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] =>
 
 export const getRankTitle = (rank: number) => {
   const titles: Record<number, string> = {
+    1: 'fellowship.rank.1',
     2: 'fellowship.rank.2',
     3: 'fellowship.rank.3',
     4: 'fellowship.rank.4',
