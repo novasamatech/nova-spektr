@@ -9,8 +9,9 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
 import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { referendumService } from '@/domains/collectives';
+import { type Track, referendumService, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
+import { tracksModel } from '../model/tracks';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
@@ -24,6 +25,14 @@ export const referendumActionsSlot = createSlot<{
   referendumId: ReferendumId;
   onHighlight: (value: 'Aye' | 'Nay' | null) => void;
 }>();
+
+const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
+  const name = relatedTrack?.find(t => t.id === rank)?.name;
+
+  if (!name) return '';
+
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 
 type Props = {
   isOpen: boolean;
@@ -39,6 +48,7 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
   const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
   const referendum = useUnit(details.$referendum);
+  const tracks = useUnit(tracksModel.$list);
   const pendingReferendum = useUnit(details.$pending);
 
   const totalReferendumVotes =
@@ -46,9 +56,16 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
 
   const loadingState = pendingReferendum && nullable(referendum);
 
+  let title = t('governance.referendums.referendumTitle', { index: referendumId });
+  if (referendum && referendumService.isOngoing(referendum)) {
+    if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
+      title = getRankTitle(referendum.track, tracks) || title;
+    }
+  }
+
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
-      <Modal.Title close>{`Referendum #${referendumId}`}</Modal.Title>
+      <Modal.Title close>{title}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full bg-main-app-background">
           <ScrollArea>

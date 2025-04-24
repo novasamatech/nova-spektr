@@ -5,7 +5,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Duration, FootnoteText, HelpText } from '@/shared/ui';
+import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
@@ -36,16 +36,14 @@ export const ActivityList = memo(() => {
         return (
           <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 pe-4 ps-4">
             <div className="flex items-center gap-2 text-button-small">
-              <div className="min-w-0 grow">
+              <div className="min-w-0 grow text-button-small">
                 {nonNullable(input?.chain) && (
-                  <BodyText>
-                    <Address
-                      title={identity ? identityService.getFullName(identity) : undefined}
-                      hideAddress
-                      variant="short"
-                      address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
-                    />
-                  </BodyText>
+                  <Address
+                    title={identity ? identityService.getFullName(identity) : undefined}
+                    hideAddress
+                    variant="short"
+                    address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
+                  />
                 )}
               </div>
               <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
