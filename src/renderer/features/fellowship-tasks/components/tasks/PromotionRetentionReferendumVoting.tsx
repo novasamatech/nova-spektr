@@ -57,8 +57,8 @@ export const PromotionRetentionReferendumVoting = memo(
     const title = getRankTitle(referendum.track, relatedTrack);
 
     return (
-      <Box direction="row" gap={10} padding={4}>
-        <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
+      <Box direction="row" gap={2}>
+        <button className="block w-full appearance-none p-4" onClick={() => onReferendumSelect(referendum)}>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               <SmallTitleText className="truncate">{title}</SmallTitleText>
@@ -73,7 +73,7 @@ export const PromotionRetentionReferendumVoting = memo(
             {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
           </Box>
         </button>
-        <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+        <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
           <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
         </Box>
       </Box>

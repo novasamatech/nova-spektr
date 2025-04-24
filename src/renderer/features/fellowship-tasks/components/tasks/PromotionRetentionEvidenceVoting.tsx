@@ -38,9 +38,9 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
       : t('fellowship.tasks.task.evidence.retentionTitle');
 
   return (
-    <Box direction="row" gap={10} padding={4}>
+    <Box direction="row" gap={2}>
       <EvidenceDetailsModal evidence={evidence}>
-        <button className="block w-full appearance-none">
+        <button className="block w-full appearance-none p-4">
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               <SmallTitleText className="truncate">{title}</SmallTitleText>
@@ -58,7 +58,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
         </button>
       </EvidenceDetailsModal>
 
-      <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+      <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
         <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction, endBlock }} />
       </Box>
     </Box>
