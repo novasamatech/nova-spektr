@@ -4,11 +4,14 @@ import { useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
+import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
+import { VoteBadge } from '../VoteBadge/VoteBadge';
 
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
@@ -45,6 +48,13 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
     keys: [referendum.id],
     fn: (meta, [id]) => meta[id] ?? null,
   });
+  const vote = useStoreMap({
+    store: votes.$memberVotes,
+    keys: [referendum.id],
+    fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
+  });
+
+  const voted = nonNullable(vote);
 
   const content = useMemo(
     () =>
@@ -72,6 +82,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
                 </Label>
               );
             })}
+            {voted && <VoteBadge active />}
           </Box>
           <FootnoteText>{content}</FootnoteText>
         </Box>
