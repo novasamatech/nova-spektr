@@ -65,7 +65,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
             <TaskLabels tags={tags} />
             {voted && <VoteBadge active />}
           </Box>
-          <FootnoteText>{content}</FootnoteText>
+          <FootnoteText as="div">{content}</FootnoteText>
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
