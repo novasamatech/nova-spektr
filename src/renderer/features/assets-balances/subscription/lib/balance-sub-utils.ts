@@ -27,7 +27,7 @@ function getSiblingAccounts(
   const polkadotAccount = selectedAccounts.find(accountUtils.isVaultShardAccount || accountUtils.isVaultChainAccount);
 
   if (polkadotAccount) {
-    return selectedAccounts.filter((account) => !accountUtils.isBaseAccount(account));
+    return selectedAccounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   }
 
   const proxiedAccount = selectedAccounts.find(accountUtils.isProxiedAccount);

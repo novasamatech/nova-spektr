@@ -35,7 +35,7 @@ export const SignerSelection = () => {
             if (!chain) return null;
 
             const account = wallet.accounts.find((account) => {
-              return accountUtils.isBaseAccount(account) || account.chainId === chain.chainId;
+              return accountUtils.isVaultBaseAccount(account) || account.chainId === chain.chainId;
             });
 
             if (!account) return null;

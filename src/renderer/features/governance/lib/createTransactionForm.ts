@@ -139,7 +139,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           walletAccounts = shards;
         } else {
           walletAccounts = wallet.accounts.filter(
-            (a) => accountUtils.isBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
+            (a) => accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain),
           );
         }
       } else {

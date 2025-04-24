@@ -6,10 +6,10 @@ import { vi } from 'vitest';
 import chains from '@/shared/config/chains/chains.json';
 import {
   AccountType,
-  type BaseAccount,
   type Chain,
   CryptoType,
   SigningType,
+  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
@@ -50,7 +50,7 @@ vi.mock('../AssetCard/AssetCard', () => ({
   AssetCard: ({ asset }: any) => <span data-testid="AssetCard">{asset.name}</span>,
 }));
 
-const accounts: (BaseAccount | VaultChainAccount | VaultShardAccount)[] = [
+const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
   {
     id: '1',
     walletId: 1,

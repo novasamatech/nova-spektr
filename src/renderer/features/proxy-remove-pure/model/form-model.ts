@@ -134,7 +134,7 @@ const $proxiedAccounts = combine(
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const walletAccounts = wallet.accounts.filter((account) => {
-      if (isPolkadotVault && accountUtils.isBaseAccount(account)) return false;
+      if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
 
       return accountUtils.isChainAndCryptoMatch(account, chain);
     });
@@ -163,7 +163,7 @@ const $proxyAccounts = combine(
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isBaseAccount(account);
+      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);

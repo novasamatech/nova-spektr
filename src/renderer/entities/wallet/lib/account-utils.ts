@@ -5,7 +5,6 @@ import keyBy from 'lodash/keyBy';
 // TODO: resolve cross import
 import {
   AccountType,
-  type BaseAccount,
   type Chain,
   type ChainId,
   CryptoType,
@@ -13,6 +12,7 @@ import {
   type MultisigThreshold,
   type ProxiedAccount,
   ProxyVariant,
+  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   type Wallet,
@@ -30,7 +30,7 @@ import { walletUtils } from './wallet-utils';
 
 export const accountUtils = {
   isWatchOnlyAccount,
-  isBaseAccount,
+  isVaultBaseAccount,
   isVaultChainAccount,
   isVaultShardAccount,
   isMultisigAccount,
@@ -69,7 +69,7 @@ function isWatchOnlyAccount(account: Partial<AnyAccount>): account is WatchOnlyA
   );
 }
 
-function isBaseAccount(account: Partial<AnyAccount>): account is BaseAccount {
+function isVaultBaseAccount(account: Partial<AnyAccount>): account is VaultBaseAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isUniversalAccount(account) && 'accountType' in account && account.accountType === AccountType.BASE
@@ -156,7 +156,7 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
   const shardsIndexes: Record<string, number> = {};
 
   return accounts.reduce<(VaultChainAccount | VaultShardAccount[])[]>((acc, account) => {
-    if (isBaseAccount(account)) return acc;
+    if (isVaultBaseAccount(account)) return acc;
 
     if (!isVaultShardAccount(account)) {
       // @ts-expect-error TODO fix
@@ -177,7 +177,7 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
   }, []);
 }
 
-function getSignatoryAccounts<T extends BaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
+function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {
   const accountsMap = keyBy(accounts, 'accountId');
 
   return accountIds.map((id) => accountsMap[id]);
@@ -215,10 +215,10 @@ function isGovernanceProxyType(account: ProxiedAccount): boolean {
  * @deprecated This predicate exists only because both "watch only" and PV
  *   "root" accounts implemented with BaseAccount interface. After introducing
  *   `WatchOnly` account type this check can be reduced to
- *   `!accountUtils.isBaseAccount(account)`.
+ *   `!accountUtils.isVaultBaseAccount(account)`.
  */
 function isNonBaseVaultAccount(account: AnyAccount, wallet: Wallet): boolean {
-  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isBaseAccount(account);
+  return !walletUtils.isPolkadotVault(wallet) || !accountUtils.isVaultBaseAccount(account);
 }
 
 function getAccountsIdsForWallet(wallet: Wallet, chain: Chain) {
