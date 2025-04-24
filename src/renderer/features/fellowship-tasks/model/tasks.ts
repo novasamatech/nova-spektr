@@ -322,7 +322,7 @@ const $completedReferendumsTasks = combine(referendums.$completed, referendums =
   return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
     return {
       id: `referendum_completed_${referendum.id}`,
-      weight: 0,
+      weight: referendum.id,
       group: 'completed',
       body: CompletedReferendumVoting,
       meta: { referendum, transaction: null, tags: [] },
