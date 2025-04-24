@@ -26,7 +26,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
           <CollectiveRank rank={rank} />
         </div>
         <div className="relative flex min-w-0 shrink grow items-center gap-2">
-          <div>
+          <div className="min-w-0">
             <div className="flex grow items-center gap-4.5">
               <Identicon address={address} size={20} canCopy background={false} />
               <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
