@@ -62,8 +62,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     return referendumMetaService.getActivityInfo(referendums, votes);
   }, [referendums, votes]);
 
-  const activityMetric = getActivityAndAgreement(member.rank).activity;
-  const agreementMetric = getActivityAndAgreement(member.rank).agreement;
+  const { activity: activityMetric, agreement: agreementMetric } = getActivityAndAgreement(member.rank);
 
   const isActivityFit = nonNullable(activity.activity) && activity.activity >= (activityMetric ?? 0);
   const isAgreementFit = nonNullable(activity.agreement) && activity.agreement >= (agreementMetric ?? 0);
