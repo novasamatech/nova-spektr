@@ -8,32 +8,11 @@ import { Box } from '@/shared/ui-kit';
 import { type Evidence, memberService, referendumMetaService } from '@/domains/collectives';
 import { fellowship } from '../../model/fellowship';
 import { members } from '../../model/members';
+import { tasksService } from '../../service';
 
 type Props = {
   evidence: Evidence;
 };
-
-interface RankMetric {
-  activity: number | null;
-  agreement: number | null;
-}
-
-const rankMetrics: Record<number, RankMetric> = {
-  0: { activity: null, agreement: null },
-  1: { activity: 90, agreement: null },
-  2: { activity: 80, agreement: null },
-  3: { activity: 70, agreement: 100 },
-  4: { activity: 60, agreement: 90 },
-  5: { activity: 50, agreement: 80 },
-  6: { activity: 40, agreement: 70 },
-  7: { activity: null, agreement: null },
-  8: { activity: null, agreement: null },
-  9: { activity: null, agreement: null },
-};
-
-function getActivityAndAgreement(rank: number) {
-  return rankMetrics[rank] ?? { activity: null, agreement: null };
-}
 
 export const VotingRecord = memo(({ evidence }: Props) => {
   const { t } = useI18n();
@@ -59,19 +38,25 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     return referendumMetaService.getReferendumsSinceLastProof(meta, member, maxRank);
   }, [meta, member, maxRank]);
   const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, votes);
-  }, [referendums, votes]);
+    return referendumMetaService.getActivityInfo(referendums, member, votes);
+  }, [referendums, member, votes]);
 
-  const { activity: activityMetric, agreement: agreementMetric } = getActivityAndAgreement(member.rank);
+  const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
+    member.rank,
+  );
 
-  const isActivityFit = nonNullable(activity.activity) && activity.activity >= (activityMetric ?? 0);
-  const isAgreementFit = nonNullable(activity.agreement) && activity.agreement >= (agreementMetric ?? 0);
+  const isActivityFit =
+    nonNullable(activity.activity) && nonNullable(activityThreshold) ? activity.activity >= activityThreshold : false;
+  const isAgreementFit =
+    nonNullable(activity.agreement) && nonNullable(agreementThreshold)
+      ? activity.agreement >= agreementThreshold
+      : false;
 
   return (
     <Box direction="row" width="100%">
       <Box width="100%" grow={1} gap={1.5}>
-        {nonNullable(activity.activity) && nonNullable(activityMetric) ? (
-          <Box direction="row" verticalAlign="start" gap={2}>
+        {nonNullable(activity.activity) && nonNullable(activityThreshold) ? (
+          <Box direction="row" verticalAlign="start" gap={3}>
             <Icon
               size={32}
               name="checkmarkCutout"
@@ -80,13 +65,13 @@ export const VotingRecord = memo(({ evidence }: Props) => {
             <Box>
               <HelpText>{t('fellowship.members.activity')}</HelpText>
               <Box direction="row" verticalAlign="end">
-                <SmallTitleText>{activity.activity}</SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">{activityMetric}%</CaptionText>
+                <SmallTitleText>{activity.activity.toString()}</SmallTitleText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{activityThreshold}%</CaptionText>
               </Box>
             </Box>
           </Box>
         ) : (
-          <Box gap={2}>
+          <Box gap={1}>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
             <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
           </Box>
@@ -94,8 +79,8 @@ export const VotingRecord = memo(({ evidence }: Props) => {
       </Box>
 
       <Box width="100%" grow={1} gap={1.5}>
-        {nonNullable(activity.agreement) && nonNullable(agreementMetric) ? (
-          <Box direction="row" verticalAlign="start" gap={2}>
+        {nonNullable(activity.agreement) && nonNullable(agreementThreshold) ? (
+          <Box direction="row" verticalAlign="start" gap={3}>
             <Icon
               size={32}
               name="checkmarkCutout"
@@ -104,13 +89,13 @@ export const VotingRecord = memo(({ evidence }: Props) => {
             <Box>
               <HelpText>{t('fellowship.members.agreement')}</HelpText>
               <Box direction="row" verticalAlign="end">
-                <SmallTitleText>{activity.agreement}</SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">{agreementMetric}%</CaptionText>
+                <SmallTitleText>{activity.agreement.toString()}</SmallTitleText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{agreementThreshold}%</CaptionText>
               </Box>
             </Box>
           </Box>
         ) : (
-          <Box gap={2}>
+          <Box gap={1}>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
             <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
           </Box>

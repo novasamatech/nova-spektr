@@ -4,11 +4,12 @@ import { memo, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { FootnoteText } from '@/shared/ui';
+import { FootnoteText, Icon } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { memberService, referendumMetaService } from '@/domains/collectives';
 import { fellowship } from '../model/fellowship';
 import { members } from '../model/members';
+import { tasksService } from '../service';
 
 type Props = {
   accountId: AccountId;
@@ -38,20 +39,47 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     return referendumMetaService.getReferendumsSinceLastProof(meta, member, maxRank);
   }, [meta, member, maxRank]);
   const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, votes);
-  }, [referendums, votes]);
+    return referendumMetaService.getActivityInfo(referendums, member, votes);
+  }, [referendums, member, votes]);
+
+  const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
+    member.rank,
+  );
+
+  const isActivityFit =
+    nonNullable(activity.activity) && nonNullable(activityThreshold) ? activity.activity >= activityThreshold : false;
+  const isAgreementFit =
+    nonNullable(activity.agreement) && nonNullable(agreementThreshold)
+      ? activity.agreement >= agreementThreshold
+      : false;
 
   return (
     <Box direction="row" gap={4}>
-      <Box direction="row" gap={1}>
-        <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
-        <FootnoteText>{nonNullable(activity.activity) ? `${activity.activity}/40%` : t('fellowship.n/a')}</FootnoteText>
+      <Box direction="row" gap={2} verticalAlign="center">
+        <Icon size={16} name="checkmarkCutout" className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'} />
+        <Box direction="row" gap={1} verticalAlign="center">
+          <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
+          <FootnoteText>
+            {nonNullable(activity.activity) && nonNullable(activityThreshold)
+              ? `${activity.activity}/${activityThreshold}%`
+              : t('fellowship.n/a')}
+          </FootnoteText>
+        </Box>
       </Box>
-      <Box direction="row" gap={1}>
-        <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
-        <FootnoteText>
-          {nonNullable(activity.agreement) ? `${activity.agreement}/47%` : t('fellowship.n/a')}
-        </FootnoteText>
+      <Box direction="row" gap={2} verticalAlign="center">
+        <Icon
+          size={16}
+          name="checkmarkCutout"
+          className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
+        />
+        <Box direction="row" gap={1} verticalAlign="center">
+          <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
+          <FootnoteText>
+            {nonNullable(activity.agreement) && nonNullable(agreementThreshold)
+              ? `${activity.agreement}/${agreementThreshold}%`
+              : t('fellowship.n/a')}
+          </FootnoteText>
+        </Box>
       </Box>
     </Box>
   );

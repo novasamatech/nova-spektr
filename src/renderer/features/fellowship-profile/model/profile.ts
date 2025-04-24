@@ -91,9 +91,11 @@ const $referendumsSinceLastProof = combine(
 );
 
 const $activityInfo = combine(
-  { referendums: $referendumsSinceLastProof, votes: $memberVotes },
-  ({ referendums, votes }) =>
-    !referendums || !votes ? null : referendumMetaService.getActivityInfo(referendums, votes),
+  { referendums: $referendumsSinceLastProof, member: $member, votes: $memberVotes },
+  ({ referendums, member, votes }) => {
+    if (nullable(referendums) || nullable(member) || nullable(votes)) return null;
+    return referendumMetaService.getActivityInfo(referendums, member, votes);
+  },
 );
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
