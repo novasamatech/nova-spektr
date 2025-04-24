@@ -1,0 +1,7 @@
+.markdown-cut {
+  mask-image: linear-gradient(
+  to bottom,
+  black calc(100% - 4px),
+  transparent 100%
+  )
+}
