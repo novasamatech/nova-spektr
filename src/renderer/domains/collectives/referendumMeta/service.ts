@@ -1,5 +1,5 @@
 import { dictionary } from '@/shared/lib/utils';
-import { type CoreMember } from '../member/types';
+import { type CoreMember, type Member } from '../member/types';
 import { trackService } from '../tracks/service';
 import { type Vote } from '../votingHistory/types';
 
@@ -28,8 +28,8 @@ function getReferendumsSinceLastProof(
   });
 }
 
-function getActivityInfo(referendums: ReferendumMeta[], votes: Vote[]) {
-  if (referendums.length === 0) return { activity: null, agreement: null };
+function getActivityInfo(referendums: ReferendumMeta[], member: Member, votes: Vote[]) {
+  if (referendums.length === 0 && member.rank === 0) return { activity: null, agreement: null };
 
   let voted = 0;
   let agreementVote = 0;

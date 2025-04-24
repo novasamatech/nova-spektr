@@ -1,21 +1,19 @@
 import { useUnit } from 'effector-react';
 import orderBy from 'lodash/orderBy';
-import { type PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
-import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
-import { Button, Duration, EmptyList, FootnoteText, HelpText } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
-import { AsyncItem, Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { nullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
+import { Button, EmptyList } from '@/shared/ui';
+import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
-import { activityFeedRecordDescriptionSlot } from './ActivityList';
 import { ActivityPlaceholder } from './ActivityPlaceholder';
+import { EventRecord } from './EventRecord';
 
 type OrderKey = 'duration-asc' | 'duration-desc' | 'name-asc' | 'name-desc';
 
@@ -40,43 +38,55 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
 
+  const deferredQuery = useDeferredValue(query);
+
   const clearSearch = () => setQuery('');
 
-  const records = list.map(record => {
-    const identity = identities[record.accountId];
-    return {
-      ...record,
-      address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
-      name: identity ? identityService.getFullName(identity) : undefined,
-      duration: (now - record.at.getTime()) / 1000,
-    };
-  });
+  const records = useMemo(
+    () =>
+      list.map(record => {
+        const identity = identities[record.accountId];
+        return {
+          ...record,
+          address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
+          name: identity ? identityService.getFullName(identity) : undefined,
+          duration: (now - record.at.getTime()) / 1000,
+        };
+      }),
+    [identities, list],
+  );
 
-  const filteredList = performSearch({
-    records,
-    query,
-    queryMinLength: 3,
-    weights: {
-      type: 0.5,
-      wish: 0.5,
-      name: 1,
-      accountId: 1,
-      address: 1,
-    },
-  });
+  const filteredList = useMemo(() => {
+    return performSearch({
+      query: deferredQuery,
+      queryMinLength: 2,
+      records,
+      weights: {
+        type: 0.5,
+        name: 1,
+        wish: 0.5,
+        accountId: 0.5,
+        address: 0.5,
+      },
+    });
+  }, [deferredQuery, records]);
 
   const isNothingFound = !!records.length && !filteredList.length;
-
   const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
-  const sortedList = orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
+  const sortedList = useMemo(
+    () => (orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList),
+    [filteredList, orderVariant],
+  );
+
+  if (nullable(input)) return children;
 
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="flex gap-x-2 bg-main-app-background px-5 pt-4">
+        <div className="flex gap-x-2 bg-main-app-background px-5 py-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
@@ -104,7 +114,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="flex h-full flex-col gap-y-5 bg-main-app-background py-6">
+        <div className="flex h-full flex-col gap-y-5 bg-main-app-background pb-4 pt-2">
           {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
           {isNothingFound && (
@@ -120,33 +130,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
             </EmptyList>
           )}
 
-          {sortedList.map(record => (
-            <AsyncItem
-              key={`${record.block}-${record.accountId}-${record.type}`}
-              spaceToReserve={{ width: '100%', height: '48px' }}
-            >
-              <div className="flex flex-col gap-1 px-5">
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 grow text-button-small">
-                    {nonNullable(input?.chain) && (
-                      <Account
-                        accountId={record.accountId}
-                        chain={input.chain}
-                        title={record.name}
-                        variant="short"
-                        hideAddress
-                      />
-                    )}
-                  </div>
-                  <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                    <Duration seconds={record.duration} shortFormat />
-                  </HelpText>
-                </div>
-                <FootnoteText className="text-text-secondary">
-                  <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
-                </FootnoteText>
-              </div>
-            </AsyncItem>
+          {sortedList.map(event => (
+            <EventRecord key={`${event.block}-${event.accountId}-${event.type}`} event={event} chain={input.chain} />
           ))}
         </div>
       </Modal.Content>
