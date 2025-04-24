@@ -39,7 +39,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
   return (
     <Modal size="xl" height="full" isOpen={open} onToggle={setOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title>{title}</Modal.Title>
+      <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
         <div className="grid h-full grid-cols-[1fr,360px] gap-x-4 bg-main-app-background p-6">
           <Box>
