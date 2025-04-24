@@ -1,4 +1,10 @@
-import { type BaseAccount, type ProxyAccount, type ProxyDeposits, type Wallet, type WcAccount } from '@/shared/core';
+import {
+  type ProxyAccount,
+  type ProxyDeposits,
+  type VaultBaseAccount,
+  type Wallet,
+  type WcAccount,
+} from '@/shared/core';
 import { AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -38,7 +44,7 @@ const wallets: Wallet[] = [
         accountId: TEST_ACCOUNTS[0],
         signingType: SigningType.MULTISIG,
         cryptoType: CryptoType.SR25519,
-      } satisfies BaseAccount,
+      } satisfies VaultBaseAccount,
     ],
   },
   {

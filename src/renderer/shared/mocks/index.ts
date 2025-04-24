@@ -4,7 +4,6 @@ import {
   AccountType,
   type Asset,
   AssetType,
-  type BaseAccount,
   type Chain,
   type ChainId,
   ChainOptions,
@@ -17,6 +16,7 @@ import {
   SigningType,
   type SingleShardWallet,
   StakingType,
+  type VaultBaseAccount,
   type VaultChainAccount,
   type WalletConnectWallet,
   WalletType,
@@ -119,10 +119,10 @@ export const createAccountId = (seed: string | number = '0') => {
 
 export const createBaseAccount = (
   id = createRandomId(),
-  params: Partial<Pick<BaseAccount, 'accountId' | 'name'>> & {
+  params: Partial<Pick<VaultBaseAccount, 'accountId' | 'name'>> & {
     walletId: number;
   },
-): BaseAccount => {
+): VaultBaseAccount => {
   const accountId = params.accountId ?? createAccountId(`Base account ${id}`);
 
   return {

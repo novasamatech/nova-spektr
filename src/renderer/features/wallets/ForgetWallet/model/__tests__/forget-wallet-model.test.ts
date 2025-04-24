@@ -4,10 +4,10 @@ import { vi } from 'vitest';
 import { storageService } from '@/shared/api/storage';
 import {
   AccountType,
-  type BaseAccount,
   CryptoType,
   ProxyVariant,
   SigningType,
+  type VaultBaseAccount,
   type Wallet,
   WalletType,
 } from '@/shared/core';
@@ -52,7 +52,7 @@ const wallet: Wallet = {
       accountType: AccountType.BASE,
       name: 'first account',
       accountId: TEST_ACCOUNTS[0],
-    } satisfies BaseAccount,
+    } satisfies VaultBaseAccount,
     {
       id: '2',
       walletId: 1,
@@ -62,7 +62,7 @@ const wallet: Wallet = {
       accountType: AccountType.BASE,
       name: 'second account',
       accountId: createAccountId('proxied account'),
-    } satisfies BaseAccount,
+    } satisfies VaultBaseAccount,
   ],
 };
 

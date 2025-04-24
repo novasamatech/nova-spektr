@@ -11,7 +11,7 @@ export interface WatchOnlyAccount extends UniversalAccount {
   accountType: AccountType.WATCH_ONLY;
 }
 
-export interface BaseAccount extends UniversalAccount {
+export interface VaultBaseAccount extends UniversalAccount {
   accountType: AccountType.BASE;
 }
 

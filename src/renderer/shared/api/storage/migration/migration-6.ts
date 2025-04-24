@@ -3,10 +3,10 @@ import uniqBy from 'lodash/uniqBy';
 
 import {
   AccountType,
-  type BaseAccount,
   type PolkadotVaultWallet,
   SigningType,
   type SingleShardWallet,
+  type VaultBaseAccount,
   type VaultChainAccount,
   type Wallet,
   WalletType,
@@ -16,7 +16,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type AnyAccountDraft, type ChainAccount } from '@/domains/network';
 
 type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };
-type OldVaultAccount = BaseAccount | OldChainAccount;
+type OldVaultAccount = VaultBaseAccount | OldChainAccount;
 
 type WalletDraft<T = Wallet> = Omit<T, 'id' | 'accounts'>;
 
@@ -51,7 +51,7 @@ export async function migrateMultishardAccounts(t: Transaction): Promise<void> {
       });
     }
 
-    return [{ ...accounts, walletId, id: `${walletId} ${accounts.accountId} universal` } satisfies BaseAccount];
+    return [{ ...accounts, walletId, id: `${walletId} ${accounts.accountId} universal` } satisfies VaultBaseAccount];
   });
 
   await t.table('accounts2').bulkAdd(newAccounts.flat());
@@ -97,14 +97,14 @@ async function getWalletsAndAccounts(t: Transaction) {
   );
 
   // Drafts that require more details to become PV or SS
-  const toWalletDraft = new Map<AccountId, BaseAccount>();
+  const toWalletDraft = new Map<AccountId, VaultBaseAccount>();
   // Will become new wallets
   const toWallet = new Map<AccountId, WalletDraft<PolkadotVaultWallet | SingleShardWallet>>();
 
   // Draft that require more details to become BaseAccount or ChainAccount
   const toRegroupDraft = new Map<AccountId, OldChainAccount[]>();
   // Will be become BaseAccount or ChainAccount
-  const toRegroup = new Map<AccountId, AccountDraft<BaseAccount> | AccountDraft<ChainAccount>[]>();
+  const toRegroup = new Map<AccountId, AccountDraft<VaultBaseAccount> | AccountDraft<ChainAccount>[]>();
 
   // Delete "baseAccountId"
   const toUpdate: ChainAccount[] = [];
@@ -160,7 +160,7 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: 'universal',
         accountType: AccountType.BASE,
         signingType: SigningType.POLKADOT_VAULT,
-      } satisfies AccountDraft<BaseAccount>);
+      } satisfies AccountDraft<VaultBaseAccount>);
     }
   }
 

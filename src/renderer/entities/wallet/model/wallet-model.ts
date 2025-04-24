@@ -3,12 +3,12 @@ import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
-  type BaseAccount,
   type ID,
   type MultisigAccount,
   type NoID,
   type PolkadotVaultGroup,
   type ProxiedAccount,
+  type VaultBaseAccount,
   type Wallet,
   type WatchOnlyAccount,
   type WcAccount,
@@ -33,7 +33,7 @@ export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = W
 };
 
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
-const singleshardCreated = createEvent<CreateParams<BaseAccount, PolkadotVaultGroup>>();
+const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();

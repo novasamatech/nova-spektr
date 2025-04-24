@@ -3,9 +3,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import {
-  type BaseAccount,
   type MultisigAccount,
   type ProxiedAccount,
+  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   type WcAccount,
@@ -41,12 +41,12 @@ export interface PolkadotVaultWallet extends Wallet {
 export interface SingleShardWallet extends Wallet {
   type: WalletType.SINGLE_PARITY_SIGNER;
   rootAccountId: AccountId;
-  accounts: BaseAccount[];
+  accounts: VaultBaseAccount[];
 }
 
 export interface WatchOnlyWallet extends Wallet {
   type: WalletType.WATCH_ONLY;
-  accounts: BaseAccount[];
+  accounts: VaultBaseAccount[];
 }
 
 export interface MultisigWallet extends Wallet {

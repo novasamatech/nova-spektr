@@ -40,7 +40,7 @@ export const createMultipleTxStore = ({
       const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
         walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
         accountFn: (a, w) => {
-          const isBase = accountUtils.isBaseAccount(a);
+          const isBase = accountUtils.isVaultBaseAccount(a);
           const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
           return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
