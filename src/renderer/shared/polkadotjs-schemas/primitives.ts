@@ -61,7 +61,7 @@ export const textSchema = z
   .transform((value) => value.toString())
   .describe('text');
 export const bytesSchema = z.instanceof(Bytes).transform((value) => value.toU8a());
-export const bytesString = z.instanceof(Bytes).transform((value) => value.toString());
+export const bytesStringSchema = z.instanceof(Bytes).transform((value) => value.toString());
 export const bytesHexSchema = z.instanceof(Bytes).transform((value) => value.toHex());
 
 export const uint8HexSchema = z.instanceof(Uint8Array).transform((value) => u8aToHex(value));

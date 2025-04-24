@@ -1,4 +1,5 @@
 import { createStore } from 'effector';
+import { readonly } from 'patronum';
 
 import { type Chain } from '@/shared/core';
 import { createDataSubscription } from '@/shared/effector';
@@ -53,7 +54,7 @@ const {
 });
 
 export const feed = {
-  $list,
+  $list: readonly($list),
   subscribe,
   unsubscribe,
 };

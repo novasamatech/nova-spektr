@@ -4,15 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui/types';
 import { FilledIconButton, Tooltip } from '@/shared/ui-kit';
-
-function categorizeImpact(voteImpact: number): string {
-  if (voteImpact >= 60) {
-    return 'huge';
-  } else if (voteImpact <= 20) {
-    return 'minor';
-  }
-  return 'moderate';
-}
+import { categorizeImpact } from '../utils';
 
 type Props = {
   variant: 'positive' | 'negative';

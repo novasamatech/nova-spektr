@@ -1,10 +1,10 @@
-import { type PropsWithChildren } from 'react';
+import { type ComponentProps, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '../Icon/Icon';
 import { type IconNames } from '../Icon/data';
 
-type Props = {
+type Props = Pick<ComponentProps<'a'>, 'onClick'> & {
   url: string;
   iconName?: IconNames;
   size?: 'sm' | 'md' | 'inherit';
@@ -23,6 +23,7 @@ export const InfoLink = ({
   iconPosition = 'left',
   tabIndex,
   download,
+  onClick,
 }: PropsWithChildren<Props>) => (
   <a
     href={url}
@@ -40,6 +41,7 @@ export const InfoLink = ({
       className,
     )}
     download={download}
+    onClick={onClick}
   >
     {iconPosition === 'left' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
     {children}

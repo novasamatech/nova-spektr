@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useFlow } from '@/shared/effector';
@@ -8,6 +9,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
 import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
+import { referendumService } from '@/domains/collectives';
 import { details } from '../model/details';
 
 import { Card } from './Card';
@@ -18,7 +20,10 @@ import { Threshold } from './Threshold';
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalLowPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 
-export const referendumActionsSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumActionsSlot = createSlot<{
+  referendumId: ReferendumId;
+  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
+}>();
 
 type Props = {
   isOpen: boolean;
@@ -31,8 +36,13 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
 
   const { t } = useI18n();
 
+  const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
+
   const referendum = useUnit(details.$referendum);
   const pendingReferendum = useUnit(details.$pending);
+
+  const totalReferendumVotes =
+    referendum && referendumService.isOngoing(referendum) ? referendum.tally.ayes + referendum.tally.nays : null;
 
   const loadingState = pendingReferendum && nullable(referendum);
 
@@ -54,9 +64,14 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
-                    <CollectiveReferendumVoteChart referendum={referendum} pending={loadingState} />
+                    <CollectiveReferendumVoteChart
+                      referendum={referendum}
+                      pending={loadingState}
+                      votes={totalReferendumVotes}
+                      highlight={highlight}
+                    />
                     <Threshold referendum={referendum} pending={loadingState} />
-                    <Slot id={referendumActionsSlot} props={{ referendumId }} />
+                    <Slot id={referendumActionsSlot} props={{ referendumId, onHighlight: setHighlight }} />
                   </Box>
                 </Card>
                 <Slot id={referendumAdditionalLowPriorityInfoSlot} props={{ referendumId }} />

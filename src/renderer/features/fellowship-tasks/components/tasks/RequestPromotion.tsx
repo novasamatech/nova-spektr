@@ -21,11 +21,9 @@ export const RequestPromotion = () => {
       <Box grow={1} gap={3}>
         <SmallTitleText>{t('fellowship.tasks.task.promotion.title')}</SmallTitleText>
         <Box direction="row" gap={2.5}>
-          {currentTrack ? (
-            <CollectiveRank rank={currentTrack.id}>{currentTrack.name.replace(/s$/, '')}</CollectiveRank>
-          ) : null}
+          {currentTrack ? <CollectiveRank rank={currentTrack.id} showName /> : null}
           <Icon name="right" size={16} className="text-text-primary" />
-          {nextTrack ? <CollectiveRank rank={nextTrack.id}>{nextTrack.name.replace(/s$/, '')}</CollectiveRank> : null}
+          {nextTrack ? <CollectiveRank rank={nextTrack.id} showName /> : null}
         </Box>
         <FootnoteText>
           {t('fellowship.tasks.task.promotion.description', { rank: toRomanNumeral(nextTrack?.id ?? 0) })}

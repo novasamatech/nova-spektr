@@ -1,12 +1,14 @@
 import { useStoreMap } from 'effector-react';
+import { useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { SmallTitleText } from '@/shared/ui';
+import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
+import { tasksService } from '../../service';
 
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
@@ -24,7 +26,7 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
   importantVote: {
     text: 'fellowship.tasks.labels.importantVote',
-    color: 'orange',
+    color: 'purple',
   },
 };
 
@@ -44,17 +46,34 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
     fn: (meta, [id]) => meta[id] ?? null,
   });
 
-  const firstTag = tags.at(0);
-  const labelConfig = firstTag ? tagLabels[firstTag] : null;
+  const content = useMemo(
+    () =>
+      meta?.description ? (
+        <Markdown compact>{tasksService.cutMarkdown(meta.description)}</Markdown>
+      ) : (
+        t('fellowship.tasks.task.anyReferendum.noDescription')
+      ),
+    [meta],
+  );
 
   return (
     <Box direction="row" gap={10} padding={4}>
-      <button className="block w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
-        <Box direction="row" fillContainer gap={3} grow={1}>
-          {labelConfig ? <Label variant={labelConfig.color}>{t(labelConfig.text)}</Label> : null}
-          <SmallTitleText className="truncate">
-            {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-          </SmallTitleText>
+      <button className="flex w-full min-w-0 appearance-none" onClick={() => onReferendumSelect(referendum)}>
+        <Box gap={3}>
+          <Box direction="row" gap={3} grow={1}>
+            <SmallTitleText className="truncate">
+              {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+            </SmallTitleText>
+            {tags.map(tag => {
+              const labelConfig = tagLabels[tag];
+              return (
+                <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+                  {t(labelConfig?.text ?? tag)}
+                </Label>
+              );
+            })}
+          </Box>
+          <FootnoteText>{content}</FootnoteText>
         </Box>
       </button>
       <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>

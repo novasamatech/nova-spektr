@@ -11,7 +11,7 @@ export const pickNestedValue = <T extends string, V>(
   return map[outerKey]?.[innerKey] ?? null;
 };
 
-export const setNestedValue = <K extends string, T extends string, V>(
+export const setNestedValue = <const K extends string, const T extends string, V>(
   map: Partial<Record<K, Record<T, V>>>,
   outerKey: K,
   innerKey: T,

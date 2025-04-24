@@ -1,19 +1,25 @@
 import { memo } from 'react';
 
-import { DynamicVoteChart } from '@/shared/ui-entities';
+import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
+import { ButtonCard } from '@/shared/ui';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
+import { PeriodEndTimer } from './PeriodEndTimer';
 
 type Props = {
   evidence: Evidence;
+  endBlock: number | null;
   variant: 'large' | 'small';
 };
 
-export const VotingActions = memo(({ evidence, variant }: Props) => {
+export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
+  const { t } = useI18n();
+
   const buttonNodes = (
-    <Box direction="row" gap={0.5}>
+    <Box direction="row" gap={1}>
       <EvidenceVotingModal evidence={evidence} aye={false}>
         <FilledIconButton variant="negative" icon="thumbDown" />
       </EvidenceVotingModal>
@@ -24,22 +30,34 @@ export const VotingActions = memo(({ evidence, variant }: Props) => {
     </Box>
   );
 
-  const chartNode = <DynamicVoteChart value={50} hasVotes />;
-
   if (variant === 'large') {
     return (
-      <Box direction="row" verticalAlign="center" gap={8}>
-        <Box width="280px">{chartNode}</Box>
-        {buttonNodes}
+      <Box direction="row" gap={4} width="100%">
+        <EvidenceVotingModal evidence={evidence} aye={false}>
+          <ButtonCard pallet="negative" icon="thumbDown" fullWidth>
+            {t('fellowship.voting.nay')}
+          </ButtonCard>
+        </EvidenceVotingModal>
+        <EvidenceVotingModal evidence={evidence} aye={true}>
+          <ButtonCard pallet="positive" icon="thumbUp" fullWidth>
+            {t('fellowship.voting.aye')}
+          </ButtonCard>
+        </EvidenceVotingModal>
       </Box>
     );
   }
 
   if (variant === 'small') {
     return (
-      <Box verticalAlign="center" gap={1} width="102px">
+      <Box
+        verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}
+        horizontalAlign="flex-end"
+        gap={2}
+        height="92px"
+        width="102px"
+      >
+        {nonNullable(endBlock) && <PeriodEndTimer endBlock={endBlock} shortDateFormat />}
         {buttonNodes}
-        {chartNode}
       </Box>
     );
   }

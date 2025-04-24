@@ -46,7 +46,7 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 const $populated = createStore(false);
 
 const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap({ sort: true });
+  return chainsService.getChainsMap();
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {

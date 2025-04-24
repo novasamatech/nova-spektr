@@ -21,7 +21,11 @@ export const DropdownOptions = () => {
   const notInstalled: ReactNode[] = [];
 
   const polkadotOption = (
-    <PairingModal extension="polkadot-js" title={t('onboarding.extension.polkadotJsTitle')}>
+    <PairingModal
+      extension="polkadot-js"
+      title={t('onboarding.extension.polkadotJsTitle')}
+      key={WalletType.POLKADOT_EXTENSION}
+    >
       <Dropdown.Item disabled={nullable(polkadotjsExtension)}>
         <Icon name={walletIcon[WalletType.POLKADOT_EXTENSION].icon} size={20} />
         {t('wallets.addPolkadotExtension')}
@@ -31,7 +35,11 @@ export const DropdownOptions = () => {
   );
 
   const talismanOption = (
-    <PairingModal extension="talisman" title={t('onboarding.extension.talismanTitle')}>
+    <PairingModal
+      extension="talisman"
+      title={t('onboarding.extension.talismanTitle')}
+      key={WalletType.TALISMAN_EXTENSION}
+    >
       <Dropdown.Item disabled={nullable(talismanExtension)}>
         <Icon name={walletIcon[WalletType.TALISMAN_EXTENSION].icon} size={20} />
         {t('wallets.addTalismanExtension')}
@@ -41,7 +49,11 @@ export const DropdownOptions = () => {
   );
 
   const subwallet = (
-    <PairingModal extension="subwallet-js" title={t('onboarding.extension.subWalletTitle')}>
+    <PairingModal
+      extension="subwallet-js"
+      title={t('onboarding.extension.subWalletTitle')}
+      key={WalletType.SUBWALLET_EXTENSION}
+    >
       <Dropdown.Item disabled={nullable(subWalletExtension)}>
         <Icon name={walletIcon[WalletType.SUBWALLET_EXTENSION].icon} size={20} />
         {t('wallets.addSubWalletExtension')}

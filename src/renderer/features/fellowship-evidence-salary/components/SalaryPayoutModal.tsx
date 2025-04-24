@@ -96,7 +96,7 @@ export const SalaryPayoutModal = ({ beneficiary, disabled, children }: Props) =>
       <Modal.Content>
         <Carousel item={step}>
           <Box horizontalAlign="center" padding={6}>
-            <Icon name="asset" size={60} />
+            <Icon name="withdraw" size={60} />
           </Box>
 
           {salary && (

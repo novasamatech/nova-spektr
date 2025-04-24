@@ -126,10 +126,9 @@ const Member = () => {
   const { t } = useI18n();
 
   const member = useUnit(profile.$member);
-  const track = useUnit(profile.$track);
   const identity = useUnit(profile.$identity);
   const input = useUnit(fellowshipProfileFeature.input);
-  const pendingDetails = useUnit(profile.$pendingDetails);
+  const pendingActivityInfo = useUnit(profile.$pendingActivityInfo);
 
   if (nullable(member)) return null;
 
@@ -170,7 +169,7 @@ const Member = () => {
               ) : null}
             </Box>
 
-            <CollectiveRank rank={member.rank ?? 0}>{track?.name.replace(/s$/, '')}</CollectiveRank>
+            <CollectiveRank rank={member.rank ?? 0} showName />
           </Box>
         </Box>
 
@@ -178,9 +177,11 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
-          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
-          <SmallTitleText>{pendingDetails ? <Skeleton height="1lh" /> : <NextRankTimeout />}</SmallTitleText>
+          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
+          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
+          <SmallTitleText>
+            <NextRankTimeout />
+          </SmallTitleText>
         </div>
       </Box>
     </Card>
@@ -189,16 +190,16 @@ const Member = () => {
 
 const Activity = () => {
   const { t } = useI18n();
-  const profileDetails = useUnit(profile.$activityInfo);
+  const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(profileDetails.activity) ? `${profileDetails.activity}%` : t('fellowship.n/a')}</span>;
+  return <span>{nonNullable(activityInfo?.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
 };
 
 const Agreement = () => {
   const { t } = useI18n();
-  const profileDetails = useUnit(profile.$activityInfo);
+  const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(profileDetails.agreement) ? `${profileDetails.agreement}%` : t('fellowship.n/a')}</span>;
+  return <span>{nonNullable(activityInfo?.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
 };
 
 const NextRankTimeout = () => {

@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { capitalize } from 'lodash';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
@@ -151,13 +150,14 @@ export const getExtrinsic: Record<
   [TransactionType.COLLECTIVE_SET_ACTIVE]: ({ pallet, isActive }, api) => {
     return collectiveCorePallet.extrinsic.setActive(pallet, api, isActive);
   },
-  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye, at }, api) => {
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: ({ pallet, proposal, track, poll, aye, after }, api) => {
     const transactions: SubmittableExtrinsic<'promise'>[] = [
       api.tx[`${pallet}Referenda`].submit(
-        { FellowshipOrigins: { [capitalize(track)]: null } },
+        { FellowshipOrigins: { [track]: null } },
         { Inline: proposal },
-        { At: at },
+        { After: after },
       ),
+      api.tx[`${pallet}Referenda`].placeDecisionDeposit(poll),
       api.tx[`${pallet}Collective`].vote(poll, aye),
     ];
     return api.tx.utility.batchAll(transactions.map((call) => call.method));

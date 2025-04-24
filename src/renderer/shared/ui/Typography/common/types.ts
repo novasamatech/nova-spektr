@@ -14,7 +14,8 @@ export type Tags =
   | 'dt'
   | 'dd'
   | 'li'
-  | 'ul';
+  | 'ul'
+  | 'div';
 
 export type Align = 'left' | 'right' | 'center' | 'balance';
 

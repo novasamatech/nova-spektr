@@ -23,7 +23,6 @@ export const RetentionInfo = memo(() => {
   const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
 
-  const track = useUnit(evidenceInfo.$track);
   const leftToDemotion = useUnit(evidenceInfo.$leftToDemotion);
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
@@ -47,7 +46,7 @@ export const RetentionInfo = memo(() => {
 
   return (
     <Box padding={[4, 5, 5]} gap={6}>
-      <CollectiveRank rank={currentMember?.rank ?? 0}>{track?.name.replace(/s$/, '')}</CollectiveRank>
+      <CollectiveRank rank={currentMember?.rank ?? 0} showName />
 
       {!hasRetentionEvidence && timeLeft !== 0 && (
         <Box direction="row">

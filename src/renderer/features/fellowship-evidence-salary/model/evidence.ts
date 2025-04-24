@@ -41,7 +41,7 @@ const $leftToDemotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-    return evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
+    return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );
 
@@ -64,7 +64,22 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
 
 // requesting data
 
-const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
+const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (!member) return;
+  return {
+    api,
+    palletType,
+    chainId,
+    accounts: [member.accountId],
+  };
+});
+
+sample({
+  clock: evendenceRequested,
+  target: evidence.request,
+});
+
+const evendencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
   return {
     api,
@@ -75,8 +90,8 @@ const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, pal
 });
 
 sample({
-  clock: evendenceRequested,
-  target: [evidence.request, evidence.requestPeriods],
+  clock: evendencePeriodsRequested,
+  target: evidence.requestPeriods,
 });
 
 // attention message
