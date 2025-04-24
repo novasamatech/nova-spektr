@@ -15,7 +15,7 @@ type Props = {
 };
 
 export const VotingHistory = ({ referendumId }: Props) => {
-  useGate(votesModel.gate, { referendumId });
+  useGate(votesModel.flow, { referendumId });
   const { t } = useI18n();
 
   const featureState = useUnit(fellowshipVotingHistoryFeature.state);

@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Duration, FootnoteText, Icon, type IconNames } from '@/shared/ui';
 
@@ -22,6 +23,8 @@ type Props = {
 };
 
 export const Timeout = memo(({ at, icon = 'clock', variant, shortDateFormat }: Props) => {
+  const { t } = useI18n();
+
   const [countdown, setCountdown] = useState(at);
 
   const countdownUnit =
@@ -32,7 +35,7 @@ export const Timeout = memo(({ at, icon = 'clock', variant, shortDateFormat }: P
         : 3600; // countdown each hour
 
   useEffect(() => {
-    if (countdown === 0) return;
+    if (countdown <= 0) return;
 
     const timer = setTimeout(() => setCountdown(countdown - countdownUnit), countdownUnit * 1000);
 
@@ -46,7 +49,13 @@ export const Timeout = memo(({ at, icon = 'clock', variant, shortDateFormat }: P
   return (
     <div className={cnTw('mr-0.5 flex items-center gap-x-1', timerColor)}>
       <Icon name={icon} size={16} className="text-inherit" />
-      <Duration as={FootnoteText} className="text-text-secondary" seconds={countdown} shortFormat={shortDateFormat} />
+      <FootnoteText className="text-text-secondary">
+        {countdown > 0 ? (
+          <Duration seconds={countdown} shortFormat={shortDateFormat} />
+        ) : (
+          <span>{t('general.timeout.expired')}</span>
+        )}
+      </FootnoteText>
     </div>
   );
 });

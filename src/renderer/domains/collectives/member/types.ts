@@ -1,8 +1,10 @@
-import { type Transaction } from '@/shared/core';
+import { type ChainId, type Transaction } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
 
 export type Member = {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
   accountId: AccountId;
   rank: number;
 };

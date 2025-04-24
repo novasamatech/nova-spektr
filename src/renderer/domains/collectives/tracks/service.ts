@@ -1,5 +1,7 @@
 import { BN, BN_BILLION, BN_ONE, bnMax, bnMin } from '@polkadot/util';
+import { capitalize } from 'lodash';
 
+import { fromRomanNumeral } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type CollectivePalletsType } from '../_lib/types';
 import { calculateVoteWeightPipeline } from '../configuration/inject';
@@ -15,16 +17,18 @@ function isRetentionTrack(track: TrackId) {
 function isPromotionTrack(track: TrackId) {
   return (
     // Promotion
-    (track >= 21 && track <= 26) ||
-    // Fast promotion
-    (track >= 31 && track <= 36)
+    (track >= 21 && track <= 26) || isFastPromotionTrack(track)
   );
+}
+
+function isFastPromotionTrack(track: TrackId) {
+  return track >= 31 && track <= 36;
 }
 
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/master/cumulus/parachains/runtimes/collectives/collectives-westend/src/fellowship/tracks.rs#L63
  */
-const getMinimumRank = (track: TrackId, maxRank: number) => {
+function getMinimumRank(track: TrackId, maxRank: number) {
   if (track >= 0 && track <= 9) {
     return track;
   }
@@ -42,31 +46,31 @@ const getMinimumRank = (track: TrackId, maxRank: number) => {
   }
 
   return maxRank;
-};
+}
 
-const getExcessRank = (rank: number, maxRank: number, track: TrackId) => {
+function getExcessRank(rank: number, maxRank: number, track: TrackId) {
   return rank - getMinimumRank(track, maxRank);
-};
+}
 
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/34352e82cf557f20375c1757a2d934e3a9d2a6b0/substrate/frame/ranked-collective/src/lib.rs#L238
  * Not meant to be used directly, use getVoteWeight method instead.
  */
-const getGeometricVoteWeight = (excessRank: number) => {
+function getGeometricVoteWeight(excessRank: number) {
   const v = excessRank + 1;
 
   return (v * (v + 1)) / 2;
-};
+}
 
 /**
  * @see https://github.com/paritytech/polkadot-sdk/blob/34352e82cf557f20375c1757a2d934e3a9d2a6b0/substrate/frame/ranked-collective/src/lib.rs#L223
  * Not meant to be used directly, use getVoteWeight method instead.
  */
-const getLinearVoteWeight = (excessRank: number) => {
+function getLinearVoteWeight(excessRank: number) {
   return excessRank + 1;
-};
+}
 
-const getVoteWeight = ({
+function getVoteWeight({
   pallet,
   rank,
   maxRank,
@@ -76,13 +80,13 @@ const getVoteWeight = ({
   rank: number;
   maxRank: number;
   track: TrackId;
-}) => {
+}) {
   const excessRank = getExcessRank(rank, maxRank, track);
 
   return calculateVoteWeightPipeline(0, { pallet, excessRank });
-};
+}
 
-const getThreshold = (curve: VotingCurve, minRank: number, maxRank: number): BN => {
+function getThreshold(curve: VotingCurve, minRank: number, maxRank: number): BN {
   const x = BN_BILLION.muln(maxRank).divn(minRank);
 
   if (curve.type === 'LinearDecreasing') {
@@ -117,7 +121,7 @@ const getThreshold = (curve: VotingCurve, minRank: number, maxRank: number): BN 
   }
 
   return BN_BILLION;
-};
+}
 
 type SupportParams = {
   track: Track;
@@ -126,7 +130,7 @@ type SupportParams = {
   tally: Tally;
 };
 
-const supportThreshold = ({ track, members, maxRank, tally }: SupportParams): VotingThreshold => {
+function supportThreshold({ track, members, maxRank, tally }: SupportParams): VotingThreshold {
   const minRank = getMinimumRank(track.id, maxRank);
   const membersWithRank = members.reduce((acc, member) => (member.rank >= minRank ? acc + 1 : acc), 0);
 
@@ -140,7 +144,7 @@ const supportThreshold = ({ track, members, maxRank, tally }: SupportParams): Vo
     passing: support.gte(threshold),
     curve: track.minSupport,
   };
-};
+}
 
 type ApprovalParams = {
   track: Track;
@@ -148,7 +152,7 @@ type ApprovalParams = {
   tally: Tally;
 };
 
-const approvalThreshold = ({ track, maxRank, tally }: ApprovalParams): VotingThreshold => {
+function approvalThreshold({ track, maxRank, tally }: ApprovalParams): VotingThreshold {
   const minRank = getMinimumRank(track.id, maxRank);
 
   const ayes = new BN(tally.ayes);
@@ -163,11 +167,60 @@ const approvalThreshold = ({ track, maxRank, tally }: ApprovalParams): VotingThr
     passing: approval.gte(threshold),
     curve: track.minApproval,
   };
-};
+}
 
-const rankSatisfiesVotingThreshold = (rank: number, maxRank: number, track: TrackId) => {
+function rankSatisfiesVotingThreshold(rank: number, maxRank: number, track: TrackId) {
   return getExcessRank(rank, maxRank, track) >= 0;
-};
+}
+
+function getReferendumTrackFromRank(tracks: Track[], rank: number, wish: 'Promotion' | 'Retention') {
+  if (wish === 'Retention') {
+    // retention range
+    const retentionTrack = rank + 10;
+    return tracks.find(track => track.id === retentionTrack) ?? null;
+  }
+  if (wish === 'Promotion') {
+    // promotion track range + 1
+    const promotionTrack = rank + 21;
+    return tracks.find(track => track.id === promotionTrack) ?? null;
+  }
+  return null;
+}
+
+function originNameFromTrack(track: Track): string {
+  if (isRetentionTrack(track.id)) {
+    const match = track.name.match(/retain at ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `RetainAt${num}Dan`;
+      }
+    }
+  }
+  if (isFastPromotionTrack(track.id)) {
+    const match = track.name.match(/fast promote to ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `Fellowship${num}Dan`;
+      }
+    }
+  }
+  if (isPromotionTrack(track.id)) {
+    const match = track.name.match(/promote to ([A-Z]+) Dan/);
+    if (match) {
+      const roman = match[1];
+      if (roman) {
+        const num = fromRomanNumeral(roman);
+        return `PromoteTo${num}Dan`;
+      }
+    }
+  }
+
+  return capitalize(track.name);
+}
 
 export const trackService = {
   isRetentionTrack,
@@ -181,4 +234,6 @@ export const trackService = {
   supportThreshold,
   approvalThreshold,
   rankSatisfiesVotingThreshold,
+  getReferendumTrackFromRank,
+  originNameFromTrack,
 };

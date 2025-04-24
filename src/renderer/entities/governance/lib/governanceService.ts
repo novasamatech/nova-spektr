@@ -96,11 +96,11 @@ function getTracks(api: ApiPromise): Record<TrackId, TrackInfo> {
 
   const result: Record<TrackId, TrackInfo> = {};
 
-  for (const { track, info } of tracks) {
+  for (const { id, info } of tracks) {
     const minApproval = mapCurve(info.minApproval);
     const minSupport = mapCurve(info.minSupport);
 
-    result[track.toString()] = {
+    result[id.toString()] = {
       name: info.name,
       maxDeciding: info.maxDeciding,
       decisionDeposit: info.decisionDeposit,

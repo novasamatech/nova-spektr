@@ -1,6 +1,7 @@
 import { type ComponentType } from 'react';
 
 import { type Transaction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type Referendum } from '@/domains/collectives';
 
 export type OperationType =
@@ -9,7 +10,7 @@ export type OperationType =
   | 'salary_payout'
   | 'salary_induct'
   | 'evidence'
-  | 'evidence_request'
+  | `evidence_request_${AccountId}`
   | `referendum_${number}`
   | `referendum_completed_${number}`;
 

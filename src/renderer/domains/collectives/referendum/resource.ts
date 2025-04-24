@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { u8aToHex } from '@polkadot/util';
 
-import { type HexString } from '@/shared/core';
+import { type ChainId, type HexString } from '@/shared/core';
+import { createPagesHandler } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import {
   type FrameSupportPreimagesBounded,
@@ -10,7 +11,9 @@ import {
   type ReferendumId,
   referendaPallet,
 } from '@/shared/pallet/referenda';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Proposal, type Referendum } from './types';
@@ -94,6 +97,8 @@ function getEndBlock(
 async function mapReferendum({
   id,
   info,
+  chainId,
+  pallet,
   tracks,
   undecidingTimeout,
   api,
@@ -103,6 +108,8 @@ async function mapReferendum({
   undecidingTimeout: BlockHeight;
   tracks: ReturnType<typeof referendaPallet.consts.tracks>;
   api: ApiPromise;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
 }): Promise<Referendum> {
   switch (info.type) {
     case 'Ongoing': {
@@ -110,7 +117,7 @@ async function mapReferendum({
         throw new Error(`Collective tally is incorrect, got\n${JSON.stringify(info.data.tally, null, 2)}`);
       }
 
-      const track = tracks.find(({ track }) => track === info.data.track);
+      const track = tracks.find(({ id }) => id === info.data.track);
       if (!track) {
         throw new Error(`Track ${info.data.track} not found in referenda pallet`);
       }
@@ -121,6 +128,8 @@ async function mapReferendum({
       return {
         id,
         type: info.type,
+        chainId,
+        pallet,
         track: info.data.track,
         submitted: info.data.submitted,
         origin: info.data.origin.type,
@@ -144,6 +153,8 @@ async function mapReferendum({
       return {
         id,
         type: info.type,
+        chainId,
+        pallet,
         since: info.data.since,
         submissionDeposit: info.data.submissionDeposit,
         decisionDeposit: info.data.decisionDeposit,
@@ -153,25 +164,80 @@ async function mapReferendum({
       return {
         id,
         type: info.type,
+        chainId,
+        pallet,
         since: info.data,
       };
     }
   }
 }
 
-export async function mapReferendums(
+async function mapReferendums(
   list: { id: ReferendumId; info: ReferendaReferendumInfoConvictionVotingTally | null }[],
   api: ApiPromise,
-  palletType: CollectivePalletsType,
+  pallet: CollectivePalletsType,
+  chainId: ChainId,
 ) {
-  const undecidingTimeout = referendaPallet.consts.undecidingTimeout(palletType, api);
-  const tracks = referendaPallet.consts.tracks(palletType, api);
+  const undecidingTimeout = referendaPallet.consts.undecidingTimeout(pallet, api);
+  const tracks = referendaPallet.consts.tracks(pallet, api);
   const referendums: Referendum[] = [];
   for (const { id, info } of list) {
     if (!info) continue;
-    const referendum = await mapReferendum({ id, info, tracks, undecidingTimeout, api });
+    const referendum = await mapReferendum({ id, info, tracks, undecidingTimeout, api, pallet, chainId });
     referendums.push(referendum);
   }
 
   return referendums;
 }
+
+type ReferendumSubscriptionParams = {
+  api: ApiPromise;
+  palletType: CollectivePalletsType;
+  chainId: ChainId;
+};
+
+export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams, Referendum[]>({
+  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+  async fn({ api, chainId, palletType }, callback) {
+    let abortController = new AbortController();
+
+    await api.isReady;
+
+    const fetchPages = createPagesHandler({
+      fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 400),
+      map: record => mapReferendums(record, api, palletType, chainId),
+    });
+
+    fetchPages(abortController, callback);
+
+    const fn = () => {
+      abortController.abort();
+      abortController = new AbortController();
+      fetchPages(abortController, callback);
+    };
+
+    /**
+     * All events related to referendums / voting are collected here
+     *
+     * @see https://github.com/paritytech/polkadot-sdk/blob/43cd6fd4370d3043272f64a79aeb9e6dc0edd13f/substrate/frame/collective/src/lib.rs#L459
+     */
+    return polkadotjsHelpers.subscribeSystemEvents({ api, section: `${palletType}Referenda` }, fn).then(fn => () => {
+      abortController.abort();
+      fn();
+    });
+  },
+});
+
+type ReferendumRequestParams = {
+  api: ApiPromise;
+  palletType: CollectivePalletsType;
+  chainId: ChainId;
+  referendums: ReferendumId[];
+};
+
+export const fetchResource = createRemoteResource<ReferendumRequestParams, Referendum[]>({
+  async fn({ api, chainId, palletType, referendums }) {
+    const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
+    return mapReferendums(response, api, palletType, chainId);
+  },
+});

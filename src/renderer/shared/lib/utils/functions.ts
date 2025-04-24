@@ -124,6 +124,32 @@ export function shallowEqual(objA: unknown, objB: unknown): boolean {
   return true;
 }
 
+export const jitter = (value: number, offsetRange: number) => {
+  return value + (Math.random() * (offsetRange * 2) - offsetRange);
+};
+
+export type PromiseWithResolvers<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason: unknown) => void;
+};
+
+export const promiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
+  let resolve: (value: T) => void;
+  let reject: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  // @ts-expect-error before assign
+  return { promise, resolve, reject };
+};
+
 export function delay(ttl: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ttl));
+}
+
+export function withTimeout<T>(promise: Promise<T>, ttl: number, fallback: T): Promise<T> {
+  return Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ttl))]);
 }

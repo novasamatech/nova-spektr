@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import orderBy from 'lodash/orderBy';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
@@ -12,20 +12,14 @@ export const VotingSummary = () => {
   const votes = useUnit(votesModel.$votesList);
   const pending = useUnit(votesModel.$pending);
 
-  const ayes = orderBy(
-    votes.filter(vote => vote.decision === 'Aye'),
-    'votes',
-    'desc',
+  const totalAyes = useMemo(
+    () => votes.filter(vote => vote.decision === 'Aye').reduce((acc, v) => acc + v.votes, 0),
+    [votes],
   );
-
-  const nays = orderBy(
-    votes.filter(vote => vote.decision === 'Nay'),
-    'votes',
-    'desc',
+  const totalNays = useMemo(
+    () => votes.filter(vote => vote.decision === 'Nay').reduce((acc, v) => acc + v.votes, 0),
+    [votes],
   );
-
-  const totalAyes = ayes.reduce((acc, v) => acc + v.votes, 0);
-  const totalNays = nays.reduce((acc, v) => acc + v.votes, 0);
 
   return (
     <div className="flex flex-col items-start gap-3">

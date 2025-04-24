@@ -33,7 +33,22 @@ const $leftToPromotion = combine(
 
 // requesting data
 
-const evendenceRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chain, member }) => {
+const evendenceRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (!member) return;
+  return {
+    api,
+    palletType,
+    chainId,
+    accounts: [member.accountId],
+  };
+});
+
+sample({
+  clock: evendenceRequested,
+  target: evidence.request,
+});
+
+const evendencePeriodsRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
   return {
     api,
@@ -44,8 +59,8 @@ const evendenceRequested = fellowshipProfileFeature.running.filterMap(({ api, pa
 });
 
 sample({
-  clock: evendenceRequested,
-  target: [evidence.request, evidence.requestPeriods],
+  clock: evendencePeriodsRequested,
+  target: evidence.requestPeriods,
 });
 
 // attention message

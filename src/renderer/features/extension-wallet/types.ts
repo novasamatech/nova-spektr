@@ -1,5 +1,5 @@
 import { type Wallet, type WalletType } from '@/shared/core';
-import { type UniversalAccount } from '@/domains/network';
+import { type ChainAccount, type UniversalAccount } from '@/domains/network';
 
 export type ExtensionType = 'polkadot-js' | 'talisman' | 'subwallet-js';
 
@@ -18,7 +18,14 @@ export type SubWalletExtensionWallet = Wallet & {
   extension: ExtensionType;
 };
 
-export interface ExtensionAccount extends UniversalAccount {
+export interface ExtensionUniversalAccount extends UniversalAccount {
   accountType: 'extension';
   extension: ExtensionType;
 }
+
+export interface ExtensionChainAccount extends ChainAccount {
+  accountType: 'extension';
+  extension: ExtensionType;
+}
+
+export type ExtensionAccount = ExtensionUniversalAccount | ExtensionChainAccount;
