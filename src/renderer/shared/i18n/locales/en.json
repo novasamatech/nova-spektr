@@ -375,11 +375,12 @@
       }
     },
     "rank": {
-      "1": "Member",
-      "2": "Proficient member",
+      "0": "Candidate",
+      "1": "Humble",
+      "2": "Proficient",
       "3": "Fellow",
       "4": "Architect",
-      "5": "Architects adept",
+      "5": "Architect adept",
       "6": "Grand architect",
       "7": "Free master",
       "8": "Masters constant",

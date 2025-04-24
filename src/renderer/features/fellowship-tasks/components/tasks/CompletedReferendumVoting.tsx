@@ -10,7 +10,7 @@ import { type CompletedReferendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
-import { VoteBadge } from '../VoteBadge/VoteBadge';
+import { VoteBadge } from '../VoteBadge';
 
 const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon: IconNames; label: string } => {
   switch (type) {

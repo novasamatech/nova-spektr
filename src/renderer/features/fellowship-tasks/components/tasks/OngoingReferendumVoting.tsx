@@ -6,32 +6,18 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box, Label, type LabelVariant } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
-import { VoteBadge } from '../VoteBadge/VoteBadge';
+import { TaskLabels } from '../TaskLabels';
+import { VoteBadge } from '../VoteBadge';
 
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
   transaction: Transaction | null;
 }>();
-
-const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
-  urgent: {
-    text: 'fellowship.tasks.labels.urgent',
-    color: 'red',
-  },
-  controversial: {
-    text: 'fellowship.tasks.labels.controversial',
-    color: 'blue',
-  },
-  importantVote: {
-    text: 'fellowship.tasks.labels.importantVote',
-    color: 'purple',
-  },
-};
 
 type Props = {
   referendum: OngoingReferendum;
@@ -74,14 +60,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
             <SmallTitleText className="truncate">
               {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
             </SmallTitleText>
-            {tags.map(tag => {
-              const labelConfig = tagLabels[tag];
-              return (
-                <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
-                  {t(labelConfig?.text ?? tag)}
-                </Label>
-              );
-            })}
+            <TaskLabels tags={tags} />
             {voted && <VoteBadge active />}
           </Box>
           <FootnoteText>{content}</FootnoteText>
