@@ -5,32 +5,18 @@ import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box, Label, type LabelVariant, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { EvidenceDetailsModal } from '../EvidenceDetailsModal/EvidenceDetailsModal';
 import { MemberActivity } from '../MemberActivity';
+import { TaskLabels } from '../TaskLabels';
 
 export const evidenceVotingTaskActionSlot = createSlot<{
   evidence: Evidence;
   transaction: Transaction | null;
   endBlock: number | null;
 }>();
-
-const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
-  urgent: {
-    text: 'fellowship.tasks.labels.urgent',
-    color: 'red',
-  },
-  controversial: {
-    text: 'fellowship.tasks.labels.controversial',
-    color: 'blue',
-  },
-  importantVote: {
-    text: 'fellowship.tasks.labels.importantVote',
-    color: 'purple',
-  },
-};
 
 type Props = {
   evidence: Evidence;
@@ -58,14 +44,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3}>
               <SmallTitleText className="truncate">{title}</SmallTitleText>
-              {tags.map(tag => {
-                const labelConfig = tagLabels[tag];
-                return (
-                  <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
-                    {t(labelConfig?.text ?? tag)}
-                  </Label>
-                );
-              })}
+              <TaskLabels tags={tags} />
             </Box>
             {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2.5lh" width="85%" />}
             <FootnoteText as="div">

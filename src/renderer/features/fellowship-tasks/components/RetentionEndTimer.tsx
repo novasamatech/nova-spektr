@@ -10,8 +10,8 @@ const ONE_DAY = 24 * 60 * 60;
 function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
-  if (days <= 15) return 'urgent';
-  if (days <= 30) return 'warning';
+  if (days <= 2) return 'urgent';
+  if (days <= 14) return 'warning';
   return 'idle';
 }
 
