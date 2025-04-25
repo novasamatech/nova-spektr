@@ -1,23 +1,17 @@
-import type * as CSS from 'csstype';
-import { type PropsWithChildren, useEffect, useState } from 'react';
-
-import { Box } from '../Box/Box';
+import { type PropsWithChildren, type ReactNode, useEffect, useState } from 'react';
 
 type AsyncItemProps = PropsWithChildren<{
   sync?: boolean;
   delay?: number;
+  fallback?: ReactNode;
   onRender?: () => void;
-  spaceToReserve?: {
-    width?: CSS.Property.Width | number;
-    height?: CSS.Property.Height | number;
-  };
 }>;
 
 /**
  * Renders children asynchronously using requestIdleCallback with setTimeout as
  * a fallback
  */
-export const AsyncItem = ({ children, sync = false, delay, spaceToReserve }: AsyncItemProps) => {
+export const AsyncItem = ({ children, sync = false, delay, fallback }: AsyncItemProps) => {
   const [isRendered, setIsRendered] = useState(sync);
 
   useEffect(() => {
@@ -41,8 +35,8 @@ export const AsyncItem = ({ children, sync = false, delay, spaceToReserve }: Asy
   }, [children, sync]);
 
   if (!isRendered) {
-    if (spaceToReserve) {
-      return <Box width={spaceToReserve.width} height={spaceToReserve.height}></Box>;
+    if (fallback) {
+      return fallback;
     } else {
       return null;
     }
