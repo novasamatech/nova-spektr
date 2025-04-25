@@ -1,0 +1,12 @@
+# Directories
+node_modules
+.husky
+.storybook
+.swc
+.github
+docs
+scripts
+
+# misc
+.DS_Store
+*.md
