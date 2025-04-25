@@ -27,11 +27,7 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
 
   const [gotFirstCalculation, setGotFirstCalculation] = useState(false);
   const [truncatedText, setTruncatedText] = useState(text);
-  const [measurements, setMeasurements] = useState<{ container: number; ellipsis: number; text: number }>({
-    container: 0,
-    ellipsis: 0,
-    text: 0,
-  });
+  const [measurements, setMeasurements] = useState({ container: 0, ellipsis: 0, text: 0 });
 
   useResizeObserver(container, entry => setMeasurements({ ...measurements, container: entry.contentRect.width }));
   useResizeObserver(ellipsisRef.current, entry =>
