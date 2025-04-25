@@ -14,7 +14,7 @@ export const MembersCard = memo(() => {
   const { t } = useI18n();
 
   const featureState = useUnit(fellowshipMembersFeature.state);
-  const [members, pending, fulfilled] = useUnit([membersModel.$list, membersModel.$pending, membersModel.$fulfilled]);
+  const [members, pending] = useUnit([membersModel.$list, membersModel.$pending]);
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   return (
@@ -24,8 +24,11 @@ export const MembersCard = memo(() => {
         disabled={pending || isNetworkDisabled}
       >
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={4} gap={2}>
-          <Skeleton active={pending && !fulfilled && !isNetworkDisabled}>
-            {t('fellowship.fellow', { count: members.length })}
+          <Skeleton active={pending && !isNetworkDisabled}>
+            <Box direction="row" gap={2} verticalAlign="center">
+              <Icon name="members" size={16} />
+              {t('fellowship.fellow', { count: members.length })}
+            </Box>
           </Skeleton>
           <Icon name="right" size={16} />
         </Box>

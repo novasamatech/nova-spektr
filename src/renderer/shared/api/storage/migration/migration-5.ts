@@ -7,6 +7,13 @@ import { type AnyAccount } from '@/domains/network';
 
 const PV_WALLETS = ['wallet_pv', 'wallet_mps', 'wallet_sps'];
 
+/**
+ * Simplify PV wallets to contain BaseAccount, ChainAccount and ShardAccount
+ *
+ * @param t Transactions from DB
+ *
+ * @returns {Promise}
+ */
 export async function migratePVAccounts(t: Transaction): Promise<void> {
   const accounts = await t.db.table<AnyAccount>('accounts2').toArray();
   const wallets = await t.db.table<Wallet>('wallets').toArray();
@@ -17,6 +24,7 @@ export async function migratePVAccounts(t: Transaction): Promise<void> {
   const walletsToUpdate: Wallet[] = [];
 
   for (const [walletId, group] of Object.entries(groupedAccounts)) {
+    if (!group) continue;
     const wallet = wallets.find((w) => w.id.toString() === walletId);
     if (!wallet) {
       // delete accounts with missing wallets

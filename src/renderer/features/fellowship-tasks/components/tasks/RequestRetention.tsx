@@ -1,41 +1,48 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
-import { Button, HeadlineText, TitleText } from '@/shared/ui';
-import { CollectiveRank, TrackDescription } from '@/shared/ui-entities';
+import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { fellowshipTasksFeature } from '../../model/feature';
+import { periods } from '../../model/periods';
 import { tracks } from '../../model/tracks';
+import { RetentionEndTimer } from '../RetentionEndTimer';
 
-export const requestRetentionActionSlot = createSlot();
+export const requestRetentionATaskActionSlot = createSlot();
 
-type Props = {
-  canSkip: boolean;
-  onSkip: VoidFunction;
-};
+export const RequestRetention = () => {
+  const { t, formatDate } = useI18n();
+  const [periodEnd, setPeriodEnd] = useState(0);
 
-export const RequestRetention = ({ canSkip, onSkip }: Props) => {
-  const { t } = useI18n();
-
+  const input = useUnit(fellowshipTasksFeature.input);
   const track = useUnit(tracks.$currentTrack);
+  const endDemotionPeriod = useUnit(periods.$endDemotionPeriod);
+
+  useEffect(() => {
+    if (input?.api && endDemotionPeriod) {
+      getCreatedDateFromApi(endDemotionPeriod, input.api).then(setPeriodEnd);
+    }
+  }, [input?.api, endDemotionPeriod]);
 
   return (
-    <Box fillContainer padding={5} gap={5}>
-      <TitleText>{t('fellowship.tasks.task.retention.title')}</TitleText>
-      {track ? <CollectiveRank rank={track.id}>{track.name}</CollectiveRank> : null}
-      <HeadlineText>
-        {t('fellowship.tasks.task.retention.description', { rank: toRomanNumeral(track?.id ?? 0) })}
-      </HeadlineText>
-      {track ? <TrackDescription track={track} /> : null}
-      <Box grow={1} />
-      <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
-        <Slot id={requestRetentionActionSlot} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
+    <Box direction="row" padding={4} gap={5} verticalAlign="flex-end">
+      <Box gap={3} grow={1}>
+        <SmallTitleText>{t('fellowship.tasks.task.retention.title')}</SmallTitleText>
+        <FootnoteText>
+          {t('fellowship.tasks.task.retention.description', { rank: toRomanNumeral(track?.id ?? 0) })}
+        </FootnoteText>
+        <FootnoteText className="text-text-secondary">
+          {t('fellowship.tasks.task.retention.until', {
+            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yyyy') : null,
+          })}
+        </FootnoteText>
+      </Box>
+      <Box verticalAlign="center" gap={8} horizontalAlign="end" shrink={0} height="100%">
+        <RetentionEndTimer endBlock={endDemotionPeriod} shortDateFormat />
+        <Slot id={requestRetentionATaskActionSlot} />
       </Box>
     </Box>
   );

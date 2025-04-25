@@ -7,8 +7,8 @@ import { type RefObject, useCallback, useRef } from 'react';
  *
  * @returns {Ref, Function}
  */
-export function useScrollTo<T extends HTMLElement>(delay = 0): [RefObject<T>, () => void] {
-  const ref = useRef<T>(null);
+export function useScrollTo<T extends HTMLElement>(delay = 0): [RefObject<T | null>, () => void] {
+  const ref = useRef<T | null>(null);
 
   const scroll = useCallback(() => {
     setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), delay);

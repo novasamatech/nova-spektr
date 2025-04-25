@@ -1,4 +1,5 @@
 import { type Address, type HexString, type ReferendumId } from '@/shared/core';
+import { type ReferendumId as RefId } from '@/shared/pallet/referenda';
 
 export type SubsquareTimelineRecordStatus =
   | 'All'
@@ -31,7 +32,7 @@ export type SubsquareTimelineRecord = {
 
 export type SubsquareSimpleReferendum = {
   _id: string;
-  referendumIndex: number;
+  referendumIndex: RefId;
   indexer: {
     blockHeight: number;
     blockHash: HexString;

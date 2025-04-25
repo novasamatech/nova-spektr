@@ -1,48 +1,25 @@
-import { attach, combine, createEvent, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { createStore, sample } from 'effector';
 
-import { populated } from '@/shared/effector';
+import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
-import { dictionary, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { evidence, referendum, referendumService, track, trackService, voting } from '@/domains/collectives';
+import { shallowEqual } from '@/shared/lib/utils';
+import {
+  type CollectivePalletsType,
+  referendum,
+  referendumMeta,
+  referendumService,
+  track,
+} from '@/domains/collectives';
+import { type GovernanceApiSource, governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
-import { memberProfile } from './memberProfile';
 
-const requestEvidence = createEvent<AccountId>();
-const requestEvidenceFx = attach({ effect: evidence.request });
-const requestVotesFx = attach({ effect: voting.request });
-
-const $votes = fellowship.$store.map(store => store?.voting ?? []);
-const $maxRank = fellowship.$store.map(x => x?.maxRank ?? 0);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
-const $votesPopulated = populated(requestVotesFx);
-
-const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
-  if (nullable(member)) return [];
-  return voting.filter(v => v.accountId === member.accountId);
-});
-
-const $notVotedReferendumns = combine(
-  {
-    maxRank: $maxRank,
-    member: memberProfile.$member,
-    ongoing: $ongoing,
-    votes: $memberVotes,
-    votesPopulated: $votesPopulated,
-  },
-  ({ maxRank, member, ongoing, votes, votesPopulated }) => {
-    if (nullable(member) || !votesPopulated) return [];
-    const votesMap = dictionary(votes, 'referendumId');
-    return ongoing.filter(
-      referendum =>
-        !(referendum.id in votesMap) &&
-        trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track),
-    );
-  },
-);
+const $completed = $referendums.map(referendumService.getCompletedReferendums);
 
 sample({
   clock: fellowshipTasksFeature.running,
@@ -50,38 +27,42 @@ sample({
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, $ongoing),
-  filter({ data: referendums }) {
-    return referendums.length > 0;
-  },
-  fn({ input, data }) {
-    return {
-      palletType: input.palletType,
-      chainId: input.chainId,
-      referendums: data.map(r => r.id),
-    };
-  },
-  target: requestVotesFx,
+  clock: fellowshipTasksFeature.running,
+  target: referendum.subscribe,
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, requestEvidence),
-  fn({ input, data: accountId }) {
-    return {
-      palletType: input.palletType,
-      api: input.api,
-      chain: input.chain,
-      accountId,
-    };
-  },
-  target: requestEvidenceFx,
+  clock: fellowshipTasksFeature.stopped,
+  target: referendum.unsubscribe,
+});
+
+const $metadataRequestParams = createStore<{
+  provider: GovernanceApiSource;
+  api: ApiPromise;
+  chainId: ChainId;
+  palletType: CollectivePalletsType;
+} | null>(null);
+
+const metadataProviderUpdated = attachToFeatureInput(fellowshipTasksFeature, governanceMetaProvider.$metaProvider).map(
+  ({ input: { chainId, palletType, api }, data: apiSource }) => ({
+    provider: apiSource!.type,
+    api,
+    chainId,
+    palletType,
+  }),
+);
+
+sample({
+  clock: metadataProviderUpdated,
+  source: $metadataRequestParams,
+  filter: (prev, next) => !shallowEqual(prev, next),
+  fn: (_, next) => next,
+  target: [$metadataRequestParams, referendumMeta.request],
 });
 
 export const referendums = {
-  $memberVoting: $memberVotes,
-  $notVotedReferendumns,
-  $evidencePending: requestEvidenceFx.pending,
-
-  pending: referendum.pending,
-  requestEvidence,
+  $ongoing,
+  $completed,
+  $metadata,
+  pending: referendum.request.pending,
 };

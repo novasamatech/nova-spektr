@@ -1,4 +1,5 @@
 import { type ChainId } from '@/shared/core';
+import { entries, groupBy, isEqual, merge, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 
 import { type CollectivePalletsType, type CollectivesStruct } from './types';
 
@@ -31,4 +32,36 @@ export const combineStores = <const T extends Record<string, CollectivesStruct<u
   }
 
   return store;
+};
+
+export const mergeNested = <
+  Store extends CollectivesStruct<Item[]>,
+  Item extends { pallet: CollectivePalletsType; chainId: ChainId },
+>(
+  store: Store,
+  records: Item[],
+  mergeBy: (a: Item) => string | number | string[],
+  sort?: (a: Item, b: Item) => number,
+): Store => {
+  const palletGroups = groupBy(records, m => m.pallet);
+  let next = store;
+  for (const [pallet, palletItems] of entries(palletGroups)) {
+    if (nullable(palletItems)) continue;
+    const chainItems = groupBy(palletItems, m => m.chainId);
+    for (const [chainId, items] of entries(chainItems)) {
+      const prev = pickNestedValue(store, pallet, chainId);
+      const merged = merge({
+        a: prev ?? [],
+        b: items ?? [],
+        mergeBy,
+        filter: (a, b) => !isEqual(a, b),
+        sort,
+      });
+
+      // @ts-expect-error weird type error
+      next = setNestedValue(next, pallet, chainId, merged);
+    }
+  }
+
+  return next;
 };

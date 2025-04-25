@@ -6,3 +6,11 @@
   height: 0;
   content: '';
 }
+.spektr-vertical-separator::before,
+.spektr-vertical-separator::after {
+  flex: 1;
+  border-left: 1px solid;
+  border-color: inherit;
+  height: 100%;
+  content: '';
+}

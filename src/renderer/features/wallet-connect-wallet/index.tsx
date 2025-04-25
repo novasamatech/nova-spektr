@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isPolkadotChain } from '@/shared/lib/utils';
-import { WalletAccountIcon } from '@/shared/ui-entities';
+import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
+import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { accountService, accounts } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -30,14 +30,20 @@ accountSDK(walletConnectWalletFeature, {
 });
 
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
+  const accountList = useUnit(accounts.$list);
+
   if (!walletUtils.isWalletConnectGroup(wallet)) return null;
 
-  const address = useMemo(() => {
-    const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
-    return mainAccount?.accountId;
-  }, [wallet]);
+  const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+  const mainAccount =
+    walletAccounts.find(account => accountService.isChainAccount(account) && isPolkadotChain(account.chainId)) ||
+    walletAccounts.at(0);
+  const address = mainAccount?.accountId;
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size}></WalletAccountIcon>;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {

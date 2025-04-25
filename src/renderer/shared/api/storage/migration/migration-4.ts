@@ -7,7 +7,7 @@ import { type AnyAccount } from '@/domains/network';
 /**
  * Migrate multisig accounts to multichain format
  *
- * @param trans Transactions from DB
+ * @param t Transactions from DB
  *
  * @returns {Promise}
  */

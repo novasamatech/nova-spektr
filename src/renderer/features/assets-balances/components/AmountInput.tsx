@@ -18,6 +18,7 @@ import {
 } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, IconButton, TitleText } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { currencyModel, useCurrencyRate } from '@/entities/price';
 
 type Props = {
@@ -27,9 +28,10 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance?: string | string[] | ReactNode;
+  balance?: string | string[] | null;
   invalid?: boolean;
   showCurrency?: boolean;
+  testId?: string;
   onChange?: (value: string) => void;
 };
 
@@ -43,6 +45,7 @@ export const AmountInput = ({
   disabled,
   invalid,
   showCurrency = true,
+  testId,
   onChange,
 }: Props) => {
   const { t } = useI18n();
@@ -102,7 +105,9 @@ export const AmountInput = ({
   }, [value]);
 
   const getBalance = useCallback(() => {
-    if (!balance) return;
+    if (!balance) {
+      return <Skeleton width={12} height={4} />;
+    }
 
     if (Array.isArray(balance)) {
       return (
@@ -182,6 +187,7 @@ export const AmountInput = ({
       prefixElement={currencyMode ? currencyIcon : prefixElement}
       suffixElement={suffixElement}
       disabled={disabled}
+      testId={testId}
       onChange={handleChange}
     />
   );
@@ -199,6 +205,7 @@ type InputProps = {
   disabled?: boolean;
   prefixElement: ReactNode;
   suffixElement?: ReactNode;
+  testId?: string;
   onChange: (value: string) => void;
 };
 export const Input = ({
@@ -210,6 +217,7 @@ export const Input = ({
   disabled,
   prefixElement,
   suffixElement,
+  testId,
   onChange,
 }: InputProps) => {
   const id = useId();
@@ -260,6 +268,7 @@ export const Input = ({
           style={{ paddingLeft }}
           type="text"
           disabled={disabled}
+          data-testid={testId}
           onChange={(event) => onChange?.(event.target.value)}
         />
         <div className={cnTw(!suffixElement && 'hidden', 'absolute bottom-3 right-3')}>{suffixElement}</div>

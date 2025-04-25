@@ -14,18 +14,6 @@ describe('entities/wallet/lib/wallet-utils', () => {
     expect(walletUtils.isPolkadotVault(wallet)).toEqual(false);
   });
 
-  test('isMultiShard should return true when wallet type is MultiShard', () => {
-    const wallet = { type: WalletType.MULTISHARD_PARITY_SIGNER } as Wallet;
-
-    expect(walletUtils.isMultiShard(wallet)).toEqual(true);
-  });
-
-  test('isMultiShard should return false when wallet type is not MultiShard', () => {
-    const wallet = { type: WalletType.NOVA_WALLET } as Wallet;
-
-    expect(walletUtils.isMultiShard(wallet)).toEqual(false);
-  });
-
   test('isMultisig should return true when wallet type is Multisig', () => {
     const wallet = { type: WalletType.MULTISIG } as Wallet;
 
@@ -120,11 +108,9 @@ describe('entities/wallet/lib/wallet-utils', () => {
 
   test('isWalletConnectGroup should return true when wallet type is in wallet connect group', () => {
     const singleshard = { type: WalletType.SINGLE_PARITY_SIGNER } as Wallet;
-    const multishard = { type: WalletType.MULTISHARD_PARITY_SIGNER } as Wallet;
     const polkadotVault = { type: WalletType.POLKADOT_VAULT } as Wallet;
 
     expect(walletUtils.isPolkadotVaultGroup(singleshard)).toEqual(true);
-    expect(walletUtils.isPolkadotVaultGroup(multishard)).toEqual(true);
     expect(walletUtils.isPolkadotVaultGroup(polkadotVault)).toEqual(true);
   });
 

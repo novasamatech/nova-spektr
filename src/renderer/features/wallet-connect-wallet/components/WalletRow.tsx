@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { cnTw, isPolkadotChain } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { cnTw, isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
+import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts as accountsDomainModel } from '@/domains/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';
@@ -38,11 +38,14 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
     return mainAccount?.accountId;
   }, [wallet]);
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
   return (
     <WalletManagement
       wallet={wallet}
       address={address}
+      theme={theme}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

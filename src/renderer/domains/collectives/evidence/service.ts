@@ -1,13 +1,13 @@
-import { type ApiPromise } from '@polkadot/api';
 import { hexToU8a } from '@polkadot/util';
 import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
-import { type CoreMember } from '../members/types';
+import { memberService } from '../member/service';
+import { type CoreMember, type Member } from '../member/types';
 
 import { type EvidencePeriods, type EvidenceTransaction } from './types';
 
@@ -31,20 +31,41 @@ function getEvidenceUploadIpfsUrl() {
   return new URL(`/api/nova/ipfs/files`, 'https://collectives.subsquare.io');
 }
 
-function getProposalAccount(api: ApiPromise, inline: HexString) {
-  const proposal = api.registry.createType('Proposal', inline);
-  const parsed = pjsSchema.accountId.safeParse(proposal.args.at(0));
-  return parsed.success ? parsed.data : null;
+function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
+  const period = periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
+  return period;
 }
 
-function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = periods.minPromotionPeriod.at(member.rank) ?? 1;
-  return period;
+function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  const promotionPeriod = getPromotionPeriod(member, periods);
+  const gone = currentBlock - member.lastPromotion;
+  return Math.max(0, promotionPeriod - gone);
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = member.rank === 0 ? periods.offboardTimeout : (periods.demotionPeriod.at(member.rank - 1) ?? 0);
+  const period =
+    member.rank === 0
+      ? periods.offboardTimeout
+      : (periods.demotionPeriod.at(member.rank - 1) ?? pjsSchema.helpers.toBlockHeight(1));
   return period;
+}
+
+function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
+  if (memberService.isCoreMember(member)) {
+    const demotionPeriod = getDemotionPeriod(member, periods);
+    return demotionPeriod + member.lastProof;
+  }
+
+  return Number.POSITIVE_INFINITY;
+}
+
+function getBlocksUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  if (memberService.isCoreMember(member)) {
+    const endDemotionBlock = getEndDemotionBlock(member, periods);
+    return Math.max(0, endDemotionBlock - currentBlock);
+  }
+
+  return Number.POSITIVE_INFINITY;
 }
 
 type EvidenceTransactionParams = {
@@ -79,9 +100,11 @@ export const evidenceService = {
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,
   getEvidenceFromCid,
-  getProposalAccount,
   getPromotionPeriod,
+  getBlockUntilNextPropotion,
   getDemotionPeriod,
+  getBlocksUntilDemotion,
+  getEndDemotionBlock,
 
   createEvidenceTransaction,
   isEvidenceTransaction,

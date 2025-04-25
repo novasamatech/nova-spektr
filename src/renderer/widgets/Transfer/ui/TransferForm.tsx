@@ -2,6 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
@@ -124,7 +125,7 @@ const AccountSelector = () => {
                   title={isShard ? toShortAddress(address, 16) : account.name}
                   canCopy={false}
                 />
-                <AssetBalance value={balances.balance} asset={network.asset} />
+                <AssetBalance value={balances?.balance} asset={network.asset} />
               </div>
             </Select.Item>
           );
@@ -237,6 +238,7 @@ const Destination = () => {
     <Field text={t('transfer.recipientLabel')}>
       <Input
         placeholder={t('transfer.recipientPlaceholder')}
+        testId={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
         invalid={destination.hasError()}
         value={destination.value}
         prefixElement={prefixElement}
@@ -257,7 +259,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.$transferForm);
 
-  const { balance } = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -269,10 +271,11 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError()}
         value={amount.value}
-        balance={balance}
+        balance={accountBalance?.balance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={amount.onChange}
       />
       <InputHint active={amount.hasError()} variant="error">
@@ -343,17 +346,17 @@ const AlertForDeliveryFee = () => {
   } = useForm(formModel.$transferForm);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const { native } = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$accountBalance);
   const network = useUnit(formModel.$networkStore);
   const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
   const asset = network?.chain.assets.at(0);
 
-  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError) {
+  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError || !accountBalance) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(native, asset.precision).value;
+  const formattedBalance = formatBalance(accountBalance.native, asset.precision).value;
 
   return (
     <DeliveryFeeAlert

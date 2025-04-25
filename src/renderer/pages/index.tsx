@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Navigate, type RouteObject } from 'react-router-dom';
+import { Navigate, Outlet, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
 import { AppShell } from '@/features/app-shell';
@@ -36,11 +36,6 @@ const Fellowship = lazy(() => import('./Fellowship/ui/Fellowship').then(({ Fello
 const FellowshipReferendumDetails = lazy(() =>
   import('./Fellowship/ui/FellowshipReferendumDetails').then(({ FellowshipReferendumDetails }) => ({
     default: FellowshipReferendumDetails,
-  })),
-);
-const FellowshipReferendumList = lazy(() =>
-  import('./Fellowship/ui/FellowshipReferendumList').then(({ FellowshipReferendumList }) => ({
-    default: FellowshipReferendumList,
   })),
 );
 
@@ -115,11 +110,7 @@ export const ROUTES_CONFIG: RouteObject[] = [
         children: [
           {
             path: Paths.FELLOWSHIP_LIST,
-            element: (
-              <Suspense fallback={<PageLoadingState />}>
-                <FellowshipReferendumList />
-              </Suspense>
-            ),
+            element: <Outlet />,
             children: [
               {
                 path: Paths.FELLOWSHIP_REFERENDUM,

@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useFlow } from '@/shared/effector';
@@ -6,20 +7,32 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
+import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
-import { referendumDetails } from '../model/details';
+import { type Track, referendumService, trackService } from '@/domains/collectives';
+import { details } from '../model/details';
+import { tracksModel } from '../model/tracks';
 
 import { Card } from './Card';
 import { ReferendumDescription } from './ReferendumDescription';
+import { ReferendumVotingStatusBadge } from './ReferendumVotingStatusBadge';
 import { Threshold } from './Threshold';
-import { ReferendumVoteChart } from './shared/ReferendumVoteChart';
-import { ReferendumVotingStatusBadge } from './shared/ReferendumVotingStatusBadge';
 
-const { VotingHistory, VotingSummary } = fellowshipVotingHistoryFeature.views;
+export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumAdditionalLowPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 
-export const additionalInfoSlot = createSlot<{ referendumId: ReferendumId }>();
-export const referendumActionsSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumActionsSlot = createSlot<{
+  referendumId: ReferendumId;
+  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
+}>();
+
+const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
+  const name = relatedTrack?.find(t => t.id === rank)?.name;
+
+  if (!name) return '';
+
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 
 type Props = {
   isOpen: boolean;
@@ -28,18 +41,31 @@ type Props = {
 };
 
 export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useFlow(referendumDetails.flow, { referendumId });
+  useFlow(details.flow, { referendumId });
 
   const { t } = useI18n();
 
-  const referendum = useUnit(referendumDetails.$referendum);
-  const pendingReferendum = useUnit(referendumDetails.$pending);
+  const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
+
+  const referendum = useUnit(details.$referendum);
+  const tracks = useUnit(tracksModel.$list);
+  const pendingReferendum = useUnit(details.$pending);
+
+  const totalReferendumVotes =
+    referendum && referendumService.isOngoing(referendum) ? referendum.tally.ayes + referendum.tally.nays : null;
 
   const loadingState = pendingReferendum && nullable(referendum);
 
+  let title = t('governance.referendums.referendumTitle', { index: referendumId });
+  if (referendum && referendumService.isOngoing(referendum)) {
+    if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
+      title = getRankTitle(referendum.track, tracks) || title;
+    }
+  }
+
   return (
     <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
-      <Modal.Title close>{`Referendum #${referendumId}`}</Modal.Title>
+      <Modal.Title close>{title}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full bg-main-app-background">
           <ScrollArea>
@@ -50,27 +76,22 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                 </Card>
               </Box>
               <Box width="350px" shrink={0} gap={4}>
-                <Slot id={additionalInfoSlot} props={{ referendumId }} />
+                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
                 <Card>
                   <Box padding={6} gap={6}>
                     <SmallTitleText>{t('fellowship.voting.votingStatus')}</SmallTitleText>
                     <ReferendumVotingStatusBadge referendum={referendum} pending={loadingState} />
-                    <ReferendumVoteChart referendum={referendum} pending={loadingState} descriptionPosition="bottom" />
+                    <CollectiveReferendumVoteChart
+                      referendum={referendum}
+                      pending={loadingState}
+                      votes={totalReferendumVotes}
+                      highlight={highlight}
+                    />
                     <Threshold referendum={referendum} pending={loadingState} />
-                    <Slot id={referendumActionsSlot} props={{ referendumId }} />
+                    <Slot id={referendumActionsSlot} props={{ referendumId, onHighlight: setHighlight }} />
                   </Box>
                 </Card>
-                <Card>
-                  <Box padding={6} gap={4}>
-                    <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-                      <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
-
-                      <VotingHistory referendumId={referendumId} />
-                    </Box>
-
-                    <VotingSummary />
-                  </Box>
-                </Card>
+                <Slot id={referendumAdditionalLowPriorityInfoSlot} props={{ referendumId }} />
               </Box>
             </Box>
           </ScrollArea>

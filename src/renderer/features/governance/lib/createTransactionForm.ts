@@ -2,29 +2,22 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 import { type Form, type FormConfig, createForm } from 'effector-forms';
-import { isNil } from 'lodash';
 
-import {
-  type Account,
-  type Address,
-  type Asset,
-  type Balance,
-  type Chain,
-  type Transaction,
-  type Wallet,
-} from '@/shared/core';
-import { nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import { type Address, type Asset, type Balance, type Chain, type Transaction, type Wallet } from '@/shared/core';
+import { nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
+import { type AnyAccount } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 export type BasicFormParams = {
-  account: Account | null;
-  signatory: Account | null;
+  account: AnyAccount | null;
+  signatory: AnyAccount | null;
 };
 
 type Params<FormShape extends NonNullable<unknown>> = {
+  $type: Store<'vote' | 'revote' | null>;
   $voters: Store<Address[]>;
   $activeWallet: Store<Wallet | null>;
   $wallets: Store<Wallet[]>;
@@ -40,9 +33,13 @@ type TransactionFactory<FormShape extends NonNullable<unknown>> = (
   params: Omit<Params<FormShape>, 'createTransactionStore' | 'form'> & { form: Form<FormShape & BasicFormParams> },
 ) => Store<Transaction | null>;
 
-export type AccountOption = { account: Account; balance: Balance | null };
+export type AccountOption = {
+  account: AnyAccount;
+  balance: Balance | null;
+};
 
 export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
+  $type,
   $voters,
   $activeWallet,
   $wallets,
@@ -70,7 +67,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
           {
             name: 'emptyAccount',
             errorText: 'governance.vote.errors.noAccountError',
-            validator: (account) => !isNil(account),
+            validator: nonNullable,
           },
         ],
       },
@@ -81,7 +78,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
             name: 'emptySignatory',
             errorText: 'governance.vote.errors.noSignatoryError',
             source: $signatories,
-            validator: (signatory, _, signatories) => signatories.length === 0 || !isNil(signatory),
+            validator: (signatory, _, signatories) => signatories.length === 0 || nonNullable(signatory),
           },
         ],
       },
@@ -92,6 +89,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   // Transactions
 
   const $coreTx = createTransactionStore({
+    $type,
     $voters,
     $activeWallet,
     $wallets,
@@ -115,12 +113,19 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
   // Derived
 
   sample({
-    clock: [$chain, $asset, $activeWallet, $balances, $voters],
-    source: { chain: $chain, asset: $asset, wallet: $activeWallet, balances: $balances, voters: $voters },
-    fn: ({ chain, asset, wallet, balances, voters }) => {
-      if (nullable(wallet) || nullable(chain) || nullable(asset)) return [];
+    clock: [$type, $chain, $asset, $activeWallet, $balances, $voters],
+    source: {
+      type: $type,
+      chain: $chain,
+      asset: $asset,
+      wallet: $activeWallet,
+      balances: $balances,
+      voters: $voters,
+    },
+    fn: ({ type, chain, asset, wallet, balances, voters }) => {
+      if (nullable(type) || nullable(wallet) || nullable(chain) || nullable(asset)) return [];
 
-      let walletAccounts: Account[] = [];
+      let walletAccounts: AnyAccount[] = [];
 
       if (walletUtils.isPolkadotVault(wallet)) {
         const shards = wallet.accounts.filter((a) => {
@@ -141,7 +146,13 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
         walletAccounts = wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
       }
 
-      if (voters.length) {
+      if (voters.length > 0 && type === 'vote') {
+        walletAccounts = walletAccounts.filter((account) => {
+          return !voters.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
+        });
+      }
+
+      if (voters.length > 0 && type === 'revote') {
         walletAccounts = walletAccounts.filter((account) => {
           return voters.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
         });
@@ -150,23 +161,20 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
       return walletAccounts.map<AccountOption>((account) => {
         const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
 
-        return {
-          account,
-          balance: balance ?? null,
-        };
+        return { account, balance: balance ?? null };
       });
     },
     target: $accounts,
   });
 
   sample({
-    clock: [$chain, $asset, $wallets, $activeWallet, tx.$txWrappers, $balances],
+    clock: [$chain, $asset, $wallets, $activeWallet, $balances, tx.$txWrappers],
     source: {
       chain: $chain,
       asset: $asset,
       wallets: $wallets,
-      txWrappers: tx.$txWrappers,
       balances: $balances,
+      txWrappers: tx.$txWrappers,
     },
     fn: ({ chain, asset, txWrappers, wallets, balances }) => {
       if (!chain || !asset) return [];
@@ -278,11 +286,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
     clock: reinitForm,
     source: $signatories,
     filter: (signatories) => signatories.length === 1,
-    fn: (signers) => {
-      const signer = signers.at(0);
-
-      return signer ? signer.account : null;
-    },
+    fn: (signers) => signers.at(0)?.account ?? null,
     target: form.fields.signatory.onChange,
   });
 

@@ -5,7 +5,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { ERROR } from '../constants';
-import { votingHistoryFeatureStatus } from '../model/feature';
+import { fellowshipVotingHistoryFeature } from '../model/feature';
 import { votesModel } from '../model/votes';
 
 import { VotesModal } from './VotesModal';
@@ -15,11 +15,10 @@ type Props = {
 };
 
 export const VotingHistory = ({ referendumId }: Props) => {
-  useGate(votingHistoryFeatureStatus.gate);
-  useGate(votesModel.gate, { referendumId });
+  useGate(votesModel.flow, { referendumId });
   const { t } = useI18n();
 
-  const featureState = useUnit(votingHistoryFeatureStatus.state);
+  const featureState = useUnit(fellowshipVotingHistoryFeature.state);
   const pending = useUnit(votesModel.$pending);
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 

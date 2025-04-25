@@ -63,6 +63,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.COLLECTIVE_SALARY_REQUEST]: () => 'fellowship.salary.salaryRequest',
   [TransactionType.COLLECTIVE_SALARY_PAYOUT]: () => 'fellowship.salary.salaryPayout',
   [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: () => 'fellowship.salary.promotionTitle',
+  [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: () => 'operations.modalTitles.vote',
 };
 
 export const getModalTransactionTitle = (

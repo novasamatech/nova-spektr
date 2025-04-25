@@ -99,7 +99,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />
+          <Account
+            accountId={toAccountId(confirmStore.destination)}
+            chain={confirmStore.xcmChain || confirmStore.chain}
+            variant="short"
+          />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

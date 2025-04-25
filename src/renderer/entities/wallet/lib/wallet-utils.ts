@@ -1,8 +1,6 @@
 import {
-  type Account,
   type FlexibleMultisigWallet,
   type ID,
-  type MultiShardWallet,
   type MultisigWallet,
   type NovaWalletWallet,
   type PolkadotVaultGroup,
@@ -15,6 +13,7 @@ import {
   WalletType,
   type WatchOnlyWallet,
 } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 import {
   type PolkadotExtensionWallet,
   type SubWalletExtensionWallet,
@@ -23,7 +22,6 @@ import {
 
 export const walletUtils = {
   isPolkadotVault,
-  isMultiShard,
   isSingleShard,
   isMultisig,
   isFlexibleMultisig,
@@ -50,16 +48,11 @@ export const walletUtils = {
 
 // Wallet types
 
-function isPolkadotVault(wallet?: Wallet): wallet is PolkadotVaultWallet {
+function isPolkadotVault(wallet?: Wallet | null): wallet is PolkadotVaultWallet {
   return wallet?.type === WalletType.POLKADOT_VAULT;
 }
 
-// ToDo: rm because MULTISHARD_PARITY_SIGNER is legacy
-function isMultiShard(wallet?: Wallet): wallet is MultiShardWallet {
-  return wallet?.type === WalletType.MULTISHARD_PARITY_SIGNER;
-}
-
-function isSingleShard(wallet?: Wallet): wallet is SingleShardWallet {
+function isSingleShard(wallet?: Wallet | null): wallet is SingleShardWallet {
   return wallet?.type === WalletType.SINGLE_PARITY_SIGNER;
 }
 
@@ -67,46 +60,46 @@ function isFlexibleMultisig(wallet?: Wallet | null): wallet is FlexibleMultisigW
   return wallet?.type === WalletType.FLEXIBLE_MULTISIG;
 }
 
-function isRegularMultisig(wallet?: Wallet): wallet is MultisigWallet {
+function isRegularMultisig(wallet?: Wallet | null): wallet is MultisigWallet {
   return wallet?.type === WalletType.MULTISIG;
 }
 
-function isMultisig(wallet?: Wallet): wallet is MultisigWallet | FlexibleMultisigWallet {
+function isMultisig(wallet?: Wallet | null): wallet is MultisigWallet | FlexibleMultisigWallet {
   return isFlexibleMultisig(wallet) || isRegularMultisig(wallet);
 }
 
-function isWatchOnly(wallet?: Wallet): wallet is WatchOnlyWallet {
+function isWatchOnly(wallet?: Wallet | null): wallet is WatchOnlyWallet {
   return wallet?.type === WalletType.WATCH_ONLY;
 }
 
-function isNovaWallet(wallet?: Wallet): wallet is NovaWalletWallet {
+function isNovaWallet(wallet?: Wallet | null): wallet is NovaWalletWallet {
   return wallet?.type === WalletType.NOVA_WALLET;
 }
 
-function isWalletConnect(wallet?: Wallet): wallet is WalletConnectWallet {
+function isWalletConnect(wallet?: Wallet | null): wallet is WalletConnectWallet {
   return wallet?.type === WalletType.WALLET_CONNECT;
 }
 
-function isProxied(wallet?: Wallet): wallet is ProxiedWallet {
+function isProxied(wallet?: Wallet | null): wallet is ProxiedWallet {
   return wallet?.type === WalletType.PROXIED;
 }
 
-function isPolkadotExtension(wallet?: Wallet): wallet is PolkadotExtensionWallet {
+function isPolkadotExtension(wallet?: Wallet | null): wallet is PolkadotExtensionWallet {
   return wallet?.type === WalletType.POLKADOT_EXTENSION;
 }
 
-function isTalismanExtension(wallet?: Wallet): wallet is TalismanExtensionWallet {
+function isTalismanExtension(wallet?: Wallet | null): wallet is TalismanExtensionWallet {
   return wallet?.type === WalletType.TALISMAN_EXTENSION;
 }
 
-function isSubWalletExtension(wallet?: Wallet): wallet is SubWalletExtensionWallet {
+function isSubWalletExtension(wallet?: Wallet | null): wallet is SubWalletExtensionWallet {
   return wallet?.type === WalletType.SUBWALLET_EXTENSION;
 }
 
 // Groups
 
 function isPolkadotVaultGroup(wallet?: Wallet): wallet is PolkadotVaultGroup {
-  return isPolkadotVault(wallet) || isMultiShard(wallet) || isSingleShard(wallet);
+  return isPolkadotVault(wallet) || isSingleShard(wallet);
 }
 
 function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
@@ -119,7 +112,6 @@ const VALID_SIGNATORY_WALLET_TYPES = [
   WalletType.TALISMAN_EXTENSION,
   WalletType.SUBWALLET_EXTENSION,
   WalletType.SINGLE_PARITY_SIGNER,
-  WalletType.MULTISHARD_PARITY_SIGNER,
   WalletType.WALLET_CONNECT,
   WalletType.NOVA_WALLET,
 ];
@@ -140,15 +132,18 @@ function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {
   return wallets.find((wallet) => wallet.id === id);
 }
 
-function getAccountsBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account[] {
-  return wallets.reduce<Account[]>((acc, wallet) => {
+function getAccountsBy(wallets: Wallet[], accountFn: (account: AnyAccount, wallet: Wallet) => boolean): AnyAccount[] {
+  return wallets.reduce<AnyAccount[]>((acc, wallet) => {
     acc.push(...wallet.accounts.filter((account) => accountFn(account, wallet)));
 
     return acc;
   }, []);
 }
 
-function getAccountBy(wallets: Wallet[], accountFn: (account: Account, wallet: Wallet) => boolean): Account | null {
+function getAccountBy(
+  wallets: Wallet[],
+  accountFn: (account: AnyAccount, wallet: Wallet) => boolean,
+): AnyAccount | null {
   for (const wallet of wallets) {
     const account = wallet.accounts.find((account) => accountFn(account, wallet));
 
@@ -176,7 +171,7 @@ function getWalletFilteredAccounts(
   wallets: Wallet[],
   predicates: {
     walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account, wallet: Wallet) => boolean;
+    accountFn?: (account: AnyAccount, wallet: Wallet) => boolean;
   },
 ): Wallet | null {
   if (!predicates.walletFn && !predicates.accountFn) return null;
@@ -212,7 +207,7 @@ function getWalletsFilteredAccounts(
   wallets: Wallet[],
   predicates: {
     walletFn?: (wallet: Wallet) => boolean;
-    accountFn?: (account: Account, wallet: Wallet) => boolean;
+    accountFn?: (account: AnyAccount, wallet: Wallet) => boolean;
   },
 ): Wallet[] | null {
   if (!predicates.walletFn && !predicates.accountFn) return null;

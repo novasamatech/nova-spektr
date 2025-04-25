@@ -1,8 +1,8 @@
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
+import { type IconNames } from '@/shared/ui';
 import { getTransactionType } from '@/entities/transaction';
 import { multisigOperationSDK } from '@/sdk/multisig-operation';
-import { type IconNames } from '../../shared/ui';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
 import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';

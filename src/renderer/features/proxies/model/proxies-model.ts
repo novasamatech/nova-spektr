@@ -1,7 +1,7 @@
 import { type Endpoint, createEndpoint } from '@remote-ui/rpc';
-import { attach, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { GraphQLClient } from 'graphql-request';
-import { combineEvents, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import {
   AccountType,
@@ -22,7 +22,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, withTimeout } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AnyAccount,
@@ -41,6 +41,7 @@ import { proxiesUtils } from '../lib/proxies-utils';
 import { type proxyWorker } from './proxy-worker';
 
 type WorkerType = Endpoint<typeof proxyWorker>;
+const LOADING_TIMEOUT = 15_000;
 
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
@@ -92,6 +93,10 @@ type GetProxiesResult = {
   };
 };
 
+const requestIdentitiesFx = attach({
+  effect: identity.request,
+});
+
 const fetchProxiesFx = createEffect(
   async ({ chain, connection, accounts, wallets, proxies, worker }: GetProxiesParams): Promise<GetProxiesResult> => {
     const proxiedAccounts = accounts.filter(accountUtils.isProxiedAccount).filter((a) => a.chainId === chain.chainId);
@@ -116,6 +121,19 @@ const fetchProxiesFx = createEffect(
 
     const proxyUrl =
       networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
+
+    if (proxiedAccountsToAdd.length) {
+      const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
+
+      await withTimeout(
+        boundRequestIdentities({
+          accounts: proxiedAccountsToAdd.map((a) => a.accountId),
+          chainId: chain.chainId,
+        }),
+        LOADING_TIMEOUT,
+        null,
+      );
+    }
 
     if (proxyUrl && proxiedAccountsToAdd.length) {
       const client = new GraphQLClient(proxyUrl);
@@ -195,7 +213,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const walletIdentity = chain ? identity[chain.chainId]?.[proxiedAccount.accountId] : null;
   const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain.addressPrefix);
 
-  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+  const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (w) => walletUtils.isFlexibleMultisig(w),
     accountFn: (a) =>
       accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
@@ -205,7 +223,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
     name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,
-    isHidden: !!proxyWallet,
+    isHidden: !!flexibleProxyWallet,
   };
 
   const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
@@ -236,20 +254,6 @@ const createProxiesWalletsFx = attach({
   effect: series(createProxiedWalletFx),
 });
 
-const requestIdentityFx = attach({
-  effect: identity.request,
-});
-
-sample({
-  clock: fetchProxiesFx.doneData,
-  filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
-  fn: ({ proxiedAccountsToAdd }) => ({
-    chainId: proxiedAccountsToAdd[0].chainId,
-    accounts: proxiedAccountsToAdd.map((p) => p.accountId),
-  }),
-  target: requestIdentityFx,
-});
-
 spread({
   source: fetchProxiesFx.doneData,
   targets: {
@@ -261,17 +265,9 @@ spread({
 });
 
 sample({
-  clock: combineEvents({
-    events: {
-      identity: requestIdentityFx.doneData,
-      proxiedAccounts: fetchProxiesFx.doneData.filterMap((result) => {
-        if (!result.proxiedAccountsToAdd.length) return;
-
-        return result.proxiedAccountsToAdd;
-      }),
-    },
-  }),
-  fn: ({ proxiedAccounts }) => proxiedAccounts,
+  clock: fetchProxiesFx.doneData,
+  filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
+  fn: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd,
   target: createProxiesWalletsFx,
 });
 

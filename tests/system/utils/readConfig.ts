@@ -8,3 +8,11 @@ export async function readConfig(): Promise<any> {
 
   return chainsData;
 }
+
+export function getChainByName(chains: any[], name: string) {
+  const chain = chains.find((chain) => chain.name === name);
+  if (!chain) {
+    throw new Error(`Chain with name "${name}" not found`);
+  }
+  return chain;
+}

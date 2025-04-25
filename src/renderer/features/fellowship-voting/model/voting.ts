@@ -1,6 +1,6 @@
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { reshape } from 'patronum';
+import { reshape, spread } from 'patronum';
 
 import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -57,6 +57,7 @@ const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, a
 });
 
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+  $active: flow.status,
   $api,
   $activeWallet: $votingWallet,
   $wallets,
@@ -127,36 +128,73 @@ sample({
 // Basket
 
 const saveToBasket = createEvent();
-const basketSaveRequestCreated = createEvent<BasketTransaction | null>();
+const removeFromBasket = createEvent();
 
 sample({
   clock: saveToBasket,
   source: {
-    transactions: $wrappedTx,
+    existing: basketOperations.$list,
     account: votingStatus.$votingAccount,
     txWrappers: $txWrappers,
+    coreTx: $coreTx,
   },
-  fn: ({ account, transactions, txWrappers }) => {
-    if (nullable(account) || nullable(transactions)) {
-      return null;
+  fn: ({ existing, account, txWrappers, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return {
+        add: [],
+        remove: [],
+      };
     }
 
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isVotingTransaction(o.coreTx)) return false;
+
+      return coreTx.args.poll === o.coreTx.args.poll;
+    });
+
+    const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
+
     // @ts-expect-error TODO fix id field
-    const tx: BasketTransaction = {
+    const newTransaction: BasketTransaction = {
       initiatorAccountId: account.accountId,
-      coreTx: transactions.coreTx,
+      coreTx,
       txWrappers,
     };
 
-    return tx;
+    return {
+      add: isSameTransaction ? [] : [newTransaction],
+      remove: existingTransactions,
+    };
   },
-  target: basketSaveRequestCreated,
+  target: spread({
+    add: basketOperations.addTransactions,
+    remove: basketOperations.removeTransactions,
+  }),
 });
 
 sample({
-  clock: basketSaveRequestCreated.filter({ fn: nonNullable }),
-  fn: tx => [tx],
-  target: basketOperations.addTransactions,
+  clock: removeFromBasket,
+  source: {
+    existing: basketOperations.$list,
+    account: votingStatus.$votingAccount,
+    coreTx: $coreTx,
+  },
+  fn: ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return [];
+    }
+
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isVotingTransaction(o.coreTx)) return false;
+
+      return coreTx.args.poll === o.coreTx.args.poll;
+    });
+
+    return existingTransactions;
+  },
+  target: basketOperations.removeTransactions,
 });
 
 export const voting = {
@@ -166,4 +204,5 @@ export const voting = {
   $txWrappers,
   sign,
   saveToBasket,
+  removeFromBasket,
 };

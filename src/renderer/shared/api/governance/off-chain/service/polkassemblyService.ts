@@ -52,7 +52,7 @@ const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referend
  * @param chain
  * @param referendumId Referendum index
  */
-const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain, referendumId) => {
+const getReferendumDetails: GovernanceApi['getReferendumDetails'] = (chain, referendumId) => {
   return polkassemblyApiService
     .fetchPost({
       network: chain.specName,
@@ -69,7 +69,7 @@ const mapTimeline = (timeline: PolkassembyPostStatus): ReferendumTimelineRecord 
   };
 };
 
-const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (chain, referendumId) => {
+const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = (chain, referendumId) => {
   return polkassemblyApiService
     .fetchPost({
       network: chain.specName,
@@ -79,7 +79,7 @@ const getReferendumTimeline: GovernanceApi['getReferendumTimeline'] = async (cha
     .then((r) => r.timeline.flatMap((timeline) => timeline.statuses.map(mapTimeline)));
 };
 
-const getReferendumSummary: GovernanceApi['getReferendumSummary'] = async (chain, referendumId) => {
+const getReferendumSummary: GovernanceApi['getReferendumSummary'] = (chain, referendumId) => {
   return polkassemblyApiService
     .fetchPost({
       network: chain.specName,

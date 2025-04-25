@@ -77,6 +77,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
+      console.log('submit args', transaction.args);
       deprecatedTransactionService
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {
@@ -231,6 +232,12 @@ sample({
   source: $results,
   filter: (_, { step }) => step !== SubmitStep.LOADING,
   target: formSubmitted,
+});
+
+sample({
+  clock: formSubmitted,
+  fn: () => null,
+  target: $submitStore,
 });
 
 export const submitModel = {

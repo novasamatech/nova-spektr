@@ -1,11 +1,12 @@
-import { fellowshipContentSlot } from '@/pages/Fellowship/ui/Fellowship';
+import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
+import { activityFeedRecordDescriptionSlot } from './components/EventRecord';
 import { LastActivity } from './components/LastActivity';
 import { fellowshipActivityFeedFeature } from './model/feature';
 
-export { fellowshipActivityFeedFeature };
+export { fellowshipActivityFeedFeature, activityFeedRecordDescriptionSlot };
 
-fellowshipActivityFeedFeature.inject(fellowshipContentSlot, {
-  order: 1,
+fellowshipActivityFeedFeature.inject(fellowshipSidebarSlot, {
+  order: 3,
   render: () => <LastActivity />,
 });

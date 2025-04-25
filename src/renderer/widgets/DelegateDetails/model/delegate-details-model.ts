@@ -1,10 +1,10 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import uniq from 'lodash/uniq';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Address } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { votingService } from '@/entities/governance';
 import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import {
@@ -23,32 +23,34 @@ const openDelegations = createEvent();
 
 const $isModalOpen = createStore(false);
 const $isDelegationsOpen = createStore(false);
-const $delegate = createStore<DelegateAccount | null>(null).reset(flowStarted);
+const $delegate = restore(flowStarted, null).reset(flowStarted);
 
 const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
 
 const $activeTracks = combine(
   {
-    votes: votingAggregate.$activeWalletVotes,
     delegate: $delegate,
+    votes: votingAggregate.$activeWalletVotes,
     chain: networkSelectorModel.$governanceChain,
   },
-  ({ votes, delegate, chain }) => {
-    const activeTracks: Record<Address, Set<string>> = {};
+  ({ delegate, votes, chain }) => {
+    const activeTracks: Record<AccountId, Set<string>> = {};
 
-    for (const [address, delegations] of Object.entries(votes)) {
-      for (const [key, vote] of Object.entries(delegations)) {
+    for (const [voterAccountId, voteList] of Object.entries(votes)) {
+      const accountId = voterAccountId as AccountId;
+
+      for (const [key, vote] of Object.entries(voteList)) {
         if (!votingService.isDelegating(vote)) continue;
 
         const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
 
         if (votingService.isDelegating(vote) && target === delegate?.accountId) {
-          if (!activeTracks[address]) {
-            activeTracks[address] = new Set();
+          if (!activeTracks[accountId]) {
+            activeTracks[accountId] = new Set();
           }
 
-          activeTracks[address].add(key);
+          activeTracks[accountId].add(key);
         }
       }
     }
@@ -58,7 +60,10 @@ const $activeTracks = combine(
 );
 
 const $activeDelegations = combine(
-  { delegations: delegationAggregate.$activeDelegations, delegate: $delegate },
+  {
+    delegations: delegationAggregate.$activeDelegations,
+    delegate: $delegate,
+  },
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 

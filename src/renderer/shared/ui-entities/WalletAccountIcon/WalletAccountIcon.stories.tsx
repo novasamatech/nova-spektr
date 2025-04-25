@@ -1,11 +1,10 @@
-import { type IconTheme } from '@polkadot/react-identicon/types';
 import { type Meta, type StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { type WalletIconType, WalletType } from '@/shared/core';
 import { Input, Select } from '@/shared/ui-kit';
 
-import { WalletAccountIcon } from './WalletAccountIcon';
+import { type IconTheme, WalletAccountIcon } from './WalletAccountIcon';
 
 const meta: Meta<typeof WalletAccountIcon> = {
   title: 'Design System/entities/WalletAccountIcon',

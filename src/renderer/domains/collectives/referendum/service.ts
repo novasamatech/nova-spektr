@@ -3,11 +3,15 @@ import { type TrackId } from '@/shared/pallet/referenda';
 import {
   type ApprovedReferendum,
   type CompletedReferendum,
+  type EvidenceProposal,
   type KilledReferendum,
   type OngoingReferendum,
+  type Proposal,
   type Referendum,
   type RejectedReferendum,
+  type RfcProposal,
   type TimedOutReferendum,
+  type UnknownProposal,
 } from './types';
 
 const isOngoing = (referendum: Referendum): referendum is OngoingReferendum => referendum.type === 'Ongoing';
@@ -19,6 +23,10 @@ const isCompleted = (referendum: Referendum): referendum is CompletedReferendum 
 
 const getOngoingReferendums = (referendums: Referendum[]) => referendums.filter(isOngoing);
 const getCompletedReferendums = (referendums: Referendum[]) => referendums.filter(isCompleted);
+
+const isEvidenceProposal = (proposal: Proposal): proposal is EvidenceProposal => proposal.type === 'Evidence';
+const isRfcProposal = (proposal: Proposal): proposal is RfcProposal => proposal.type === 'Rfc';
+const isUnknownProposal = (proposal: Proposal): proposal is UnknownProposal => proposal.type === 'Unknown';
 
 function isReferendumInTrack(selectedTrackIds: TrackId[], referendum: Referendum) {
   if (selectedTrackIds.length === 0) {
@@ -41,6 +49,14 @@ function getOperationStatus(referendum: OngoingReferendum) {
   return 'deciding';
 }
 
+function getProposer(referendum: OngoingReferendum) {
+  if (referendum.proposal?.type === 'Evidence') {
+    return referendum.proposal.accountId;
+  }
+
+  return referendum.submissionDeposit?.who ?? null;
+}
+
 export const referendumService = {
   isOngoing,
   isRejected,
@@ -49,9 +65,14 @@ export const referendumService = {
   isTimedOut,
   isKilled,
 
+  isEvidenceProposal,
+  isRfcProposal,
+  isUnknownProposal,
+
   isReferendumInTrack,
 
   getOngoingReferendums,
   getCompletedReferendums,
   getOperationStatus,
+  getProposer,
 };

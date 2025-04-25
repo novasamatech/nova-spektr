@@ -20,8 +20,8 @@ export abstract class BasePage<T extends BasePageElements = BasePageElements> {
   public async gotoMain(): Promise<this> {
     await this.page.goto(this.pageElements.url);
     await this.page.waitForLoadState('load');
-    await this.page.reload();
-    await this.page.waitForLoadState('load');
+    await this.page.waitForLoadState('domcontentloaded');
+    await this.page.waitForLoadState('networkidle');
 
     return this;
   }

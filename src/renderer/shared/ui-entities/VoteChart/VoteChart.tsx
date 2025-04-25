@@ -11,6 +11,7 @@ type Props = {
   threshold?: number;
   disabled?: boolean;
   thresholdIndicatorBorder?: string;
+  showDivider?: boolean;
 };
 
 export const VoteChart = ({ value, threshold, disabled, thresholdIndicatorBorder = 'icon-button' }: Props) => {
@@ -31,6 +32,7 @@ export const VoteChart = ({ value, threshold, disabled, thresholdIndicatorBorder
           {value !== 100 ? <div className="h-2.5 grow rounded-md bg-icon-negative" /> : null}
         </>
       )}
+
       {nonNullable(threshold) ? (
         <div
           className={cnTw(

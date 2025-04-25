@@ -1,16 +1,23 @@
 import { type ComponentType } from 'react';
 
+import { type Transaction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type Referendum } from '@/domains/collectives';
+
 export type OperationType =
   | 'set_active'
   | 'salary_request'
   | 'salary_payout'
   | 'salary_induct'
   | 'evidence'
-  | `referendum_${number}`;
+  | `evidence_request_${AccountId}`
+  | `referendum_${number}`
+  | `referendum_completed_${number}`;
 
 export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
-  priority: 0 | 1 | 2;
-  body: ComponentType<T & { canSkip: boolean; onSkip: VoidFunction }>;
-  meta: T;
+  group: 'personal' | 'general' | 'completed';
+  weight: number;
+  body: ComponentType<T & { transaction: Transaction | null; onReferendumSelect(referendum: Referendum): void }>;
+  meta: T & { transaction: Transaction | null; tags: string[] };
 };

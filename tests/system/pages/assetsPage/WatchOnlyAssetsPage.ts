@@ -1,18 +1,30 @@
-import { BasePage } from '../BasePage';
-import { type AssetsPageElements } from '../_elements/AssetsPageElements';
-import { SettingsPageElements } from '../_elements/SettingsPageElements';
-import { WalletModalElements } from '../_elements/WalletModalElements';
-import { WalletModalWindow } from '../modals/WalletModalWindow';
-import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
+import { expect } from '@playwright/test';
 
-export class WatchOnlyAssetsPage extends BasePage<AssetsPageElements> {
-  public async goToSettingsPage(): Promise<BaseSettingsPage> {
-    return new BaseSettingsPage(this.page, new SettingsPageElements()).gotoMain();
+import { TEST_IDS } from '@/shared/constants/testIds';
+import { type ChainModel } from '../../data/chains/testChainModel';
+import { TransferModalElements } from '../_elements/TransferModalElements';
+import { TransferModalWindow } from '../modals/TransferModalWindow';
+
+import { BaseAssetsPage } from './BaseAssetsPage';
+
+export class WatchOnlyAssetsPage extends BaseAssetsPage {
+  public async checkTransferButtonNotExists(): Promise<WatchOnlyAssetsPage> {
+    const sendButton = this.page.getByTestId(TEST_IDS.ASSETS.SEND_ARROW_ICON).first();
+    await expect(sendButton, 'Transfer button should not be visible for watch-only wallet').not.toBeVisible();
+
+    return this;
   }
 
-  public async openWalletManagement(): Promise<WalletModalWindow> {
-    await this.click(this.pageElements.accountButton);
+  public async checkReceiveButtonNotExists(): Promise<WatchOnlyAssetsPage> {
+    const receiveButton = this.page.getByTestId(TEST_IDS.ASSETS.RECEIVE_ARROW_ICON).first();
+    await expect(receiveButton, 'Receive button should not be visible for watch-only wallet').not.toBeVisible();
 
-    return new WalletModalWindow(this.page, new WalletModalElements(), this);
+    return this;
+  }
+
+  public override async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
+    return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModal(
+      false,
+    );
   }
 }

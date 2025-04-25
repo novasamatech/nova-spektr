@@ -18,6 +18,7 @@ import {
 import {
   migrateAccounts,
   migrateEvents,
+  migrateMultishardAccounts,
   migrateMultisigAccounts,
   migratePVAccounts,
   migrateWallets,
@@ -107,6 +108,7 @@ class DexieStorage extends Dexie {
       .upgrade(migrateMultisigAccounts);
 
     this.version(28).upgrade(migratePVAccounts);
+    this.version(29).upgrade(migrateMultishardAccounts);
 
     this.version(29).stores({
       multisigOperations: 'id',

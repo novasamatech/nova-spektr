@@ -109,8 +109,8 @@ export const getExpectedBlockTime = (api: ApiPromise): BN => {
   return bnMin(ONE_DAY, DEFAULT_TIME);
 };
 
-export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: number, blockTime: number): number => {
-  return Date.now() - (currentBlock - neededBlock) * blockTime;
+export const getCreatedDate = (neededBlock: BlockHeight, currentBlock: BlockHeight, blockTime: number): number => {
+  return Date.now() + (neededBlock - currentBlock) * blockTime;
 };
 
 export const getCreatedDateFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
@@ -124,7 +124,7 @@ export const getTimeToBlock = async (neededBlock: BlockHeight, api: ApiPromise):
   const currentBlock = await getCurrentBlockNumber(api);
   const blockTime = getExpectedBlockTime(api);
 
-  return Math.abs(neededBlock - currentBlock) * blockTime.toNumber();
+  return (neededBlock - currentBlock) * blockTime.toNumber();
 };
 
 export const getRelativeTimeFromApi = async (neededBlock: BlockHeight, api: ApiPromise): Promise<number> => {
@@ -148,6 +148,14 @@ export const getBlockTimeAgo = async (neededTime: number, api: ApiPromise): Prom
   const completedBlocks = Math.ceil(neededTime / blockTime.toNumber());
 
   return Math.max(0, currentBlock - completedBlocks);
+};
+
+export const getBlockFromTime = async (neededTime: number, api: ApiPromise): Promise<number> => {
+  const timestampMs = new Date(neededTime).getTime();
+  const currentTime = Date.now();
+  const time = currentTime - timestampMs;
+
+  return getBlockTimeAgo(time, api);
 };
 
 export const getTypeVersion = (api: ApiPromise, typeName: string): string => {

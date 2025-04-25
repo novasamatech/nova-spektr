@@ -14,6 +14,12 @@ export const TEST_IDS = {
   },
   ASSETS: {
     SETTINGS_WIDGET: 'assets-settings-widget',
+    SEND_ARROW_ICON: 'Icon:sendArrow',
+    RECEIVE_ARROW_ICON: 'Icon:receiveArrow',
+    SHELF_RIGHT_ARROW_ICON: 'Icon:shelfRight',
+    ASSET_DETAILS: 'assets-asset-details',
+    PORTFOLIO_LIST: 'assets-portfolio-list',
+    TOKEN_PLATE: 'assets-token-plate',
   },
   COMMON: {
     WALLET_BUTTON: 'common-wallet-button',
@@ -24,6 +30,11 @@ export const TEST_IDS = {
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
     ESTIMATE_FEE: 'operations-estimate-fee',
+    AMOUNT_INPUT: 'operations-amount-input',
+    RECIPIENT_INPUT: 'operations-recipient-input',
+    QR_CODE_CONTAINER: 'operations-qr-code-container',
+    SIGNATORY_SELECTOR: 'operations-signatory-selector',
+    SIGNATORY_SELECTOR_OPTION: 'Address',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
@@ -34,4 +45,5 @@ export const TEST_IDS = {
     PROPOSAL_ID: 'governance-proposal-id',
     PROPOSAL_VOTE_DETAILS: 'governance-proposal-vote-details',
   },
+  CLOSE_BUTTON: 'Icon:close',
 } as const;

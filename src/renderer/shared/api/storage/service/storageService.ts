@@ -5,7 +5,7 @@ import { type NoID } from '@/shared/core';
 import { dexieStorage } from './dexie';
 
 // TODO: think about throwing errors instead of returning value from catch
-class StorageService<T extends { id: K }, K extends IndexableType> {
+export class StorageService<T extends { id: K }, K extends IndexableType> {
   private dexieTable: Table<T, K>;
 
   constructor(table: Table<T, K>) {

@@ -5,12 +5,12 @@ import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts, multisigOperations } from '@/domains/network';
-import { governanceModel } from '@/entities/governance';
 import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -24,9 +24,9 @@ import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
-import { fellowshipReferendumsFeature } from '@/features/fellowship-referendums';
 import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceBasketFeature } from '@/features/governance-basket';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -86,9 +86,10 @@ const populate = async () => {
   proxyModel.populate();
   multisigOperations.populate();
 
+  governanceMetaProvider.populate();
+
   // TODO rework as populate effects
   kernelModel.events.appStarted();
-  governanceModel.events.governanceStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
   proxiesModel.findAllProxies();
@@ -114,10 +115,10 @@ export const bootstrap = () => {
     fellowshipNavigationFeature,
     fellowshipProfileFeature,
     fellowshipReferendumsDetailsFeature,
-    fellowshipReferendumsFeature,
     fellowshipSalaryFeature,
     fellowshipTasksFeature,
     fellowshipVotingFeature,
+    fellowshipVotingHistoryFeature,
     fellowshipBasketFeature,
 
     walletSelectFeature.feature,

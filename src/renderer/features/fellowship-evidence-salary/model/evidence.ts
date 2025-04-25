@@ -24,18 +24,11 @@ const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
-const $promotionPeriod = combine(profile.$member, $periods, (member, periods) => {
-  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-  return evidenceService.getPromotionPeriod(member, periods);
-});
-
 const $leftToPromotion = combine(
-  { promotionPeriod: $promotionPeriod, currentBlock: block.$currentBlock, member: profile.$member },
-  ({ promotionPeriod, currentBlock, member }) => {
-    if (nullable(promotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    const gone = currentBlock - member.lastPromotion;
-    return Math.max(0, promotionPeriod - gone);
+  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
+  ({ periods, currentBlock, member }) => {
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
   },
 );
 
@@ -45,12 +38,10 @@ const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => 
 });
 
 const $leftToDemotion = combine(
-  { demotionPeriod: $demotionPeriod, currentBlock: block.$currentBlock, member: profile.$member },
-  ({ demotionPeriod, currentBlock, member }) => {
-    if (nullable(demotionPeriod) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    const gone = currentBlock - member.lastProof;
-    return Math.max(0, demotionPeriod - gone);
+  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
+  ({ periods, currentBlock, member }) => {
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );
 
@@ -73,7 +64,22 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
 
 // requesting data
 
-const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
+const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (!member) return;
+  return {
+    api,
+    palletType,
+    chainId,
+    accounts: [member.accountId],
+  };
+});
+
+sample({
+  clock: evendenceRequested,
+  target: evidence.request,
+});
+
+const evendencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
   if (!member) return;
   return {
     api,
@@ -84,8 +90,8 @@ const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, pal
 });
 
 sample({
-  clock: evendenceRequested,
-  target: [evidence.request, evidence.requestPeriods],
+  clock: evendencePeriodsRequested,
+  target: evidence.requestPeriods,
 });
 
 // attention message
@@ -110,7 +116,6 @@ export const evidenceInfo = {
   $track,
   $nextTrack,
   $periods,
-  $promotionPeriod,
   $leftToPromotion,
   $demotionPeriod,
   $leftToDemotion,

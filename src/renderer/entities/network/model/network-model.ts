@@ -29,7 +29,6 @@ const chainConnected = createEvent<ChainId>();
 const chainDisconnected = createEvent<ChainId>();
 const connectionStatusChanged = createEvent<{ chainId: ChainId; status: ConnectionStatus }>();
 
-const connected = createEvent<ChainId>();
 const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
@@ -47,7 +46,7 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 const $populated = createStore(false);
 
 const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap({ sort: true });
+  return chainsService.getChainsMap();
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
@@ -99,7 +98,6 @@ type CreateProviderParams = {
 };
 const createProviderFx = createEffect(
   ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
-    const boundConnected = scopeBind(connected, { safe: true });
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
 
@@ -112,7 +110,6 @@ const createProviderFx = createEffect(
           if (DEBUG_NETWORKS) {
             console.info('🟢 Provider connected ==> ', chainId);
           }
-          boundConnected(chainId);
         },
         onDisconnected: () => {
           if (DEBUG_NETWORKS) {
@@ -133,16 +130,14 @@ const createProviderFx = createEffect(
       metadataReceived({ chainId, metadata, metadataVersion, runtimeVersion });
     });
 
-    if (providerType === ProviderType.LIGHT_CLIENT) {
-      /**
-       * HINT: Light Client provider must be connected manually GitHub Light
-       * Client section -
-       * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
-       */
-      provider.connect();
-    }
+    if (providerType === ProviderType.WEB_SOCKET) return provider;
 
-    return provider;
+    /**
+     * HINT: Light Client provider must be connected manually GitHub Light
+     * Client section -
+     * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
+     */
+    return provider.connect().then(() => provider);
   },
 );
 
@@ -153,8 +148,10 @@ type CreateApiParams = {
   provider: ProviderWithMetadata;
   existingApi: ApiPromise | null;
 };
-const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
-  if (nonNullable(existingApi)) return existingApi;
+const createApiFx = createEffect(({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
+  if (nonNullable(existingApi)) {
+    return Promise.resolve(existingApi);
+  }
 
   return networkService.createApi(chainId, provider).isReady;
 });
@@ -338,12 +335,13 @@ sample({
   target: $apis,
 });
 
+// HINT: We cannot rely on Provider.onConnected because it fires BEFORE we have API
 sample({
-  clock: connected,
+  clock: createApiFx.done,
   source: $connectionStatuses,
-  fn: (statuses, chainId) => ({
-    newStatuses: { ...statuses, [chainId]: ConnectionStatus.CONNECTED },
-    event: { chainId, status: ConnectionStatus.CONNECTED },
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
+    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
   }),
   target: spread({
     newStatuses: $connectionStatuses,

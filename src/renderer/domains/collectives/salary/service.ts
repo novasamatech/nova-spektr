@@ -5,7 +5,7 @@ import { formatBalance } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
-import { type Member } from '../members/types';
+import { type Member } from '../member/types';
 
 import {
   type ClaimStatus,

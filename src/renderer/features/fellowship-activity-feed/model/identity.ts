@@ -1,5 +1,6 @@
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 
+import { member } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipActivityFeedFeature } from './feature';
@@ -8,6 +9,20 @@ const $list = combine(identity.$list, fellowshipActivityFeedFeature.state, (list
   if (state.status !== 'running') return {};
 
   return list[state.data.chainId] ?? {};
+});
+
+sample({
+  clock: member.receive,
+  filter({ result }) {
+    return result.length > 0;
+  },
+  fn({ params, result }) {
+    return {
+      chainId: params.api.genesisHash.toHex(),
+      accounts: result.map(m => m.accountId),
+    };
+  },
+  target: identity.request,
 });
 
 export const identityModel = {

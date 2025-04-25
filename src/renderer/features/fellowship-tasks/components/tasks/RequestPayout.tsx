@@ -1,26 +1,19 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
-import { Trans } from 'react-i18next';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getCreatedDateFromApi, getRelativeTimeFromApi } from '@/shared/lib/utils';
-import { Button, Duration, HeadlineText, Icon, SmallTitleText, TitleText } from '@/shared/ui';
+import { getCreatedDateFromApi } from '@/shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
 
-export const payoutSalaryActionSlot = createSlot();
+export const payoutSalaryTaskActionSlot = createSlot();
 
-type Props = {
-  canSkip: boolean;
-  onSkip: VoidFunction;
-};
-
-export const RequestPayout = ({ canSkip, onSkip }: Props) => {
+export const RequestPayout = () => {
   const { t, formatDate } = useI18n();
-  const [timeLeft, setTimeLeft] = useState(0);
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const input = useUnit(fellowshipTasksFeature.input);
@@ -29,37 +22,31 @@ export const RequestPayout = ({ canSkip, onSkip }: Props) => {
 
   useEffect(() => {
     if (input?.api && currentPeriod && currentPeriod.type !== 'unknown') {
-      getRelativeTimeFromApi(currentPeriod.left, input.api).then(setTimeLeft);
       getCreatedDateFromApi(currentPeriod.until, input.api).then(setPeriodEnd);
     }
   }, [input?.api, currentPeriod]);
+
   return (
-    <Box fillContainer padding={5} gap={5}>
-      <TitleText>{t('fellowship.tasks.task.requestPayout.title')}</TitleText>
-      <Box direction="row" verticalAlign="center" gap={1.5}>
-        <Icon className="text-icon-warning" name="warn" size={14} />
-        <SmallTitleText>
-          <Trans
-            t={t}
-            i18nKey="fellowship.tasks.task.requestSalary.left"
-            components={{ duration: <Duration seconds={timeLeft / 1000} /> }}
-          />
-        </SmallTitleText>
+    <Box direction="row" fillContainer padding={5} gap={5} verticalAlign="flex-end">
+      <Box gap={3} grow={1}>
+        <SmallTitleText>{t('fellowship.tasks.task.requestPayout.title')}</SmallTitleText>
+        <FootnoteText>
+          {t('fellowship.tasks.task.requestPayout.description', {
+            salary: salaryService.formatSalaryAmount(salary.active),
+            endDate: formatDate(periodEnd, 'dd/MM/yy'),
+          })}
+        </FootnoteText>
+        <FootnoteText className="text-text-secondary">
+          {t('fellowship.tasks.task.requestPayout.until', {
+            salary: salaryService.formatSalaryAmount(salary.active),
+            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yy') : null,
+          })}
+        </FootnoteText>
       </Box>
-      <HeadlineText>
-        {t('fellowship.tasks.task.requestPayout.description', {
-          salary: salaryService.formatSalaryAmount(salary.active),
-          endDate: formatDate(periodEnd, 'dd/MM/yy'),
-        })}
-      </HeadlineText>
-      <Box grow={1} />
-      <Box direction="row-reverse" verticalAlign="center" horizontalAlign="space-between">
-        <Slot id={payoutSalaryActionSlot} />
-        {canSkip && (
-          <Button variant="text" onClick={onSkip}>
-            {t('fellowship.tasks.skip')}
-          </Button>
-        )}
+      <Box verticalAlign="center" horizontalAlign="flex-end" shrink={0} gap={8.5} height="100%">
+        <Box width="102px">
+          <Slot id={payoutSalaryTaskActionSlot} />
+        </Box>
       </Box>
     </Box>
   );

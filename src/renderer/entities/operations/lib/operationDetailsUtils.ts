@@ -105,7 +105,7 @@ export const getSignatoryAccounts = (
       result.push(signatoryAccount);
     } else {
       const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountUtils.isChainDependant(a) && accountService.isChainAccount(a) && a.chainId === chainId,
+        (a) => accountService.isChainAccount(a) && accountService.isChainAccount(a) && a.chainId === chainId,
       );
       if (legacySignatoryAccount) {
         result.push(legacySignatoryAccount);
@@ -211,14 +211,16 @@ export const getUndelegationData = async (
   const coreTx = unwrap(transaction, types.isConvictionVotingDelegateTransaction);
   if (!coreTx) return { votes: undefined, target: undefined };
 
-  const votes = await convictionVotingPallet.storage.votingFor(api, [[coreTx.args.target, coreTx.args.track]]);
-  const delegation = votes.find((vote) => vote.type === 'Delegating');
+  return convictionVotingPallet.storage.votingFor(api, [[coreTx.args.target, coreTx.args.track]]).then((votes) => {
+    const delegation = votes.find((vote) => vote.type === 'Delegating');
 
-  return {
-    votes:
-      delegation && votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
-    target: delegation && toAddress(delegation.data.target),
-  };
+    if (!delegation) return { votes: undefined, target: undefined };
+
+    return {
+      votes: votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
+      target: toAddress(delegation.data.target),
+    };
+  });
 };
 
 export const getReferendumId = (tx: AnyDecodedTransaction): string | undefined => {

@@ -8,6 +8,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { voteHistoryAggregate } from '../../aggregates/voteHistory';
+import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VoteCount } from './VoteCount';
 import { VotingHistoryList } from './VotingHistoryList';
@@ -29,16 +30,28 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   const voteHistory = useStoreMap({
     store: voteHistoryAggregate.$voteHistory,
     keys: [referendum.referendumId],
-    fn: (x, [referendumId]) => x[referendumId] ?? [],
+    fn: (history, [referendumId]) => history[referendumId] ?? [],
   });
 
   const votingAsset = useUnit(voteHistoryAggregate.$votingAsset);
   const isLoading = useUnit(voteHistoryAggregate.$isLoading);
   const hasError = useUnit(voteHistoryAggregate.$hasError);
 
-  const ayes = useMemo(() => voteHistory.filter((history) => history.decision === 'aye'), [voteHistory]);
-  const nays = useMemo(() => voteHistory.filter((history) => history.decision === 'nay'), [voteHistory]);
-  const abstain = useMemo(() => voteHistory.filter((history) => history.decision === 'abstain'), [voteHistory]);
+  const { ayes, nays, abstain } = useMemo(() => {
+    const result: Record<'ayes' | 'nays' | 'abstain', AggregatedVoteHistory[]> = {
+      ayes: [],
+      nays: [],
+      abstain: [],
+    };
+
+    for (const history of voteHistory) {
+      if (history.decision === 'aye') result.ayes.push(history);
+      else if (history.decision === 'nay') result.nays.push(history);
+      else if (history.decision === 'abstain') result.abstain.push(history);
+    }
+
+    return result;
+  }, [voteHistory.length]);
 
   return (
     <Modal isOpen={showModal} size="md" height="lg" onToggle={closeModal}>

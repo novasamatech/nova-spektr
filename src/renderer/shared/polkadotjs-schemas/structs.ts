@@ -96,6 +96,18 @@ export const optionalSchema = <const Value>(schema: z.ZodType<Value, z.ZodTypeDe
   });
 };
 
+export const enumTypeLooseSchema = <const Value extends string[]>(...args: Value) => {
+  return z.instanceof(Enum).transform((value): Value[number] | (string & {}) => {
+    const valid = args.includes(value.type);
+    if (valid) {
+      return value.type as Value[number];
+    } else {
+      console.warn(`Enum should be (${args.join(' | ')}), got ${value.type}. Value is fallback as a string`);
+      return value.type as string & {};
+    }
+  });
+};
+
 export const enumTypeSchema = <const Value extends string[]>(...args: Value) => {
   return z.instanceof(Enum).transform((value, ctx) => {
     const valid = args.includes(value.type);

@@ -2,11 +2,10 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText, IconButton, Tabs } from '@/shared/ui';
-import { type TabItem } from '@/shared/ui/types';
-import { Address, AssetBalance } from '@/shared/ui-entities';
-import { Graphics, Modal, Skeleton } from '@/shared/ui-kit';
-import { ExplorersPopover } from '@/entities/wallet';
+import { nullable } from '@/shared/lib/utils';
+import { FootnoteText } from '@/shared/ui';
+import { Account, AssetBalance } from '@/shared/ui-entities';
+import { Box, Graphics, Modal, Skeleton, Tabs } from '@/shared/ui-kit';
 import { type AggregatedReferendum, ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
 import { VotedReferendumItem } from '@/features/governance/components/ReferendumList/VotedReferendumItem';
 import { delegateDetailsModel } from '../model/delegate-details-model';
@@ -21,48 +20,52 @@ export const DelegateSummary = () => {
   const votedReferendums = useUnit(delegateSummaryModel.$votedReferendums);
   const votedReferendumsMonth = useUnit(delegateSummaryModel.$votedReferendumsMonth);
 
+  const [tab, setTab] = useState('delegators');
+
   if (!chain || !delegate) return null;
-
-  const tabs: TabItem[] = [
-    {
-      id: 'delegators',
-      title: (
-        <span className="flex items-center gap-1">
-          {t('governance.addDelegation.card.delegations')}
-          <FootnoteText className="text-text-secondary"> {delegate.delegators}</FootnoteText>
-        </span>
-      ),
-      panel: <DelegationsList />,
-    },
-    {
-      id: 'votedMonth',
-      title: (
-        <span className="flex items-center gap-1">
-          {t('governance.addDelegation.card.voted')}
-          <FootnoteText className="text-text-secondary"> {delegate.delegateVotesMonth}</FootnoteText>
-        </span>
-      ),
-      panel: <DelegationReferendumList votedReferendums={votedReferendumsMonth} />,
-    },
-    {
-      id: 'voted',
-      title: (
-        <span className="flex items-center gap-1">
-          {t('governance.addDelegation.votedAllTime')}
-          <FootnoteText className="text-text-secondary"> {delegate.delegateVotes}</FootnoteText>
-        </span>
-      ),
-
-      panel: <DelegationReferendumList votedReferendums={votedReferendums} />,
-    },
-  ];
 
   return (
     <Modal isOpen={isModalOpen} size="lg" onToggle={() => delegateSummaryModel.events.closeModal()}>
-      <Modal.Title close>{t('governance.addDelegation.summary.delegateSummary')}</Modal.Title>
+      <Modal.Title close>{t('governance.addDelegation.summary.delegationSummary')}</Modal.Title>
       <Modal.Content>
         <div className="bg-main-app-background px-5 py-4">
-          <Tabs items={tabs} />
+          <Tabs value={tab} onChange={setTab}>
+            <Tabs.List>
+              <Tabs.Trigger value="delegators">
+                <span className="flex items-center gap-1">
+                  {t('governance.addDelegation.card.delegations')}
+                  <FootnoteText className="text-text-secondary"> {delegate.delegators}</FootnoteText>
+                </span>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="votedMonth">
+                <span className="flex items-center gap-1">
+                  {t('governance.addDelegation.card.voted')}
+                  <FootnoteText className="text-text-secondary"> {delegate.delegateVotesMonth}</FootnoteText>
+                </span>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="voted">
+                <span className="flex items-center gap-1">
+                  {t('governance.addDelegation.votedAllTime')}
+                  <FootnoteText className="text-text-secondary"> {delegate.delegateVotes}</FootnoteText>
+                </span>
+              </Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="delegators">
+              <div className="mt-4">
+                <DelegationsList />
+              </div>
+            </Tabs.Content>
+            <Tabs.Content value="votedMonth">
+              <div className="mt-4">
+                <DelegationReferendumList votedReferendums={votedReferendumsMonth} />
+              </div>
+            </Tabs.Content>
+            <Tabs.Content value="voted">
+              <div className="mt-4">
+                <DelegationReferendumList votedReferendums={votedReferendums} />
+              </div>
+            </Tabs.Content>
+          </Tabs>
         </div>
       </Modal.Content>
     </Modal>
@@ -95,49 +98,43 @@ const EmptyState = () => {
 const DelegationsList = () => {
   const { t } = useI18n();
 
+  const chain = useUnit(delegateDetailsModel.$chain);
+  const delegate = useUnit(delegateDetailsModel.$delegate);
   const proposers = useUnit(delegateSummaryModel.$proposers);
   const currentDelegations = useUnit(delegateSummaryModel.$currentDelegations);
   const isDelegatingLoading = useUnit(delegateSummaryModel.$isDelegatingLoading);
-  const chain = useUnit(delegateDetailsModel.$chain);
-  const delegate = useUnit(delegateDetailsModel.$delegate);
 
   if (delegate && !delegate.delegators) {
     return <EmptyState />;
   }
 
-  if (isDelegatingLoading) {
+  if (isDelegatingLoading || nullable(chain)) {
     return <Loading />;
   }
 
   return (
-    <div className="flex flex-col gap-2 px-5">
+    <div className="flex flex-col gap-2">
       <div className="flex justify-between">
         <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.summary.accountLabel')}</FootnoteText>
-        <FootnoteText className="mr-16 text-text-tertiary">
-          {t('governance.addDelegation.summary.amountLabel')}
+        <FootnoteText className="text-text-tertiary">
+          {t('governance.addDelegation.summary.delegatedLabel')}
         </FootnoteText>
       </div>
       {currentDelegations.map(([address, delegation]) => (
         <div key={address} className="flex items-center justify-between py-2">
-          <BodyText className="flex-1">
-            <Address showIcon address={address} title={proposers[address]?.parent.name} variant="full" iconSize={20} />
-          </BodyText>
-          <div className="mr-6 gap-y-1">
-            <BodyText className="text-right">
-              <AssetBalance showSymbol value={delegation.amount.toString()} asset={chain?.assets[0]} />
-            </BodyText>
+          <Account
+            hideAddress
+            iconSize={20}
+            title={proposers[address]?.parent.name}
+            accountId={address}
+            chain={chain}
+          />
+          <Box direction="column" horizontalAlign="end">
+            <AssetBalance showSymbol value={delegation.amount.toString()} asset={chain?.assets[0]} />
             <FootnoteText className="text-text-tertiary">
               {t('governance.addDelegation.summary.acrossTracks', { count: delegation.tracks.length })}
             </FootnoteText>
-          </div>
-          <div className="w-10">
-            <ExplorersPopover
-              button={<IconButton className="ml-2 flex" name="info" />}
-              address={address}
-              addressPrefix={chain?.addressPrefix}
-              explorers={chain?.explorers}
-            />
-          </div>
+          </Box>
         </div>
       ))}
     </div>
@@ -145,8 +142,8 @@ const DelegationsList = () => {
 };
 
 const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: VotedReferendum[] }) => {
-  const isReferendumsLoading = useUnit(delegateSummaryModel.$isReferendumsLoading);
   const network = useUnit(networkSelectorModel.$network);
+  const isReferendumsLoading = useUnit(delegateSummaryModel.$isReferendumsLoading);
 
   const [selectedReferendum, setSelectedReferendum] = useState<AggregatedReferendum | null>(null);
 
@@ -159,7 +156,7 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
   }
 
   return (
-    <div className="flex flex-col gap-2 px-5">
+    <div className="flex flex-col gap-2">
       {votedReferendums.map((referendum) => (
         <VotedReferendumItem
           key={referendum.referendumId}

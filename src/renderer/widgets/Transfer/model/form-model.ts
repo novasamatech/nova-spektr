@@ -81,9 +81,10 @@ const $isProxy = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $accountBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
+const $accountBalance = createStore<BalanceMap | null>(null);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<BalanceMap>({ balance: ZERO_BALANCE, native: ZERO_BALANCE });
+const $isAccountBalanceLoading = $accountBalance.map((value) => value == null);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -335,7 +336,10 @@ const $accounts = combine(
 
       return {
         account,
-        balances: { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) },
+        balances:
+          balance && nativeBalance
+            ? { balance: transferableAmount(balance), native: transferableAmount(nativeBalance) }
+            : null,
       };
     });
   },
@@ -432,9 +436,12 @@ const $canSubmit = combine(
     isFeeLoading: $isFeeLoading,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
     isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
+    isAccountBalanceLoading: $isAccountBalanceLoading,
   },
-  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
-    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
+  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading, isAccountBalanceLoading }) => {
+    return (
+      isFormValid && !isFeeLoading && !isAccountBalanceLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
+    );
   },
 );
 
@@ -508,13 +515,15 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.account.onChange,
-  source: $accounts,
-  filter: (_, account) => nonNullable(account),
-  fn: (accounts, account) => {
-    const match = accounts.find((a) => a.account.id === account!.id);
+  source: {
+    accounts: $accounts,
+    selectedAccount: $transferForm.fields.account.$value,
+  },
+  filter: ({ selectedAccount }) => nonNullable(selectedAccount),
+  fn: ({ accounts, selectedAccount }) => {
+    const match = accounts.find((a) => a.account.id === selectedAccount?.id);
 
-    return match?.balances || { balance: ZERO_BALANCE, native: ZERO_BALANCE };
+    return match?.balances || null;
   },
   target: $accountBalance,
 });
@@ -552,12 +561,14 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.signatory.$value,
-  source: $signatories,
-  filter: (signatories, signatory) => {
+  source: {
+    signatory: $transferForm.fields.signatory.$value,
+    signatories: $signatories,
+  },
+  filter: ({ signatory, signatories }) => {
     return !isEmpty(signatories) && nonNullable(signatory);
   },
-  fn: (signatories, signatory) => {
+  fn: ({ signatory, signatories }) => {
     if (!signatory) {
       return ZERO_BALANCE;
     }
@@ -574,6 +585,11 @@ sample({
   filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
+});
+
+sample({
+  clock: [$transferForm.fields.account.onChange, $transferForm.fields.signatory.onChange],
+  target: $transferForm.resetErrors,
 });
 
 sample({

@@ -74,7 +74,7 @@ export const ReceiveAssetModal = ({ chain, asset, onClose }: Props) => {
     setTimeout(onClose, DEFAULT_TRANSITION);
   };
 
-  const isVault = walletUtils.isPolkadotVault(wallet) || walletUtils.isMultiShard(wallet);
+  const isVault = walletUtils.isPolkadotVault(wallet);
   const account = activeAccount ? wallet?.accounts[activeAccount.value] : undefined;
   const accountId = account?.accountId || '0x00';
   const prefix = chain.addressPrefix;

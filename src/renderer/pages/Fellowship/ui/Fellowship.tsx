@@ -1,14 +1,14 @@
 import { useGate, useUnit } from 'effector-react';
-import { useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
-import { Box, ScrollArea, Select } from '@/shared/ui-kit';
+import { Box, Select } from '@/shared/ui-kit';
+import { type Referendum } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import {
@@ -18,8 +18,8 @@ import {
   fellowshipPageModel,
 } from '../model/fellowshipPage';
 
-export const fellowshipHeaderCardsSlot = createSlot();
-export const fellowshipContentSlot = createSlot();
+export const fellowshipSidebarSlot = createSlot<{ onReferendumSelect(referendum: Referendum): void }>();
+export const fellowshipContentSlot = createSlot<{ onReferendumSelect(referendum: Referendum): void }>();
 
 export const Fellowship = () => {
   const { t } = useI18n();
@@ -38,47 +38,51 @@ export const Fellowship = () => {
     }
   }, [chainId]);
 
+  const selectReferendum = useCallback(
+    (referendum: Referendum) => {
+      if (chainId) {
+        navigationModel.events.navigateTo(
+          generatePath(Paths.FELLOWSHIP_REFERENDUM, { chainId, referendumId: referendum.id.toString() }),
+        );
+      }
+    },
+    [chainId],
+  );
+
   return (
-    <div className="flex h-full flex-col">
+    <Box height="100%" width="100%">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px] shrink-0">
-        {isDev() && (
+        {true /* isDev() */ && (
           <Box width="200px">
             {/* TODO remove before release */}
-            <div className="flex flex-col justify-center gap-1 rounded-md border border-alert bg-alert-background-warning">
+            <Select
+              placeholder="Select network"
+              value={selectedChain ?? null}
+              onChange={(chainId) =>
+                navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))
+              }
+            >
               {/* eslint-disable i18next/no-literal-string */}
-
-              <Select
-                placeholder="Select network"
-                value={selectedChain ?? null}
-                onChange={(chainId) =>
-                  navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId }))
-                }
-              >
-                <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot Collectives</Select.Item>
-                <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Westend Collectives</Select.Item>
-                <Select.Item value={COLLECTIVES_NOVASAMA_CHAIN_ID}>Novasama Collectives</Select.Item>
-              </Select>
+              <Select.Item value={COLLECTIVES_CHAIN_ID}>Polkadot Collectives</Select.Item>
+              <Select.Item value={COLLECTIVES_WESTEND_CHAIN_ID}>Westend Collectives</Select.Item>
+              <Select.Item value={COLLECTIVES_NOVASAMA_CHAIN_ID}>Novasama Collectives</Select.Item>
               {/* eslint-enable i18next/no-literal-string */}
-            </div>
+            </Select>
           </Box>
         )}
       </Header>
 
-      <ScrollArea>
-        <Box horizontalAlign="center" fillContainer padding={[6, 0]}>
-          <Box width="736px" gap={5}>
-            <div className="grid grid-cols-3 gap-4">
-              <Slot id={fellowshipHeaderCardsSlot} />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <Slot id={fellowshipContentSlot} />
-            </div>
-
-            <Outlet />
+      <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
+        <Box direction="row" gap={2} width="1089px" height="100%">
+          <Box width="276px" height="100%" gap={2.5} shrink={0}>
+            <Slot id={fellowshipSidebarSlot} props={{ onReferendumSelect: selectReferendum }} />
+          </Box>
+          <Box width="805px" height="100%" gap={2.5} shrink={0}>
+            <Slot id={fellowshipContentSlot} props={{ onReferendumSelect: selectReferendum }} />
           </Box>
         </Box>
-      </ScrollArea>
-    </div>
+        <Outlet />
+      </Box>
+    </Box>
   );
 };

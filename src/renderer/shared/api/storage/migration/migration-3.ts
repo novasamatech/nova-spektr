@@ -7,7 +7,7 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
 /**
  * Migrate accounts table to accounts2 for supporting new format
  *
- * @param trans Transactions from DB
+ * @param t Transactions from DB
  *
  * @returns {Promise}
  */

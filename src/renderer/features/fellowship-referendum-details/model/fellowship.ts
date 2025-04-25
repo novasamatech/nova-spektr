@@ -1,11 +1,11 @@
 import { combine } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
-import { collectiveDomain } from '@/domains/collectives';
+import { $collectiveStore } from '@/domains/collectives';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
 
-const $fellowshipStore = collectiveDomain.$store.map(store => store['fellowship'] || null);
+const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || null);
 
 const $store = combine($fellowshipStore, fellowshipReferendumsDetailsFeature.state, (fellowshipStore, state) => {
   if (nullable(fellowshipStore) || state.status !== 'running') {
@@ -15,6 +15,6 @@ const $store = combine($fellowshipStore, fellowshipReferendumsDetailsFeature.sta
   return fellowshipStore[state.data.chainId] ?? null;
 });
 
-export const fellowshipModel = {
+export const fellowship = {
   $store,
 };

@@ -71,7 +71,7 @@ const Root = () => {
 
   return (
     <ThemeProvider theme="light" iconStyle="colored">
-      <HashRouter>
+      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <I18Provider>
           <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
             <Suspense fallback={splashScreen}>
@@ -90,7 +90,7 @@ if (!container) {
   throw new Error('Root container is missing in index.html');
 }
 
-document.body.style.minWidth = `1024px`;
+document.body.style.minWidth = `1372px`;
 
 // NOTE: React 18 Strict mode renders twice in DEV mode
 // which leads to errors in components that use camera

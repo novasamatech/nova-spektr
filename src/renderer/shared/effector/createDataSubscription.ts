@@ -84,17 +84,17 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   const $subscribed = $currentSubscription.map(nonNullable);
 
   const subscribeFx = domain.createEffect<Params, UnsubscribeFn>(params => {
-    const bindedReceived = scope ? scopeBind(received, { scope }) : received;
-    const bindedDone = scope ? scopeBind(done, { scope }) : done;
+    const boundReceived = scope ? scopeBind(received, { scope }) : received;
+    const boundDone = scope ? scopeBind(done, { scope }) : done;
 
     return fn(params, result => {
       if (result.done) {
         if (result.value !== undefined) {
-          bindedReceived({ params, result: result.value });
+          boundReceived({ params, result: result.value });
         }
-        bindedDone();
+        boundDone();
       } else {
-        bindedReceived({ params, result: result.value });
+        boundReceived({ params, result: result.value });
       }
     });
   });
@@ -197,27 +197,28 @@ export const createDataSubscription = <Value, Params = void, Response = void>({
   return {
     $: $store,
 
-    subscribed: $subscribed,
+    subscribed: readonly($subscribed),
     subscribe,
     unsubscribe,
-    pending: $pending,
-    fulfilled: $fulfilled,
+    pending: readonly($pending),
+    fulfilled: readonly($fulfilled),
     received: readonly(received),
   };
 };
 
 type PageHandlerParams<Input, Output> = {
   fn: () => AsyncGenerator<Input, void>;
-  map: (input: Input) => Output;
+  map: (input: Input) => Output | Promise<Output>;
 };
 
 export const createPagesHandler = <Input, Output>({ fn, map }: PageHandlerParams<Input, Output>) => {
   return async (abort: AbortController, callback: CallbackFn<Output>) => {
-    for await (const value of fn()) {
+    for await (const record of fn()) {
       if (abort.signal.aborted) {
         break;
       }
-      callback({ done: false, value: map(value) });
+      const value = await map(record);
+      callback({ done: false, value });
     }
 
     callback({ done: true, value: undefined });

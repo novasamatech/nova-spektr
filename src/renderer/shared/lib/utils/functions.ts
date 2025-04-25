@@ -20,6 +20,23 @@ export function nullable(value: unknown): value is null | undefined {
   return value === null || value === undefined;
 }
 
+type NonNullableMap<T extends Record<PropertyKey, unknown>> = {
+  [K in keyof T]: NonNullable<T[K]>;
+};
+
+/**
+ * Type guard that checks every value in record. If any field is null or
+ * undefined - returns false.
+ */
+export function nonNullableMap<T extends Record<PropertyKey, unknown>>(values: T): values is NonNullableMap<T> {
+  for (const item of Object.values(values)) {
+    if (nullable(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Type guard that checks is value nullable
  *
@@ -107,6 +124,32 @@ export function shallowEqual(objA: unknown, objB: unknown): boolean {
   return true;
 }
 
+export const jitter = (value: number, offsetRange: number) => {
+  return value + (Math.random() * (offsetRange * 2) - offsetRange);
+};
+
+export type PromiseWithResolvers<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason: unknown) => void;
+};
+
+export const promiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
+  let resolve: (value: T) => void;
+  let reject: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  // @ts-expect-error before assign
+  return { promise, resolve, reject };
+};
+
 export function delay(ttl: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ttl));
+}
+
+export function withTimeout<T>(promise: Promise<T>, ttl: number, fallback: T): Promise<T> {
+  return Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ttl))]);
 }

@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 
 import { type Asset } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
-import { useTheme } from '@/shared/ui-kit';
+import { Skeleton, useTheme } from '@/shared/ui-kit';
 
 type Props = {
   asset: Pick<Asset, 'name' | 'icon'>;
@@ -27,9 +27,11 @@ export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
         'border border-token-border bg-token-background p-px': computedStyle === 'monochrome',
       })}
     >
+      {!isImgLoaded && <Skeleton circle width={iconSize / 4} height={iconSize / 4} />}
+
       <img
         src={iconSrc}
-        className={cnTw('select-none transition-opacity duration-75', !isImgLoaded && 'opacity-0')}
+        className={cnTw('select-none transition-opacity duration-75', !isImgLoaded && 'hidden')}
         // using width and height attr doesn't work properly for invisible img. It gets reset by tailwind @base styles
         style={{ width: iconSize, height: iconSize }}
         alt={asset.name}

@@ -1,8 +1,9 @@
 import { type BN } from '@polkadot/util';
 
-import { type HexString } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
+import { type CollectivePalletsType } from '../_lib/types';
 
 export type Tally = {
   ayes: number;
@@ -15,15 +16,32 @@ export type Deposit = {
   amount: BN;
 };
 
+export type EvidenceProposal = {
+  type: 'Evidence';
+  accountId: AccountId;
+};
+
+export type RfcProposal = {
+  type: 'Rfc';
+  pullRequest: string;
+  documentHash: string;
+};
+
+export type UnknownProposal = {
+  type: 'Unknown';
+  description: string;
+};
+
+export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal;
+
 export type OngoingReferendum = {
   type: 'Ongoing';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   origin: string;
   track: TrackId;
-  proposal: {
-    type: 'Inline' | 'Lookup' | 'Legacy';
-    data: HexString;
-  };
+  proposal: Proposal | null;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -36,12 +54,15 @@ export type OngoingReferendum = {
     since: BlockHeight;
     confirming: BlockHeight | null;
   } | null;
+  ends: BlockHeight;
   tally: Tally;
 };
 
 export type RejectedReferendum = {
   type: 'Rejected';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   since: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -50,6 +71,8 @@ export type RejectedReferendum = {
 export type ApprovedReferendum = {
   type: 'Approved';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   since: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -58,6 +81,8 @@ export type ApprovedReferendum = {
 export type CancelledReferendum = {
   type: 'Cancelled';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   since: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -66,6 +91,8 @@ export type CancelledReferendum = {
 export type TimedOutReferendum = {
   type: 'TimedOut';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   since: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -74,6 +101,8 @@ export type TimedOutReferendum = {
 export type KilledReferendum = {
   type: 'Killed';
   id: ReferendumId;
+  chainId: ChainId;
+  pallet: CollectivePalletsType;
   since: BlockHeight;
 };
 

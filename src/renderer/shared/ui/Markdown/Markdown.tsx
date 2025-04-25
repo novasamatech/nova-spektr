@@ -1,5 +1,7 @@
+import './Markdown.css';
+
 import noop from 'lodash/noop';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -10,7 +12,6 @@ import { Checkbox } from '@/shared/ui-kit';
 import { Button } from '../Buttons';
 import { Icon } from '../Icon/Icon';
 import { InfoLink } from '../InfoLink/InfoLink';
-import { BodyText } from '../Typography';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
@@ -18,19 +19,16 @@ const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
 const components: Components = {
   h1: ({ node: _, className, ...props }) => (
-    <h1
-      className={cnTw('text-balance border-b pb-2 text-header-title [&:not(:first-child)]:mt-6', className)}
-      {...props}
-    />
+    <h1 className={cnTw('border-b pb-2 text-header-title [&:not(:first-child)]:mt-6', className)} {...props} />
   ),
   h2: ({ node: _, className, ...props }) => (
-    <h2 className={cnTw('text-balance text-header-title [&:not(:first-child)]:mt-4', className)} {...props} />
+    <h2 className={cnTw('text-header-title [&:not(:first-child)]:mt-4', className)} {...props} />
   ),
   h3: ({ node: _, className, ...props }) => (
-    <h3 className={cnTw('text-balance text-footnote [&:not(:first-child)]:mt-2', className)} {...props} />
+    <h3 className={cnTw('text-footnote [&:not(:first-child)]:mt-2', className)} {...props} />
   ),
   h4: ({ node: _, className, ...props }) => (
-    <h4 className={cnTw('text-balance text-small-title [&:not(:first-child)]:mt-2', className)} {...props} />
+    <h4 className={cnTw('text-small-title [&:not(:first-child)]:mt-2', className)} {...props} />
   ),
   ul: ({ node: _, className, ...props }) => (
     <ul
@@ -46,7 +44,7 @@ const components: Components = {
   ),
   li: ({ node: _, children, className, ...props }) => (
     <li className={className} {...props}>
-      <div className={cnTw({ 'flex items-center gap-2': className?.includes('task-list-item') })}>{children}</div>
+      <span className={cnTw({ 'flex items-center gap-2': className?.includes('task-list-item') })}>{children}</span>
     </li>
   ),
   ol: ({ node: _, className, ...props }) => (
@@ -60,12 +58,13 @@ const components: Components = {
       className="text-primary-button-background-default hover:underline focus:w-full"
       url={props.href ?? ''}
       size="inherit"
+      onClick={(e) => e.stopPropagation()}
     >
       {props.children}
     </InfoLink>
   ),
   p: ({ node: _, className, ...props }) => (
-    <BodyText as="p" className={cnTw('overflow-hidden overflow-ellipsis text-balance', className)} {...props} />
+    <span className={cnTw('overflow-hidden overflow-ellipsis text-start text-inherit', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
   input: ({ node: _, type, ...props }) =>
@@ -128,14 +127,23 @@ const components: Components = {
   ),
 };
 
-export const Markdown = ({ children }: { children: string }) => {
+type Props = {
+  compact?: boolean;
+  cut?: string;
+  children: string;
+};
+
+export const Markdown = memo(({ compact, cut, children }: Props) => {
   if (!children) {
     return null;
   }
 
-  return (
+  const markdown = (
     <ReactMarkdown
-      className="flex flex-col gap-3 overflow-hidden whitespace-pre-line text-body"
+      className={cnTw('flex flex-col overflow-hidden whitespace-pre-line text-body', {
+        'gap-3': !compact,
+        'gap-0.5': compact,
+      })}
       remarkRehypeOptions={rehypeOptions}
       remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}
@@ -144,4 +152,14 @@ export const Markdown = ({ children }: { children: string }) => {
       {children}
     </ReactMarkdown>
   );
-};
+
+  if (cut) {
+    return (
+      <div className="markdown-cut overflow-hidden" style={{ maxHeight: cut }}>
+        {markdown}
+      </div>
+    );
+  }
+
+  return markdown;
+});

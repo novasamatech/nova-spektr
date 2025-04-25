@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
 import { VotingConfirmation, fellowship, fellowshipVotingFeature, votingStatus } from '@/features/fellowship-voting';
@@ -45,13 +46,21 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   });
 
   const maxRank = useUnit(votingStatus.$maxRank);
+  const memberTrack = useUnit(votingStatus.$memberTrack);
+  const currentTrack = useUnit(votingStatus.$currentProposerTrack);
+  const nextTrack = useUnit(votingStatus.$nextProposerTrack);
 
-  if (nullable(confirm) || nullable(votingReferendum) || referendumService.isCompleted(votingReferendum)) {
+  if (
+    nullable(confirm) ||
+    nullable(memberTrack) ||
+    nullable(votingReferendum) ||
+    referendumService.isCompleted(votingReferendum)
+  ) {
     return null;
   }
 
   return (
-    <div className="px-5 py-4">
+    <Box padding={[4, 5]}>
       <VotingConfirmation
         account={confirm.accounts.initiator}
         asset={confirm.meta.asset}
@@ -59,6 +68,9 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         vote={confirm.meta.aye ? 'aye' : 'nay'}
         wallets={confirm.meta.wallets}
         referendum={votingReferendum}
+        memberTrack={memberTrack}
+        currentProposerTrack={currentTrack}
+        nextProposerTrack={nextTrack}
         maxRank={maxRank}
         fee={confirm.meta.fee}
         rank={confirm.meta.rank}
@@ -85,6 +97,6 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
           )}
         </div>
       </div>
-    </div>
+    </Box>
   );
 };

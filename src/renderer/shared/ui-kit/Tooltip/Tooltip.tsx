@@ -52,11 +52,7 @@ const Root = ({
 };
 
 const Trigger = ({ children }: PropsWithChildren) => {
-  return (
-    <RadixTooltip.Trigger asChild onClick={e => e.preventDefault()}>
-      {children}
-    </RadixTooltip.Trigger>
-  );
+  return <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>;
 };
 
 const Content = ({ children }: PropsWithChildren) => {

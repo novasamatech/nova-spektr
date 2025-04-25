@@ -1,18 +1,32 @@
-import { combine, sample } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { attach, combine, createStore, sample } from 'effector';
 import { and, or } from 'patronum';
 
+import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { member, track } from '@/domains/collectives';
+import { nonNullable, nullable, shallowEqual } from '@/shared/lib/utils';
+import { type PalletType } from '@/shared/pallet/collective/types';
+import { member, memberService, referendumMetaService, track } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
-import { fellowshipModel } from './fellowship';
+import { fellowship } from './fellowship';
 
-const $tracks = fellowshipModel.$store.map(store => store?.tracks ?? []);
+const requestIdentityFx = attach({ effect: identity.request });
+
+const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta ?? {});
+const $votes = fellowship.$store.map(store => store?.voting ?? []);
+const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
+
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipProfileFeature.input.map(store => (store ? store.account : null));
 const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
+
+const $memberVotes = combine($member, $votes, (member, voting) => {
+  if (nullable(member)) return null;
+  return voting.filter(v => v.accountId === member.accountId);
+});
 
 const $identities = combine(fellowshipProfileFeature.input, identity.$list, (featureInput, list) => {
   if (nullable(featureInput)) return {};
@@ -32,13 +46,22 @@ const $track = combine($member, $tracks, (member, tracks) => {
   return tracks.find(t => t.id === member.rank) ?? null;
 });
 
-const $pendingMember = and(or(member.pending, identity.pending), $member.map(nullable));
+const $fellowshipParams = createStore<{
+  api: ApiPromise;
+  chainId: ChainId;
+  palletType: PalletType;
+} | null>(null);
 
-const memberUpdate = attachToFeatureInput(fellowshipProfileFeature, $member);
+const fellowshipProviderUpdated = fellowshipProfileFeature.running.map(({ api, chainId, palletType }) => {
+  return { api, chainId, palletType };
+});
 
 sample({
-  clock: fellowshipProfileFeature.running,
-  target: [member.subscribe, track.request],
+  clock: fellowshipProviderUpdated,
+  source: $fellowshipParams,
+  filter: (prev, next) => !shallowEqual(prev, next),
+  fn: (_, next) => next,
+  target: [$fellowshipParams, member.subscribe, track.request],
 });
 
 sample({
@@ -47,16 +70,48 @@ sample({
 });
 
 sample({
-  clock: memberUpdate,
+  clock: attachToFeatureInput(fellowshipProfileFeature, $member),
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,
     accounts: member ? [member.accountId] : [],
   }),
-  target: identity.request,
+  target: requestIdentityFx,
 });
+
+const $referendumsSinceLastProof = combine(
+  {
+    referendums: $referendumMeta,
+    member: $member,
+  },
+  ({ referendums, member }) => {
+    if (!member || !memberService.isCoreMember(member)) return null;
+    return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member);
+  },
+);
+
+const $activityInfo = combine(
+  {
+    referendums: $referendumsSinceLastProof,
+    member: $member,
+    maxRank: $maxRank,
+    votes: $memberVotes,
+  },
+  ({ referendums, member, maxRank, votes }) => {
+    if (nullable(referendums) || nullable(member) || nullable(votes)) return null;
+    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
+  },
+);
+
+const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
+const $pendingReferendums = $referendumsSinceLastProof.map(
+  referendumsList => nullable(referendumsList) || !referendumsList.length,
+);
+const $pendingVotes = $memberVotes.map(memberVotes => nullable(memberVotes) || !memberVotes.length);
 
 export const profile = {
   $member,
+  $activityInfo,
+  $pendingActivityInfo: or($pendingReferendums, $pendingVotes),
   $account,
   $track,
   $identity,

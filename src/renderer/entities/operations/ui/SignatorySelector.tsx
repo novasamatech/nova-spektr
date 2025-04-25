@@ -1,5 +1,6 @@
 import { type BN } from '@polkadot/util';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -42,6 +43,7 @@ export const SignatorySelector = ({
       <Select
         placeholder={t('proxy.addProxy.signatoryPlaceholder')}
         value={signatory?.id.toString() ?? null}
+        testId={TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR}
         invalid={hasError}
         onChange={(value) => selectSigner(value)}
       >

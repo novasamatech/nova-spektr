@@ -49,6 +49,7 @@ const $coreTx = combine(
 );
 
 const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+  $active: flow.status,
   $api,
   $activeWallet: $wallet,
   $wallets,
@@ -128,8 +129,8 @@ sample({
     return {
       palletType: 'fellowship' as const,
       api: api!,
-      chain: chain!,
-      accountId: account!.accountId,
+      chainId: chain!.chainId,
+      accounts: [account!.accountId],
     };
   },
   target: evidence.request,

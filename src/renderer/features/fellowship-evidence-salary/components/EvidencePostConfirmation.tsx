@@ -13,19 +13,29 @@ type Props = {
   wallets: Wallet[];
   chain: Chain;
   asset: Asset;
-  wish: 'Promotion' | 'Retention';
+  evidenceType: 'Promotion' | 'Retention';
   evidence: HexString;
   fee: BN;
+  rank: string;
 };
 
-export const EvidencePostConfirmation = ({ fee, account, wallets, chain, asset, wish, evidence }: Props) => {
+export const EvidencePostConfirmation = ({
+  fee,
+  account,
+  wallets,
+  chain,
+  asset,
+  evidenceType,
+  evidence,
+  rank,
+}: Props) => {
   const { t } = useI18n();
 
   const ipfsUrl = evidenceService.getEvidenceIpfsUrl(evidence);
 
   return (
     <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
-      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.wish')}>{wish}</DetailRow>
+      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidenceType')}>{evidenceType}</DetailRow>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>
         <ButtonWebLink
           size="sm"
@@ -36,6 +46,9 @@ export const EvidencePostConfirmation = ({ fee, account, wallets, chain, asset, 
         >
           <Hash variant="truncate" value={evidence} />
         </ButtonWebLink>
+      </DetailRow>
+      <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>
+        <span className="uppercase">{rank}</span>
       </DetailRow>
       <Separator />
       <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>

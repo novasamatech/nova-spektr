@@ -1,5 +1,4 @@
 import { useGate, useUnit } from 'effector-react';
-import { isEmpty } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import {
@@ -13,7 +12,7 @@ import { KeyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, Icon, IconButton, StatusModal } from '@/shared/ui';
+import { FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Hash } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
@@ -77,10 +76,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     setChains(filteredChains);
   }, []);
 
-  if (isEmpty(accountsMap)) {
-    return <StatusModal isOpen={isModalOpen} title={t('walletDetails.vault.noAccounts')} onClose={closeModal} />;
-  }
-
   const handleConstructorKeys = (
     keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
     keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
@@ -111,11 +106,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   };
 
   const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
-    vaultDetailsModel.events.accountsCreated({
-      walletId: wallet.id,
-      rootAccountId: wallet.rootAccountId,
-      accounts,
-    });
+    vaultDetailsModel.events.accountsCreated({ walletId: wallet.id, accounts });
     toggleScanModal();
   };
 

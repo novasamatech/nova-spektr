@@ -1,87 +1,103 @@
 import { combine } from 'effector';
 import { or } from 'patronum';
 
-import { nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
+import { type Transaction } from '@/shared/core';
+import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
+  type CompletedReferendum,
   type OngoingReferendum,
+  evidence,
   evidenceService,
+  member,
   memberService,
   salaryService,
   trackService,
   votingService,
 } from '@/domains/collectives';
+import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { ReferendumVoting } from '../components/tasks/ReferendumVoting';
+import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
+import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
+import { PromotionRetentionEvidenceVoting } from '../components/tasks/PromotionRetentionEvidenceVoting';
+import { PromotionRetentionReferendumVoting } from '../components/tasks/PromotionRetentionReferendumVoting';
 import { RequestPayout } from '../components/tasks/RequestPayout';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
 import { RequestSalary } from '../components/tasks/RequestSalary';
 import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
+import { tasksService } from '../service';
 import { type OperationType, type TaskDescription } from '../types';
 
-import { evidenceInfo } from './evidence';
+import { block } from './block';
+import { evidenceModel } from './evidence';
 import { fellowshipTasksFeature } from './feature';
-import { memberProfile } from './memberProfile';
+import { fellowship } from './fellowship';
 import { memberSalary } from './memberSalary';
 import { periods } from './periods';
 import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
+const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
+const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
+const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
+const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
+const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
-const $basketOperations = combine(basketOperations.$list, memberProfile.$member, (operations, member) => {
-  return operations.filter(
-    operation =>
-      nonNullable(member) &&
-      operation.coreTx.accountId === member.accountId &&
-      (memberService.isSetActiveTransaction(operation.coreTx) ||
-        salaryService.isSalaryInductTransaction(operation.coreTx) ||
-        salaryService.isSalaryRequestTransaction(operation.coreTx) ||
-        salaryService.isSalaryPayoutTransaction(operation.coreTx) ||
-        votingService.isVotingTransaction(operation.coreTx)),
-  );
+const $hasPermission = $account.map(account => {
+  return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
 });
 
-const $basketOperationsIds = $basketOperations.map(operations => {
-  return operations
-    .map<OperationType | null>(operation => {
-      // TODO support other types
-      if (memberService.isSetActiveTransaction(operation.coreTx)) {
-        return 'set_active';
-      }
+// basket
 
-      if (salaryService.isSalaryInductTransaction(operation.coreTx)) {
-        return 'salary_induct';
-      }
-
-      if (salaryService.isSalaryRequestTransaction(operation.coreTx)) {
-        return 'salary_request';
-      }
-
-      if (salaryService.isSalaryPayoutTransaction(operation.coreTx)) {
-        return 'salary_payout';
-      }
-
-      if (evidenceService.isEvidenceTransaction(operation.coreTx)) {
-        return `evidence`;
-      }
-
-      if (votingService.isVotingTransaction(operation.coreTx)) {
-        return `referendum_${operation.coreTx.args.poll}`;
-      }
-
-      return null;
-    })
-    .filter(nonNullable);
+const $memberBasketOperations = combine(basketOperations.$list, $member, (operations, member) => {
+  if (nullable(member)) return [];
+  return operations.filter(operation => operation.coreTx.accountId === member.accountId);
 });
 
-const $salaryTasks = combine(
+const $basketOperationsMap = $memberBasketOperations.map(operations => {
+  const map: Partial<Record<OperationType, Transaction>> = {};
+
+  for (const operation of operations) {
+    const transaction = operation.coreTx;
+    if (memberService.isSetActiveTransaction(operation.coreTx)) {
+      map['set_active'] = transaction;
+    }
+
+    if (salaryService.isSalaryInductTransaction(operation.coreTx)) {
+      map['salary_induct'] = transaction;
+    }
+
+    if (salaryService.isSalaryRequestTransaction(operation.coreTx)) {
+      map['salary_request'] = transaction;
+    }
+
+    if (salaryService.isSalaryPayoutTransaction(operation.coreTx)) {
+      map['salary_payout'] = transaction;
+    }
+
+    if (evidenceService.isEvidenceTransaction(operation.coreTx)) {
+      map['evidence'] = transaction;
+    }
+
+    if (votingService.isVotingTransaction(operation.coreTx)) {
+      map[`referendum_${operation.coreTx.args.poll}`] = transaction;
+    }
+  }
+
+  return map;
+});
+
+// personal
+
+const $memberSalaryTasks = combine(
   {
-    member: memberProfile.$member,
+    member: $member,
     period: memberSalary.$currentPeriod,
     claimStatus: memberSalary.$memberClaimStatus,
+    operations: $basketOperationsMap,
   },
-  ({ member, period, claimStatus }): TaskDescription[] => {
+  ({ member, period, claimStatus, operations }): TaskDescription[] => {
     if (nullable(member) || !memberService.isCoreMember(member)) return [];
     if (nullable(period) || nullable(claimStatus)) return [];
 
@@ -89,9 +105,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_request',
-          priority: 0,
+          weight: 0,
+          group: 'personal',
           body: RequestSalary,
-          meta: {},
+          meta: { transaction: operations['salary_request'] ?? null, tags: [] },
         },
       ];
     }
@@ -100,9 +117,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_payout',
-          priority: 0,
+          weight: 0,
+          group: 'personal',
           body: RequestPayout,
-          meta: {},
+          meta: { transaction: operations['salary_payout'] ?? null, tags: [] },
         },
       ];
     }
@@ -111,9 +129,10 @@ const $salaryTasks = combine(
       return [
         {
           id: 'salary_induct',
-          priority: 0,
+          weight: 0,
+          group: 'personal',
           body: RequestSalaryInduct,
-          meta: {},
+          meta: { transaction: operations['salary_induct'] ?? null, tags: [] },
         },
       ];
     }
@@ -122,14 +141,15 @@ const $salaryTasks = combine(
   },
 );
 
-const $evidenceTasks = combine(
+const $memberEvidenceTasks = combine(
   {
-    member: memberProfile.$member,
-    evidencePopulated: evidenceInfo.$evidencePopulated,
+    member: $member,
+    evidencePopulated: evidence.$populated,
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
-    hasPromotionEvidence: evidenceInfo.$hasPromotionEvidence,
-    hasRetentionEvidence: evidenceInfo.$hasRetentionEvidence,
+    hasPromotionEvidence: evidenceModel.$hasPromotionEvidence,
+    hasRetentionEvidence: evidenceModel.$hasRetentionEvidence,
+    operations: $basketOperationsMap,
   },
   ({
     member,
@@ -138,6 +158,7 @@ const $evidenceTasks = combine(
     hasPromotionEvidence,
     leftToDemotion,
     hasRetentionEvidence,
+    operations,
   }): TaskDescription[] => {
     if (!evidencePopulated || nullable(member) || !memberService.isCoreMember(member)) return [];
 
@@ -145,20 +166,27 @@ const $evidenceTasks = combine(
       return [
         {
           id: 'evidence',
-          priority: 0,
+          weight: 1,
+          group: 'personal',
           body: RequestRetention,
-          meta: {},
+          meta: { transaction: operations['evidence'] ?? null, tags: [] },
         },
       ];
     }
 
-    if (nonNullable(leftToPromotion) && leftToPromotion === 0 && hasPromotionEvidence === false) {
+    if (
+      memberService.canPromote(member) &&
+      nonNullable(leftToPromotion) &&
+      leftToPromotion === 0 &&
+      hasPromotionEvidence === false
+    ) {
       return [
         {
           id: 'evidence',
-          priority: 2,
+          weight: 1,
+          group: 'personal',
           body: RequestPromotion,
-          meta: {},
+          meta: { transaction: operations['evidence'] ?? null, tags: [] },
         },
       ];
     }
@@ -167,35 +195,169 @@ const $evidenceTasks = combine(
   },
 );
 
-const $referendumTasks = combine(referendums.$notVotedReferendumns, referendums => {
-  return referendums
-    .filter(referendum => {
-      return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track);
-    })
-    .map<TaskDescription<{ referendum: OngoingReferendum }>>(referendum => {
-      return {
-        id: `referendum_${referendum.id}`,
-        priority: 1,
-        body: ReferendumVoting,
-        meta: { referendum },
-      };
+// general
+
+const $evidenceTasks = combine(
+  {
+    evidences: evidenceModel.$evidencesWithoutReferendums,
+    periods: $evidencePeriods,
+    member: $member,
+    members: $members,
+    evidencePopulated: evidence.$populated,
+    currentBlock: block.$currentBlock,
+  },
+  ({ evidences, periods, member, members, evidencePopulated, currentBlock }) => {
+    if (!evidencePopulated || nullable(member) || nullable(periods)) {
+      return [];
+    }
+
+    const tasks: TaskDescription[] = [];
+
+    for (const evidence of evidences) {
+      const proposer = members.find(m => m.accountId === evidence.accountId);
+      if (nullable(proposer)) continue;
+
+      if (memberService.canVoteForProposal(member, proposer.rank)) {
+        const leftToDemotion =
+          evidence.wish === 'Retention'
+            ? evidenceService.getBlocksUntilDemotion(proposer, periods, currentBlock)
+            : null;
+
+        if (nonNullable(leftToDemotion) && leftToDemotion <= 0) continue;
+
+        const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(proposer, periods) : null;
+        const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, proposer, periods, currentBlock);
+
+        tasks.push({
+          id: `evidence_request_${proposer.accountId}`,
+          weight: sortingScore,
+          group: 'general',
+          body: PromotionRetentionEvidenceVoting,
+          meta: { evidence, transaction: null, endBlock, tags },
+        });
+      }
+    }
+
+    return tasks;
+  },
+);
+
+const $ongoingReferendumsTasks = combine(
+  {
+    referendums: referendums.$ongoing,
+    operations: $basketOperationsMap,
+    maxRank: $maxRank,
+    members: $members,
+    member: $member,
+    currentBlock: block.$currentBlock,
+  },
+  ({ referendums, operations, maxRank, members, member, currentBlock }) => {
+    if (nullable(member)) return [];
+
+    const possibleReferendums = referendums.filter(referendum => {
+      return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
     });
+
+    const groups = groupBy(possibleReferendums, referendum => {
+      return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
+        ? 'evidence'
+        : 'other';
+    });
+
+    const getWeight = (referendum: OngoingReferendum) => {
+      const maximumAvailableVotingWeight = tasksService.getMaximumAvailableVotingWeight(
+        members,
+        maxRank,
+        referendum.track,
+      );
+
+      const memberVotingWeight = trackService.getVoteWeight({
+        pallet: 'fellowship',
+        maxRank,
+        rank: member.rank,
+        track: referendum.track,
+      });
+
+      return tasksService.getReferendumImportance({
+        referendum,
+        maximumAvailableVotingWeight,
+        memberVotingWeight,
+        currentBlock,
+      });
+    };
+
+    const evidenceTasks = groups.evidence
+      ? groups.evidence.map<TaskDescription>(referendum => {
+          const weight = getWeight(referendum);
+          return {
+            id: `referendum_${referendum.id}`,
+            weight: weight.sortingScore,
+            group: 'general',
+            body: PromotionRetentionReferendumVoting,
+            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null, tags: weight.tags },
+          };
+        })
+      : [];
+
+    const otherTasks = groups.other
+      ? groups.other.map<TaskDescription>(referendum => {
+          const weight = getWeight(referendum);
+          return {
+            id: `referendum_${referendum.id}`,
+            weight: weight.sortingScore,
+            group: 'general',
+            body: OngoingReferendumVoting,
+            meta: { referendum, transaction: operations[`referendum_${referendum.id}`] ?? null, tags: weight.tags },
+          };
+        })
+      : [];
+
+    return [...evidenceTasks, ...otherTasks];
+  },
+);
+
+// completed
+
+const $completedReferendumsTasks = combine(referendums.$completed, referendums => {
+  return referendums.map<TaskDescription<{ referendum: CompletedReferendum }>>(referendum => {
+    return {
+      id: `referendum_completed_${referendum.id}`,
+      weight: referendum.id,
+      group: 'completed',
+      body: CompletedReferendumVoting,
+      meta: { referendum, transaction: null, tags: [] },
+    };
+  });
 });
+
+// combine
 
 const $list = combine(
   {
-    salaryTasks: $salaryTasks,
-    referendumTasks: $referendumTasks,
+    memberSalaryTasks: $memberSalaryTasks,
+    memberEvidenceTasks: $memberEvidenceTasks,
+    referendumTasks: $ongoingReferendumsTasks,
+    completedReferendumsTasks: $completedReferendumsTasks,
     evidenceTasks: $evidenceTasks,
-    operations: $basketOperationsIds,
-    hasPermission: memberProfile.$hasPermission,
+    hasPermission: $hasPermission,
   },
-  ({ salaryTasks, referendumTasks, evidenceTasks, operations, hasPermission }) => {
+  ({
+    memberSalaryTasks,
+    memberEvidenceTasks,
+    evidenceTasks,
+    referendumTasks,
+    completedReferendumsTasks,
+    hasPermission,
+  }) => {
     if (hasPermission) {
-      const operationsMap = toKeysRecord(operations);
-      return [...salaryTasks, ...referendumTasks, ...evidenceTasks]
-        .filter(t => !(t.id in operationsMap))
-        .sort((a, b) => a.priority - b.priority);
+      const list = [
+        ...memberSalaryTasks,
+        ...memberEvidenceTasks,
+        ...evidenceTasks,
+        ...referendumTasks,
+        ...completedReferendumsTasks,
+      ];
+      return list.sort((a, b) => b.weight - a.weight);
     }
 
     return [];
@@ -204,7 +366,7 @@ const $list = combine(
 
 export const tasks = {
   $chainName,
-  $basketOperations,
+  $basketOperations: $memberBasketOperations,
   $list,
-  pending: or(basketOperations.pending, memberProfile.$pending, evidenceInfo.pending),
+  pending: or(basketOperations.pending, member.pending, evidenceModel.requestEvidence.pending),
 };

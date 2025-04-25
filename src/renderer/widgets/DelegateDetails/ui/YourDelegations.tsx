@@ -2,19 +2,19 @@ import { useUnit } from 'effector-react';
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Account } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
-import { allTracks, votingService } from '@/entities/governance';
+import { type AnyAccount } from '@/domains/network';
+import { allTracks, locksService } from '@/entities/governance';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
-const GRID_TEMPLATE = 'grid-cols-[40px,284px,166px,128px,62px,44px,44px]';
+const GRID_TEMPLATE = 'grid-cols-[40px,412px,166px,62px,44px,44px]';
 
 export const YourDelegations = () => {
   const { t } = useI18n();
@@ -27,7 +27,7 @@ export const YourDelegations = () => {
   const delegate = useUnit(delegateDetailsModel.$delegate);
   const wallet = useUnit(walletModel.$activeWallet);
 
-  const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([]);
+  const [selectedAccounts, setSelectedAccounts] = useState<AnyAccount[]>([]);
 
   if (!chain) return null;
 
@@ -39,7 +39,7 @@ export const YourDelegations = () => {
       return isChainMatch && accountExist;
     }) || [];
 
-  const toggleAccount = (account: Account) => {
+  const toggleAccount = (account: AnyAccount) => {
     if (selectedAccounts.includes(account)) {
       setSelectedAccounts(selectedAccounts.filter((x) => x !== account));
     } else {
@@ -82,30 +82,28 @@ export const YourDelegations = () => {
             {t('governance.addDelegation.accountsLabel', { count: 1 })}
           </FootnoteText>
           <FootnoteText className="justify-self-end px-3 text-text-tertiary">
-            {t('governance.addDelegation.amountMultiply')}
-          </FootnoteText>
-          <FootnoteText className="justify-self-end px-3 text-text-tertiary">
-            {t('governance.addDelegation.votesLabel')}
+            {t('governance.addDelegation.lockedAmount')}
           </FootnoteText>
           <FootnoteText className="px-3 text-text-tertiary">{t('governance.addDelegation.tracksLabel')}</FootnoteText>
         </div>
 
         <ul className="mx-2 mb-4 flex flex-col gap-y-2">
           {activeAccounts.map((address, index) => {
+            const activeDelegation = activeDelegations[address];
+
             const account = wallet?.accounts.find((a) => {
               return toAddress(a.accountId, { prefix: chain.addressPrefix }) === address;
             });
-            const activeDelegation = activeDelegations[address];
 
-            if (!account || !activeDelegation || !activeTracks[address]) return null;
+            if (!account || !activeDelegation || !activeTracks[account.accountId]) return null;
 
             return (
               <li key={address} className={cnTw('grid h-13 grid-flow-row items-center', GRID_TEMPLATE)}>
-                <Box direction="row" horizontalAlign="center" verticalAlign="center">
+                <Box horizontalAlign="center">
                   <Checkbox checked={selectedAccounts.includes(account)} onChange={() => toggleAccount(account)} />
                 </Box>
 
-                <Box padding={[0, 3, 0, 3]} verticalAlign="center">
+                <Box padding={[0, 3]}>
                   <AccountAddress
                     iconSize={20}
                     title={account.name}
@@ -115,12 +113,12 @@ export const YourDelegations = () => {
                   />
                 </Box>
 
-                <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
+                <Box padding={[0, 3]} horizontalAlign="end">
                   <BodyText>
                     <Trans
                       t={t}
-                      i18nKey="governance.addDelegation.balanceValue"
-                      values={{ conviction: votingService.getConvictionMultiplier(activeDelegation.conviction) }}
+                      i18nKey="general.actions.duration"
+                      values={{ duration: locksService.getLockPeriodsMultiplier(activeDelegation.conviction) }}
                       components={{
                         balance: <AssetBalance value={activeDelegation.balance} asset={chain.assets[0]} />,
                       }}
@@ -128,33 +126,24 @@ export const YourDelegations = () => {
                   </BodyText>
                 </Box>
 
-                <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
-                  <BodyText>
-                    <AssetBalance
-                      value={votingService.calculateVotingPower(activeDelegation.balance, activeDelegation.conviction)}
-                      asset={chain.assets[0]}
-                    />
-                  </BodyText>
-                </Box>
-
-                <Box padding={[0, 3, 0, 3]} direction="column" horizontalAlign="end" verticalAlign="center">
+                <Box padding={[0, 3]} horizontalAlign="start">
                   <Tooltip side="bottom">
                     <Tooltip.Trigger>
                       <div className="flex items-center gap-1">
-                        <FootnoteText>{activeTracks[address].size || 0}</FootnoteText>
+                        <FootnoteText>{activeTracks[account.accountId].size || 0}</FootnoteText>
 
                         <Icon className="group-hover:text-icon-hover" name="info" size={16} />
                       </div>
                     </Tooltip.Trigger>
                     <Tooltip.Content>
-                      {[...activeTracks[address]]
+                      {[...activeTracks[account.accountId]]
                         .map((trackId) => t(allTracks.find((track) => track.id === trackId)?.value || ''))
                         .join(', ')}
                     </Tooltip.Content>
                   </Tooltip>
                 </Box>
 
-                <Box direction="column" horizontalAlign="center" verticalAlign="center">
+                <Box horizontalAlign="center">
                   {accounts.length > 1 && (
                     <IconButton
                       name="edit"
@@ -169,7 +158,7 @@ export const YourDelegations = () => {
                   )}
                 </Box>
 
-                <Box direction="column" horizontalAlign="center" verticalAlign="center">
+                <Box horizontalAlign="center">
                   {accounts.length > 1 && (
                     <IconButton
                       name="delete"

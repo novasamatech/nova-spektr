@@ -4,7 +4,7 @@
 
 .spektr-waiting::after {
   position: absolute;
-  top: -4px;
+  top: -2px;
   left: calc(100% + 2px);
   animation: dotty steps(1, end) 1.75s infinite;
   content: '';

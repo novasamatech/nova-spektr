@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -22,11 +22,11 @@ type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = {
   isOpen: boolean;
-  onClose: () => void;
   vote: 'aye' | 'nay' | null;
+  onClose: () => void;
 };
 
-export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
+export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
   useGate(voting.flow, { vote });
 
   const { t } = useI18n();
@@ -37,17 +37,17 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   const maxRank = useUnit(votingStatus.$maxRank);
   const account = useUnit(votingStatus.$votingAccount);
   const member = useUnit(votingStatus.$currentMember);
+  const memberTrack = useUnit(votingStatus.$memberTrack);
+  const currentProposerTrack = useUnit(votingStatus.$currentProposerTrack);
+  const nextProposerTrack = useUnit(votingStatus.$nextProposerTrack);
   const fee = useUnit(voting.$fee);
-
-  useEffect(() => {
-    setStep('confirm');
-  }, [isOpen]);
 
   if (
     nullable(input) ||
     nullable(member) ||
     nullable(account) ||
     nullable(vote) ||
+    nullable(memberTrack) ||
     nullable(referendum) ||
     referendumService.isCompleted(referendum)
   ) {
@@ -77,7 +77,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
   };
 
   if (step === 'submit') {
-    return <OperationSubmit isOpen={isOpen} onClose={onClose} />;
+    return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false)} />;
   }
 
   if (step === 'basket') {
@@ -87,7 +87,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
         variant="success"
         autoCloseTimeout={2000}
         title={t('operation.addedToBasket')}
-        onClose={onClose}
+        onClose={() => handleToggle(false)}
       />
     );
   }
@@ -99,7 +99,7 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
         variant="error"
         autoCloseTimeout={2000}
         title={t('fellowship.voting.errors.noAccount')}
-        onClose={onClose}
+        onClose={() => handleToggle(false)}
       />
     );
   }
@@ -120,6 +120,9 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
                 account={account}
                 vote={vote}
                 rank={member.rank}
+                memberTrack={memberTrack}
+                currentProposerTrack={currentProposerTrack}
+                nextProposerTrack={nextProposerTrack}
                 referendum={referendum}
                 maxRank={maxRank}
                 fee={fee}
@@ -141,4 +144,4 @@ export const VotingModal = ({ isOpen, onClose, vote }: Props) => {
       </Modal.Content>
     </Modal>
   );
-};
+});
