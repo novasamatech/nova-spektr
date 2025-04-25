@@ -1,13 +1,12 @@
-import { type Event, type EventCallable, type Store, type StoreWritable, createStore, is, sample } from 'effector';
+import { type Event, type EventCallable, type StoreWritable, createStore, is, sample } from 'effector';
 
 import { nonNullable } from '@/shared/lib/utils';
 
 // resource
 
-export interface Resource<Input, Output, Metadata = unknown> {
-  pull: EventCallable<Input>;
-  push: Event<Output>;
-  metadata?: Store<Metadata>;
+export interface Resource<Input, Output, Metadata> {
+  pull: EventCallable<{ result: Input; meta: never }>;
+  push: Event<{ meta: Metadata; result: Output }>;
 }
 
 export type InferRecourceInput<R> = R extends Resource<infer I, any, any> ? I : never;
@@ -20,21 +19,18 @@ type ResourcesChain<T extends any[]> = T extends [infer Head, infer Second, ...i
     : { error: 'Resources input and output are not compatable' }
   : T;
 
-type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]] ? InferResourceOutput<Head> : never;
-type ResourcesFirstMetadata<T extends any[]> = T extends [infer Head, ...unknown[]]
-  ? InferResourceMetadata<Head>
+type ResourcesMetadata<T extends any[]> = T extends [infer Head, ...infer Tail]
+  ? [InferResourceMetadata<Head>, ResourcesMetadata<Tail>][number]
   : never;
+
+type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]] ? InferResourceOutput<Head> : never;
 
 // storage
 
 type DerivedParams<State, Resources extends any[]> = {
   store: StoreWritable<State> | State;
   resources: ResourcesChain<Resources>;
-  map(
-    state: NoInfer<State>,
-    input: ResourcesFirstOutput<Resources>,
-    metadata?: ResourcesFirstMetadata<Resources>,
-  ): State;
+  map(state: NoInfer<State>, input: ResourcesFirstOutput<Resources>, metadata: ResourcesMetadata<Resources>): State;
 };
 
 export function deriveFromResources<State, const Resources extends Resource<any, any, any>[]>({
@@ -50,6 +46,10 @@ export function deriveFromResources<State, const Resources extends Resource<any,
     if (nonNullable(resource) && nonNullable(nextResource)) {
       sample({
         clock: resource.push,
+        fn: ({ result, meta }) => ({
+          result,
+          meta: meta as never,
+        }),
         target: nextResource.pull,
       });
     }
@@ -57,20 +57,11 @@ export function deriveFromResources<State, const Resources extends Resource<any,
 
   const closestResource = resources.at(0);
   if (closestResource) {
-    if (closestResource.metadata) {
-      sample({
-        clock: closestResource.push,
-        source: { state: $state, metadata: closestResource.metadata },
-        fn: ({ state, metadata }, resourceData) => map(state, resourceData, metadata),
-        target: $state,
-      });
-    } else {
-      sample({
-        clock: closestResource.push,
-        source: $state,
-        fn: (state, resourceData) => map(state, resourceData, undefined),
-        target: $state,
-      });
-    }
+    sample({
+      clock: closestResource.push,
+      source: $state,
+      fn: (state, { meta, result }) => map(state, result, meta),
+      target: $state,
+    });
   }
 }

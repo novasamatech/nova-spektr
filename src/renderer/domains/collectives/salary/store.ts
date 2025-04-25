@@ -13,8 +13,8 @@ const $status = createStore<CollectivesStruct<SalaryCycle | null>>({});
 deriveFromResources({
   store: $status,
   resources: [statusResource],
-  map(state, status, metadata) {
-    const { palletType, chainId } = metadata!.params;
+  map(state, status, params) {
+    const { palletType, chainId } = params;
 
     if (nullable(status)) return state;
 
@@ -27,8 +27,8 @@ const $salaries = createStore<CollectivesStruct<Salaries>>({});
 deriveFromResources({
   store: $salaries,
   resources: [salariesResource],
-  map(state, salaries, metadata) {
-    const { palletType, chainId } = metadata!.params;
+  map(state, salaries, params) {
+    const { palletType, chainId } = params;
 
     return setNestedValue(state, palletType, chainId, salaries);
   },
@@ -39,8 +39,8 @@ const $claimantStatus = createStore<CollectivesStruct<Record<AccountId, ClaimSta
 deriveFromResources({
   store: $claimantStatus,
   resources: [claimantStatusResource],
-  map(state, claimantStatus, metadata) {
-    const { palletType, chainId } = metadata!.params;
+  map(state, claimantStatus, params) {
+    const { palletType, chainId } = params;
 
     const previousState = pickNestedValue(state, palletType, chainId) ?? {};
 

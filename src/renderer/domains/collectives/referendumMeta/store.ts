@@ -13,8 +13,8 @@ const $list = createStore<CollectivesStruct<Record<ReferendumId, ReferendumMeta>
 deriveFromResources({
   store: $list,
   resources: [referendumMetaResource],
-  map(state, referendums, metadata) {
-    const { palletType, chainId } = metadata!.params;
+  map(state, referendums, params) {
+    const { palletType, chainId } = params;
 
     const previousState = pickNestedValue(state, palletType, chainId) ?? {};
     const resultMap = dictionary(referendums, 'referendumId');

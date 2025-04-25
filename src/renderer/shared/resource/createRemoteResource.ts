@@ -1,4 +1,4 @@
-import { type Effect, type Store, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { type Effect, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { readonly } from 'patronum';
 
 import { createQueuedEffect } from '@/shared/effector';
@@ -22,9 +22,8 @@ type RemoteParams<Params, Response> = {
   retryDelay?: number;
 };
 
-interface RemoteResource<Params, Response> extends Resource<Response, Response> {
+interface RemoteResource<Params, Response> extends Resource<Response, Response, Params | never> {
   request: Effect<Params, Awaited<Response>>;
-  metadata: Store<{ params: Params } | null>;
 }
 
 export const createRemoteResource = <Params, Response>({
@@ -36,14 +35,12 @@ export const createRemoteResource = <Params, Response>({
 }: RemoteParams<Params, Response>): RemoteResource<Params, Response> => {
   const cached: Record<string, { response: Response; ts: number }> = {};
 
-  const $metadata = createStore<{ params: Params } | null>(null);
-
   const getCacheKey = (params: Params) => {
     return cache?.key?.(params) ?? defaultRemoteCacheKey(params);
   };
 
-  const pull = createEvent<Response>();
-  const push = createEvent<Response>();
+  const pull = createEvent<{ meta: never; result: Response }>();
+  const push = createEvent<{ meta: Params; result: Response }>();
   const queuedFx = createQueuedEffect<Params, Response>(fn, { pool, retryCount, retryDelay });
 
   const requestFx = createEffect(async (params: Params) => {
@@ -76,7 +73,13 @@ export const createRemoteResource = <Params, Response>({
   });
 
   sample({
-    clock: queuedFx.doneData,
+    clock: queuedFx.done,
+    fn({ params, result }) {
+      return {
+        meta: params,
+        result,
+      };
+    },
     target: push,
   });
 
@@ -86,17 +89,10 @@ export const createRemoteResource = <Params, Response>({
     target: push,
   });
 
-  sample({
-    clock: requestFx,
-    fn: (params) => ({ params }),
-    target: $metadata,
-  });
-
   return {
     pull,
     push: readonly(push),
     // @ts-expect-error weird Awaited type error
     request: requestFx,
-    metadata: $metadata,
   };
 };
