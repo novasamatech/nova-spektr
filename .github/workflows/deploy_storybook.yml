@@ -17,11 +17,15 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install pnpm
         uses: ./.github/workflows/install-pnpm
+
+      - name: ⚙️Install dependencies
+        run: pnpm install
+        shell: bash
 
       - name: Build storybook
         env:

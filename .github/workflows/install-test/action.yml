@@ -15,8 +15,9 @@ runs:
       id: playwright-version
       shell: bash
       run: |
-        PLAYWRIGHT_VERSION=$(node -e "console.log(require('yaml').parse(require('fs').readFileSync('./pnpm-lock.yaml', 'utf8')).importers['.'].devDependencies['@playwright/test'].version)")
+        PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'].replace(/^[^0-9]*/, ''))")
         echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
+
     - name: Cache playwright binaries
       uses: actions/cache@v3
       id: playwright-cache
