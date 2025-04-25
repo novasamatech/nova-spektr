@@ -38,27 +38,31 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
       : t('fellowship.tasks.task.evidence.retentionTitle');
 
   return (
-    <Box direction="row" gap={10} padding={4}>
+    <Box direction="row" gap={2}>
       <EvidenceDetailsModal evidence={evidence}>
-        <button className="block w-full appearance-none">
-          <Box fillContainer gap={3} grow={1}>
-            <Box direction="row" gap={3}>
-              <SmallTitleText className="truncate">{title}</SmallTitleText>
-              <TaskLabels tags={tags} />
+        <button className="block w-full appearance-none p-4">
+          <Box gap={3} verticalAlign="space-between">
+            <Box fillContainer gap={3} grow={1}>
+              <Box direction="row" gap={3}>
+                <SmallTitleText className="truncate">{title}</SmallTitleText>
+                <TaskLabels tags={tags} />
+              </Box>
+              {!evidenceSummary?.summary && evidenceSummaryPending && evidenceSummaryPending && (
+                <Skeleton height="2.5lh" width="85%" />
+              )}
+              <FootnoteText as="div">
+                {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+                {!evidenceSummary?.summary && !evidenceSummaryPending
+                  ? t('fellowship.tasks.task.promotionVoting.noEvidence')
+                  : null}
+              </FootnoteText>
             </Box>
-            {!evidenceSummary?.summary && evidenceSummaryPending && <Skeleton height="2.5lh" width="85%" />}
-            <FootnoteText as="div">
-              {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-              {!evidenceSummary?.summary && !evidenceSummaryPending
-                ? t('fellowship.tasks.task.promotionVoting.noEvidence')
-                : null}
-            </FootnoteText>
             <MemberActivity accountId={evidence.accountId} />
           </Box>
         </button>
       </EvidenceDetailsModal>
 
-      <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+      <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
         <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction, endBlock }} />
       </Box>
     </Box>

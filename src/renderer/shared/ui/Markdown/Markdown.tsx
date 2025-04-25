@@ -1,3 +1,5 @@
+import './Markdown.css';
+
 import noop from 'lodash/noop';
 import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
@@ -125,12 +127,18 @@ const components: Components = {
   ),
 };
 
-export const Markdown = memo(({ compact, children }: { compact?: boolean; children: string }) => {
+type Props = {
+  compact?: boolean;
+  cut?: string;
+  children: string;
+};
+
+export const Markdown = memo(({ compact, cut, children }: Props) => {
   if (!children) {
     return null;
   }
 
-  return (
+  const markdown = (
     <ReactMarkdown
       className={cnTw('flex flex-col overflow-hidden whitespace-pre-line text-body', {
         'gap-3': !compact,
@@ -144,4 +152,14 @@ export const Markdown = memo(({ compact, children }: { compact?: boolean; childr
       {children}
     </ReactMarkdown>
   );
+
+  if (cut) {
+    return (
+      <div className="markdown-cut overflow-hidden" style={{ maxHeight: cut }}>
+        {markdown}
+      </div>
+    );
+  }
+
+  return markdown;
 });
