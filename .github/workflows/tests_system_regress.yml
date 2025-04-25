@@ -34,9 +34,15 @@ jobs:
   system-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install pnpm
         uses: ./.github/workflows/install-pnpm
+
+      - name: ⚙️Install dependencies
+        run: pnpm install
+        shell: bash
 
       - name: ⚙️ Install test dependencies
         uses: ./.github/workflows/install-test
