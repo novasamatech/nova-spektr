@@ -37,7 +37,7 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
 
   console.log({ measurements });
 
-  const truncateText = (measurements: { container: number; ellipsis: number; text: number }, text: string) => {
+  const truncateText = (value: typeof measurements, text: string) => {
     const containerWidth = measurements.container;
     const ellipsisWidth = measurements.ellipsis;
     const textWidth = measurements.text;
