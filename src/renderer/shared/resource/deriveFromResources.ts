@@ -5,16 +5,16 @@ import { nonNullable } from '@/shared/lib/utils';
 // resource
 
 export interface Resource<Input, Output, Metadata> {
-  pull: EventCallable<{ result: Input; meta: never }>;
+  pull: EventCallable<{ meta: never; result: Input }>;
   push: Event<{ meta: Metadata; result: Output }>;
 }
 
-export type InferRecourceInput<R> = R extends Resource<infer I, any, any> ? I : never;
+export type InferResourceInput<R> = R extends Resource<infer I, any, any> ? I : never;
 export type InferResourceOutput<R> = R extends Resource<any, infer O, any> ? O : never;
 export type InferResourceMetadata<R> = R extends Resource<any, any, infer M> ? M : never;
 
 type ResourcesChain<T extends any[]> = T extends [infer Head, infer Second, ...infer Tail]
-  ? InferResourceOutput<Second> extends InferRecourceInput<Head>
+  ? InferResourceOutput<Second> extends InferResourceInput<Head>
     ? [Head, ...ResourcesChain<[Second, ...Tail]>]
     : { error: 'Resources input and output are not compatable' }
   : T;
