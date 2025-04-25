@@ -1,16 +1,17 @@
 import { type ReactNode, memo } from 'react';
 
-import { Accordion, Box } from '@/shared/ui-kit';
+import { Accordion, AsyncItem, Box } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
 import { type TaskDescription } from '../types';
 
 type Props = {
   title: ReactNode;
   group: TaskDescription[];
+  async?: boolean;
   onReferendumSelect(referendum: Referendum): void;
 };
 
-export const TasksGroup = memo(({ group, title, onReferendumSelect }: Props) => {
+export const TasksGroup = memo(({ group, title, async = false, onReferendumSelect }: Props) => {
   if (group.length === 0) return null;
 
   return (
@@ -24,7 +25,9 @@ export const TasksGroup = memo(({ group, title, onReferendumSelect }: Props) => 
       <Accordion.Content>
         <div className="divide-y divide-filter-border bg-card-background">
           {group.map(({ id, body: Component, meta }) => (
-            <Component key={id} {...meta} onReferendumSelect={onReferendumSelect} />
+            <AsyncItem key={id} sync={!async}>
+              <Component {...meta} onReferendumSelect={onReferendumSelect} />
+            </AsyncItem>
           ))}
         </div>
       </Accordion.Content>

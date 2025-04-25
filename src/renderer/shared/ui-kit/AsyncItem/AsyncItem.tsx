@@ -4,6 +4,7 @@ import { type PropsWithChildren, useEffect, useState } from 'react';
 import { Box } from '../Box/Box';
 
 type AsyncItemProps = PropsWithChildren<{
+  sync?: boolean;
   delay?: number;
   onRender?: () => void;
   spaceToReserve?: {
@@ -16,10 +17,12 @@ type AsyncItemProps = PropsWithChildren<{
  * Renders children asynchronously using requestIdleCallback with setTimeout as
  * a fallback
  */
-export const AsyncItem = ({ children, delay, spaceToReserve }: AsyncItemProps) => {
-  const [isRendered, setIsRendered] = useState(false);
+export const AsyncItem = ({ children, sync = false, delay, spaceToReserve }: AsyncItemProps) => {
+  const [isRendered, setIsRendered] = useState(sync);
 
   useEffect(() => {
+    if (sync) return;
+
     let timeoutId: ReturnType<typeof setTimeout>;
     let idleCallbackId: number;
 
@@ -35,7 +38,7 @@ export const AsyncItem = ({ children, delay, spaceToReserve }: AsyncItemProps) =
         window.cancelIdleCallback(idleCallbackId);
       }
     };
-  }, [children]);
+  }, [children, sync]);
 
   if (!isRendered) {
     if (spaceToReserve) {
