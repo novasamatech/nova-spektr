@@ -7,6 +7,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { AsyncItem } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
@@ -34,26 +35,28 @@ export const ActivityList = memo(() => {
         const identity = identities[record.accountId];
 
         return (
-          <div key={`${record.block}-${record.accountId}-${record.type}`} className="flex flex-col gap-1 pe-4 ps-4">
-            <div className="flex items-center gap-2 text-button-small">
-              <div className="min-w-0 grow text-button-small">
-                {nonNullable(input?.chain) && (
-                  <Address
-                    title={identity ? identityService.getFullName(identity) : undefined}
-                    hideAddress
-                    variant="short"
-                    address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
-                  />
-                )}
+          <AsyncItem key={`${record.block}-${record.accountId}-${record.type}`}>
+            <div className="flex flex-col gap-1 pe-4 ps-4">
+              <div className="flex items-center gap-2 text-button-small">
+                <div className="min-w-0 grow text-button-small">
+                  {nonNullable(input?.chain) && (
+                    <Address
+                      title={identity ? identityService.getFullName(identity) : undefined}
+                      hideAddress
+                      variant="short"
+                      address={toAddress(record.accountId, { prefix: input.chain.addressPrefix })}
+                    />
+                  )}
+                </div>
+                <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+                  <Duration seconds={(now - record.at.getTime()) / 1000} shortFormat />
+                </HelpText>
               </div>
-              <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                <Duration seconds={(now - record.at.getTime()) / 1000} shortFormat />
-              </HelpText>
+              <FootnoteText className="text-text-secondary">
+                <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
+              </FootnoteText>
             </div>
-            <FootnoteText className="text-text-secondary">
-              <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record }} />
-            </FootnoteText>
-          </div>
+          </AsyncItem>
         );
       })}
     </div>

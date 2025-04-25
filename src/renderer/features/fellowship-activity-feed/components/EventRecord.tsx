@@ -7,7 +7,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { AsyncItem } from '@/shared/ui-kit';
+import { AsyncItem, Box } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { identityModel } from '../model/identity';
@@ -31,7 +31,7 @@ export const EventRecord = memo(({ event, chain }: Props) => {
   });
 
   return (
-    <AsyncItem spaceToReserve={{ width: '100%', height: '48px' }}>
+    <AsyncItem fallback={<Box width="100%" height="48px"></Box>}>
       <div className="flex flex-col gap-1 px-5">
         <div className="flex items-center gap-2">
           <div className="min-w-0 grow text-button-small">

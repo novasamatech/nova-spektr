@@ -64,6 +64,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
               key="completed"
               title={t('fellowship.tasks.completed')}
               group={groups.completed}
+              async
               onReferendumSelect={onReferendumSelect}
             />
           ) : null}
