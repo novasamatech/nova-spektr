@@ -19,7 +19,7 @@ type StatusRequestParams = {
 };
 
 export const statusResource = createRemoteResource<StatusRequestParams, SalaryCycle | null>({
-  async fn({ api, palletType, chainId }: StatusRequestParams): Promise<SalaryCycle | null> {
+  async fn({ api, palletType }: StatusRequestParams): Promise<SalaryCycle | null> {
     const status = await salaryPallet.storage.status(palletType, api);
     if (nullable(status)) return null;
 
@@ -34,8 +34,6 @@ export const statusResource = createRemoteResource<StatusRequestParams, SalaryCy
       budget: status.budget,
       totalRegistrations: status.totalRegistrations,
       totalUnregisteredPaid: status.totalUnregisteredPaid,
-      pallet: palletType,
-      chainId,
     };
   },
 });
@@ -66,28 +64,16 @@ type ClaimantRequestParams = {
   accounts: AccountId[];
 };
 
-export const claimantStatusResource = createRemoteResource<
-  ClaimantRequestParams,
-  {
-    pallet: CollectivePalletsType;
-    chainId: ChainId;
-    data: Record<AccountId, ClaimStatus>;
-  }
->({
-  async fn({ api, palletType, accounts, chainId }: ClaimantRequestParams): Promise<{
-    pallet: CollectivePalletsType;
-    chainId: ChainId;
-    data: Record<AccountId, ClaimStatus>;
-  }> {
+export const claimantStatusResource = createRemoteResource<ClaimantRequestParams, Record<AccountId, ClaimStatus>>({
+  cache: {
+    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+    ttl: Number.POSITIVE_INFINITY,
+  },
+  async fn({ api, palletType, accounts }: ClaimantRequestParams): Promise<Record<AccountId, ClaimStatus>> {
     const claimants = await salaryPallet.storage.claimant(palletType, api, accounts);
     const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
 
     const res: Record<AccountId, ClaimStatus> = {};
-    const response = {
-      pallet: palletType,
-      chainId,
-      data: res,
-    };
 
     for (const { account, claim } of mapped) {
       if (nullable(claim)) {
@@ -124,6 +110,6 @@ export const claimantStatusResource = createRemoteResource<
       }
     }
 
-    return response;
+    return res;
   },
 });

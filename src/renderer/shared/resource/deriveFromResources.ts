@@ -1,16 +1,18 @@
-import { type Event, type EventCallable, type StoreWritable, createStore, is, sample } from 'effector';
+import { type Event, type EventCallable, type Store, type StoreWritable, createStore, is, sample } from 'effector';
 
 import { nonNullable } from '@/shared/lib/utils';
 
 // resource
 
-export interface Resource<Input, Output> {
+export interface Resource<Input, Output, Metadata = unknown> {
   pull: EventCallable<Input>;
   push: Event<Output>;
+  metadata?: Store<Metadata>;
 }
 
-export type InferRecourceInput<R> = R extends Resource<infer I, any> ? I : never;
-export type InferResourceOutput<R> = R extends Resource<any, infer O> ? O : never;
+export type InferRecourceInput<R> = R extends Resource<infer I, any, any> ? I : never;
+export type InferResourceOutput<R> = R extends Resource<any, infer O, any> ? O : never;
+export type InferResourceMetadata<R> = R extends Resource<any, any, infer M> ? M : never;
 
 type ResourcesChain<T extends any[]> = T extends [infer Head, infer Second, ...infer Tail]
   ? InferResourceOutput<Second> extends InferRecourceInput<Head>
@@ -19,16 +21,23 @@ type ResourcesChain<T extends any[]> = T extends [infer Head, infer Second, ...i
   : T;
 
 type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]] ? InferResourceOutput<Head> : never;
+type ResourcesFirstMetadata<T extends any[]> = T extends [infer Head, ...unknown[]]
+  ? InferResourceMetadata<Head>
+  : never;
 
 // storage
 
 type DerivedParams<State, Resources extends any[]> = {
   store: StoreWritable<State> | State;
   resources: ResourcesChain<Resources>;
-  map(state: NoInfer<State>, input: ResourcesFirstOutput<Resources>): State;
+  map(
+    state: NoInfer<State>,
+    input: ResourcesFirstOutput<Resources>,
+    metadata?: ResourcesFirstMetadata<Resources>,
+  ): State;
 };
 
-export function deriveFromResources<State, const Resources extends Resource<any, any>[]>({
+export function deriveFromResources<State, const Resources extends Resource<any, any, any>[]>({
   store,
   resources,
   map,
@@ -48,11 +57,20 @@ export function deriveFromResources<State, const Resources extends Resource<any,
 
   const closestResource = resources.at(0);
   if (closestResource) {
-    sample({
-      clock: closestResource.push,
-      source: $state,
-      fn: (state, resource) => map(state, resource),
-      target: $state,
-    });
+    if (closestResource.metadata) {
+      sample({
+        clock: closestResource.push,
+        source: { state: $state, metadata: closestResource.metadata },
+        fn: ({ state, metadata }, resourceData) => map(state, resourceData, metadata),
+        target: $state,
+      });
+    } else {
+      sample({
+        clock: closestResource.push,
+        source: $state,
+        fn: (state, resourceData) => map(state, resourceData, undefined),
+        target: $state,
+      });
+    }
   }
 }

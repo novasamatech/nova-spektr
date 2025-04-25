@@ -13,10 +13,12 @@ const $status = createStore<CollectivesStruct<SalaryCycle | null>>({});
 deriveFromResources({
   store: $status,
   resources: [statusResource],
-  map(state, status) {
+  map(state, status, metadata) {
+    const { palletType, chainId } = metadata!.params;
+
     if (nullable(status)) return state;
 
-    return setNestedValue(state, status.pallet, status.chainId, status);
+    return setNestedValue(state, palletType, chainId, status);
   },
 });
 
@@ -25,8 +27,10 @@ const $salaries = createStore<CollectivesStruct<Salaries>>({});
 deriveFromResources({
   store: $salaries,
   resources: [salariesResource],
-  map(state, salaries) {
-    return setNestedValue(state, salaries.pallet, salaries.chainId, salaries);
+  map(state, salaries, metadata) {
+    const { palletType, chainId } = metadata!.params;
+
+    return setNestedValue(state, palletType, chainId, salaries);
   },
 });
 
@@ -35,12 +39,14 @@ const $claimantStatus = createStore<CollectivesStruct<Record<AccountId, ClaimSta
 deriveFromResources({
   store: $claimantStatus,
   resources: [claimantStatusResource],
-  map(state, claimantStatus) {
-    const previousState = pickNestedValue(state, claimantStatus.pallet, claimantStatus.chainId) ?? {};
+  map(state, claimantStatus, metadata) {
+    const { palletType, chainId } = metadata!.params;
 
-    return setNestedValue(state, claimantStatus.pallet, claimantStatus.chainId, {
+    const previousState = pickNestedValue(state, palletType, chainId) ?? {};
+
+    return setNestedValue(state, palletType, chainId, {
       ...previousState,
-      ...claimantStatus.data,
+      ...claimantStatus,
     });
   },
 });

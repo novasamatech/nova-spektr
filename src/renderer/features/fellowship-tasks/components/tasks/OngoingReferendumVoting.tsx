@@ -41,7 +41,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
   const meta = useStoreMap({
     store: referendums.$metadata,
     keys: [referendum.id],
-    fn: (meta, [id]) => meta.find(x => x.referendumId === id) ?? null,
+    fn: (meta, [id]) => meta[id] ?? null,
   });
 
   const firstTag = tags.at(0);

@@ -1,4 +1,4 @@
-import { type Effect, createEffect, createEvent, sample, scopeBind } from 'effector';
+import { type Effect, type Store, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { readonly } from 'patronum';
 
 import { createQueuedEffect } from '@/shared/effector';
@@ -24,6 +24,7 @@ type RemoteParams<Params, Response> = {
 
 interface RemoteResource<Params, Response> extends Resource<Response, Response> {
   request: Effect<Params, Awaited<Response>>;
+  metadata: Store<{ params: Params } | null>;
 }
 
 export const createRemoteResource = <Params, Response>({
@@ -34,6 +35,8 @@ export const createRemoteResource = <Params, Response>({
   fn,
 }: RemoteParams<Params, Response>): RemoteResource<Params, Response> => {
   const cached: Record<string, { response: Response; ts: number }> = {};
+
+  const $metadata = createStore<{ params: Params } | null>(null);
 
   const getCacheKey = (params: Params) => {
     return cache?.key?.(params) ?? defaultRemoteCacheKey(params);
@@ -83,10 +86,17 @@ export const createRemoteResource = <Params, Response>({
     target: push,
   });
 
+  sample({
+    clock: requestFx,
+    fn: (params) => ({ params }),
+    target: $metadata,
+  });
+
   return {
     pull,
     push: readonly(push),
     // @ts-expect-error weird Awaited type error
     request: requestFx,
+    metadata: $metadata,
   };
 };

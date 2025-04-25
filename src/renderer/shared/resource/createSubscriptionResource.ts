@@ -16,6 +16,7 @@ interface SubscriptionResource<Params, Data> extends Resource<Data, Data> {
   pending: Store<boolean>;
   receive: Event<{ params: Params; result: Data }>;
   fulfilled: Store<boolean>;
+  metadata: Store<{ params: Params } | null>;
 }
 
 type SubscriptionParams<Params, Data> = {
@@ -47,6 +48,7 @@ export const createSubscriptionResource = <Params, Data>({
   const $currentKey = domain.createStore('', { name: 'currentKey' });
   const $currentSubscription = domain.createStore<{ unsubscribe: UnsubscribeFn } | null>(null);
   const $subscribed = $currentSubscription.map(nonNullable);
+  const $metadata = domain.createStore<{ params: Params } | null>(null, { name: 'metadata' });
 
   const subscribeFx = domain.createEffect<Params, UnsubscribeFn>((params) => {
     const bindedReceived = scope ? scopeBind(callback, { scope }) : callback;
@@ -177,6 +179,20 @@ export const createSubscriptionResource = <Params, Data>({
     target: $fulfilled,
   });
 
+  // Update metadata on subscribe
+  sample({
+    clock: subscribe,
+    fn: (params) => ({ params }),
+    target: $metadata,
+  });
+
+  // Clear metadata on unsubscribe
+  sample({
+    clock: unsubscribe,
+    fn: () => null,
+    target: $metadata,
+  });
+
   return {
     pull,
     push: readonly(push),
@@ -187,6 +203,7 @@ export const createSubscriptionResource = <Params, Data>({
     unsubscribe,
     pending: readonly($pending),
     fulfilled: readonly($fulfilled),
+    metadata: $metadata,
   };
 };
 

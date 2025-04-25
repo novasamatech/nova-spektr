@@ -35,7 +35,7 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
   const meta = useStoreMap({
     store: referendums.$metadata,
     keys: [referendum.id],
-    fn: (meta, [id]) => meta.find(x => x.referendumId === id) ?? null,
+    fn: (meta, [id]) => meta[id] ?? null,
   });
   const vote = useStoreMap({
     store: votes.$memberVotes,

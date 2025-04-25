@@ -17,8 +17,6 @@ export type SalaryCycle = {
   budget: BN;
   totalRegistrations: BN;
   totalUnregisteredPaid: BN;
-  pallet: CollectivePalletsType;
-  chainId: ChainId;
 };
 
 export type SalaryCyclePeriod =

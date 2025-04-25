@@ -17,7 +17,11 @@ type RequestParams = {
 };
 
 export const referendumMetaResource = createRemoteResource<RequestParams, ReferendumMeta[]>({
-  async fn({ chainId, api, provider, palletType }) {
+  cache: {
+    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+    ttl: Number.POSITIVE_INFINITY,
+  },
+  async fn({ chainId, api, provider }) {
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
     if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {
@@ -40,8 +44,6 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
             track: x.track,
             status: x.state.name,
             created: x.indexer.blockHeight,
-            pallet: palletType,
-            chainId,
           })),
         );
       }
@@ -66,8 +68,6 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
               track: x.trackNumber,
               status: x.status,
               created: blockHeight,
-              pallet: palletType,
-              chainId: chainId as ChainId,
             };
           }),
         );
