@@ -40,10 +40,6 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
     submitModel.events.submitStarted();
   }, []);
 
-  if (!submitStore) {
-    return null;
-  }
-
   const handleModalClose = () => {
     if (submitUtils.isLoadingStep(step)) {
       return;
@@ -61,7 +57,7 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
       return { title: t('transfer.successMessage'), variant: 'success', autoCloseTimeout: 2000 };
     }
 
-    if (submitUtils.isWarningStep(step)) {
+    if (submitUtils.isWarningStep(step) && submitStore) {
       return {
         title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
         variant: 'warning',

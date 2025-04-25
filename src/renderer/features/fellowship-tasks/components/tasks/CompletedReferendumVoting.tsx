@@ -53,7 +53,9 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
   const content = useMemo(
     () =>
       meta?.description ? (
-        <Markdown compact>{tasksService.cutMarkdown(meta.description)}</Markdown>
+        <Markdown cut="150px" compact>
+          {tasksService.cutMarkdown(meta.description)}
+        </Markdown>
       ) : (
         t('fellowship.tasks.task.anyReferendum.noDescription')
       ),
@@ -76,7 +78,7 @@ export const CompletedReferendumVoting = memo(({ referendum, onReferendumSelect 
         </Box>
       </Box>
       <Box width="80%">
-        <FootnoteText>{content}</FootnoteText>
+        <FootnoteText as="div">{content}</FootnoteText>
       </Box>
     </button>
   );

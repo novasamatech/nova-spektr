@@ -46,6 +46,19 @@ sample({
   target: voting.unsubscribeAccountsVoting,
 });
 
+sample({
+  clock: attachToFeatureInput(fellowshipVotingFeature, voting.receive),
+  fn({ input, data: { result } }) {
+    return {
+      api: input.api,
+      palletType: input.palletType,
+      chainId: input.chainId,
+      referendums: result.map(v => v.referendumId),
+    };
+  },
+  target: referendum.request,
+});
+
 // referendum
 
 const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {

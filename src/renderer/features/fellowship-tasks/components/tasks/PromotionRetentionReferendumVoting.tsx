@@ -57,23 +57,25 @@ export const PromotionRetentionReferendumVoting = memo(
     const title = getRankTitle(referendum.track, relatedTrack);
 
     return (
-      <Box direction="row" gap={10} padding={4}>
-        <button className="block w-full appearance-none" onClick={() => onReferendumSelect(referendum)}>
-          <Box fillContainer gap={3} grow={1}>
-            <Box direction="row" gap={3}>
-              <SmallTitleText className="truncate">{title}</SmallTitleText>
-              <TaskLabels tags={tags} />
-              {voted && <VoteBadge active />}
+      <Box direction="row" gap={2}>
+        <button className="block w-full appearance-none p-4" onClick={() => onReferendumSelect(referendum)}>
+          <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
+            <Box gap={3}>
+              <Box direction="row" gap={3}>
+                <SmallTitleText className="truncate">{title}</SmallTitleText>
+                <TaskLabels tags={tags} />
+                {voted && <VoteBadge active />}
+              </Box>
+              {!evidenceSummary?.summary && pending && <Skeleton height="3lh" width="85%" />}
+              <FootnoteText as="div">
+                {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+                {!evidenceSummary?.summary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
+              </FootnoteText>
             </Box>
-            {!evidenceSummary?.summary && <Skeleton height="3lh" width="85%" />}
-            <FootnoteText as="div">
-              {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-              {!evidenceSummary?.summary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
-            </FootnoteText>
             {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
           </Box>
         </button>
-        <Box alignSelf="flex-end" gap={3} horizontalAlign="end" shrink={0}>
+        <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
           <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
         </Box>
       </Box>
