@@ -26,12 +26,8 @@ jobs:
       - name: ⚙️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️Install pnpm
-        uses: ./.github/workflows/install-pnpm
-
       - name: ⚙️Install dependencies
-        run: pnpm install
-        shell: bash
+        uses: ./.github/workflows/install-pnpm
 
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1 # Put version in GIT_TAG_NAME environment variable

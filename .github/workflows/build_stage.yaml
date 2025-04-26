@@ -86,12 +86,8 @@ jobs:
         run: |
           echo "::set-output name=version::$(cat internal_version.txt)"
 
-      - name: ⚙️Install pnpm
-        uses: ./.github/workflows/install-pnpm
-
       - name: ⚙️Install dependencies
-        run: pnpm install
-        shell: bash
+        uses: ./.github/workflows/install-pnpm
 
       - name: Add MacOS certs
         if: startsWith(matrix.os, 'macos')
@@ -153,7 +149,7 @@ jobs:
             fi
           done
 
-      - name: ⚙️Install pnpm
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/setup-s3cmd
         with:
           s3_region: pl-waw
