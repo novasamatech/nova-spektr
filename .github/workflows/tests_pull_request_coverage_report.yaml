@@ -20,12 +20,8 @@ jobs:
           git checkout -b dev origin/dev
           git checkout -
 
-      - name: ⚙️Install pnpm
-        uses: ./.github/workflows/install-pnpm
-
       - name: ⚙️Install dependencies
-        run: pnpm install
-        shell: bash
+        uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests with coverage
         run: pnpm test:coverage-new-files

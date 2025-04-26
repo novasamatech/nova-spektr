@@ -13,3 +13,7 @@ runs:
       with:
         cache: pnpm
         node-version: 21
+
+    - name: ⚙️Install dependencies
+      run: pnpm install
+      shell: bash

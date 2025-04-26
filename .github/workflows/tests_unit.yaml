@@ -19,12 +19,8 @@ jobs:
       - name: ⚙️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️Install pnpm
-        uses: ./.github/workflows/install-pnpm
-
       - name: ⚙️Install dependencies
-        run: pnpm install
-        shell: bash
+        uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests
         run: pnpm test
