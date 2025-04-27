@@ -133,9 +133,15 @@ function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
-  const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+  if (isWcAccount(account)) {
+    return true;
+  }
 
-  return isWcAccount(account) || account.cryptoType === cryptoType;
+  const cryptoTypes = networkUtils.isEthereumBased(chain.options)
+    ? [CryptoType.ECDSA, CryptoType.ETHEREUM]
+    : [CryptoType.SR25519, CryptoType.ED25519];
+
+  return cryptoTypes.includes(account.cryptoType);
 }
 
 function isEthereumBased(account: AnyAccount): boolean {

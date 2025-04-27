@@ -51,7 +51,7 @@ export class MockDataBuilder {
     return account;
   }
 
-  generateSignatories(num: number): Array<any> {
+  generateSignatories(num: number): any[] {
     const signatories: any[] = [];
     for (let i = 0; i < num; i++) {
       signatories.push({
