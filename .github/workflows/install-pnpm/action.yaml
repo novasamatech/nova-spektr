@@ -8,8 +8,12 @@ runs:
         version: 9
         run_install: false
 
-    - name: 🤞 Use Node.js
+    - name: 🤞 Install Node.js
       uses: actions/setup-node@v4
       with:
         cache: pnpm
         node-version: 21
+
+    - name: ⚙️ Install dependencies
+      run: pnpm install
+      shell: bash

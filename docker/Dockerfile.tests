@@ -1,17 +1,13 @@
 FROM mcr.microsoft.com/playwright:v1.38.0-jammy
 
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && \
-    corepack prepare pnpm@9
-
+RUN mkdir -p /tests
 WORKDIR /tests
 
-COPY package.json pnpm-lock.yaml ./
-COPY .papi ./.papi/
+COPY package*.json ./
 
-RUN pnpm install --frozen-lockfile
+RUN npm install -g pnpm
+RUN pnpm install
 
 COPY . .
 
-CMD [ "pnpm", "test:system" ]
+CMD [ "npx", "playwright", "test" ]

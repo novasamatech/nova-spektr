@@ -2,26 +2,17 @@ ARG NODE_JS_IMAGE_VERSION=20-alpine
 ARG BUILD_TYPE=production
 
 FROM node:${NODE_JS_IMAGE_VERSION} AS build
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && \
-    corepack prepare pnpm@9
-
+ARG BUILD_TYPE
+ADD . /project
 WORKDIR /project
 
-COPY package.json pnpm-lock.yaml ./
-COPY .papi ./.papi/
-
-RUN pnpm install --frozen-lockfile
-
+RUN npm install -g pnpm
+RUN pnpm install
 RUN if [ "$BUILD_TYPE" = "development" ]; then \
         pnpm build:staging && pnpm postbuild:staging; \
     else\
         pnpm build && pnpm postbuild; \
     fi
-
-COPY . .
 
 FROM nginx:stable-alpine
 
