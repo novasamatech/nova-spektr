@@ -46,7 +46,7 @@ const $tokens = combine(
     activeView: $activeView,
     wallet: walletModel.$activeWallet,
     chains: networkModel.$chains,
-    accounts: walletSelect.$selectedAccounts,
+    accounts: $accounts,
   },
   ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;

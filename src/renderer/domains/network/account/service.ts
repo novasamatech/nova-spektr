@@ -34,9 +34,11 @@ function uniqId(account: AnyAccountDraft) {
 }
 
 function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): boolean {
-  const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+  const supportedCryptoTypes = networkUtils.isEthereumBased(chain.options)
+    ? [CryptoType.ECDSA, CryptoType.ETHEREUM]
+    : [CryptoType.SR25519, CryptoType.ED25519];
 
-  return account.cryptoType === cryptoType;
+  return supportedCryptoTypes.includes(account.cryptoType);
 }
 
 function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAccount {
