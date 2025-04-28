@@ -23,9 +23,10 @@ jobs:
     name: Update Coverage on Readme
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: Run Tests

@@ -6,7 +6,7 @@ import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
-import { WalletIcon, accountUtils, walletUtils } from '@/entities/wallet';
+import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
@@ -72,13 +72,11 @@ export const PolkadotVault = ({
   };
 
   const getSignerAccountId = () => {
-    if (!walletUtils.isPolkadotVault(signerWallet)) {
-      return signingPayloads[0].transaction.accountId;
+    if (walletUtils.isPolkadotVault(signerWallet)) {
+      return signerWallet.rootAccountId;
     }
 
-    const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
-
-    return root ? root.accountId : signingPayloads[0].transaction.accountId;
+    return signingPayloads[0].transaction.accountId;
   };
 
   const scanAgain = () => {
