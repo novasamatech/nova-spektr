@@ -7,10 +7,12 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
+import { type ActivityFeedRecord } from '../types';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
@@ -42,15 +44,37 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const clearSearch = () => setQuery('');
 
+  const getDescription = (record: FeedRecord) => {
+    switch (record.type) {
+      case 'promoted':
+        return t('fellowship.activityFeed.record.promoted', { rank: record.rank });
+      case 'demoted':
+        return t('fellowship.activityFeed.record.demoted', { rank: record.rank });
+      case 'proven':
+        return t('fellowship.activityFeed.record.proven', { rank: record.rank });
+      case 'requested':
+        return record.wish === 'Promotion'
+          ? t('fellowship.activityFeed.record.submittedPromotion')
+          : t('fellowship.activityFeed.record.submittedRetention');
+      case 'activeChanged':
+        return t('fellowship.activityFeed.record.activeChanged', { status: record.isActive ? 'active' : 'inactive' });
+      case 'imported':
+        return t('fellowship.activityFeed.record.imported', { rank: record.rank });
+      default:
+        return undefined;
+    }
+  };
+
   const records = useMemo(
     () =>
-      list.map(record => {
+      list.map<ActivityFeedRecord>(record => {
         const identity = identities[record.accountId];
         return {
           ...record,
           address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
           name: identity ? identityService.getFullName(identity) : undefined,
           duration: (now - record.at.getTime()) / 1000,
+          description: getDescription(record),
         };
       }),
     [identities, list],
@@ -62,11 +86,12 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       queryMinLength: 2,
       records,
       weights: {
-        type: 0.5,
         name: 1,
+        description: 0.75,
+        address: 0.5,
+        type: 0.5,
         wish: 0.5,
         accountId: 0.5,
-        address: 0.5,
       },
     });
   }, [deferredQuery, records]);
