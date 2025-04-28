@@ -82,7 +82,7 @@ const $description = combine({ referendum: $referendum, metadata: $referendumMet
 });
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.request.pending);
-const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.pending);
+const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.request.pending);
 
 const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(
   ({ input, data }) => {
