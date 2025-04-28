@@ -3,8 +3,10 @@ import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { nonNullable } from '@/shared/lib/utils';
+import { type Chain } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { createSubscriptionResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type FeedRecord } from './types';
@@ -211,3 +213,29 @@ export async function fetchActivitiesSince(
 
   return result.feedEvents.nodes.map(mapSubqueryFeedRecord).filter(nonNullable);
 }
+
+type SubscriptionParams = {
+  palletType: CollectivePalletsType;
+  chain: Chain;
+};
+
+export const feedSubscriptionResource = createSubscriptionResource<SubscriptionParams, FeedRecord[]>({
+  pool: ({ palletType, chain }) => `${palletType}-${chain.chainId}`,
+  fn({ chain, palletType }, callback) {
+    const url = chain.externalApi?.collectives.find(x => x.type === 'subquery')?.url;
+    if (nullable(url)) {
+      throw new Error(`Collectives indexer doesn't support ${chain.name} chain`);
+    }
+
+    const fn = () => {
+      fetchAllActivities(url, palletType).then(value => {
+        callback({ done: true, value });
+      });
+    };
+
+    fn();
+
+    const interval = setInterval(fn, 60000);
+    return () => clearInterval(interval);
+  },
+});

@@ -4,19 +4,24 @@ import { nonNullable } from '@/shared/lib/utils';
 
 // resource
 
-export interface Resource<Input, Output> {
-  pull: EventCallable<Input>;
-  push: Event<Output>;
+export interface Resource<Input, Output, Metadata> {
+  pull: EventCallable<{ meta: never; result: Input }>;
+  push: Event<{ meta: Metadata; result: Output }>;
 }
 
-export type InferRecourceInput<R> = R extends Resource<infer I, any> ? I : never;
-export type InferResourceOutput<R> = R extends Resource<any, infer O> ? O : never;
+export type InferResourceInput<R> = R extends Resource<infer I, any, any> ? I : never;
+export type InferResourceOutput<R> = R extends Resource<any, infer O, any> ? O : never;
+export type InferResourceMetadata<R> = R extends Resource<any, any, infer M> ? M : never;
 
 type ResourcesChain<T extends any[]> = T extends [infer Head, infer Second, ...infer Tail]
-  ? InferResourceOutput<Second> extends InferRecourceInput<Head>
+  ? InferResourceOutput<Second> extends InferResourceInput<Head>
     ? [Head, ...ResourcesChain<[Second, ...Tail]>]
     : { error: 'Resources input and output are not compatable' }
   : T;
+
+type ResourcesMetadata<T extends any[]> = T extends [infer Head, ...infer Tail]
+  ? [InferResourceMetadata<Head>, ResourcesMetadata<Tail>][number]
+  : never;
 
 type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]] ? InferResourceOutput<Head> : never;
 
@@ -25,10 +30,10 @@ type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]
 type DerivedParams<State, Resources extends any[]> = {
   store: StoreWritable<State> | State;
   resources: ResourcesChain<Resources>;
-  map(state: NoInfer<State>, input: ResourcesFirstOutput<Resources>): State;
+  map(state: NoInfer<State>, input: ResourcesFirstOutput<Resources>, metadata: ResourcesMetadata<Resources>): State;
 };
 
-export function deriveFromResources<State, const Resources extends Resource<any, any>[]>({
+export function deriveFromResources<State, const Resources extends Resource<any, any, any>[]>({
   store,
   resources,
   map,
@@ -41,6 +46,10 @@ export function deriveFromResources<State, const Resources extends Resource<any,
     if (nonNullable(resource) && nonNullable(nextResource)) {
       sample({
         clock: resource.push,
+        fn: ({ result, meta }) => ({
+          result,
+          meta: meta as never,
+        }),
         target: nextResource.pull,
       });
     }
@@ -51,7 +60,7 @@ export function deriveFromResources<State, const Resources extends Resource<any,
     sample({
       clock: closestResource.push,
       source: $state,
-      fn: (state, resource) => map(state, resource),
+      fn: (state, { meta, result }) => map(state, result, meta),
       target: $state,
     });
   }

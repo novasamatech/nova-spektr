@@ -22,7 +22,7 @@ type RemoteParams<Params, Response> = {
   retryDelay?: number;
 };
 
-interface RemoteResource<Params, Response> extends Resource<Response, Response> {
+interface RemoteResource<Params, Response> extends Resource<Response, Response, Params | never> {
   request: Effect<Params, Awaited<Response>>;
 }
 
@@ -39,8 +39,8 @@ export const createRemoteResource = <Params, Response>({
     return cache?.key?.(params) ?? defaultRemoteCacheKey(params);
   };
 
-  const pull = createEvent<Response>();
-  const push = createEvent<Response>();
+  const pull = createEvent<{ meta: never; result: Response }>();
+  const push = createEvent<{ meta: Params; result: Response }>();
   const queuedFx = createQueuedEffect<Params, Response>(fn, { pool, retryCount, retryDelay });
 
   const requestFx = createEffect(async (params: Params) => {
@@ -73,7 +73,13 @@ export const createRemoteResource = <Params, Response>({
   });
 
   sample({
-    clock: queuedFx.doneData,
+    clock: queuedFx.done,
+    fn({ params, result }) {
+      return {
+        meta: params,
+        result,
+      };
+    },
     target: push,
   });
 
