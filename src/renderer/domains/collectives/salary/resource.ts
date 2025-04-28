@@ -19,7 +19,7 @@ type StatusRequestParams = {
 };
 
 export const statusResource = createRemoteResource<StatusRequestParams, SalaryCycle | null>({
-  async fn({ api, palletType }: StatusRequestParams): Promise<SalaryCycle | null> {
+  async fn({ api, palletType }): Promise<SalaryCycle | null> {
     const status = await salaryPallet.storage.status(palletType, api);
     if (nullable(status)) return null;
 
@@ -45,7 +45,11 @@ type SalariesRequestParams = {
 };
 
 export const salariesResource = createRemoteResource<SalariesRequestParams, Salaries>({
-  async fn({ api, palletType }: SalariesRequestParams): Promise<Salaries> {
+  cache: {
+    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+    ttl: Number.POSITIVE_INFINITY,
+  },
+  async fn({ api, palletType }): Promise<Salaries> {
     const params = await collectiveCorePallet.storage.params(palletType, api);
 
     return {
@@ -63,11 +67,7 @@ type ClaimantRequestParams = {
 };
 
 export const claimantStatusResource = createRemoteResource<ClaimantRequestParams, Record<AccountId, ClaimStatus>>({
-  cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  async fn({ api, palletType, accounts }: ClaimantRequestParams): Promise<Record<AccountId, ClaimStatus>> {
+  async fn({ api, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> {
     const claimants = await salaryPallet.storage.claimant(palletType, api, accounts);
     const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
 
