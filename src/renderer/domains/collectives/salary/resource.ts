@@ -45,14 +45,12 @@ type SalariesRequestParams = {
 };
 
 export const salariesResource = createRemoteResource<SalariesRequestParams, Salaries>({
-  async fn({ api, palletType, chainId }: SalariesRequestParams): Promise<Salaries> {
+  async fn({ api, palletType }: SalariesRequestParams): Promise<Salaries> {
     const params = await collectiveCorePallet.storage.params(palletType, api);
 
     return {
       active: params.activeSalary,
       passive: params.passiveSalary,
-      pallet: palletType,
-      chainId,
     };
   },
 });

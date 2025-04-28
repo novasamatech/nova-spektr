@@ -13,16 +13,21 @@ const $feed = createStore<CollectivesStruct<FeedRecord[]>>({});
 deriveFromResources({
   store: $feed,
   resources: [feedSubscriptionResource],
-  map(state, feed) {
-    const prev = pickNestedValue(state, feed.pallet, feed.chainId) ?? [];
+  map(state, feed, meta) {
+    const {
+      chain: { chainId },
+      palletType,
+    } = meta;
+
+    const prev = pickNestedValue(state, palletType, chainId) ?? [];
     const newList = merge({
       a: prev,
-      b: feed.data,
+      b: feed,
       mergeBy: a => [a.accountId, a.block, a.type],
       sort: (a, b) => b.block - a.block,
     });
 
-    return setNestedValue(state, feed.pallet, feed.chainId, newList);
+    return setNestedValue(state, palletType, chainId, newList);
   },
 });
 

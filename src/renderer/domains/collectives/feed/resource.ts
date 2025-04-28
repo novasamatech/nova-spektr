@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource } from '@/shared/resource';
@@ -219,14 +219,7 @@ type SubscriptionParams = {
   chain: Chain;
 };
 
-export const feedSubscriptionResource = createSubscriptionResource<
-  SubscriptionParams,
-  {
-    pallet: CollectivePalletsType;
-    chainId: ChainId;
-    data: FeedRecord[];
-  }
->({
+export const feedSubscriptionResource = createSubscriptionResource<SubscriptionParams, FeedRecord[]>({
   pool: ({ palletType, chain }) => `${palletType}-${chain.chainId}`,
   fn({ chain, palletType }, callback) {
     const url = chain.externalApi?.collectives.find(x => x.type === 'subquery')?.url;
@@ -236,7 +229,7 @@ export const feedSubscriptionResource = createSubscriptionResource<
 
     const fn = () => {
       fetchAllActivities(url, palletType).then(value => {
-        callback({ done: true, value: { data: value, chainId: chain.chainId, pallet: palletType } });
+        callback({ done: true, value });
       });
     };
 
