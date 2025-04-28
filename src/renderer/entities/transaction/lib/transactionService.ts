@@ -98,13 +98,13 @@ async function signAndSubmit(
   api: ApiPromise,
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>((resolve) => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const accountId = transaction.accountId;
-    extrinsic.addSignature(accountId, hexToU8a(signature), payload);
-
     let unsubscribe: VoidFunction;
 
     try {
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+      const accountId = transaction.accountId;
+
+      extrinsic.addSignature(accountId, hexToU8a(signature), payload);
       extrinsic
         .send((result) => {
           const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
