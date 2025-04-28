@@ -47,7 +47,6 @@ export const createSubscriptionResource = <Params, Data>({
   const $currentKey = domain.createStore('', { name: 'currentKey' });
   const $currentSubscription = domain.createStore<{ unsubscribe: UnsubscribeFn } | null>(null);
   const $subscribed = $currentSubscription.map(nonNullable);
-  const $metadata = domain.createStore<{ params: Params } | null>(null, { name: 'metadata' });
 
   const subscribeFx = domain.createEffect<Params, UnsubscribeFn>((params) => {
     const bindedReceived = scope ? scopeBind(callback, { scope }) : callback;
@@ -176,20 +175,6 @@ export const createSubscriptionResource = <Params, Data>({
     clock: unsubscribe,
     fn: () => false,
     target: $fulfilled,
-  });
-
-  // Update metadata on subscribe
-  sample({
-    clock: subscribe,
-    fn: (params) => ({ params }),
-    target: $metadata,
-  });
-
-  // Clear metadata on unsubscribe
-  sample({
-    clock: unsubscribe,
-    fn: () => null,
-    target: $metadata,
   });
 
   return {

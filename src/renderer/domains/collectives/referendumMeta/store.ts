@@ -23,8 +23,6 @@ deriveFromResources({
       ...previousState,
       ...resultMap,
     });
-
-    // return mergeNested(state, referendums, r => r.referendumId);
   },
 });
 
