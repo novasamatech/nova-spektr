@@ -228,7 +228,7 @@ sample({
     chains: networkModel.$chains,
     acccounts: accounts.$list,
   },
-  filter: ( wallet) =>  nonNullable(wallet), 
+  filter: (wallet) => nonNullable(wallet),
   fn: ({ subAccounts, acccounts, chains }, wallet) => {
     const selectedAccounts = accountService.filterAccountsByWallet(acccounts, wallet!.id);
     const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
