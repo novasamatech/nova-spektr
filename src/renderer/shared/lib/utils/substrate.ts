@@ -30,16 +30,11 @@ const UNUSED_LABEL = 'unused';
  */
 export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-
-  const [header, blockHash, nonce] = await Promise.all([
-    api.rpc.chain.getHeader(),
-    api.rpc.chain.getBlockHash(),
-    api.rpc.system.accountNextIndex(accountId),
-  ]);
+  const [header, nonce] = await Promise.all([api.rpc.chain.getHeader(), api.rpc.system.accountNextIndex(accountId)]);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
     address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
-    blockHash: blockHash.toHex(),
+    blockHash: header.hash.toHex(),
     blockNumber: header.number.toHex(),
     genesisHash: chainId,
     nonce: nonce.toHex(),
