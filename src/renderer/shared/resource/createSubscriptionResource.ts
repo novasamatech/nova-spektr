@@ -154,13 +154,13 @@ export const createSubscriptionResource = <Params, Data>({
   // status
 
   sample({
-    clock: [subscribe, callback],
+    clock: [subscribeFx, callback],
     fn: () => true,
     target: $pending,
   });
 
   sample({
-    clock: [done, unsubscribe],
+    clock: [done, unsubscribeFx],
     fn: () => false,
     target: $pending,
   });
