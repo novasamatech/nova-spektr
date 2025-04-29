@@ -35,5 +35,5 @@ export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
   if (!endTime || !input) return null;
   const variant = getTimerColor(endTime);
 
-  return <Timeout at={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
+  return <Timeout secondsToEnd={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
 };
