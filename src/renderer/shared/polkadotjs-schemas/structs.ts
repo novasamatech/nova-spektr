@@ -217,21 +217,19 @@ export const enumValueLooseSchema = <const Map extends Record<string, z.ZodTypeA
 };
 
 export const tupleMapSchema = <const Entries extends [name: string, schema: z.ZodTypeAny][]>(...args: Entries) => {
-  type EntriesTupple = [string, z.ZodTypeAny];
+  type EntriesTuple = [string, z.ZodTypeAny];
 
-  type FromEntries<T extends EntriesTupple[]> = T['length'] extends 0
+  type FromEntries<T extends EntriesTuple[]> = T['length'] extends 0
     ? NonNullable<unknown>
-    : T extends [infer Head extends EntriesTupple, ...infer Tail extends EntriesTupple[]]
+    : T extends [infer Head extends EntriesTuple, ...infer Tail extends EntriesTuple[]]
       ? Record<Head[0], z.infer<Head[1]>> & FromEntries<Tail>
       : never;
-
-  type Result = FromEntries<Entries>;
 
   const inputSchema = args.map((x) => x[1]);
   const missingSchemaIndex = inputSchema.findIndex((x) => x === undefined);
   if (missingSchemaIndex !== -1) {
     throw new TypeError(
-      `Tupple map schema for field ${args.map((x) => x[1]).join(', ')} is missing schema at ${missingSchemaIndex}`,
+      `Tuple map schema for field ${args.map((x) => x[1]).join(', ')} is missing schema at ${missingSchemaIndex}`,
     );
   }
 
@@ -240,16 +238,16 @@ export const tupleMapSchema = <const Entries extends [name: string, schema: z.Zo
     const result: Record<string, unknown> = {};
 
     for (const [index, value] of values.entries()) {
-      const tupple = args[index];
-      if (!tupple) throw new TypeError('Tupple is not defined');
+      const tuple = args[index];
+      if (!tuple) throw new TypeError('Tuple is not defined');
 
-      const key = tupple[0];
-      if (!key) throw new TypeError('Tupple key is not defined');
+      const key = tuple[0];
+      if (!key) throw new TypeError('Tuple key is not defined');
 
       result[key] = value;
     }
 
-    return result as Result;
+    return result as FromEntries<Entries>;
   });
 };
 

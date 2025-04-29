@@ -28,12 +28,14 @@ const $leftToPromotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
 const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+
   return evidenceService.getDemotionPeriod(member, periods);
 });
 
@@ -41,6 +43,7 @@ const $leftToDemotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+
     return evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
   },
 );
@@ -64,8 +67,9 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
 
 // requesting data
 
-const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
-  if (!member) return;
+const evidenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (nullable(member)) return;
+
   return {
     api,
     palletType,
@@ -75,22 +79,19 @@ const evendenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, pal
 });
 
 sample({
-  clock: evendenceRequested,
+  clock: evidenceRequested,
   target: evidence.request,
 });
 
-const evendencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chain, member }) => {
-  if (!member) return;
+const evidencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ palletType, chain }) => {
   return {
-    api,
     palletType,
-    chain,
-    accountId: member.accountId,
+    chainId: chain.chainId,
   };
 });
 
 sample({
-  clock: evendencePeriodsRequested,
+  clock: evidencePeriodsRequested,
   target: evidence.requestPeriods,
 });
 

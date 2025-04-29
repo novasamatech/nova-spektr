@@ -15,4 +15,6 @@ export { identityService } from './identity/service';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
 export { registry } from './registry/store';
+export { registryService } from './registry/service';
 export { getChainRegistry } from './registry/service/chainRegistry';
+export type { PolkadotApi, ConnectionStatus } from './registry/lib/types';

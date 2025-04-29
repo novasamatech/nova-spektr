@@ -147,8 +147,8 @@ export const addLeadingZero = (value: number): string => {
   return value < 10 ? `0${value}` : `${value}`;
 };
 
-export const isHex = (v: string): v is HexString => {
-  return v.startsWith('0x');
+export const isHex = (value: string): value is HexString => {
+  return value.startsWith('0x');
 };
 
 const romanNumbersLookup = [

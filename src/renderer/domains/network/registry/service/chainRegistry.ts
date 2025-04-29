@@ -1,5 +1,5 @@
 import mitt, { type Emitter } from 'mitt';
-import { type PolkadotClient, createClient } from 'polkadot-api';
+import { type CompatibilityToken, type PolkadotClient, createClient } from 'polkadot-api';
 import {
   type JsonRpcProvider,
   type WsEvent,
@@ -12,7 +12,6 @@ import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { CONFIG } from '../lib/constants';
-import { type PolkadotApi } from '../lib/types';
 
 type RegistryEvents = {
   status: {
@@ -30,7 +29,7 @@ export class ChainRegistry {
       client: PolkadotClient;
     }
   >();
-
+  readonly #tokens = new Map<ChainId, CompatibilityToken>();
   readonly #subscribers = new Map<ChainId, VoidFunction[]>();
 
   readonly #chainsList: Chain[];
@@ -54,11 +53,17 @@ export class ChainRegistry {
     this.#createClient = papi.createClient;
   }
 
-  getApi(chainId: ChainId): PolkadotApi {
+  getApi(chainId: ChainId) {
     const connector = this.#storage.get(chainId);
 
     if (nullable(connector)) {
       throw new Error(`Provider and Client for ${chainId} is absent, need to establish connect first`);
+    }
+
+    const token = this.#tokens.get(chainId);
+
+    if (nullable(token)) {
+      throw new Error(`Token for ${chainId} is absent, make sure to call requestToken after connection`);
     }
 
     const chain = this.#chainsMap.get(chainId);
@@ -71,12 +76,12 @@ export class ChainRegistry {
       throw new Error(`Chain spec ${chain.specName} is not supported`);
     }
 
-    return config(chain.chainId, connector.client);
+    return config(chain.chainId, connector.client, token);
   }
 
   connect(chainId: ChainId, endpoints: string[]) {
     if (this.#storage.has(chainId)) {
-      throw new Error(`Connection for ${chainId} already exist`);
+      throw new Error(`Connection for ${chainId} already exists`);
     }
 
     const provider = this.#createWcProvider({
@@ -85,6 +90,14 @@ export class ChainRegistry {
     });
 
     this.#storage.set(chainId, { provider, client: this.#createClient(provider) });
+  }
+
+  async requestToken(chainId: ChainId) {
+    if (this.#tokens.has(chainId)) {
+      throw new Error(`Token for ${chainId} already exists`);
+    }
+
+    this.#tokens.set(chainId, await this.getApi(chainId).api.compatibilityToken);
   }
 
   disconnect(chainId: ChainId) {
@@ -98,6 +111,17 @@ export class ChainRegistry {
 
     this.#storage.delete(chainId);
     this.#subscribers.delete(chainId);
+    this.#tokens.delete(chainId);
+  }
+
+  getStatus(chainId: ChainId) {
+    const connector = this.#storage.get(chainId);
+
+    if (nullable(connector)) {
+      throw new Error(`Provider for ${chainId} is not connected`);
+    }
+
+    return connector.provider.getStatus();
   }
 
   on<K extends keyof RegistryEvents>(chainId: ChainId, key: K, cb: (value: RegistryEvents[K]) => void) {
@@ -134,6 +158,16 @@ export class ChainRegistry {
 
   getChain(chainId: ChainId) {
     return this.#chainsMap.get(chainId);
+  }
+
+  getFinalizedBlock(chainId: ChainId) {
+    const connector = this.#storage.get(chainId);
+
+    if (nullable(connector)) {
+      throw new Error(`Provider for ${chainId} is not connected`);
+    }
+
+    return connector.client.getFinalizedBlock();
   }
 }
 

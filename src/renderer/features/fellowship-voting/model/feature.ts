@@ -18,11 +18,7 @@ const $input = combine(
     if (nullable(network)) return null;
 
     return {
-      api: network.api,
-      asset: network.asset,
-      chain: network.chain,
-      chainId: network.chainId,
-      palletType: network.palletType,
+      ...network,
       member,
       account,
       wallets,

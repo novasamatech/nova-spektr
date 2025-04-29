@@ -27,14 +27,16 @@ const $leftToPromotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
 // requesting data
 
-const evendenceRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chainId, member }) => {
-  if (!member) return;
+const evidenceRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+  if (nullable(member)) return;
+
   return {
     api,
     palletType,
@@ -44,22 +46,19 @@ const evendenceRequested = fellowshipProfileFeature.running.filterMap(({ api, pa
 });
 
 sample({
-  clock: evendenceRequested,
+  clock: evidenceRequested,
   target: evidence.request,
 });
 
-const evendencePeriodsRequested = fellowshipProfileFeature.running.filterMap(({ api, palletType, chain, member }) => {
-  if (!member) return;
+const evidencePeriodsRequested = fellowshipProfileFeature.running.filterMap(({ palletType, chain }) => {
   return {
-    api,
     palletType,
-    chain,
-    accountId: member.accountId,
+    chainId: chain.chainId,
   };
 });
 
 sample({
-  clock: evendencePeriodsRequested,
+  clock: evidencePeriodsRequested,
   target: evidence.requestPeriods,
 });
 

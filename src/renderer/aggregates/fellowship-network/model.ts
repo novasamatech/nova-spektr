@@ -1,9 +1,10 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { or } from 'patronum';
 
-import { type ChainId, ConnectionStatus } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { networkModel, networkUtils } from '@/entities/network';
+import { getChainRegistry, registry, registryService } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 
 const selectCollective = createEvent<{ chainId: ChainId }>();
 
@@ -15,20 +16,28 @@ sample({
   target: $selectedChainId,
 });
 
-const $fellowshipChain = combine(networkModel.$chains, $selectedChainId, (chains, collectiveChainId) => {
-  return Object.values(chains).find(chain => chain.chainId === collectiveChainId) || null;
+const $fellowshipChain = combine($selectedChainId, collectiveChainId => {
+  return getChainRegistry().chainsList.find(chain => chain.chainId === collectiveChainId) ?? null;
 });
 
-const $connectionStatus = combine($selectedChainId, networkModel.$connectionStatuses, (chainId, statuses) => {
-  if (!chainId) return ConnectionStatus.CONNECTING;
+const $connectionStatus = combine(
+  {
+    chainId: $selectedChainId,
+    papiStatus: registry.$connectionStatuses,
+    pjsStatus: networkModel.$connectionStatuses,
+  },
+  ({ chainId, papiStatus, pjsStatus }) => {
+    if (nullable(chainId)) return 'connecting';
+    if (nullable(papiStatus[chainId]) || nullable(pjsStatus[chainId])) return 'close';
 
-  return statuses[chainId] ?? ConnectionStatus.DISCONNECTED;
-});
+    return papiStatus[chainId];
+  },
+);
 
-const $isConnecting = $connectionStatus.map(networkUtils.isConnectingStatus);
-const $isConnected = $connectionStatus.map(networkUtils.isConnectedStatus);
+const $isConnecting = $connectionStatus.map(registryService.isConnecting);
+const $isConnected = $connectionStatus.map(registryService.isConnected);
 const $isActive = or($isConnecting, $isConnected);
-const $isDisconnected = $connectionStatus.map(networkUtils.isDisconnectedStatus);
+const $isDisconnected = $connectionStatus.map(registryService.isClose);
 
 const $fellowshipChainApi = combine($selectedChainId, networkModel.$apis, (chainId, apis) => {
   return chainId ? (apis[chainId] ?? null) : null;

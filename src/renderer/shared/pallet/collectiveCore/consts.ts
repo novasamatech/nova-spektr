@@ -1,33 +1,28 @@
-import { type ApiPromise } from '@polkadot/api';
-
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type PolkadotApi } from '@/domains/network';
 
 import { getPalletName } from './helpers';
 import { type PalletType } from './types';
 
-const getPallet = (type: PalletType, api: ApiPromise) => {
-  const name = getPalletName(type);
-  const pallet = api.consts[name];
-
-  if (!pallet) {
-    throw new TypeError(`${name} pallet not found`);
+const getPallet = (type: PalletType, papi: PolkadotApi) => {
+  if (papi.type === 'dot_col') {
+    return papi.api.constants[getPalletName(type)];
   }
 
-  return pallet;
+  throw new TypeError(`Wrong chain - ${papi.type}. Only Collective chains able to make operations.`);
 };
 
 export const consts = {
   /**
    * The maximum size in bytes submitted evidence is allowed to be.
    */
-  evidenceSize(type: PalletType, api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(type, api)['evidenceSize']);
+  evidenceSize(type: PalletType, papi: PolkadotApi) {
+    return getPallet(type, papi).EvidenceSize();
   },
 
   /**
    * Represents the highest possible rank in this pallet.
    */
-  maxRank(type: PalletType, api: ApiPromise) {
-    return pjsSchema.u32.parse(getPallet(type, api)['maxRank']);
+  maxRank(type: PalletType, papi: PolkadotApi) {
+    return getPallet(type, papi).MaxRank();
   },
 };

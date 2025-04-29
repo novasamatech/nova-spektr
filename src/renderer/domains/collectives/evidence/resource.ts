@@ -1,11 +1,11 @@
-import { type ApiPromise } from '@polkadot/api';
 import { z } from 'zod';
 
-import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { type ChainId, type HexString } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createRemoteResource } from '@/shared/resource';
+import { getChainRegistry } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { evidenceService } from './service';
@@ -13,7 +13,6 @@ import { type Evidence, type EvidenceContent, type EvidencePeriods, type Evidenc
 
 type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
   chainId: ChainId;
   accounts: AccountId[];
 };
@@ -24,8 +23,10 @@ export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evid
     key: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
     ttl: 30 * 1000,
   },
-  async fn({ palletType, api, chainId, accounts }) {
-    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, accounts);
+  async fn({ palletType, chainId, accounts }) {
+    const papi = getChainRegistry().getApi(chainId);
+    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, papi, accounts);
+
     return evidences
       .map(({ account, evidence }) => {
         if (nullable(evidence)) return null;
@@ -44,7 +45,6 @@ export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evid
 
 type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
   chainId: ChainId;
   accountId: AccountId;
 };
@@ -55,8 +55,9 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
     ttl: 30 * 1000,
   },
-  async fn({ palletType, api, chainId, accountId }) {
-    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, [accountId]);
+  async fn({ palletType, chainId, accountId }) {
+    const papi = getChainRegistry().getApi(chainId);
+    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, papi, [accountId]);
     const evidence = evidences.at(0);
 
     if (evidence?.evidence) {
@@ -79,25 +80,25 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
 
 type PeriodsRequestParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
-  chain: Chain;
+  chainId: ChainId;
 };
 
 export const evidencePeriodResource = createRemoteResource<PeriodsRequestParams, EvidencePeriods>({
-  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
   cache: {
-    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
     ttl: 60 * 1000,
   },
-  async fn({ palletType, api, chain }) {
-    const params = await collectiveCorePallet.storage.params(palletType, api);
+  async fn({ palletType, chainId }) {
+    const papi = getChainRegistry().getApi(chainId);
+    const params = await collectiveCorePallet.storage.params(palletType, papi);
 
     return {
+      chainId,
       pallet: palletType,
-      chainId: chain.chainId,
-      minPromotionPeriod: params.minPromotionPeriod,
-      demotionPeriod: params.demotionPeriod,
-      offboardTimeout: params.offboardTimeout,
+      minPromotionPeriod: params.min_promotion_period,
+      demotionPeriod: params.demotion_period,
+      offboardTimeout: params.offboard_timeout,
     };
   },
 });
@@ -114,7 +115,7 @@ type EvidenceSummaryRequestParams = {
   evidence: HexString;
   accountId: AccountId;
   /**
-   * User github name
+   * User GitHub name
    */
   githubHandle?: string;
   /**

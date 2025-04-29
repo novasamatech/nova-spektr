@@ -69,6 +69,7 @@ sample({
 
 const $proposal = combine({ api: $api, evidence: $evidence, member: $member }, ({ api, evidence, member }) => {
   if (nullable(api) || nullable(evidence) || nullable(member)) return null;
+
   return votingService.createProposal('fellowship', evidence, member, api);
 });
 

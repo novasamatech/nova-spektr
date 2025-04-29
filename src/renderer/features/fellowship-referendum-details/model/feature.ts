@@ -11,11 +11,7 @@ const $input = combine(fellowshipNetwork.$network, walletModel.$availableAccount
   if (nullable(network)) return null;
 
   return {
-    api: network.api,
-    asset: network.asset,
-    chain: network.chain,
-    chainId: network.chainId,
-    palletType: network.palletType,
+    ...network,
     accounts: accountService.filterAccountOnChain(accounts, network.chain),
   };
 });

@@ -1,9 +1,11 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { interval } from 'patronum';
 
+import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
-import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { papiSchema } from '@/shared/papi-schemas';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { getChainRegistry } from '@/domains/network';
 
 import { fellowshipSalaryFeature } from './feature';
 
@@ -11,7 +13,11 @@ const $currentBlock = createStore<BlockHeight>(pjsSchema.helpers.toBlockHeight(1
 const startBlockListening = createEvent();
 const stopBlockListening = createEvent();
 
-const getBlockFx = createEffect(getCurrentBlockNumber);
+const getBlockNumberFx = createEffect(async (chainId: ChainId) => {
+  const block = await getChainRegistry().getFinalizedBlock(chainId);
+
+  return block.number;
+});
 
 const { tick } = interval({
   start: startBlockListening,
@@ -32,15 +38,13 @@ sample({
 
 sample({
   clock: attachToFeatureInput(fellowshipSalaryFeature, tick),
-  fn({ input: { api } }) {
-    return api;
-  },
-  target: getBlockFx,
+  fn: ({ input: { chainId } }) => chainId,
+  target: getBlockNumberFx,
 });
 
 sample({
-  clock: getBlockFx.doneData,
-  fn: pjsSchema.helpers.toBlockHeight,
+  clock: getBlockNumberFx.doneData,
+  fn: papiSchema.helpers.toBlockHeight,
   target: $currentBlock,
 });
 

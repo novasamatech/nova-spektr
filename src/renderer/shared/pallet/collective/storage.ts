@@ -1,44 +1,37 @@
-import { type ApiPromise } from '@polkadot/api';
 import { zipWith } from 'lodash';
+import { type SS58String } from 'polkadot-api';
+import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
-import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId, papiSchema } from '@/shared/papi-schemas';
+import { type PolkadotApi } from '@/domains/network';
 
 import { getPalletName } from './helpers';
-import { type CollectiveRank, collectiveMemberRecord, collectiveRank, collectiveVoteRecord } from './schemas';
+import { collectiveMemberRecord, collectiveVoteRecord } from './schemas';
 import { type PalletType } from './types';
 
-const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
-  const palletName = getPalletName(type);
-  const pallet = api.query[palletName];
-  if (!pallet) {
-    throw new TypeError(`${palletName} pallet not found in ${api.runtimeChain.toString()} chain`);
+const getQuery = (type: PalletType, papi: PolkadotApi) => {
+  if (papi.type === 'dot_col') {
+    return papi.api.query[getPalletName(type)];
   }
 
-  const query = pallet[name];
-  if (!query) {
-    throw new TypeError(`${name} query not found`);
-  }
-
-  return query;
+  throw new TypeError(`Wrong chain - ${papi.type}. Only Collective chains able to make operations.`);
 };
-
 export const storage = {
   /**
-   * The index of each ranks's member into the group of members who have at
-   * least that rank.
+   * The index of each rank's member into the group of members who have at least
+   * that rank.
    */
-  idToIndex(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['key', pjsSchema.storageKey(pjsSchema.u16, pjsSchema.accountId)],
-        ['index', pjsSchema.optional(pjsSchema.u32)],
-      ),
+  idToIndex(type: PalletType, papi: PolkadotApi) {
+    const schema = z.array(
+      z.object({
+        key: z.tuple([z.number(), papiSchema.accountId]),
+        index: z.number(),
+      }),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'idToIndex').entries()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, papi).IdToIndex.getEntries()).then(schema.parse);
   },
 
   /**
@@ -46,98 +39,101 @@ export const storage = {
    * `0..MemberCount` will return `Some`, however a member's index is not
    * guaranteed to remain unchanged over time.
    */
-  indexToId(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['key', pjsSchema.storageKey(collectiveRank, pjsSchema.u32)],
-        ['index', pjsSchema.optional(pjsSchema.accountId)],
-      ),
+  indexToId(type: PalletType, papi: PolkadotApi) {
+    const schema = z.array(
+      z.object({
+        key: z.tuple([z.number(), z.number()]),
+        index: papiSchema.accountId,
+      }),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'indexToId').entries()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, papi).IndexToId.getEntries()).then(schema.parse);
   },
 
   /**
    * The number of members in the collective who have at least the rank
    * according to the index of the vec.
    */
-  memberCount(type: PalletType, api: ApiPromise, ranks: CollectiveRank[]) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(['rank', pjsSchema.storageKey(collectiveRank).transform(x => x[0])], ['count', pjsSchema.u32]),
+  memberCount(type: PalletType, papi: PolkadotApi, ranks: number[]) {
+    const schema = z.array(
+      z.object({
+        rank: z.number(),
+        count: z.number(),
+      }),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'memberCount').entries(ranks)).then(schema.parse);
+    const ranksTuples = ranks.map(r => [r] satisfies [Key: number]);
+
+    return substrateRpcPool.call(() => getQuery(type, papi).MemberCount.getValues(ranksTuples)).then(schema.parse);
   },
 
   /**
    * The current members of the collective.
    */
-  members(type: PalletType, api: ApiPromise) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['account', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
-        ['member', pjsSchema.optional(collectiveMemberRecord)],
-      ),
+  members(type: PalletType, papi: PolkadotApi) {
+    const schema = z.array(
+      z.object({
+        account: papiSchema.accountId,
+        member: collectiveMemberRecord,
+      }),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'members').entries()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, papi).Members.getEntries()).then(schema.parse);
   },
 
+  // TODO: resolve later
   /**
    * The current members of the collective.
    */
-  async *membersPaged(type: PalletType, api: ApiPromise, pageSize: number) {
-    const schema = pjsSchema.vec(
-      pjsSchema.tupleMap(
-        ['accountId', pjsSchema.storageKey(pjsSchema.accountId).transform(x => x[0])],
-        ['member', pjsSchema.optional(collectiveMemberRecord)],
-      ),
-    );
-
-    for await (const result of polkadotjsHelpers.createPagedRequest({
-      query: getQuery(type, api, 'members'),
-      pageSize,
-    })) {
-      yield schema.parse(result);
-    }
-  },
+  // async *membersPaged(type: PalletType, papi: PolkadotApi, pageSize: number) {
+  //   const schema = z.array(
+  //     z.object({
+  //       accountId: papiSchema.accountId,
+  //       member: z.number(),
+  //     }),
+  //   );
+  //
+  //   for await (const result of polkadotjsHelpers.createPagedRequest({
+  //     query: getQuery(type, papi).Members,
+  //     pageSize,
+  //   })) {
+  //     yield schema.parse(result);
+  //   }
+  // },
 
   /**
    * Votes on a given proposal, if it is ongoing.
    */
-  voting(
-    type: PalletType,
-    api: ApiPromise,
-    keys: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
-  ) {
-    const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
+  voting(type: PalletType, papi: PolkadotApi, keys: (readonly [ReferendumId, AccountId])[] | ReferendumId) {
+    const votingResponseSchema = z.array(z.optional(collectiveVoteRecord));
 
-    if (!Array.isArray(keys)) {
-      const votingWithKeyResponseSchema = pjsSchema.vec(
-        pjsSchema.tupleMap(
-          [
-            'key',
-            pjsSchema
-              .storageKey(referendaPallet.schema.referendumId, pjsSchema.accountId)
-              .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
-          ],
-          ['vote', pjsSchema.optional(collectiveVoteRecord)],
-        ),
+    if (Array.isArray(keys)) {
+      const typedKeys = keys.map(
+        ([referendumId, accountId]) => [Number(referendumId), accountId] as [number, SS58String],
       );
 
       return substrateRpcPool
-        .call(() => getQuery(type, api, 'voting').entries(keys))
-        .then(votingWithKeyResponseSchema.parse);
+        .call(() => getQuery(type, papi).Voting.getValues(typedKeys))
+        .then(votingResponseSchema.parse)
+        .then(votes =>
+          zipWith(votes, keys, (vote, key) => ({
+            key: { referendumId: key[0], accountId: key[1] },
+            vote,
+          })),
+        );
     }
 
+    const votingWithKeyResponseSchema = z.array(
+      z.object({
+        key: z
+          .tuple([referendaPallet.schema.referendumId, papiSchema.accountId])
+          .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
+        vote: z.optional(collectiveVoteRecord),
+      }),
+    );
+
     return substrateRpcPool
-      .call(() => getQuery(type, api, 'voting').multi(keys))
-      .then(votingResponseSchema.parse)
-      .then(votes =>
-        zipWith(votes, keys, (vote, key) => ({
-          key: { referendumId: key[0], accountId: key[1]! },
-          vote,
-        })),
-      );
+      .call(() => getQuery(type, papi).Voting.getEntries(Number(keys)))
+      .then(votingWithKeyResponseSchema.parse);
   },
 };

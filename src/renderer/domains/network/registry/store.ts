@@ -1,12 +1,12 @@
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { readonly } from 'patronum';
 import { WsEvent } from 'polkadot-api/ws-provider/web';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector';
 
+import { type ConnectionStatus } from './lib/types';
 import { getChainRegistry } from './service/chainRegistry';
-
-type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'close';
 
 const WS_EVENT_TO_READABLE: Record<WsEvent, ConnectionStatus> = {
   [WsEvent.CONNECTING]: 'connecting',
@@ -29,6 +29,8 @@ const createConnectionFx = createEffect((chain: Chain) => {
     chain.chainId,
     chain.nodes.map(n => n.url),
   );
+
+  return registry.requestToken(chain.chainId);
 });
 
 sample({
@@ -56,7 +58,7 @@ sample({
 });
 
 export const registry = {
-  $connectionStatuses,
+  $connectionStatuses: readonly($connectionStatuses),
 
   startNetworks,
 };

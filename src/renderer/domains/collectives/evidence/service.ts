@@ -31,22 +31,20 @@ function getEvidenceUploadIpfsUrl() {
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
-  return period;
+  return periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
 }
 
-function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const gone = currentBlock - member.lastPromotion;
+
   return Math.max(0, promotionPeriod - gone);
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period =
-    member.rank === 0
-      ? periods.offboardTimeout
-      : (periods.demotionPeriod.at(member.rank - 1) ?? pjsSchema.helpers.toBlockHeight(1));
-  return period;
+  return member.rank === 0
+    ? periods.offboardTimeout
+    : (periods.demotionPeriod.at(member.rank - 1) ?? pjsSchema.helpers.toBlockHeight(1));
 }
 
 function getBlockUntilDemotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
@@ -93,7 +91,7 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
-  getBlockUntilNextPropotion,
+  getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlockUntilDemotion,
   getEndDemotionBlock,

@@ -8,6 +8,7 @@ import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { salaryPallet } from '@/shared/pallet/salary';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { getChainRegistry } from '@/domains/network';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
@@ -50,12 +51,13 @@ type SalariesRequestParams = {
 
 const { $: $salaries, request: requestSalaries } = createDataSource({
   initial: {} as CollectivesStruct<Salaries>,
-  async fn({ api, palletType }: SalariesRequestParams): Promise<Salaries> {
-    const params = await collectiveCorePallet.storage.params(palletType, api);
+  async fn({ chainId, palletType }: SalariesRequestParams): Promise<Salaries> {
+    const papi = getChainRegistry().getApi(chainId);
+    const params = await collectiveCorePallet.storage.params(palletType, papi);
 
     return {
-      active: params.activeSalary,
-      passive: params.passiveSalary,
+      active: params.active_salary,
+      passive: params.passive_salary,
     };
   },
   map(store, { params, result }) {

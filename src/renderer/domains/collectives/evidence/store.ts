@@ -74,10 +74,10 @@ export const evidence = {
   $populated: readonly($populated),
   $periods: readonly($periods),
   $summary: readonly($summary),
+  summaryFulfilled,
   request: evidenceResource.request,
   requestContent: evidenceContentResource.request,
   requestPeriods: evidencePeriodResource.request,
   requestSummary: evidenceSummaryResource.request,
-  summaryFulfilled,
   pendingSummary: evidenceSummaryResource.request,
 };

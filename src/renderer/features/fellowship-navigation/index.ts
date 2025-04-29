@@ -9,5 +9,10 @@ export const fellowshipNavigationFeature = createFeature({
 });
 
 fellowshipNavigationFeature.inject(navigationTopLinksPipeline, items => {
-  return items.concat({ order: 3, icon: 'fellowshipNav', title: 'navigation.fellowship', link: Paths.FELLOWSHIP });
+  return items.concat({
+    order: 3,
+    icon: 'fellowshipNav',
+    title: 'navigation.fellowship',
+    link: Paths.FELLOWSHIP,
+  });
 });

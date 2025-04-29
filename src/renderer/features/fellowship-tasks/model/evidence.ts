@@ -61,14 +61,14 @@ const $evidencesWithoutReferendums = combine(
 
 const evidenceContentRequested = attachToFeatureInput(fellowshipTasksFeature, evidenceContentFlow.open).filterMap(
   ({ input, data: { evidence } }) => {
-    if (evidence) {
-      return {
-        api: input.api,
-        chainId: input.chainId,
-        palletType: input.palletType,
-        accountId: evidence?.accountId,
-      };
-    }
+    if (nullable(evidence)) return;
+
+    return {
+      api: input.api,
+      chainId: input.chainId,
+      palletType: input.palletType,
+      accountId: evidence?.accountId,
+    };
   },
 );
 
@@ -79,20 +79,18 @@ sample({
 
 sample({
   clock: attachToFeatureInput(fellowshipTasksFeature, $members),
-  fn({ input, data: members }) {
-    return {
-      api: input.api,
-      palletType: input.palletType,
-      chainId: input.chainId,
-      accounts: members.map(m => m.accountId),
-    };
-  },
+  fn: ({ input, data: members }) => ({
+    api: input.api,
+    palletType: input.palletType,
+    chainId: input.chainId,
+    accounts: members.map(m => m.accountId),
+  }),
   target: requestEvidenceFx,
 });
 
 sample({
   clock: attachToFeatureInput(fellowshipTasksFeature, requestEvidenceFx.doneData),
-  fn({ input, data: evidences }) {
+  fn: ({ input, data: evidences }) => {
     return evidences.filter(nonNullable).map(e => ({
       palletType: input.palletType,
       chainId: input.chainId,

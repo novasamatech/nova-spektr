@@ -16,12 +16,14 @@ const $leftToPromotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
 const $endDemotionPeriod = combine(memberProfile.$member, $periods, (member, periods) => {
   if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+
   return evidenceService.getEndDemotionBlock(member, periods);
 });
 
@@ -29,17 +31,17 @@ const $leftToDemotion = combine(
   { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+
     return evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
   },
 );
 
 // requesting data
 
-const periodRequested = fellowshipTasksFeature.running.filterMap(({ api, palletType, chain }) => {
+const periodRequested = fellowshipTasksFeature.running.filterMap(({ palletType, chain }) => {
   return {
-    api,
     palletType,
-    chain,
+    chainId: chain.chainId,
   };
 });
 

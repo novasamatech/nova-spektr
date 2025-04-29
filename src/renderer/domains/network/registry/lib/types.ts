@@ -1,5 +1,7 @@
 import { type dot, type dot_col, type dot_ppl, type ksm, type ksm_ppl } from '@polkadot-api/descriptors';
-import { type ChainDefinition, type TypedApi } from 'polkadot-api';
+import { type ChainDefinition, type CompatibilityToken, type TypedApi } from 'polkadot-api';
+
+export type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'close';
 
 type ChainsDescriptors = 'dot' | 'dot_ppl' | 'dot_col' | 'ksm' | 'ksm_ppl';
 // type ChainsDescriptors =
@@ -39,6 +41,7 @@ type ChainsDescriptors = 'dot' | 'dot_ppl' | 'dot_col' | 'ksm' | 'ksm_ppl';
 export type ChainApi<C extends ChainsDescriptors, A extends ChainDefinition> = {
   type: C;
   api: TypedApi<A>;
+  token: CompatibilityToken;
 };
 
 export type DotApi =

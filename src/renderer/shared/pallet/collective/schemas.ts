@@ -1,17 +1,14 @@
-import { type z } from 'zod';
+import { z } from 'zod';
 
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
-
-export type CollectiveRank = z.infer<typeof collectiveRank>;
-export const collectiveRank = pjsSchema.u16;
+import { papiSchema } from '@/shared/papi-schemas';
 
 export type CollectiveMemberRecord = z.infer<typeof collectiveMemberRecord>;
-export const collectiveMemberRecord = pjsSchema.object({
-  rank: collectiveRank,
+export const collectiveMemberRecord = z.object({
+  rank: z.number(),
 });
 
 export type CollectiveVoteRecord = z.infer<typeof collectiveVoteRecord>;
-export const collectiveVoteRecord = pjsSchema.enumValue({
-  Aye: pjsSchema.u32,
-  Nay: pjsSchema.u32,
+export const collectiveVoteRecord = papiSchema.enumValue({
+  Aye: z.number(),
+  Nay: z.number(),
 });

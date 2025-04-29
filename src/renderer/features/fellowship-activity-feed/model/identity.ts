@@ -13,15 +13,11 @@ const $list = combine(identity.$list, fellowshipActivityFeedFeature.state, (list
 
 sample({
   clock: member.receive,
-  filter({ result }) {
-    return result.length > 0;
-  },
-  fn({ params, result }) {
-    return {
-      chainId: params.api.genesisHash.toHex(),
-      accounts: result.map(m => m.accountId),
-    };
-  },
+  filter: ({ result }) => result.length > 0,
+  fn: ({ params, result }) => ({
+    chainId: params.chainId,
+    accounts: result.map(m => m.accountId),
+  }),
   target: identity.request,
 });
 

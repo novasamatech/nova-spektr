@@ -1,15 +1,18 @@
 import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
 import { GraphQLClient } from 'graphql-request';
+import { capitalize } from 'lodash';
 import { z } from 'zod';
 
 import { type ArrayElement, type Chain, type ChainId, ExternalType } from '@/shared/core';
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
-import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { papiHelpers } from '@/shared/papi-helpers';
+import { papiSchema } from '@/shared/papi-schemas';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
+import { getChainRegistry } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Vote } from './types';
@@ -19,7 +22,7 @@ const mapChainVote = (
   chainId: ChainId,
   { vote, key }: ArrayElement<Awaited<ReturnType<typeof collectivePallet.storage.voting>>>,
 ): Vote | undefined => {
-  if (!vote) return;
+  if (nullable(vote)) return;
 
   return {
     pallet,
@@ -31,16 +34,20 @@ const mapChainVote = (
   };
 };
 
-const requestFromChain = async (
-  api: ApiPromise,
-  pallet: CollectivePalletsType,
-  referendums: ReferendumId[],
-  accounts: AccountId[],
-) => {
+type VotingRequestParams = {
+  chainId: ChainId;
+  palletType: CollectivePalletsType;
+  referendums: ReferendumId[];
+  accounts: AccountId[];
+};
+
+const requestFromChain = async ({ palletType, chainId, referendums, accounts }: VotingRequestParams) => {
   const keys = referendums.map(r => accounts.map(a => [r, a] as const)).flat();
-  const votes = await collectivePallet.storage.voting(pallet, api, keys);
-  const chainId = api.genesisHash.toHex();
-  return votes.map(vote => mapChainVote(pallet, chainId, vote)).filter(nonNullable);
+
+  const papi = getChainRegistry().getApi(chainId);
+  const votes = await collectivePallet.storage.voting(palletType, papi, keys);
+
+  return votes.map(vote => mapChainVote(palletType, chainId, vote)).filter(nonNullable);
 };
 
 const GET_VOTES_QUERY = gql`
@@ -116,16 +123,15 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
     },
     ttl: 60 * 1000,
   },
-  async fn({ palletType, api, chain, referendums, accounts }) {
+  async fn({ palletType, chain, referendums, accounts }) {
     if (referendums.length === 0) return [];
 
-    if (api) {
-      try {
-        return await requestFromChain(api, palletType, referendums, accounts);
-      } catch (e) {
-        /* skip */
-        console.error(e);
+    try {
+      if (getChainRegistry().getApi(chain.chainId)) {
+        return requestFromChain({ palletType, chainId: chain.chainId, referendums, accounts });
       }
+    } catch (e) {
+      console.error(e);
     }
 
     const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
@@ -139,46 +145,45 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
 
 type VotingSubscribeParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
   chainId: ChainId;
   accounts: AccountId[];
 };
 
 export const subscribeResource = createSubscriptionResource<VotingSubscribeParams, Vote[]>({
   pool: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
-  async fn({ palletType, api, chainId, accounts }, callback) {
-    const number = z.string().transform(v => parseInt(v));
-    const eventSchema = z.object({
-      who: z.string(),
-      poll: number.transform(referendaPallet.helpers.toReferendumId),
-      vote: z.object({ Aye: number }).or(z.object({ Nay: number })),
+  async fn({ palletType, chainId, accounts }, callback) {
+    const payloadSchema = z.object({
+      who: papiSchema.accountId,
+      poll: z.number().transform(referendaPallet.helpers.toReferendumId),
+      vote: z.object({ Aye: z.number() }).or(z.object({ Nay: z.number() })),
     });
 
-    const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
-      { api, section: `${palletType}Collective`, methods: ['Voted'] },
-      event => {
-        const data = eventSchema.parse(event.data.toHuman());
-        const accountId = toAccountId(data.who);
-        if (!accounts.some(a => a === accountId)) {
-          return;
-        }
+    const papi = getChainRegistry().getApi(chainId);
+
+    return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+      const pallet = `${capitalize(palletType)}Collective` as const;
+
+      api.event[pallet].Voted.watch().subscribe(({ payload }) => {
+        const parsedData = payloadSchema.parse(payload);
+
+        const accountMatch = accounts.some(a => a === parsedData.who);
+
+        if (!accountMatch) return;
 
         const vote: Vote = {
           pallet: palletType,
           chainId,
-          accountId,
-          referendumId: data.poll,
-          decision: 'Aye' in data.vote ? 'Aye' : 'Nay',
-          votes: 'Aye' in data.vote ? data.vote.Aye : data.vote.Nay,
+          accountId: parsedData.who,
+          referendumId: parsedData.poll,
+          decision: 'Aye' in parsedData.vote ? 'Aye' : 'Nay',
+          votes: 'Aye' in parsedData.vote ? parsedData.vote.Aye : parsedData.vote.Nay,
         };
 
         callback({
           value: [vote],
           done: true,
         });
-      },
-    );
-
-    return unsubscribe;
+      });
+    });
   },
 });

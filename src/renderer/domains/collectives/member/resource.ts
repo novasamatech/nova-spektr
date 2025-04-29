@@ -1,25 +1,29 @@
-import { type ApiPromise } from '@polkadot/api';
+import { capitalize } from 'lodash';
 
+import { type ChainId } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { papiHelpers } from '@/shared/papi-helpers';
 import { createSubscriptionResource } from '@/shared/resource';
+import { getChainRegistry } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type CoreMember, type Member } from './types';
 
 type RequestParams = {
+  chainId: ChainId;
   palletType: CollectivePalletsType;
-  api: ApiPromise;
 };
 
 export const membersSubscription = createSubscriptionResource<RequestParams, Member[]>({
-  pool: ({ api, palletType }) => `${api.genesisHash.toHex()}:${palletType}`,
-  fn({ api, palletType }, callback) {
+  pool: ({ chainId, palletType }) => `${chainId}:${palletType}`,
+  fn({ chainId, palletType }, callback) {
+    const papi = getChainRegistry().getApi(chainId);
+
     const fn = async () => {
-      const collectiveMembers = await collectivePallet.storage.members(palletType, api);
-      const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
+      const collectiveMembers = await collectivePallet.storage.members(palletType, papi);
+      const coreMembers = await collectiveCorePallet.storage.member(palletType, papi);
       const result: (Member | CoreMember)[] = [];
 
       for (const collectiveMember of collectiveMembers) {
@@ -29,8 +33,8 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
 
         if (nonNullable(coreMember?.status)) {
           result.push({
+            chainId,
             pallet: palletType,
-            chainId: api.genesisHash.toHex(),
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,
             isActive: coreMember.status.isActive,
@@ -39,8 +43,8 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
           });
         } else {
           result.push({
+            chainId,
             pallet: palletType,
-            chainId: api.genesisHash.toHex(),
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,
           });
@@ -55,27 +59,27 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
 
     fn();
 
-    const unsubscribe = Promise.all([
-      polkadotjsHelpers.subscribeSystemEvents(
-        {
-          api,
-          section: `${palletType}Collective`,
-          methods: ['MemberAdded', 'MemberExchanged', 'MemberRemoved', 'RankChanged'],
-        },
-        fn,
-      ),
-      polkadotjsHelpers.subscribeSystemEvents(
-        { api, section: `${palletType}Core`, methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'] },
-        fn,
-      ),
-    ]);
+    const unsubscribe = papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+      const palletCollective = `${capitalize(palletType)}Collective` as const;
+      const palletCore = `${capitalize(palletType)}Core` as const;
+
+      return [
+        api.event[palletCollective].MemberAdded.watch().subscribe(fn),
+        api.event[palletCollective].MemberRemoved.watch().subscribe(fn),
+        api.event[palletCollective].MemberExchanged.watch().subscribe(fn),
+        api.event[palletCollective].RankChanged.watch().subscribe(fn),
+        api.event[palletCore].Imported.watch().subscribe(fn),
+        api.event[palletCore].Swapped.watch().subscribe(fn),
+        api.event[palletCore].Promoted.watch().subscribe(fn),
+        api.event[palletCore].Demoted.watch().subscribe(fn),
+        api.event[palletCore].ActiveChanged.watch().subscribe(fn),
+      ];
+    });
 
     return () => {
-      unsubscribe.then(fns => () => {
-        for (const fn of fns) {
-          fn();
-        }
-      });
+      for (const fn of unsubscribe) {
+        fn();
+      }
     };
   },
 });

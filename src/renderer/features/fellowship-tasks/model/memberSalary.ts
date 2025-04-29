@@ -66,7 +66,7 @@ sample({
 });
 
 const memberUpdated = attachToFeatureInput(fellowshipTasksFeature, $member).filterMap(({ data, input }) => {
-  if (!data) return;
+  if (nullable(data)) return;
 
   return {
     api: input.api,

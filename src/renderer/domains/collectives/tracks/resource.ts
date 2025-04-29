@@ -4,6 +4,7 @@ import { type ChainId } from '@/shared/core';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendaCurve, referendaPallet } from '@/shared/pallet/referenda';
 import { createRemoteResource } from '@/shared/resource';
+import { getChainRegistry } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { type Track, type VotingCurve } from './types';
@@ -49,30 +50,24 @@ export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>
   fn({ api, palletType, chainId }) {
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
-    return tracks.map<Track>(({ track, info }) => {
-      const minApproval = mapCurve(info.minApproval);
-      const minSupport = mapCurve(info.minSupport);
-
-      return {
-        id: track,
-        name: info.name,
-        chainId,
-        pallet: palletType,
-        maxDeciding: info.maxDeciding,
-        decisionDeposit: info.decisionDeposit,
-        preparePeriod: info.preparePeriod,
-        decisionPeriod: info.decisionPeriod,
-        minEnactmentPeriod: info.minEnactmentPeriod,
-        minApproval,
-        minSupport,
-      };
-    });
+    return tracks.map<Track>(({ track, info }) => ({
+      id: track,
+      name: info.name,
+      chainId,
+      pallet: palletType,
+      maxDeciding: info.maxDeciding,
+      decisionDeposit: info.decisionDeposit,
+      preparePeriod: info.preparePeriod,
+      decisionPeriod: info.decisionPeriod,
+      minEnactmentPeriod: info.minEnactmentPeriod,
+      minApproval: mapCurve(info.minApproval),
+      minSupport: mapCurve(info.minSupport),
+    }));
   },
 });
 
 type RequestMaxRankParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
   chainId: ChainId;
 };
 
@@ -87,11 +82,14 @@ export const maxRankResource = createRemoteResource<RequestMaxRankParams, MaxRan
     key: ({ chainId, palletType }) => `${palletType}:${chainId}`,
     ttl: Number.POSITIVE_INFINITY,
   },
-  fn({ api, palletType, chainId }) {
+  async fn({ palletType, chainId }) {
+    const papi = getChainRegistry().getApi(chainId);
+    const maxRank = await collectiveCorePallet.consts.maxRank(palletType, papi);
+
     return {
       palletType,
       chainId,
-      maxRank: collectiveCorePallet.consts.maxRank(palletType, api),
+      maxRank,
     };
   },
 });

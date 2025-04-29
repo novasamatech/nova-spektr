@@ -7,13 +7,14 @@ import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const $fellowshipMembers = member.$list.map(members => members['fellowship'] ?? {});
-const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (network, members) =>
-  network ? (members[network.chainId] ?? []) : [],
-);
 
-const $accounts = combine(fellowshipNetwork.$network, walletModel.$availableAccounts, (network, accounts) =>
-  network ? accountService.filterAccountOnChain(accounts, network.chain) : [],
-);
+const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (network, members) => {
+  return network ? (members[network.chainId] ?? []) : [];
+});
+
+const $accounts = combine(fellowshipNetwork.$network, walletModel.$availableAccounts, (network, accounts) => {
+  return network ? accountService.filterAccountOnChain(accounts, network.chain) : [];
+});
 
 const $currentMember = combine(
   {
