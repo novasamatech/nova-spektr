@@ -10,8 +10,8 @@ const ONE_DAY = 24 * 60 * 60;
 function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
-  if (days <= 15) return 'urgent';
-  if (days <= 30) return 'warning';
+  if (days <= 2) return 'urgent';
+  if (days <= 14) return 'warning';
   return 'idle';
 }
 
@@ -22,18 +22,18 @@ type Props = {
 
 export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
   const input = useUnit(fellowshipSalaryFeature.input);
-  const [endTime, setEndTime] = useState<number>();
+  const [secondsToEnd, setSecondsToEnd] = useState<number>();
 
   useEffect(() => {
     if (endBlock && input) {
       getTimeToBlock(endBlock, input.api).then(date => {
-        setEndTime(date / 1000);
+        setSecondsToEnd(date / 1000);
       });
     }
   }, [endBlock, input]);
 
-  if (!endTime || !input) return null;
-  const variant = getTimerColor(endTime);
+  if (!secondsToEnd || !input) return null;
+  const variant = getTimerColor(secondsToEnd);
 
-  return <Timeout secondsToEnd={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
+  return <Timeout secondsToEnd={secondsToEnd} variant={variant} shortDateFormat={shortDateFormat} />;
 };
