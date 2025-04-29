@@ -25,16 +25,18 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
         <div className="shrink-0">
           <CollectiveRank rank={rank} />
         </div>
-        <div className="relative min-w-0 shrink grow">
-          <div className="flex grow items-center gap-4.5">
-            <Identicon address={address} size={20} canCopy background={false} />
-            <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
+        <div className="relative flex min-w-0 shrink grow items-center gap-2">
+          <div className="min-w-0">
+            <div className="flex grow items-center gap-4.5">
+              <Identicon address={address} size={20} canCopy background={false} />
+              <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 left-3 my-auto h-fit w-fit">
+              <Indicator active={isActive} />
+            </div>
           </div>
-          <div className="pointer-events-none absolute inset-y-0 left-3 my-auto h-fit w-fit">
-            <Indicator active={isActive} />
-          </div>
+          <AccountExplorers accountId={accountId} chain={chain} />
         </div>
-        <AccountExplorers accountId={accountId} chain={chain} />
       </div>
       {children}
     </div>

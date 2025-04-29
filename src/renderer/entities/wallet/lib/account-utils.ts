@@ -4,12 +4,14 @@ import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
 import {
+  AccountType,
   type Chain,
   type ChainId,
-  type ID,
+  CryptoType,
   type MultisigAccount,
   type MultisigThreshold,
   type ProxiedAccount,
+  ProxyVariant,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -17,7 +19,6 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
@@ -49,7 +50,6 @@ export const accountUtils = {
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
-  getBaseAccount,
   getDerivationPath,
 
   isAnyProxyType,
@@ -133,9 +133,15 @@ function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
-  const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
+  if (isWcAccount(account)) {
+    return true;
+  }
 
-  return isWcAccount(account) || account.cryptoType === cryptoType;
+  const cryptoTypes = networkUtils.isEthereumBased(chain.options)
+    ? [CryptoType.ECDSA, CryptoType.ETHEREUM]
+    : [CryptoType.SR25519, CryptoType.ED25519];
+
+  return cryptoTypes.includes(account.cryptoType);
 }
 
 function isEthereumBased(account: AnyAccount): boolean {
@@ -175,14 +181,6 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
 
     return acc;
   }, []);
-}
-
-function getBaseAccount(accounts: AnyAccount[], walletId?: ID): VaultBaseAccount | undefined {
-  return accounts.find((a) => {
-    const walletMatch = !walletId || walletId === a.walletId;
-
-    return walletMatch && isVaultBaseAccount(a);
-  }) as VaultBaseAccount;
 }
 
 function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {

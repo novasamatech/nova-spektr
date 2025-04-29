@@ -52,7 +52,7 @@ type EvidenceContentRequestParams = {
 export const evidenceContentResource = createRemoteResource<EvidenceContentRequestParams, EvidenceContent | null>({
   pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
   cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
+    key: ({ palletType, chainId, accountId }) => `${palletType}:${chainId}:${accountId}`,
     ttl: 30 * 1000,
   },
   async fn({ palletType, chainId, accountId }) {

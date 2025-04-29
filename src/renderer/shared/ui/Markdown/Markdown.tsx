@@ -1,5 +1,7 @@
+import './Markdown.css';
+
 import noop from 'lodash/noop';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
@@ -56,6 +58,7 @@ const components: Components = {
       className="text-primary-button-background-default hover:underline focus:w-full"
       url={props.href ?? ''}
       size="inherit"
+      onClick={(e) => e.stopPropagation()}
     >
       {props.children}
     </InfoLink>
@@ -124,14 +127,23 @@ const components: Components = {
   ),
 };
 
-export const Markdown = ({ children }: { children: string }) => {
+type Props = {
+  compact?: boolean;
+  cut?: string;
+  children: string;
+};
+
+export const Markdown = memo(({ compact, cut, children }: Props) => {
   if (!children) {
     return null;
   }
 
-  return (
+  const markdown = (
     <ReactMarkdown
-      className="flex flex-col gap-3 overflow-hidden whitespace-pre-line text-body"
+      className={cnTw('flex flex-col overflow-hidden whitespace-pre-line text-body', {
+        'gap-3': !compact,
+        'gap-0.5': compact,
+      })}
       remarkRehypeOptions={rehypeOptions}
       remarkPlugins={remarkPlugins}
       rehypePlugins={rehypePlugins}
@@ -140,4 +152,14 @@ export const Markdown = ({ children }: { children: string }) => {
       {children}
     </ReactMarkdown>
   );
-};
+
+  if (cut) {
+    return (
+      <div className="markdown-cut overflow-hidden" style={{ maxHeight: cut }}>
+        {markdown}
+      </div>
+    );
+  }
+
+  return markdown;
+});

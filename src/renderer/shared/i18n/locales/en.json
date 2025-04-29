@@ -312,16 +312,20 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
-        "nothing-found": "Nothing found for \"{query}\"",
-        "search-placeholder": "Search",
+        "nothing-found": {
+          "clear": "Clear search",
+          "description": "“{query}” did not match any event address or identity. Please try searching with another term.",
+          "title": "Nothing found"
+        },
+        "search-placeholder": "Search by event, address or identity",
         "sort": {
-          "duration-asc": "Duration asc",
-          "duration-desc": "Duration desc",
-          "name-asc": "Name asc",
-          "name-desc": "Name desc",
+          "duration-asc": "Newest",
+          "duration-desc": "Oldest",
+          "name-asc": "Name: A-Z",
+          "name-desc": "Name: Z-A",
           "placeholder": "Sort by"
         },
-        "title": "Events on"
+        "title": "All events"
       },
       "lastActivityCardTitle": "Last events",
       "record": {
@@ -358,6 +362,7 @@
       "dateOfInitialInduction": "Date of initial induction:",
       "dateOfLastReport": "Date of last report:",
       "matrixUsername": "Matrix username:",
+      "member": "Member",
       "memberDetails": "Member details",
       "polkadotAddress": "Polkadot address:",
       "promotedAt": "(promotion executed on <time/>)",
@@ -365,8 +370,8 @@
       "titleRetention": "Retain on rank",
       "votingRecord": "Voting record"
     },
-    "fellow_one": "{ count } Fellow",
-    "fellow_other": "{ count } Fellows",
+    "fellow_one": "{ count } Member",
+    "fellow_other": "{ count } Members",
     "members": {
       "active": "Active",
       "activity": "Activity",
@@ -411,6 +416,18 @@
         },
         "title": "Switching status on"
       }
+    },
+    "rank": {
+      "0": "Candidate",
+      "1": "Humble",
+      "2": "Proficient",
+      "3": "Fellow",
+      "4": "Architect",
+      "5": "Architect adept",
+      "6": "Grand architect",
+      "7": "Free master",
+      "8": "Masters constant",
+      "9": "Grand master"
     },
     "referendums": {
       "completed": "Completed referendums",
@@ -508,7 +525,9 @@
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
         "evidenceType": "Evidence type",
-        "rank": "Rank"
+        "promote": "Promote to { rank }",
+        "rank": "Rank",
+        "retain": "Retain at { rank }"
       },
       "submitEvidenceVoteConfirm": {
         "evidence": "Evidence",
@@ -536,11 +555,12 @@
       "reviewBasketTitle_other": "Decisions",
       "task": {
         "anyReferendum": {
+          "noDescription": "No description provided",
           "title": "Review referendum"
         },
         "evidence": {
-          "promotionTitle": "Review promotion",
-          "retentionTitle": "Review retention"
+          "promotionTitle": "Review promotion evidence",
+          "retentionTitle": "Review retention evidence"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
@@ -549,9 +569,13 @@
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
-          "noEvidence": "Evidence not provided",
+          "noEvidence": "No evidence provided",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
+        },
+        "referendum": {
+          "promotionTitle": "Promote to { rank }",
+          "retentionTitle": "Retain at { rank }"
         },
         "requestPayout": {
           "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
@@ -596,6 +620,8 @@
         "referendumType": "Referendum type",
         "retentionTrack": "Retention",
         "salary": "Salary",
+        "status": "Status",
+        "submissionDeposit": "Decision deposit",
         "vote": "Vote"
       },
       "errors": {
@@ -606,6 +632,7 @@
       "summary": "Summary",
       "threshold": "Threshold",
       "title": "Vote on",
+      "tooltip": "This will create a referendum with a { vote } vote pre-cast",
       "voteImpact": {
         "huge": "Huge",
         "impact": "Vote impact:",
@@ -660,6 +687,9 @@
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
+    },
+    "timeout": {
+      "expired": "Expired"
     },
     "title": {
       "appName": "Nova Spektr",

@@ -1,21 +1,27 @@
-import { attach, createStore } from 'effector';
+import { attach, createEffect, createStore, scopeBind } from 'effector';
 import { isEmpty } from 'lodash';
 import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
-import { entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
+import { createAsyncTaskPool, entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 
-import { type ResourceParams, resource } from './resource';
+import { type FetchParams, fetchIdentity } from './resource';
 import { type AccountIdentity } from './types';
+
+const fetchPool = createAsyncTaskPool({
+  poolSize: 1,
+  retryCount: 5,
+  retryDelay: 2000,
+});
 
 const $list = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
 
 deriveFromResources({
   store: $list,
-  resources: [resource],
+  resources: [fetchIdentity],
   map(state, identities) {
     if (isEmpty(identities)) return state;
 
@@ -38,13 +44,13 @@ deriveFromResources({
   },
 });
 
-const request = attach({
-  effect: resource.request,
+const requestFx = attach({
   source: {
-    apis: networkModel.$apis,
     chains: networkModel.$chains,
+    apis: networkModel.$apis,
   },
-  mapParams: ({ chainId, accounts }: Omit<ResourceParams, 'api'>, { apis, chains }) => {
+  effect({ chains, apis }, { chainId, accounts }: Omit<FetchParams, 'api'>) {
+    const bound = scopeBind(fetchIdentity.request, { safe: true });
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
     const api = apis[identityChainId];
 
@@ -52,11 +58,18 @@ const request = attach({
       throw new Error(`Api for chain ${identityChainId} not found`);
     }
 
-    return { accounts, chainId, api };
+    return bound({ accounts, chainId, api });
   },
 });
 
+const requestWithRetryFx = createEffect<Omit<FetchParams, 'api'>, Record<AccountId, AccountIdentity>>(
+  ({ chainId, accounts }) => {
+    const bound = scopeBind(requestFx, { safe: true });
+    return fetchPool.call(() => bound({ chainId, accounts }));
+  },
+);
+
 export const identity = {
   $list: readonly($list),
-  request: request,
+  request: requestWithRetryFx,
 };

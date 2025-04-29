@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 
-import { createBaseAccount, polkadotChain } from '@/shared/mocks';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotChain } from '@/shared/mocks';
 
 import { Account } from './Account';
 
@@ -8,7 +9,7 @@ const meta: Meta<typeof Account> = {
   title: 'Design System/entities/Account',
   component: Account,
   args: {
-    accountId: createBaseAccount().accountId,
+    accountId: TEST_ACCOUNTS[0],
     chain: polkadotChain,
   },
 };

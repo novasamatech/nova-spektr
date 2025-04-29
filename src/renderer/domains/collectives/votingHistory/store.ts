@@ -23,5 +23,6 @@ export const voting = {
 
   subscribeAccountsVoting: subscribeResource.subscribe,
   unsubscribeAccountsVoting: subscribeResource.unsubscribe,
+  receive: subscribeResource.receive,
   request: requestResource.request,
 };

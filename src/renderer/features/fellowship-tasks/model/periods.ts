@@ -32,7 +32,7 @@ const $leftToDemotion = combine(
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
 
-    return evidenceService.getBlockUntilDemotion(member, periods, currentBlock);
+    return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );
 

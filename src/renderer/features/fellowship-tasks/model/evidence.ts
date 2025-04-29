@@ -1,6 +1,7 @@
 import { attach, combine, sample } from 'effector';
+import { createGate } from 'effector-react';
 
-import { createFlow, populated, series } from '@/shared/effector';
+import { populated, series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type Evidence, evidence, referendumService, trackService } from '@/domains/collectives';
@@ -12,7 +13,7 @@ import { referendums } from './referendums';
 
 // flow
 
-const evidenceContentFlow = createFlow<{ evidence: Evidence | null }>({ evidence: null });
+const evidenceContentFlow = createGate<{ evidence: Evidence | null }>({ defaultState: { evidence: null } });
 
 // evidences
 

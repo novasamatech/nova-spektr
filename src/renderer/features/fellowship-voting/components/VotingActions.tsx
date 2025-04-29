@@ -88,7 +88,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
 
   const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
   const userVotesImpact =
-    tasksService.getUserImportanceScore(
+    tasksService.getReferendumUserImportanceScore(
       totalReferendumVotes,
       referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
     ) * 100;

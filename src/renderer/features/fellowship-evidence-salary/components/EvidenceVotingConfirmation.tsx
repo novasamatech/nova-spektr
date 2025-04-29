@@ -1,10 +1,11 @@
 import { type BN } from '@polkadot/util';
-import { memo } from 'react';
+import { capitalize } from 'lodash';
+import { memo, useMemo } from 'react';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset } from '@/shared/lib/utils';
-import { DetailRow, Icon, Separator } from '@/shared/ui';
+import { formatAsset, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { DetailRow, Icon, type IconNames, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Member, type Track, trackService } from '@/domains/collectives';
@@ -35,26 +36,27 @@ export const EvidenceVotingConfirmation = memo(
     });
 
     let rankTitle = '';
+    let iconName: IconNames | null = null;
 
     if (evidence.wish === 'Retention') {
+      iconName = 'retain';
       if (currentTrack) {
-        rankTitle = currentTrack.name;
+        rankTitle = `${toRomanNumeral(currentTrack.id)} ${capitalize(currentTrack.name).replace(/s$/, '')}`;
       }
     }
     if (evidence.wish === 'Promotion') {
+      iconName = 'promote';
       if (nextTrack) {
-        if (currentTrack) {
-          rankTitle = `${currentTrack.name} → ${nextTrack.name}`;
-        } else {
-          rankTitle = nextTrack.name;
-        }
+        rankTitle = `${toRomanNumeral(nextTrack.id)} ${capitalize(nextTrack.name).replace(/s$/, '')}`;
       }
     }
+
+    const decisionDeposit = useMemo(() => (currentTrack ? currentTrack.decisionDeposit : null), [currentTrack]);
 
     return (
       <Box gap={6}>
         <Box gap={3} horizontalAlign="center">
-          <Icon className="text-icon-default" name="voteMst" size={60} />
+          {iconName && <Icon className="text-icon-default" name={iconName} size={60} />}
 
           <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
             {t('governance.referendum.votes', { votes, count: votes })}
@@ -65,10 +67,15 @@ export const EvidenceVotingConfirmation = memo(
           <DetailRow label={t('fellowship.salary.submitEvidenceVoteConfirm.vote')}>{vote}</DetailRow>
           {rankTitle && (
             <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.rank')}>
-              <span className="uppercase">{rankTitle}</span>
+              <span>{rankTitle}</span>
             </DetailRow>
           )}
           <Separator />
+          {nonNullable(decisionDeposit) && (
+            <DetailRow label={t('fellowship.voting.confirmation.submissionDeposit')}>
+              {formatAsset(decisionDeposit, asset)}
+            </DetailRow>
+          )}
           <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
         </TransactionDetails>
       </Box>

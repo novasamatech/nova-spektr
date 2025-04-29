@@ -6,11 +6,13 @@ import { combineEvents, once, previous, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
-import { isFulfilled } from '@/shared/lib/utils';
+import { isFulfilled, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
 
@@ -133,7 +135,7 @@ sample({
 });
 
 sample({
-  clock: once(combineEvents([walletModel.$activeWallet.updates, networkModel.$chains.updates])),
+  clock: once(combineEvents([walletSelect.$selectedWallet.updates, networkModel.$chains.updates])),
   filter: ([wallet]) => Boolean(wallet),
   fn: ([wallet, chains]) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
@@ -220,15 +222,16 @@ sample({
 });
 
 sample({
-  clock: [walletToSubSet, walletModel.$activeWallet],
+  clock: [walletToSubSet, walletSelect.$selectedWallet],
   source: {
     subAccounts: $subAccounts,
-    wallets: walletModel.$wallets,
     chains: networkModel.$chains,
+    acccounts: accounts.$list,
   },
-  filter: (_, wallet) => Boolean(wallet),
-  fn: ({ subAccounts, wallets, chains }, wallet) => {
-    const accountsToSub = balanceSubUtils.getSiblingAccounts(wallet!, wallets, chains);
+  filter: (wallet) => nonNullable(wallet),
+  fn: ({ subAccounts, acccounts, chains }, wallet) => {
+    const selectedAccounts = accountService.filterAccountsByWallet(acccounts, wallet!.id);
+    const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
 
     return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
   },
@@ -236,7 +239,7 @@ sample({
 });
 
 sample({
-  clock: [walletToSubSet, walletModel.$activeWallet],
+  clock: [walletToSubSet, walletSelect.$selectedWallet],
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,

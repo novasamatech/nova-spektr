@@ -9,12 +9,12 @@ import { transactionService } from './service';
 import { metadata } from './service.mocks';
 import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from './types';
 
-type TrasferDecodedTransaction = DecodedTransaction<{
+type TransferDecodedTransaction = DecodedTransaction<{
   destination: AccountId;
   amount: string;
 }>;
 
-const isTransferTransaction = (t: AnyDecodedTransaction): t is TrasferDecodedTransaction => {
+const isTransferTransaction = (t: AnyDecodedTransaction): t is TransferDecodedTransaction => {
   return t.section === 'balances' && t.method === 'transferKeepAlive';
 };
 
@@ -58,7 +58,7 @@ describe('Transaction service', () => {
         type: 'encoded',
         callData: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
       };
-      const decodedTransaction: TrasferDecodedTransaction = {
+      const decodedTransaction: TransferDecodedTransaction = {
         type: 'decoded',
         section: 'balances',
         method: 'transferKeepAlive',
@@ -108,7 +108,7 @@ describe('Transaction service', () => {
   describe('encoding', () => {
     it('should encode transaction', async () => {
       const api = await createMockApi();
-      const decodedTransaction: TrasferDecodedTransaction = {
+      const decodedTransaction: TransferDecodedTransaction = {
         type: 'decoded',
         section: 'balances',
         method: 'transferKeepAlive',
@@ -137,7 +137,7 @@ describe('Transaction service', () => {
 
     it('should throw in no encoder found', async () => {
       const api = await createMockApi();
-      const decodedTransaction: TrasferDecodedTransaction = {
+      const decodedTransaction: TransferDecodedTransaction = {
         type: 'decoded',
         section: 'balances',
         method: 'transferKeepAlive',

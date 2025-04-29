@@ -175,3 +175,34 @@ export const toRomanNumeral = (num: number) => {
     return acc;
   }, '');
 };
+
+export const fromRomanNumeral = (roman: string): number => {
+  let accumulator = 0;
+  for (let i = 0; i < roman.length; i++) {
+    if (roman[i] === 'I' && roman[i + 1] === 'V') {
+      accumulator += 4;
+      i++;
+    } else if (roman[i] === 'I' && roman[i + 1] === 'X') {
+      accumulator += 9;
+      i++;
+    } else if (roman[i] === 'X' && roman[i + 1] === 'L') {
+      accumulator += 40;
+      i++;
+    } else if (roman[i] === 'X' && roman[i + 1] === 'C') {
+      accumulator += 90;
+      i++;
+    } else if (roman[i] === 'C' && roman[i + 1] === 'D') {
+      accumulator += 400;
+      i++;
+    } else if (roman[i] === 'C' && roman[i + 1] === 'M') {
+      accumulator += 900;
+      i++;
+    } else {
+      const lookup = romanNumbersLookup.find((x) => x[0] === roman[i]);
+      if (lookup) {
+        accumulator += lookup[1];
+      }
+    }
+  }
+  return accumulator;
+};

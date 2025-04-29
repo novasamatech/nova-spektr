@@ -30,7 +30,9 @@ deriveFromResources({
 deriveFromResources({
   store: $maxRank,
   resources: [maxRankResource],
-  map(state, { palletType, chainId, maxRank }) {
+  map(state, { maxRank }, params) {
+    const { palletType, chainId } = params;
+
     return produce(state, draft => {
       let pallet = draft[palletType];
       if (!pallet) {

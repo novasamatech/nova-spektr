@@ -9,7 +9,7 @@ type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
-interface SubscriptionResource<Params, Data> extends Resource<Data, Data> {
+interface SubscriptionResource<Params, Data> extends Resource<Data, Data, Params> {
   subscribed: Store<boolean>;
   subscribe: EventCallable<Params>;
   unsubscribe: EventCallable<void>;
@@ -34,8 +34,8 @@ export const createSubscriptionResource = <Params, Data>({
 }: SubscriptionParams<Params, Data>): SubscriptionResource<Params, Data> => {
   const domain = createDomain({ name: `${name}/subscription` });
 
-  const pull = domain.createEvent<Data>();
-  const push = domain.createEvent<Data>();
+  const pull = domain.createEvent<{ meta: never; result: Data }>();
+  const push = domain.createEvent<{ meta: Params; result: Data }>();
 
   const subscribe = domain.createEvent<Params>({ name: 'subscribe' });
   const unsubscribe = domain.createEvent({ name: 'unsubscribe' });
@@ -49,17 +49,17 @@ export const createSubscriptionResource = <Params, Data>({
   const $subscribed = $currentSubscription.map(nonNullable);
 
   const subscribeFx = domain.createEffect<Params, UnsubscribeFn>((params) => {
-    const bindedReceived = scope ? scopeBind(callback, { scope }) : callback;
-    const bindedDone = scope ? scopeBind(done, { scope }) : done;
+    const boundReceived = scope ? scopeBind(callback, { scope }) : callback;
+    const boundDone = scope ? scopeBind(done, { scope }) : done;
 
     return fn(params, (result) => {
       if (result.done) {
         if (nonNullable(result.value)) {
-          bindedReceived({ params, result: result.value });
+          boundReceived({ params, result: result.value });
         }
-        bindedDone();
+        boundDone();
       } else {
-        bindedReceived({ params, result: result.value });
+        boundReceived({ params, result: result.value });
       }
     });
   });
@@ -91,12 +91,6 @@ export const createSubscriptionResource = <Params, Data>({
     target: subscribeFx,
   });
 
-  sample({
-    clock: subscribe,
-    fn: (params) => pool(params),
-    target: $currentKey,
-  });
-
   // unsubscribe and pass param down for resubscription later
   sample({
     clock: subscribe,
@@ -104,6 +98,12 @@ export const createSubscriptionResource = <Params, Data>({
     filter: ({ sub, key }, params) => nonNullable(sub) && key !== pool(params),
     fn: ({ sub }, resubscribe) => ({ fn: sub?.unsubscribe ?? null, resubscribe }),
     target: unsubscribeFx,
+  });
+
+  sample({
+    clock: subscribe,
+    fn: (params) => pool(params),
+    target: $currentKey,
   });
 
   // save unsubscribe fn
@@ -147,20 +147,20 @@ export const createSubscriptionResource = <Params, Data>({
 
   sample({
     clock: callback,
-    fn: ({ result }) => result,
+    fn: ({ params, result }) => ({ meta: params, result }),
     target: push,
   });
 
   // status
 
   sample({
-    clock: [subscribe, callback],
+    clock: [subscribeFx, callback],
     fn: () => true,
     target: $pending,
   });
 
   sample({
-    clock: [done, unsubscribe],
+    clock: [done, unsubscribeFx],
     fn: () => false,
     target: $pending,
   });

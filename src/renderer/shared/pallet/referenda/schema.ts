@@ -40,7 +40,7 @@ export const referendaCurve = pjsSchema.enumValue({
 
 export type ReferendaTrackInfo = z.infer<typeof referendaTrackInfo>;
 export const referendaTrackInfo = pjsSchema.object({
-  name: pjsSchema.text,
+  name: z.union([pjsSchema.text, pjsSchema.uint8String.transform(n => n.replace(/\W/g, ''))]),
   maxDeciding: pjsSchema.blockHeight,
   decisionDeposit: pjsSchema.u128,
   preparePeriod: pjsSchema.blockHeight,

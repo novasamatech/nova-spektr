@@ -36,9 +36,11 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
     );
   }
 
+  const tasksCount = (groups.personal?.length ?? 0) + (groups.general?.length ?? 0);
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
-      <Title />
+      <Title count={tasksCount} />
       {hasAccount && hasPermission && activeTasks.length ? (
         <ScrollArea>
           {groups.personal ? (
@@ -62,6 +64,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
               key="completed"
               title={t('fellowship.tasks.completed')}
               group={groups.completed}
+              async
               onReferendumSelect={onReferendumSelect}
             />
           ) : null}

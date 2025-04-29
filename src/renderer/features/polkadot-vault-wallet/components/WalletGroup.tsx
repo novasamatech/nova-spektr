@@ -45,13 +45,12 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
-              const firstAccount = wallet.accounts.at(0);
-              const isMultishard = wallet.accounts.length > 1;
-              const address = isMultishard ? wallet.rootAccountId : firstAccount?.accountId;
+              const isSingleAccount = wallet.accounts.length === 1;
+              const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
               if (nullable(address)) return null;
 
               const isEthereum = isEthereumAccountId(address);
-              const theme: IconTheme = isEthereum ? 'ethereum' : isMultishard ? 'jdenticon' : 'polkadot';
+              const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
               return (
                 <WalletManagement

@@ -3,13 +3,12 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { HeaderTitleText, HelpText, LargeTitleText } from '@/shared/ui';
+import { CaptionText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, memberService, referendumMetaService } from '@/domains/collectives';
 import { fellowship } from '../../model/fellowship';
 import { members } from '../../model/members';
-
-import { Card } from './Card';
+import { tasksService } from '../../service';
 
 type Props = {
   evidence: Evidence;
@@ -36,31 +35,72 @@ export const VotingRecord = memo(({ evidence }: Props) => {
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
   const referendums = useMemo(() => {
-    return referendumMetaService.getReferendumsSinceLastProof(meta, member, maxRank);
-  }, [meta, member, maxRank]);
+    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  }, [meta, member]);
   const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, votes);
-  }, [referendums, votes]);
+    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
+  }, [referendums, member, maxRank, votes]);
+
+  const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
+    member.rank,
+  );
+
+  const isActivityFit =
+    nonNullable(activity.activity) && nonNullable(activityThreshold) ? activity.activity >= activityThreshold : false;
+  const isAgreementFit =
+    nonNullable(activity.agreement) && nonNullable(agreementThreshold)
+      ? activity.agreement >= agreementThreshold
+      : false;
 
   return (
-    <Card>
-      <Box gap={4}>
-        <HeaderTitleText>{t('fellowship.evidenceModal.votingRecord')}</HeaderTitleText>
-        <Box direction="row" width="100%">
-          <Box width="100%" grow={1} gap={1.5}>
-            <HelpText className="text-text-secondary">{t('fellowship.members.activity')}</HelpText>
-            <LargeTitleText>
-              {nonNullable(activity.activity) ? `${activity.activity}%` : t('fellowship.n/a')}
-            </LargeTitleText>
+    <Box direction="row" width="100%">
+      <Box width="100%" grow={1} gap={1.5}>
+        {nonNullable(activity.activity) && nonNullable(activityThreshold) ? (
+          <Box direction="row" verticalAlign="start" gap={3}>
+            <Icon
+              size={32}
+              name="checkmarkCutout"
+              className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'}
+            />
+            <Box>
+              <HelpText>{t('fellowship.members.activity')}</HelpText>
+              <Box direction="row" verticalAlign="end">
+                <SmallTitleText>{activity.activity.toString()}</SmallTitleText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{activityThreshold}%</CaptionText>
+              </Box>
+            </Box>
           </Box>
-          <Box width="100%" grow={1} gap={1.5}>
-            <HelpText className="text-text-secondary">{t('fellowship.members.agreement')}</HelpText>
-            <LargeTitleText>
-              {nonNullable(activity.agreement) ? `${activity.agreement}%` : t('fellowship.n/a')}
-            </LargeTitleText>
+        ) : (
+          <Box gap={1}>
+            <HelpText>{t('fellowship.members.activity')}</HelpText>
+            <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
           </Box>
-        </Box>
+        )}
       </Box>
-    </Card>
+
+      <Box width="100%" grow={1} gap={1.5}>
+        {nonNullable(activity.agreement) && nonNullable(agreementThreshold) ? (
+          <Box direction="row" verticalAlign="start" gap={3}>
+            <Icon
+              size={32}
+              name="checkmarkCutout"
+              className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
+            />
+            <Box>
+              <HelpText>{t('fellowship.members.agreement')}</HelpText>
+              <Box direction="row" verticalAlign="end">
+                <SmallTitleText>{activity.agreement.toString()}</SmallTitleText>
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">{agreementThreshold}%</CaptionText>
+              </Box>
+            </Box>
+          </Box>
+        ) : (
+          <Box gap={1}>
+            <HelpText>{t('fellowship.members.agreement')}</HelpText>
+            <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 });

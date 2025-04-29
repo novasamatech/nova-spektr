@@ -84,7 +84,7 @@ type GetMultisigsParams = {
 const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) => {
   if (accounts.length === 0) return [];
 
-  const bindedRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
+  const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
   const requests = chains.flatMap(async (chain) => {
     const multisigIndexer = networkUtils.getProxyExternalApi(chain);
     if (nullable(multisigIndexer)) return [];
@@ -99,7 +99,7 @@ const getMultisigsFx = createEffect(({ chains, accounts }: GetMultisigsParams) =
     try {
       // Identity request with drop after 15 seconds
       const identities = await Promise.race([
-        bindedRequestIdentities({
+        boundRequestIdentities({
           accounts: multisigs.map((x) => x.accountId),
           chainId: chain.chainId,
         }),

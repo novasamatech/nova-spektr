@@ -50,8 +50,8 @@ export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>
   fn({ api, palletType, chainId }) {
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
-    return tracks.map<Track>(({ track, info }) => ({
-      id: track,
+    return tracks.map<Track>(({ id, info }) => ({
+      id,
       name: info.name,
       chainId,
       pallet: palletType,
@@ -72,8 +72,6 @@ type RequestMaxRankParams = {
 };
 
 type MaxRankResponse = {
-  palletType: CollectivePalletsType;
-  chainId: ChainId;
   maxRank: number;
 };
 
@@ -82,14 +80,11 @@ export const maxRankResource = createRemoteResource<RequestMaxRankParams, MaxRan
     key: ({ chainId, palletType }) => `${palletType}:${chainId}`,
     ttl: Number.POSITIVE_INFINITY,
   },
-  async fn({ palletType, chainId }) {
+  async fn({ chainId, palletType }) {
     const papi = getChainRegistry().getApi(chainId);
-    const maxRank = await collectiveCorePallet.consts.maxRank(palletType, papi);
 
     return {
-      palletType,
-      chainId,
-      maxRank,
+      maxRank: await collectiveCorePallet.consts.maxRank(palletType, papi),
     };
   },
 });

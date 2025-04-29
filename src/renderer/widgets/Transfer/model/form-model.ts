@@ -515,11 +515,6 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.account.onChange,
-  target: $transferForm.resetErrors,
-});
-
-sample({
   source: {
     accounts: $accounts,
     selectedAccount: $transferForm.fields.account.$value,
@@ -566,12 +561,14 @@ sample({
 });
 
 sample({
-  clock: $transferForm.fields.signatory.$value,
-  source: $signatories,
-  filter: (signatories, signatory) => {
+  source: {
+    signatory: $transferForm.fields.signatory.$value,
+    signatories: $signatories,
+  },
+  filter: ({ signatory, signatories }) => {
     return !isEmpty(signatories) && nonNullable(signatory);
   },
-  fn: (signatories, signatory) => {
+  fn: ({ signatory, signatories }) => {
     if (!signatory) {
       return ZERO_BALANCE;
     }
@@ -588,6 +585,11 @@ sample({
   filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
+});
+
+sample({
+  clock: [$transferForm.fields.account.onChange, $transferForm.fields.signatory.onChange],
+  target: $transferForm.resetErrors,
 });
 
 sample({

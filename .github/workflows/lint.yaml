@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: 🔪 Check by typescript

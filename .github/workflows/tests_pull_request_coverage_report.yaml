@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -20,7 +20,7 @@ jobs:
           git checkout -b dev origin/dev
           git checkout -
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: 🧪 Run tests with coverage
