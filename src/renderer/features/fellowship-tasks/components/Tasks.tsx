@@ -20,12 +20,15 @@ type Props = {
 
 export const Tasks = memo(({ onReferendumSelect }: Props) => {
   const { t } = useI18n();
+
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
   const pending = useUnit(tasks.pending);
   const hasAccount = useUnit(memberProfile.$hasAccount);
 
-  const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
+  const groups = useMemo(() => {
+    return groupBy(activeTasks, task => task.group);
+  }, [activeTasks]);
 
   if (nullable(input) || pending) {
     return (
@@ -60,10 +63,10 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
           ) : null}
           {groups.completed ? (
             <TasksGroup
+              async
               key="completed"
               title={t('fellowship.tasks.completed')}
               group={groups.completed}
-              async
               onReferendumSelect={onReferendumSelect}
             />
           ) : null}

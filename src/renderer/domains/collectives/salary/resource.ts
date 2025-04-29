@@ -68,7 +68,6 @@ type ClaimantRequestParams = {
 export const claimantStatusResource = createRemoteResource<ClaimantRequestParams, Record<AccountId, ClaimStatus>>({
   async fn({ chainId, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> {
     const papi = getChainRegistry().getApi(chainId);
-
     const claimants = await salaryPallet.storage.claimant(palletType, papi, accounts);
 
     const res: Record<AccountId, ClaimStatus> = {};

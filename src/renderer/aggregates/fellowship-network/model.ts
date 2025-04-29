@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { or } from 'patronum';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { getChainRegistry, registry, registryService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -28,9 +28,9 @@ const $connectionStatus = combine(
   },
   ({ chainId, papiStatus, pjsStatus }) => {
     if (nullable(chainId)) return 'connecting';
-    if (nullable(papiStatus[chainId]) || nullable(pjsStatus[chainId])) return 'close';
+    if (papiStatus[chainId] === 'connected' && pjsStatus[chainId] === ConnectionStatus.CONNECTED) return 'connected';
 
-    return papiStatus[chainId];
+    return 'close';
   },
 );
 

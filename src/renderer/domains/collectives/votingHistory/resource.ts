@@ -159,7 +159,6 @@ export const subscribeResource = createSubscriptionResource<VotingSubscribeParam
     });
 
     const papi = getChainRegistry().getApi(chainId);
-
     const subscription = papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
       const pallet = `${capitalize(palletType)}Collective` as const;
 

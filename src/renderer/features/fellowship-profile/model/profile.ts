@@ -25,6 +25,7 @@ const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(
 
 const $memberVotes = combine($member, $votes, (member, voting) => {
   if (nullable(member)) return null;
+
   return voting.filter(v => v.accountId === member.accountId);
 });
 
@@ -85,6 +86,7 @@ const $referendumsSinceLastProof = combine(
   },
   ({ referendums, member }) => {
     if (!member || !memberService.isCoreMember(member)) return null;
+
     return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member);
   },
 );
@@ -98,6 +100,7 @@ const $activityInfo = combine(
   },
   ({ referendums, member, maxRank, votes }) => {
     if (nullable(referendums) || nullable(member) || nullable(votes)) return null;
+
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   },
 );

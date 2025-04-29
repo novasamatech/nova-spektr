@@ -4,7 +4,6 @@ type AsyncItemProps = PropsWithChildren<{
   sync?: boolean;
   delay?: number;
   fallback?: ReactNode;
-  onRender?: () => void;
 }>;
 
 /**
@@ -34,13 +33,7 @@ export const AsyncItem = ({ children, sync = false, delay, fallback }: AsyncItem
     };
   }, [children, sync]);
 
-  if (!isRendered) {
-    if (fallback) {
-      return fallback;
-    } else {
-      return null;
-    }
-  }
+  if (isRendered) return children;
 
-  return children;
+  return fallback ?? null;
 };

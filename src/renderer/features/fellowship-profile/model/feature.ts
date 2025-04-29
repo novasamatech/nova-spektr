@@ -3,7 +3,6 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { registry, registryService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
@@ -15,20 +14,13 @@ const $input = combine(
     member: fellowshipMember.$currentMember,
     account: fellowshipMember.$currentMemberAccount,
     wallet: fellowshipMember.$currentMemberWallet,
-    connection: registry.$connectionStatuses,
+    connected: fellowshipNetwork.$isConnected,
     wallets: walletModel.$wallets,
   },
-  ({ network, member, account, wallet, wallets, connection }) => {
-    if (nullable(network) || nullable(connection[network.chainId])) return null;
+  ({ network, ...rest }) => {
+    if (nullable(network)) return null;
 
-    return {
-      ...network,
-      status: connection[network.chainId],
-      member,
-      account,
-      wallet,
-      wallets,
-    };
+    return { ...network, ...rest };
   },
 );
 
@@ -37,7 +29,7 @@ export const fellowshipProfileFeature = createFeature({
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
   filter: input => {
-    if (input.api.isConnected && registryService.isConnected(input.status)) return null;
+    if (input.connected) return null;
 
     return {
       status: 'failed',
