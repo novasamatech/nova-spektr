@@ -9,7 +9,7 @@ type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
-interface SubscriptionResource<Params, Data> extends Resource<Data, Data> {
+interface SubscriptionResource<Params, Data> extends Resource<Data, Data, Params> {
   subscribed: Store<boolean>;
   subscribe: EventCallable<Params>;
   unsubscribe: EventCallable<void>;
@@ -34,8 +34,8 @@ export const createSubscriptionResource = <Params, Data>({
 }: SubscriptionParams<Params, Data>): SubscriptionResource<Params, Data> => {
   const domain = createDomain({ name: `${name}/subscription` });
 
-  const pull = domain.createEvent<Data>();
-  const push = domain.createEvent<Data>();
+  const pull = domain.createEvent<{ meta: never; result: Data }>();
+  const push = domain.createEvent<{ meta: Params; result: Data }>();
 
   const subscribe = domain.createEvent<Params>({ name: 'subscribe' });
   const unsubscribe = domain.createEvent({ name: 'unsubscribe' });
@@ -147,20 +147,20 @@ export const createSubscriptionResource = <Params, Data>({
 
   sample({
     clock: callback,
-    fn: ({ result }) => result,
+    fn: ({ params, result }) => ({ meta: params, result }),
     target: push,
   });
 
   // status
 
   sample({
-    clock: [subscribe, callback],
+    clock: [subscribeFx, callback],
     fn: () => true,
     target: $pending,
   });
 
   sample({
-    clock: [done, unsubscribe],
+    clock: [done, unsubscribeFx],
     fn: () => false,
     target: $pending,
   });

@@ -30,20 +30,4 @@ describe('ui/LanguageSwitcher', () => {
     const label = screen.getByText('English');
     expect(label).toBeInTheDocument();
   });
-
-  // test('should render full component', () => {
-  //   const changeLanguage = jest.fn();
-  //   render(<LanguageSwitcher languages={languages} selected="en" onChange={changeLanguage} />);
-  //
-  //   const button = screen.getByTestId('language-switcher-button');
-  //
-  //   act(() => button.click());
-  //
-  //   const englishButton = screen.getByText('English');
-  //   expect(englishButton).toBeInTheDocument();
-  //
-  //   act(() => englishButton.click());
-  //
-  //   expect(changeLanguage).toBeCalledWith('en');
-  // });
 });

@@ -2,7 +2,9 @@ import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
 import { storageService } from '@/shared/api/storage';
-import { ConnectionStatus, type Transaction, type VaultBaseAccount } from '@/shared/core';
+import { ConnectionStatus, type Transaction } from '@/shared/core';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { createVaultBaseAccount } from '@/shared/mocks';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -56,8 +58,8 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: { accountId: '0x00' } as unknown as VaultBaseAccount,
-          delegate: '0x00',
+          account: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
+          delegate: TEST_ACCOUNTS[0],
           proxyType: 'Any',
           proxyDeposit: '1',
           proxyNumber: 1,
@@ -83,7 +85,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SUBMIT);
 
-    // @ts-expect-error TODO fix
+    // @ts-expect-error TODO: fix
     const action = allSettled(submitModel.output.formSubmitted, {
       scope,
       params: {

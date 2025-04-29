@@ -35,7 +35,7 @@ export interface Wallet {
 export interface PolkadotVaultWallet extends Wallet {
   type: WalletType.POLKADOT_VAULT;
   rootAccountId: AccountId;
-  accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[];
+  accounts: (VaultChainAccount | VaultShardAccount)[];
 }
 
 export interface SingleShardWallet extends Wallet {

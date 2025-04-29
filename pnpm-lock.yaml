@@ -459,9 +459,6 @@ importers:
       npm-run-all:
         specifier: 4.1.5
         version: 4.1.5
-      pnpm:
-        specifier: 9.15.9
-        version: 9.15.9
       postcss:
         specifier: 8.5.3
         version: 8.5.3
@@ -7579,11 +7576,6 @@ packages:
 
   pnglib@0.0.1:
     resolution: {integrity: sha512-95ChzOoYLOPIyVmL+Y6X+abKGXUJlvOVLkB1QQkyXl7Uczc6FElUy/x01NS7r2GX6GRezloO/ecCX9h4U9KadA==}
-
-  pnpm@9.15.9:
-    resolution: {integrity: sha512-aARhQYk8ZvrQHAeSMRKOmvuJ74fiaR1p5NQO7iKJiClf1GghgbrlW1hBjDolO95lpQXsfF+UA+zlzDzTfc8lMQ==}
-    engines: {node: '>=18.12'}
-    hasBin: true
 
   polished@4.3.1:
     resolution: {integrity: sha512-OBatVyC/N7SCW/FaDHrSd+vn0o5cS855TOmYi4OkdWUMSJCET/xip//ch8xGUvtr3i44X9LVyWwQlRMTN3pwSA==}
@@ -18636,8 +18628,6 @@ snapshots:
       irregular-plurals: 1.4.0
 
   pnglib@0.0.1: {}
-
-  pnpm@9.15.9: {}
 
   polished@4.3.1:
     dependencies:
