@@ -14,6 +14,8 @@ type Props = {
   accountId: AccountId;
 };
 
+const DEFAULT_VALUE = '100/100%';
+
 export const MemberActivity = memo(({ accountId }: Props) => {
   const { t } = useI18n();
 
@@ -60,7 +62,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
               nonNullable(activityThreshold) ? (
                 `${activity.activity}/${activityThreshold}%`
               ) : (
-                '100/100%'
+                DEFAULT_VALUE
               )
             ) : (
               <Skeleton width={20} height={5} />
@@ -81,7 +83,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
               nonNullable(agreementThreshold) ? (
                 `${activity.agreement}/${agreementThreshold}%`
               ) : (
-                '100/100%'
+                DEFAULT_VALUE
               )
             ) : (
               <Skeleton width={20} height={5} />
