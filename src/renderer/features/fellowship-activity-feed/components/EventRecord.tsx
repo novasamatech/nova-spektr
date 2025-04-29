@@ -14,15 +14,24 @@ export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; reco
 type Props = {
   event: ActivityFeedRecord;
   chain: Chain;
+  isFullVersion?: boolean;
 };
 
-export const EventRecord = memo(({ event, chain }: Props) => {
+export const EventRecord = memo(({ event, chain, isFullVersion }: Props) => {
   return (
     <AsyncItem fallback={<Box width="100%" height="48px"></Box>}>
       <div className="flex flex-col gap-1 px-5">
         <div className="flex items-center gap-2">
           <div className="min-w-0 grow text-button-small">
-            <Account accountId={event.accountId} chain={chain} title={event.name} variant="short" hideAddress />
+            <Account
+              accountId={event.accountId}
+              chain={chain}
+              title={event.name}
+              variant="short"
+              hideAddress
+              hideExplorers={!isFullVersion}
+              hideIcon={!isFullVersion}
+            />
           </div>
           <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
             <Duration seconds={event.duration} shortFormat />
