@@ -14,7 +14,6 @@ import {
   trackService,
   votingService,
 } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
@@ -38,15 +37,10 @@ import { referendums } from './referendums';
 
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
-const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
 const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
-
-const $hasPermission = $account.map(account => {
-  return nonNullable(account) && accountService.hasPermissionToMakeActions(account);
-});
 
 // basket
 
@@ -339,28 +333,16 @@ const $list = combine(
     referendumTasks: $ongoingReferendumsTasks,
     completedReferendumsTasks: $completedReferendumsTasks,
     evidenceTasks: $evidenceTasks,
-    hasPermission: $hasPermission,
   },
-  ({
-    memberSalaryTasks,
-    memberEvidenceTasks,
-    evidenceTasks,
-    referendumTasks,
-    completedReferendumsTasks,
-    hasPermission,
-  }) => {
-    if (hasPermission) {
-      const list = [
-        ...memberSalaryTasks,
-        ...memberEvidenceTasks,
-        ...evidenceTasks,
-        ...referendumTasks,
-        ...completedReferendumsTasks,
-      ];
-      return list.sort((a, b) => b.weight - a.weight);
-    }
-
-    return [];
+  ({ memberSalaryTasks, memberEvidenceTasks, evidenceTasks, referendumTasks, completedReferendumsTasks }) => {
+    const list = [
+      ...memberSalaryTasks,
+      ...memberEvidenceTasks,
+      ...evidenceTasks,
+      ...referendumTasks,
+      ...completedReferendumsTasks,
+    ];
+    return list.sort((a, b) => b.weight - a.weight);
   },
 );
 
