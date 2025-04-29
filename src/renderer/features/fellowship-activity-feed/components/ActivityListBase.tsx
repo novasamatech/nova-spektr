@@ -30,21 +30,20 @@ const now = Date.now();
 
 type Props = {
   isFullVersion?: boolean;
+  limit?: number;
 };
 
-const BASE_MAX_LENGTH = 20;
-
-export const ActivityListBase = ({ children, isFullVersion }: PropsWithChildren<Props>) => {
+export const ActivityListBase = ({
+  children,
+  isFullVersion,
+  limit = Number.POSITIVE_INFINITY,
+}: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipActivityFeedFeature.input);
   const feed = useUnit(activityFeed.$activityFeed);
 
-  const feedWithMaxLength = useMemo(() => {
-    if (isFullVersion) return feed;
-
-    return feed.slice(0, BASE_MAX_LENGTH);
-  }, [feed, isFullVersion]);
+  const feedWithMaxLength = useMemo(() => feed.slice(0, limit), [feed, limit]);
 
   const { list, isLoading } = useDeferredList({ list: feedWithMaxLength, isLoading: feedWithMaxLength.length === 0 });
 
