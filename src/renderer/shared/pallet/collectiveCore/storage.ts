@@ -3,9 +3,9 @@ import { type SS58String } from 'polkadot-api';
 import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { papiHelpers } from '@/shared/papi-helpers';
-import { type AccountId, papiSchema } from '@/shared/papi-schemas';
+import { type AccountId } from '@/shared/papi-schemas';
 import { type PolkadotApi } from '@/domains/network';
 
 import { getPalletName } from './helpers';
@@ -31,10 +31,12 @@ export const storage = {
    */
   member(type: PalletType, papi: PolkadotApi) {
     const schema = z.array(
-      z.object({
-        account: papiSchema.accountId,
-        status: collectiveCoreMemberStatus,
-      }),
+      z
+        .object({
+          keyArgs: z.tuple([z.string()]).transform(a => toAccountId(a[0])),
+          value: collectiveCoreMemberStatus,
+        })
+        .transform(({ keyArgs, value }) => ({ account: keyArgs, status: value })),
     );
 
     return substrateRpcPool.call(() => getQuery(type, papi).Member.getEntries().then(schema.parse));

@@ -3,13 +3,14 @@ import { type SS58String } from 'polkadot-api';
 import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
+import { toAccountId } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { papiHelpers } from '@/shared/papi-helpers';
-import { type AccountId, papiSchema } from '@/shared/papi-schemas';
+import { type AccountId } from '@/shared/papi-schemas';
 import { type PolkadotApi } from '@/domains/network';
 
 import { getPalletName } from './helpers';
-import { collectiveMemberRecord, collectiveVoteRecord } from './schemas';
+import { collectiveVoteRecord } from './schemas';
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, papi: PolkadotApi) => {
@@ -25,10 +26,12 @@ export const storage = {
    */
   idToIndex(type: PalletType, papi: PolkadotApi) {
     const schema = z.array(
-      z.object({
-        key: z.tuple([z.number(), papiSchema.accountId]),
-        index: z.number(),
-      }),
+      z
+        .object({
+          keyArgs: z.tuple([z.number(), z.string()]).transform(v => [v[0], toAccountId(v[1])]),
+          value: z.number(),
+        })
+        .transform(({ keyArgs, value }) => ({ key: [keyArgs[0], keyArgs[1]], index: value })),
     );
 
     return substrateRpcPool.call(() => getQuery(type, papi).IdToIndex.getEntries()).then(schema.parse);
@@ -41,10 +44,12 @@ export const storage = {
    */
   indexToId(type: PalletType, papi: PolkadotApi) {
     const schema = z.array(
-      z.object({
-        key: z.tuple([z.number(), z.number()]),
-        index: papiSchema.accountId,
-      }),
+      z
+        .object({
+          keyArgs: z.tuple([z.number(), z.number()]),
+          value: z.string().transform(toAccountId),
+        })
+        .transform(({ keyArgs, value }) => ({ key: keyArgs, index: value })),
     );
 
     return substrateRpcPool.call(() => getQuery(type, papi).IndexToId.getEntries()).then(schema.parse);
@@ -72,13 +77,15 @@ export const storage = {
    */
   members(type: PalletType, papi: PolkadotApi) {
     const schema = z.array(
-      z.object({
-        account: papiSchema.accountId,
-        member: collectiveMemberRecord,
-      }),
+      z
+        .object({
+          keyArgs: z.tuple([z.string()]).transform(a => toAccountId(a[0])),
+          value: z.number().transform(rank => ({ rank })),
+        })
+        .transform(({ keyArgs, value }) => ({ account: keyArgs, member: value })),
     );
 
-    return substrateRpcPool.call(() => getQuery(type, papi).Members.getEntries()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, papi).Members.getEntries()).then(x => schema.parse(x));
   },
 
   // TODO: resolve later
@@ -124,12 +131,14 @@ export const storage = {
     }
 
     const votingWithKeyResponseSchema = z.array(
-      z.object({
-        key: z
-          .tuple([referendaPallet.schema.referendumId, papiSchema.accountId])
-          .transform(([referendumId, accountId]) => ({ referendumId, accountId })),
-        vote: z.optional(collectiveVoteRecord),
-      }),
+      z
+        .object({
+          keyArgs: z
+            .tuple([referendaPallet.schema.referendumId, z.string()])
+            .transform(v => ({ referendumId: v[0], accountId: toAccountId(v[1]) })),
+          value: z.optional(collectiveVoteRecord),
+        })
+        .transform(({ keyArgs, value }) => ({ key: keyArgs, vote: value })),
     );
 
     return substrateRpcPool

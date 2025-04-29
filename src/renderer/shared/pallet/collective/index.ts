@@ -8,4 +8,4 @@ export const collectivePallet = {
   schemas,
 };
 
-export type { CollectiveVoteRecord, CollectiveMemberRecord } from './schemas';
+export type { CollectiveVoteRecord } from './schemas';

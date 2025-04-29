@@ -60,12 +60,6 @@ export class ChainRegistry {
       throw new Error(`Provider and Client for ${chainId} is absent, need to establish connect first`);
     }
 
-    const token = this.#tokens.get(chainId);
-
-    if (nullable(token)) {
-      throw new Error(`Token for ${chainId} is absent, make sure to call requestToken after connection`);
-    }
-
     const chain = this.#chainsMap.get(chainId);
     if (nullable(chain)) {
       throw new Error(`Chain ${chainId} is not supported`);
@@ -76,7 +70,7 @@ export class ChainRegistry {
       throw new Error(`Chain spec ${chain.specName} is not supported`);
     }
 
-    return config(chain.chainId, connector.client, token);
+    return config(chain.chainId, connector.client);
   }
 
   connect(chainId: ChainId, endpoints: string[]) {
@@ -114,14 +108,14 @@ export class ChainRegistry {
     this.#tokens.delete(chainId);
   }
 
-  getStatus(chainId: ChainId) {
-    const connector = this.#storage.get(chainId);
+  getCompatibilityToken(chainId: ChainId) {
+    const token = this.#tokens.get(chainId);
 
-    if (nullable(connector)) {
-      throw new Error(`Provider for ${chainId} is not connected`);
+    if (nullable(token)) {
+      throw new Error(`Token for ${chainId} is absent. Request it after connection.`);
     }
 
-    return connector.provider.getStatus();
+    return token;
   }
 
   on<K extends keyof RegistryEvents>(chainId: ChainId, key: K, cb: (value: RegistryEvents[K]) => void) {
