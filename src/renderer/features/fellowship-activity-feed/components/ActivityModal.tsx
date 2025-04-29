@@ -21,7 +21,9 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.Content>
         <div className="bg-main-app-background">
-          <ActivityListBase isFullVersion>{children}</ActivityListBase>
+          <ActivityListBase limit={Number.POSITIVE_INFINITY} isFullVersion={true}>
+            {children}
+          </ActivityListBase>
         </div>
       </Modal.Content>
     </Modal>

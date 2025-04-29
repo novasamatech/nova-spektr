@@ -30,14 +30,10 @@ const now = Date.now();
 
 type Props = {
   isFullVersion?: boolean;
-  limit?: number;
+  limit: number;
 };
 
-export const ActivityListBase = ({
-  children,
-  isFullVersion,
-  limit = Number.POSITIVE_INFINITY,
-}: PropsWithChildren<Props>) => {
+export const ActivityListBase = ({ children, isFullVersion, limit }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipActivityFeedFeature.input);
