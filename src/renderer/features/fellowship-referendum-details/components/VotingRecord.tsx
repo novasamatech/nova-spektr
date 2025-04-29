@@ -1,27 +1,29 @@
-import { useStoreMap } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { useStoreMap, useUnit } from 'effector-react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { CaptionText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, memberService, referendumMetaService } from '@/domains/collectives';
-import { fellowship } from '../../model/fellowship';
-import { members } from '../../model/members';
-import { tasksService } from '../../service';
+import { details } from '../model/details';
+import { fellowship } from '../model/fellowship';
+import { detailsService } from '../service';
 
 type Props = {
-  evidence: Evidence;
+  evidence?: Evidence;
 };
 
 export const VotingRecord = memo(({ evidence }: Props) => {
   const { t } = useI18n();
 
+  const proposer = useUnit(details.$proposer);
   const member = useStoreMap({
-    store: members.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
+    store: details.$members,
+    keys: [proposer || evidence?.accountId],
+    fn: (members, [accountId]) => (accountId && members[accountId]) ?? null,
   });
+
   const { meta, votes, maxRank } = useStoreMap({
     store: fellowship.$store,
     keys: [],
@@ -34,16 +36,12 @@ export const VotingRecord = memo(({ evidence }: Props) => {
 
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
-  const referendums = useMemo(() => {
-    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
-  }, [meta, member]);
-  const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
-  }, [referendums, member, maxRank, votes]);
+  const referendums = referendumMetaService.getReferendumsSinceLastProof(meta, member);
 
-  const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
-    member.rank,
-  );
+  const activity = referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
+
+  const { activity: activityThreshold, agreement: agreementThreshold } =
+    detailsService.getActivityAndAgreementThresholds(member.rank);
 
   const isActivityFit =
     nonNullable(activity.activity) && nonNullable(activityThreshold) ? activity.activity >= activityThreshold : false;
