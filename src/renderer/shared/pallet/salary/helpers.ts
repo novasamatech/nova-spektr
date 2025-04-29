@@ -1,5 +1,7 @@
+import { capitalize } from 'lodash';
+
 import { type PalletType } from './types';
 
 export const getPalletName = (type: PalletType) => {
-  return `${type}Salary`;
+  return `${capitalize(type)}Salary` as const;
 };

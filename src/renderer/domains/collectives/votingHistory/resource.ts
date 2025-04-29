@@ -160,10 +160,10 @@ export const subscribeResource = createSubscriptionResource<VotingSubscribeParam
 
     const papi = getChainRegistry().getApi(chainId);
 
-    return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+    const subscription = papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
       const pallet = `${capitalize(palletType)}Collective` as const;
 
-      api.event[pallet].Voted.watch().subscribe(({ payload }) => {
+      return api.event[pallet].Voted.watch().subscribe(({ payload }) => {
         const parsedData = payloadSchema.parse(payload);
 
         const accountMatch = accounts.some(a => a === parsedData.who);
@@ -185,5 +185,7 @@ export const subscribeResource = createSubscriptionResource<VotingSubscribeParam
         });
       });
     });
+
+    return subscription.unsubscribe;
   },
 });

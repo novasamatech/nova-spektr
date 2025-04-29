@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
+import { papiHelpers } from '@/shared/papi-helpers';
 import { type AccountId, papiSchema } from '@/shared/papi-schemas';
 import { type PolkadotApi } from '@/domains/network';
 
@@ -12,12 +13,11 @@ import { collectiveMemberRecord, collectiveVoteRecord } from './schemas';
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, papi: PolkadotApi) => {
-  if (papi.type === 'dot_col') {
-    return papi.api.query[getPalletName(type)];
-  }
-
-  throw new TypeError(`Wrong chain - ${papi.type}. Only Collective chains able to make operations.`);
+  return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+    return api.query[getPalletName(type)];
+  });
 };
+
 export const storage = {
   /**
    * The index of each rank's member into the group of members who have at least

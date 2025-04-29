@@ -1,6 +1,4 @@
-import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
-import { zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
@@ -14,27 +12,28 @@ import { type CollectivePalletsType } from '../_lib/types';
 import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
 
 type StatusRequestParams = {
-  api: ApiPromise;
-  palletType: CollectivePalletsType;
   chainId: ChainId;
+  palletType: CollectivePalletsType;
 };
 
 export const statusResource = createRemoteResource<StatusRequestParams, SalaryCycle | null>({
-  async fn({ api, palletType }): Promise<SalaryCycle | null> {
-    const status = await salaryPallet.storage.status(palletType, api);
+  async fn({ chainId, palletType }): Promise<SalaryCycle | null> {
+    const papi = getChainRegistry().getApi(chainId);
+
+    const status = await salaryPallet.storage.status(palletType, papi);
     if (nullable(status)) return null;
 
-    const registrationPeriod = salaryPallet.consts.registrationPeriod(palletType, api);
-    const payoutPeriod = salaryPallet.consts.payoutPeriod(palletType, api);
+    const registrationPeriod = salaryPallet.consts.registrationPeriod(palletType, papi);
+    const payoutPeriod = salaryPallet.consts.payoutPeriod(palletType, papi);
 
     return {
-      cycleIndex: status.cycleIndex,
-      cycleStart: status.cycleStart,
+      cycleIndex: status.cycle_index,
+      cycleStart: status.cycle_start,
       registrationPeriod,
       payoutPeriod,
       budget: status.budget,
-      totalRegistrations: status.totalRegistrations,
-      totalUnregisteredPaid: status.totalUnregisteredPaid,
+      totalRegistrations: status.total_registrations,
+      totalUnregisteredPaid: status.total_unregisteredPaid,
     };
   },
 });
@@ -61,20 +60,20 @@ export const salariesResource = createRemoteResource<SalariesRequestParams, Sala
 });
 
 type ClaimantRequestParams = {
-  api: ApiPromise;
   palletType: CollectivePalletsType;
   chainId: ChainId;
   accounts: AccountId[];
 };
 
 export const claimantStatusResource = createRemoteResource<ClaimantRequestParams, Record<AccountId, ClaimStatus>>({
-  async fn({ api, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> {
-    const claimants = await salaryPallet.storage.claimant(palletType, api, accounts);
-    const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
+  async fn({ chainId, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> {
+    const papi = getChainRegistry().getApi(chainId);
+
+    const claimants = await salaryPallet.storage.claimant(palletType, papi, accounts);
 
     const res: Record<AccountId, ClaimStatus> = {};
 
-    for (const { account, claim } of mapped) {
+    for (const { account, claim } of claimants) {
       if (nullable(claim)) {
         res[account] = {
           type: 'none',
@@ -86,7 +85,7 @@ export const claimantStatusResource = createRemoteResource<ClaimantRequestParams
       if (claim.status.type === 'Nothing') {
         res[account] = {
           type: 'nothing',
-          lastActive: claim.lastActive,
+          lastActive: claim.last_active,
         };
         continue;
       }
@@ -95,7 +94,7 @@ export const claimantStatusResource = createRemoteResource<ClaimantRequestParams
         res[account] = {
           type: 'registered',
           amount: claim.status.data,
-          lastActive: claim.lastActive,
+          lastActive: claim.last_active,
         };
       }
 
@@ -104,7 +103,7 @@ export const claimantStatusResource = createRemoteResource<ClaimantRequestParams
           type: 'payout',
           registered: claim.status.data.registered ?? BN_ZERO,
           amount: claim.status.data.amount,
-          lastActive: claim.lastActive,
+          lastActive: claim.last_active,
         };
       }
     }

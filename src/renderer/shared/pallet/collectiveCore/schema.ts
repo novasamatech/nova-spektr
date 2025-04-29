@@ -13,9 +13,9 @@ export const collectiveCoreParams = z.object({
 
 export type CollectiveCoreMemberStatus = z.infer<typeof collectiveCoreMemberStatus>;
 export const collectiveCoreMemberStatus = z.object({
-  isActive: z.boolean(),
-  lastPromotion: papiSchema.blockHeight,
-  lastProof: papiSchema.blockHeight,
+  is_active: z.boolean(),
+  last_promotion: papiSchema.blockHeight,
+  last_proof: papiSchema.blockHeight,
 });
 
 export type CollectiveCoreMemberEvidence = z.infer<typeof collectiveCoreMemberEvidence>;

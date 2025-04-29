@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { toAddress } from '@/shared/lib/utils';
+import { papiHelpers } from '@/shared/papi-helpers';
 import { type AccountId, papiSchema } from '@/shared/papi-schemas';
 import { type PolkadotApi } from '@/domains/network';
 
@@ -12,11 +13,9 @@ import { collectiveCoreMemberEvidence, collectiveCoreMemberStatus, collectiveCor
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, papi: PolkadotApi) => {
-  if (papi.type === 'dot_col') {
-    return papi.api.query[getPalletName(type)];
-  }
-
-  throw new TypeError(`Wrong chain - ${papi.type}. Only Collective chains able to make operations.`);
+  return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+    return api.query[getPalletName(type)];
+  });
 };
 
 export const storage = {
@@ -46,7 +45,6 @@ export const storage = {
    */
   memberEvidence(type: PalletType, papi: PolkadotApi, accounts: AccountId[]) {
     const schema = z.array(z.optional(collectiveCoreMemberEvidence));
-
     const addresses = accounts.map(a => [toAddress(a)] satisfies [SS58String]);
 
     return substrateRpcPool

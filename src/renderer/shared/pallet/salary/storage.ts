@@ -1,43 +1,43 @@
-import { type ApiPromise } from '@polkadot/api';
+import { zipWith } from 'lodash';
+import { type SS58String } from 'polkadot-api';
+import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { toAddress } from '@/shared/lib/utils';
+import { papiHelpers } from '@/shared/papi-helpers';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type PolkadotApi } from '@/domains/network';
 
 import { getPalletName } from './helpers';
 import { salaryClaimantStatus, salaryStatusType } from './schema';
 import { type PalletType } from './types';
 
-const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
-  const palletName = getPalletName(type);
-  const root = api.query[palletName];
-  if (!root) {
-    throw new TypeError(`${palletName} pallet not found in ${api.runtimeChain.toString()} chain`);
-  }
-
-  const query = root[name];
-  if (!query) {
-    throw new TypeError(`${name} query not found`);
-  }
-
-  return query;
+const getQuery = (type: PalletType, papi: PolkadotApi) => {
+  return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+    return api.query[getPalletName(type)];
+  });
 };
 
 export const storage = {
   /**
    * The status of a claimant.
    */
-  claimant: (type: PalletType, api: ApiPromise, accounts: AccountId[]) => {
-    const schema = pjsSchema.vec(pjsSchema.optional(salaryClaimantStatus));
+  claimant: (type: PalletType, papi: PolkadotApi, accounts: AccountId[]) => {
+    const schema = z.array(z.optional(salaryClaimantStatus));
+    const addresses = accounts.map(a => [toAddress(a)] satisfies [SS58String]);
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'claimant').multi(accounts)).then(schema.parse);
+    return substrateRpcPool
+      .call(() => getQuery(type, papi).Claimant.getValues(addresses))
+      .then(schema.parse)
+      .then(claimants => zipWith(claimants, accounts, (claim, account) => ({ account, claim })));
   },
 
   /**
    * The overall status of the system.
    */
-  status: (type: PalletType, api: ApiPromise) => {
-    const schema = pjsSchema.optional(salaryStatusType);
+  status: (type: PalletType, papi: PolkadotApi) => {
+    const schema = z.optional(salaryStatusType);
 
-    return substrateRpcPool.call(() => getQuery(type, api, 'status')()).then(schema.parse);
+    return substrateRpcPool.call(() => getQuery(type, papi).Status.getValue()).then(schema.parse);
   },
 };

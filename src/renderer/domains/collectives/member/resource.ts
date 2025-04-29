@@ -37,9 +37,9 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
             pallet: palletType,
             accountId: collectiveMember.account,
             rank: collectiveMember.member.rank,
-            isActive: coreMember.status.isActive,
-            lastPromotion: coreMember.status.lastPromotion,
-            lastProof: coreMember.status.lastProof,
+            isActive: coreMember.status.is_active,
+            lastPromotion: coreMember.status.last_promotion,
+            lastProof: coreMember.status.last_proof,
           });
         } else {
           result.push({
@@ -59,7 +59,7 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
 
     fn();
 
-    const unsubscribe = papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
+    const subscriptions = papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
       const palletCollective = `${capitalize(palletType)}Collective` as const;
       const palletCore = `${capitalize(palletType)}Core` as const;
 
@@ -77,8 +77,8 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
     });
 
     return () => {
-      for (const fn of unsubscribe) {
-        fn();
+      for (const sub of subscriptions) {
+        sub.unsubscribe();
       }
     };
   },
