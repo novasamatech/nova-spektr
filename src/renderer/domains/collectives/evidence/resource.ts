@@ -32,8 +32,8 @@ export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evid
         if (nullable(evidence)) return null;
 
         return {
-          pallet: palletType,
           chainId,
+          pallet: palletType,
           wish: evidence.wish,
           accountId: account,
           hash: evidence.value,

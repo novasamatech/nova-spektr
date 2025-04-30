@@ -106,10 +106,12 @@ const $activityInfo = combine(
 );
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
-const $pendingReferendums = $referendumsSinceLastProof.map(
-  referendumsList => nullable(referendumsList) || !referendumsList.length,
-);
-const $pendingVotes = $memberVotes.map(memberVotes => nullable(memberVotes) || !memberVotes.length);
+const $pendingReferendums = $referendumsSinceLastProof.map(referendumsList => {
+  return nullable(referendumsList) || !referendumsList.length;
+});
+const $pendingVotes = $memberVotes.map(memberVotes => {
+  return nullable(memberVotes) || !memberVotes.length;
+});
 
 export const profile = {
   $member,

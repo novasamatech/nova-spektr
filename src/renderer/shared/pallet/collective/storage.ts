@@ -3,8 +3,8 @@ import { type SS58String } from 'polkadot-api';
 import { z } from 'zod';
 
 import { substrateRpcPool } from '@/shared/api/substrate-helpers';
-import { toAccountId } from '@/shared/lib/utils';
-import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { papiHelpers } from '@/shared/papi-helpers';
 import { type AccountId } from '@/shared/papi-schemas';
 import { type PolkadotApi } from '@/domains/network';
@@ -111,38 +111,21 @@ export const storage = {
   /**
    * Votes on a given proposal, if it is ongoing.
    */
-  voting(type: PalletType, papi: PolkadotApi, keys: (readonly [ReferendumId, AccountId])[] | ReferendumId) {
+  voting(type: PalletType, papi: PolkadotApi, keys: [ReferendumId, AccountId][]) {
     const votingResponseSchema = z.array(z.optional(collectiveVoteRecord));
 
-    if (Array.isArray(keys)) {
-      const typedKeys = keys.map(
-        ([referendumId, accountId]) => [Number(referendumId), accountId] as [number, SS58String],
-      );
-
-      return substrateRpcPool
-        .call(() => getQuery(type, papi).Voting.getValues(typedKeys))
-        .then(votingResponseSchema.parse)
-        .then(votes =>
-          zipWith(votes, keys, (vote, key) => ({
-            key: { referendumId: key[0], accountId: key[1] },
-            vote,
-          })),
-        );
-    }
-
-    const votingWithKeyResponseSchema = z.array(
-      z
-        .object({
-          keyArgs: z
-            .tuple([referendaPallet.schema.referendumId, z.string()])
-            .transform(v => ({ referendumId: v[0], accountId: toAccountId(v[1]) })),
-          value: z.optional(collectiveVoteRecord),
-        })
-        .transform(({ keyArgs, value }) => ({ key: keyArgs, vote: value })),
+    const typedKeys = keys.map(
+      ([referendumId, accountId]) => [referendumId, toAddress(accountId)] as [number, SS58String],
     );
 
     return substrateRpcPool
-      .call(() => getQuery(type, papi).Voting.getEntries(Number(keys)))
-      .then(votingWithKeyResponseSchema.parse);
+      .call(() => getQuery(type, papi).Voting.getValues(typedKeys))
+      .then(votingResponseSchema.parse)
+      .then(votes =>
+        zipWith(votes, keys, (vote, key) => ({
+          key: { referendumId: key[0], accountId: key[1] },
+          vote,
+        })),
+      );
   },
 };

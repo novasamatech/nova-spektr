@@ -19,7 +19,11 @@ export const collectiveCoreMemberStatus = z.object({
 });
 
 export type CollectiveCoreMemberEvidence = z.infer<typeof collectiveCoreMemberEvidence>;
-export const collectiveCoreMemberEvidence = z.object({
-  wish: papiSchema.enumType('Retention', 'Promotion'),
-  value: papiSchema.bytesHex,
-});
+export const collectiveCoreMemberEvidence = z
+  .tuple([
+    z.object({
+      type: z.union([z.literal('Retention'), z.literal('Promotion')]),
+    }),
+    papiSchema.bytesHex,
+  ])
+  .transform(item => ({ wish: item[0].type, value: item[1] }));

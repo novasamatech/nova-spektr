@@ -40,11 +40,13 @@ const $memberSalary = combine(profile.$member, $chainSalaries, (member, salaries
 
 const $memberClaimStatus = combine(profile.$member, $claimantStatuses, (member, statuses) => {
   if (nullable(member)) return null;
+
   return statuses?.[member.accountId] ?? null;
 });
 
 const $currentPeriod = combine($status, block.$currentBlock, (status, currentBlock) => {
   if (nullable(status)) return null;
+
   return salaryService.getCurrentPeriod(status, currentBlock);
 });
 

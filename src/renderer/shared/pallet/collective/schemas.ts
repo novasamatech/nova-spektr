@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { papiSchema } from '@/shared/papi-schemas';
-
 export type CollectiveVoteRecord = z.infer<typeof collectiveVoteRecord>;
-export const collectiveVoteRecord = papiSchema.enumValue({
-  Aye: z.number(),
-  Nay: z.number(),
-});
+export const collectiveVoteRecord = z
+  .object({
+    type: z.union([z.literal('Aye'), z.literal('Nay')]),
+    value: z.number(),
+  })
+  .transform(item => ({ type: item.type, data: item.value }));

@@ -8,7 +8,6 @@ import {
   blockHeightSchema,
   bytesHexSchema,
 } from './primitives';
-import { enumTypeSchema, enumValueSchema } from './structs';
 
 export type { AccountId, BlockHeight };
 
@@ -16,11 +15,7 @@ export const papiSchema = {
   accountId: accountIdSchema,
   blockHeight: blockHeightSchema,
   bigNumber: bigNumberSchema,
-
   bytesHex: bytesHexSchema,
-
-  enumType: enumTypeSchema,
-  enumValue: enumValueSchema,
 
   helpers: {
     toAccountId: (value: string) => {

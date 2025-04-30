@@ -1,5 +1,4 @@
 import { gql } from '@apollo/client';
-import { type ApiPromise } from '@polkadot/api';
 import { GraphQLClient } from 'graphql-request';
 import { capitalize } from 'lodash';
 import { z } from 'zod';
@@ -42,7 +41,7 @@ type VotingRequestParams = {
 };
 
 const requestFromChain = async ({ palletType, chainId, referendums, accounts }: VotingRequestParams) => {
-  const keys = referendums.map(r => accounts.map(a => [r, a] as const)).flat();
+  const keys = referendums.map(r => accounts.map(a => [r, a] as [ReferendumId, AccountId])).flat();
 
   const papi = getChainRegistry().getApi(chainId);
   const votes = await collectivePallet.storage.voting(palletType, papi, keys);
@@ -110,7 +109,6 @@ const requestFromSubQuery = async (
 type RequestVotesParams = {
   palletType: CollectivePalletsType;
   chain: Chain;
-  api: ApiPromise;
   referendums: ReferendumId[];
   accounts: AccountId[];
 };
