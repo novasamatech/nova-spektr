@@ -1,9 +1,9 @@
-import { useStoreMap } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
 import { type Chain } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
+import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
@@ -12,23 +12,28 @@ import { type FeedRecord } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { identityModel } from '../model/identity';
 
+import { getDescription } from './utils';
+
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
 type Props = {
   event: FeedRecord;
   chain: Chain;
+  withFullAccountInfo?: boolean;
 };
 
 const now = Date.now();
 
-export const EventRecord = memo(({ event, chain }: Props) => {
+export const EventRecord = memo(({ event, chain, withFullAccountInfo }: Props) => {
   const { t } = useI18n();
+  const identities = useUnit(identityModel.$list);
+  const identity = identities[event.accountId];
 
-  const identity = useStoreMap({
-    store: identityModel.$list,
-    keys: [event.accountId],
-    fn: (identities, [accountId]) => identities[accountId] ?? null,
-  });
+  const name = identity ? identityService.getFullName(identity) : undefined;
+
+  const description = getDescription(event, t);
+
+  const duration = (now - event.at.getTime()) / 1000;
 
   return (
     <AsyncItem fallback={<Box width="100%" height="48px"></Box>}>
@@ -38,18 +43,18 @@ export const EventRecord = memo(({ event, chain }: Props) => {
             <Account
               accountId={event.accountId}
               chain={chain}
-              title={identity ? identityService.getFullName(identity) : undefined}
+              title={name}
               variant="short"
               hideAddress
+              hideExplorers={!withFullAccountInfo}
+              hideIcon={!withFullAccountInfo}
             />
           </div>
           <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-            <Duration seconds={(now - event.at.getTime()) / 1000} shortFormat />
+            <Duration seconds={duration} shortFormat />
           </HelpText>
         </div>
-        <FootnoteText className="text-text-secondary">
-          <Slot id={activityFeedRecordDescriptionSlot} props={{ t, record: event }} />
-        </FootnoteText>
+        <FootnoteText className="text-text-secondary">{description}</FootnoteText>
       </div>
     </AsyncItem>
   );

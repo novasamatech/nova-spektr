@@ -7,20 +7,26 @@ import { fellowshipVotingFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
-function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
+export interface DateThresholds {
+  urgent: number;
+  warning: number;
+}
+
+function getTimerColor(time: number, thresholds: DateThresholds): 'urgent' | 'warning' | 'idle' {
   const days = Math.floor(time / ONE_DAY);
 
-  if (days <= 3) return 'urgent';
-  if (days <= 7) return 'warning';
+  if (days <= thresholds.urgent) return 'urgent';
+  if (days <= thresholds.warning) return 'warning';
   return 'idle';
 }
 
 type Props = {
   endBlock: number | null;
   shortDateFormat?: boolean;
+  dateThresholds: DateThresholds;
 };
 
-export const ReferendumEndTimer = ({ endBlock, shortDateFormat }: Props) => {
+export const ReferendumEndTimer = ({ endBlock, shortDateFormat, dateThresholds }: Props) => {
   const input = useUnit(fellowshipVotingFeature.input);
   const [endTime, setEndTime] = useState<number>();
 
@@ -33,7 +39,7 @@ export const ReferendumEndTimer = ({ endBlock, shortDateFormat }: Props) => {
   }, [endBlock, input]);
 
   if (!endTime || !input) return null;
-  const variant = getTimerColor(endTime);
+  const variant = getTimerColor(endTime, dateThresholds);
 
-  return <Timeout at={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
+  return <Timeout secondsToEnd={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
 };

@@ -15,9 +15,25 @@ import { tasksService } from '../../service';
 import { TaskLabels } from '../TaskLabels';
 import { VoteBadge } from '../VoteBadge';
 
+export interface DateThresholds {
+  urgent: number;
+  warning: number;
+}
+
+export const DefaultDateThresholds: DateThresholds = {
+  urgent: 5,
+  warning: 14,
+};
+
+export const LooseDateThresholds: DateThresholds = {
+  urgent: 2,
+  warning: 8,
+};
+
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
   transaction: Transaction | null;
+  dateThresholds: DateThresholds;
 }>();
 
 type Props = {
@@ -71,7 +87,10 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
         </button>
       </ReferendumDetailsModal>
       <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
-        <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
+        <Slot
+          id={referendumVotingTaskActionSlot}
+          props={{ referendum, transaction, dateThresholds: DefaultDateThresholds }}
+        />
       </Box>
     </Box>
   );

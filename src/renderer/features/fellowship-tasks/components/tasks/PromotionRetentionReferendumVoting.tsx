@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type OngoingReferendum, type Track, referendumService, track } from '@/domains/collectives';
+import { type OngoingReferendum, type Track, referendumService, track, trackService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
@@ -16,7 +16,7 @@ import { MemberActivity } from '../MemberActivity';
 import { TaskLabels } from '../TaskLabels';
 import { VoteBadge } from '../VoteBadge';
 
-import { referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
+import { DefaultDateThresholds, LooseDateThresholds, referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
 const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
   const name = relatedTrack?.find(t => t.id === rank)?.name;
@@ -55,6 +55,9 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
 
   const title = getRankTitle(referendum.track, relatedTrack);
 
+  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+  const dateThresholds = isRetentionTrack ? LooseDateThresholds : DefaultDateThresholds;
+
   return (
     <Box direction="row" gap={2}>
       <ReferendumDetailsModal referendum={referendum}>
@@ -77,7 +80,7 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
         </button>
       </ReferendumDetailsModal>
       <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
-        <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
+        <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction, dateThresholds }} />
       </Box>
     </Box>
   );
