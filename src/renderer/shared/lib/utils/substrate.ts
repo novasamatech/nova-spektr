@@ -217,7 +217,7 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
     ...metadata,
     signerPayloadBase: {
       ...metadata.signerPayloadBase,
-      nonce: numberToScaleEncoded(scaleEncodedToNumber(metadata.signerPayloadBase.nonce) + index),
+      nonce: numberToScaleEncoded(parseInt(metadata.signerPayloadBase.nonce) + index),
     },
   };
 };
