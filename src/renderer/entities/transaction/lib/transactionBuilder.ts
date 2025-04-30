@@ -586,7 +586,6 @@ type CreateFlexibleMultisigParams = {
   api: ApiPromise;
   multisigAccountId: AccountId;
   threshold: number;
-  proxyDeposit: string;
   signatories: Signatory[];
 };
 
@@ -597,43 +596,19 @@ function buildCreateFlexibleMultisig({
   threshold,
   signatories,
   signer,
-  proxyDeposit,
 }: CreateFlexibleMultisigParams): Transaction {
-  const proxyTransaction = transactionBuilder.buildCreatePureProxy({
-    chain: chain,
-    accountId: signer.accountId,
-  });
-
-  const wrappedTransaction = transactionService.getWrappedTransaction({
-    api: api,
-    transaction: proxyTransaction,
-    txWrappers: [
-      {
-        kind: WrapperKind.MULTISIG,
-        multisigAccount: {
-          accountId: multisigAccountId,
-          signatories,
-          threshold,
-        } as MultisigAccount,
-        signatories: signatories.map((s) => ({
-          accountId: s.accountId,
-        })) as Account[],
-        signer,
-      },
-    ],
-  });
-
-  const transferTransaction = {
+  const remarkTransaction = {
     chainId: chain.chainId,
     accountId: signer.accountId,
-    type: TransactionType.TRANSFER,
+    type: TransactionType.REMARK_WITH_EVENT,
     args: {
-      dest: toAddress(multisigAccountId, { prefix: chain.addressPrefix }),
-      value: proxyDeposit,
+      remark: JSON.stringify({
+        type: 'multisig_creation',
+        threshold,
+        signatories: signatories.map(s => s.accountId)
+      })
     },
   };
 
-  const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
-
-  return buildBatchAll({ chain, accountId: signer.accountId, transactions });
+  return remarkTransaction;
 }

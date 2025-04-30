@@ -124,31 +124,6 @@ export const Confirmation = ({
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
-          <DetailRow
-            className="text-text-primary"
-            label={
-              <>
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                <Tooltip>
-                  <Tooltip.Trigger>
-                    <div tabIndex={0}>
-                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-                </Tooltip>
-              </>
-            }
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
-            </div>
-          </DetailRow>
-        )}
-
         <DetailRow
           className="text-text-primary"
           label={

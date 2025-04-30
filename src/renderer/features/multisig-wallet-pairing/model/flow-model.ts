@@ -96,9 +96,13 @@ const $remarkTx = combine(
     return {
       chainId: form.chainId,
       accountId: account.accountId,
-      type: TransactionType.REMARK,
+      type: TransactionType.REMARK_WITH_EVENT,
       args: {
-        remark: 'Multisig created with Nova Spektr',
+        remark: JSON.stringify({
+          type: 'multisig_creation',
+          threshold: form.threshold,
+          signatories: form.signatories.map(s => s.accountId)
+        })
       },
     };
   },
