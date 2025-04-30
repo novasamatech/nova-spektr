@@ -162,7 +162,6 @@ export const subscribeResource = createSubscriptionResource<VotingSubscribeParam
 
       return api.event[pallet].Voted.watch().subscribe(({ payload }) => {
         const parsedData = payloadSchema.parse(payload);
-
         const accountMatch = accounts.some(a => a === parsedData.who);
 
         if (!accountMatch) return;

@@ -50,19 +50,18 @@ export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>
   fn({ api, palletType, chainId }) {
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
-    return tracks.map<Track>(({ id, info }) => ({
-      id,
-      name: info.name,
-      chainId,
-      pallet: palletType,
-      maxDeciding: info.maxDeciding,
-      decisionDeposit: info.decisionDeposit,
-      preparePeriod: info.preparePeriod,
-      decisionPeriod: info.decisionPeriod,
-      minEnactmentPeriod: info.minEnactmentPeriod,
-      minApproval: mapCurve(info.minApproval),
-      minSupport: mapCurve(info.minSupport),
-    }));
+    return tracks.map<Track>(({ id, info }) => {
+      const { minApproval, minSupport, ...rest } = info;
+
+      return {
+        id,
+        chainId,
+        pallet: palletType,
+        minApproval: mapCurve(minApproval),
+        minSupport: mapCurve(minSupport),
+        ...rest,
+      };
+    });
   },
 });
 
