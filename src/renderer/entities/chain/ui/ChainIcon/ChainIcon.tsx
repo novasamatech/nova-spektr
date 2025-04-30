@@ -13,18 +13,16 @@ type Props = {
 export const ChainIcon = memo(({ src, name, size = 16, className }: Props) => {
   const [isImgLoaded, toggleImgLoaded] = useState(false);
 
-  if (!isImgLoaded) {
-    return <Skeleton width={`${size}px`} height={`${size}px`} />;
-  }
-
   return (
-    <img
-      src={src}
-      className={cnTw('pointer-events-none select-none', className)}
-      width={size}
-      height={size}
-      alt={name}
-      onLoad={() => toggleImgLoaded(true)}
-    />
+    <Skeleton active={!isImgLoaded}>
+      <img
+        src={src}
+        className={cnTw('pointer-events-none select-none', className)}
+        width={size}
+        height={size}
+        alt={name}
+        onLoad={() => toggleImgLoaded(true)}
+      />
+    </Skeleton>
   );
 });
