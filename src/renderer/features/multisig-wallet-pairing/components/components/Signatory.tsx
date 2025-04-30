@@ -152,24 +152,24 @@ export const Signatory = ({
 
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
-      const displayAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
-      const isValidAddress = validateAddress(displayAddress, chain);
+      const displayedAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
+      const isValidAddress = validateAddress(displayedAddress, chain);
 
       if (!isValidAddress) continue;
 
       addressOptions.push({
         id: contact.id.toString(),
-        label: <Address showIcon title={contact.name} address={displayAddress} />,
-        value: { address: displayAddress },
+        label: <Address showIcon title={contact.name} address={displayedAddress} />,
+        value: { address: displayedAddress },
       });
     }
 
     if (validateAddress(query, chain)) {
-      const displayAddress = toAddress(query, { prefix: chain.addressPrefix });
+      const displayedAddress = toAddress(query, { prefix: chain.addressPrefix });
       addressOptions.push({
         id: query,
-        label: <Address showIcon address={displayAddress} />,
-        value: { address: displayAddress },
+        label: <Address showIcon address={displayedAddress} />,
+        value: { address: displayedAddress },
       });
     }
 
