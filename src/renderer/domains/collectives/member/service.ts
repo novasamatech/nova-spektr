@@ -87,10 +87,10 @@ function isSetActiveTransaction(transaction: Transaction): transaction is SetAct
   return transaction.type === TransactionType.COLLECTIVE_SET_ACTIVE;
 }
 
-interface RankActivityThreshold {
+type RankActivityThreshold = {
   activity: number | null;
   agreement: number | null;
-}
+};
 
 const rankThresholds: Record<number, RankActivityThreshold> = {
   0: { activity: null, agreement: null },
@@ -117,7 +117,7 @@ export const memberService = {
   canPromote,
   canVoteForProposal,
   getActivityAndAgreementThresholds,
-  
+
   createSetActiveTransaction,
   isSetActiveTransaction,
 };

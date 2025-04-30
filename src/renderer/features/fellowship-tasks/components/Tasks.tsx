@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { groupBy, nullable } from '@/shared/lib/utils';
@@ -13,7 +13,7 @@ import { Basket } from './Basket';
 import { TasksGroup } from './TasksGroup';
 import { Title } from './Title';
 
-export const Tasks = memo(() => {
+export const Tasks = () => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
@@ -53,9 +53,9 @@ export const Tasks = memo(() => {
       <Basket />
     </div>
   );
-});
+};
 
-const AllDone = memo(() => {
+const AllDone = () => {
   const { t } = useI18n();
 
   return (
@@ -67,9 +67,9 @@ const AllDone = memo(() => {
       </Box>
     </Box>
   );
-});
+};
 
-const AccountNotFound = memo(() => {
+const AccountNotFound = () => {
   const { t } = useI18n();
   const chainName = useUnit(tasks.$chainName);
 
@@ -79,4 +79,4 @@ const AccountNotFound = memo(() => {
       description={t('fellowship.tasks.noAccountDescription', { chain: chainName })}
     />
   );
-});
+};
