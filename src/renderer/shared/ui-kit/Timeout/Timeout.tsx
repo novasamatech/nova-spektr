@@ -53,7 +53,7 @@ export const Timeout = memo(({ secondsToEnd, icon = 'clock', variant, shortDateF
         {countdown > 0 ? (
           <Duration seconds={countdown} shortFormat={shortDateFormat} />
         ) : (
-          <span>{t('general.timeout.expired')}</span>
+          <span data-testid="ExpiredMsg">{t('general.timeout.expired')}</span>
         )}
       </FootnoteText>
     </div>
