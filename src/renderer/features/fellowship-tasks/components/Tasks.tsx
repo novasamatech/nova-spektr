@@ -22,7 +22,6 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
-  const hasPermission = useUnit(memberProfile.$hasPermission);
   const pending = useUnit(tasks.pending);
   const hasAccount = useUnit(memberProfile.$hasAccount);
 
@@ -41,7 +40,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
-      {hasAccount && hasPermission && activeTasks.length ? (
+      {hasAccount && activeTasks.length ? (
         <ScrollArea>
           {groups.personal ? (
             <TasksGroup
@@ -70,7 +69,7 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
           ) : null}
         </ScrollArea>
       ) : null}
-      {(hasAccount && hasPermission && !activeTasks.length) || (hasAccount && !hasPermission) ? <AllDone /> : null}
+      {hasAccount && !activeTasks.length ? <AllDone /> : null}
       {!hasAccount ? <AccountNotFound /> : null}
       <Basket />
     </div>

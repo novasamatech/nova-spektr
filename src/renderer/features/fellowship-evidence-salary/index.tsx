@@ -28,6 +28,7 @@ import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmat
 import { VotingActions } from './components/VotingActions';
 import { fellowshipSalaryFeature } from './model/feature';
 import { memberSalary } from './model/memberSalary';
+import { profile } from './model/profile';
 import { salaryInduct } from './model/salaryInduct';
 import { salaryPayout } from './model/salaryPayout';
 import { salaryRequest } from './model/salaryRequest';
@@ -43,6 +44,7 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryRequest.$account);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
+  const canVote = useUnit(profile.$canVote);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
   const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
 
@@ -50,7 +52,7 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
     return (
       <>
         {currentPeriodExists && <PeriodEndTimer endBlock={currentPeriod.until} shortDateFormat />}
-        <Button size="sm" onClick={() => salaryRequest.saveToBasket()}>
+        <Button size="sm" disabled={!canVote} onClick={() => salaryRequest.saveToBasket()}>
           {t('fellowship.tasks.task.requestSalary.request')}
         </Button>
       </>
@@ -60,7 +62,9 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
       <>
         {currentPeriodExists && <PeriodEndTimer endBlock={currentPeriod.until} shortDateFormat />}
         <SalaryRegisterModal>
-          <Button size="sm">{t('fellowship.tasks.task.requestSalary.request')}</Button>
+          <Button size="sm" disabled={!canVote}>
+            {t('fellowship.tasks.task.requestSalary.request')}
+          </Button>
         </SalaryRegisterModal>
       </>
     );
@@ -70,18 +74,21 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
 fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryInduct.$account);
+  const canVote = useUnit(profile.$canVote);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
 
   if (canSaveToBasket) {
     return (
-      <Button size="sm" onClick={() => salaryInduct.saveToBasket()}>
+      <Button size="sm" disabled={!canVote} onClick={() => salaryInduct.saveToBasket()}>
         {t('fellowship.tasks.task.requestSalaryInduct.request')}
       </Button>
     );
   } else {
     return (
       <SalaryInductModal>
-        <Button size="sm">{t('fellowship.tasks.task.requestSalaryInduct.request')}</Button>
+        <Button size="sm" disabled={!canVote}>
+          {t('fellowship.tasks.task.requestSalaryInduct.request')}
+        </Button>
       </SalaryInductModal>
     );
   }
@@ -90,18 +97,21 @@ fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
 fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryPayout.$account);
+  const canVote = useUnit(profile.$canVote);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
 
   if (canSaveToBasket) {
     return (
-      <Button size="sm" onClick={() => salaryPayout.saveToBasket()}>
+      <Button size="sm" disabled={!canVote} onClick={() => salaryPayout.saveToBasket()}>
         {t('fellowship.tasks.task.requestPayout.request')}
       </Button>
     );
   } else {
     return (
       <SalaryRegisterModal>
-        <Button size="sm">{t('fellowship.tasks.task.requestPayout.request')}</Button>
+        <Button size="sm" disabled={!canVote}>
+          {t('fellowship.tasks.task.requestPayout.request')}
+        </Button>
       </SalaryRegisterModal>
     );
   }
@@ -109,18 +119,24 @@ fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
 
 fellowshipSalaryFeature.inject(requestPromotionTaskActionSlot, () => {
   const { t } = useI18n();
+  const canVote = useUnit(profile.$canVote);
+
   return (
     <EvidencePostFlowModal wish="Promotion">
-      <Button size="sm">{t('fellowship.tasks.task.promotion.request')}</Button>
+      <Button size="sm" disabled={!canVote}>
+        {t('fellowship.tasks.task.promotion.request')}
+      </Button>
     </EvidencePostFlowModal>
   );
 });
 
 fellowshipSalaryFeature.inject(requestRetentionATaskActionSlot, () => {
   const { t } = useI18n();
+  const canVote = useUnit(profile.$canVote);
+
   return (
     <EvidencePostFlowModal wish="Retention">
-      <Button size="sm" className="w-[102px]">
+      <Button size="sm" className="w-[102px]" disabled={!canVote}>
         {t('fellowship.tasks.task.retention.request')}
       </Button>
     </EvidencePostFlowModal>
@@ -151,9 +167,13 @@ fellowshipSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }
 });
 
 fellowshipSalaryFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endBlock }) => {
-  return <VotingActions evidence={evidence} endBlock={endBlock} variant="small" />;
+  const canVote = useUnit(profile.$canVote);
+
+  return <VotingActions evidence={evidence} endBlock={endBlock} variant="small" disabled={!canVote} />;
 });
 
 fellowshipSalaryFeature.inject(evidenceActionsSlot, ({ evidence }) => {
-  return <VotingActions evidence={evidence} endBlock={null} variant="large" />;
+  const canVote = useUnit(profile.$canVote);
+
+  return <VotingActions evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
 });
