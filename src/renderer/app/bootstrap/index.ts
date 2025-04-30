@@ -17,16 +17,7 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { basketOperationsFeature } from '@/features/basket-operations';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
-import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-feed';
-import { fellowshipBasketFeature } from '@/features/fellowship-basket';
-import { fellowshipSalaryFeature } from '@/features/fellowship-evidence-salary';
-import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
-import { fellowshipProfileFeature } from '@/features/fellowship-profile';
-import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
-import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
-import { fellowshipVotingFeature } from '@/features/fellowship-voting';
-import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceBasketFeature } from '@/features/governance-basket';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
@@ -95,26 +86,21 @@ const populate = async () => {
 export const bootstrap = () => {
   const config = configureDomains();
 
+  import('./fellowship').then(({ bootstrapFellowship }) => bootstrapFellowship());
+
   registerFeatures([
     config,
 
     assetsNavigationFeature,
+    fellowshipNavigationFeature,
     operationsNavigationFeature,
     contactsNavigationFeature,
     notificationsNavigationFeature,
     settingsNavigationFeature,
     flexibleMultisigNavigationFeature,
-
-    fellowshipActivityFeedFeature,
-    fellowshipMembersFeature,
-    fellowshipNavigationFeature,
-    fellowshipProfileFeature,
-    fellowshipReferendumsDetailsFeature,
-    fellowshipSalaryFeature,
-    fellowshipTasksFeature,
-    fellowshipVotingFeature,
-    fellowshipVotingHistoryFeature,
-    fellowshipBasketFeature,
+    basketNavigationFeature,
+    stakingNavigationFeature,
+    governanceNavigationFeature,
 
     walletSelectFeature.feature,
     walletDetailsFeature,
@@ -139,10 +125,8 @@ export const bootstrap = () => {
 
     proxiedWalletFeature,
 
-    basketNavigationFeature,
     basketOperationsFeature,
 
-    governanceNavigationFeature,
     governanceBasketFeature,
     governanceOperationDetailFeature,
 
@@ -151,7 +135,6 @@ export const bootstrap = () => {
     transferOperationDetailFeature,
     transferBasketFeature,
 
-    stakingNavigationFeature,
     stakingOperationDetailFeature,
     stakingBasketFeature,
 
