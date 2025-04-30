@@ -23,4 +23,10 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
 
     return this;
   }
+
+  public async clickOnMultisigButton(): Promise<WalletModalWindow> {
+    await this.click(this.pageElements.multisigButton);
+
+    return this;
+  }
 }
