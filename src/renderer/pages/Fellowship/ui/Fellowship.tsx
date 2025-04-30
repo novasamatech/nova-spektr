@@ -5,6 +5,7 @@ import { Outlet, generatePath, useParams } from 'react-router-dom';
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
@@ -52,7 +53,7 @@ export const Fellowship = () => {
   return (
     <Box height="100%" width="100%">
       <Header title={t('fellowship.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px] shrink-0">
-        {true /* isDev() */ && (
+        {isDev() && (
           <Box width="200px">
             {/* TODO remove before release */}
             <Select
