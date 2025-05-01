@@ -14,7 +14,7 @@ export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
       <div className="flex flex-1 items-center gap-x-2 p-3">
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
       </div>
-      {children}
+      <div className="flex items-center justify-items-end gap-x-3 p-3">{children}</div>
     </Plate>
   );
 };
