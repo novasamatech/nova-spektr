@@ -17,6 +17,7 @@ const meta: Meta<typeof ConfirmModal> = {
   component: ConfirmModal,
   args: {
     title: exampleTitle,
+    description: exampleDescription,
     cancelText: exampleCancelText,
     confirmText: exampleConfirmText,
   },
@@ -36,7 +37,6 @@ export const Default: Story = {
         <ConfirmModal.Trigger>
           <Button>Toggle Confirm Modal</Button>
         </ConfirmModal.Trigger>
-        <ConfirmModal.Content>{exampleDescription}</ConfirmModal.Content>
       </ConfirmModal>
     );
   },
@@ -62,11 +62,7 @@ export const Controlled: Story = {
     },
   ],
   render(args) {
-    return (
-      <ConfirmModal {...args}>
-        <ConfirmModal.Content>{exampleDescription}</ConfirmModal.Content>
-      </ConfirmModal>
-    );
+    return <ConfirmModal {...args} />;
   },
 };
 
@@ -77,7 +73,6 @@ export const Alert: Story = {
         <ConfirmModal.Trigger>
           <Button>Toggle Confirm Modal</Button>
         </ConfirmModal.Trigger>
-        <ConfirmModal.Content>{exampleDescription}</ConfirmModal.Content>
       </ConfirmModal>
     );
   },
@@ -95,7 +90,6 @@ export const Warning: Story = {
         <ConfirmModal.Trigger>
           <Button>Toggle Confirm Modal</Button>
         </ConfirmModal.Trigger>
-        <ConfirmModal.Content>{exampleDescription}</ConfirmModal.Content>
       </ConfirmModal>
     );
   },

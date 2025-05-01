@@ -1,14 +1,14 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
-import { isObject } from 'lodash';
-import { Children, type PropsWithChildren } from 'react';
+import { type PropsWithChildren } from 'react';
 
-import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box } from '../Box/Box';
 import { useTheme } from '../Theme/useTheme';
 
 type Props = {
   title: string;
+  description: string;
   cancelText: string;
   confirmText: string;
   type?: 'alert' | 'warning';
@@ -20,6 +20,7 @@ type Props = {
 
 const Root = ({
   title,
+  description,
   cancelText,
   confirmText,
   type = 'alert',
@@ -31,17 +32,9 @@ const Root = ({
 }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
-  const arrayChildren = Children.toArray(children);
-  const triggerNode = arrayChildren.find(child => {
-    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Trigger;
-  });
-  const contentNode = arrayChildren.find(child => {
-    return nonNullable(child) && isObject(child) && 'type' in child && child.type === Content;
-  });
-
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={onToggle}>
-      {triggerNode}
+      {children}
       <AlertDialog.Portal container={portalContainer}>
         <AlertDialog.Overlay
           className={cnTw(
@@ -59,7 +52,7 @@ const Root = ({
             )}
           >
             <AlertDialog.Title className="font-manrope text-small-title">{title}</AlertDialog.Title>
-            {contentNode}
+            <AlertDialog.Description className="mt-2 text-text-tertiary">{description}</AlertDialog.Description>
             <Box horizontalAlign="center" direction="row" gap={3} padding={[4, 0, 0]}>
               <AlertDialog.Cancel asChild>
                 <Button className="flex-1" size="sm" variant="fill" pallet="secondary" onClick={onCancel}>
@@ -85,10 +78,6 @@ const Root = ({
   );
 };
 
-const Content = ({ children }: PropsWithChildren) => {
-  return <AlertDialog.Description className="mt-2 text-text-tertiary">{children}</AlertDialog.Description>;
-};
-
 const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean }>) => {
   return (
     <AlertDialog.Trigger disabled={disabled} asChild>
@@ -98,6 +87,5 @@ const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean 
 };
 
 export const ConfirmModal = Object.assign(Root, {
-  Content,
   Trigger,
 });

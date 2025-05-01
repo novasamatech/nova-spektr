@@ -18,6 +18,7 @@ export const RemoveContactModal = ({ name, contactId }: Props) => {
   return (
     <ConfirmModal
       title={t('addressBook.removeConfirm.title')}
+      description={t('addressBook.removeConfirm.description', { name })}
       cancelText={t('addressBook.removeConfirm.cancelButton')}
       confirmText={t('addressBook.removeConfirm.confirmButton')}
       type="warning"
@@ -26,7 +27,6 @@ export const RemoveContactModal = ({ name, contactId }: Props) => {
       <ConfirmModal.Trigger>
         <IconButton name="delete" className="p-2" />
       </ConfirmModal.Trigger>
-      <ConfirmModal.Content>{t('addressBook.removeConfirm.description', { name })}</ConfirmModal.Content>
     </ConfirmModal>
   );
 };
