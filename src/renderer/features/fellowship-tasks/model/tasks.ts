@@ -15,6 +15,7 @@ import {
   votingService,
 } from '@/domains/collectives';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';
 import { PromotionRetentionEvidenceVoting } from '../components/tasks/PromotionRetentionEvidenceVoting';
@@ -27,7 +28,6 @@ import { RequestSalaryInduct } from '../components/tasks/RequestSalaryInduct';
 import { tasksService } from '../service';
 import { type OperationType, type TaskDescription } from '../types';
 
-import { block } from './block';
 import { evidenceModel } from './evidence';
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -198,10 +198,10 @@ const $evidenceTasks = combine(
     member: $member,
     members: $members,
     evidencePopulated: evidence.$populated,
-    currentBlock: block.$currentBlock,
+    currentBlock: fellowshipNetwork.$currentBlock,
   },
   ({ evidences, periods, member, members, evidencePopulated, currentBlock }) => {
-    if (!evidencePopulated || nullable(member) || nullable(periods)) {
+    if (!evidencePopulated || nullable(member) || nullable(periods) || nullable(currentBlock)) {
       return [];
     }
 
@@ -243,10 +243,10 @@ const $ongoingReferendumsTasks = combine(
     maxRank: $maxRank,
     members: $members,
     member: $member,
-    currentBlock: block.$currentBlock,
+    currentBlock: fellowshipNetwork.$currentBlock,
   },
   ({ referendums, operations, maxRank, members, member, currentBlock }) => {
-    if (nullable(member)) return [];
+    if (nullable(member) || nullable(currentBlock)) return [];
 
     const possibleReferendums = referendums.filter(referendum => {
       return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
