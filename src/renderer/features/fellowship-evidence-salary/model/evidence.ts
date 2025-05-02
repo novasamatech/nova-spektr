@@ -33,7 +33,7 @@ const $leftToDemotion = combine(
 
 // requesting data
 
-const evendenceRequested = fellowshipEvidenceSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+const evidenceRequested = fellowshipEvidenceSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
   if (!member) return;
   return {
     api,
@@ -44,11 +44,11 @@ const evendenceRequested = fellowshipEvidenceSalaryFeature.running.filterMap(({ 
 });
 
 sample({
-  clock: evendenceRequested,
+  clock: evidenceRequested,
   target: evidence.request,
 });
 
-const evendencePeriodsRequested = fellowshipEvidenceSalaryFeature.running.filterMap(
+const evidencePeriodsRequested = fellowshipEvidenceSalaryFeature.running.filterMap(
   ({ api, palletType, chain, member }) => {
     if (!member) return;
     return {
@@ -61,7 +61,7 @@ const evendencePeriodsRequested = fellowshipEvidenceSalaryFeature.running.filter
 );
 
 sample({
-  clock: evendencePeriodsRequested,
+  clock: evidencePeriodsRequested,
   target: evidence.requestPeriods,
 });
 
