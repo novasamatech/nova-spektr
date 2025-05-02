@@ -7,7 +7,8 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
+import { type OngoingReferendum } from '@/domains/collectives';
+import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
@@ -39,10 +40,9 @@ type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
   tags: string[];
-  onReferendumSelect(referendum: Referendum): void;
 };
 
-export const OngoingReferendumVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
+export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
   const meta = useStoreMap({
@@ -72,18 +72,20 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
 
   return (
     <Box direction="row" gap={2}>
-      <button className="flex w-full min-w-0 appearance-none p-4" onClick={() => onReferendumSelect(referendum)}>
-        <Box gap={3}>
-          <Box direction="row" gap={3} grow={1}>
-            <SmallTitleText className="truncate">
-              {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-            </SmallTitleText>
-            <TaskLabels tags={tags} />
-            {voted && <VoteBadge active />}
+      <ReferendumDetailsModal referendum={referendum}>
+        <button className="flex w-full min-w-0 appearance-none p-4">
+          <Box gap={3}>
+            <Box direction="row" gap={3} grow={1}>
+              <SmallTitleText className="truncate">
+                {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+              </SmallTitleText>
+              <TaskLabels tags={tags} />
+              {voted && <VoteBadge active />}
+            </Box>
+            <FootnoteText as="div">{content}</FootnoteText>
           </Box>
-          <FootnoteText as="div">{content}</FootnoteText>
-        </Box>
-      </button>
+        </button>
+      </ReferendumDetailsModal>
       <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
         <Slot
           id={referendumVotingTaskActionSlot}
