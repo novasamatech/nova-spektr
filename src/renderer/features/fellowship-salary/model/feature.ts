@@ -33,8 +33,8 @@ const $input = combine(
   },
 );
 
-export const fellowshipEvidenceSalaryFeature = createFeature({
-  name: 'fellowship/evidence-salary',
+export const fellowshipSalaryFeature = createFeature({
+  name: 'fellowship/salary',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
   filter: input => {
@@ -51,5 +51,5 @@ export const fellowshipEvidenceSalaryFeature = createFeature({
 sample({
   clock: fellowshipNetwork.$isConnected,
   filter: fellowshipNetwork.$isConnected,
-  target: fellowshipEvidenceSalaryFeature.restore,
+  target: fellowshipSalaryFeature.restore,
 });

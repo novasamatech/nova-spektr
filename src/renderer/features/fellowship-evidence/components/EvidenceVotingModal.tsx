@@ -10,7 +10,7 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { evidenceVoting } from '../model/evidenceVoting';
-import { fellowshipSalaryFeature } from '../model/feature';
+import { fellowshipEvidenceFeature } from '../model/feature';
 
 import { EvidenceVotingConfirmation } from './EvidenceVotingConfirmation';
 
@@ -27,7 +27,7 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>('confirm');
-  const input = useUnit(fellowshipSalaryFeature.input);
+  const input = useUnit(fellowshipEvidenceFeature.input);
   const account = useUnit(evidenceVoting.$votingAccount);
   const votingMember = useUnit(evidenceVoting.$votingMember);
   const wallet = useUnit(evidenceVoting.$wallet);

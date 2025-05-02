@@ -19,11 +19,13 @@ import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { extensionWalletFeature } from '@/features/extension-wallet';
 import { fellowshipActivityFeedFeature } from '@/features/fellowship-activity-feed';
 import { fellowshipBasketFeature } from '@/features/fellowship-basket';
-import { fellowshipSalaryFeature } from '@/features/fellowship-evidence-salary';
+import { fellowshipEvidenceFeature } from '@/features/fellowship-evidence';
+import { fellowshipEvidenceSalaryFeature } from '@/features/fellowship-evidence-salary';
 import { fellowshipMembersFeature } from '@/features/fellowship-members';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { fellowshipProfileFeature } from '@/features/fellowship-profile';
 import { fellowshipReferendumsDetailsFeature } from '@/features/fellowship-referendum-details';
+import { fellowshipSalaryFeature } from '@/features/fellowship-salary';
 import { fellowshipTasksFeature } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { fellowshipVotingHistoryFeature } from '@/features/fellowship-voting-history';
@@ -115,6 +117,9 @@ export const bootstrap = () => {
     fellowshipVotingFeature,
     fellowshipVotingHistoryFeature,
     fellowshipBasketFeature,
+    fellowshipEvidenceSalaryFeature,
+    fellowshipEvidenceFeature,
+    fellowshipSalaryFeature,
 
     walletSelectFeature.feature,
     walletDetailsFeature,

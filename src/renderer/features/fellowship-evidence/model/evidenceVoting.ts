@@ -10,13 +10,13 @@ import { type Evidence, trackService, votingService } from '@/domains/collective
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { fellowshipSalaryFeature } from './feature';
+import { fellowshipEvidenceFeature } from './feature';
 import { fellowship } from './fellowship';
 
 const flow = createGate<{ evidence: Evidence | null; aye: boolean }>({ defaultState: { evidence: null, aye: false } });
 
 const { $api, $chain, $wallet, $wallets, $votingAccount, $votingMember } = reshape({
-  source: fellowshipSalaryFeature.input,
+  source: fellowshipEvidenceFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
@@ -55,7 +55,7 @@ const requestNextReferendumFx = createEffect(({ api }: { api: ApiPromise }) => {
 });
 
 sample({
-  clock: fellowshipSalaryFeature.running,
+  clock: fellowshipEvidenceFeature.running,
   target: requestNextReferendumFx,
 });
 
