@@ -4,7 +4,13 @@ import { Outlet } from 'react-router-dom';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@/entities/contact';
-import { ContactFilter, CreateContactNavigation, EditContactNavigation, filterModel } from '@/features/contacts';
+import {
+  ContactFilter,
+  CreateContactNavigation,
+  EditContactNavigation,
+  RemoveContactModal,
+  filterModel,
+} from '@/features/contacts';
 
 export const Contacts = () => {
   const { t } = useI18n();
@@ -35,6 +41,7 @@ export const Contacts = () => {
                 {contactsFiltered.map((contact) => (
                   <ContactRow key={contact.id} contact={contact}>
                     <EditContactNavigation contactId={contact.id} />
+                    <RemoveContactModal contactId={contact.id} name={contact.name} />
                   </ContactRow>
                 ))}
               </ContactList>
