@@ -44,8 +44,6 @@ export const RetentionInfo = memo(() => {
     }
   }, [input?.api, leftToDemotion]);
 
-  console.log('HUY', currentMember, input?.chain);
-
   return (
     <Box padding={[4, 5, 5]} gap={6}>
       <CollectiveRank rank={currentMember?.rank ?? 0} showName />

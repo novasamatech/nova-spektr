@@ -54,7 +54,6 @@ export const SalaryInfo = memo(() => {
     nonNullable(currentPeriod) &&
     salaryService.isClaimantRequestedSalaryPayout(claimStatus, currentPeriod);
 
-  console.log('HUY', currentMember, input?.chain, identity?.name);
   return (
     <Box padding={[4, 5, 5]} gap={6}>
       <Box gap={2}>

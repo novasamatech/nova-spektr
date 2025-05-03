@@ -40,25 +40,25 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
-      {hasAccount && activeTasks.length ? (
+      {hasAccount && activeTasks.length && (
         <ScrollArea>
-          {groups.personal ? (
+          {groups.personal && (
             <TasksGroup
               key="pesonal"
               title={t('fellowship.tasks.personal')}
               group={groups.personal}
               onReferendumSelect={onReferendumSelect}
             />
-          ) : null}
-          {groups.general ? (
+          )}
+          {groups.general && (
             <TasksGroup
               key="general"
               title={t('fellowship.tasks.general')}
               group={groups.general}
               onReferendumSelect={onReferendumSelect}
             />
-          ) : null}
-          {groups.completed ? (
+          )}
+          {groups.completed && (
             <TasksGroup
               key="completed"
               title={t('fellowship.tasks.completed')}
@@ -66,11 +66,11 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
               async
               onReferendumSelect={onReferendumSelect}
             />
-          ) : null}
+          )}
         </ScrollArea>
-      ) : null}
-      {hasAccount && !activeTasks.length ? <AllDone /> : null}
-      {!hasAccount ? <AccountNotFound /> : null}
+      )}
+      {hasAccount && !activeTasks.length && <AllDone />}
+      {!hasAccount && <AccountNotFound />}
       <Basket />
     </div>
   );

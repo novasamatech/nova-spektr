@@ -55,8 +55,3 @@ export const profile = {
   $canVote,
   $pending: or($pendingMember, fellowshipSalaryFeature.isStarting),
 };
-
-// eslint-disable-next-line
-profile.$member.watch(m => {
-  console.log('HUY', m);
-});
