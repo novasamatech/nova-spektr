@@ -30,7 +30,9 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
   const input = useUnit(fellowshipEvidenceFeature.input);
   const account = useUnit(evidenceVoting.$votingAccount);
   const votingMember = useUnit(evidenceVoting.$votingMember);
+  const proposerMember = useUnit(evidenceVoting.$member);
   const wallet = useUnit(evidenceVoting.$wallet);
+  const tracks = useUnit(evidenceVoting.$tracks);
   const currentTrack = useUnit(evidenceVoting.$currentTrack);
   const nextTrack = useUnit(evidenceVoting.$nextTrack);
   const maxRank = useUnit(evidenceVoting.$maxRank);
@@ -108,17 +110,17 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              {nonNullable(votingMember) && (
+              {nonNullable(votingMember) && nonNullable(proposerMember) && (
                 <EvidenceVotingConfirmation
                   evidence={evidence}
                   asset={input.asset}
                   chain={input.chain}
                   wallets={input.wallets}
-                  currentTrack={currentTrack}
-                  nextTrack={nextTrack}
+                  tracks={tracks}
                   account={account}
                   vote={aye ? 'Aye' : 'Nay'}
                   maxRank={maxRank}
+                  proposerMember={proposerMember}
                   votingMember={votingMember}
                   fee={fee}
                 />

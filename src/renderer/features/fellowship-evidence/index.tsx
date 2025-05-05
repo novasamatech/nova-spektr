@@ -5,11 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { evidenceSlot } from '@/features/fellowship-evidence-salary';
 import { profileInfoSlot } from '@/features/fellowship-profile';
-import {
-  evidenceActionsSlot,
-  evidenceVotingTaskActionSlot,
-  requestPromotionTaskActionSlot,
-} from '@/features/fellowship-tasks';
+import { evidenceActionsSlot } from '@/features/fellowship-referendum-details';
+import { evidenceVotingTaskActionSlot, requestPromotionTaskActionSlot } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
 import { PromotionInfo } from './components/PromotionInfo';

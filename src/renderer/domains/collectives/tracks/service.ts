@@ -82,7 +82,6 @@ function getVoteWeight({
   track: TrackId;
 }) {
   const excessRank = getExcessRank(rank, maxRank, track);
-
   return calculateVoteWeightPipeline(0, { pallet, excessRank });
 }
 
@@ -227,6 +226,7 @@ export const trackService = {
   isPromotionTrack,
 
   getMinimumRank,
+  getExcessRank,
   getLinearVoteWeight,
   getGeometricVoteWeight,
   getVoteWeight,

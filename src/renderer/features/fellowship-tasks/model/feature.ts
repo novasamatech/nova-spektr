@@ -44,11 +44,6 @@ export const fellowshipTasksFeature = createFeature({
   },
 });
 
-// eslint-disable-next-line effector/no-watch
-fellowshipTasksFeature.running.watch(() => {
-  console.log('Tasks feature ApiPromise resolved');
-});
-
 sample({
   clock: fellowshipNetwork.$isConnected,
   filter: fellowshipNetwork.$isConnected,

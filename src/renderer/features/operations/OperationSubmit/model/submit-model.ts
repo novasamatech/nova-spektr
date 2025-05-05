@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { u8aToHex } from '@polkadot/util';
 import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
@@ -84,7 +85,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
-      console.log('submit args', transaction.args);
+      console.log('payload', u8aToHex(txPayloads[index]));
       transactionService
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {

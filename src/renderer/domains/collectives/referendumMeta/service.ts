@@ -30,7 +30,7 @@ function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank:
   );
 
   if (referendums.length > 0 && possibleReferendums.length === 0) {
-    return { activity: 100, agreement: null };
+    return { activity: 100, agreement: 100 };
   }
 
   let voted = 0;

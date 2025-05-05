@@ -1,7 +1,8 @@
 import { type PropsWithChildren } from 'react';
 
 import { type Contact } from '@/shared/core';
-import { Plate } from '@/shared/ui';
+import { copyToClipboard } from '@/shared/lib/utils';
+import { IconButton, Plate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 
 type Props = {
@@ -11,10 +12,15 @@ type Props = {
 export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
   return (
     <Plate className="flex p-0">
-      <div className="flex flex-1 items-center gap-x-2 p-3">
+      <div className="flex gap-x-2 p-3">
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
+        <IconButton
+          className="shrink-0 self-end text-icon-default"
+          name="copy"
+          onClick={() => copyToClipboard(contact.address)}
+        />
       </div>
-      {children}
+      <div className="ml-auto flex items-center gap-x-3 p-3">{children}</div>
     </Plate>
   );
 };

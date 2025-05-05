@@ -7,16 +7,11 @@ import { salary as salaryModel, salaryService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
 import { fellowshipTasksFeature } from './feature';
+import { fellowship } from './fellowship';
 
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
-const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
+const $status = fellowship.$store.map(s => s?.salaryStatus ?? null);
 const $fellowshipClaimantStatuses = salaryModel.$claimantStatus.map(s => s['fellowship'] ?? {});
-
-const $status = combine(fellowshipTasksFeature.input, $statuses, (featureInput, statuses) => {
-  if (nullable(featureInput)) return null;
-
-  return statuses[featureInput.chainId] ?? null;
-});
 
 const $chainClaimantStatuses = combine(
   fellowshipTasksFeature.input,

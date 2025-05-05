@@ -335,7 +335,14 @@ module.exports = {
             rules: [
               {
                 from: 'app',
-                allow: ['app', /* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+                allow: [
+                  'app',
+                  /* TODO fix */ 'shared',
+                  /* TODO fix */ 'entities',
+                  /* TODO fix */ 'features',
+                  'aggregates',
+                  'domains',
+                ],
               },
               {
                 from: 'shared',

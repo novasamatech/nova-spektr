@@ -3,9 +3,8 @@ import { and, or } from 'patronum';
 
 import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
-import { type ReferendumId } from '@/shared/pallet/referenda';
-import { evidence, referendum, referendumMeta, referendumService } from '@/domains/collectives';
+import { dictionary, nullable } from '@/shared/lib/utils';
+import { type Referendum, evidence, referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
@@ -13,19 +12,13 @@ import { fellowship } from './fellowship';
 
 const requestEvidenceFx = attach({ effect: evidence.requestContent });
 
-const flow = createFlow<{ referendumId: ReferendumId | null }>({ referendumId: null });
+const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null });
 
-const $referendumId = flow.state.map(state => state.referendumId);
+const $referendum = flow.state.map(state => state.referendum);
 
 const $evidences = fellowship.$store.map(store => store?.evidenceContent ?? []);
-const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
+const $members = fellowship.$store.map(store => dictionary(store?.members ?? [], 'accountId'));
 const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
-
-const $referendum = combine($referendums, $referendumId, (referendums, referendumId) => {
-  if (referendums.length === 0 || referendumId === null) return null;
-
-  return referendums.find(referendum => referendum.id === referendumId) ?? null;
-});
 
 const $identities = combine(identity.$list, fellowshipReferendumsDetailsFeature.input, (identities, input) => {
   if (nullable(input)) return {};
@@ -33,10 +26,10 @@ const $identities = combine(identity.$list, fellowshipReferendumsDetailsFeature.
   return identities[input.chainId] ?? {};
 });
 
-const $referendumMeta = combine($meta, $referendumId, (meta, referendumId) => {
-  if (referendumId === null) return null;
+const $referendumMeta = combine($meta, $referendum, (meta, referendum) => {
+  if (nullable(referendum)) return null;
 
-  return meta[referendumId] ?? null;
+  return meta[referendum.id] ?? null;
 });
 
 const $proposer = $referendum.map(referendum => {
@@ -111,6 +104,8 @@ export const details = {
   $description,
   $referendum,
   $referendumMeta,
+  $members,
+  $identities,
 
   $pendingEvidence: requestEvidenceFx.pending,
   $pendingProposer: identity.request.pending,
