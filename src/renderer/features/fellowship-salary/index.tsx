@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { basketUtils } from '@/entities/basket';
 import { salarySlot } from '@/features/fellowship-evidence-salary';
 import {
@@ -10,7 +11,6 @@ import {
   requestSalaryTaskActionSlot,
 } from '@/features/fellowship-tasks';
 
-import { PeriodEndTimer } from './components/PeriodEndTimer';
 import { SalaryInductModal } from './components/SalaryInductModal';
 import { SalaryInfo } from './components/SalaryInfo';
 import { SalaryPayoutConfirmation } from './components/SalaryPayoutConfirmation';
@@ -32,15 +32,18 @@ fellowshipSalaryFeature.inject(salarySlot, () => {
 fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   const { t } = useI18n();
   const account = useUnit(salaryRequest.$account);
+  const input = useUnit(fellowshipSalaryFeature.input);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const canVote = useUnit(profile.$canVote);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
   const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
 
+  if (!input) return null;
+
   if (canSaveToBasket) {
     return (
       <>
-        {currentPeriodExists && <PeriodEndTimer endBlock={currentPeriod.until} shortDateFormat />}
+        {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
         <Button size="sm" disabled={!canVote} onClick={() => salaryRequest.saveToBasket()}>
           {t('fellowship.tasks.task.requestSalary.request')}
         </Button>
@@ -49,7 +52,7 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   } else {
     return (
       <>
-        {currentPeriodExists && <PeriodEndTimer endBlock={currentPeriod.until} shortDateFormat />}
+        {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
         <SalaryRegisterModal>
           <Button size="sm" disabled={!canVote}>
             {t('fellowship.tasks.task.requestSalary.request')}

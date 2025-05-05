@@ -1,13 +1,15 @@
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { ButtonCard } from '@/shared/ui';
+import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
+import { fellowshipEvidenceFeature } from '../model/feature';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
-import { PeriodEndTimer } from './PeriodEndTimer';
 
 type Props = {
   evidence: Evidence;
@@ -18,6 +20,7 @@ type Props = {
 
 export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Props) => {
   const { t } = useI18n();
+  const input = useUnit(fellowshipEvidenceFeature.input);
 
   const buttonNodes = (
     <Box direction="row" gap={1}>
@@ -48,7 +51,7 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
     );
   }
 
-  if (variant === 'small') {
+  if (variant === 'small' && input) {
     return (
       <Box
         verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}
@@ -57,7 +60,7 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
         height="92px"
         width="102px"
       >
-        {nonNullable(endBlock) && <PeriodEndTimer endBlock={endBlock} shortDateFormat />}
+        {nonNullable(endBlock) && <PeriodEndTimer api={input.api} endBlock={endBlock} shortDateFormat />}
         {buttonNodes}
       </Box>
     );
