@@ -7,8 +7,10 @@ import {
 } from '@/features/basket-operations';
 
 export const basketSDK = createSDK({
-  operationTitle: operationTitleSlot,
-  transactionConfirmTitle: basketTransactionConfirmTitleSlot,
-  transactionConfirmDetails: basketTransactionConfirmDetailsSlot,
-  validation: validation.validationAsyncPipeline,
+  required: {
+    operationTitle: operationTitleSlot,
+    transactionConfirmTitle: basketTransactionConfirmTitleSlot,
+    transactionConfirmDetails: basketTransactionConfirmDetailsSlot,
+    validation: validation.validationAsyncPipeline,
+  },
 });
