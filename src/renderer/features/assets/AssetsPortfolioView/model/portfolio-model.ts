@@ -28,16 +28,21 @@ const $query = restore<string>(queryChanged, '');
 
 const $defaultTokens = createStore(tokensService.getTokensData());
 
-const $activeShards = createStore<AnyAccount[] | null>(null);
+const $filteredAccounts = createStore<AnyAccount[] | null>(null);
 
 sample({
-  clock: [shardsModel.events.shardsConfirmed, walletSelect.$selectedAccounts],
+  clock: shardsModel.events.shardsConfirmed,
   source: {
     struct: shardsModel.$selectedStructure,
     selectedAccounts: walletSelect.$selectedAccounts,
   },
   fn: ({ struct, selectedAccounts }) => shardsUtils.getSelectedShards(struct, selectedAccounts),
-  target: $activeShards,
+  target: $filteredAccounts,
+});
+
+sample({
+  clock: walletSelect.$selectedAccounts,
+  target: $filteredAccounts,
 });
 
 const $tokens = combine(
@@ -74,14 +79,11 @@ const $activeTokens = combine(
     connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,
-    selectedAccounts: walletSelect.$selectedAccounts,
-    activeShards: $activeShards,
+    filteredAccounts: $filteredAccounts,
     isShardsAccessDenied: shardsModel.$isAccessDenied,
   },
-  ({ connections, chains, tokens, wallet, selectedAccounts, activeShards, isShardsAccessDenied }) => {
-    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(activeShards)) return DEFAULT_LIST;
-
-    const filteredAccounts = isShardsAccessDenied ? selectedAccounts : activeShards;
+  ({ connections, chains, tokens, wallet, filteredAccounts }) => {
+    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(filteredAccounts)) return DEFAULT_LIST;
 
     const isMultisigWallet = walletUtils.isMultisig(wallet);
     const activeTokens: AssetByChains[] = [];
