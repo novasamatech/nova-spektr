@@ -183,6 +183,7 @@ export const evidenceVoting = {
   flow,
   $member,
   $maxRank,
+  $tracks,
   $currentTrack,
   $nextTrack,
   $proposal,

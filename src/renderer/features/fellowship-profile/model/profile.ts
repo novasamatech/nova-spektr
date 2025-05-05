@@ -109,9 +109,7 @@ const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $membe
 const $pendingReferendums = $referendumsSinceLastProof.map(referendumsList => {
   return nullable(referendumsList) || !referendumsList.length;
 });
-const $pendingVotes = $memberVotes.map(memberVotes => {
-  return nullable(memberVotes) || !memberVotes.length;
-});
+const $pendingVotes = $memberVotes.map(nullable);
 
 export const profile = {
   $member,

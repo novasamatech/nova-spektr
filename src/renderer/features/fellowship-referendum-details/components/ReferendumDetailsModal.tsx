@@ -1,19 +1,20 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { type PropsWithChildren, memo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { SmallTitleText } from '@/shared/ui';
 import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
-import { type Track, referendumService, trackService } from '@/domains/collectives';
+import { type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 import { tracksModel } from '../model/tracks';
+import { detailsService } from '../service';
 
 import { Card } from './Card';
+import { MemberProfile } from './MemberProfile';
 import { ReferendumDescription } from './ReferendumDescription';
 import { ReferendumVotingStatusBadge } from './ReferendumVotingStatusBadge';
 import { Threshold } from './Threshold';
@@ -26,28 +27,15 @@ export const referendumActionsSlot = createSlot<{
   onHighlight: (value: 'Aye' | 'Nay' | null) => void;
 }>();
 
-const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
-  const name = relatedTrack?.find(t => t.id === rank)?.name;
+type Props = PropsWithChildren<{
+  referendum: Referendum;
+}>;
 
-  if (!name) return '';
-
-  return name.charAt(0).toUpperCase() + name.slice(1);
-};
-
-type Props = {
-  isOpen: boolean;
-  referendumId: ReferendumId;
-  onToggle: (open: boolean) => void;
-};
-
-export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props) => {
-  useFlow(details.flow, { referendumId });
-
+export const ReferendumDetailsModal = memo(({ referendum, children }: Props) => {
   const { t } = useI18n();
 
   const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
-  const referendum = useUnit(details.$referendum);
   const tracks = useUnit(tracksModel.$list);
   const pendingReferendum = useUnit(details.$pending);
 
@@ -56,24 +44,25 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
 
   const loadingState = pendingReferendum && nullable(referendum);
 
+  const referendumId = referendum?.id;
+
   let title = t('governance.referendums.referendumTitle', { index: referendumId });
   if (referendum && referendumService.isOngoing(referendum)) {
     if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
-      title = getRankTitle(referendum.track, tracks) || title;
+      title = detailsService.getRankTitle(referendum.track, tracks) || title;
     }
   }
 
   return (
-    <Modal size="xl" height="full" isOpen={isOpen} onToggle={onToggle}>
+    <Modal size="xl" height="full">
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full bg-main-app-background">
           <ScrollArea>
             <Box direction="row" width="100%" gap={4} padding={[4, 6]} fillContainer>
-              <Box width="100%">
-                <Card>
-                  <ReferendumDescription />
-                </Card>
+              <Box width="100%" gap={4}>
+                <ReferendumDescription referendum={referendum} />
               </Box>
               <Box width="350px" shrink={0} gap={4}>
                 <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
@@ -91,6 +80,9 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
                     <Slot id={referendumActionsSlot} props={{ referendumId, onHighlight: setHighlight }} />
                   </Box>
                 </Card>
+
+                <MemberProfile referendum={referendum} />
+
                 <Slot id={referendumAdditionalLowPriorityInfoSlot} props={{ referendumId }} />
               </Box>
             </Box>
@@ -99,4 +91,4 @@ export const ReferendumDetailsModal = ({ referendumId, isOpen, onToggle }: Props
       </Modal.Content>
     </Modal>
   );
-};
+});
