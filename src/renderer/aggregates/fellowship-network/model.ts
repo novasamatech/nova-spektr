@@ -50,10 +50,10 @@ const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, 
   };
 });
 
-const $currentBlock = combine(block.$currentBlockMap, $network, (currentBlockMap, network) => {
+const $currentBlock = combine(block.$currentBlock, $network, (currentBlock, network) => {
   if (nullable(network) || nullable(network?.chainId)) return null;
 
-  return currentBlockMap[network.chainId];
+  return currentBlock[network.chainId] ?? null;
 });
 
 export const fellowshipNetwork = {

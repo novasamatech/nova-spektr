@@ -9,23 +9,23 @@ import { networkModel } from '@/entities/network';
 
 export const $apis = networkModel.$apis;
 
-// Store mapping network IDs to their current block heights
-const $currentBlockMap = createStore<Record<HexString, BlockHeight>>({});
+// Store mapping chain IDs to their current block heights
+const $currentBlock = createStore<Record<HexString, BlockHeight>>({});
 
 const startBlockListening = createEvent();
 const stopBlockListening = createEvent();
 
-// Create an effect factory for getting a block for a specific network
-const getBlockForNetworkFx = attach({
-  effect: createEffect(async ({ networkId, api }: { networkId: HexString; api: ApiPromise }) => {
+// Create an effect factory for getting a block for a specific chain
+const getBlockForChainFx = attach({
+  effect: createEffect(async ({ chainId, api }: { chainId: HexString; api: ApiPromise }) => {
     try {
       const blockNumber = await getCurrentBlockNumber(api);
       return {
-        networkId,
+        chainId,
         blockHeight: pjsSchema.helpers.toBlockHeight(blockNumber),
       };
     } catch (error) {
-      console.error(`Failed to get block for network ${networkId}:`, error);
+      console.error(`Failed to get block for chain ${chainId}:`, error);
       throw error;
     }
   }),
@@ -35,7 +35,7 @@ const getBlockForNetworkFx = attach({
 const { tick } = interval({
   start: startBlockListening,
   stop: stopBlockListening,
-  timeout: 6000,
+  timeout: 60000,
   leading: true,
 });
 
@@ -52,25 +52,25 @@ sample({
   source: $apis,
   fn: apis => Object.entries(apis) as [HexString, ApiPromise][],
   target: createEffect((entries: [HexString, ApiPromise][]) => {
-    for (const [networkId, api] of entries) {
-      getBlockForNetworkFx({ networkId, api });
+    for (const [chainId, api] of entries) {
+      getBlockForChainFx({ chainId, api });
     }
   }),
 });
 
-// Update block map when any network's block height is fetched
+// Update block map when any chain's block height is fetched
 sample({
-  clock: getBlockForNetworkFx.doneData,
-  source: $currentBlockMap,
-  fn: (blockMap, { networkId, blockHeight }) => ({
+  clock: getBlockForChainFx.doneData,
+  source: $currentBlock,
+  fn: (blockMap, { chainId, blockHeight }) => ({
     ...blockMap,
-    [networkId]: blockHeight,
+    [chainId]: blockHeight,
   }),
-  target: $currentBlockMap,
+  target: $currentBlock,
 });
 
 export const block = {
-  $currentBlockMap,
+  $currentBlock,
   startBlockListening,
   stopBlockListening,
 };
