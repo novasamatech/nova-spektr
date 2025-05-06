@@ -114,14 +114,15 @@ const $activeTokens = combine(
 const $activeTokensWithBalance = combine(
   {
     activeTokens: $activeTokens,
-    accounts: $accounts,
+    filteredAccounts: $filteredAccounts,
     balances: balanceModel.$balances,
   },
-  ({ activeTokens, balances, accounts }) => {
+  ({ activeTokens, balances, filteredAccounts }) => {
     const tokens: AssetByChains[] = [];
+    if (nullable(filteredAccounts)) return tokens;
 
     for (const token of activeTokens) {
-      const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, accounts);
+      const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, filteredAccounts);
 
       if (chainsWithBalance.length === 0) {
         continue;
