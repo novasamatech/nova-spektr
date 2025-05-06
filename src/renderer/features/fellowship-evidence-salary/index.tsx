@@ -5,8 +5,8 @@ import { Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { profileInfoSlot } from '@/features/fellowship-profile';
+import { evidenceActionsSlot } from '@/features/fellowship-referendum-details';
 import {
-  evidenceActionsSlot,
   evidenceVotingTaskActionSlot,
   payoutSalaryTaskActionSlot,
   requestPromotionTaskActionSlot,

@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { WalletIconType, WalletType } from '@/shared/core';
+import { type Transaction, TransactionType, WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
@@ -9,6 +9,7 @@ import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
 import { multisigUtils } from '@/entities/multisig';
 import { networkUtils } from '@/entities/network';
+import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { transactionSDK } from '@/sdk/transaction';
@@ -104,6 +105,29 @@ transactionSDK(multisigWalletFeature, {
         type: 'encoded',
         callData: transaction.args.call,
       };
+    }
+  },
+  wrapLegacy(transaction, { api, account }) {
+    if (accountUtils.isMultisigAccount(account)) {
+      const otherSignatories = multisigUtils.getOtherSignatories(account, account.accountId);
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+      return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+        const multisigTransaction: Transaction = {
+          type: TransactionType.MULTISIG_AS_MULTI,
+          accountId: account.accountId,
+          chainId: api.genesisHash.toHex(),
+          args: {
+            threshold: account.threshold,
+            otherSignatories,
+            maybeTimepoint: null,
+            call: extrinsic.method.toHex(),
+            maxWeight,
+          },
+        };
+
+        return multisigTransaction;
+      });
     }
   },
 });

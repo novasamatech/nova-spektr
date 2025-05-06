@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useCallback, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ChainId } from '@/shared/core';
@@ -9,7 +9,6 @@ import { isDev } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
-import { type Referendum } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import {
@@ -19,8 +18,8 @@ import {
   fellowshipPageModel,
 } from '../model/fellowshipPage';
 
-export const fellowshipSidebarSlot = createSlot<{ onReferendumSelect(referendum: Referendum): void }>();
-export const fellowshipContentSlot = createSlot<{ onReferendumSelect(referendum: Referendum): void }>();
+export const fellowshipSidebarSlot = createSlot();
+export const fellowshipContentSlot = createSlot();
 
 export const Fellowship = () => {
   const { t } = useI18n();
@@ -38,17 +37,6 @@ export const Fellowship = () => {
       navigationModel.events.navigateTo(generatePath(Paths.FELLOWSHIP_LIST, { chainId: COLLECTIVES_CHAIN_ID }));
     }
   }, [chainId]);
-
-  const selectReferendum = useCallback(
-    (referendum: Referendum) => {
-      if (chainId) {
-        navigationModel.events.navigateTo(
-          generatePath(Paths.FELLOWSHIP_REFERENDUM, { chainId, referendumId: referendum.id.toString() }),
-        );
-      }
-    },
-    [chainId],
-  );
 
   return (
     <Box height="100%" width="100%">
@@ -76,10 +64,10 @@ export const Fellowship = () => {
       <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
         <Box direction="row" gap={2} width="1089px" height="100%">
           <Box width="276px" height="100%" gap={2.5} shrink={0}>
-            <Slot id={fellowshipSidebarSlot} props={{ onReferendumSelect: selectReferendum }} />
+            <Slot id={fellowshipSidebarSlot} />
           </Box>
           <Box width="805px" height="100%" gap={2.5} shrink={0}>
-            <Slot id={fellowshipContentSlot} props={{ onReferendumSelect: selectReferendum }} />
+            <Slot id={fellowshipContentSlot} />
           </Box>
         </Box>
         <Outlet />
