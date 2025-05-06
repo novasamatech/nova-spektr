@@ -12,6 +12,7 @@ import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
@@ -209,6 +210,7 @@ export const Signatory = ({
         <Box width="100%">
           <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
+              data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
               placeholder={t('createMultisigAccount.signatorySelection')}
               options={options}
               query={query}

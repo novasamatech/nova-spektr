@@ -1,4 +1,4 @@
 export class MultisigModalElements {
-  static nameInput = 'placeholder="Enter name"';
+  static nameInput = 'Enter name';
 
 }
