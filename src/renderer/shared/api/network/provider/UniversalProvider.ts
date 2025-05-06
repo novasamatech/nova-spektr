@@ -86,25 +86,25 @@ class UniversalProvider {
     }
   }
 
-  #onConnecting() {
+  #onConnecting = () => {
     this.#updateStatus({ type: 'connecting', uri: this.#socket?.url ?? '' });
-  }
+  };
 
-  #onOpen() {
+  #onOpen = () => {
     this.#updateStatus({ type: 'open', uri: this.#socket?.url ?? '' });
-  }
+  };
 
-  #onClose(event: CloseEvent) {
+  #onClose = (event: CloseEvent) => {
     this.#updateStatus({ type: 'close', event });
-  }
+  };
 
-  #onError(event: Event) {
+  #onError = (event: Event) => {
     this.#updateStatus({ type: 'error', event });
-  }
+  };
 
-  #onMessage(event: MessageEvent) {
+  #onMessage = (event: MessageEvent) => {
     this.#events.emit('message', event.data);
-  }
+  };
 
   disconnect() {
     if (nullable(this.#socket)) {
@@ -127,6 +127,8 @@ class UniversalProvider {
     if (nullable(this.#socket)) {
       throw new Error('Connection is not initialized');
     }
+
+    // if (this.#socket.readyState !== WebSocket.OPEN) return;
 
     this.#socket.send(message);
   }
