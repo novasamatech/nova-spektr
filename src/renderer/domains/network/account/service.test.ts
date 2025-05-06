@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { afterEach, describe } from 'vitest';
 
 import { CryptoType, SigningType } from '@/shared/core';
 import { createAccountId, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
@@ -40,6 +40,13 @@ const universalAccount: UniversalAccount = {
 };
 
 describe('accounts service', () => {
+  afterEach(() => {
+    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
+    accountService.accountActionPermissionAnyOf.resetHandlers();
+    accountService.accountCanSignMultipleAnyOf.resetHandlers();
+    accountService.accountCollectChildrenPipeline.resetHandlers();
+  });
+
   it('should check account types', async () => {
     expect(accountService.isChainAccount(chainAccount)).toEqual(true);
     expect(accountService.isChainAccount(universalAccount)).toEqual(false);
@@ -67,8 +74,6 @@ describe('accounts service', () => {
 
     expect(filtered).toEqual([chainAccount, universalAccount]);
     expect(spy).toBeCalledWith({ account: universalAccount, chain: polkadotChain });
-
-    accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
   });
 
   describe('graph', () => {
@@ -156,7 +161,7 @@ describe('accounts service', () => {
         chainId: polkadotChainId,
         accountId: createAccountId('1'),
         cryptoType: CryptoType.SR25519,
-        signingType: SigningType.WALLET_CONNECT,
+        signingType: SigningType.WATCH_ONLY,
         proxiedAccountId: createAccountId('2'),
       };
 
@@ -168,7 +173,7 @@ describe('accounts service', () => {
         chainId: polkadotChainId,
         accountId: createAccountId('2'),
         cryptoType: CryptoType.SR25519,
-        signingType: SigningType.WALLET_CONNECT,
+        signingType: SigningType.WATCH_ONLY,
         proxiedAccountId: createAccountId('3'),
       };
 

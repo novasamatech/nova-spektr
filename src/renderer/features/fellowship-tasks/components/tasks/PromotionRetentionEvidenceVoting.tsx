@@ -7,8 +7,8 @@ import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
+import { EvidenceDetailsModal } from '@/features/fellowship-referendum-details';
 import { evidenceModel } from '../../model/evidence';
-import { EvidenceDetailsModal } from '../EvidenceDetailsModal/EvidenceDetailsModal';
 import { MemberActivity } from '../MemberActivity';
 import { TaskLabels } from '../TaskLabels';
 

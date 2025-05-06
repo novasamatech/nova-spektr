@@ -42,9 +42,6 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  collectAccountChildren(children) {
-    return children;
-  },
 });
 
 polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
