@@ -31,12 +31,7 @@ const memberUpdate = attachToFeatureInput(fellowshipEvidenceFeature, $member);
 
 sample({
   clock: fellowshipEvidenceFeature.running,
-  target: [member.subscribe, track.request],
-});
-
-sample({
-  clock: fellowshipEvidenceFeature.stopped,
-  target: member.unsubscribe,
+  target: [track.request],
 });
 
 sample({

@@ -35,19 +35,21 @@ export const Tasks = () => {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
-      {hasAccount && activeTasks.length && (
+      {hasAccount && activeTasks.length ? (
         <ScrollArea>
-          {groups.personal && (
+          {groups.personal ? (
             <TasksGroup key="pesonal" title={t('fellowship.tasks.personal')} group={groups.personal} />
-          )}
-          {groups.general && <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />}
-          {groups.completed && (
+          ) : null}
+          {groups.general ? (
+            <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />
+          ) : null}
+          {groups.completed ? (
             <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
-          )}
+          ) : null}
         </ScrollArea>
-      )}
-      {hasAccount && !activeTasks.length && <AllDone />}
-      {!hasAccount && <AccountNotFound />}
+      ) : null}
+      {hasAccount && !activeTasks.length ? <AllDone /> : null}
+      {!hasAccount ? <AccountNotFound /> : null}
       <Basket />
     </div>
   );
