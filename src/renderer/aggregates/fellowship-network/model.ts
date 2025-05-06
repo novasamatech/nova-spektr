@@ -51,7 +51,7 @@ const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, 
 });
 
 const $currentBlock = combine(block.$currentBlock, $network, (currentBlock, network) => {
-  if (nullable(network) || nullable(network?.chainId)) return null;
+  if (nullable(network?.chainId)) return null;
 
   return currentBlock[network.chainId] ?? null;
 });

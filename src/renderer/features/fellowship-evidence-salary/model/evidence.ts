@@ -25,8 +25,9 @@ const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $leftToDemotion = combine(
   { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock)) {
       return null;
+    }
     return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );

@@ -98,13 +98,13 @@ fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
         {t('fellowship.tasks.task.requestPayout.request')}
       </Button>
     );
-  } else {
-    return (
-      <SalaryRegisterModal>
-        <Button size="sm" disabled={!canVote}>
-          {t('fellowship.tasks.task.requestPayout.request')}
-        </Button>
-      </SalaryRegisterModal>
-    );
   }
+
+  return (
+    <SalaryRegisterModal>
+      <Button size="sm" disabled={!canVote}>
+        {t('fellowship.tasks.task.requestPayout.request')}
+      </Button>
+    </SalaryRegisterModal>
+  );
 });

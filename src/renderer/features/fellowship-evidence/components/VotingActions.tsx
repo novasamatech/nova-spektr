@@ -51,7 +51,7 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
     );
   }
 
-  if (variant === 'small' && input) {
+  if (variant === 'small' && nonNullable(input)) {
     return (
       <Box
         verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}

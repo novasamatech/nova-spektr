@@ -1,9 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, createEffect, createEvent, createStore, sample } from 'effector';
+import { produce } from 'immer';
 import { interval } from 'patronum';
 
 import { type HexString } from '@/shared/core';
-import { getCurrentBlockNumber } from '@/shared/lib/utils';
+import { series } from '@/shared/effector/series';
+import { entries, getCurrentBlockNumber } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
@@ -26,7 +28,6 @@ const getBlockForChainFx = attach({
       };
     } catch (error) {
       console.error(`Failed to get block for chain ${chainId}:`, error);
-      throw error;
     }
   }),
 });
@@ -46,26 +47,25 @@ sample({
   target: startBlockListening,
 });
 
-// On each tick, iterate through available APIs and trigger individual requests
+// On each tick, use series to trigger requests for all APIs
 sample({
   clock: tick,
   source: $apis,
-  fn: apis => Object.entries(apis) as [HexString, ApiPromise][],
-  target: createEffect((entries: [HexString, ApiPromise][]) => {
-    for (const [chainId, api] of entries) {
-      getBlockForChainFx({ chainId, api });
-    }
-  }),
+  fn: apis => entries(apis).map(([chainId, api]) => ({ chainId, api })),
+  target: series(getBlockForChainFx, { parallel: true }),
 });
 
 // Update block map when any chain's block height is fetched
 sample({
   clock: getBlockForChainFx.doneData,
   source: $currentBlock,
-  fn: (blockMap, { chainId, blockHeight }) => ({
-    ...blockMap,
-    [chainId]: blockHeight,
-  }),
+  fn: (blockMap, data) =>
+    produce(blockMap, draft => {
+      if (!data) return;
+
+      const { chainId, blockHeight } = data;
+      draft[chainId] = blockHeight;
+    }),
   target: $currentBlock,
 });
 
