@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { WalletType } from '@/shared/core';
+import { type Transaction, TransactionType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
+import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { transactionSDK } from '@/sdk/transaction';
@@ -97,6 +98,23 @@ transactionSDK(proxiedWalletFeature, {
         type: 'encoded',
         callData: transaction.args.call,
       };
+    }
+  },
+  wrapLegacy(transition, { api, account }) {
+    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+      const extrinsic = getExtrinsic[transition.type](transition.args, api);
+      const proxyTransaction: Transaction = {
+        type: TransactionType.PROXY,
+        accountId: account.accountId,
+        chainId: api.genesisHash.toHex(),
+        args: {
+          real: account.accountId,
+          forceProxyType: account.proxyType,
+          call: extrinsic.method.toHex(),
+        },
+      };
+
+      return proxyTransaction;
     }
   },
 });

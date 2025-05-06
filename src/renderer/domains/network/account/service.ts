@@ -182,6 +182,10 @@ function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
  * connection between accounts - returns empty array.
  */
 function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+  if (source === destination) {
+    return [destination];
+  }
+
   const stack: AnyAccount[] = [];
   const graphs = createAccountGraphs(accounts, chain);
   const entryNode = graphs.get(source);

@@ -27,9 +27,6 @@ accountSDK(watchOnlyWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectAccountChildren(children) {
-    return children;
-  },
 });
 
 watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
