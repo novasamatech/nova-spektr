@@ -40,7 +40,7 @@ export const createComplexTxStore = <T extends Transaction>({
     route: AnyAccount[];
   };
 
-  const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
+  const wrapTransactionFx = createEffect(({ transaction, route, api }: WrapParams) => {
     return transactionService.wrapLegacyTransaction(transaction, route, api);
   });
 
