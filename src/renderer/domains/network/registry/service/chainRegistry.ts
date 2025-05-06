@@ -5,13 +5,14 @@ import {
   type WsEvent,
   type WsJsonRpcProvider,
   type WsProviderConfig,
-  getWsProvider,
 } from 'polkadot-api/ws-provider/web';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { CONFIG } from '../lib/constants';
+
+import { getWsPapi } from './wsPapiProvider';
 
 type RegistryEvents = {
   status: {
@@ -37,13 +38,13 @@ export class ChainRegistry {
 
   readonly #events: Emitter<RegistryEvents> = mitt();
 
-  readonly #createWcProvider: (wsProviderConfig: WsProviderConfig) => WsJsonRpcProvider;
+  readonly #createWcProvider: (chainId: ChainId, config: WsProviderConfig) => WsJsonRpcProvider;
   readonly #createClient: (provider: JsonRpcProvider) => PolkadotClient;
 
   constructor(
     chains: Chain[],
     papi: {
-      createWcProvider: (wsProviderConfig: WsProviderConfig) => WsJsonRpcProvider;
+      createWcProvider: (chainId: ChainId, config: WsProviderConfig) => WsJsonRpcProvider;
       createClient: (provider: JsonRpcProvider) => PolkadotClient;
     },
   ) {
@@ -78,7 +79,7 @@ export class ChainRegistry {
       throw new Error(`Connection for ${chainId} already exists`);
     }
 
-    const provider = this.#createWcProvider({
+    const provider = this.#createWcProvider(chainId, {
       endpoints,
       onStatusChanged: ({ type }) => this.#events.emit('status', { chainId, type }),
     });
@@ -171,7 +172,7 @@ let instance: ChainRegistry | undefined;
 export function getChainRegistry(): ChainRegistry {
   if (nullable(instance)) {
     instance = new ChainRegistry(chainsService.getChainsData(), {
-      createWcProvider: getWsProvider,
+      createWcProvider: getWsPapi,
       createClient,
     });
   }
