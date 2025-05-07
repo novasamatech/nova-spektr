@@ -67,7 +67,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   }
 
    public async fillSignatoryAndSetTrashhold(signatoryDictionary: string[], trashhold?: number): Promise<void> {
-    await this.fillFirstSignatoryAddress(signatoryDictionary[0]);
+    await this.fillSignatoryAddress(signatoryDictionary[0], 0);
     for (let i = 1; i < signatoryDictionary.length; i++) {
       await this.clickAddSignatoryButton();
       await this.fillSignatoryWalletName("Multisig wallet", i);
