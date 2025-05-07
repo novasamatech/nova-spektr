@@ -62,7 +62,7 @@ export const SelectAccount = ({ asset, chain }: Props) => {
       </Box>
       <FootnoteText className="px-5 pt-4 text-text-tertiary">{t('receive.selectAccount')}</FootnoteText>
       <ScrollArea>
-        <ul className="p-5 pt-2 text-text-secondary">
+        <ul className="h-[590px] p-5 pt-2 text-text-secondary">
           <Skeleton fullWidth active={isLoading}>
             {accountsGroup.map((account) =>
               accountUtils.isAccountWithShards(account) ? (

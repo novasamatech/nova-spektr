@@ -4,7 +4,7 @@ import { type PropsWithChildren, useState } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { Alert, Button, FootnoteText } from '@/shared/ui';
+import { Alert, Button, FootnoteText, Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Checkbox, Label, Modal } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -111,6 +111,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
       <OperationResult
         autoCloseTimeout={2000}
         isOpen={Boolean(statusType)}
+        content={<Icon size={40} name="checkmarkOutline" className="m-4 text-icon-positive" />}
         title={t(assetTransactionUtils.getStatusTitle(statusType))}
         onClose={() => setStatusType(null)}
       />

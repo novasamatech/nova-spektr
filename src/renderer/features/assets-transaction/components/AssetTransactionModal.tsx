@@ -50,7 +50,7 @@ export const AssetTransactionModal = () => {
   const { title, path } = getModalDetails(modalType);
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="md" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t(title, { asset: assetWithChains.symbol })}</Modal.Title>
       <Modal.Content disableScroll>
         <Box shrink={0} padding={[3, 5, 0]}>

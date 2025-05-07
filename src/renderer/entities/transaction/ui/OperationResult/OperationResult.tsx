@@ -9,6 +9,7 @@ import { type Variant } from './common/types';
 type Props = {
   title: string;
   variant?: Variant;
+  content?: React.ReactNode;
   description?: string;
   autoCloseTimeout?: number;
   isOpen: boolean;
@@ -17,6 +18,7 @@ type Props = {
 
 export const OperationResult = ({
   title,
+  content,
   variant = 'success',
   description,
   autoCloseTimeout = 0,
@@ -54,11 +56,12 @@ export const OperationResult = ({
   return (
     <StatusModal
       content={
-        variant === 'warning' ? (
+        content ??
+        (variant === 'warning' ? (
           <Icon name="warn" size={48} className="m-4" />
         ) : (
           <Animation variant={variant} {...VariantAnimationProps[variant]} />
-        )
+        ))
       }
       title={title}
       description={description}

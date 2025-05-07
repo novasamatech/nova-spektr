@@ -97,6 +97,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
       <OperationResult
         autoCloseTimeout={2000}
         isOpen={Boolean(statusType)}
+        content={<Icon size={40} name="checkmarkOutline" className="m-4 text-icon-positive" />}
         title={t(assetTransactionUtils.getStatusTitle(statusType))}
         onClose={() => setStatusType(null)}
       />
