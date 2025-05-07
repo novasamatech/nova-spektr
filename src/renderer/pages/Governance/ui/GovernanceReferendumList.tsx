@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ReferendumId } from '@/shared/core';
@@ -13,7 +13,6 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const GovernanceReferendumList = () => {
-  useGate(governancePageAggregate.gates.flow);
   const { chainId } = useParams<'chainId'>();
 
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
@@ -38,6 +37,8 @@ export const GovernanceReferendumList = () => {
   const isNetworkDisabled = !isApiConnected && !isLoadingState && all.length === 0;
   const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
   const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
+
+  console.log({ isLoadingState, isLoading, isSearching, isTitlesLoading });
 
   return (
     <Box gap={4} grow={1}>
