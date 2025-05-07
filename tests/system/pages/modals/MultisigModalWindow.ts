@@ -15,15 +15,11 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
 
   private async clickAddSignatoryButton(): Promise<void> {
     await this.page.getByRole('button', { name: 'Add new signatory' }).click();
-  }
-
-  private async fillFirstSignatoryAddress(address: string): Promise<void> {
-    await this.page.getByTestId(MultisigModalElements.signatoryComboBox).fill(address);
-    await this.page.getByTestId(MultisigModalElements.address).click();
-  }
+  }  
 
   private async fillSignatoryAddress(address: string, ammount: number): Promise<void> {
     await this.page.getByTestId(MultisigModalElements.signatoryComboBox).nth(ammount).fill(address);
+    await this.page.getByTestId(MultisigModalElements.address).click();
   }
 
   private async fillWalletName(name: string): Promise<void> {
@@ -72,7 +68,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   }
 
    public async fillSignatoryAndSetTrashhold(signatoryDictionary: string[], trashhold?: number): Promise<void> {
-    await this.fillFirstSignatoryAddress(signatoryDictionary[0]);
+    await this.fillSignatoryAddress(signatoryDictionary[0], 0);
     
     for (let i = 1; i < signatoryDictionary.length; i++) {
       await this.clickAddSignatoryButton();
