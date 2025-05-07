@@ -37,6 +37,10 @@ export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpc
     }
   };
 
+  // const jsonRpcMessage = <T extends object>(msg: T) => {
+  //   return JSON.stringify({ jsonrpc: '2.0', ...msg });
+  // };
+
   provider.on('status', status => {
     config.onStatusChanged?.(getFormattedStatus(status));
   });

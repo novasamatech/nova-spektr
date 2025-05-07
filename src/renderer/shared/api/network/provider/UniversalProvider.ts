@@ -1,7 +1,7 @@
 import mitt, { type Emitter } from 'mitt';
 
 import { type ChainId } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 
 type WsConnecting = {
   type: 'connecting';
@@ -32,18 +32,18 @@ type RegistryEvents = {
 
 const DEFAULT_TIMEOUT = 3500;
 
-/**
- * ProvidersMap that holds UniversalProviders for a specific chain
- */
-const ProvidersMap = new Map<ChainId, UniversalProvider>();
-
 class UniversalProvider {
-  readonly #chainId: ChainId;
+  // readonly #endpoints: string[] = [];
+  // #endpointIndex = 0;
+
   // @ts-expect-error not used
   readonly #timeout: number;
+  readonly #reconnectDelay = 1_000;
+  readonly #maxReconnectAttempts = 3;
+  #reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  #reconnectAttempts = 0;
 
-  readonly #endpoints: string[] = [];
-  #endpointIndex: number;
+  #messageQueue: string[] = [];
 
   #socket: WebSocket | null = null;
   #status: Status = { type: 'close', event: null };
@@ -51,76 +51,49 @@ class UniversalProvider {
   readonly #events: Emitter<RegistryEvents> = mitt();
   readonly #subscribers = new Map<keyof RegistryEvents, VoidFunction[]>();
 
-  constructor(chainId: ChainId, endpoints: string[], timeout = DEFAULT_TIMEOUT) {
-    this.#chainId = chainId;
+  // ==================================================================
+  // =========================== Public API ===========================
+  // ==================================================================
+
+  constructor(endpoints: string[], timeout = DEFAULT_TIMEOUT) {
     this.#timeout = timeout;
-    this.#endpoints = endpoints;
-    this.#endpointIndex = 0;
+    // this.#endpoints = endpoints;
 
     this.connect();
   }
 
-  connect(endpoint?: string) {
-    const nextEndpoint = endpoint || this.#endpoints.at(this.#endpointIndex % this.#endpoints.length);
+  connect() {
+    // const nextEndpoint = endpoint || this.#endpoints.at(this.#endpointIndex % this.#endpoints.length);
 
-    if (nullable(nextEndpoint)) {
-      throw new Error('No valid RPC URL provided');
+    if (nonNullable(this.#socket)) {
+      throw new Error('Web Socket already exists');
     }
 
-    console.info(`Trying to connect URL: ${nextEndpoint}, chainId: ${this.#chainId} `);
-
-    // TODO: handle reconnect with timeout
-    try {
-      this.#socket = new WebSocket(nextEndpoint);
-      this.#onConnecting();
-
-      this.#socket.addEventListener('open', this.#onOpen);
-      this.#socket.addEventListener('close', this.#onClose);
-      this.#socket.addEventListener('error', this.#onError);
-      this.#socket.addEventListener('message', this.#onMessage);
-
-      this.#endpointIndex++;
-    } catch (error) {
-      console.error('WebSocket initialization error: ', error);
-      this.#updateStatus({ type: 'error', event: null });
-    }
+    // console.info(`Trying to connect URL: ${nextEndpoint}`);
+    this.#attemptToConnect();
   }
-
-  #onConnecting = () => {
-    this.#updateStatus({ type: 'connecting', uri: this.#socket?.url ?? '' });
-  };
-
-  #onOpen = () => {
-    this.#updateStatus({ type: 'open', uri: this.#socket?.url ?? '' });
-  };
-
-  #onClose = (event: CloseEvent) => {
-    this.#updateStatus({ type: 'close', event });
-  };
-
-  #onError = (event: Event) => {
-    this.#updateStatus({ type: 'error', event });
-  };
-
-  #onMessage = (event: MessageEvent) => {
-    this.#events.emit('message', event.data);
-  };
 
   disconnect() {
     if (nullable(this.#socket)) {
-      throw new Error('Connection is not initialized');
+      throw new Error('WebSocket is not initialized');
     }
 
-    console.log(`Disconnecting from URL: ${this.#socket.url}, chainId: ${this.#chainId} `);
+    console.info(`Disconnecting from URL: ${this.#socket.url}`);
 
-    this.#socket.close();
+    this.#socket.removeEventListener('open', this.#openListener);
+    this.#socket.removeEventListener('close', this.#closeListener);
+    this.#socket.removeEventListener('error', this.#errorListener);
+    this.#socket.removeEventListener('message', this.#messageListener);
 
-    this.#socket.removeEventListener('open', this.#onOpen);
-    this.#socket.removeEventListener('close', this.#onClose);
-    this.#socket.removeEventListener('error', this.#onError);
-    this.#socket.removeEventListener('message', this.#onMessage);
+    if (this.#socket.readyState === WebSocket.OPEN || this.#socket.readyState === WebSocket.CONNECTING) {
+      this.#socket.close(1000, 'Internal disconnect');
+    }
 
     this.#socket = null;
+    this.#reconnectAttempts = 0;
+    this.#unsubscribeAll();
+    this.#clearReconnectTimer();
+    this.#updateStatus({ type: 'close', event: null });
   }
 
   send(message: string) {
@@ -128,9 +101,13 @@ class UniversalProvider {
       throw new Error('Connection is not initialized');
     }
 
-    // if (this.#socket.readyState !== WebSocket.OPEN) return;
-
-    this.#socket.send(message);
+    if (this.#socket.readyState === WebSocket.CONNECTING) {
+      this.#messageQueue.push(message);
+    } else if (this.#socket.readyState === WebSocket.OPEN) {
+      this.#socket.send(message);
+    } else {
+      throw new Error('WebSocket is not connected or connecting');
+    }
   }
 
   /*
@@ -164,15 +141,103 @@ class UniversalProvider {
     subscriber.filter((fn) => fn !== listener);
   }
 
+  // ==================================================================
+  // ============================ Internals ===========================
+  // ==================================================================
+
+  #attemptToConnect() {
+    this.#updateStatus({ type: 'connecting', uri: this.#socket?.url ?? '' });
+    this.#clearReconnectTimer();
+
+    try {
+      this.#socket = new WebSocket('ws://localhost:8080');
+      // this.#socket = new WebSocket(nextEndpoint);
+
+      this.#socket.addEventListener('open', this.#openListener);
+      this.#socket.addEventListener('close', this.#closeListener);
+      this.#socket.addEventListener('error', this.#errorListener);
+      this.#socket.addEventListener('message', this.#messageListener);
+
+      // this.#endpointIndex++;
+    } catch (error) {
+      console.error('WebSocket connection error: ', error);
+
+      this.#updateStatus({ type: 'error', event: null });
+      this.#attemptToReconnect();
+    }
+  }
+
+  #clearReconnectTimer() {
+    if (nullable(this.#reconnectTimer)) return;
+
+    clearTimeout(this.#reconnectTimer);
+    this.#reconnectTimer = null;
+  }
+
+  #attemptToReconnect() {
+    if (this.#reconnectAttempts >= this.#maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached, switching the endpoint');
+      // TODO: try another endpoint
+      this.disconnect();
+    } else {
+      const delay = this.#reconnectDelay * Math.pow(2, ++this.#reconnectAttempts - 1);
+
+      this.#reconnectTimer = setTimeout(this.#attemptToConnect, delay);
+    }
+  }
+
+  #openListener = () => {
+    this.#updateStatus({ type: 'open', uri: this.#socket?.url ?? '' });
+    this.#reconnectAttempts = 0;
+    this.#flushMessageQueue();
+  };
+
+  #closeListener = (event: CloseEvent | null = null) => {
+    this.#updateStatus({ type: 'close', event });
+    this.#attemptToReconnect();
+  };
+
+  #errorListener = (event: Event | null = null) => {
+    this.#updateStatus({ type: 'error', event });
+    this.#attemptToReconnect();
+  };
+
+  #messageListener = (event: MessageEvent) => {
+    this.#events.emit('message', event.data);
+  };
+
   #updateStatus(data: Status) {
     this.#status = data;
     this.#events.emit('status', data);
+  }
+
+  #unsubscribeAll() {
+    for (const unsubFns of this.#subscribers.values()) {
+      for (const fn of unsubFns) {
+        fn();
+      }
+    }
+
+    this.#subscribers.clear();
+  }
+
+  #flushMessageQueue() {
+    for (const message of this.#messageQueue) {
+      this.send(message);
+    }
+
+    this.#messageQueue = [];
   }
 
   get status() {
     return this.#status;
   }
 }
+
+/**
+ * ProvidersMap that holds UniversalProviders for a specific chain
+ */
+const ProvidersMap = new Map<ChainId, UniversalProvider>();
 
 /**
  * Provider that orchestrate WebSocket connection for PAPI and PJS running at
@@ -182,6 +247,6 @@ class UniversalProvider {
  *
  * @returns {Object}
  */
-export function getUniversalProvider(...args: ConstructorParameters<typeof UniversalProvider>) {
-  return ProvidersMap.get(args[0]) ?? new UniversalProvider(...args);
+export function getUniversalProvider(chainId: ChainId, ...args: ConstructorParameters<typeof UniversalProvider>) {
+  return ProvidersMap.get(chainId) ?? new UniversalProvider(...args);
 }
