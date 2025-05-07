@@ -2,7 +2,6 @@ import { BasePage } from "../BasePage";
 import { Page } from "@playwright/test";
 import { BaseModal } from "../BaseModalWindow";
 import { MultisigModalElements } from "../_elements/MultisigModalElements";
-import { TEST_IDS } from "@/shared/constants/testIds";
 import { ConfirmationModalWindow } from "./ConfirmationModalWindow";
 import { ConfirmationModalElements } from "../_elements/ConfirmationModalElements";
 
@@ -14,27 +13,27 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     this.previousPage = previousPage;
   }
 
-  public async fillFirstSignatoryAddress(address: string): Promise<void> {
-    await this.page.getByTestId(TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX).fill(address);
+  private async fillFirstSignatoryAddress(address: string): Promise<void> {
+    await this.page.getByTestId(MultisigModalElements.signatoryComboBox).fill(address);
   }
 
-  public async clickAddSignatoryButton(): Promise<void> {
+  private async clickAddSignatoryButton(): Promise<void> {
     await this.page.getByRole('button', { name: 'Add new signatory' }).click();
   }
 
-  public async fillSecondSignatoryAddress(address: string): Promise<void> {
-    await this.page.getByTestId(TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX).nth(1).fill(address);
+  private async fillSignatoryAddress(address: string, ammount: number): Promise<void> {
+    await this.page.getByTestId(MultisigModalElements.signatoryComboBox).nth(ammount).fill(address);
   }
 
-  public async fillWalletName(name: string): Promise<void> {
+  private async fillWalletName(name: string): Promise<void> {
     await this.page.getByPlaceholder(MultisigModalElements.nameInput).fill(name);
   }
 
-  public async fillSignatoryWalletName(name: string): Promise<void> {
-    await this.page.getByPlaceholder(MultisigModalElements.nameInput).nth(1).fill(name);
+  private async fillSignatoryWalletName(name: string, ammount: number): Promise<void> {
+    await this.page.getByPlaceholder(MultisigModalElements.nameInput).nth(ammount).fill(name + '_' + ammount);
   }
 
-  public async chooseNetwork(network: string): Promise<void> {    
+  private async chooseNetwork(network: string): Promise<void> {    
     await this.page.getByTestId('Select').click();
     await this.page.getByLabel(network, { exact: true }).getByText(network).click();
   }
@@ -49,8 +48,8 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     }
   }
 
-  public async chooseTrashhold(trashhold: number): Promise<void> {
-    await this.page.getByTestId('Select').click();
+  private async chooseTrashhold(trashhold: number): Promise<void> {
+    await this.page.getByTestId(MultisigModalElements.selectTestId).click();
     await this.page.getByRole('option', { name: trashhold.toString() }).click();
   
   }
@@ -65,6 +64,26 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     return new ConfirmationModalWindow(this.page, new ConfirmationModalElements(), this.previousPage);
   }
   
+  public async chooseNetworkandWalletName(network: string, name: string): Promise<void> {
+    await this.fillWalletName(name);
+    await this.chooseNetwork(network);
+    await this.clickOnContinueButton();
+  }
+
+   public async fillSignatoryAndSetTrashhold(signatoryDictionary: string[], trashhold?: number): Promise<void> {
+    await this.fillFirstSignatoryAddress(signatoryDictionary[0]);
+    for (let i = 1; i < signatoryDictionary.length; i++) {
+      await this.clickAddSignatoryButton();
+      await this.fillSignatoryWalletName("Multisig wallet", i);
+      await this.fillSignatoryAddress(signatoryDictionary[i], i);            
+    }
+    if (trashhold) {
+      if (trashhold < 2 || trashhold > signatoryDictionary.length) {
+        throw new Error(`Threshold must be between 2 and ${signatoryDictionary.length}`);
+      }
+      await this.chooseTrashhold(trashhold);
+    } else {
+      await this.chooseTrashhold(signatoryDictionary.length);
+    }
+  }
 }
-
-

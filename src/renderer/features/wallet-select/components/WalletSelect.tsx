@@ -9,6 +9,7 @@ import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/sha
 import { walletSelect } from '@/aggregates/wallet-select';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
+import { TEST_IDS } from '@/shared/constants';
 
 const {
   views: { WalletFiatBalance },
@@ -38,6 +39,7 @@ export const WalletSelect = () => {
       <Popover.Trigger>
         <button
           type="button"
+          data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
           className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         >
           <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
