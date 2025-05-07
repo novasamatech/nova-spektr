@@ -150,7 +150,7 @@ export const Signatory = ({
 
   // Contacts
   useEffect(() => {
-    if (isOwnAccount || contacts.length === 0 || !chain) return;
+    if (isOwnAccount || !chain) return;
 
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
@@ -174,6 +174,8 @@ export const Signatory = ({
         value: { address: displayedAddress },
       });
     }
+
+    if (addressOptions.length === 0) return;
 
     const contactsOptions: ComboboxGroup[] = [
       {
