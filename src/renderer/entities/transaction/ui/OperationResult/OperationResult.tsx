@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { type PropsWithChildren, type ReactNode, useEffect, useRef } from 'react';
 
 import { Icon, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
@@ -9,7 +9,7 @@ import { type Variant } from './common/types';
 type Props = {
   title: string;
   variant?: Variant;
-  content?: React.ReactNode;
+  content?: ReactNode;
   description?: string;
   autoCloseTimeout?: number;
   isOpen: boolean;
