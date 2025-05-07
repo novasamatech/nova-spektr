@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
@@ -11,9 +12,9 @@ import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { TEST_IDS } from '@/shared/constants/testIds';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
+
 
 const { services, constants } = walletSelectFeature;
 
