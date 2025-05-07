@@ -65,9 +65,9 @@ export const CompletedReferendums = memo(
             {showPlaceholders && createPlaceholders(placeholdersCount)}
 
             {showList &&
-              deferredReferendums.map((referendum, index) => (
+              deferredReferendums.map((referendum) => (
                 <li key={referendum.referendumId}>
-                  <AsyncItem fallback={<ListItemPlaceholder />} strategy={index < 100 ? 'async' : 'idle'}>
+                  <AsyncItem fallback={<ListItemPlaceholder />}>
                     <ReferendumItem
                       api={api}
                       asset={asset}
