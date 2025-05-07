@@ -13,10 +13,6 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     this.previousPage = previousPage;
   }
 
-  private async fillFirstSignatoryAddress(address: string): Promise<void> {
-    await this.page.getByTestId(MultisigModalElements.signatoryComboBox).fill(address);
-  }
-
   private async clickAddSignatoryButton(): Promise<void> {
     await this.page.getByRole('button', { name: 'Add new signatory' }).click();
   }
