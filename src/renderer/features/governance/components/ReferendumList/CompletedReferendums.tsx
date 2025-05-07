@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
-import { Accordion, Skeleton } from '@/shared/ui-kit';
+import { Accordion, AsyncItem, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
 
 import { ListItemPlaceholder } from './ListItemPlaceholder';
@@ -65,15 +65,17 @@ export const CompletedReferendums = memo(
             {showPlaceholders && createPlaceholders(placeholdersCount)}
 
             {showList &&
-              deferredReferendums.map((referendum) => (
+              deferredReferendums.map((referendum, index) => (
                 <li key={referendum.referendumId}>
-                  <ReferendumItem
-                    api={api}
-                    asset={asset}
-                    referendum={referendum}
-                    isTitlesLoading={isTitlesLoading}
-                    onSelect={onSelect}
-                  />
+                  <AsyncItem fallback={<ListItemPlaceholder />} strategy={index < 100 ? 'async' : 'idle'}>
+                    <ReferendumItem
+                      api={api}
+                      asset={asset}
+                      referendum={referendum}
+                      isTitlesLoading={isTitlesLoading}
+                      onSelect={onSelect}
+                    />
+                  </AsyncItem>
                 </li>
               ))}
           </ul>
