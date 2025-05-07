@@ -77,8 +77,6 @@ type RequestMaxRankParams = {
 };
 
 type MaxRankResponse = {
-  palletType: CollectivePalletsType;
-  chainId: ChainId;
   maxRank: number;
 };
 
@@ -87,10 +85,8 @@ export const maxRankResource = createRemoteResource<RequestMaxRankParams, MaxRan
     key: ({ chainId, palletType }) => `${palletType}:${chainId}`,
     ttl: Number.POSITIVE_INFINITY,
   },
-  fn({ api, palletType, chainId }) {
+  fn({ api, palletType }) {
     return {
-      palletType,
-      chainId,
       maxRank: collectiveCorePallet.consts.maxRank(palletType, api),
     };
   },

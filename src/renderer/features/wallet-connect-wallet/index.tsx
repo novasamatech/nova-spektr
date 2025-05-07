@@ -24,9 +24,6 @@ accountSDK(walletConnectWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectAccountChildren(children) {
-    return children;
-  },
 });
 
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

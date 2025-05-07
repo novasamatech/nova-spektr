@@ -21,7 +21,7 @@ jobs:
     if: contains(github.event.label.name, 'internal-build')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
 
       - name: Get version from package.json
@@ -73,7 +73,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
 
       - name: Download build artifacts
@@ -86,7 +86,7 @@ jobs:
         run: |
           echo "::set-output name=version::$(cat internal_version.txt)"
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: Add MacOS certs
@@ -125,8 +125,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -148,7 +149,7 @@ jobs:
             fi
           done
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/setup-s3cmd
         with:
           s3_region: pl-waw

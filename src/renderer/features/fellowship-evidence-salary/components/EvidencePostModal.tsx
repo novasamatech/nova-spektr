@@ -5,7 +5,7 @@ import { type HexString } from '@/shared/core';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toRomanNumeral } from '@/shared/lib/utils';
-import { Button, Icon } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { track } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
@@ -98,10 +98,6 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
         <OperationTitle title={t('fellowship.salary.promotionTitle')} chainId={input.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
-        <Box horizontalAlign="center" padding={6}>
-          <Icon name="evidence" size={60} />
-        </Box>
-
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>

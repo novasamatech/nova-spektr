@@ -52,7 +52,7 @@ export async function migratePVAccounts(t: Transaction): Promise<void> {
     if (baseAccount) {
       walletsToUpdate.push({
         ...wallet,
-        // @ts-expect-error unkown wallet type
+        // @ts-expect-error unknown wallet type
         rootAccountId: baseAccount.accountId,
       });
     }

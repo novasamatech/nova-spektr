@@ -2,9 +2,9 @@ import { combine, sample } from 'effector';
 import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { member, track } from '@/domains/collectives';
-import { identity } from '@/domains/network';
+import { accountService, identity } from '@/domains/network';
 
 import { fellowshipSalaryFeature } from './feature';
 
@@ -22,6 +22,8 @@ const $identity = combine($member, $identities, (member, identities) => {
 
   return identities[member.accountId] ?? null;
 });
+
+const $canVote = $account.map(a => nonNullable(a) && accountService.hasPermissionToMakeActions(a));
 
 const $pendingMember = and(or(member.pending, identity.request.pending), $member.map(nullable));
 
@@ -50,5 +52,6 @@ export const profile = {
   $member,
   $account,
   $identity,
+  $canVote,
   $pending: or($pendingMember, fellowshipSalaryFeature.isStarting),
 };

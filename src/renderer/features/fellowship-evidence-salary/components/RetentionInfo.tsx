@@ -48,12 +48,12 @@ export const RetentionInfo = memo(() => {
     <Box padding={[4, 5, 5]} gap={6}>
       <CollectiveRank rank={currentMember?.rank ?? 0} showName />
 
-      {!hasRetentionEvidence && timeLeft !== 0 && (
+      {!hasRetentionEvidence && (
         <Box direction="row">
           <Box gap={1} grow={1}>
             <FootnoteText className="text-text-secondary">{t('fellowship.salary.retentionLeft')}</FootnoteText>
             <SmallTitleText>
-              <Duration seconds={timeLeft / 1000} />
+              {timeLeft === 0 ? t('general.timeout.expired') : <Duration seconds={timeLeft / 1000} />}
             </SmallTitleText>
           </Box>
           <EvidencePostFlowModal wish="Retention">

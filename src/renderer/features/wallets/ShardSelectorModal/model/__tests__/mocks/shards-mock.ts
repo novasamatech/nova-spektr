@@ -4,16 +4,15 @@ import {
   KeyType,
   type PolkadotVaultWallet,
   SigningType,
-  type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
   WalletType,
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
+const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
   {
-    id: '2',
+    id: '1',
     walletId: 1,
     name: 'Shard_1 WND key',
     groupId: 'shard_1',
@@ -27,7 +26,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//westend//hot//0',
   },
   {
-    id: '3',
+    id: '2',
     walletId: 1,
     name: 'Shard_2 WND key',
     groupId: 'shard_1',
@@ -41,7 +40,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//westend//hot//1',
   },
   {
-    id: '4',
+    id: '3',
     walletId: 1,
     name: 'Main KSM key',
     type: 'chain',
@@ -54,7 +53,7 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     derivationPath: '//kusama//pub',
   },
   {
-    id: '5',
+    id: '4',
     walletId: 1,
     name: 'Main DOT key',
     type: 'chain',
@@ -65,16 +64,6 @@ const vaultAccounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[
     accountId: '0x661127faa225949b1c1a48f834f43fa626c9f58fa0c7e522551d4b9616e18c37' as AccountId,
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     derivationPath: '//polkadot//main',
-  },
-  {
-    id: '1',
-    walletId: 1,
-    name: 'My ROOT',
-    type: 'universal',
-    accountType: AccountType.BASE,
-    accountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
-    cryptoType: CryptoType.SR25519,
-    signingType: SigningType.POLKADOT_VAULT,
   },
 ];
 

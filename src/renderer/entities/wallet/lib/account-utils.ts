@@ -4,12 +4,14 @@ import keyBy from 'lodash/keyBy';
 
 // TODO: resolve cross import
 import {
+  AccountType,
   type Chain,
   type ChainId,
-  type ID,
+  CryptoType,
   type MultisigAccount,
   type MultisigThreshold,
   type ProxiedAccount,
+  ProxyVariant,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -17,7 +19,6 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { AccountType, CryptoType, ProxyVariant } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO all this type checks should be defined in features with own context
@@ -49,7 +50,6 @@ export const accountUtils = {
   getAccountsAndShardGroups,
   getMultisigAccountId,
   getSignatoryAccounts,
-  getBaseAccount,
   getDerivationPath,
 
   isAnyProxyType,
@@ -181,14 +181,6 @@ function getAccountsAndShardGroups(accounts: AnyAccount[]): (VaultChainAccount |
 
     return acc;
   }, []);
-}
-
-function getBaseAccount(accounts: AnyAccount[], walletId?: ID): VaultBaseAccount | undefined {
-  return accounts.find((a) => {
-    const walletMatch = !walletId || walletId === a.walletId;
-
-    return walletMatch && isVaultBaseAccount(a);
-  }) as VaultBaseAccount;
 }
 
 function getSignatoryAccounts<T extends VaultBaseAccount>(accountIds: AccountId[], accounts: T[]): T[] {

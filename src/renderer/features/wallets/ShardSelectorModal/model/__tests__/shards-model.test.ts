@@ -21,12 +21,11 @@ describe('features/wallet/model/shards-model', () => {
 
     await allSettled(shardsModel.events.structureRequested, { scope, params: true });
 
-    const root = vaultAccounts[4];
     const shards = [(vaultAccounts[0] as VaultShardAccount).chainId, [[vaultAccounts[0], vaultAccounts[1]]]];
     const accounts_1 = [(vaultAccounts[3] as VaultChainAccount).chainId, [vaultAccounts[3]]];
     const accounts_2 = [(vaultAccounts[2] as VaultChainAccount).chainId, [vaultAccounts[2]]];
 
-    const tuples = [[root.accountId, [accounts_1, accounts_2, shards]]];
+    const tuples = [[vaultWallet.rootAccountId, [accounts_1, accounts_2, shards]]];
 
     expect(scope.getState(shardsModel.$shardsStructure)).toEqual(tuples);
   });

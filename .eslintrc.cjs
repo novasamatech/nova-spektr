@@ -335,7 +335,14 @@ module.exports = {
             rules: [
               {
                 from: 'app',
-                allow: ['app', /* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+                allow: [
+                  'app',
+                  /* TODO fix */ 'shared',
+                  /* TODO fix */ 'entities',
+                  /* TODO fix */ 'features',
+                  'aggregates',
+                  'domains',
+                ],
               },
               {
                 from: 'shared',
@@ -422,6 +429,7 @@ module.exports = {
 
         '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/require-await': 'warn',
 
         'no-restricted-syntax': [
           'error',

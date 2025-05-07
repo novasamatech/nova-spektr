@@ -19,20 +19,27 @@ type Props = {
   evidence: Evidence;
   vote: 'Aye' | 'Nay';
   votingMember: Member;
-  currentTrack: Track | null;
-  nextTrack: Track | null;
+  proposerMember: Member;
+  tracks: Track[];
   maxRank: number;
   fee: BN;
 };
 
 export const EvidenceVotingConfirmation = memo(
-  ({ fee, account, wallets, chain, asset, vote, votingMember, currentTrack, nextTrack, maxRank, evidence }: Props) => {
+  ({ fee, account, wallets, chain, asset, vote, votingMember, proposerMember, tracks, maxRank, evidence }: Props) => {
     const { t } = useI18n();
+
+    const currentTrack = tracks.find(t => t.id === proposerMember.rank);
+    const nextTrack = tracks.find(t => t.id === proposerMember.rank + 1);
+
+    const retentionTrack = currentTrack ? tracks.find(t => t.id === currentTrack.id + 10) : null;
+    const promotionTrack = nextTrack ? tracks.find(t => t.id === nextTrack.id + 20) : null;
+
     const votes = trackService.getVoteWeight({
       pallet: 'fellowship',
       rank: votingMember.rank,
       maxRank,
-      track: evidence.wish === 'Retention' ? (currentTrack?.id ?? 0) : (nextTrack?.id ?? 0),
+      track: evidence.wish === 'Retention' ? (retentionTrack?.id ?? 0) : (promotionTrack?.id ?? 0),
     });
 
     let rankTitle = '';
