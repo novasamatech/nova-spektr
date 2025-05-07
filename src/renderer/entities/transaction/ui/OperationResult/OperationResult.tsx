@@ -49,7 +49,7 @@ export const OperationResult = ({
     return () => {
       mounted = false;
     };
-  }, [autoCloseTimeout]);
+  }, [autoCloseTimeout, isOpen]);
 
   return (
     <StatusModal

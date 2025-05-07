@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { totalAmount } from '@/shared/lib/utils';
+import { Step, isStep, totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
@@ -41,10 +41,7 @@ export const AssetTransactionModal = () => {
   const query = useUnit(assetTransactionModel.$query);
   const chains = useUnit(networkModel.$chains);
 
-  const [isModalOpen, closeModal] = useModalClose(
-    !assetTransactionUtils.isNoneStep(step),
-    assetTransactionModel.output.flowClosed,
-  );
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), assetTransactionModel.flowClosed);
 
   if (!assetWithChains || modalType === null) {
     return null;
@@ -74,7 +71,7 @@ export const AssetTransactionModal = () => {
               >
                 <Link
                   to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}
-                  onClick={() => assetTransactionModel.output.flowClosed()}
+                  onClick={() => assetTransactionModel.flowClosed}
                 >
                   <div className="flex items-center px-2 py-1.5">
                     <div className="mr-auto flex items-center gap-x-2 px-2 py-1">

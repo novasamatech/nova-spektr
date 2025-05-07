@@ -228,7 +228,37 @@
     "chooseOptionLabel": "Choose an option"
   },
   "dynamicDerivations": {
-    "constructor": {
+    "importKeys": {
+      "backButton": "Back",
+      "continueButton": "Continue",
+      "downloadTemplateButton": "Download the template",
+      "error": {
+        "invalidFile": "Incorrect file format",
+        "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
+        "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",
+        "invalidPath_one": "Derivation path {invalidValues} is not valid, please check the file.",
+        "invalidPath_other": "Derivation paths {invalidValues} are not valid, please check the file.",
+        "invalidRoot": "The public key doesn’t match.",
+        "missingName_one": "Name is not specified for the key with {invalidValues}, please check the file.",
+        "missingName_other": "Name is not specified for the keys with {invalidValues}, please check the file.",
+        "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
+        "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
+      },
+      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
+      "modalTitle": "Import keys",
+      "report": {
+        "addedKeys_one": "{count} key added",
+        "addedKeys_other": "{count} keys added",
+        "duplicatedKeys_one": "{count} derivation path is duplicated.",
+        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
+        "networksIgnored_one": "{count} networks ignored with genesis hash:",
+        "networksIgnored_other": "{count} networks ignored with genesis hash:",
+        "title": "Success",
+        "updatedNetworks_one": "for {count} network.",
+        "updatedNetworks_other": "for {count} networks."
+      }
+    },
+    "keysConstructor": {
       "backButton": "Back",
       "derivationLabel": "Derivation path",
       "derivationPlaceholder": "Derivation path",
@@ -270,36 +300,6 @@
       "warnModalLeaveButton": "Leave form",
       "warnModalTitle": "Leave form without changes?",
       "wrongDerivationError": "Wrong derivation path format"
-    },
-    "importKeys": {
-      "backButton": "Back",
-      "continueButton": "Continue",
-      "downloadTemplateButton": "Download the template",
-      "error": {
-        "invalidFile": "Incorrect file format",
-        "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
-        "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",
-        "invalidPath_one": "Derivation path {invalidValues} is not valid, please check the file.",
-        "invalidPath_other": "Derivation paths {invalidValues} are not valid, please check the file.",
-        "invalidRoot": "The public key doesn’t match.",
-        "missingName_one": "Name is not specified for the key with {invalidValues}, please check the file.",
-        "missingName_other": "Name is not specified for the keys with {invalidValues}, please check the file.",
-        "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
-        "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
-      },
-      "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
-      "modalTitle": "Import keys",
-      "report": {
-        "addedKeys_one": "{count} key added",
-        "addedKeys_other": "{count} keys added",
-        "duplicatedKeys_one": "{count} derivation path is duplicated.",
-        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
-        "networksIgnored_one": "{count} networks ignored with genesis hash:",
-        "networksIgnored_other": "{count} networks ignored with genesis hash:",
-        "title": "Success",
-        "updatedNetworks_one": "for {count} network.",
-        "updatedNetworks_other": "for {count} networks."
-      }
     }
   },
   "emptyState": {
@@ -1541,12 +1541,28 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "chainLabel": "token to this address on the {name} network!",
-    "copyAddressButton": "Copy address",
+    "addressCopied": "Address copied",
+    "compareAddressFormat": "Compare address format",
+    "copy": "Copy",
+    "copyLegacyFormat": "Copy legacy format",
+    "exchangeAccount": "Need address for exchange?",
     "explorerLinkLabel": "Link to {name}",
-    "selectWalletPlaceholder": "Select a wallet...",
-    "sendOnlyLabel": "Send only",
-    "title": "Receive {asset} on"
+    "legacyAddressCopied": "Legacy address copied",
+    "selectAccount": "Select account",
+    "title": "Receive {asset} on",
+    "unfiedAddress": {
+      "alertDescription": "Send only { asset } ({ assetName }) token to this legacy address on the { network } network.",
+      "alertTitle": "About legacy format",
+      "checkboxLabel": "Do not show this again. You can copy legacy address in receive.",
+      "compareAddressTitle": "Compare address formats",
+      "description": "You may need to use the legacy format when interacting with certain",
+      "legacyFormat": "Legacy format",
+      "new": "New",
+      "newUnifiedTitle": "New unified address",
+      "unifiedFormat": "Unified format"
+    },
+    "unifiedAddressCopied": "Unified address copied",
+    "viewInExplorers": "View in explorers"
   },
   "settings": {
     "autoUpdate": "Spektr auto updates",

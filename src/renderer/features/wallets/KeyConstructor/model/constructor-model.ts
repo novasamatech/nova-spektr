@@ -62,52 +62,52 @@ const $constructorForm = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'dynamicDerivations.constructor.numberRequiredError',
+          errorText: 'dynamicDerivations.keysConstructor.numberRequiredError',
           validator: (value, { isSharded }) => !isSharded || Boolean(value),
         },
         {
           name: 'NaN',
-          errorText: 'dynamicDerivations.constructor.notNumberError',
+          errorText: 'dynamicDerivations.keysConstructor.notNumberError',
           validator: (value, { isSharded }) => !isSharded || !Number.isNaN(Number(value)),
         },
         {
           name: 'maxAmount',
-          errorText: 'dynamicDerivations.constructor.maxShardsError',
+          errorText: 'dynamicDerivations.keysConstructor.maxShardsError',
           validator: (value, { isSharded }) => !isSharded || Number(value) <= 50,
         },
         {
           name: 'minAmount',
-          errorText: 'dynamicDerivations.constructor.minShardsError',
+          errorText: 'dynamicDerivations.keysConstructor.minShardsError',
           validator: (value, { isSharded }) => !isSharded || Number(value) >= 2,
         },
       ],
     },
     keyName: {
       init: '',
-      rules: [{ name: 'required', errorText: 'dynamicDerivations.constructor.displayNameError', validator: Boolean }],
+      rules: [{ name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean }],
     },
     derivationPath: {
       init: '',
       rules: [
         {
           name: 'required',
-          errorText: 'dynamicDerivations.constructor.requiredDerivationError',
+          errorText: 'dynamicDerivations.keysConstructor.requiredDerivationError',
           validator: (value, { keyType }) => keyType !== KeyType.CUSTOM || Boolean(value),
         },
         {
           name: 'hasPassword',
-          errorText: 'dynamicDerivations.constructor.passwordDerivationError',
+          errorText: 'dynamicDerivations.keysConstructor.passwordDerivationError',
           validator: (value) => !derivationHasPassword(value),
         },
         {
           name: 'badFormat',
-          errorText: 'dynamicDerivations.constructor.wrongDerivationError',
+          errorText: 'dynamicDerivations.keysConstructor.wrongDerivationError',
           validator: validateDerivation,
         },
         {
           name: 'duplicated',
           source: $keys,
-          errorText: 'dynamicDerivations.constructor.duplicateDerivationError',
+          errorText: 'dynamicDerivations.keysConstructor.duplicateDerivationError',
           validator: (value, { chainId }, keys: (VaultChainAccount | VaultShardAccount[])[]) => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;

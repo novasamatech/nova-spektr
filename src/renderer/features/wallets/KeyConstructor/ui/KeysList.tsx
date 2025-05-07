@@ -18,9 +18,9 @@ export const KeysList = () => {
     return (
       <div className="flex h-full flex-col items-center justify-center">
         <Icon name="document" size={64} className="mb-6 text-icon-default" />
-        <SmallTitleText>{t('dynamicDerivations.constructor.emptyListTitle')}</SmallTitleText>
+        <SmallTitleText>{t('dynamicDerivations.keysConstructor.emptyListTitle')}</SmallTitleText>
         <FootnoteText className="mt-2 text-text-tertiary">
-          {t('dynamicDerivations.constructor.emptyListDescription')}
+          {t('dynamicDerivations.keysConstructor.emptyListDescription')}
         </FootnoteText>
       </div>
     );
@@ -29,8 +29,8 @@ export const KeysList = () => {
   return (
     <div className="h-full">
       <div className="sticky top-0 z-10 flex gap-x-6 bg-white px-5 pb-2">
-        <HelpText className="text-text-tertiary">{t('dynamicDerivations.constructor.listNetworkLabel')}</HelpText>
-        <HelpText className="text-text-tertiary">{t('dynamicDerivations.constructor.listKeysLabel')}</HelpText>
+        <HelpText className="text-text-tertiary">{t('dynamicDerivations.keysConstructor.listNetworkLabel')}</HelpText>
+        <HelpText className="text-text-tertiary">{t('dynamicDerivations.keysConstructor.listKeysLabel')}</HelpText>
       </div>
       <ul className="flex flex-col gap-y-2">
         {keys.map((key, index) => {
