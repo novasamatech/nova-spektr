@@ -78,15 +78,9 @@ export const ScanMultiframeQr = ({
 
       metadataMap[accountId][chainId] = upgradeNonce(metadataMap[accountId][chainId], 1);
 
-      let address = '';
-
-      const root = accountUtils.getBaseAccount(signerWallet.accounts, signerWallet.id);
-
-      if (walletUtils.isPolkadotVault(signerWallet) && root) {
-        address = toAddress(root.accountId, { prefix: 1 });
-      } else {
-        address = toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
-      }
+      const address = walletUtils.isPolkadotVault(signerWallet)
+        ? toAddress(signerWallet.rootAccountId, { prefix: 1 })
+        : toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
 
       const derivationPath =
         accountUtils.isVaultShardAccount(signingPayload.account) ||

@@ -3,8 +3,7 @@ import orderBy from 'lodash/orderBy';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useDeferredList } from '@/shared/lib/hooks';
-import { nullable, performSearch, toAddress, truncate } from '@/shared/lib/utils';
+import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { identityService } from '@/domains/network';
@@ -12,8 +11,8 @@ import { fellowshipActivityFeedFeature } from '../model/feature';
 import { identityModel } from '../model/identity';
 import { activityFeed } from '../model/list';
 
-import { ActivityPlaceholder } from './ActivityPlaceholder';
-import { EventRecord } from './EventRecord';
+import { ActivityListView } from './ActivityListView';
+import { getDescription } from './utils';
 
 type OrderKey = 'duration-asc' | 'duration-desc' | 'name-asc' | 'name-desc';
 
@@ -24,15 +23,11 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
   'name-desc': { field: 'name', direction: 'desc' },
 };
 
-const now = Date.now();
-
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   const input = useUnit(fellowshipActivityFeedFeature.input);
   const feed = useUnit(activityFeed.$activityFeed);
-  const { list, isLoading } = useDeferredList({ list: feed, isLoading: feed.length === 0 });
-
   const identities = useUnit(identityModel.$list);
 
   const [query, setQuery] = useState('');
@@ -44,16 +39,15 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const records = useMemo(
     () =>
-      list.map(record => {
+      feed.map(record => {
         const identity = identities[record.accountId];
         return {
           ...record,
-          address: toAddress(record.accountId, { prefix: input?.chain.addressPrefix }),
           name: identity ? identityService.getFullName(identity) : undefined,
-          duration: (now - record.at.getTime()) / 1000,
+          description: getDescription(record, t),
         };
       }),
-    [identities, list],
+    [identities, feed, t],
   );
 
   const filteredList = useMemo(() => {
@@ -62,11 +56,12 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       queryMinLength: 2,
       records,
       weights: {
-        type: 0.5,
         name: 1,
+        description: 0.75,
+        address: 0.5,
+        type: 0.5,
         wish: 0.5,
         accountId: 0.5,
-        address: 0.5,
       },
     });
   }, [deferredQuery, records]);
@@ -114,9 +109,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="flex h-full flex-col gap-y-5 bg-main-app-background pb-4 pt-2">
-          {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
-
+        <div className="bg-main-app-background">
           {isNothingFound && (
             <EmptyList
               title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
@@ -129,10 +122,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               </Button>
             </EmptyList>
           )}
-
-          {sortedList.map(event => (
-            <EventRecord key={`${event.block}-${event.accountId}-${event.type}`} event={event} chain={input.chain} />
-          ))}
+          <ActivityListView limit={Number.POSITIVE_INFINITY} feed={sortedList} withFullAccountInfo />
         </div>
       </Modal.Content>
     </Modal>

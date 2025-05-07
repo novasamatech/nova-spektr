@@ -45,6 +45,12 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
+    "removeConfirm": {
+      "cancelButton": "Cancel",
+      "confirmButton": "Delete",
+      "description": "Are you sure you want to remove {name} from contacts?",
+      "title": "Delete contact"
+    },
     "searchPlaceholder": "Search",
     "title": "Address Book"
   },
@@ -127,6 +133,7 @@
     "chainName": "Network",
     "chainPlaceholder": "Select network",
     "closeButton": "Close",
+    "contactsGroup": "Contacts",
     "contactsTab": "Contacts",
     "continueButton": "Continue",
     "create": "Create",

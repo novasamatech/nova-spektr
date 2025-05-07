@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
-import { GenericSignerPayload, u32 } from '@polkadot/types';
+import { GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
@@ -21,7 +21,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable, scaleEncodedToNumber } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -46,7 +46,6 @@ export const transactionService = {
 
   createPayload,
   createPayloadWithMetadata,
-  createSignerOptions,
   signAndSubmit,
 
   getTxWrappers,
@@ -98,13 +97,11 @@ async function signAndSubmit(
   api: ApiPromise,
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>((resolve) => {
-    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-    const accountId = transaction.accountId;
-    extrinsic.addSignature(accountId, hexToU8a(signature), payload);
-
-    let unsubscribe: VoidFunction;
-
     try {
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+      const accountId = transaction.accountId;
+
+      extrinsic.addSignature(accountId, hexToU8a(signature), payload);
       extrinsic
         .send((result) => {
           const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
@@ -115,9 +112,6 @@ async function signAndSubmit(
           let multisigError = '';
 
           if (internalError) {
-            if (unsubscribe) {
-              unsubscribe();
-            }
             resolve({
               executed: false,
               error: internalError.message,
@@ -126,9 +120,6 @@ async function signAndSubmit(
           }
 
           if (dispatchError) {
-            if (unsubscribe) {
-              unsubscribe();
-            }
             resolve({
               executed: false,
               error: decodeDispatchError(dispatchError, api),
@@ -137,9 +128,6 @@ async function signAndSubmit(
           }
 
           if (status.isInvalid) {
-            if (unsubscribe) {
-              unsubscribe();
-            }
             resolve({
               executed: false,
               error: 'Invalid transaction',
@@ -156,9 +144,6 @@ async function signAndSubmit(
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
-                if (unsubscribe) {
-                  unsubscribe();
-                }
                 resolve({
                   executed: true,
                   params: {
@@ -175,13 +160,7 @@ async function signAndSubmit(
             }
           }
         })
-        .then((fn) => {
-          unsubscribe = fn;
-        })
         .catch((error) => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
           resolve({
             executed: false,
             error: (error as Error).message || 'Error',
@@ -404,16 +383,6 @@ function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { 
   };
 }
 
-async function createSignerOptions(api: ApiPromise): Promise<Partial<SignerOptions>> {
-  const [blockHash] = await Promise.all([api.rpc.chain.getBlockHash()]);
-
-  return {
-    blockHash,
-    nonce: new u32(api.registry, 1),
-    era: 64,
-  };
-}
-
 async function getExtrinsicWeight(
   extrinsic: SubmittableExtrinsic<'promise'>,
   options?: Partial<SignerOptions>,
@@ -498,7 +467,7 @@ function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
     console.table({
       address: log.unsigned.address,
       chain: log.unsigned.genesisHash,
-      nonce: `${log.unsigned.nonce} (${scaleEncodedToNumber(log.unsigned.nonce)})`,
+      nonce: `${log.unsigned.nonce} (${parseInt(log.unsigned.nonce)})`,
     });
 
     console.group('args');

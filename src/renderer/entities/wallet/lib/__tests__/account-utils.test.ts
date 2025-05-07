@@ -1,5 +1,4 @@
 import {
-  type Account,
   AccountType,
   CryptoType,
   KeyType,
@@ -163,37 +162,5 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
     const result = accountUtils.getMultisigAccountId(ids, threshold, CryptoType.SR25519);
 
     expect(result).toEqual('0x7c03b938aa7d9952e4c0f9b573e5e3a3ae9f6a9910c4f965a22803f64d7fbc68');
-  });
-
-  test('should return undefined if accounts array is empty', () => {
-    const accounts: Account[] = [];
-    const result = accountUtils.getBaseAccount(accounts);
-
-    expect(result).toBeUndefined();
-  });
-
-  test('should return undefined if no account matches the walletId', () => {
-    const accounts: Account[] = [
-      { id: 1, walletId: 1, accountType: AccountType.BASE } as unknown as Account,
-      { id: 2, walletId: 2, accountType: AccountType.BASE } as unknown as Account,
-      { id: 3, walletId: 3, accountType: AccountType.BASE } as unknown as Account,
-    ];
-    const walletId = 4;
-    const result = accountUtils.getBaseAccount(accounts, walletId);
-
-    expect(result).toBeUndefined();
-  });
-
-  test('should return the first account that matches the walletId and is a base account', () => {
-    const accounts: Account[] = [
-      { id: 1, walletId: 1 } as unknown as Account,
-      { id: 2, walletId: 1 } as unknown as Account,
-      { id: 3, walletId: 1, type: 'universal', accountType: AccountType.BASE } as unknown as Account,
-    ];
-
-    const walletId = 1;
-    const result = accountUtils.getBaseAccount(accounts, walletId);
-
-    expect(result).toEqual(accounts[2]);
   });
 });

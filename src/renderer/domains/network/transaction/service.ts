@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 
-import { type HexString } from '@/shared/core';
+import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '../account/types';
@@ -11,6 +11,12 @@ import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransactio
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
   AnyTransaction | Promise<AnyTransaction>,
+  { account: AnyAccount; api: ApiPromise }
+>();
+
+const wrapLegacyTransactionTransformer = createTransformer<
+  DeprecatedTransaction,
+  DeprecatedTransaction | Promise<DeprecatedTransaction>,
   { account: AnyAccount; api: ApiPromise }
 >();
 
@@ -36,6 +42,22 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
   let wrapped: AnyTransaction = transaction;
   for (const account of Array.from(route).reverse()) {
     const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, api });
+    if (nonNullable(result)) {
+      wrapped = result;
+    }
+  }
+  return wrapped;
+}
+
+/**
+ * Wraps transaction with accounts to legacy format.
+ *
+ * @deprecated
+ */
+async function wrapLegacyTransaction(transaction: DeprecatedTransaction, route: AnyAccount[], api: ApiPromise) {
+  let wrapped: DeprecatedTransaction = transaction;
+  for (const account of Array.from(route).reverse()) {
+    const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, { account, api });
     if (nonNullable(result)) {
       wrapped = result;
     }
@@ -126,6 +148,7 @@ async function getExtrinsicWeight(extrinsic: SubmittableExtrinsic<'promise'>) {
 
 export const transactionService = {
   wrapTransactionTransformer,
+  wrapLegacyTransactionTransformer,
   unwrapTransactionTransformer,
   encodeTransactionTransformer,
   decodeTransactionTransformer,
@@ -134,6 +157,7 @@ export const transactionService = {
   isDecodedTransaction,
 
   wrapTransaction,
+  wrapLegacyTransaction,
   unwrapTransaction,
   encodeTransaction,
   decodeTransaction,

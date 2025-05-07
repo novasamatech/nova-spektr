@@ -15,10 +15,10 @@ import { votingStatus } from './model/votingStatus';
 
 export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
 
-fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, transaction }) => {
+fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, transaction, dateThresholds }) => {
   return (
     <>
-      <ReferendumEndTimer endBlock={referendum.ends} shortDateFormat />
+      <ReferendumEndTimer endBlock={referendum.ends} dateThresholds={dateThresholds} shortDateFormat />
       <VotingActions referendum={referendum} transaction={transaction} />
     </>
   );

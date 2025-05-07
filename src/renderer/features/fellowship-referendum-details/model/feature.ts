@@ -1,4 +1,4 @@
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
@@ -24,4 +24,19 @@ export const fellowshipReferendumsDetailsFeature = createFeature({
   name: 'fellowship/referendum details',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
+  filter: input => {
+    if (input.api.isConnected) return null;
+
+    return {
+      status: 'failed',
+      type: 'warning',
+      error: new Error('Network disabled'),
+    };
+  },
+});
+
+sample({
+  clock: fellowshipNetwork.$isConnected,
+  filter: fellowshipNetwork.$isConnected,
+  target: fellowshipReferendumsDetailsFeature.restore,
 });

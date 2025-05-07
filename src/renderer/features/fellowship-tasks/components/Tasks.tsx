@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { groupBy, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
 import { Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
-import { type Referendum } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../model/feature';
 import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
@@ -14,15 +13,10 @@ import { Basket } from './Basket';
 import { TasksGroup } from './TasksGroup';
 import { Title } from './Title';
 
-type Props = {
-  onReferendumSelect(referendum: Referendum): void;
-};
-
-export const Tasks = memo(({ onReferendumSelect }: Props) => {
+export const Tasks = () => {
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
-  const hasPermission = useUnit(memberProfile.$hasPermission);
   const pending = useUnit(tasks.pending);
   const hasAccount = useUnit(memberProfile.$hasAccount);
 
@@ -41,43 +35,27 @@ export const Tasks = memo(({ onReferendumSelect }: Props) => {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
-      {hasAccount && hasPermission && activeTasks.length ? (
+      {hasAccount && activeTasks.length ? (
         <ScrollArea>
           {groups.personal ? (
-            <TasksGroup
-              key="pesonal"
-              title={t('fellowship.tasks.personal')}
-              group={groups.personal}
-              onReferendumSelect={onReferendumSelect}
-            />
+            <TasksGroup key="pesonal" title={t('fellowship.tasks.personal')} group={groups.personal} />
           ) : null}
           {groups.general ? (
-            <TasksGroup
-              key="general"
-              title={t('fellowship.tasks.general')}
-              group={groups.general}
-              onReferendumSelect={onReferendumSelect}
-            />
+            <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />
           ) : null}
           {groups.completed ? (
-            <TasksGroup
-              key="completed"
-              title={t('fellowship.tasks.completed')}
-              group={groups.completed}
-              async
-              onReferendumSelect={onReferendumSelect}
-            />
+            <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
           ) : null}
         </ScrollArea>
       ) : null}
-      {(hasAccount && hasPermission && !activeTasks.length) || (hasAccount && !hasPermission) ? <AllDone /> : null}
+      {hasAccount && !activeTasks.length ? <AllDone /> : null}
       {!hasAccount ? <AccountNotFound /> : null}
       <Basket />
     </div>
   );
-});
+};
 
-const AllDone = memo(() => {
+const AllDone = () => {
   const { t } = useI18n();
 
   return (
@@ -89,9 +67,9 @@ const AllDone = memo(() => {
       </Box>
     </Box>
   );
-});
+};
 
-const AccountNotFound = memo(() => {
+const AccountNotFound = () => {
   const { t } = useI18n();
   const chainName = useUnit(tasks.$chainName);
 
@@ -101,4 +79,4 @@ const AccountNotFound = memo(() => {
       description={t('fellowship.tasks.noAccountDescription', { chain: chainName })}
     />
   );
-});
+};

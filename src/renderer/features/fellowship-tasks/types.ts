@@ -2,7 +2,6 @@ import { type ComponentType } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type Referendum } from '@/domains/collectives';
 
 export type OperationType =
   | 'set_active'
@@ -18,6 +17,6 @@ export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
   group: 'personal' | 'general' | 'completed';
   weight: number;
-  body: ComponentType<T & { transaction: Transaction | null; onReferendumSelect(referendum: Referendum): void }>;
+  body: ComponentType<T & { transaction: Transaction | null }>;
   meta: T & { transaction: Transaction | null; tags: string[] };
 };

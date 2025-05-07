@@ -13,19 +13,20 @@ type Props = {
   evidence: Evidence;
   endBlock: number | null;
   variant: 'large' | 'small';
+  disabled: boolean;
 };
 
-export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
+export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Props) => {
   const { t } = useI18n();
 
   const buttonNodes = (
     <Box direction="row" gap={1}>
       <EvidenceVotingModal evidence={evidence} aye={false}>
-        <FilledIconButton variant="negative" icon="thumbDown" />
+        <FilledIconButton variant="negative" icon="thumbDown" disabled={disabled} />
       </EvidenceVotingModal>
 
       <EvidenceVotingModal evidence={evidence} aye={true}>
-        <FilledIconButton variant="positive" icon="thumbUp" />
+        <FilledIconButton variant="positive" icon="thumbUp" disabled={disabled} />
       </EvidenceVotingModal>
     </Box>
   );
@@ -34,12 +35,12 @@ export const VotingActions = memo(({ evidence, endBlock, variant }: Props) => {
     return (
       <Box direction="row" gap={4} width="100%">
         <EvidenceVotingModal evidence={evidence} aye={false}>
-          <ButtonCard pallet="negative" icon="thumbDown" fullWidth>
+          <ButtonCard pallet="negative" icon="thumbDown" fullWidth disabled={disabled}>
             {t('fellowship.voting.nay')}
           </ButtonCard>
         </EvidenceVotingModal>
         <EvidenceVotingModal evidence={evidence} aye={true}>
-          <ButtonCard pallet="positive" icon="thumbUp" fullWidth>
+          <ButtonCard pallet="positive" icon="thumbUp" fullWidth disabled={disabled}>
             {t('fellowship.voting.aye')}
           </ButtonCard>
         </EvidenceVotingModal>

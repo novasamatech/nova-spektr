@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: ⚙️Checkout
         uses: actions/checkout@v4
 
       - name: Set spektr config version
@@ -32,7 +32,7 @@ jobs:
             echo "CHAINS_VERSION=${{ secrets.SPEKTR_CONFIG_VERSION }}" >> $GITHUB_ENV
           fi
 
-      - name: ⚙️ Install dependencies
+      - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
       - name: 📝 Update chains file
