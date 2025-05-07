@@ -6,7 +6,7 @@ import { multisigOnboardingSignatories } from '../../utils/multisigOnboardingTes
 const feature = 'Onboarding. Multisig Vault';
 const story = 'Multisig Vault onboarding';
 
-test.describe('Multisig Vault onboarding', { tag: ['@regress1'] }, () => {
+test.describe('Multisig Vault onboarding', { tag: ['@regress'] }, () => {
   test('Can create multisig wallet', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
