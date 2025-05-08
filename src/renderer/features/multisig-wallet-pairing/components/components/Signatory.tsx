@@ -15,7 +15,6 @@ import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
-
 const { services, constants } = walletSelectFeature;
 
 type ComboboxItem = {
