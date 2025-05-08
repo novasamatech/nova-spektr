@@ -4,11 +4,10 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Alert, Markdown } from '@/shared/ui';
-import { Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
-
-import { Card } from './Card';
+import { Card } from '../Card';
 
 type Props = {
   evidence: Evidence;
@@ -32,19 +31,23 @@ export const Content = memo(({ evidence }: Props) => {
   if (pending && !content) {
     return (
       <Card>
-        <Skeleton height="10lh" />
+        <Box padding={6}>
+          <Skeleton height="10lh" />
+        </Box>
       </Card>
     );
   }
 
   return (
     <Card>
-      <Markdown>{content?.content ?? ''}</Markdown>
-      <Alert
-        active={nullable(content?.content)}
-        variant="warn"
-        title={t('fellowship.tasks.task.promotionVoting.noEvidence')}
-      />
+      <Box padding={6}>
+        <Markdown>{content?.content ?? ''}</Markdown>
+        <Alert
+          active={nullable(content?.content)}
+          variant="warn"
+          title={t('fellowship.tasks.task.promotionVoting.noEvidence')}
+        />
+      </Box>
     </Card>
   );
 });

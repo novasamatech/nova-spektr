@@ -29,7 +29,6 @@ accountSDK(extensionWalletFeature, {
     return polkadotExtensionService.isExtensionAccount(account);
   },
   canSignMultipleTransactions: () => false,
-  collectAccountChildren: () => [],
 });
 
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

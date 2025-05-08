@@ -1,10 +1,10 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ReferendumId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { Box } from '@/shared/ui-kit';
+import { AsyncItem, Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
 import { CompletedReferendums, Filters, OngoingReferendums, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -13,7 +13,6 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const GovernanceReferendumList = () => {
-  useGate(governancePageAggregate.gates.flow);
   const { chainId } = useParams<'chainId'>();
 
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
@@ -39,6 +38,8 @@ export const GovernanceReferendumList = () => {
   const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
   const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
 
+  console.log({ isLoadingState, isLoading, isSearching, isTitlesLoading });
+
   return (
     <Box gap={4} grow={1}>
       <Filters />
@@ -58,15 +59,17 @@ export const GovernanceReferendumList = () => {
             mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />
-          <CompletedReferendums
-            api={network?.api}
-            asset={network?.asset}
-            referendums={completed}
-            isLoading={isLoading}
-            isTitlesLoading={isTitlesLoading}
-            mixLoadingWithData={isLoadingState}
-            onSelect={({ referendumId }) => navigate(referendumId)}
-          />
+          <AsyncItem>
+            <CompletedReferendums
+              api={network?.api}
+              asset={network?.asset}
+              referendums={completed}
+              isLoading={isLoading}
+              isTitlesLoading={isTitlesLoading}
+              mixLoadingWithData={isLoadingState}
+              onSelect={({ referendumId }) => navigate(referendumId)}
+            />
+          </AsyncItem>
         </Box>
       )}
 
