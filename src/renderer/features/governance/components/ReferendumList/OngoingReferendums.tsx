@@ -5,7 +5,7 @@ import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
-import { Accordion, Skeleton } from '@/shared/ui-kit';
+import { Accordion, AsyncItem, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
 
 import { ListItemPlaceholder } from './ListItemPlaceholder';
@@ -57,13 +57,15 @@ export const OngoingReferendums = memo(
             {showList &&
               referendums.map((referendum) => (
                 <li key={referendum.referendumId}>
-                  <ReferendumItem
-                    api={api}
-                    asset={asset}
-                    referendum={referendum}
-                    isTitlesLoading={isTitlesLoading}
-                    onSelect={onSelect}
-                  />
+                  <AsyncItem fallback={<ListItemPlaceholder />}>
+                    <ReferendumItem
+                      api={api}
+                      asset={asset}
+                      referendum={referendum}
+                      isTitlesLoading={isTitlesLoading}
+                      onSelect={onSelect}
+                    />
+                  </AsyncItem>
                 </li>
               ))}
           </ul>
