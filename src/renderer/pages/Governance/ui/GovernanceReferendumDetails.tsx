@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 
@@ -14,7 +14,6 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
 export const GovernanceReferendumDetails = () => {
-  useGate(governancePageAggregate.gates.flow);
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
   const [showVoteModal, setShowVoteModal] = useState(false);
