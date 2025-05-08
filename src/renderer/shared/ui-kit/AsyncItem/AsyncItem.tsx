@@ -1,4 +1,4 @@
-import { type PropsWithChildren, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type PropsWithChildren, type ReactNode, useEffect, useState } from 'react';
 
 type AsyncItemProps = PropsWithChildren<{
   strategy?: 'async' | 'idle' | 'sync';
@@ -14,7 +14,6 @@ export const AsyncItem = ({ children, strategy = 'async', fallback }: AsyncItemP
   const isSync = strategy === 'sync';
   const isAsync = strategy === 'async';
 
-  const fallbackRef = useRef<HTMLDivElement>(null);
   const [isRendered, setIsRendered] = useState(isSync);
   const renderCallback = () => setIsRendered(true);
 
@@ -45,7 +44,7 @@ export const AsyncItem = ({ children, strategy = 'async', fallback }: AsyncItemP
 
   if (!isRendered) {
     if (fallback) {
-      return <div ref={fallbackRef}>{fallback}</div>;
+      return fallback;
     } else {
       return null;
     }
