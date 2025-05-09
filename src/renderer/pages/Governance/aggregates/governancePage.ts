@@ -19,6 +19,7 @@ const $referendumsFilteredByQuery = combine(
   {
     referendums: $currentReferendums,
     query: filterModel.$debouncedQuery,
+    titles: listAggregate.$titles,
   },
   governancePageUtils.filteredByQuery,
 );
