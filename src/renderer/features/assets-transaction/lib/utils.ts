@@ -3,16 +3,12 @@ import { type TFunction } from 'i18next';
 import { formatBalance, totalAmount } from '@/shared/lib/utils';
 import { type AssetChain } from '@/features/assets';
 
-import { Step } from './types';
+import { type StatusType } from './types';
 
 export const assetTransactionUtils = {
-  isNoneStep,
   getChainBalance,
+  getStatusTitle,
 };
-
-function isNoneStep(step: Step): boolean {
-  return step === Step.NONE;
-}
 
 function getChainBalance(t: TFunction, chain: AssetChain, precision: number): string {
   const { value: formattedValue, decimalPlaces, suffix } = formatBalance(totalAmount(chain.balance), precision);
@@ -23,4 +19,15 @@ function getChainBalance(t: TFunction, chain: AssetChain, precision: number): st
   });
 
   return `${balanceValue} ${suffix} ${chain.assetSymbol}`;
+}
+
+function getStatusTitle(type: StatusType | null): string {
+  switch (type) {
+    case 'legacy':
+      return 'receive.legacyAddressCopied';
+    case 'unified':
+      return 'receive.unifiedAddressCopied';
+    default:
+      return 'receive.addressCopied';
+  }
 }

@@ -53,7 +53,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
       closeButton
       contentClass="flex flex-col h-[calc(100%-46px)]"
       panelClass="w-[784px] h-[678px]"
-      title={t('dynamicDerivations.constructor.title', { title })}
+      title={t('dynamicDerivations.keysConstructor.title', { title })}
       isOpen={isOpen}
       onClose={closeConstructor}
     >
@@ -65,10 +65,10 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
       </div>
       <div className="flex justify-between px-5 pb-4 pt-3">
         <Button variant="text" onClick={closeConstructor}>
-          {t('dynamicDerivations.constructor.backButton')}
+          {t('dynamicDerivations.keysConstructor.backButton')}
         </Button>
         <Button onClick={() => onConfirm(keysToAdd, keysToRemove)}>
-          {t('dynamicDerivations.constructor.saveButton')}
+          {t('dynamicDerivations.keysConstructor.saveButton')}
         </Button>
       </div>
 
