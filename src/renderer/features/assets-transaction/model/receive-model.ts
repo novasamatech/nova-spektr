@@ -1,0 +1,90 @@
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+
+import { localStorageService } from '@/shared/api/local-storage';
+import { type Chain } from '@/shared/core';
+import { createFlow } from '@/shared/effector';
+import { nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
+import { type AnyAccount, accountService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { navigationModel } from '@/features/navigation';
+
+const flow = createFlow<{ chain: Chain | null }>({ chain: null });
+const $selectedChain = flow.state.map((state) => state.chain);
+
+const selectAccount = createEvent<AnyAccount>();
+const $selectedAccount = restore<AnyAccount | null>(selectAccount, null).reset(flow.close);
+
+const $chainAccounts = combine(
+  {
+    selectedAccounts: walletSelect.$selectedAccounts,
+    chain: $selectedChain,
+    balances: balanceModel.$balances,
+  },
+  ({ selectedAccounts, chain, balances }) => {
+    if (selectedAccounts.length === 0 || nullable(chain)) return [];
+    if (selectedAccounts.length === 1) return selectedAccounts;
+
+    const filteredAccount = selectedAccounts.filter(
+      (acc) => accountService.isChainAccount(acc) && accountUtils.isChainIdMatch(acc, chain.chainId),
+    );
+
+    return filteredAccount.map((account) => ({
+      ...account,
+      balance: withdrawableAmountBN(
+        balanceUtils.getBalance(balances, account.accountId, chain.chainId, chain.assets[0]?.assetId.toString()),
+      ),
+    }));
+  },
+);
+
+sample({
+  source: $chainAccounts,
+  filter: (accounts) => accounts.length === 1,
+  fn: (accounts) => accounts!.at(0) ?? null,
+  target: $selectedAccount,
+});
+
+// Show popup
+
+const $showPopup = createStore(false);
+
+const saveLegacyFormatViewedFx = createEffect((value: boolean): boolean => {
+  return localStorageService.saveToStorage('legacy_format_viewed', value);
+});
+
+const getLegacyFormatViewedFx = createEffect((): boolean => {
+  return localStorageService.getFromStorage('legacy_format_viewed', false);
+});
+
+sample({
+  clock: flow.open,
+  target: getLegacyFormatViewedFx,
+});
+
+sample({
+  clock: getLegacyFormatViewedFx.doneData,
+  fn: (value) => !value,
+  target: $showPopup,
+});
+
+// Navigation
+
+sample({
+  clock: flow.close,
+  fn: () => Paths.ASSETS,
+  target: navigationModel.events.navigateTo,
+});
+
+export const receiveModel = {
+  $chainAccounts,
+  $selectedAccount,
+  $showPopup,
+
+  selectAccount,
+  saveLegacyFormatViewed: saveLegacyFormatViewedFx,
+
+  flow,
+};

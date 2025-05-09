@@ -28,7 +28,7 @@ export const ShardsStructure = () => {
   };
 
   return (
-    <ul className="max-h-[470px] overflow-y-scroll pr-3">
+    <ul className="max-h-[470px]">
       {shardsStructure.map(([rootAccountId, chainTuple]) => (
         <li key={rootAccountId}>
           <SelectableRoot

@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { type PropsWithChildren, type ReactNode, useEffect, useRef } from 'react';
 
 import { Icon, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
@@ -9,6 +9,7 @@ import { type Variant } from './common/types';
 type Props = {
   title: string;
   variant?: Variant;
+  content?: ReactNode;
   description?: string;
   autoCloseTimeout?: number;
   isOpen: boolean;
@@ -17,6 +18,7 @@ type Props = {
 
 export const OperationResult = ({
   title,
+  content,
   variant = 'success',
   description,
   autoCloseTimeout = 0,
@@ -49,16 +51,17 @@ export const OperationResult = ({
     return () => {
       mounted = false;
     };
-  }, [autoCloseTimeout]);
+  }, [autoCloseTimeout, isOpen]);
 
   return (
     <StatusModal
       content={
-        variant === 'warning' ? (
+        content ??
+        (variant === 'warning' ? (
           <Icon name="warn" size={48} className="m-4" />
         ) : (
           <Animation variant={variant} {...VariantAnimationProps[variant]} />
-        )
+        ))
       }
       title={title}
       description={description}

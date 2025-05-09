@@ -2,8 +2,9 @@ import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
 import { type AssetByChains } from '@/shared/core';
+import { Step } from '@/shared/lib/utils';
 import { portfolioModel } from '@/features/assets';
-import { ModalType, Step } from '../../lib/types';
+import { ModalType } from '../../lib/types';
 import { assetTransactionModel } from '../asset-transaction-model';
 
 const mockAsset = {
@@ -38,7 +39,7 @@ const mockAsset = {
   },
 } as AssetByChains;
 
-describe('widgets/AssetTransactionModal/model/add-transaction-model', () => {
+describe('AssetTransactionModal/model/add-transaction-model', () => {
   test('shoild update stores on transferStarted', async () => {
     const scope = fork({});
     await allSettled(portfolioModel.events.transferStarted, { scope, params: mockAsset });
@@ -59,7 +60,7 @@ describe('widgets/AssetTransactionModal/model/add-transaction-model', () => {
 
   test('should change $step and reset stores on flowClosed', async () => {
     const scope = fork({});
-    await allSettled(assetTransactionModel.output.flowClosed, { scope });
+    await allSettled(assetTransactionModel.flowClosed, { scope });
 
     expect(scope.getState(assetTransactionModel.$step)).toEqual(Step.NONE);
     expect(scope.getState(assetTransactionModel.$modalType)).toEqual(null);
