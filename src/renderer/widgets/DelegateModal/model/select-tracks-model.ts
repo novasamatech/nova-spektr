@@ -127,12 +127,6 @@ const checkMaxWeightReachedFx = createEffect(
 );
 
 sample({
-  clock: formInitiated,
-  source: $availableAccounts,
-  target: $accounts,
-});
-
-sample({
   clock: [votingAggregate.$activeWalletVotes, $accounts],
   source: {
     accounts: $accounts,
