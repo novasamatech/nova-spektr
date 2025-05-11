@@ -4,7 +4,6 @@
 
 .card-stack[data-state="closed"] .card-stack-plate {
   max-width: calc(100% - 8px);
-  animation: bounceUp 0.17s ease-out 0.36s forwards;
 }
 
 .card-stack[data-state="open"] .card-stack-plate {
@@ -24,46 +23,5 @@
   }
 }
 
-.card-stack-content[data-state="open"] {
-  animation: cardStackSlideDown 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.15);
-}
-
-.card-stack-content[data-state="closed"] {
-  animation: cardStackSlideUp 0.45s cubic-bezier(0.25, 1, 0.75, 1);
-}
-
-@keyframes cardStackSlideDown {
-  from {
-    height: 0;
-    opacity: 0;
-  }
-  to {
-    height: var(--radix-accordion-content-height);
-    opacity: 1;
-  }
-}
-
-@keyframes cardStackSlideUp {
-  from {
-    height: var(--radix-accordion-content-height);
-    opacity: 1;
-  }
-  to {
-    height: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes bounceUp {
-  0% {
-    transform: translateX(-50%) translateY(0);
-  }
-  50% {
-    transform: translateX(-50%) translateY(-4px);
-  }
-  100% {
-    transform: translateX(-50%) translateY(0);
-  }
-}
 
 

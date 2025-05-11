@@ -1,7 +1,9 @@
 import './CardStack.css';
 
 import * as RadixAccordion from '@radix-ui/react-accordion';
-import { type PropsWithChildren, createContext, useContext, useDeferredValue, useId, useMemo, useState } from 'react';
+import { animated, useSpring } from '@react-spring/web';
+import { type PropsWithChildren, createContext, useContext, useId, useMemo, useState } from 'react';
+import useMeasure from 'react-use-measure';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
@@ -15,7 +17,6 @@ type RootProps = PropsWithChildren<{
 const Root = ({ initialOpen = false, children }: RootProps) => {
   const id = useId();
   const [open, setOpen] = useState(initialOpen);
-  const deferred = useDeferredValue(open);
 
   const ctx = useMemo(() => ({ open }), [open]);
 
@@ -24,7 +25,7 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
       <RadixAccordion.Root
         collapsible
         type="single"
-        value={deferred ? id : ''}
+        value={open ? id : ''}
         onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id} className="group/stack card-stack rounded-md">
@@ -73,6 +74,18 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 };
 
 const Content = ({ children }: PropsWithChildren) => {
+  const { open } = useContext(Context);
+  const [measureRef, { height }] = useMeasure();
+
+  const springProps = useSpring({
+    from: { height: 0, opacity: 0 },
+    to: {
+      height: open ? height : 0,
+      opacity: open ? 1 : 0,
+    },
+    config: { tension: 210, friction: 20 },
+  });
+
   return (
     <div className="relative min-h-1.5 overflow-hidden">
       <div
@@ -81,8 +94,13 @@ const Content = ({ children }: PropsWithChildren) => {
           'group-data-[state=open]/stack:shadow-none',
         )}
       />
-      <RadixAccordion.Content asChild>
-        <section className="card-stack-content relative">{children}</section>
+      <RadixAccordion.Content asChild forceMount>
+        {/* @ts-expect-error Type missmatch with react 19 */}
+        <animated.div style={{ ...springProps, overflow: 'hidden' }}>
+          <div ref={measureRef}>
+            <section className="card-stack-content relative">{children}</section>
+          </div>
+        </animated.div>
       </RadixAccordion.Content>
     </div>
   );
