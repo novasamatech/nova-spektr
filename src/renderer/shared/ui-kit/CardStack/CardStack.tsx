@@ -2,7 +2,16 @@ import './CardStack.css';
 
 import * as RadixAccordion from '@radix-ui/react-accordion';
 import { animated, useSpring } from '@react-spring/web';
-import { type PropsWithChildren, createContext, useContext, useId, useMemo, useState } from 'react';
+import {
+  type PropsWithChildren,
+  createContext,
+  useContext,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from 'react';
 import useMeasure from 'react-use-measure';
 
 import { cnTw } from '@/shared/lib/utils';
@@ -20,12 +29,14 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
 
   const ctx = useMemo(() => ({ open }), [open]);
 
+  const deferred = useDeferredValue(open);
+
   return (
     <Context.Provider value={ctx}>
       <RadixAccordion.Root
         collapsible
         type="single"
-        value={open ? id : ''}
+        value={deferred ? id : ''}
         onValueChange={value => setOpen(value === id)}
       >
         <RadixAccordion.Item value={id} className="group/stack card-stack rounded-md">
@@ -77,6 +88,14 @@ const Content = ({ children }: PropsWithChildren) => {
   const { open } = useContext(Context);
   const [measureRef, { height }] = useMeasure();
 
+  const [mountContent, setMountContent] = useState(open);
+
+  useEffect(() => {
+    if (open) {
+      setMountContent(true);
+    }
+  }, [open]);
+
   const springProps = useSpring({
     from: { height: 0, opacity: 0 },
     to: {
@@ -84,6 +103,12 @@ const Content = ({ children }: PropsWithChildren) => {
       opacity: open ? 1 : 0,
     },
     config: { tension: 210, friction: 20 },
+    onResolve: result => {
+      //i know this is a bloody hack, but it works just fine
+      if (result.value['height'] === 0) {
+        setMountContent(false);
+      }
+    },
   });
 
   return (
@@ -97,9 +122,11 @@ const Content = ({ children }: PropsWithChildren) => {
       <RadixAccordion.Content asChild forceMount>
         {/* @ts-expect-error Type missmatch with react 19 */}
         <animated.div style={{ ...springProps, overflow: 'hidden' }}>
-          <div ref={measureRef}>
-            <section className="card-stack-content relative">{children}</section>
-          </div>
+          {mountContent && (
+            <div ref={measureRef}>
+              <section className="card-stack-content relative">{children}</section>
+            </div>
+          )}
         </animated.div>
       </RadixAccordion.Content>
     </div>
