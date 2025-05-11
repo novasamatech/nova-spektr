@@ -252,7 +252,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
           <ScrollArea>
-            <div className="ml-9 flex flex-col gap-2 divide-y">
+            <div className="ml-9 mr-1 flex flex-col gap-2 divide-y">
               {chainElements.map(([chainId, chainAccounts]) => {
                 if (chainAccounts.length === 0) return;
 
