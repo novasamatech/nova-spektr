@@ -328,6 +328,8 @@ sample({
   fn: (accountsBalances) => {
     if (accountsBalances.length === 0) return ZERO_BALANCE;
 
+    if (accountsBalances.length === 1) return accountsBalances[0];
+
     const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
       if (!balance) return acc;
 
