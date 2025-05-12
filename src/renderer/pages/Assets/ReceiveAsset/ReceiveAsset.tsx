@@ -1,19 +1,18 @@
 import { useUnit } from 'effector-react';
-import { useNavigate } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
-import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
+import { CheckPermission, OperationType } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AssetRouteGuard } from '@/features/assets';
-import { ReceiveAssetModal } from '@/widgets/ReceiveAssetModal';
+import { ReceiveAssetModal } from '@/features/assets-transaction';
 
 export const ReceiveAsset = () => {
-  const navigate = useNavigate();
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   return (
     <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet} redirectPath={Paths.ASSETS}>
       <AssetRouteGuard redirectPath={Paths.ASSETS}>
-        {(chain, asset) => <ReceiveAssetModal chain={chain} asset={asset} onClose={() => navigate(Paths.ASSETS)} />}
+        {(chain, asset) => <ReceiveAssetModal chain={chain} asset={asset} />}
       </AssetRouteGuard>
     </CheckPermission>
   );

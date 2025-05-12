@@ -1,14 +1,11 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { type AssetByChains } from '@/shared/core';
-import { includes } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
+import { Step, includes } from '@/shared/lib/utils';
 import { portfolioModel } from '@/features/assets';
-import { navigationModel } from '@/features/navigation';
-import { ModalType, Step } from '../lib/types';
+import { ModalType } from '../lib/types';
 
 const flowClosed = createEvent();
-
 const stepChanged = createEvent<Step>();
 const modalTypeChanged = createEvent<ModalType>();
 const queryChanged = createEvent<string>();
@@ -66,12 +63,6 @@ sample({
   target: stepChanged,
 });
 
-sample({
-  clock: flowClosed,
-  fn: () => Paths.ASSETS,
-  target: navigationModel.events.navigateTo,
-});
-
 export const assetTransactionModel = {
   $assetWithChains,
   $modalType,
@@ -80,7 +71,6 @@ export const assetTransactionModel = {
   events: {
     queryChanged,
   },
-  output: {
-    flowClosed,
-  },
+
+  flowClosed,
 };

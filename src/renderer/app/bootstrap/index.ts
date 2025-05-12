@@ -14,40 +14,15 @@ import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { assetsSettingsModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
-import { basketOperationsFeature } from '@/features/basket-operations';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
-import { extensionWalletFeature } from '@/features/extension-wallet';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
-import { governanceBasketFeature } from '@/features/governance-basket';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
-import { governanceOperationDetailFeature } from '@/features/governance-operation-details';
-import { importDBFeature } from '@/features/import-db';
-import { ledgerWalletPairingFeature } from '@/features/ledger-wallet-pairing';
-import { multisigOperationDetailsFeature } from '@/features/multisig-operation-details';
-import { multisigWalletFeature } from '@/features/multisig-wallet';
-import { multisigWalletPairingFeature } from '@/features/multisig-wallet-pairing';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
-import { polkadotVaultWalletFeature } from '@/features/polkadot-vault-wallet';
-import { polkadotVaultWalletPairingFeature } from '@/features/polkadot-vault-wallet-pairing';
-import { proxiedWalletFeature } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
-import { proxyBasketFeature } from '@/features/proxy-basket';
-import { proxyOperationDetailFeature } from '@/features/proxy-operation-details';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
-import { stakingBasketFeature } from '@/features/staking-basket';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
-import { stakingOperationDetailFeature } from '@/features/staking-operation-details';
-import { transferBasketFeature } from '@/features/transfer-basket';
-import { transferOperationDetailFeature } from '@/features/transfer-operation-details';
-import { walletConnectWalletFeature } from '@/features/wallet-connect-wallet';
-import { walletConnectWalletPairingFeature } from '@/features/wallet-connect-wallet-pairing';
-import { walletDetailsFeature } from '@/features/wallet-details';
-import { walletPairingFeature } from '@/features/wallet-pairing';
-import { walletSelectFeature } from '@/features/wallet-select';
-import { watchOnlyWalletFeature } from '@/features/watch-only-wallet';
-import { watchOnlyWalletPairingFeature } from '@/features/watch-only-wallet-pairing';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -86,8 +61,6 @@ const populate = async () => {
 export const bootstrap = () => {
   const config = configureDomains();
 
-  import('./fellowship').then(({ bootstrapFellowship }) => bootstrapFellowship());
-
   registerFeatures([
     config,
 
@@ -102,46 +75,81 @@ export const bootstrap = () => {
     stakingNavigationFeature,
     governanceNavigationFeature,
 
-    walletSelectFeature.feature,
-    walletDetailsFeature,
+    import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
+    import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),
+    import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
-    walletPairingFeature,
+    import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
+    import('@/features/multisig-wallet-pairing').then(
+      ({ multisigWalletPairingFeature }) => multisigWalletPairingFeature,
+    ),
 
-    multisigWalletFeature,
-    multisigWalletPairingFeature,
+    import('@/features/polkadot-vault-wallet').then(({ polkadotVaultWalletFeature }) => polkadotVaultWalletFeature),
+    import('@/features/polkadot-vault-wallet-pairing').then(
+      ({ polkadotVaultWalletPairingFeature }) => polkadotVaultWalletPairingFeature,
+    ),
 
-    polkadotVaultWalletFeature,
-    polkadotVaultWalletPairingFeature,
+    import('@/features/wallet-connect-wallet').then(({ walletConnectWalletFeature }) => walletConnectWalletFeature),
+    import('@/features/wallet-connect-wallet-pairing').then(
+      ({ walletConnectWalletPairingFeature }) => walletConnectWalletPairingFeature,
+    ),
 
-    walletConnectWalletFeature,
-    walletConnectWalletPairingFeature,
+    import('@/features/watch-only-wallet').then(({ watchOnlyWalletFeature }) => watchOnlyWalletFeature),
+    import('@/features/watch-only-wallet-pairing').then(
+      ({ watchOnlyWalletPairingFeature }) => watchOnlyWalletPairingFeature,
+    ),
 
-    watchOnlyWalletFeature,
-    watchOnlyWalletPairingFeature,
+    import('@/features/extension-wallet').then(({ extensionWalletFeature }) => extensionWalletFeature),
 
-    extensionWalletFeature,
+    import('@/features/ledger-wallet-pairing').then(({ ledgerWalletPairingFeature }) => ledgerWalletPairingFeature),
 
-    ledgerWalletPairingFeature,
+    import('@/features/proxied-wallet').then(({ proxiedWalletFeature }) => proxiedWalletFeature),
 
-    proxiedWalletFeature,
+    import('@/features/fellowship-activity-feed').then(
+      ({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature,
+    ),
+    import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),
+    import('@/features/fellowship-evidence-salary').then(
+      ({ fellowshipEvidenceSalaryFeature }) => fellowshipEvidenceSalaryFeature,
+    ),
+    import('@/features/fellowship-evidence').then(({ fellowshipEvidenceFeature }) => fellowshipEvidenceFeature),
+    import('@/features/fellowship-salary').then(({ fellowshipSalaryFeature }) => fellowshipSalaryFeature),
+    import('@/features/fellowship-members').then(({ fellowshipMembersFeature }) => fellowshipMembersFeature),
+    import('@/features/fellowship-profile').then(({ fellowshipProfileFeature }) => fellowshipProfileFeature),
+    import('@/features/fellowship-referendum-details').then(
+      ({ fellowshipReferendumsDetailsFeature }) => fellowshipReferendumsDetailsFeature,
+    ),
+    import('@/features/fellowship-tasks').then(({ fellowshipTasksFeature }) => fellowshipTasksFeature),
+    import('@/features/fellowship-voting').then(({ fellowshipVotingFeature }) => fellowshipVotingFeature),
+    import('@/features/fellowship-voting-history').then(
+      ({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature,
+    ),
 
-    basketOperationsFeature,
+    import('@/features/basket-operations').then(({ basketOperationsFeature }) => basketOperationsFeature),
 
-    governanceBasketFeature,
-    governanceOperationDetailFeature,
+    import('@/features/governance-operation-details').then(
+      ({ governanceOperationDetailFeature }) => governanceOperationDetailFeature,
+    ),
+    import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
 
-    multisigOperationDetailsFeature,
+    import('@/features/multisig-operation-details').then(
+      ({ multisigOperationDetailsFeature }) => multisigOperationDetailsFeature,
+    ),
 
-    transferOperationDetailFeature,
-    transferBasketFeature,
+    import('@/features/transfer-operation-details').then(
+      ({ transferOperationDetailFeature }) => transferOperationDetailFeature,
+    ),
+    import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),
 
-    stakingOperationDetailFeature,
-    stakingBasketFeature,
+    import('@/features/staking-operation-details').then(
+      ({ stakingOperationDetailFeature }) => stakingOperationDetailFeature,
+    ),
+    import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
-    proxyOperationDetailFeature,
-    proxyBasketFeature,
+    import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
+    import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
-    importDBFeature,
+    import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
   ]);
 
   populate();
