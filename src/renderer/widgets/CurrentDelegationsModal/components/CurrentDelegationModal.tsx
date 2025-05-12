@@ -27,7 +27,7 @@ export const CurrentDelegationModal = () => {
   }
 
   return (
-    <Modal isOpen={isOpen} size="md" height="lg" onToggle={() => currentDelegationModel.output.flowFinished()}>
+    <Modal isOpen={isOpen} size="md" height="full" onToggle={() => currentDelegationModel.output.flowFinished()}>
       <Modal.Title close>
         <OperationTitle title={t('governance.delegations.title')} chainId={network.chain.chainId} />
       </Modal.Title>
