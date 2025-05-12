@@ -11,7 +11,7 @@ import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/ent
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAddress, lockPeriodsModel, locksAggregate, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -61,7 +61,9 @@ export const Confirmation = ({
   });
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore?.chain });
+  useGate(locksAggregate.gates.flow, { chain: confirmStore?.chain });
 
+  const trackLocks = useUnit(locksAggregate.$trackLocks);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   if (!confirmStore || !initiatorWallet) {
@@ -75,6 +77,8 @@ export const Confirmation = ({
   const amountValue = config.withFormatAmount
     ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
     : confirmStore.balance;
+
+  const locksForAddress = getLocksForAddress(confirmStore.account.accountId, trackLocks);
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
@@ -111,12 +115,12 @@ export const Confirmation = ({
             from={confirmStore.transferable}
             to={new BN(confirmStore.transferable).add(new BN(amountValue))}
             asset={confirmStore.asset}
-            lock={confirmStore.locks}
+            lock={locksForAddress}
           />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={confirmStore.balance} to="0" asset={confirmStore.asset} />
+          <LockValueDiff from={locksForAddress} to="0" asset={confirmStore.asset} />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
