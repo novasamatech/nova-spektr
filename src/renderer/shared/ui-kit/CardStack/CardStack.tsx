@@ -12,10 +12,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import useMeasure from 'react-use-measure';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
+import { useResizeObserver } from '../hooks/useResizeObserver';
 
 const Context = createContext<{ open: boolean }>({ open: false });
 
@@ -86,7 +86,13 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
 
 const Content = ({ children }: PropsWithChildren) => {
   const { open } = useContext(Context);
-  const [measureRef, { height }] = useMeasure();
+  const [contentRef, setContentRef] = useState<HTMLElement | null>(null);
+  const [height, setHeight] = useState(0);
+
+  useResizeObserver(contentRef, entry => {
+    const height = entry.borderBoxSize.reduce((a, x) => a + x.blockSize, 0);
+    setHeight(height);
+  });
 
   const [mountContent, setMountContent] = useState(open);
 
@@ -95,7 +101,6 @@ const Content = ({ children }: PropsWithChildren) => {
       setMountContent(true);
     }
   }, [open]);
-
   const springProps = useSpring({
     from: { height: 0, opacity: 0 },
     to: {
@@ -122,11 +127,9 @@ const Content = ({ children }: PropsWithChildren) => {
       <RadixAccordion.Content asChild forceMount>
         {/* @ts-expect-error Type missmatch with react 19 */}
         <animated.div style={{ ...springProps, overflow: 'hidden' }}>
-          {mountContent && (
-            <div ref={measureRef}>
-              <section className="card-stack-content relative">{children}</section>
-            </div>
-          )}
+          <div ref={setContentRef}>
+            <section className="card-stack-content relative">{mountContent ? children : null}</section>
+          </div>
         </animated.div>
       </RadixAccordion.Content>
     </div>
