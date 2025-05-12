@@ -1,9 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
-import { attach, createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { interval } from 'patronum';
 
-import { type HexString } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector/series';
 import { entries, getCurrentBlockNumber } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -12,24 +12,22 @@ import { networkModel } from '@/entities/network';
 export const $apis = networkModel.$apis;
 
 // Store mapping chain IDs to their current block heights
-const $currentBlock = createStore<Record<HexString, BlockHeight>>({});
+const $currentBlock = createStore<Record<ChainId, BlockHeight>>({});
 
 const startBlockListening = createEvent();
 const stopBlockListening = createEvent();
 
 // Create an effect factory for getting a block for a specific chain
-const getBlockForChainFx = attach({
-  effect: createEffect(async ({ chainId, api }: { chainId: HexString; api: ApiPromise }) => {
-    try {
-      const blockNumber = await getCurrentBlockNumber(api);
-      return {
-        chainId,
-        blockHeight: pjsSchema.helpers.toBlockHeight(blockNumber),
-      };
-    } catch (error) {
-      console.error(`Failed to get block for chain ${chainId}:`, error);
-    }
-  }),
+const getBlockForChainFx = createEffect(async ({ chainId, api }: { chainId: ChainId; api: ApiPromise }) => {
+  try {
+    const blockNumber = await getCurrentBlockNumber(api);
+    return {
+      chainId,
+      blockHeight: pjsSchema.helpers.toBlockHeight(blockNumber),
+    };
+  } catch (error) {
+    console.error(`Failed to get block for chain ${chainId}:`, error);
+  }
 });
 
 // Set up interval to check block numbers
