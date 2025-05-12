@@ -174,11 +174,6 @@ sample({
 });
 
 sample({
-  clock: $availableAccounts,
-  target: $accounts,
-});
-
-sample({
   clock: trackToggled,
   source: $tracks,
   fn: (tracks, track) => {
