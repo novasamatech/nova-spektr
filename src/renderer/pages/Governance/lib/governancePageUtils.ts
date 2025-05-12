@@ -18,8 +18,12 @@ type FilteredByQueryParams<T> = {
   titles: Record<string, string>;
 };
 
-function filteredByQuery<T extends AggregatedReferendum>({ referendums, query, titles }: FilteredByQueryParams<T>): T[] {
-  const res = performSearch<AggregatedReferendum, { title: string}>({
+function filteredByQuery<T extends AggregatedReferendum>({
+  referendums,
+  query,
+  titles,
+}: FilteredByQueryParams<T>): T[] {
+  const res = performSearch<AggregatedReferendum, { title: string }>({
     records: referendums,
     getMeta: (ref) => ({ title: titles[ref.referendumId], referendumId: ref.referendumId }),
     query,

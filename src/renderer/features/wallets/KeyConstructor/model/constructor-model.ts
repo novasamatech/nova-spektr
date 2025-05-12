@@ -84,7 +84,9 @@ const $constructorForm = createForm<FormValues>({
     },
     keyName: {
       init: '',
-      rules: [{ name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean }],
+      rules: [
+        { name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean },
+      ],
     },
     derivationPath: {
       init: '',

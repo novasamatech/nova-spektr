@@ -1,9 +1,8 @@
-import { useUnit } from 'effector-react';
+import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipSalaryFeature } from '../model/feature';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -17,22 +16,22 @@ function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
 
 type Props = {
   endBlock: number | null;
+  api: ApiPromise;
   shortDateFormat?: boolean;
 };
 
-export const PeriodEndTimer = ({ endBlock, shortDateFormat }: Props) => {
-  const input = useUnit(fellowshipSalaryFeature.input);
+export const PeriodEndTimer = ({ endBlock, api, shortDateFormat }: Props) => {
   const [secondsToEnd, setSecondsToEnd] = useState<number>();
 
   useEffect(() => {
-    if (endBlock && input) {
-      getTimeToBlock(endBlock, input.api).then(date => {
+    if (endBlock && api) {
+      getTimeToBlock(endBlock, api).then(date => {
         setSecondsToEnd(date / 1000);
       });
     }
-  }, [endBlock, input]);
+  }, [endBlock, api]);
 
-  if (!secondsToEnd || !input) return null;
+  if (!secondsToEnd || !api) return null;
   const variant = getTimerColor(secondsToEnd);
 
   return <Timeout secondsToEnd={secondsToEnd} variant={variant} shortDateFormat={shortDateFormat} />;
