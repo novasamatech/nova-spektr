@@ -38,8 +38,6 @@ export const GovernanceReferendumList = () => {
   const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
   const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
 
-  console.log({ isLoadingState, isLoading, isSearching, isTitlesLoading });
-
   return (
     <Box gap={4} grow={1}>
       <Filters />
