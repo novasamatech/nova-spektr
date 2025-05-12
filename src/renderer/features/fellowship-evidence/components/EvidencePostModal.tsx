@@ -14,7 +14,7 @@ import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { evidencePost } from '../model/evidencePost';
-import { fellowshipSalaryFeature } from '../model/feature';
+import { fellowshipEvidenceFeature } from '../model/feature';
 
 import { EvidencePostConfirmation } from './EvidencePostConfirmation';
 
@@ -32,7 +32,7 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
-  const input = useUnit(fellowshipSalaryFeature.input);
+  const input = useUnit(fellowshipEvidenceFeature.input);
   const account = useUnit(evidencePost.$account);
   const wallet = useUnit(evidencePost.$wallet);
   const fee = useUnit(evidencePost.$fee);

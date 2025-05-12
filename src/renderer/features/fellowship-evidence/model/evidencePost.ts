@@ -11,12 +11,12 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { evidenceForm } from './evidenceForm';
-import { fellowshipSalaryFeature } from './feature';
+import { fellowshipEvidenceFeature } from './feature';
 
 const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
-  source: fellowshipSalaryFeature.input,
+  source: fellowshipEvidenceFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
@@ -28,7 +28,7 @@ const { $api, $chain, $wallet, $wallets, $account } = reshape({
 
 const $coreTx = combine(
   {
-    input: fellowshipSalaryFeature.input,
+    input: fellowshipEvidenceFeature.input,
     account: $account,
     wish: evidenceForm.$wish,
     evidence: evidenceForm.$evidence,

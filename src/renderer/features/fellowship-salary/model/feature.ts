@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { feed } from '@/domains/collectives';
+import { walletModel } from '@/entities/wallet';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
@@ -12,9 +12,11 @@ const $input = combine(
   {
     network: fellowshipNetwork.$network,
     member: fellowshipMember.$currentMember,
+    wallet: fellowshipMember.$currentMemberWallet,
     account: fellowshipMember.$currentMemberAccount,
+    wallets: walletModel.$wallets,
   },
-  ({ network, member, account }) => {
+  ({ network, wallets, wallet, account, member }) => {
     if (nullable(network)) return null;
 
     return {
@@ -24,13 +26,15 @@ const $input = combine(
       chainId: network.chainId,
       palletType: network.palletType,
       member,
+      wallet,
       account,
+      wallets,
     };
   },
 );
 
-export const fellowshipTasksFeature = createFeature({
-  name: 'fellowship/tasks',
+export const fellowshipSalaryFeature = createFeature({
+  name: 'fellowship/salary',
   enable: $features.map(({ fellowship }) => fellowship),
   input: $input,
   filter: input => {
@@ -47,15 +51,5 @@ export const fellowshipTasksFeature = createFeature({
 sample({
   clock: fellowshipNetwork.$isConnected,
   filter: fellowshipNetwork.$isConnected,
-  target: fellowshipTasksFeature.restore,
-});
-
-sample({
-  clock: fellowshipTasksFeature.running,
-  target: feed.subscribe,
-});
-
-sample({
-  clock: fellowshipTasksFeature.stopped,
-  target: feed.unsubscribe,
+  target: fellowshipSalaryFeature.restore,
 });

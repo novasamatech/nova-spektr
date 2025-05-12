@@ -3,11 +3,11 @@ import { combine } from 'effector';
 import { nullable } from '@/shared/lib/utils';
 import { $collectiveStore } from '@/domains/collectives';
 
-import { fellowshipEvidenceSalaryFeature } from './feature';
+import { fellowshipEvidenceFeature } from './feature';
 
 const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || null);
 
-const $store = combine($fellowshipStore, fellowshipEvidenceSalaryFeature.state, (fellowshipStore, state) => {
+const $store = combine($fellowshipStore, fellowshipEvidenceFeature.state, (fellowshipStore, state) => {
   if (nullable(fellowshipStore) || state.status !== 'running') {
     return null;
   }

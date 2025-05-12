@@ -9,7 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
-import { fellowshipSalaryFeature } from '../model/feature';
+import { fellowshipEvidenceFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
@@ -19,7 +19,7 @@ export const RetentionInfo = memo(() => {
   const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
 
-  const input = useUnit(fellowshipSalaryFeature.input);
+  const input = useUnit(fellowshipEvidenceFeature.input);
   const currentMember = useUnit(profile.$member);
   const account = useUnit(profile.$account);
 

@@ -34,14 +34,20 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     }),
   });
 
-  if (nullable(member) || !memberService.isCoreMember(member)) return null;
+  const notMemberOrNotCoreMember = nullable(member) || !memberService.isCoreMember(member);
 
   const referendums = useMemo(() => {
+    if (notMemberOrNotCoreMember) return [];
+
     return referendumMetaService.getReferendumsSinceLastProof(meta, member);
-  }, [meta, member]);
+  }, [meta, member, notMemberOrNotCoreMember]);
   const activity = useMemo(() => {
+    if (notMemberOrNotCoreMember) return { activity: null, agreement: null };
+
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
-  }, [referendums, member, maxRank, votes]);
+  }, [referendums, member, maxRank, votes, notMemberOrNotCoreMember]);
+
+  if (notMemberOrNotCoreMember) return null;
 
   const { activity: activityThreshold, agreement: agreementThreshold } =
     memberService.getActivityAndAgreementThresholds(member.rank);

@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
-import { SubmitEvidenceConfirmation } from '@/features/fellowship-evidence-salary';
+import { SubmitEvidenceConfirmation } from '@/features/fellowship-evidence';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {

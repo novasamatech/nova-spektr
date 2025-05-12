@@ -80,16 +80,24 @@ export const bootstrap = () => {
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
-    import('@/features/multisig-wallet-pairing').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
+    import('@/features/multisig-wallet-pairing').then(
+      ({ multisigWalletPairingFeature }) => multisigWalletPairingFeature,
+    ),
 
     import('@/features/polkadot-vault-wallet').then(({ polkadotVaultWalletFeature }) => polkadotVaultWalletFeature),
-    import('@/features/polkadot-vault-wallet-pairing').then(({ polkadotVaultWalletPairingFeature }) => polkadotVaultWalletPairingFeature),
+    import('@/features/polkadot-vault-wallet-pairing').then(
+      ({ polkadotVaultWalletPairingFeature }) => polkadotVaultWalletPairingFeature,
+    ),
 
     import('@/features/wallet-connect-wallet').then(({ walletConnectWalletFeature }) => walletConnectWalletFeature),
-    import('@/features/wallet-connect-wallet-pairing').then(({ walletConnectWalletPairingFeature }) => walletConnectWalletPairingFeature),
+    import('@/features/wallet-connect-wallet-pairing').then(
+      ({ walletConnectWalletPairingFeature }) => walletConnectWalletPairingFeature,
+    ),
 
     import('@/features/watch-only-wallet').then(({ watchOnlyWalletFeature }) => watchOnlyWalletFeature),
-    import('@/features/watch-only-wallet-pairing').then(({ watchOnlyWalletPairingFeature }) => watchOnlyWalletPairingFeature),
+    import('@/features/watch-only-wallet-pairing').then(
+      ({ watchOnlyWalletPairingFeature }) => watchOnlyWalletPairingFeature,
+    ),
 
     import('@/features/extension-wallet').then(({ extensionWalletFeature }) => extensionWalletFeature),
 
@@ -97,27 +105,45 @@ export const bootstrap = () => {
 
     import('@/features/proxied-wallet').then(({ proxiedWalletFeature }) => proxiedWalletFeature),
 
-    import('@/features/fellowship-activity-feed').then(({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature),
+    import('@/features/fellowship-activity-feed').then(
+      ({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature,
+    ),
     import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),
-    import('@/features/fellowship-evidence-salary').then(({ fellowshipSalaryFeature }) => fellowshipSalaryFeature),
+    import('@/features/fellowship-evidence-salary').then(
+      ({ fellowshipEvidenceSalaryFeature }) => fellowshipEvidenceSalaryFeature,
+    ),
+    import('@/features/fellowship-evidence').then(({ fellowshipEvidenceFeature }) => fellowshipEvidenceFeature),
+    import('@/features/fellowship-salary').then(({ fellowshipSalaryFeature }) => fellowshipSalaryFeature),
     import('@/features/fellowship-members').then(({ fellowshipMembersFeature }) => fellowshipMembersFeature),
     import('@/features/fellowship-profile').then(({ fellowshipProfileFeature }) => fellowshipProfileFeature),
-    import('@/features/fellowship-referendum-details').then(({ fellowshipReferendumsDetailsFeature }) => fellowshipReferendumsDetailsFeature),
+    import('@/features/fellowship-referendum-details').then(
+      ({ fellowshipReferendumsDetailsFeature }) => fellowshipReferendumsDetailsFeature,
+    ),
     import('@/features/fellowship-tasks').then(({ fellowshipTasksFeature }) => fellowshipTasksFeature),
     import('@/features/fellowship-voting').then(({ fellowshipVotingFeature }) => fellowshipVotingFeature),
-    import('@/features/fellowship-voting-history').then(({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature),
+    import('@/features/fellowship-voting-history').then(
+      ({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature,
+    ),
 
     import('@/features/basket-operations').then(({ basketOperationsFeature }) => basketOperationsFeature),
 
-    import('@/features/governance-operation-details').then(({ governanceOperationDetailFeature }) => governanceOperationDetailFeature),
+    import('@/features/governance-operation-details').then(
+      ({ governanceOperationDetailFeature }) => governanceOperationDetailFeature,
+    ),
     import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
 
-    import('@/features/multisig-operation-details').then(({ multisigOperationDetailsFeature }) => multisigOperationDetailsFeature),
+    import('@/features/multisig-operation-details').then(
+      ({ multisigOperationDetailsFeature }) => multisigOperationDetailsFeature,
+    ),
 
-    import('@/features/transfer-operation-details').then(({ transferOperationDetailFeature }) => transferOperationDetailFeature),
+    import('@/features/transfer-operation-details').then(
+      ({ transferOperationDetailFeature }) => transferOperationDetailFeature,
+    ),
     import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),
 
-    import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
+    import('@/features/staking-operation-details').then(
+      ({ stakingOperationDetailFeature }) => stakingOperationDetailFeature,
+    ),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
