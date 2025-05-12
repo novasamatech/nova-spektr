@@ -24,6 +24,12 @@
   "proseWrap": "always",
   "overrides": [
     {
+      "files": ["./src/renderer/app/bootstrap/*.ts"],
+      "options": {
+        "printWidth": 160
+      }
+    },
+    {
       "files": [
         "./src/renderer/domains/**/*.ts",
         "./src/renderer/aggregates/**/*.ts",
