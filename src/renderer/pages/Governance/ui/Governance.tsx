@@ -63,13 +63,12 @@ export const Governance = () => {
   }, [chainId]);
 
   const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
+  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
 
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <Box width="230px">
-          <Search />
-        </Box>
+        <Box width="230px">{isApiConnected && <Search />}</Box>
       </Header>
 
       <ScrollArea>
@@ -79,12 +78,18 @@ export const Governance = () => {
               <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
                 <NetworkSelector />
               </Plate>
-              <Locks onClick={unlockAggregate.events.flowStarted} />
-              <TotalDelegation
-                onClick={() =>
-                  hasDelegations ? currentDelegationModel.events.flowStarted() : delegationModel.events.flowStarted()
-                }
-              />
+              {isApiConnected && (
+                <>
+                  <Locks onClick={unlockAggregate.events.flowStarted} />
+                  <TotalDelegation
+                    onClick={() =>
+                      hasDelegations
+                        ? currentDelegationModel.events.flowStarted()
+                        : delegationModel.events.flowStarted()
+                    }
+                  />
+                </>
+              )}
             </div>
 
             <Outlet />
