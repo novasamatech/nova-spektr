@@ -124,15 +124,18 @@ const fetchProxiesFx = createEffect(
 
     if (proxiedAccountsToAdd.length) {
       const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
-
-      await withTimeout(
-        boundRequestIdentities({
-          accounts: proxiedAccountsToAdd.map((a) => a.accountId),
-          chainId: chain.chainId,
-        }),
-        LOADING_TIMEOUT,
-        null,
-      );
+      try {
+        await withTimeout(
+          boundRequestIdentities({
+            accounts: proxiedAccountsToAdd.map((a) => a.accountId),
+            chainId: chain.chainId,
+          }),
+          LOADING_TIMEOUT,
+          null,
+        );
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     if (proxyUrl && proxiedAccountsToAdd.length) {
