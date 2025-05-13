@@ -34,6 +34,7 @@ const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
 
+// providers are here
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
@@ -91,13 +92,14 @@ const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => 
 
 type CreateProviderParams = {
   chainId: ChainId;
+  chain: Chain;
   nodes: string[];
   metadata?: ChainMetadata;
   providerType: ProviderType;
   DEBUG_NETWORKS?: boolean;
 };
 const createProviderFx = createEffect(
-  ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
+  ({ chainId, chain, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
 
@@ -107,13 +109,21 @@ const createProviderFx = createEffect(
       { nodes, metadata },
       {
         onConnected: () => {
+          console.info('🟢 Provider connected ==> ', chainId);
           if (DEBUG_NETWORKS) {
-            console.info('🟢 Provider connected ==> ', chainId);
           }
         },
         onDisconnected: () => {
+          console.info('🟠 Provider disconnected ==> ', {
+            chainId,
+            provider: {
+              provider,
+              isConnected: provider.isConnected,
+            },
+            providerType,
+            chain,
+          });
           if (DEBUG_NETWORKS) {
-            console.info('🟠 Provider disconnected ==> ', chainId);
           }
           boundDisconnected(chainId);
         },
@@ -140,6 +150,19 @@ const createProviderFx = createEffect(
     return provider.connect().then(() => provider);
   },
 );
+
+const pageReturnFx = (() => {
+  const event = createEvent();
+
+  const callback = () => {
+    if (document.visibilityState === 'visible') {
+      pageReturnFx();
+    }
+  };
+  document.addEventListener('visibilitychange', callback);
+
+  return event;
+})();
 
 const createProvidersFx = series(createProviderFx);
 
@@ -186,6 +209,20 @@ sample({
 sample({
   clock: getDefaultStatusesFx.doneData,
   target: $connectionStatuses,
+});
+
+sample({
+  clock: pageReturnFx,
+  source: $providers,
+  fn: (providers) => {
+    console.log({ providers, disconnected: Object.values(providers).filter((p) => !p.isConnected) });
+    for (const provider of Object.values(providers)) {
+      if (!provider.isConnected) {
+        provider.connect();
+      }
+    }
+  },
+  target: [],
 });
 
 sample({
@@ -290,6 +327,7 @@ sample({
       providerType,
       // set true in case of some network issues
       DEBUG_NETWORKS: false,
+      chain: store.chains[chainId],
     };
   },
   target: createProviderFx,
@@ -499,7 +537,7 @@ export const networkModel = {
   startNetworks: startNetworksFx,
 
   events: {
-    chainConnected,
+    chainConnected: chainConnected,
     chainDisconnected,
     connectionsPopulated: populateConnectionsFx.doneData,
   },
