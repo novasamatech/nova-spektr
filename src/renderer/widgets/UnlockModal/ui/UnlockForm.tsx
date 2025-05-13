@@ -94,8 +94,8 @@ const AccountsSelector = () => {
       id: account.id,
       value: account,
       element: (
-        <div className="flex w-full justify-between" key={account.id}>
-          <Address address={address} variant="truncate" iconSize={20} canCopy={false} title={account.name} showIcon />
+        <div className="flex flex-grow justify-between" key={account.id}>
+          <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
           <AssetBalance value={balance} asset={network.asset} className="w-min" />
         </div>
       ),
