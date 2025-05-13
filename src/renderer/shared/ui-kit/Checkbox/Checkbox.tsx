@@ -50,7 +50,7 @@ export const Checkbox = ({
           'checkbox items-center justify-center rounded border border-filter-border bg-button-text',
           (checked || semiChecked) && 'border-0 border-icon-accent-default bg-primary-button-background-default',
           'hover:shadow-card-shadow aria-checked:hover:bg-primary-button-background-active',
-          'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
+          'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:aria-checked:bg-main-app-background',
           !disabled && 'hover:cursor-pointer',
           checkboxPosition === 'center' && 'self-center',
           checkboxPosition === 'top' && 'self-top mt-1',
