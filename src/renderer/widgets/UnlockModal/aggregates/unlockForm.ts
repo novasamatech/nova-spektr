@@ -391,19 +391,17 @@ sample({
 sample({
   clock: formInitiated,
   source: {
-    chainId: networkSelectorModel.$governanceChainId,
-    network: networkSelectorModel.$network,
     shards: $unlockForm.fields.shards.$value,
-    balances: balanceModel.$balances,
+    claimable: unlockModel.$claimable,
   },
-  filter: ({ chainId, network, shards }) => !!chainId || !!network || shards.length > 0,
-  fn: ({ chainId, network, shards, balances }) => {
+  filter: ({ shards, claimable }) => !!claimable || shards.length > 0,
+  fn: ({ shards, claimable }) => {
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chainId!, network!.asset.assetId.toString());
+      const balance = claimable?.[shard.accountId] || BN_ZERO;
 
       return {
         account: shard,
-        balance: transferableAmount(balance),
+        balance: balance.toString(),
       };
     });
   },
