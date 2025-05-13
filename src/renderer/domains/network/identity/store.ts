@@ -55,7 +55,7 @@ const requestFx = attach({
     const api = apis[identityChainId];
 
     if (nullable(api)) {
-      throw new Error(`Api for chain ${identityChainId} not found`);
+      return {};
     }
 
     return bound({ accounts, chainId, api });
