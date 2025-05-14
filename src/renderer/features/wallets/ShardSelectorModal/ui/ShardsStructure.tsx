@@ -30,10 +30,11 @@ export const ShardsStructure = () => {
 
   return (
     <ul className="max-h-[470px]">
-      {shardsStructure.map(([rootAccountId, chainTuple]) => (
+      {shardsStructure.map(([rootAccountId, rootAccountName, chainTuple]) => (
         <li key={rootAccountId}>
           <SelectableRoot
             accountId={rootAccountId}
+            accountName={rootAccountName}
             checked={selectorUtils.isChecked(selectedStructure[rootAccountId])}
             semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId])}
             onChange={(value) => shardsModel.events.rootToggled({ root: rootAccountId, value })}
