@@ -1,30 +1,40 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
+import { createForm } from 'effector-forms';
 import { and, empty, not, reset } from 'patronum';
 
-import { type AccountVote, type Address, type Conviction, type OngoingReferendum } from '@/shared/core';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { balanceModel } from '@/entities/balance';
+import {
+  type AccountVote,
+  type Address,
+  type Conviction,
+  type OngoingReferendum,
+  type Transaction,
+} from '@/shared/core';
+import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
-import { type WrappedTransactions, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type AggregatedReferendum, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { type BasicFormParams, createTransactionForm } from '@/features/governance/lib/createTransactionForm';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 
 type Form = {
+  signatory: AnyAccount | null;
   amount: BN | null;
   conviction: Conviction;
   decision: 'aye' | 'nay' | 'abstain' | null;
 };
 
 type FormInput = {
-  form: BasicFormParams & Form;
-  wrappedTransactions: WrappedTransactions;
+  form: Form;
+  transaction: Transaction;
 };
 
 const $type = createStore<'vote' | 'revote' | null>(null);
@@ -38,83 +48,123 @@ const $canSubmit = createStore(false);
 
 const formSubmitted = createEvent<FormInput>();
 
-const transactionForm = createTransactionForm<Form>({
-  $type,
-  $voters,
-  $asset: votingAssetModel.$votingAsset,
-  $chain: networkSelectorModel.$governanceChain,
-  $api: networkSelectorModel.$governanceChainApi,
+const $initiator = combine(walletSelect.$selectedAccounts, networkSelectorModel.$governanceChain, (accounts, chain) => {
+  return chain ? (accountService.filterAccountOnChain(accounts, chain).at(0) ?? null) : null;
+});
 
-  $activeWallet: walletModel.$activeWallet.map((w) => w ?? null),
-  $wallets: walletModel.$wallets,
-  $balances: balanceModel.$balances,
+const $initiatorWallet = combine(walletModel.$wallets, $initiator, (wallets, account) => {
+  return account ? (wallets.find((w) => w.id === account.walletId) ?? null) : null;
+});
 
-  createTransactionStore: ({ $chain, form }) =>
-    combine(
-      {
-        chain: $chain,
-        referendum: $referendum,
-        existingVote: $existingVote,
-        conviction: form.fields.conviction.$value,
-        account: form.fields.account.$value,
-        amount: form.fields.amount.$value,
-        decision: form.fields.decision.$value,
-      },
-      ({ chain, referendum, account, amount, conviction, decision, existingVote }) => {
-        if (nullable(referendum) || nullable(chain) || nullable(account)) {
-          return null;
-        }
+const $signatories = createSignatoriesStore({
+  chain: networkSelectorModel.$governanceChain,
+  initiator: $initiator,
+  accounts: accounts.$list,
+});
 
-        if (existingVote) {
-          return transactionBuilder.buildRevote({
-            chain: chain,
-            accountId: account.accountId,
-            trackId: referendum.track,
-            referendumId: referendum.referendumId,
-            vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
-          });
-        }
+// form
 
-        return transactionBuilder.buildVote({
-          chain: chain,
-          accountId: account.accountId,
-          trackId: referendum.track,
-          referendumId: referendum.referendumId,
-          vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
-        });
-      },
-    ),
-
-  form: {
-    filter: createStore(true),
-    validateOn: ['submit'],
-    fields: {
-      amount: {
-        init: null,
-        rules: [
-          {
-            name: 'notZero',
-            errorText: 'transfer.notZeroAmountError',
-            validator: (value) => nonNullable(value) && value.gt(BN_ZERO),
-          },
-          {
-            name: 'notEnoughBalance',
-            errorText: 'governance.errors.notEnoughBalanceError',
-            source: $availableBalance,
-            validator: (value, _, balance: BN) => nullable(value) || value.lte(balance),
-          },
-        ],
-      },
-      conviction: { init: 'Locked1x' },
-      decision: { init: null },
+const form = createForm<Form>({
+  validateOn: ['submit'],
+  fields: {
+    signatory: {
+      init: null,
+      rules: [
+        {
+          name: 'emptySignatory',
+          errorText: 'governance.vote.errors.noSignatoryError',
+          source: $signatories,
+          validator: (signatory, _, signatories) => signatories.length === 0 || nonNullable(signatory),
+        },
+      ],
     },
+    amount: {
+      init: null,
+      rules: [
+        {
+          name: 'notZero',
+          errorText: 'transfer.notZeroAmountError',
+          validator: (value) => nonNullable(value) && value.gt(BN_ZERO),
+        },
+        {
+          name: 'notEnoughBalance',
+          errorText: 'governance.errors.notEnoughBalanceError',
+          source: $availableBalance,
+          validator: (value, _, balance: BN) => nullable(value) || value.lte(balance),
+        },
+      ],
+    },
+    conviction: { init: 'Locked1x' },
+    decision: { init: null },
   },
 });
 
-const { form, resetForm, transaction, accounts } = transactionForm;
+sample({
+  clock: form.reset,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signers) => signers.at(0) ?? null,
+  target: form.fields.signatory.onChange,
+});
+
+// transaction
+
+const $coreTx = combine(
+  {
+    chain: networkSelectorModel.$governanceChain,
+    referendum: $referendum,
+    existingVote: $existingVote,
+    conviction: form.fields.conviction.$value,
+    account: $initiator,
+    amount: form.fields.amount.$value,
+    decision: form.fields.decision.$value,
+  },
+  ({ chain, referendum, account, amount, conviction, decision, existingVote }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(account)) {
+      return null;
+    }
+
+    if (existingVote) {
+      return transactionBuilder.buildRevote({
+        chain: chain,
+        accountId: account.accountId,
+        trackId: referendum.track,
+        referendumId: referendum.referendumId,
+        vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
+      });
+    }
+
+    return transactionBuilder.buildVote({
+      chain: chain,
+      accountId: account.accountId,
+      trackId: referendum.track,
+      referendumId: referendum.referendumId,
+      vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
+    });
+  },
+);
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: networkSelectorModel.$governanceChainApi,
+  initiator: $initiator,
+  accounts: accounts.$list,
+  chain: networkSelectorModel.$governanceChain,
+  signatory: form.fields.signatory.$value,
+  transaction: $coreTx,
+});
+
+const $txWrappers = createTxWrappers({
+  initiator: $initiator,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: networkSelectorModel.$governanceChain,
+  signatory: form.fields.signatory.$value,
+});
+
+// balances
 
 sample({
-  clock: form.fields.account.onChange,
+  clock: $initiator,
   source: {
     trackLocks: locksAggregate.$trackLocks,
     chain: networkSelectorModel.$governanceChain,
@@ -129,16 +179,25 @@ sample({
 });
 
 sample({
-  clock: form.fields.account.onChange,
+  clock: $initiator,
   source: {
+    initiator: $initiator,
     referendum: $referendum,
-    accounts: accounts.$available,
+    chain: networkSelectorModel.$governanceChain,
+    balances: balanceModel.$balances,
+    accounts: accounts.$list,
   },
-  filter: ({ referendum }, account) => nonNullable(account) && nonNullable(referendum),
-  fn: ({ referendum, accounts }, account) => {
-    if (!account || !referendum) return BN_ZERO;
+  filter: ({ referendum, chain, initiator }) => nonNullable(initiator) && nonNullable(chain) && nonNullable(referendum),
+  fn: ({ referendum, balances, chain, initiator }) => {
+    if (!initiator || !referendum) return BN_ZERO;
 
-    const accountBalance = accounts.find((a) => a.account.accountId === account.accountId)?.balance ?? null;
+    const nativeAsset = getNativeAsset(chain?.assets ?? []);
+    const accountBalance = balanceUtils.getBalance(
+      balances,
+      initiator!.accountId,
+      chain!.chainId,
+      nativeAsset.assetId.toString(),
+    );
     if (!accountBalance) return BN_ZERO;
 
     return locksService.getAvailableBalance(accountBalance);
@@ -149,7 +208,7 @@ sample({
 // Reset
 
 reset({
-  clock: resetForm,
+  clock: form.reset,
   target: [$referendum, $existingVote],
 });
 
@@ -157,8 +216,8 @@ reset({
 
 sample({
   clock: and(
-    not(transaction.$pendingFee),
-    not(empty(transaction.$wrappedTx)),
+    not($pendingFee),
+    not(empty($tx)),
     not(empty(votingAssetModel.$votingAsset)),
     not(empty(networkSelectorModel.$governanceChainId)),
   ),
@@ -169,14 +228,14 @@ sample({
   clock: form.formValidated,
   source: {
     form: form.$values,
-    wrappedTransactions: transaction.$wrappedTx,
+    transaction: $tx,
   },
-  filter: ({ wrappedTransactions }) => nonNullable(wrappedTransactions),
-  fn: ({ form, wrappedTransactions }) => {
+  filter: ({ transaction }) => nonNullable(transaction),
+  fn: ({ form, transaction }) => {
     return {
       form,
-      wrappedTransactions: wrappedTransactions!,
-    };
+      transaction: transaction!,
+    } satisfies FormInput;
   },
   target: formSubmitted,
 });
@@ -186,21 +245,28 @@ sample({
   source: {
     form: form.$values,
     existingVote: $existingVote,
+    initiator: $initiator,
     network: networkSelectorModel.$network,
-    wrappedTransactions: transaction.$wrappedTx,
+    route: $route,
+    tx: $tx,
+    multisigTx: $multisigTx,
+    coreTx: $coreTx,
   },
-  filter: ({ network, wrappedTransactions }, { account, decision }) => {
-    return nonNullable(network) && nonNullable(account) && nonNullable(decision) && nonNullable(wrappedTransactions);
+  filter: ({ network, tx, initiator }, { decision }) => {
+    return nonNullable(network) && nonNullable(initiator) && nonNullable(decision) && nonNullable(tx);
   },
-  fn: ({ existingVote, network, wrappedTransactions }, { account, signatory }): VoteConfirm => {
+  fn: ({ existingVote, network, tx, coreTx, multisigTx, route, initiator }, { signatory }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
       asset: network!.asset,
-      account: account!,
-      signatory,
+      route,
+      initiator: initiator!,
+      signatory: signatory!,
       existingVote,
-      wrappedTransactions: wrappedTransactions!,
+      tx: tx!,
+      coreTx: coreTx!,
+      multisigTx,
     };
   },
   target: voteConfirmModel.events.replaceWithConfirm,
@@ -208,25 +274,37 @@ sample({
 
 sample({
   clock: form.$values,
-  source: transaction.$wrappedTx,
-  filter: (transactions) => transactions !== null,
-  fn: (transactions) => ({
+  source: $tx,
+  filter: nonNullable,
+  fn: (transaction) => ({
     id: 0,
-    transaction: transactions!.wrappedTx,
+    transaction: transaction!,
     feeMap: {},
   }),
   target: voteValidateModel.validate,
 });
 
 export const voteFormAggregate = {
-  transactionForm,
+  form,
 
+  $tx,
+  $coreTx,
+  $multisigTx,
+  $txWrappers,
+
+  $initiator,
+  $initiatorWallet,
+  $signatory: form.fields.signatory.$value,
+  $signatories,
   $type,
   $referendum,
   $voters,
   $existingVote,
   $lockForAccount,
   $availableBalance,
+
+  $fee,
+  $pendingFee,
 
   $canSubmit,
 

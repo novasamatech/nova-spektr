@@ -19,7 +19,7 @@ type Props = PropsWithChildren<{
   chain: Chain;
   initiator: AnyAccount[];
   signatory: AnyAccount | null;
-  proxied?: AnyAccount;
+  proxied?: AnyAccount | null;
 }>;
 
 export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {

@@ -2,16 +2,13 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEvent } from 'effector';
 
 import { type AccountVote, type Asset } from '@/shared/core';
+import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import {
-  type ConfirmInfo,
-  createTransactionConfirmStore,
-} from '@/features/operations/OperationsConfirm/lib/createTransactionConfirmStore';
 
-export type VoteConfirm = ConfirmInfo & {
+export type VoteConfirm = TxConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
   existingVote: AccountVote | null;

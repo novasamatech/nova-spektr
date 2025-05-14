@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { type OngoingReferendum } from '@/shared/core';
-import { Step, isStep, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { Step, isStep, nonNullable, nonNullableMap, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
 import { walletModel } from '@/entities/wallet';
@@ -38,20 +38,20 @@ const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.o
 const $hasDelegatedTrack = combine(
   {
     referendum: voteFormAggregate.$referendum,
-    account: voteFormAggregate.transactionForm.form.fields.account.$value,
+    initiator: voteFormAggregate.$initiator,
     network: networkSelectorModel.$network,
     tracks: delegationAggregate.$activeTracks,
   },
-  ({ referendum, account, network, tracks }) => {
-    if (nullable(account) || nullable(referendum) || nullable(network)) {
+  ({ referendum, initiator, network, tracks }) => {
+    if (nullable(initiator) || nullable(referendum) || nullable(network)) {
       return false;
     }
 
-    const accountAddress = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+    const initiatorAddress = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
 
     for (const delegators of Object.values(tracks)) {
       for (const [address, tracks] of Object.entries(delegators)) {
-        if (address === accountAddress && tracks.includes(referendum.track)) {
+        if (address === initiatorAddress && tracks.includes(referendum.track)) {
           return true;
         }
       }
@@ -61,8 +61,6 @@ const $hasDelegatedTrack = combine(
   },
 );
 
-const { form, reinitForm, resetForm, transaction } = voteFormAggregate.transactionForm;
-
 // Transaction save
 
 const txSaved = createEvent();
@@ -70,17 +68,17 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    account: form.fields.account.$value,
-    transaction: transaction.$wrappedTx,
-    txWrappers: transaction.$txWrappers,
+    account: voteFormAggregate.$initiator,
+    coreTx: voteFormAggregate.$coreTx,
+    txWrappers: voteFormAggregate.$txWrappers,
   },
-  filter: ({ account, transaction }) => !!account && !!transaction,
-  fn: ({ account, transaction, txWrappers }) => {
-    if (!account || !transaction) return [];
+  filter: nonNullableMap,
+  fn: ({ account, coreTx, txWrappers }) => {
+    if (!account || !coreTx) return [];
 
     const tx = {
       initiatorAccountId: account.accountId,
-      coreTx: transaction.coreTx,
+      coreTx,
       txWrappers,
       createdAt: Date.now(),
     };
@@ -163,11 +161,11 @@ sample({
 
 sample({
   clock: flow.open,
-  target: reinitForm,
+  target: voteFormAggregate.form.reset,
 });
 
 sample({
-  clock: form.fields.account.$value,
+  clock: voteFormAggregate.$initiator,
   source: {
     state: flow.state,
     network: networkSelectorModel.$network,
@@ -195,12 +193,12 @@ sample({
       conviction: votingService.getAccountVoteConviction(vote),
     };
   },
-  target: form.setForm,
+  target: voteFormAggregate.form.setForm,
 });
 
 sample({
   clock: flow.close,
-  target: [resetForm, voteConfirmModel.events.resetConfirm],
+  target: voteConfirmModel.events.resetConfirm,
 });
 
 sample({
@@ -228,11 +226,11 @@ sample({
     }
 
     return {
-      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
-        account: accounts.initiator,
+      signingPayloads: Object.values(confirms).map(({ meta }) => ({
+        account: meta.initiator,
         chain: meta.chain,
-        transaction: meta.wrappedTransactions.wrappedTx,
-        signatory: accounts.signer,
+        transaction: meta.tx,
+        signatory: meta.signatory,
       })),
     };
   },
@@ -252,11 +250,11 @@ sample({
       txPayloads: signParams.txPayloads,
 
       chain: meta.chain,
-      account: meta.account,
+      account: meta.initiator,
       signatory: meta.signatory,
-      wrappedTxs: [meta.wrappedTransactions.wrappedTx],
-      coreTxs: [meta.wrappedTransactions.coreTx],
-      multisigTxs: meta.wrappedTransactions.multisigTx ? [meta.wrappedTransactions.multisigTx] : [],
+      wrappedTxs: [meta.tx],
+      coreTxs: [meta.coreTx],
+      multisigTxs: meta.multisigTx ? [meta.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,
@@ -284,8 +282,8 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.submitFinished,
-  source: transaction.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && results[0]?.result === ExtrinsicResult.SUCCESS,
+  source: voteFormAggregate.$multisigTx,
+  filter: (multisigTx, results) => nonNullable(multisigTx) && results[0]?.result === ExtrinsicResult.SUCCESS,
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
@@ -300,12 +298,9 @@ sample({
 // Aggregate
 
 export const voteModalAggregate = {
-  ...voteFormAggregate.transactionForm,
-
   $lockPeriods: lockPeriodsModel.$lockPeriods,
   $lock: voteFormAggregate.$lockForAccount,
   $existingVote: voteFormAggregate.$existingVote,
-  $availableBalance: voteFormAggregate.$availableBalance,
   $canSubmit: voteFormAggregate.$canSubmit,
   $hasDelegatedTrack,
 

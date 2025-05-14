@@ -6,18 +6,17 @@ import { Trans } from 'react-i18next';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { formatAsset } from '@/shared/lib/utils';
+import { formatAsset, nonNullable } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
+import { balanceModel } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { locksPeriodsAggregate } from '@/features/governance';
+import { voteFormAggregate } from '../aggregates/voteForm';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { AboutVoting } from './AboutVoting';
-import { AccountsSelector } from './formFields/AccountsSelector';
 import { Amount } from './formFields/Amount';
 import { ConvictionSelect } from './formFields/ConvictionSelect';
 import { Signatories } from './formFields/Signatories';
@@ -33,15 +32,15 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const lock = useUnit(voteModalAggregate.$lock);
 
   const existingVote = useUnit(voteModalAggregate.$existingVote);
-  const fee = useUnit(voteModalAggregate.transaction.$fee);
+  const fee = useUnit(voteFormAggregate.$fee);
 
-  const availableBalance = useUnit(voteModalAggregate.$availableBalance);
-  const signatories = useUnit(voteModalAggregate.signatory.$available);
-  const accounts = useUnit(voteModalAggregate.accounts.$available);
-  const isMultisig = useUnit(voteModalAggregate.transaction.$isMultisig);
-  const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
+  const availableBalance = useUnit(voteFormAggregate.$availableBalance);
+  const signatories = useUnit(voteFormAggregate.$signatories);
+  // const accounts = useUnit(voteModalAggregate.accounts.$available);
+  const mutisigTx = useUnit(voteFormAggregate.$multisigTx);
+  const isFeeLoading = useUnit(voteFormAggregate.$pendingFee);
   const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const balances = useUnit(balanceModel.$balances);
 
   const lockPeriods = useStoreMap({
     store: voteModalAggregate.$lockPeriods,
@@ -53,8 +52,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const {
     submit,
-    fields: { account, signatory, conviction, amount, decision },
-  } = useForm(voteModalAggregate.form);
+    fields: { signatory, conviction, amount, decision },
+  } = useForm(voteFormAggregate.form);
 
   const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
 
@@ -86,22 +85,24 @@ export const VoteForm = ({ chain, asset }: Props) => {
           </Popover>
         </div>
         <div className="flex flex-col gap-4">
-          {accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet) && (
-            <AccountsSelector
-              value={account.value}
-              asset={asset}
-              chain={chain}
-              accounts={accounts}
-              hasError={account.hasError()}
-              errorText={t(account.errorText())}
-              onChange={account.onChange}
-            />
-          )}
-          {isMultisig && (
+          {/*TODO restore*/}
+          {/*{accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet) && (*/}
+          {/*  <AccountsSelector*/}
+          {/*    value={account.value}*/}
+          {/*    asset={asset}*/}
+          {/*    chain={chain}*/}
+          {/*    accounts={accounts}*/}
+          {/*    hasError={account.hasError()}*/}
+          {/*    errorText={t(account.errorText())}*/}
+          {/*    onChange={account.onChange}*/}
+          {/*  />*/}
+          {/*)}*/}
+          {nonNullable(mutisigTx) && (
             <Signatories
               value={signatory.value}
               asset={asset}
               chain={chain}
+              balances={balances}
               signatories={signatories}
               errorText={signatory.errorText()}
               hasError={signatory.hasError()}

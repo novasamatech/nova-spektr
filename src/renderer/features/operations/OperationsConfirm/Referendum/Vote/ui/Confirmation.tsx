@@ -11,7 +11,7 @@ import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
@@ -56,16 +56,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     );
   }
 
-  const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
+  const { asset, existingVote, tx, coreTx, api, initiator, chain } = confirm.meta;
 
-  if (
-    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) &&
-    !voteTransactionService.isRevoteTransaction(wrappedTransactions.coreTx)
-  ) {
+  if (!voteTransactionService.isVoteTransaction(coreTx) && !voteTransactionService.isRevoteTransaction(coreTx)) {
     return null;
   }
 
-  const vote = voteTransactionService.getVote(wrappedTransactions.coreTx);
+  const vote = voteTransactionService.getVote(coreTx);
 
   const decision = voteTransactionService.isStandardVote(vote) ? (vote.Standard.vote.aye ? 'aye' : 'nay') : 'abstain';
   const conviction = voteTransactionService.isStandardVote(vote) ? vote.Standard.vote.conviction : 'None';
@@ -76,8 +73,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
   const votingPower = votingService.calculateVotingPower(amount, conviction);
 
-  const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
+  const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
+
+  const proxiedAccount = confirm.meta.route.find(accountUtils.isProxiedAccount);
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
@@ -111,9 +110,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <TransactionDetails
         chain={confirm.meta.chain}
         wallets={wallets}
-        initiator={[confirm.accounts.initiator]}
-        signatory={confirm.accounts.signer}
-        proxied={confirm.accounts.proxied || undefined}
+        initiator={[confirm.meta.initiator]}
+        signatory={confirm.meta.signatory}
+        proxied={proxiedAccount}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
@@ -124,7 +123,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
-          <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />
+          <Fee api={api} asset={asset} transaction={tx} />
         </DetailRow>
       </TransactionDetails>
 
@@ -141,7 +140,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
+              type={confirm.wallets.signatory?.type}
               onClick={() => {
                 confirmModel.events.sign();
               }}
