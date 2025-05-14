@@ -75,7 +75,7 @@ const $shardsStructure = combine(
     if (!proceed || nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
 
     const chainsMap = shardsUtils.getChainsMap<AnyAccount>(chains);
-    return shardsUtils.getStructForVault(wallet.rootAccountId, accounts, chainsMap);
+    return shardsUtils.getStructForVault(wallet.rootAccountId, wallet.name, accounts, chainsMap);
   },
 );
 
