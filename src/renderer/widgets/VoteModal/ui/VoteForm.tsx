@@ -17,6 +17,7 @@ import { voteFormAggregate } from '../aggregates/voteForm';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { AboutVoting } from './AboutVoting';
+import { AccountsSelector } from './formFields/AccountsSelector';
 import { Amount } from './formFields/Amount';
 import { ConvictionSelect } from './formFields/ConvictionSelect';
 import { Signatories } from './formFields/Signatories';
@@ -36,7 +37,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const availableBalance = useUnit(voteFormAggregate.$availableBalance);
   const signatories = useUnit(voteFormAggregate.$signatories);
-  // const accounts = useUnit(voteModalAggregate.accounts.$available);
+  const initiators = useUnit(voteFormAggregate.$initiators);
   const mutisigTx = useUnit(voteFormAggregate.$multisigTx);
   const isFeeLoading = useUnit(voteFormAggregate.$pendingFee);
   const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
@@ -52,7 +53,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const {
     submit,
-    fields: { signatory, conviction, amount, decision },
+    fields: { initiator, signatory, conviction, amount, decision },
   } = useForm(voteFormAggregate.form);
 
   const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
@@ -85,18 +86,18 @@ export const VoteForm = ({ chain, asset }: Props) => {
           </Popover>
         </div>
         <div className="flex flex-col gap-4">
-          {/*TODO restore*/}
-          {/*{accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet) && (*/}
-          {/*  <AccountsSelector*/}
-          {/*    value={account.value}*/}
-          {/*    asset={asset}*/}
-          {/*    chain={chain}*/}
-          {/*    accounts={accounts}*/}
-          {/*    hasError={account.hasError()}*/}
-          {/*    errorText={t(account.errorText())}*/}
-          {/*    onChange={account.onChange}*/}
-          {/*  />*/}
-          {/*)}*/}
+          {initiators.length > 1 && (
+            <AccountsSelector
+              value={initiator.value}
+              asset={asset}
+              chain={chain}
+              accounts={initiators}
+              balances={balances}
+              hasError={initiator.hasError()}
+              errorText={t(initiator.errorText())}
+              onChange={initiator.onChange}
+            />
+          )}
           {nonNullable(mutisigTx) && (
             <Signatories
               value={signatory.value}

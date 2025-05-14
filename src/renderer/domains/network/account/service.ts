@@ -65,7 +65,7 @@ function isAccountAvailableOnChain(account: Pick<AnyAccount, 'type' | 'cryptoTyp
   return false;
 }
 
-function filterAccountOnChain(accounts: AnyAccount[], chain: Chain) {
+function filterAccountsOnChain(accounts: AnyAccount[], chain: Chain) {
   return accounts.filter(account => isAccountAvailableOnChain(account, chain));
 }
 
@@ -225,7 +225,7 @@ export const accountService = {
 
   hasPermissionToMakeActions,
 
-  filterAccountOnChain,
+  filterAccountsOnChain,
   filterAccountsByWallet,
 
   // graph

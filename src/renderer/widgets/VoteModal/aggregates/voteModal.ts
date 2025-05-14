@@ -38,7 +38,7 @@ const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.o
 const $hasDelegatedTrack = combine(
   {
     referendum: voteFormAggregate.$referendum,
-    initiator: voteFormAggregate.$initiator,
+    initiator: voteFormAggregate.form.fields.initiator.$value,
     network: networkSelectorModel.$network,
     tracks: delegationAggregate.$activeTracks,
   },
@@ -68,16 +68,16 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    account: voteFormAggregate.$initiator,
+    initiator: voteFormAggregate.form.fields.initiator.$value,
     coreTx: voteFormAggregate.$coreTx,
     txWrappers: voteFormAggregate.$txWrappers,
   },
   filter: nonNullableMap,
-  fn: ({ account, coreTx, txWrappers }) => {
-    if (!account || !coreTx) return [];
+  fn: ({ initiator, coreTx, txWrappers }) => {
+    if (!initiator || !coreTx) return [];
 
     const tx = {
-      initiatorAccountId: account.accountId,
+      initiatorAccountId: initiator.accountId,
       coreTx,
       txWrappers,
       createdAt: Date.now(),
@@ -165,7 +165,7 @@ sample({
 });
 
 sample({
-  clock: voteFormAggregate.$initiator,
+  clock: voteFormAggregate.form.fields.initiator.$value,
   source: {
     state: flow.state,
     network: networkSelectorModel.$network,
