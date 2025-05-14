@@ -844,7 +844,9 @@
         "electorate": "Electorate",
         "proposer": "Proposer",
         "supportCurve": "Support curve",
-        "turnout": "Turnout"
+        "turnout": "Turnout",
+        "beneficiary": "Beneficiary",
+        "requested": "Requested"
       },
       "title": "Advanced"
     },
@@ -925,7 +927,9 @@
       "votes_one": "{votes} vote",
       "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
-      "votingSummary": "Summary"
+      "votingSummary": "Summary",
+      "beneficiary": "Beneficiary:",
+      "requested": "Requested: {amount} {asset}"
     },
     "referendums": {
       "approveIn": "Approve in",

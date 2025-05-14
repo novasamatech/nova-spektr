@@ -1,9 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN } from '@polkadot/util';
+import { BN, u8aToHex } from '@polkadot/util';
 
-import { type Referendum, type TrackId, type TrackInfo, type VotingCurve } from '@/shared/core';
+import { type HexString, type Referendum, type TrackId, type TrackInfo, type VotingCurve } from '@/shared/core';
+import { type Proposal } from '@/shared/core/types/referendum';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import {
+  type FrameSupportPreimagesBounded,
   type ReferendaCurve,
   type ReferendaReferendumInfoConvictionVotingTally,
   type ReferendumId,
@@ -18,18 +21,69 @@ export const governanceService = {
   mapReferendum,
 };
 
-function mapReferendum(referendumId: string, info: ReferendaReferendumInfoConvictionVotingTally): Referendum {
+async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPromise): Promise<Proposal | null> {
+  let proposalHex: HexString | null = null;
+
+  if (proposal.type === 'Inline') {
+    proposalHex = proposal.data;
+  }
+
+  if (proposal.type === 'Lookup') {
+    const preimage = await api.query.preimage.preimageFor([proposal.data.hash_, proposal.data.len]);
+    if (preimage.isSome) {
+      proposalHex = u8aToHex(preimage.value);
+    }
+  }
+
+  if (nullable(proposalHex)) return null;
+
+  try {
+    const struct = api.registry.createType('Proposal', proposalHex);
+
+    if (struct.method === 'spendLocal' && struct.section === 'treasury') {
+      const amount = String(struct.args.at(0)?.toHuman()).replaceAll(',', '');
+      const beneficiary = struct.args.at(1)?.toJSON() as { id: string };
+
+      const parsedBeneficiary = toAccountId(beneficiary.id);
+
+      if (amount && parsedBeneficiary) {
+        return {
+          type: 'Spend',
+          amount: new BN(amount),
+          beneficiary: parsedBeneficiary,
+        };
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+
+  return null;
+}
+
+async function mapReferendum(
+  referendumId: string,
+  info: ReferendaReferendumInfoConvictionVotingTally,
+  api: ApiPromise,
+): Promise<Referendum> {
   switch (info.type) {
     case 'Ongoing':
       if (!('support' in info.data.tally)) {
         throw new Error('Tally is incorrect');
       }
 
+      // eslint-disable-next-line no-case-declarations
+      const proposal = await parseProposal(info.data.proposal, api);
+
+      if (proposal) {
+        console.log('eblo', { proposal, id: referendumId });
+      }
       return {
         referendumId,
         type: info.type,
         track: info.data.track.toString(),
-        proposal: info.data.proposal.data,
+        proposal,
         submitted: info.data.submitted,
         enactment: {
           value: info.data.enactment.data,
@@ -63,12 +117,13 @@ function mapReferendum(referendumId: string, info: ReferendaReferendumInfoConvic
 
 async function getReferendums(api: ApiPromise, ids?: ReferendumId[]): Promise<Referendum[]> {
   const referendums = await referendaPallet.storage.referendumInfoFor('governance', api, ids);
+
   const result: Referendum[] = [];
 
   for (const { id, info } of referendums) {
     if (!info) continue;
 
-    result.push(mapReferendum(id.toString(), info));
+    result.push(await mapReferendum(id.toString(), info, api));
   }
 
   return result;

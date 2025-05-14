@@ -142,7 +142,7 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
       const value: Referendum[] = [];
       for (const { id, info } of page) {
         if (!info) continue;
-        value.push(governanceService.mapReferendum(id.toString(), info));
+        value.push(await governanceService.mapReferendum(id.toString(), info, api));
       }
       callback({ done: false, value });
     }
