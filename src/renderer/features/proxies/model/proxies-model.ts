@@ -195,7 +195,7 @@ const findAllProxiesFx = attach({
       .filter(proxiesUtils.chainSupportProxy)
       .map((chain) => ({
         chain,
-        accounts: accountService.filterAccountOnChain(accounts, chain),
+        accounts: accountService.filterAccountsOnChain(accounts, chain),
       }));
   },
   effect: series(findProxiesFx, { parallel: true, skipErrors: true }),
