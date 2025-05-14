@@ -76,9 +76,6 @@ async function mapReferendum(
       // eslint-disable-next-line no-case-declarations
       const proposal = await parseProposal(info.data.proposal, api);
 
-      if (proposal) {
-        console.log('eblo', { proposal, id: referendumId });
-      }
       return {
         referendumId,
         type: info.type,
