@@ -25,7 +25,7 @@ describe('features/wallet/model/shards-model', () => {
     const accounts_1 = [(vaultAccounts[3] as VaultChainAccount).chainId, [vaultAccounts[3]]];
     const accounts_2 = [(vaultAccounts[2] as VaultChainAccount).chainId, [vaultAccounts[2]]];
 
-    const tuples = [[vaultWallet.rootAccountId, [accounts_1, accounts_2, shards]]];
+    const tuples = [[vaultWallet.rootAccountId, vaultWallet.name, [accounts_1, accounts_2, shards]]];
 
     expect(scope.getState(shardsModel.$shardsStructure)).toEqual(tuples);
   });
