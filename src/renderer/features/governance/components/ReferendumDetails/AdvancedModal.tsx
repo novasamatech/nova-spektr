@@ -1,4 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 import { isString } from 'lodash';
 
 import { type Asset, type OngoingReferendum } from '@/shared/core';
@@ -6,9 +7,12 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { copyToClipboard, formatAsset } from '@/shared/lib/utils';
 import { DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Account } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
+import { networkSelectorModel } from '../../model/networkSelector';
 import { type AggregatedReferendum } from '../../types/structs';
+
+import { ProposalDetails } from './ProposalDetails';
 
 type Props = {
   referendum: AggregatedReferendum<OngoingReferendum>;
@@ -17,18 +21,21 @@ type Props = {
 };
 
 export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
+  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
+
+  const chain = useUnit(networkSelectorModel.$governanceChain);
+
   const { t } = useI18n();
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
-  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
   const approvalCurve = approvalThreshold?.curve?.type;
   const supportCurve = supportThreshold?.curve?.type;
 
-  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset);
-  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset) : null;
+  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset, { M: false });
+  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset, { M: false }) : null;
 
   const turnoutValue = supportThreshold ? BN.max(BN_ZERO, supportThreshold.value.sub(tally.support)) : BN_ZERO;
-  const turnout = supportThreshold ? formatAsset(turnoutValue, asset) : null;
+  const turnout = supportThreshold ? formatAsset(turnoutValue, asset, { M: false }) : null;
 
   return (
     <Modal isOpen={isOpen} size="md" onToggle={closeModal}>
@@ -37,13 +44,16 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
         <div className="flex flex-col gap-4 pb-4 pe-3 ps-5">
           <DetailRow
             label={t('governance.advanced.fields.proposer')}
-            className="px-2 text-footnote text-text-secondary"
+            className="text-right text-footnote text-text-secondary"
           >
-            {submissionDeposit && <Address address={submissionDeposit.who} variant="short" canCopy={false} showIcon />}
+            {submissionDeposit && chain ? (
+              <Account accountId={submissionDeposit.who} chain={chain} variant="short" />
+            ) : null}
           </DetailRow>
 
           <DetailRow label={t('governance.advanced.fields.deposit')}>{deposit}</DetailRow>
 
+          {referendum.proposal ? <ProposalDetails proposal={referendum.proposal} /> : null}
           <Separator className="border-filter-border" />
 
           <div className="flex flex-col gap-2.5">
