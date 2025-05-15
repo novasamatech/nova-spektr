@@ -7,6 +7,7 @@ import { TrackInfo, referendumService } from '@/entities/governance';
 import { detailsAggregate } from '../../aggregates/details';
 
 import { ProposerName } from './ProposerName';
+import { Proposal } from './proposal/Proposal';
 
 type Props = {
   chainId: ChainId;
@@ -41,7 +42,7 @@ export const ProposalDescription = ({ chainId, addressPrefix, referendum }: Prop
         <HeaderTitleText className="text-balance">
           {!title && isTitlesLoading ? <Shimmering height="1em" /> : title}
         </HeaderTitleText>
-
+        {referendum.type === 'Ongoing' && referendum.proposal && <Proposal proposal={referendum.proposal} />}
         {isDescriptionLoading && (
           <div className="flex flex-col gap-3">
             <Shimmering height={18} />

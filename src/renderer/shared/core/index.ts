@@ -124,6 +124,8 @@ export type {
   CancelledReferendum,
   CompletedReferendum,
   Referendum,
+  Proposal,
+  SpendProposal,
 } from './types/referendum';
 
 export type {
