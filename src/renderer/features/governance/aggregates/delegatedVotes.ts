@@ -43,7 +43,7 @@ sample({
 
     for (const referendumId of Object.keys(result)) {
       for (const delegate of result[referendumId]) {
-        uniqDelegates.add(delegate.delegateId);
+        uniqDelegates.add(delegate.delegateAddress);
       }
     }
 
