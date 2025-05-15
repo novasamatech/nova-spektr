@@ -18,7 +18,7 @@ import { getDelegationsList } from '../lib/utils';
 import { delegateDetailsModel } from './delegate-details-model';
 
 type RequestParams = {
-  accountId: string;
+  address: string;
   chain: Chain;
 };
 
@@ -45,12 +45,12 @@ const $currentReferendums = listAggregate.$referendums.map((referendums) => {
   return listService.sortReferendumsByOngoing(referendums ?? []);
 });
 
-const getDelegatesFx = createEffect(({ accountId, chain }: RequestParams) => {
-  return delegationService.getDelegatesForAccount(chain, accountId);
+const getDelegatesFx = createEffect(({ address, chain }: RequestParams) => {
+  return delegationService.getDelegatesForAccount(chain, address);
 });
 
-const getReferendumsForVoterFx = createEffect(({ accountId, chain }: RequestParams) => {
-  return votingsService.getVotingsForVoter(chain, accountId);
+const getReferendumsForVoterFx = createEffect(({ address, chain }: RequestParams) => {
+  return votingsService.getVotingsForVoter(chain, address);
 });
 
 const getMonthBlockFx = createEffect((api: ApiPromise) => {
@@ -71,7 +71,7 @@ sample({
   },
   filter: ({ delegate, chain }) => nonNullable(delegate) && nonNullable(chain),
   fn: ({ delegate, chain }) => ({
-    accountId: delegate!.accountId,
+    address: delegate!.address,
     chain: chain!,
   }),
   target: [getDelegatesFx, getReferendumsForVoterFx],
@@ -84,7 +84,7 @@ sample({
   fn: (delegations, { params, result }) => {
     const delegationsList = getDelegationsList(result!.delegations);
 
-    return setNestedValue(delegations, params.chain.chainId, params.accountId, delegationsList);
+    return setNestedValue(delegations, params.chain.chainId, params.address, delegationsList);
   },
   target: $delegations,
 });
@@ -134,7 +134,7 @@ sample({
       });
     }
 
-    return setNestedValue(referendumsList, params.chain.chainId, params.accountId, referendums);
+    return setNestedValue(referendumsList, params.chain.chainId, params.address, referendums);
   },
   target: $referendumsList,
 });
@@ -150,7 +150,7 @@ const $currentDelegations = combine(
       return [];
     }
 
-    return delegations[chain.chainId]?.[delegate.accountId] ?? [];
+    return delegations[chain.chainId]?.[delegate.address] ?? [];
   },
 );
 
@@ -165,7 +165,7 @@ const $votedReferendums = combine(
       return [];
     }
 
-    return referendumsList[chain.chainId]?.[delegate.accountId] ?? [];
+    return referendumsList[chain.chainId]?.[delegate.address] ?? [];
   },
 );
 
