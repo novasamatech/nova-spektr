@@ -146,7 +146,6 @@ const $currentDelegations = combine(
     delegate: delegateDetailsModel.$delegate,
   },
   ({ delegations, chain, delegate }) => {
-    console.log(delegations, delegate);
     if (!nonNullable(chain) || !nonNullable(delegate)) {
       return [];
     }
