@@ -46,11 +46,11 @@ export const Checkbox = ({
       <CheckboxItem.Root
         checked={checkedState}
         className={cnTw(
-          'relative flex h-4 w-4 shrink-0',
+          'group relative flex h-4 w-4 shrink-0',
           'checkbox items-center justify-center rounded border border-filter-border bg-button-text',
           (checked || semiChecked) && 'border-0 border-icon-accent-default bg-primary-button-background-default',
           'hover:shadow-card-shadow aria-checked:hover:bg-primary-button-background-active',
-          'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:checked:bg-main-app-background',
+          'disabled:border disabled:border-filter-border disabled:bg-main-app-background disabled:aria-checked:bg-main-app-background',
           !disabled && 'hover:cursor-pointer',
           checkboxPosition === 'center' && 'self-center',
           checkboxPosition === 'top' && 'self-top mt-1',
@@ -63,6 +63,13 @@ export const Checkbox = ({
           {checked && <Icon name="checked" size={16} className={iconColor} />}
           {!checked && semiChecked && <Icon name="semiChecked" size={16} className={iconColor} />}
         </CheckboxItem.Indicator>
+        {!checked && !semiChecked && !disabled && (
+          <span
+            className={cnTw('absolute opacity-0 transition-opacity', 'group-hover:opacity-100', 'pointer-events-none')}
+          >
+            <Icon name="checked" size={16} className="text-filter-border" />
+          </span>
+        )}
       </CheckboxItem.Root>
       {children}
     </LabelText>
