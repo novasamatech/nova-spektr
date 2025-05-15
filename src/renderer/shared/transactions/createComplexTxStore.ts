@@ -3,7 +3,7 @@ import { type Store, combine, createEffect, createStore, sample } from 'effector
 import { spread } from 'patronum';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { nonNullableMap } from '@/shared/lib/utils';
+import { nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -81,6 +81,13 @@ export const createComplexTxStore = <T extends Transaction>({
     clock: wrapTransaction,
     filter: active,
     target: wrapTransactionFx,
+  });
+
+  sample({
+    clock: transaction,
+    filter: (t) => nullable(t),
+    fn: () => null,
+    target: $tx,
   });
 
   sample({
