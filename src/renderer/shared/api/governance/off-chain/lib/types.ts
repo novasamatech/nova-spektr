@@ -122,7 +122,7 @@ export interface DelegationApi {
   ) => Promise<Record<ReferendumId, DelegateInfo[]>>;
   getDelegatesFromExternalSource: (chain: Chain, blockNumber: number) => Promise<DelegateStat[]>;
   getDelegatesForAccount: (chain: Chain, accountId: string) => Promise<DelegationsByAccount | null>;
-  aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[]) => DelegateAccount[];
+  aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[], chain: Chain) => DelegateAccount[];
 
   calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;
 }

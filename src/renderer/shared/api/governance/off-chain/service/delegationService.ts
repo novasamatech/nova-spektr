@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
 import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
-import { dictionary, nullable, toPrecision } from '@/shared/lib/utils';
+import { dictionary, nullable, toAccountId, toAddress, toPrecision } from '@/shared/lib/utils';
 import {
   type DelegateAccount,
   type DelegateDetails,
@@ -54,7 +54,7 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
       return (
         (data as any)?.delegates?.nodes?.map(
           ({ accountId, delegators, delegatorVotes, delegateVotes, delegateVotesMonth }: any) => ({
-            accountId,
+            accountId: toAddress(toAccountId(accountId), { prefix: chain.addressPrefix }), // Address
             delegators,
             delegatorVotes,
             delegateVotes: delegateVotes.totalCount,
@@ -81,7 +81,7 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
         if (nullable(parent.delegateId)) continue;
 
         const info: DelegateInfo = {
-          delegator,
+          delegator: toAddress(toAccountId(delegator), { prefix: chain.addressPrefix }),
           delegateId: parent.delegateId,
           decision: parent.standardVote.aye ? 'aye' : 'nay',
           amount: new BN(vote.amount),
@@ -100,11 +100,19 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
     .catch(() => ({}));
 }
 
-function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateStat[]): DelegateAccount[] {
+function aggregateDelegateAccounts(
+  accounts: DelegateDetails[],
+  stats: DelegateStat[],
+  chain: Chain,
+): DelegateAccount[] {
   const accountsMap = dictionary(stats, 'accountId');
 
   for (const account of accounts) {
-    accountsMap[account.address] = { ...accountsMap[account.address], ...account };
+    const address = toAddress(toAccountId(account.address), {
+      prefix: chain.addressPrefix,
+    });
+
+    accountsMap[address] = { ...accountsMap[address], ...account };
   }
 
   return Object.values(accountsMap);
@@ -122,7 +130,7 @@ async function getDelegatesForAccount(chain: Chain, accountId: string): Promise<
       const result = (data as any)?.delegates?.nodes?.[0];
 
       return {
-        accountId: result.accountId,
+        accountId: toAddress(toAccountId(result.accountId), { prefix: chain.addressPrefix }),
         delegations: result.delegations.nodes.map((x: Delegation) => x),
       };
     })

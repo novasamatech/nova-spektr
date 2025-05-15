@@ -26,7 +26,7 @@ const requestDelegateRegistryFx = createEffect(
     const delegates = await delegationService.getDelegatesFromRegistry(chain);
     const stats = await delegationService.getDelegatesFromExternalSource(chain, blockNumber);
 
-    return delegationService.aggregateDelegateAccounts(delegates, stats);
+    return delegationService.aggregateDelegateAccounts(delegates, stats, chain);
   },
 );
 
