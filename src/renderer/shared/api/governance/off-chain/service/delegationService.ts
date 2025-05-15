@@ -54,7 +54,7 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
       return (
         (data as any)?.delegates?.nodes?.map(
           ({ accountId, delegators, delegatorVotes, delegateVotes, delegateVotesMonth }: any) => ({
-            accountId: toAddress(toAccountId(accountId), { prefix: chain.addressPrefix }), // Address
+            address: toAddress(toAccountId(accountId), { prefix: chain.addressPrefix }),
             delegators,
             delegatorVotes,
             delegateVotes: delegateVotes.totalCount,
@@ -82,7 +82,7 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
 
         const info: DelegateInfo = {
           delegator: toAddress(toAccountId(delegator), { prefix: chain.addressPrefix }),
-          delegateId: parent.delegateId,
+          delegateAddress: parent.delegateId,
           decision: parent.standardVote.aye ? 'aye' : 'nay',
           amount: new BN(vote.amount),
           conviction: vote.conviction,
@@ -105,7 +105,7 @@ function aggregateDelegateAccounts(
   stats: DelegateStat[],
   chain: Chain,
 ): DelegateAccount[] {
-  const accountsMap = dictionary(stats, 'accountId');
+  const accountsMap = dictionary(stats, 'address');
 
   for (const account of accounts) {
     const address = toAddress(toAccountId(account.address), {
@@ -118,19 +118,19 @@ function aggregateDelegateAccounts(
   return Object.values(accountsMap);
 }
 
-async function getDelegatesForAccount(chain: Chain, accountId: string): Promise<DelegationsByAccount | null> {
+async function getDelegatesForAccount(chain: Chain, address: string): Promise<DelegationsByAccount | null> {
   const client = getGraphQLClient(chain);
   if (!client) {
     return null;
   }
 
   return client
-    .request(GET_DELEGATES_FOR_ACCOUNT, { accountId })
+    .request(GET_DELEGATES_FOR_ACCOUNT, { address })
     .then((data) => {
       const result = (data as any)?.delegates?.nodes?.[0];
 
       return {
-        accountId: toAddress(toAccountId(result.accountId), { prefix: chain.addressPrefix }),
+        address: toAddress(toAccountId(result.accountId), { prefix: chain.addressPrefix }),
         delegations: result.delegations.nodes.map((x: Delegation) => x),
       };
     })

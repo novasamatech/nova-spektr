@@ -63,7 +63,7 @@ const $availableAccounts = combine(
       )
       .filter(
         (account) =>
-          !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
+          !delegations[delegate.address]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
       );
   },
 );

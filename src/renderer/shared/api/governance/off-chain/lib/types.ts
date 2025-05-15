@@ -82,8 +82,7 @@ export type DelegateDetails = {
 };
 
 export type DelegateStat = {
-  // Address actually
-  accountId: Address;
+  address: Address;
   delegators: number;
   delegatorVotes: string;
   delegateVotes: number;
@@ -100,7 +99,7 @@ export type Delegation = {
 };
 
 export type DelegationsByAccount = {
-  accountId: Address;
+  address: Address;
   delegations: Delegation[];
 };
 
@@ -108,7 +107,7 @@ export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
 
 export type DelegateInfo = {
   delegator: Address;
-  delegateId: Address;
+  delegateAddress: Address;
   decision: 'aye' | 'nay';
   amount: BN;
   conviction: Conviction;
@@ -121,7 +120,7 @@ export interface DelegationApi {
     voter: Address[],
   ) => Promise<Record<ReferendumId, DelegateInfo[]>>;
   getDelegatesFromExternalSource: (chain: Chain, blockNumber: number) => Promise<DelegateStat[]>;
-  getDelegatesForAccount: (chain: Chain, accountId: string) => Promise<DelegationsByAccount | null>;
+  getDelegatesForAccount: (chain: Chain, address: string) => Promise<DelegationsByAccount | null>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[], chain: Chain) => DelegateAccount[];
 
   calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;

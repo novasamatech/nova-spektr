@@ -23,10 +23,10 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
   if (delegates.length === 1) {
     const delegate = delegates[0];
 
-    const delegateName = nonNullable(identity[delegate.delegateId]) ? (
-      <span className="truncate">{identity[delegate.delegateId].parent.name}</span>
+    const delegateName = nonNullable(identity[delegate.delegateAddress]) ? (
+      <span className="truncate">{identity[delegate.delegateAddress].parent.name}</span>
     ) : (
-      <AccountAddress showIcon={false} variant="short" address={delegate.delegateId} />
+      <AccountAddress showIcon={false} variant="short" address={delegate.delegateAddress} />
     );
 
     const amount = <AssetBalance className="text-icon-alert" value={delegate.amount} asset={asset} />;
