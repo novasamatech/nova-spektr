@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import mapValues from 'lodash/mapValues';
-import { combineEvents, once, previous, spread } from 'patronum';
+import { once, previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
@@ -134,10 +134,17 @@ sample({
   target: $subscriptions,
 });
 
+const $walletAndChains = combine({
+  wallet: walletSelect.$selectedWallet,
+  chains: networkModel.$chains,
+});
+
 sample({
-  clock: once(combineEvents([walletSelect.$selectedWallet.updates, networkModel.$chains.updates])),
-  filter: ([wallet]) => Boolean(wallet),
-  fn: ([wallet, chains]) => ({
+  clock: once($walletAndChains.map(({ wallet, chains }) =>
+    nonNullable(wallet) && Object.keys(chains).length > 0
+  )),
+  source: $walletAndChains,
+  fn: ({wallet, chains}) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
     walletToSub: wallet!,
   }),
@@ -201,7 +208,7 @@ sample({
 sample({
   clock: [walletToUnsubSet, $previousWallet],
   source: $subAccounts,
-  filter: (_, wallet) => Boolean(wallet),
+  filter: (_, wallet) => nonNullable(wallet),
   fn: (subAccounts, wallet) => {
     return Object.entries(subAccounts).reduce<SubAccounts>((acc, [chainId, walletMap]) => {
       const { [wallet!.id]: _, ...rest } = walletMap;
@@ -216,7 +223,7 @@ sample({
 sample({
   clock: [walletToUnsubSet, $previousWallet],
   source: $subscriptions,
-  filter: (_, wallet) => Boolean(wallet),
+  filter: (_, wallet) => nonNullable(wallet),
   fn: (subscriptions, wallet) => ({ walletId: wallet!.id, subscriptions }),
   target: unsubscribeWalletFx,
 });
@@ -228,7 +235,7 @@ sample({
     chains: networkModel.$chains,
     acccounts: accounts.$list,
   },
-  filter: (wallet) => nonNullable(wallet),
+  filter: (_, wallet) => nonNullable(wallet),
   fn: ({ subAccounts, acccounts, chains }, wallet) => {
     const selectedAccounts = accountService.filterAccountsByWallet(acccounts, wallet!.id);
     const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
@@ -247,7 +254,7 @@ sample({
     subAccounts: $subAccounts,
   },
   filter: ({ statuses }, wallet) => {
-    return Boolean(wallet) && Object.values(statuses).some(networkUtils.isConnectedStatus);
+    return nonNullable(wallet) && Object.values(statuses).some(networkUtils.isConnectedStatus);
   },
   fn: ({ subAccounts, statuses, ...params }, wallet) => {
     const { apis, chains } = Object.entries(statuses).reduce(
@@ -275,7 +282,7 @@ sample({
     const isDisabled = networkUtils.isDisconnectedStatus(status);
     const isError = networkUtils.isErrorStatus(status);
 
-    return (isDisabled || isError) && Boolean(subscriptions[chainId]);
+    return (isDisabled || isError) && nonNullable(subscriptions[chainId]);
   },
   fn: (subscriptions, { chainId }) => ({ chainId, subscriptions }),
   target: unsubscribeChainFx,
