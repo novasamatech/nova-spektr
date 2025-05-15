@@ -173,7 +173,7 @@ sample({
 
 // TODO this connection is dirty, we should decouple wallet delete logic and proxy manipulation.
 sample({
-  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
+  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess], //
   target: proxiesModel.findAllProxies,
 });
 
