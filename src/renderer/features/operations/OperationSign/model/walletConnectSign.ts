@@ -3,7 +3,8 @@ import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { combineEvents } from 'patronum';
+import { nanoid } from 'nanoid';
+import { combineEvents, spread } from 'patronum';
 
 import { type ChainId, type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
@@ -20,10 +21,20 @@ type SignResponse = {
 };
 
 const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloads: [] } });
+const $step = createStore<Step>('idle');
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
+
 const $transactions = createStore<ReturnType<typeof transactionService.createPayloadWithMetadata>[]>([]);
-const $step = createStore<Step>('idle');
+
+/**
+ * Uniq id for current request. If user cancel signing and try to sign again -
+ * previous signing request will be skipped.
+ */
+const $pending = createStore<string | null>(null);
+/**
+ * Array of signatures. Used in react part for correct flow finish.
+ */
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
 const gotFirstPayload = $signingPayloads.updates.map((payloads) => payloads.at(0)).filter({ fn: nonNullable });
@@ -58,13 +69,14 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
 const getSessionFx = attach({ effect: walletConnect.restoreSession });
 
 type SignParams = {
+  id: string;
   session: SessionTypes.Struct;
   payload: SignerPayloadJSON;
 };
 
 const signFx = attach({
   source: walletConnect.$client,
-  async effect(client, { payload, session }: SignParams) {
+  async effect(client, { payload, session, id }: SignParams) {
     assert(client, 'Wallet Connect client not found.');
 
     const response = await walletConnect.request({
@@ -80,7 +92,10 @@ const signFx = attach({
       },
     });
 
-    return response as SignResponse;
+    return {
+      ...(response as SignResponse),
+      id,
+    };
   },
 });
 
@@ -112,14 +127,20 @@ sample({
   target: $step,
 });
 
+// Signing
+
 sample({
-  clock: signAllFx.fail,
+  clock: signFx.fail,
+  source: $pending,
+  filter: (id, { params }) => params.id === id,
   fn: () => 'failed' as const,
   target: $step,
 });
 
 sample({
-  clock: signAllFx.done,
+  clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
   fn: () => 'success' as const,
   target: $step,
 });
@@ -169,18 +190,47 @@ sample({
   fn(client, { transactions, session }) {
     assert(client, 'WC client not found');
 
-    return transactions.map<SignParams>(({ unsigned }) => ({
-      client,
-      session,
-      payload: unsigned,
-    }));
+    const id = nanoid();
+
+    return {
+      id,
+      transactions: transactions.map<SignParams>(({ unsigned }) => ({
+        id,
+        client,
+        session,
+        payload: unsigned,
+      })),
+    };
   },
-  target: signAllFx,
+  target: spread({
+    id: $pending,
+    transactions: signAllFx,
+  }),
 });
 
 sample({
   clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
+  fn: (_, response) => response,
   target: $signed,
+});
+
+// Pending management
+
+sample({
+  clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
+  fn: () => null,
+  target: $pending,
+});
+
+sample({
+  clock: $step,
+  filter: (step) => step === 'idle',
+  fn: () => null,
+  target: $pending,
 });
 
 export const walletConnectSign = {

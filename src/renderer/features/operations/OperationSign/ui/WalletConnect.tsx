@@ -138,7 +138,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         )}
       </div>
 
-      <div className="mt-5 flex w-full justify-between">
+      <div className="flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
