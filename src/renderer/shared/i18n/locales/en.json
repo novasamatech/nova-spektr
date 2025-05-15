@@ -1353,7 +1353,7 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle_one": "Scan with { walletName }",
+      "signTitle_one": "Confirm with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
