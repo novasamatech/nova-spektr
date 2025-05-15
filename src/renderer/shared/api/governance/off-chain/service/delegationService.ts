@@ -125,7 +125,7 @@ async function getDelegatesForAccount(chain: Chain, address: string): Promise<De
   }
 
   return client
-    .request(GET_DELEGATES_FOR_ACCOUNT, { address })
+    .request(GET_DELEGATES_FOR_ACCOUNT, { accountId: address }) // Address is expected
     .then((data) => {
       const result = (data as any)?.delegates?.nodes?.[0];
 
