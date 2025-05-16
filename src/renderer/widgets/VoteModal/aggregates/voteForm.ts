@@ -1,5 +1,5 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { and, empty, not, reset } from 'patronum';
 
@@ -18,7 +18,7 @@ import { locksService, voteTransactionService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type AggregatedReferendum, networkSelectorModel } from '@/features/governance';
+import { type AggregatedReferendum, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
@@ -38,10 +38,12 @@ type FormInput = {
   transaction: Transaction;
 };
 
+const setReferendum = createEvent<AggregatedReferendum<OngoingReferendum> | null>();
+
 const $type = createStore<'vote' | 'revote' | null>(null);
 const $voters = createStore<Address[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
-const $referendum = createStore<AggregatedReferendum<OngoingReferendum> | null>(null);
+const $referendum = restore(setReferendum, null);
 const $availableBalance = createStore(BN_ZERO);
 const $lockForAccount = createStore(BN_ZERO);
 
@@ -116,7 +118,7 @@ sample({
 const $initiatorWallet = combine(walletModel.$wallets, form.fields.initiator.$value, (wallets, initiator) => {
   if (nullable(initiator)) return null;
 
-  return wallets.find((w) => initiator.walletId === w.id);
+  return wallets.find((w) => initiator.walletId === w.id) ?? null;
 });
 
 // signatories
@@ -126,6 +128,34 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
+
+// delegated
+
+const $hasDelegatedTrack = combine(
+  {
+    referendum: $referendum,
+    initiator: form.fields.initiator.$value,
+    network: networkSelectorModel.$network,
+    tracks: delegationAggregate.$activeTracks,
+  },
+  ({ referendum, initiator, network, tracks }) => {
+    if (nullable(initiator) || nullable(referendum) || nullable(network)) {
+      return false;
+    }
+
+    const accountAddress = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
+
+    for (const delegators of Object.values(tracks)) {
+      for (const [address, tracks] of Object.entries(delegators)) {
+        if (address === accountAddress && tracks.includes(referendum.track)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  },
+);
 
 sample({
   clock: form.reset,
@@ -148,6 +178,7 @@ const $coreTx = combine(
     decision: form.fields.decision.$value,
   },
   ({ chain, referendum, initiator, amount, conviction, decision, existingVote }) => {
+    console.log({ chain, referendum, initiator, amount, conviction, decision, existingVote });
     if (nullable(referendum) || nullable(chain) || nullable(initiator)) {
       return null;
     }
@@ -329,13 +360,13 @@ export const voteFormAggregate = {
   $existingVote,
   $lockForAccount,
   $availableBalance,
+  $hasDelegatedTrack,
 
   $fee,
   $pendingFee,
 
   $canSubmit,
 
-  events: {
-    formSubmitted,
-  },
+  setReferendum,
+  formSubmitted,
 };

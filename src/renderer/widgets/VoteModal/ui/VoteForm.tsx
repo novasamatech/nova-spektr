@@ -40,7 +40,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const initiators = useUnit(voteFormAggregate.$initiators);
   const mutisigTx = useUnit(voteFormAggregate.$multisigTx);
   const isFeeLoading = useUnit(voteFormAggregate.$pendingFee);
-  const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
+  const hasDelegatedTrack = useUnit(voteFormAggregate.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balances);
 
   const lockPeriods = useStoreMap({

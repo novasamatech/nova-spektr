@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
@@ -10,7 +10,6 @@ import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import {
   type AggregatedReferendum,
-  delegationAggregate,
   lockPeriodsModel,
   locksModel,
   networkSelectorModel,
@@ -34,32 +33,6 @@ const flow = createGate<{
 });
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
-
-const $hasDelegatedTrack = combine(
-  {
-    referendum: voteFormAggregate.$referendum,
-    initiator: voteFormAggregate.form.fields.initiator.$value,
-    network: networkSelectorModel.$network,
-    tracks: delegationAggregate.$activeTracks,
-  },
-  ({ referendum, initiator, network, tracks }) => {
-    if (nullable(initiator) || nullable(referendum) || nullable(network)) {
-      return false;
-    }
-
-    const initiatorAddress = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
-
-    for (const delegators of Object.values(tracks)) {
-      for (const [address, tracks] of Object.entries(delegators)) {
-        if (address === initiatorAddress && tracks.includes(referendum.track)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  },
-);
 
 // Transaction save
 
@@ -106,7 +79,7 @@ sample({
 });
 
 sample({
-  clock: voteFormAggregate.events.formSubmitted,
+  clock: voteFormAggregate.formSubmitted,
   fn: () => Step.CONFIRM,
   target: setStep,
 });
@@ -154,13 +127,13 @@ sample({
   },
   target: spread({
     type: voteFormAggregate.$type,
-    referendum: voteFormAggregate.$referendum,
+    referendum: voteFormAggregate.setReferendum,
     voters: voteFormAggregate.$voters,
   }),
 });
 
 sample({
-  clock: flow.open,
+  clock: flow.close,
   target: voteFormAggregate.form.reset,
 });
 
@@ -302,7 +275,6 @@ export const voteModalAggregate = {
   $lock: voteFormAggregate.$lockForAccount,
   $existingVote: voteFormAggregate.$existingVote,
   $canSubmit: voteFormAggregate.$canSubmit,
-  $hasDelegatedTrack,
 
   $step,
 

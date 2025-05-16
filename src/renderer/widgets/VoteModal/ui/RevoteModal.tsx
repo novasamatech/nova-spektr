@@ -11,6 +11,7 @@ import { OperationResult } from '@/entities/transaction';
 import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
+import { voteFormAggregate } from '../aggregates/voteForm';
 import { voteModalAggregate } from '../aggregates/voteModal';
 
 import { VoteForm } from './VoteForm';
@@ -28,7 +29,7 @@ export const RevoteModal = ({ referendum, asset, chain, onClose }: Props) => {
   useGate(voteModalAggregate.gates.flow, { type: 'revote', referendum });
 
   const step = useUnit(voteModalAggregate.$step);
-  const initiatorWallet = useUnit(voteModalAggregate.accounts.$initiatorWallet);
+  const initiatorWallet = useUnit(voteFormAggregate.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);

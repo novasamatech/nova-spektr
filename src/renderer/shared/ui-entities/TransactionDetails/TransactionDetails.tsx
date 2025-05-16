@@ -3,11 +3,10 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
 import { Box } from '@/shared/ui-kit';
-// TODO what should we do with domain imports in ui-entities? Is it an exception from rules?
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 import { AccountsModal } from '@/entities/staking';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
@@ -53,6 +52,12 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
     return null;
   }
 
+  const shouldRenderProxied = nonNullable(proxiedWallet) && nonNullable(proxied);
+  const shouldRenderSignatory =
+    nonNullable(signatoryWallet) &&
+    nonNullable(signatory) &&
+    (initiator.length !== 1 || initiator.every(i => i !== signatory));
+
   return (
     <dl className="flex w-full flex-col gap-y-4 text-footnote">
       {!proxiedWallet && (
@@ -87,7 +92,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
         </>
       )}
 
-      {proxiedWallet && proxied && (
+      {shouldRenderProxied && (
         <>
           <DetailRow label={t('transfer.senderProxiedWallet')}>
             <Box direction="row" gap={2}>
@@ -126,7 +131,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
         </>
       )}
 
-      {signatoryWallet && signatory && (
+      {shouldRenderSignatory && (
         <DetailRow label={t('proxy.details.signatory')}>
           <Box direction="row" gap={2}>
             <WalletIcon type={signatoryWallet.type} size={16} />
@@ -136,7 +141,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
         </DetailRow>
       )}
 
-      {children ? <Separator className="border-filter-border" /> : null}
+      {nonNullable(children) ? <Separator className="border-filter-border" /> : null}
 
       {children}
 
