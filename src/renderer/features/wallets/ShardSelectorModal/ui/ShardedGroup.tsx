@@ -48,17 +48,18 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
   return (
     <Accordion initialOpen>
       <Accordion.Trigger>
-        <div onClick={(e) => e.stopPropagation()}>
-          <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={toggleSharded} />
+        <div className="w-full" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={toggleSharded}>
+            <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+              <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
+            </div>
+            <FootnoteText
+              className={cnTw('normal-case', isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+            >
+              {account.name}
+            </FootnoteText>
+          </Checkbox>
         </div>
-        <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
-          <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
-        </div>
-        <FootnoteText
-          className={cnTw('normal-case', isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
-        >
-          {account.name}
-        </FootnoteText>
       </Accordion.Trigger>
       <Accordion.Content>
         {accounts.map((shard) => (
