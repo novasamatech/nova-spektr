@@ -116,7 +116,7 @@ describe('features/wallets/ForgetModel', () => {
       ],
       handlers: [
         [accounts.deleteAccounts, spyDeleteAccounts],
-        [walletModel.__test.removeWalletFx, spyDeleteWallet],
+        [walletModel.__test.removeWalletsFx, spyDeleteWallet],
         [balanceModel.__test.removeBalancesFx, () => {}],
       ],
     });
@@ -124,7 +124,7 @@ describe('features/wallets/ForgetModel', () => {
     await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
-    expect(spyDeleteWallet).toHaveBeenCalledWith(wallet);
+    expect(spyDeleteWallet).toHaveBeenCalledWith([wallet]);
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {
