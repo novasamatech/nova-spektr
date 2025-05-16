@@ -346,7 +346,14 @@ module.exports = {
               },
               {
                 from: 'shared',
-                allow: ['app', 'shared', 'domains', 'entities'],
+                allow: ['app', 'shared', 'entities'],
+              },
+              {
+                from: [
+                  ['shared', { package: 'ui-entities' }],
+                  ['shared', { package: 'transactions' }],
+                ],
+                allow: ['domains'],
               },
               {
                 from: 'sdk',
