@@ -61,7 +61,7 @@ const $tokens = combine(
 
     for (const token of defaultTokens) {
       const filteredChains = token.chains.filter((chain) => {
-        return accountService.filterAccountOnChain(accounts, chains[chain.chainId]);
+        return accountService.filterAccountsOnChain(accounts, chains[chain.chainId]);
       });
 
       if (filteredChains.length === 0) continue;

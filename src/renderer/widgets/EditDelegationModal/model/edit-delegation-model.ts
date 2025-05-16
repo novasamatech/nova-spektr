@@ -542,7 +542,9 @@ sample({
     return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
   },
   fn: ({ walletData, coreTxs, txWrappers }) => {
-    const accounts = walletData.chain ? accountService.filterAccountOnChain(walletData.accounts, walletData.chain) : [];
+    const accounts = walletData.chain
+      ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
+      : [];
     const account = accounts.at(0);
     if (!account) throw new Error('Account not found');
 

@@ -34,7 +34,7 @@ export const SignerSelection = () => {
           {ownedSignatoriesWallets.map(wallet => {
             if (!chain) return null;
 
-            const accounts = accountService.filterAccountOnChain(wallet.accounts, chain);
+            const accounts = accountService.filterAccountsOnChain(wallet.accounts, chain);
             const account = accounts.at(0);
 
             if (!account) return null;
