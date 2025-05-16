@@ -49,21 +49,24 @@ export const ShardsStructure = () => {
                 <li key={chainId} className="mt-2">
                   <Accordion initialOpen>
                     <Accordion.Trigger>
-                      <div onClick={(e) => e.stopPropagation()}>
+                      <div className="w-full" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isChecked}
                           semiChecked={isSemiChecked}
                           onChange={(checked) => toggleChain(rootAccountId, chainId, checked)}
-                        />
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChainTitle
+                              chain={chains[chainId]}
+                              fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+                            />
+                            <HelpText className="text-text-tertiary">
+                              {selectedStructure[rootAccountId][chainId].checked} /{' '}
+                              {selectedStructure[rootAccountId][chainId].total}
+                            </HelpText>
+                          </div>
+                        </Checkbox>
                       </div>
-                      <ChainTitle
-                        chain={chains[chainId]}
-                        fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
-                      />
-                      <HelpText className="text-text-tertiary">
-                        {selectedStructure[rootAccountId][chainId].checked} /{' '}
-                        {selectedStructure[rootAccountId][chainId].total}
-                      </HelpText>
                     </Accordion.Trigger>
                     <Accordion.Content>
                       <div className="ml-6">
