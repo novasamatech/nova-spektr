@@ -42,7 +42,7 @@ const { tick } = interval({
 sample({
   source: $apis,
   filter: apis => Object.keys(apis).length > 0,
-  target: startBlockListening,
+  target: [stopBlockListening, startBlockListening],
 });
 
 // On each tick, use series to trigger requests for all APIs
