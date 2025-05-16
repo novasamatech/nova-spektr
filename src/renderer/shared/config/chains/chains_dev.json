@@ -7213,6 +7213,7 @@
     "options": [
       "testnet",
       "multisig",
+      "governance",
       "regular_proxy",
       "pure_proxy"
     ],
@@ -7274,6 +7275,12 @@
         {
           "type": "subquery",
           "url": "https://subquery-history-westend-prod.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-polkadot-prod.novasama-tech.org"
         }
       ]
     }
