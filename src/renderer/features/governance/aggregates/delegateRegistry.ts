@@ -26,7 +26,7 @@ const requestDelegateRegistryFx = createEffect(
     const delegates = await delegationService.getDelegatesFromRegistry(chain);
     const stats = await delegationService.getDelegatesFromExternalSource(chain, blockNumber);
 
-    return delegationService.aggregateDelegateAccounts(delegates, stats);
+    return delegationService.aggregateDelegateAccounts(delegates, stats, chain);
   },
 );
 
@@ -48,7 +48,7 @@ sample({
   fn: (delegates, { delegate, votes }) => {
     const newDelegates = [...delegates];
 
-    const index = newDelegates.findIndex((d) => d.accountId === delegate.accountId);
+    const index = newDelegates.findIndex((d) => d.address === delegate.address);
 
     if (index === -1) {
       newDelegates.push({ ...delegate, delegatorVotes: votes.toString(), delegators: 1 });
@@ -78,7 +78,7 @@ sample({
     for (const delegate of delegates) {
       if (nonNullable(delegate.name)) continue;
 
-      const accountId = toAccountId(delegate.address ?? delegate.accountId);
+      const accountId = toAccountId(delegate.address);
       if (nonNullable(identity[chain!.chainId]?.[accountId])) continue;
 
       accounts.add(accountId);

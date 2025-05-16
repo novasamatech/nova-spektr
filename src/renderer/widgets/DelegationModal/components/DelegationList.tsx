@@ -78,7 +78,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
           <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto pt-0.5">
             <ul className="flex w-[400px] flex-col gap-y-2">
               {delegationList.map((delegate) => {
-                const accountId = toAccountId(delegate.address ?? delegate.accountId);
+                const accountId = toAccountId(delegate.address);
 
                 return (
                   <li key={accountId}>

@@ -80,7 +80,7 @@ const requestVoteHistoryFx = createEffect(({ chain, referendum }: RequestVoteHis
           voter: toAddress(toAccountId(voting.voter), { prefix: chain.addressPrefix }),
           vote: accountVote,
           delegatorVotes: voting.delegatorVotes.nodes.map((delegatorVote) => ({
-            delegator: delegatorVote.delegator,
+            delegator: toAddress(toAccountId(delegatorVote.delegator), { prefix: chain.addressPrefix }),
             amount: new BN(delegatorVote.vote.amount),
             conviction: delegatorVote.vote.conviction,
           })),

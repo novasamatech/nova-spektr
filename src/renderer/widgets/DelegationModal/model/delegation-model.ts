@@ -38,7 +38,7 @@ const $delegateList = combine(
   },
   ({ activeWallet, delegationsList, query, sortType }) => {
     const accounts = activeWallet?.accounts.map((a) => a.accountId) || [];
-    const list = delegationsList.filter((d) => !accounts.includes(toAccountId(d.accountId)));
+    const list = delegationsList.filter((d) => !accounts.includes(toAccountId(d.address)));
 
     if (!sortType && !query) {
       const grouped = groupBy(list, (delegate) => !!delegate.name);
@@ -50,7 +50,7 @@ const $delegateList = combine(
     }
 
     const searched = list.filter((delegate) =>
-      includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
+      includesMultiple([delegate.address, delegate.address, delegate.name, delegate.shortDescription], query),
     );
 
     const sortProp = SortProp[sortType || SortType.DELEGATIONS];
@@ -122,7 +122,7 @@ sample({
   source: $customDelegate,
   fn: (delegate) =>
     ({
-      accountId: delegate,
+      address: delegate,
       delegators: 0,
       delegatorVotes: '0',
       delegateVotes: 0,

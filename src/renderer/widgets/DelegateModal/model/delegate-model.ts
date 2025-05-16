@@ -182,7 +182,7 @@ sample({
         accountId: shard.accountId,
         balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
         conviction: delegateData!.conviction || 'None',
-        target: target?.accountId || '',
+        target: target?.address || '',
         tracks,
       });
     });
@@ -314,7 +314,7 @@ sample({
           chain: walletData.chain!,
           asset: asset!,
           tracks,
-          target: target?.accountId || '',
+          target: target?.address || '',
           transferable: transferableAmount(
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
