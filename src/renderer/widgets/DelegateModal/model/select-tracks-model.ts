@@ -191,6 +191,14 @@ sample({
 });
 
 sample({
+clock: formInitiated,
+source: $availableAccounts,
+filter: (accounts) => accounts.length > 0,
+fn: (accounts) => [accounts.at(0)!],
+target: $accounts,
+});
+
+sample({
   clock: accountsChanged,
   target: $accounts,
 });
