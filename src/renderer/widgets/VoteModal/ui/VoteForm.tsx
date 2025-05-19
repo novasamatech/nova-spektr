@@ -1,9 +1,9 @@
 import { BN_ZERO } from '@polkadot/util';
-import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset, nonNullable } from '@/shared/lib/utils';
@@ -13,8 +13,8 @@ import { Popover, Skeleton } from '@/shared/ui-kit';
 import { balanceModel } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
 import { locksPeriodsAggregate } from '@/features/governance';
-import { voteFormAggregate } from '../aggregates/voteForm';
-import { voteModalAggregate } from '../aggregates/voteModal';
+import { voteForm } from '../model/voteForm';
+import { voteModal } from '../model/voteModal';
 
 import { AboutVoting } from './AboutVoting';
 import { AccountsSelector } from './formFields/AccountsSelector';
@@ -30,21 +30,21 @@ type Props = {
 export const VoteForm = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
-  const lock = useUnit(voteModalAggregate.$lock);
+  const lock = useUnit(voteModal.$lock);
 
-  const existingVote = useUnit(voteModalAggregate.$existingVote);
-  const fee = useUnit(voteFormAggregate.$fee);
+  const existingVote = useUnit(voteModal.$existingVote);
+  const fee = useUnit(voteForm.$fee);
 
-  const availableBalance = useUnit(voteFormAggregate.$availableBalance);
-  const signatories = useUnit(voteFormAggregate.$signatories);
-  const initiators = useUnit(voteFormAggregate.$initiators);
-  const mutisigTx = useUnit(voteFormAggregate.$multisigTx);
-  const isFeeLoading = useUnit(voteFormAggregate.$pendingFee);
-  const hasDelegatedTrack = useUnit(voteFormAggregate.$hasDelegatedTrack);
+  const availableBalance = useUnit(voteForm.$availableBalance);
+  const signatories = useUnit(voteForm.$signatories);
+  const initiators = useUnit(voteForm.$initiators);
+  const mutisigTx = useUnit(voteForm.$multisigTx);
+  const isFeeLoading = useUnit(voteForm.$pendingFee);
+  const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balances);
 
   const lockPeriods = useStoreMap({
-    store: voteModalAggregate.$lockPeriods,
+    store: voteModal.$lockPeriods,
     keys: [chain.chainId],
     fn: (periods, [chainId]) => periods[chainId] ?? null,
   });
@@ -54,7 +54,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const {
     submit,
     fields: { initiator, signatory, conviction, amount, decision },
-  } = useForm(voteFormAggregate.form);
+  } = useForm(voteForm.form);
 
   const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
 
@@ -93,8 +93,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
               chain={chain}
               accounts={initiators}
               balances={balances}
-              hasError={initiator.hasError()}
-              errorText={t(initiator.errorText())}
+              hasError={initiator.hasError}
+              errorText={t(initiator.errorMessage)}
               onChange={initiator.onChange}
             />
           )}
@@ -105,8 +105,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
               chain={chain}
               balances={balances}
               signatories={signatories}
-              errorText={signatory.errorText()}
-              hasError={signatory.hasError()}
+              errorText={signatory.errorMessage}
+              hasError={signatory.hasError}
               onChange={signatory.onChange}
             />
           )}
@@ -114,8 +114,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
             value={amount.value}
             asset={asset}
             availableBalance={availableBalance}
-            hasError={amount.hasError()}
-            errorText={amount.errorText()}
+            hasError={amount.hasError}
+            errorText={amount.errorMessage}
             onChange={amount.onChange}
           />
           <ConvictionSelect

@@ -12,8 +12,8 @@ import { OperationResult } from '@/entities/transaction';
 import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
-import { voteFormAggregate } from '../aggregates/voteForm';
-import { voteModalAggregate } from '../aggregates/voteModal';
+import { voteForm } from '../model/voteForm';
+import { voteModal } from '../model/voteModal';
 
 import { VoteForm } from './VoteForm';
 
@@ -27,10 +27,10 @@ type Props = {
 export const VoteModal = ({ referendum, asset, chain, onClose }: Props) => {
   const { t } = useI18n();
 
-  useGate(voteModalAggregate.gates.flow, { type: 'vote', referendum });
+  useGate(voteModal.gates.flow, { type: 'vote', referendum });
 
-  const step = useUnit(voteModalAggregate.$step);
-  const initiatorWallet = useUnit(voteFormAggregate.$initiatorWallet);
+  const step = useUnit(voteModal.$step);
+  const initiatorWallet = useUnit(voteForm.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);
@@ -64,17 +64,15 @@ export const VoteModal = ({ referendum, asset, chain, onClose }: Props) => {
               secondaryActionButton={
                 initiatorWallet &&
                 basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => voteModalAggregate.events.txSaved()}>
+                  <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
                     {t('operation.addToBasket')}
                   </Button>
                 )
               }
-              onGoBack={() => voteModalAggregate.events.setStep(Step.INIT)}
+              onGoBack={() => voteModal.events.setStep(Step.INIT)}
             />
           )}
-          {isStep(step, Step.SIGN) && (
-            <OperationSign onGoBack={() => voteModalAggregate.events.setStep(Step.CONFIRM)} />
-          )}
+          {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => voteModal.events.setStep(Step.CONFIRM)} />}
         </section>
       </Modal.Content>
     </Modal>

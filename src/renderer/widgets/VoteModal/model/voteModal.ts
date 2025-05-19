@@ -20,7 +20,7 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
 import { voteConfirmModel } from '@/features/operations/OperationsConfirm';
 
-import { voteFormAggregate } from './voteForm';
+import { voteForm } from './voteForm';
 
 const flow = createGate<{
   type: 'vote' | 'revote' | null;
@@ -41,9 +41,9 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    initiator: voteFormAggregate.form.fields.initiator.$value,
-    coreTx: voteFormAggregate.$coreTx,
-    txWrappers: voteFormAggregate.$txWrappers,
+    initiator: voteForm.form.fields.initiator.$value,
+    coreTx: voteForm.$coreTx,
+    txWrappers: voteForm.$txWrappers,
   },
   filter: nonNullableMap,
   fn: ({ initiator, coreTx, txWrappers }) => {
@@ -79,7 +79,7 @@ sample({
 });
 
 sample({
-  clock: voteFormAggregate.formSubmitted,
+  clock: voteForm.formSubmitted,
   fn: () => Step.CONFIRM,
   target: setStep,
 });
@@ -126,19 +126,35 @@ sample({
     return { type, referendum, voters };
   },
   target: spread({
-    type: voteFormAggregate.$type,
-    referendum: voteFormAggregate.setReferendum,
-    voters: voteFormAggregate.$voters,
+    type: voteForm.$type,
+    referendum: voteForm.setReferendum,
+    voters: voteForm.$voters,
   }),
 });
 
 sample({
   clock: flow.close,
-  target: voteFormAggregate.form.reset,
+  target: voteForm.form.reset,
 });
 
 sample({
-  clock: voteFormAggregate.form.fields.initiator.$value,
+  clock: flow.open,
+  source: voteForm.$initiators,
+  filter: (initiators) => initiators.length === 1,
+  fn: (initiators) => initiators.at(0) ?? null,
+  target: voteForm.form.fields.initiator.change,
+});
+
+sample({
+  clock: flow.open,
+  source: voteForm.$signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: voteForm.form.fields.signatory.change,
+});
+
+sample({
+  clock: voteForm.form.fields.initiator.$value,
   source: {
     state: flow.state,
     network: networkSelectorModel.$network,
@@ -152,11 +168,11 @@ sample({
 
     return record.vote;
   },
-  target: voteFormAggregate.$existingVote,
+  target: voteForm.$existingVote,
 });
 
 sample({
-  clock: voteFormAggregate.$existingVote,
+  clock: voteForm.$existingVote,
   filter: nonNullable,
   fn: (vote) => {
     if (nullable(vote)) return {};
@@ -166,7 +182,7 @@ sample({
       conviction: votingService.getAccountVoteConviction(vote),
     };
   },
-  target: voteFormAggregate.form.setForm,
+  target: voteForm.form.setForm,
 });
 
 sample({
@@ -183,7 +199,7 @@ sample({
   fn: (network, { referendum }) => {
     return referendum!.voting.votes.map((vote) => toAddress(vote.voter, { prefix: network?.chain.addressPrefix }));
   },
-  target: voteFormAggregate.$voters,
+  target: voteForm.$voters,
 });
 
 // Data bindings
@@ -255,7 +271,7 @@ sample({
 
 sample({
   clock: voteConfirmModel.events.submitFinished,
-  source: voteFormAggregate.$multisigTx,
+  source: voteForm.$multisigTx,
   filter: (multisigTx, results) => nonNullable(multisigTx) && results[0]?.result === ExtrinsicResult.SUCCESS,
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
@@ -268,13 +284,11 @@ sample({
   target: navigationModel.events.navigateTo,
 });
 
-// Aggregate
-
-export const voteModalAggregate = {
+export const voteModal = {
   $lockPeriods: lockPeriodsModel.$lockPeriods,
-  $lock: voteFormAggregate.$lockForAccount,
-  $existingVote: voteFormAggregate.$existingVote,
-  $canSubmit: voteFormAggregate.$canSubmit,
+  $lock: voteForm.$lockForAccount,
+  $existingVote: voteForm.$existingVote,
+  $canSubmit: voteForm.$canSubmit,
 
   $step,
 

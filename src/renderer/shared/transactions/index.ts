@@ -3,5 +3,6 @@ export { createFeeCalculator } from './createFeeCalculator';
 export { createMultisigDeposit } from './createMultisigDeposit';
 export { createTxStore } from './createTxStore';
 export { createComplexTxStore } from './createComplexTxStore';
+export { createInitiatorsStore } from './createInitiatorsStore';
 export { createSignatoriesStore } from './createSignatoriesStore';
-export { createTransactionConfirmStore, type TxConfirmInfo } from './createTransactionConfirmStore';
+export { createTransactionConfirmStore, type TxConfirmInfo, type ConfirmItem } from './createTransactionConfirmStore';

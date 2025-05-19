@@ -1,6 +1,5 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
 import { and, empty, not, reset } from 'patronum';
 
 import {
@@ -10,6 +9,7 @@ import {
   type OngoingReferendum,
   type Transaction,
 } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -25,7 +25,7 @@ import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 
-type Form = {
+type FormFields = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: BN | null;
@@ -34,7 +34,7 @@ type Form = {
 };
 
 type FormInput = {
-  form: Form;
+  form: FormFields;
   transaction: Transaction;
 };
 
@@ -44,7 +44,6 @@ const $type = createStore<'vote' | 'revote' | null>(null);
 const $voters = createStore<Address[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = restore(setReferendum, null);
-const $availableBalance = createStore(BN_ZERO);
 const $lockForAccount = createStore(BN_ZERO);
 
 const $canSubmit = createStore(false);
@@ -53,47 +52,44 @@ const formSubmitted = createEvent<FormInput>();
 
 // form
 
-const form = createForm<Form>({
+const form: Form<FormFields> = createForm<FormFields>({
   validateOn: ['submit'],
   fields: {
     initiator: {
-      init: null,
-      rules: [
-        {
-          name: 'emptyInitiator',
-          errorText: 'governance.vote.errors.noAccountError',
-          validator: nonNullable,
-        },
-      ],
+      defaultValue: null,
+      validator: () => (value) => {
+        if (nullable(value)) {
+          return { message: 'governance.vote.errors.noAccountError' };
+        }
+      },
     },
     signatory: {
-      init: null,
-      rules: [
-        {
-          name: 'emptySignatory',
-          errorText: 'governance.vote.errors.noSignatoryError',
-          validator: nonNullable,
-        },
-      ],
+      defaultValue: null,
+      validator: () => (value) => {
+        if (nullable(value)) {
+          return { message: 'governance.vote.errors.noSignatoryError' };
+        }
+      },
     },
     amount: {
-      init: null,
-      rules: [
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => nonNullable(value) && value.gt(BN_ZERO),
-        },
-        {
-          name: 'notEnoughBalance',
-          errorText: 'governance.errors.notEnoughBalanceError',
+      defaultValue: null,
+      validator: () => {
+        return {
           source: $availableBalance,
-          validator: (value, _, balance: BN) => nullable(value) || value.lte(balance),
-        },
-      ],
+          fn: (value, _, balance: BN) => {
+            if (nullable(value) || value.lte(BN_ZERO)) {
+              return { message: 'transfer.notZeroAmountError' };
+            }
+
+            if (nonNullable(value) && value.gt(balance)) {
+              return { message: 'governance.errors.notEnoughBalanceError' };
+            }
+          },
+        };
+      },
     },
-    conviction: { init: 'Locked1x' },
-    decision: { init: null },
+    conviction: { defaultValue: 'Locked1x' },
+    decision: { defaultValue: null },
   },
 });
 
@@ -106,14 +102,6 @@ const $initiators = combine(
     return chain ? (accountService.filterAccountsOnChain(accounts, chain) ?? []) : [];
   },
 );
-
-sample({
-  clock: form.reset,
-  source: $initiators,
-  filter: (initiators) => initiators.length === 1,
-  fn: (initiators) => initiators.at(0) ?? null,
-  target: form.fields.initiator.onChange,
-});
 
 const $initiatorWallet = combine(walletModel.$wallets, form.fields.initiator.$value, (wallets, initiator) => {
   if (nullable(initiator)) return null;
@@ -157,14 +145,6 @@ const $hasDelegatedTrack = combine(
   },
 );
 
-sample({
-  clock: form.reset,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.onChange,
-});
-
 // transaction
 
 const $coreTx = combine(
@@ -178,7 +158,6 @@ const $coreTx = combine(
     decision: form.fields.decision.$value,
   },
   ({ chain, referendum, initiator, amount, conviction, decision, existingVote }) => {
-    console.log({ chain, referendum, initiator, amount, conviction, decision, existingVote });
     if (nullable(referendum) || nullable(chain) || nullable(initiator)) {
       return null;
     }
@@ -237,32 +216,29 @@ sample({
   target: $lockForAccount,
 });
 
-sample({
-  clock: [form.fields.initiator.$value, $referendum, form.reset],
-  source: {
+const $availableBalance = combine(
+  {
     initiator: form.fields.initiator.$value,
     referendum: $referendum,
     chain: networkSelectorModel.$governanceChain,
     balances: balanceModel.$balances,
     accounts: accounts.$list,
   },
-  filter: ({ referendum, chain, initiator }) => nonNullable(initiator) && nonNullable(chain) && nonNullable(referendum),
-  fn: ({ referendum, balances, chain, initiator }) => {
-    if (!initiator || !referendum) return BN_ZERO;
+  ({ referendum, balances, chain, initiator }) => {
+    if (!initiator || !referendum || !chain) return BN_ZERO;
 
-    const nativeAsset = getNativeAsset(chain?.assets ?? []);
+    const nativeAsset = getNativeAsset(chain.assets);
     const accountBalance = balanceUtils.getBalance(
       balances,
-      initiator!.accountId,
-      chain!.chainId,
+      initiator.accountId,
+      chain.chainId,
       nativeAsset.assetId.toString(),
     );
     if (!accountBalance) return BN_ZERO;
 
     return locksService.getAvailableBalance(accountBalance);
   },
-  target: $availableBalance,
-});
+);
 
 // Reset
 
@@ -284,13 +260,12 @@ sample({
 });
 
 sample({
-  clock: form.formValidated,
+  clock: form.submit.doneData,
   source: {
-    form: form.$values,
     transaction: $tx,
   },
   filter: ({ transaction }) => nonNullable(transaction),
-  fn: ({ form, transaction }) => {
+  fn: ({ transaction }, form) => {
     return {
       form,
       transaction: transaction!,
@@ -300,9 +275,8 @@ sample({
 });
 
 sample({
-  clock: form.formValidated,
+  clock: form.submit.doneData,
   source: {
-    form: form.$values,
     existingVote: $existingVote,
     initiator: form.fields.initiator.$value,
     network: networkSelectorModel.$network,
@@ -343,7 +317,7 @@ sample({
   target: voteValidateModel.validate,
 });
 
-export const voteFormAggregate = {
+export const voteForm = {
   form,
 
   $tx,

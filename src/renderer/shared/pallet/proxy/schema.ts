@@ -13,6 +13,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'Staking',
   'Identity',
   'IdentityJudgement',
+  'OldIdentityJudgement',
   'Society',
   'Senate',
   'Triumvirate',
@@ -24,6 +25,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'Nomination',
   'NominationPools',
   'Auction',
+  'OldAuction',
   'CancelProxy',
   'Registration',
   'SudoBalances',
@@ -35,6 +37,7 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'SudoUncheckedSetCode',
   'Owner',
   'ParaRegistration',
+  'OldParaRegistration',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;
