@@ -15,11 +15,17 @@ export const governancePageUtils = {
 type FilteredByQueryParams<T> = {
   referendums: T[];
   query: string;
+  titles: Record<string, string>;
 };
 
-function filteredByQuery<T extends AggregatedReferendum>({ referendums, query }: FilteredByQueryParams<T>): T[] {
-  const res = performSearch<AggregatedReferendum>({
+function filteredByQuery<T extends AggregatedReferendum>({
+  referendums,
+  query,
+  titles,
+}: FilteredByQueryParams<T>): T[] {
+  const res = performSearch<AggregatedReferendum, { title: string }>({
     records: referendums,
+    getMeta: (ref) => ({ title: titles[ref.referendumId], referendumId: ref.referendumId }),
     query,
     weights: {
       title: 1,

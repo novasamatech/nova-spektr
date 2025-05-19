@@ -63,7 +63,7 @@ const $availableAccounts = combine(
       )
       .filter(
         (account) =>
-          !delegations[delegate.accountId]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
+          !delegations[delegate.address]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
       );
   },
 );
@@ -127,12 +127,6 @@ const checkMaxWeightReachedFx = createEffect(
 );
 
 sample({
-  clock: formInitiated,
-  source: $availableAccounts,
-  target: $accounts,
-});
-
-sample({
   clock: [votingAggregate.$activeWalletVotes, $accounts],
   source: {
     accounts: $accounts,
@@ -194,6 +188,14 @@ sample({
     return [...tracks, track];
   },
   target: $tracks,
+});
+
+sample({
+clock: formInitiated,
+source: $availableAccounts,
+filter: (accounts) => accounts.length > 0,
+fn: (accounts) => [accounts.at(0)!],
+target: $accounts,
 });
 
 sample({

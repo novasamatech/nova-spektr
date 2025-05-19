@@ -31,10 +31,10 @@ function sortReferendumsByOngoing(referendums: AggregatedReferendum[]) {
 function getMappedIdentity(proposers: Record<Address, Identity>, delegates: DelegateInfo[]) {
   const identity: Record<Address, Identity> = {};
 
-  for (const { delegateId } of delegates) {
-    if (nullable(proposers[delegateId])) continue;
+  for (const { delegateAddress } of delegates) {
+    if (nullable(proposers[delegateAddress])) continue;
 
-    identity[delegateId] = proposers[delegateId];
+    identity[delegateAddress] = proposers[delegateAddress];
   }
 
   return identity;

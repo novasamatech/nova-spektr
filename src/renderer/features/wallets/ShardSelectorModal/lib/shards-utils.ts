@@ -92,6 +92,7 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
 
 function getStructForVault(
   rootAccountId: AccountId,
+  rootAccountName: string,
   accounts: AnyAccount[],
   chainsMap: ChainsMap<AnyAccount>,
 ): RootTuple[] {
@@ -126,7 +127,7 @@ function getStructForVault(
     return acc;
   }, []);
 
-  return [[rootAccountId, chainsTuples]];
+  return [[rootAccountId, rootAccountName, chainsTuples]];
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {

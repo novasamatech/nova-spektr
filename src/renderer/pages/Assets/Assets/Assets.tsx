@@ -11,8 +11,8 @@ import {
   assetsSearchModel,
   assetsSettingsModel,
 } from '@/features/assets';
+import { AssetTransactionModal } from '@/features/assets-transaction';
 import { ShardSelectorButton, ShardSelectorModal } from '@/features/wallets';
-import { AssetTransactionModal } from '@/widgets/AssetTransactionModal';
 
 import { assetsModel } from './model/assets-model';
 

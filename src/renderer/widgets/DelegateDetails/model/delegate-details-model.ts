@@ -45,7 +45,7 @@ const $activeTracks = combine(
 
         const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
 
-        if (votingService.isDelegating(vote) && target === delegate?.accountId) {
+        if (votingService.isDelegating(vote) && target === delegate?.address) {
           if (!activeTracks[accountId]) {
             activeTracks[accountId] = new Set();
           }
@@ -67,7 +67,7 @@ const $activeDelegations = combine(
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 
-    return delegations[delegate.accountId] || {};
+    return delegations[delegate.address] || {};
   },
 );
 
@@ -134,7 +134,7 @@ sample({
   clock: flowStarted,
   fn: (delegate) => {
     return {
-      addresses: [delegate.accountId],
+      addresses: [delegate.address],
     };
   },
   target: proposerIdentityAggregate.events.requestProposers,

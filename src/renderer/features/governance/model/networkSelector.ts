@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ChainId, type ConnectionStatus } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 
@@ -23,6 +23,8 @@ const $governanceChain = combine(
     return chains.find((chain) => chain.chainId === chainId) ?? null;
   },
 );
+
+const $nativeAsset = combine($governanceChain, (chain) => (chain?.assets ? getNativeAsset(chain.assets) : null));
 
 const $governanceChainApi = combine(
   {
@@ -103,6 +105,7 @@ export const networkSelectorModel = {
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
+  $nativeAsset,
 
   $network,
   $hasAccount,

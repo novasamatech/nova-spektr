@@ -27,7 +27,7 @@ export const CurrentDelegationModal = () => {
   }
 
   return (
-    <Modal isOpen={isOpen} size="md" height="lg" onToggle={() => currentDelegationModel.output.flowFinished()}>
+    <Modal isOpen={isOpen} size="md" height="full" onToggle={() => currentDelegationModel.output.flowFinished()}>
       <Modal.Title close>
         <OperationTitle title={t('governance.delegations.title')} chainId={network.chain.chainId} />
       </Modal.Title>
@@ -52,14 +52,14 @@ export const CurrentDelegationModal = () => {
               <div className="scrollbar-stable flex flex-1 flex-col items-center overflow-y-auto">
                 <ul className="flex w-[400px] flex-col gap-y-2 pt-0.5">
                   {delegationList.map((delegate) => {
-                    const accountId = toAccountId(delegate.address ?? delegate.accountId);
+                    const accountId = toAccountId(delegate.address);
 
                     return (
                       <li key={accountId}>
                         <DelegationCard
                           asset={network.asset}
                           delegate={delegate}
-                          votes={Object.values(activeDelegations[delegate.accountId] || {})}
+                          votes={Object.values(activeDelegations[delegate.address] || {})}
                           onClick={() => delegateDetailsModel.events.flowStarted(delegate)}
                         />
                       </li>

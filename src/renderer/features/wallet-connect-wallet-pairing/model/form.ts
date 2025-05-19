@@ -137,7 +137,7 @@ sample({
 
 sample({
   clock: createWalletConnectWalletFx.done,
-  target: [flow.shut, reset],
+  target: flow.shut,
 });
 
 sample({
@@ -183,7 +183,7 @@ sample({
 });
 
 sample({
-  clock: reset,
+  clock: [reset, flow.shut],
   target: form.reset,
 });
 

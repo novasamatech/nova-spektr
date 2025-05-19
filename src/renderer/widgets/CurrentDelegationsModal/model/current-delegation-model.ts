@@ -39,20 +39,20 @@ const $delegateList = combine(
     }
 
     const activeDelegationsList = [...activeDelegationsSet];
-    const addresses = new Set(list.map((d) => d.accountId));
+    const addresses = new Set(list.map((d) => d.address));
 
     const delegationsList = [
       ...list,
       ...activeDelegationsList
         .filter((d) => !addresses.has(toAddress(toAccountId(d), { prefix: chain?.addressPrefix })))
-        .map((d) => ({ accountId: d }) as DelegateAccount),
+        .map((d) => ({ address: d }) as DelegateAccount),
     ];
 
-    const delegatedList = delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.accountId));
+    const delegatedList = delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.address));
 
     const searched = query
       ? delegatedList.filter((delegate) =>
-          includesMultiple([delegate.accountId, delegate.address, delegate.name, delegate.shortDescription], query),
+          includesMultiple([delegate.address, delegate.address, delegate.name, delegate.shortDescription], query),
         )
       : delegatedList;
 
