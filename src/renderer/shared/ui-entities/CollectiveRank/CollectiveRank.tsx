@@ -1,7 +1,7 @@
 import { type ComponentProps, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { TextBase } from '@/shared/ui/Typography';
 import { Box, Label } from '@/shared/ui-kit';
 
@@ -46,7 +46,7 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
   return (
     <Label variant={pickRankColor(rank)} className="rounded px-1">
       <Box direction="row" gap={1}>
-        <span className="text-text-primary">{rank ? toRomanNumeral(rank) : null}</span>
+        <span className="text-text-primary">{nonNullable(rank) ? toRomanNumeral(rank) : null}</span>
         {showName ? (
           <TextBase className="text-text-primary" as="span">
             {t(getRankTitle(rank))}
