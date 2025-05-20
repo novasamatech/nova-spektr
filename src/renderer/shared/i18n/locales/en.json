@@ -621,7 +621,11 @@
       "titles": {
         "promote": "Should {name} be promoted to Rank {rank}?",
         "retain": "Should {name} be retained at Rank {rank}?",
-        "votingTitle": "Is it good enough?"
+        "votingTitle": {
+          "rank": "Is it good enough for Rank {rank}?",
+          "whitelist": "Is it good enough to be whitelisted?",
+          "rfc": "Is it good enough to be approved?"
+        }
       }
     },
     "title": "Fellowship",

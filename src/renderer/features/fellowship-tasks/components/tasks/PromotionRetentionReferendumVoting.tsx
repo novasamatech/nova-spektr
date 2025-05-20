@@ -45,9 +45,9 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
   const proposerAccountId = referendumService.getProposer(referendum);
   const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
 
-  const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
+  const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
 
-  const currentTrack = relatedTrack?.find(t => t.id === referendum.track);
+  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
 
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);

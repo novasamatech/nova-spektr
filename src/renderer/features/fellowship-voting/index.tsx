@@ -1,6 +1,10 @@
+import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
+
 import { useI18n } from '@/shared/i18n';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { referendumService, track, trackService } from '@/domains/collectives';
 import {
   Card,
   referendumActionsSlot,
@@ -34,10 +38,39 @@ fellowshipVotingFeature.inject(referendumAdditionalHighPriorityInfoSlot, ({ refe
 
 fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
   const { t } = useI18n();
+
+  const input = useUnit(fellowshipVotingFeature.input);
+  const tracks = useUnit(track.$list);
+
+  const title = useMemo(() => {
+    if (!referendum || !referendumService.isOngoing(referendum)) return '';
+
+    const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
+
+    const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
+    const currentTrack = relatedTrack?.find(t => t.id === referendum.track);
+
+    if (!currentTrack) return '';
+
+    let title = '';
+    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: trackService.getDanFromTrackName(currentTrack) });
+
+    if (isRFCProposal) {
+      title = t('fellowship.tasks.titles.votingTitle.rfc');
+    }
+
+    //todo detect whitelist
+    // if (isWhitelist) {
+    //   title = t('fellowship.tasks.titles.votingTitle.whitelist');
+    // }
+
+    return title;
+  }, [referendum, input, tracks]);
+
   return (
     <Card>
       <Box padding={6} gap={6}>
-        <SmallTitleText>{t('fellowship.tasks.titles.votingTitle')}</SmallTitleText>
+        <SmallTitleText>{title}</SmallTitleText>
         <VotingButtons referendum={referendum} evidence={evidence} />
       </Box>
     </Card>

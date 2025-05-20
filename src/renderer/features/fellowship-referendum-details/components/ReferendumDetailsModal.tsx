@@ -57,7 +57,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
                 <Slot id={referendumAdditionalInfoSlot} props={{ referendumId }} />
 
-                <Slot id={referendumActionsSlot} props={{ referendum }} />
+                <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
 
                 <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
               </Box>
