@@ -232,6 +232,21 @@ export const getDanFromTrackName = (track: Track): string | null => {
   return null;
 };
 
+export const getRankFromTrack = (tracks: Track[], proposerMember: Member, wish: 'Promotion' | 'Retention'): number => {
+  const currentTrack = tracks.find(t => t.id === proposerMember.rank);
+  const nextTrack = tracks.find(t => t.id === proposerMember.rank + 1);
+
+  if (wish === 'Retention') {
+    return currentTrack?.id ?? 0;
+  }
+
+  if (wish === 'Promotion') {
+    return nextTrack?.id ?? 0;
+  }
+
+  return 0;
+};
+
 export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
@@ -248,4 +263,5 @@ export const trackService = {
   getReferendumTrackFromRank,
   originNameFromTrack,
   getDanFromTrackName,
+  getRankFromTrack,
 };

@@ -1,7 +1,8 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService, track, trackService } from '@/domains/collectives';
@@ -19,6 +20,7 @@ import { VotingConfirmation } from './components/VotingConfirmation';
 import { WalletVotingInfo } from './components/WalletVotingInfo';
 import { fellowshipVotingFeature } from './model/feature';
 import { fellowship } from './model/fellowship';
+import { members } from './model/members';
 import { votingStatus } from './model/votingStatus';
 
 export { fellowshipVotingFeature, VotingConfirmation, votingStatus, fellowship };
@@ -42,18 +44,37 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
   const input = useUnit(fellowshipVotingFeature.input);
   const tracks = useUnit(track.$list);
 
+  const proposerMember = useStoreMap({
+    store: members.$list,
+    keys: [referendum, evidence],
+    fn: (members, [referendum, evidence]) => {
+      if (nonNullable(referendum) && referendumService.isOngoing(referendum)) {
+        const proposer = referendumService.getProposer(referendum);
+        return members.find(m => m.accountId === proposer) ?? null;
+      }
+
+      if (nonNullable(evidence)) {
+        return members.find(m => m.accountId === evidence?.accountId) ?? null;
+      }
+
+      return null;
+    },
+  });
+
   const title = useMemo(() => {
     if (!referendum || !referendumService.isOngoing(referendum)) return '';
 
     const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
 
-    const relatedTrack = input ? tracks.fellowship?.[input.chainId] : null;
-    const currentTrack = relatedTrack?.find(t => t.id === referendum.track);
+    const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
+    const isPromotion = evidence?.wish === 'Promotion' || trackService.isPromotionTrack(referendum.track);
 
-    if (!currentTrack) return '';
+    if (!relatedTracks || !proposerMember) return '';
 
     let title = '';
-    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: trackService.getDanFromTrackName(currentTrack) });
+    title = t('fellowship.tasks.titles.votingTitle.rank', {
+      rank: trackService.getRankFromTrack(relatedTracks, proposerMember, isPromotion ? 'Promotion' : 'Retention'),
+    });
 
     if (isRFCProposal) {
       title = t('fellowship.tasks.titles.votingTitle.rfc');

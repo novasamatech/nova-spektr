@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { fromRomanNumeral, nonNullable } from '@/shared/lib/utils';
+import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService, track, trackService } from '@/domains/collectives';
@@ -12,6 +12,7 @@ import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details
 import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { identityModel } from '../../model/identity';
+import { members } from '../../model/members';
 import { votes } from '../../model/voting';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
@@ -63,23 +64,36 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
     },
   });
 
+  const proposerMember = useStoreMap({
+    store: members.$list,
+    keys: [proposerAccountId],
+    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
+  });
+
   const title = useMemo(() => {
     if (!proposerIdentity) return '';
 
-    if (!currentTrack) return '';
+    if (!currentTrack || !relatedTracks || !proposerMember) return '';
 
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
     return t(string, {
       name: proposerIdentity.name,
-      rank: trackService.getDanFromTrackName(currentTrack),
+      rank: toRomanNumeral(
+        trackService.getRankFromTrack(relatedTracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention'),
+      ),
     });
-  }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t]);
+  }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember]);
 
   const rank = useMemo(() => {
-    if (!currentTrack) return null;
-    const danRoman = trackService.getDanFromTrackName(currentTrack);
-    return danRoman ? fromRomanNumeral(danRoman) : null;
-  }, [currentTrack]);
+    if (!currentTrack || !relatedTracks || !proposerMember) return null;
+    const rank = trackService.getRankFromTrack(
+      relatedTracks,
+      proposerMember,
+      isPromotionTrack ? 'Promotion' : 'Retention',
+    );
+
+    return rank;
+  }, [currentTrack, relatedTracks, isPromotionTrack, isRetentionTrack, proposerMember]);
 
   return (
     <Box direction="row" gap={2}>
