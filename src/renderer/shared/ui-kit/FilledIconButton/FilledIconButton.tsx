@@ -27,30 +27,27 @@ export const FilledIconButton = memo(
             'pointer-events-auto': !checked,
           },
           {
-            'bg-secondary-positive-button-background text-text-positive hover:bg-secondary-positive-button-background-hover active:bg-secondary-positive-button-background-active':
-              variant === 'positive',
-            'bg-secondary-negative-button-background text-text-negative hover:bg-secondary-negative-button-background-hover active:bg-secondary-negative-button-background-active':
+            'bg-alert-background-negative text-text-negative hover:bg-badge-red-background active:bg-secondary-negative-button-background-active':
               variant === 'negative',
+            'bg-alert-background-positive text-text-positive hover:bg-badge-green-background active:bg-secondary-positive-button-background-active':
+              variant === 'positive',
+          },
+          {
+            'bg-label-background-red': variant === 'negative' && marked,
+            'bg-label-background-green': variant === 'positive' && marked,
           },
         )}
         onClick={onClick}
         onMouseOver={onMouseOver}
         onMouseLeave={onMouseLeave}
       >
-        {marked && (
-          <div
-            className={cnTw('absolute top-1 h-1.5 w-1.5 rounded-full', {
-              'right-2 bg-icon-positive': variant === 'positive',
-              'left-1 bg-icon-negative': variant === 'negative',
-            })}
-          />
-        )}
         <Icon
           name={icon}
           size={16}
           className={cnTw({
-            'text-icon-positive': variant === 'positive' && !disabled,
             'text-icon-negative': variant === 'negative' && !disabled,
+            'text-icon-positive': variant === 'positive' && !disabled,
+            'text-icon-button': marked && !disabled,
           })}
         />
       </button>
