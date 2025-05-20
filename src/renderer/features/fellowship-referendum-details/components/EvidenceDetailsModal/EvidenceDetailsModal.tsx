@@ -1,12 +1,9 @@
 import { type PropsWithChildren, memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
-import { useI18n } from '@/shared/i18n';
-import { SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { AdditionalInfo } from '../AdditionalInfo';
-import { Card } from '../Card';
 import { MemberProfile } from '../MemberProfile';
 
 import { Content } from './Content';
@@ -19,8 +16,6 @@ type Props = PropsWithChildren<{
 export const evidenceActionsSlot = createSlot<{ evidence: Evidence }>();
 
 export const EvidenceDetailsModal = memo(({ evidence, children, title }: Props) => {
-  const { t } = useI18n();
-
   return (
     <Modal size="xl" height="full">
       <Modal.Trigger>{children}</Modal.Trigger>
@@ -33,12 +28,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children, title }: Props) 
           <Box gap={4} shrink={0}>
             <MemberProfile evidence={evidence} />
 
-            <Card>
-              <Box fillContainer gap={6} padding={6}>
-                <SmallTitleText>{t('fellowship.tasks.titles.votingTitle')}</SmallTitleText>
-                <Slot id={evidenceActionsSlot} props={{ evidence }} />
-              </Box>
-            </Card>
+            <Slot id={evidenceActionsSlot} props={{ evidence }} />
 
             <AdditionalInfo evidenceHash={evidence.hash} />
           </Box>

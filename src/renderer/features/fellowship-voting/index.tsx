@@ -1,4 +1,8 @@
+import { useI18n } from '@/shared/i18n';
+import { SmallTitleText } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import {
+  Card,
   referendumActionsSlot,
   referendumAdditionalHighPriorityInfoSlot,
 } from '@/features/fellowship-referendum-details';
@@ -29,5 +33,13 @@ fellowshipVotingFeature.inject(referendumAdditionalHighPriorityInfoSlot, ({ refe
 });
 
 fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
-  return <VotingButtons referendum={referendum} evidence={evidence} />;
+  const { t } = useI18n();
+  return (
+    <Card>
+      <Box padding={6} gap={6}>
+        <SmallTitleText>{t('fellowship.tasks.titles.votingTitle')}</SmallTitleText>
+        <VotingButtons referendum={referendum} evidence={evidence} />;
+      </Box>
+    </Card>
+  );
 });

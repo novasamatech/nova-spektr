@@ -2,10 +2,11 @@ import { useUnit } from 'effector-react';
 import React from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { ButtonCard } from '@/shared/ui';
+import { ButtonCard, SmallTitleText } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
 import { evidenceSlot } from '@/features/fellowship-evidence-salary';
 import { profileInfoSlot } from '@/features/fellowship-profile';
-import { evidenceActionsSlot } from '@/features/fellowship-referendum-details';
+import { Card, evidenceActionsSlot } from '@/features/fellowship-referendum-details';
 import { evidenceVotingTaskActionSlot, requestPromotionTaskActionSlot } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
@@ -46,7 +47,15 @@ fellowshipEvidenceFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endB
 });
 
 fellowshipEvidenceFeature.inject(evidenceActionsSlot, ({ evidence }) => {
-  const canVote = useUnit(profile.$canVote);
+  const { t } = useI18n();
 
-  return <VotingActions evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
+  const canVote = useUnit(profile.$canVote);
+  return (
+    <Card>
+      <Box fillContainer gap={6} padding={6}>
+        <SmallTitleText>{t('fellowship.tasks.titles.votingTitle')}</SmallTitleText>
+        <VotingActions evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />
+      </Box>
+    </Card>
+  );
 });
