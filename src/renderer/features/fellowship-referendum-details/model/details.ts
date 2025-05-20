@@ -49,7 +49,7 @@ const $evidence = combine(
 
     if (referendumService.isOngoing(referendum) && referendum.proposal) {
       if (referendum.proposal.type === 'Evidence') {
-        return evidences.find(x => x.accountId === proposer)?.content ?? null;
+        return evidences.find(x => x.accountId === proposer) ?? null;
       }
     }
 

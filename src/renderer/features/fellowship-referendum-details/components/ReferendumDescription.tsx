@@ -54,7 +54,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>
-            <Markdown>{evidence ?? ''}</Markdown>
+            <Markdown>{evidence.content ?? ''}</Markdown>
           </Box>
         </Card>
       ) : null}

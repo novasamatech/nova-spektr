@@ -38,7 +38,7 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
     <Card>
       <Box padding={6} gap={6}>
         <SmallTitleText>{t('fellowship.tasks.titles.votingTitle')}</SmallTitleText>
-        <VotingButtons referendum={referendum} evidence={evidence} />;
+        <VotingButtons referendum={referendum} evidence={evidence} />
       </Box>
     </Card>
   );

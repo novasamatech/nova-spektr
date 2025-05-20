@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { details } from '../model/details';
 import { tracksModel } from '../model/tracks';
 import { detailsService } from '../service';
 
@@ -27,6 +28,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
   const { t } = useI18n();
 
   const tracks = useUnit(tracksModel.$list);
+  const evidence = useUnit(details.$evidence);
 
   const referendumId = referendum?.id;
 
@@ -57,7 +59,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
                 <Slot id={referendumActionsSlot} props={{ referendum }} />
 
-                <AdditionalInfo referendumId={referendumId} />
+                <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
               </Box>
             </Box>
           </ScrollArea>
