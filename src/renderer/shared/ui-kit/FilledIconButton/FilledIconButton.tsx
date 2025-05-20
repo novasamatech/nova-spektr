@@ -23,11 +23,14 @@ export const FilledIconButton = memo(
         className={cnTw(
           'flex appearance-none flex-col items-center gap-2 rounded-lg px-4 py-3',
           'disabled:pointer-events-none disabled:bg-secondary-button-background',
-          { 'opacity-30': !checked },
           {
             'pointer-events-auto': !checked,
-            'bg-badge-green-background text-text-positive hover:opacity-90 active:opacity-100': variant === 'positive',
-            'bg-badge-red-background text-text-negative hover:opacity-90 active:opacity-100': variant === 'negative',
+          },
+          {
+            'bg-secondary-positive-button-background text-text-positive hover:bg-secondary-positive-button-background-hover active:bg-secondary-positive-button-background-active':
+              variant === 'positive',
+            'bg-secondary-negative-button-background text-text-negative hover:bg-secondary-negative-button-background-hover active:bg-secondary-negative-button-background-active':
+              variant === 'negative',
           },
         )}
         onClick={onClick}

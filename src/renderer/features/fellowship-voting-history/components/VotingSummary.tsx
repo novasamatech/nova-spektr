@@ -21,26 +21,29 @@ export const VotingSummary = () => {
     [votes],
   );
 
+  const { levelTextKey, levelClassName } = useMemo(() => {
+    const totalVotes = totalAyes + totalNays;
+    const ayePercentage = totalVotes > 0 ? (totalAyes / totalVotes) * 100 : 0;
+
+    if (ayePercentage <= 25) {
+      return { levelTextKey: 'fellowship.votingHistory.level.notGood', levelClassName: 'text-text-negative' };
+    }
+    if (ayePercentage <= 75) {
+      return { levelTextKey: 'fellowship.votingHistory.level.controversial', levelClassName: 'text-text-warning' };
+    }
+    return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
+  }, [totalAyes, totalNays]);
+
   return (
     <div className="flex flex-col items-start gap-3">
-      <Skeleton active={pending} fullWidth>
-        <div className="flex w-full items-center gap-2">
-          <div className="h-3 w-1 rounded-[0.25em] bg-icon-positive" />
-          <FootnoteText>{t('governance.referendum.aye')}</FootnoteText>
-          <FootnoteText className="grow text-end">
-            {t('fellowship.votingHistory.votes', { count: totalAyes })}
-          </FootnoteText>
-        </div>
-      </Skeleton>
-      <Skeleton active={pending} fullWidth>
-        <div className="flex w-full items-center gap-2">
-          <div className="h-3 w-1 rounded-[4px] bg-icon-negative" />
-          <FootnoteText>{t('governance.referendum.nay')}</FootnoteText>
-          <FootnoteText className="grow text-end">
-            {t('fellowship.votingHistory.votes', { count: totalNays })}
-          </FootnoteText>
-        </div>
-      </Skeleton>
+      <div className="flex items-center gap-x-1.5">
+        <FootnoteText>{t('fellowship.votingHistory.subtitle')}</FootnoteText>
+        {pending ? (
+          <Skeleton width={80} height={16} />
+        ) : (
+          <FootnoteText className={levelClassName}>{t(levelTextKey)}</FootnoteText>
+        )}
+      </div>
     </div>
   );
 };

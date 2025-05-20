@@ -346,6 +346,12 @@
       },
       "viewList": "View list"
     },
+    "additional": {
+      "evidenceSource": "Evidence source",
+      "polkassembly": "Polkassembly",
+      "subsquare": "Subsquare",
+      "title": "Additional"
+    },
     "basket": {
       "salaryInduct": "Activate salary",
       "salaryPayout": "Withdraw salary",
@@ -369,13 +375,14 @@
       "dateOfInitialInduction": "Date of initial induction:",
       "dateOfLastReport": "Date of last report:",
       "matrixUsername": "Matrix username:",
-      "member": "Member",
+      "member": "Member stats",
       "memberDetails": "Member details",
       "polkadotAddress": "Polkadot address:",
       "promotedAt": "(promotion executed on <time/>)",
-      "titlePromotion": "Promote to rank",
-      "titleRetention": "Retain on rank",
-      "votingRecord": "Voting record"
+      "titlePromotion": "Should {name} be promoted to Rank {rank}?",
+      "titleRetention": "Should {name} be retained at Rank {rank}?",
+      "votingRecord": "Voting record",
+      "votingTitle": "Is it good enough for rank {rank}?"
     },
     "fellow_one": "{ count } Member",
     "fellow_other": "{ count } Members",
@@ -550,9 +557,9 @@
       "emptyTitle": "All tasks completed",
       "general": "General",
       "labels": {
-        "controversial": "Tiebreaker",
-        "importantVote": "Kingmaker",
-        "urgent": "Last call"
+        "controversial": "TIEBREAKER",
+        "importantVote": "OPINION MATTERS",
+        "urgent": "LAST CALL"
       },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
@@ -610,6 +617,11 @@
         "retentionVoting": {
           "title": "Review retention evidence"
         }
+      },
+      "titles": {
+        "promote": "Should {name} be promoted to Rank {rank}?",
+        "retain": "Should {name} be retained at Rank {rank}?",
+        "votingTitle": "Is it good enough?"
       }
     },
     "title": "Fellowship",
@@ -618,7 +630,6 @@
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
-      "aye": "Aye",
       "confirmation": {
         "fee": "Network fee",
         "promotionTrack": "Promotion",
@@ -635,8 +646,10 @@
         "noAccount": "Account for voting not found",
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
+      "good": "Good",
       "nay": "Nay",
-      "summary": "Summary",
+      "notGood": "Not Good",
+      "summary": "What do others think?",
       "threshold": "Threshold",
       "title": "Vote on",
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
@@ -650,9 +663,16 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
-      "emptyList": "There is no vote history",
-      "modalTitle": "Vote history",
-      "showHistoryButton": "View vote history",
+      "emptyListDescription": "Other members will appear here once they vote",
+      "emptyListTitle": "Nobody has voted for this option yet",
+      "level": {
+        "controversial": "Controversial",
+        "good": "Good",
+        "notGood": "Not Good"
+      },
+      "modalTitle": "What do others think?",
+      "showHistoryButton": "View more",
+      "subtitle": "Other members find the evidence to be ",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."

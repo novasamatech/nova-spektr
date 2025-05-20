@@ -221,6 +221,17 @@ function originNameFromTrack(track: Track): string {
   return capitalize(track.name);
 }
 
+export const getDanFromTrackName = (track: Track): string | null => {
+  const regex = /(?:(?:fast )?promote to|retain at)\s+([A-Z]+)\s+dan/i;
+  const match = track.name.match(regex);
+
+  if (match && match[1]) {
+    return match[1].toUpperCase();
+  }
+
+  return null;
+};
+
 export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
@@ -236,4 +247,5 @@ export const trackService = {
   rankSatisfiesVotingThreshold,
   getReferendumTrackFromRank,
   originNameFromTrack,
+  getDanFromTrackName,
 };

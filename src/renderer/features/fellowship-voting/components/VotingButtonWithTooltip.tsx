@@ -15,11 +15,11 @@ type Props = {
   votes?: number | null;
   voteImpact?: number;
   onClick?: MouseEventHandler<HTMLButtonElement>;
-  onHighlight: (arg: 'Aye' | 'Nay' | null) => void;
+  onHighlight?: (arg: 'Aye' | 'Nay' | null) => void;
 };
 
 export const VotingButtonWithTooltip = memo(
-  ({ isVoted, checked, disabled, votes, variant, voteImpact, onClick, onHighlight, icon }: Props) => {
+  ({ isVoted, checked, disabled, votes, variant, voteImpact, onClick, onHighlight = () => {}, icon }: Props) => {
     const { t } = useI18n();
 
     const buttonNode = (

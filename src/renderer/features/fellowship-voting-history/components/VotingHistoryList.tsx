@@ -2,11 +2,9 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Chain } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, Icon } from '@/shared/ui';
-import { Box, ScrollArea, Tooltip } from '@/shared/ui-kit';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { type Vote as VoteType } from '@/domains/collectives';
 import { identityModel } from '../model/identity';
 
@@ -21,8 +19,6 @@ type Props = {
 };
 
 export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
-  const { t } = useI18n();
-
   const identity = useUnit(identityModel.$identity);
 
   const filteredItems = useMemo(() => {
@@ -55,25 +51,6 @@ export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
         {shouldRenderEmptyState && <VotingHistoryListEmptyState />}
         {shouldRenderList && (
           <ScrollArea>
-            <Box direction="row" horizontalAlign="space-between" padding={[4, 7, 2]}>
-              <FootnoteText className="text-text-tertiary">
-                {t('governance.voteHistory.listColumnAccount')}
-              </FootnoteText>
-              <Box gap={1} direction="row" verticalAlign="center">
-                <FootnoteText className="text-text-tertiary">
-                  {t('governance.voteHistory.listColumnVotingPower')}
-                </FootnoteText>
-                <Tooltip>
-                  <Tooltip.Trigger>
-                    <div>
-                      <Icon name="info" size={16} />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('fellowship.votingHistory.votingPowerDescription')}</Tooltip.Content>
-                </Tooltip>
-              </Box>
-            </Box>
-
             <Box padding={[0, 5, 4]}>
               {deferredItems.map(vote => (
                 <Vote key={vote.accountId} item={vote} chain={chain} />

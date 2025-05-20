@@ -28,6 +28,6 @@ fellowshipVotingFeature.inject(referendumAdditionalHighPriorityInfoSlot, ({ refe
   return <WalletVotingInfo referendumId={referendumId} />;
 });
 
-fellowshipVotingFeature.inject(referendumActionsSlot, ({ referendumId, onHighlight }) => {
-  return <VotingButtons referendumId={referendumId} onHighlight={onHighlight} />;
+fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
+  return <VotingButtons referendum={referendum} evidence={evidence} />;
 });

@@ -18,7 +18,6 @@ type Props = {
 
 export const ReferendumDescription = memo(({ referendum }: Props) => {
   useFlow(details.flow, { referendum });
-
   const { t } = useI18n();
 
   const referendumMeta = useUnit(details.$referendumMeta);

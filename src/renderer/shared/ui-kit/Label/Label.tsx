@@ -16,9 +16,10 @@ export type LabelVariant =
 
 type Props = PropsWithChildren<{
   variant: LabelVariant;
+  className?: string;
 }>;
 
-export const Label = ({ variant, children }: Props) => {
+export const Label = ({ variant, children, className }: Props) => {
   return (
     <span
       className={cnTw(
@@ -35,6 +36,7 @@ export const Label = ({ variant, children }: Props) => {
           ['bg-label-background-gray text-white']: variant === 'darkGray',
           ['bg-input-background-disabled text-text-secondary']: variant === 'gray',
         },
+        className,
       )}
     >
       <span className="truncate">{children}</span>

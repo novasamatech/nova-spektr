@@ -60,7 +60,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
   return (
     <Box direction="row" gap={4}>
       <Box direction="row" gap={2} verticalAlign="center">
-        <Icon size={16} name="checkmarkCutout" className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'} />
+        <Icon size={16} name={isActivityFit ? 'positive' : 'negative'} />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText>
@@ -77,11 +77,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
         </Box>
       </Box>
       <Box direction="row" gap={2} verticalAlign="center">
-        <Icon
-          size={16}
-          name="checkmarkCutout"
-          className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
-        />
+        <Icon size={16} name={isAgreementFit ? 'positive' : 'negative'} />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText>

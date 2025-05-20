@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import React from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { ButtonCard } from '@/shared/ui';
 import { evidenceSlot } from '@/features/fellowship-evidence-salary';
 import { profileInfoSlot } from '@/features/fellowship-profile';
 import { evidenceActionsSlot } from '@/features/fellowship-referendum-details';
@@ -28,9 +28,9 @@ fellowshipEvidenceFeature.inject(requestPromotionTaskActionSlot, () => {
 
   return (
     <EvidencePostFlowModal wish="Promotion">
-      <Button size="sm" disabled={!canVote}>
+      <ButtonCard size="sm" disabled={!canVote}>
         {t('fellowship.tasks.task.promotion.request')}
-      </Button>
+      </ButtonCard>
     </EvidencePostFlowModal>
   );
 });

@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { Card, referendumAdditionalLowPriorityInfoSlot } from '@/features/fellowship-referendum-details';
+import { Card, referendumAdditionalInfoSlot } from '@/features/fellowship-referendum-details';
 
 import { VotingHistory } from './components/VotingHistory';
 import { VotingSummary } from './components/VotingSummary';
@@ -9,7 +9,7 @@ import { fellowshipVotingHistoryFeature } from './model/feature';
 
 export { fellowshipVotingHistoryFeature };
 
-fellowshipVotingHistoryFeature.inject(referendumAdditionalLowPriorityInfoSlot, ({ referendumId }) => {
+fellowshipVotingHistoryFeature.inject(referendumAdditionalInfoSlot, ({ referendumId }) => {
   const { t } = useI18n();
 
   return (
