@@ -289,13 +289,19 @@ sample({
   fn: (accounts, proxiedAccounts) => {
     const accountsMap = groupBy(accounts, (a) => a.accountId);
 
-    const multisigAccounts = accounts.filter(
-      (acc) =>
-        accountUtils.isMultisigAccount(acc) &&
-        acc.signatories.some((s) => proxiedAccounts.some((p) => p.accountId === s.accountId)) &&
-        acc.signatories.filter((s) => accountsMap[s.accountId]?.some((a) => !accountUtils.isWatchOnlyAccount(a)))
-          .length < 2,
-    );
+    const multisigAccounts = accounts.filter((account) => {
+      if (!accountUtils.isMultisigAccount(account)) return false;
+
+      const hasSignatoryToDelete = account.signatories.some((signatory) =>
+        proxiedAccounts.some((proxy) => proxy.accountId === signatory.accountId),
+      );
+
+      const otherSignatories = account.signatories.filter((signatory) =>
+        accountsMap[signatory.accountId]?.some((acc) => !accountUtils.isWatchOnlyAccount(acc)),
+      );
+
+      return hasSignatoryToDelete && otherSignatories.length < 2;
+    });
 
     return [...proxiedAccounts.map((p) => p.walletId), ...multisigAccounts.map((a) => a.walletId)];
   },
