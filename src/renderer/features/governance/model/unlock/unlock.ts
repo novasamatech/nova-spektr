@@ -15,7 +15,7 @@ import { networkSelectorModel } from '../networkSelector';
 const $claimSchedule = createStore<UnlockChunk[] | null>(null);
 const $isLoading = createStore(true);
 
-const $claimable = $claimSchedule.updates.map((claimSchedule) => {
+const $claimable = $claimSchedule.map((claimSchedule) => {
   if (nullable(claimSchedule)) {
     return null;
   }
@@ -32,7 +32,7 @@ const $claimable = $claimSchedule.updates.map((claimSchedule) => {
   return record;
 });
 
-const $totalUnlock = $claimSchedule.updates.map((claimSchedule) => {
+const $totalUnlock = $claimSchedule.map((claimSchedule) => {
   if (nullable(claimSchedule)) {
     return BN_ZERO;
   }
