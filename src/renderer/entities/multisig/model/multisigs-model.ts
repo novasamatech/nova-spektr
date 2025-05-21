@@ -20,7 +20,7 @@ import {
 } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
-import { delay, isFulfilled, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { delay, groupBy, isFulfilled, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { identity, identityService } from '@/domains/network';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -246,12 +246,22 @@ sample({
   clock: getLastMultisigsFx.doneData,
   source: {
     multisigAccounts: $multisigAccounts,
+    accountsList: accounts.$list,
     apis: networkModel.$apis,
   },
   filter: (_, multisigs) => multisigs.length > 0,
-  fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
+  fn: ({ multisigAccounts, apis, accountsList }, indexedMultisigs) => {
     const existingAccountIds = new Set(multisigAccounts.map((a) => a.accountId));
-    const accounts = indexedMultisigs.filter((indexed) => !existingAccountIds.has(indexed.accountId));
+    const accountsMap = groupBy(accountsList, (a) => a.accountId);
+
+    const accounts = indexedMultisigs.filter(
+      (indexed) =>
+        indexed.signatories.some((s) =>
+          accountsMap[s]?.find(
+            (a) => !accountUtils.isWatchOnlyAccount(a) && !accountUtils.isProxiedAccount(a) && a.accountId === s,
+          ),
+        ) && !existingAccountIds.has(indexed.accountId),
+    );
 
     return { accounts, apis };
   },
