@@ -4,9 +4,9 @@ import { spread } from 'patronum';
 
 import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, groupBy } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
 import { proxyModel } from '@/entities/proxy';
@@ -39,7 +39,7 @@ const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount)
 
 type CheckForProxiedWalletsParams = {
   wallet: Wallet;
-  wallets: Wallet[];
+  accounts: AnyAccount[];
   proxies: Record<AccountId, ProxyAccount[]>;
   walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
 };
@@ -50,10 +50,10 @@ type CheckForProxiedWalletsResult = {
   proxyGroupsToDelete: ProxyGroup[];
 };
 const findProxiedWalletsFx = createEffect(
-  ({ wallet, wallets, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
-    const walletAccountsIds = wallet.accounts.map((a) => a.accountId);
+  ({ wallet, accounts, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
+    const walletAccountsIds = accountService.filterAccountsByWallet(accounts, wallet.id).map((a) => a.accountId);
 
-    const proxiedAccountsToDelete = walletUtils.getAccountsBy(wallets, (a) => {
+    const proxiedAccountsToDelete = accounts.filter((a) => {
       return accountUtils.isProxiedAccount(a) && walletAccountsIds.includes(a.proxyAccountId);
     });
     const proxiedWalletsToDelete = uniq(proxiedAccountsToDelete.map((a) => a.walletId));
@@ -103,8 +103,20 @@ sample({
   clock: [forgetWallet, forgetWcWallet],
   source: {
     proxies: proxyModel.$proxies,
-    wallets: walletModel.$allWallets,
+    accounts: accounts.$list,
     walletsProxyGroups: proxyModel.$walletsProxyGroups,
+  },
+  filter: ({ accounts }, { id: walletId }) => {
+    const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
+    const accountsToDeleteMap = dictionary(accountsToDelete, 'accountId');
+
+    return !accounts.some(
+      (acc) =>
+        accountsToDeleteMap[acc.accountId] &&
+        !accountUtils.isWatchOnlyAccount(acc) &&
+        !accountUtils.isProxiedAccount(acc) &&
+        acc.walletId !== walletId,
+    );
   },
   fn: (params, wallet) => ({ ...params, wallet }),
   target: findProxiedWalletsFx,
@@ -148,14 +160,30 @@ sample({
   source: accounts.$list,
   fn: (accounts, walletId) => {
     const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
-    const accountsMap = dictionary(accounts, 'accountId');
+
+    if (accountsToDelete.length === 1 && accountUtils.isWatchOnlyAccount(accountsToDelete.at(0)!)) {
+      return [walletId];
+    }
+    const accountsMap = groupBy(accounts, (a) => a.accountId);
     const accountsToDeleteMap = dictionary(accountsToDelete, 'accountId');
+
+    const isDublicated = accounts.find(
+      (acc) =>
+        accountsToDeleteMap[acc.accountId] &&
+        !accountUtils.isWatchOnlyAccount(acc) &&
+        !accountUtils.isProxiedAccount(acc) &&
+        acc.walletId !== walletId,
+    );
+
+    if (isDublicated) return [walletId];
 
     const multisigAccounts = accounts.filter(
       (acc) =>
         accountUtils.isMultisigAccount(acc) &&
         acc.signatories.some((s) => accountsToDeleteMap[s.accountId]) &&
-        acc.signatories.filter((s) => accountsMap[s.accountId]).length === 1,
+        acc.signatories.some(
+          (s) => !accountsMap[s.accountId]?.some((a) => a.walletId !== walletId && !accountUtils.isWatchOnlyAccount(a)),
+        ),
     );
 
     return [walletId, ...multisigAccounts.map((a) => a.walletId)];
@@ -164,7 +192,7 @@ sample({
 });
 
 sample({
-  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
+  clock: [walletModel.events.walletsRemovedSuccess, walletModel.events.walletHiddenSuccess],
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onDeleteFinished(),
@@ -173,7 +201,7 @@ sample({
 
 // TODO this connection is dirty, we should decouple wallet delete logic and proxy manipulation.
 sample({
-  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
+  clock: [walletModel.events.walletsRemovedSuccess, walletModel.events.walletHiddenSuccess],
   target: proxiesModel.findAllProxies,
 });
 
