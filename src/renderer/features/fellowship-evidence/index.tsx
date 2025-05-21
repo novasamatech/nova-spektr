@@ -13,6 +13,7 @@ import { PromotionInfo } from './components/PromotionInfo';
 import { RetentionInfo } from './components/RetentionInfo';
 import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
 import { VotingActions } from './components/VotingActions';
+import { VotingActionsCard } from './components/VotingActionsCard';
 import { fellowshipEvidenceFeature } from './model/feature';
 import { profile } from './model/profile';
 
@@ -48,5 +49,5 @@ fellowshipEvidenceFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endB
 fellowshipEvidenceFeature.inject(evidenceActionsSlot, ({ evidence }) => {
   const canVote = useUnit(profile.$canVote);
 
-  return <VotingActions evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
+  return <VotingActionsCard evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
 });

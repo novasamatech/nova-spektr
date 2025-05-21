@@ -1,15 +1,13 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
-import { ButtonCard, SmallTitleText } from '@/shared/ui';
+import { ButtonCard } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
-import { Card } from '@/features/fellowship-referendum-details';
 import { fellowshipEvidenceFeature } from '../model/feature';
-import { members } from '../model/members';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
 
@@ -24,40 +22,8 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
   const { t } = useI18n();
   const input = useUnit(fellowshipEvidenceFeature.input);
 
-  const isPromotion = evidence.wish === 'Promotion';
-  const isRetention = evidence.wish === 'Retention';
-
-  const member = useStoreMap({
-    store: members.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
-  });
-
-  let title = '';
-
-  if (nonNullable(member) && isPromotion) {
-    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: member?.rank + 1 });
-  }
-
-  if (nonNullable(member) && isRetention) {
-    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: member?.rank });
-  }
-
-  let component = null;
-  const buttonNodes = (
-    <Box direction="row" gap={1}>
-      <EvidenceVotingModal evidence={evidence} aye={false}>
-        <FilledIconButton variant="negative" icon="negative" disabled={disabled} />
-      </EvidenceVotingModal>
-
-      <EvidenceVotingModal evidence={evidence} aye={true}>
-        <FilledIconButton variant="positive" icon="positive" disabled={disabled} />
-      </EvidenceVotingModal>
-    </Box>
-  );
-
   if (variant === 'large') {
-    component = (
+    return (
       <Box fillContainer gap={4}>
         <Box direction="row" gap={4} width="100%">
           <EvidenceVotingModal evidence={evidence} aye={false}>
@@ -75,8 +41,29 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
     );
   }
 
+  const buttonNodes = (
+    <Box direction="row" gap={1}>
+      {!disabled && (
+        <>
+          <EvidenceVotingModal evidence={evidence} aye={false}>
+            <FilledIconButton variant="negative" icon="negative" disabled={disabled} />
+          </EvidenceVotingModal>
+          <EvidenceVotingModal evidence={evidence} aye={true}>
+            <FilledIconButton variant="positive" icon="positive" disabled={disabled} />
+          </EvidenceVotingModal>
+        </>
+      )}
+      {disabled && (
+        <>
+          <FilledIconButton variant="negative" icon="negative" disabled={disabled} />
+          <FilledIconButton variant="positive" icon="positive" disabled={disabled} />
+        </>
+      )}
+    </Box>
+  );
+
   if (variant === 'small' && nonNullable(input)) {
-    component = (
+    return (
       <Box
         verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}
         horizontalAlign="flex-end"
@@ -90,12 +77,5 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
     );
   }
 
-  return (
-    <Card>
-      <Box fillContainer gap={6} padding={6}>
-        <SmallTitleText>{title}</SmallTitleText>
-        {component}
-      </Box>
-    </Card>
-  );
+  return null;
 });
