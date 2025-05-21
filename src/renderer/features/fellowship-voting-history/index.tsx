@@ -9,7 +9,7 @@ import { fellowshipVotingHistoryFeature } from './model/feature';
 
 export { fellowshipVotingHistoryFeature };
 
-fellowshipVotingHistoryFeature.inject(referendumAdditionalInfoSlot, ({ referendumId }) => {
+fellowshipVotingHistoryFeature.inject(referendumAdditionalInfoSlot, ({ referendum }) => {
   const { t } = useI18n();
 
   return (
@@ -18,10 +18,10 @@ fellowshipVotingHistoryFeature.inject(referendumAdditionalInfoSlot, ({ referendu
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
           <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
 
-          <VotingHistory referendumId={referendumId} />
+          <VotingHistory referendumId={referendum.id} />
         </Box>
 
-        <VotingSummary />
+        <VotingSummary referendum={referendum} />
       </Box>
     </Card>
   );

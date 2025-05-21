@@ -15,7 +15,7 @@ import { MemberProfile } from './MemberProfile';
 import { ReferendumDescription } from './ReferendumDescription';
 
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
-export const referendumAdditionalInfoSlot = createSlot<{ referendumId: ReferendumId }>();
+export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
 export const referendumActionsSlot = createSlot<{ referendum?: Referendum | null; evidence?: Evidence | null }>();
 
@@ -55,7 +55,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
                 <MemberProfile referendum={referendum} />
 
-                <Slot id={referendumAdditionalInfoSlot} props={{ referendumId }} />
+                <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
 
                 <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
 

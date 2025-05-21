@@ -674,6 +674,7 @@
         "good": "Good",
         "notGood": "Not Good"
       },
+      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "modalTitle": "What do others think?",
       "noVotes": "Nobody has voted yet",
       "showHistoryButton": "View more",

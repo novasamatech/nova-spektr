@@ -4,9 +4,10 @@ import { useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
+import { type Referendum, referendumService } from '@/domains/collectives';
 import { votesModel } from '../model/votes';
 
-export const VotingSummary = () => {
+export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { t } = useI18n();
 
   const votes = useUnit(votesModel.$votesList);
@@ -22,7 +23,6 @@ export const VotingSummary = () => {
   );
 
   const totalVotes = totalAyes + totalNays;
-
   const nobodyVoted = totalVotes === 0;
 
   const { levelTextKey, levelClassName } = useMemo(() => {
@@ -37,22 +37,32 @@ export const VotingSummary = () => {
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
   }, [totalAyes, totalNays]);
 
-  let levelContent = null;
+  let title = null;
+
+  if (nobodyVoted) {
+    title = t('fellowship.votingHistory.noVotes');
+  } else if (referendumService.isCompleted(referendum)) {
+    title = t('fellowship.votingHistory.voteEnded');
+  } else {
+    title = t('fellowship.votingHistory.subtitle');
+  }
+
+  let voteLevel = null;
+
   if (!nobodyVoted) {
     if (pending) {
-      levelContent = <Skeleton width={12} height="1lh" />;
+      voteLevel = <Skeleton width={12} height="1lh" />;
     } else {
-      levelContent = <FootnoteText className={levelClassName}>{t(levelTextKey)}</FootnoteText>;
+      voteLevel = <span className={levelClassName}>{t(levelTextKey)}</span>;
     }
   }
 
   return (
     <div className="flex flex-col items-start gap-3">
-      <div className="flex items-center gap-x-1.5">
+      <div className="flex items-center">
         <FootnoteText>
-          {nobodyVoted ? t('fellowship.votingHistory.noVotes') : t('fellowship.votingHistory.subtitle')}
+          {title} {voteLevel}
         </FootnoteText>
-        {levelContent}
       </div>
     </div>
   );
