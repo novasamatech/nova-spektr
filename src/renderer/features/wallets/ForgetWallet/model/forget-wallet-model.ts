@@ -155,6 +155,7 @@ sample({
   target: walletsRemoved,
 });
 
+// TODO: with CAS implementation that should be done via graph traversal from deleted wallet to its children
 sample({
   clock: walletsRemoved,
   source: accounts.$list,
