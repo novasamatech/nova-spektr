@@ -222,14 +222,13 @@ function originNameFromTrack(track: Track): string {
 }
 
 export const getRankFromTrack = (tracks: Track[], proposerMember: Member, wish: 'Promotion' | 'Retention'): number => {
-  const currentTrack = tracks.find(t => t.id === proposerMember.rank);
-  const nextTrack = tracks.find(t => t.id === proposerMember.rank + 1);
-
   if (wish === 'Retention') {
+    const currentTrack = tracks.find(t => t.id === proposerMember.rank);
     return currentTrack?.id ?? 0;
   }
 
   if (wish === 'Promotion') {
+    const nextTrack = tracks.find(t => t.id === proposerMember.rank + 1);
     return nextTrack?.id ?? 0;
   }
 

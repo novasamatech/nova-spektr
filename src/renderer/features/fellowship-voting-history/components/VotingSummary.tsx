@@ -21,8 +21,11 @@ export const VotingSummary = () => {
     [votes],
   );
 
+  const totalVotes = totalAyes + totalNays;
+
+  const nobodyVoted = totalVotes === 0;
+
   const { levelTextKey, levelClassName } = useMemo(() => {
-    const totalVotes = totalAyes + totalNays;
     const ayePercentage = totalVotes > 0 ? (totalAyes / totalVotes) * 100 : 0;
 
     if (ayePercentage <= 25) {
@@ -34,15 +37,22 @@ export const VotingSummary = () => {
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
   }, [totalAyes, totalNays]);
 
+  let levelContent = null;
+  if (!nobodyVoted) {
+    if (pending) {
+      levelContent = <Skeleton width={12} height="1lh" />;
+    } else {
+      levelContent = <FootnoteText className={levelClassName}>{t(levelTextKey)}</FootnoteText>;
+    }
+  }
+
   return (
     <div className="flex flex-col items-start gap-3">
       <div className="flex items-center gap-x-1.5">
-        <FootnoteText>{t('fellowship.votingHistory.subtitle')}</FootnoteText>
-        {pending ? (
-          <Skeleton width={80} height={16} />
-        ) : (
-          <FootnoteText className={levelClassName}>{t(levelTextKey)}</FootnoteText>
-        )}
+        <FootnoteText>
+          {nobodyVoted ? t('fellowship.votingHistory.noVotes') : t('fellowship.votingHistory.subtitle')}
+        </FootnoteText>
+        {levelContent}
       </div>
     </div>
   );

@@ -88,6 +88,10 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
     return title;
   }, [referendum, input, tracks]);
 
+  if (nonNullable(referendum) && referendumService.isCompleted(referendum)) {
+    return null;
+  }
+
   return (
     <Card>
       <Box padding={6} gap={6}>
