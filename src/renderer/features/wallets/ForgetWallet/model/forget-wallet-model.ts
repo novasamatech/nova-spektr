@@ -69,7 +69,7 @@ const findProxiedWalletsFx = createEffect(
         return acc;
       }, []);
 
-    // TODO: it should be done via graph in one place
+    // TODO: temp solution, it should be done via graph in one place
     const accountsMap = groupBy(accounts, (a) => a.accountId);
 
     const multisigAccounts = accounts.filter(
