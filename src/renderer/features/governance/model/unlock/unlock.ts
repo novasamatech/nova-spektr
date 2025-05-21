@@ -13,9 +13,40 @@ import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
 const $claimSchedule = createStore<UnlockChunk[] | null>(null);
-const $claimable = createStore<Record<AccountId, BN> | null>(null);
-const $totalUnlock = createStore<BN>(BN_ZERO);
 const $isLoading = createStore(true);
+
+const $claimable = $claimSchedule.updates.map((claimSchedule) => {
+  if (nullable(claimSchedule)) {
+    return null;
+  }
+
+  const record: Record<AccountId, BN> = {};
+
+  for (const claim of claimSchedule) {
+    if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
+
+    const accountSum = record[claim.accountId] || BN_ZERO;
+    record[claim.accountId] = accountSum.add(claim.amount);
+  }
+
+  return record;
+});
+
+const $totalUnlock = $claimSchedule.updates.map((claimSchedule) => {
+  if (nullable(claimSchedule)) {
+    return BN_ZERO;
+  }
+
+  let total = BN_ZERO;
+
+  for (const claim of claimSchedule) {
+    if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
+
+    total = total.add(claim.amount);
+  }
+
+  return total;
+});
 
 type Props = {
   api: ApiPromise;
@@ -62,7 +93,7 @@ const getClaimScheduleFx = createEffect(
 
 sample({
   clock: [networkSelectorModel.$network, walletModel.$activeWallet],
-  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+  target: [$claimSchedule.reinit],
 });
 
 sample({
@@ -105,41 +136,6 @@ sample({
 sample({
   clock: getClaimScheduleFx.doneData,
   target: $claimSchedule,
-});
-
-sample({
-  clock: $claimSchedule.updates,
-  filter: (claimSchedule: UnlockChunk[] | null): claimSchedule is UnlockChunk[] => nonNullable(claimSchedule),
-  fn: (claimSchedule) => {
-    const record: Record<AccountId, BN> = {};
-
-    for (const claim of claimSchedule) {
-      if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
-
-      const accountSum = record[claim.accountId] || BN_ZERO;
-      record[claim.accountId] = accountSum.add(claim.amount);
-    }
-
-    return record;
-  },
-  target: $claimable,
-});
-
-sample({
-  clock: $claimSchedule.updates,
-  filter: (claimSchedule: UnlockChunk[] | null): claimSchedule is UnlockChunk[] => nonNullable(claimSchedule),
-  fn: (claimSchedule) => {
-    let total = BN_ZERO;
-
-    for (const claim of claimSchedule) {
-      if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
-
-      total = total.add(claim.amount);
-    }
-
-    return total;
-  },
-  target: $totalUnlock,
 });
 
 export const unlockModel = {
