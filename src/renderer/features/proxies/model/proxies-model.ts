@@ -22,7 +22,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { dictionary, withTimeout } from '@/shared/lib/utils';
+import { dictionary, groupBy, withTimeout } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AnyAccount,
@@ -284,7 +284,27 @@ sample({
 
 sample({
   clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.walletId),
+  source: accounts.$list,
+  filter: (proxiedAccounts) => proxiedAccounts.length > 0,
+  fn: (accounts, proxiedAccounts) => {
+    const accountsMap = groupBy(accounts, (a) => a.accountId);
+
+    const multisigAccounts = accounts.filter((account) => {
+      if (!accountUtils.isMultisigAccount(account)) return false;
+
+      const hasSignatoryToDelete = account.signatories.some((signatory) =>
+        proxiedAccounts.some((proxy) => proxy.accountId === signatory.accountId),
+      );
+
+      const otherSignatories = account.signatories.filter((signatory) =>
+        accountsMap[signatory.accountId]?.some((acc) => !accountUtils.isWatchOnlyAccount(acc)),
+      );
+
+      return hasSignatoryToDelete && otherSignatories.length < 2;
+    });
+
+    return [...proxiedAccounts.map((p) => p.walletId), ...multisigAccounts.map((a) => a.walletId)];
+  },
   target: walletModel.events.walletsRemoved,
 });
 
