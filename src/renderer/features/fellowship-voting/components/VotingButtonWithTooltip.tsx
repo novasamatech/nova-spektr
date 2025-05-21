@@ -25,7 +25,7 @@ export const VotingButtonWithTooltip = memo(
     const buttonNode = (
       <FilledIconButton
         checked={checked || isVoted}
-        marked={checked && !isVoted}
+        marked={checked || isVoted}
         disabled={disabled}
         icon={icon}
         variant={variant}

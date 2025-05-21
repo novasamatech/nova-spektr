@@ -27,14 +27,16 @@ export const FilledIconButton = memo(
             'pointer-events-auto': !checked,
           },
           {
-            'bg-alert-background-negative text-text-negative hover:bg-badge-red-background active:bg-secondary-negative-button-background-active':
+            'bg-alert-background-negative text-text-negative active:bg-secondary-negative-button-background-active':
               variant === 'negative',
-            'bg-alert-background-positive text-text-positive hover:bg-badge-green-background active:bg-secondary-positive-button-background-active':
+            'bg-alert-background-positive text-text-positive active:bg-secondary-positive-button-background-active':
               variant === 'positive',
           },
           {
             'bg-label-background-red': variant === 'negative' && marked,
+            'hover:bg-badge-red-background': variant === 'negative' && !marked,
             'bg-label-background-green': variant === 'positive' && marked,
+            'hover:bg-badge-green-background': variant === 'positive' && !marked,
           },
         )}
         onClick={onClick}
