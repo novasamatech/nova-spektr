@@ -28,7 +28,7 @@ export const ProposerName = () => {
 
   const address = toAddress(proposer, { prefix: input.chain.addressPrefix });
 
-  const shouldRenderPending = isProposerLoading && !identity;
+  const shouldRenderPending = isProposerLoading && !identity && !address;
 
   const proposerName = !shouldRenderPending ? (
     <Address
