@@ -7,6 +7,7 @@ import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { tracks } from '../../model/tracks';
+import { BadgeIcon } from '../TaskBadge';
 
 export const requestPromotionTaskActionSlot = createSlot();
 
@@ -17,7 +18,10 @@ export const RequestPromotion = () => {
   const nextTrack = useUnit(tracks.$nextTrack);
 
   return (
-    <Box direction="row" padding={4} gap={5} verticalAlign="flex-end">
+    <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">
+      <Box alignSelf="flex-start" shrink={0}>
+        <BadgeIcon iconName="submitPromotionEvidence" />
+      </Box>
       <Box grow={1} gap={3}>
         <SmallTitleText>{t('fellowship.tasks.task.promotion.title')}</SmallTitleText>
         <Box direction="row" gap={2.5}>

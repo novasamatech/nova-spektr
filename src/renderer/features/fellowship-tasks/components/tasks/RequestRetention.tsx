@@ -10,6 +10,7 @@ import { fellowshipTasksFeature } from '../../model/feature';
 import { periods } from '../../model/periods';
 import { tracks } from '../../model/tracks';
 import { RetentionEndTimer } from '../RetentionEndTimer';
+import { BadgeIcon } from '../TaskBadge';
 
 export const requestRetentionATaskActionSlot = createSlot();
 
@@ -28,7 +29,10 @@ export const RequestRetention = () => {
   }, [input?.api, endDemotionPeriod]);
 
   return (
-    <Box direction="row" padding={4} gap={5} verticalAlign="flex-end">
+    <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">
+      <Box alignSelf="flex-start" shrink={0}>
+        <BadgeIcon iconName="submitRetentionEvidence" />
+      </Box>
       <Box gap={3} grow={1}>
         <SmallTitleText>{t('fellowship.tasks.task.retention.title')}</SmallTitleText>
         <FootnoteText>

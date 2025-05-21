@@ -9,6 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { memberSalary } from '../../model/memberSalary';
+import { BadgeIcon } from '../TaskBadge';
 
 export const payoutSalaryTaskActionSlot = createSlot();
 
@@ -27,7 +28,10 @@ export const RequestPayout = () => {
   }, [input?.api, currentPeriod]);
 
   return (
-    <Box direction="row" fillContainer padding={5} gap={5} verticalAlign="flex-end">
+    <Box direction="row" fillContainer padding={5} gap={2} verticalAlign="flex-end">
+      <Box alignSelf="flex-start" shrink={0}>
+        <BadgeIcon iconName="withdrawSalary" />
+      </Box>
       <Box gap={3} grow={1}>
         <SmallTitleText>{t('fellowship.tasks.task.requestPayout.title')}</SmallTitleText>
         <FootnoteText>

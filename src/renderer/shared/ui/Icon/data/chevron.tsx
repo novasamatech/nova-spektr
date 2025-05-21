@@ -2,6 +2,7 @@
 
 import CheckedIcon from '@/shared/assets/images/chevron/checked.svg?jsx';
 import DownIcon from '@/shared/assets/images/chevron/down.svg?jsx';
+import EmbedIcon from '@/shared/assets/images/chevron/embed.svg?jsx';
 import LeftIcon from '@/shared/assets/images/chevron/left.svg?jsx';
 import RightIcon from '@/shared/assets/images/chevron/right.svg?jsx';
 import SemiCheckedIcon from '@/shared/assets/images/chevron/semiChecked.svg?jsx';
@@ -18,6 +19,7 @@ const ChevronImages = {
   shelfRight: { svg: ShelfRightIcon },
   checked: { svg: CheckedIcon },
   semiChecked: { svg: SemiCheckedIcon },
+  embed: { svg: EmbedIcon },
 } as const;
 
 export type Chevron = keyof typeof ChevronImages;

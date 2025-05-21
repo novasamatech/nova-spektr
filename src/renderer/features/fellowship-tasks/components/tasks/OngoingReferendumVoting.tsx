@@ -7,11 +7,12 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum } from '@/domains/collectives';
+import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
 import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
+import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
 import { VoteBadge } from '../VoteBadge';
 
@@ -56,6 +57,10 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
   });
 
+  const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
+  //todo: whitelist detection might be implemented better
+  const isWhitelist = !isRFCProposal;
+
   const voted = nonNullable(vote);
 
   const content = useMemo(
@@ -73,7 +78,10 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   return (
     <Box direction="row" gap={2}>
       <ReferendumDetailsModal referendum={referendum}>
-        <button className="flex w-full min-w-0 appearance-none p-4">
+        <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
+          <Box alignSelf="flex-start" shrink={0}>
+            <TaskBadge isRFC={isRFCProposal} isWhitelist={isWhitelist} />
+          </Box>
           <Box gap={3}>
             <Box direction="row" gap={3} grow={1}>
               <SmallTitleText className="truncate">
@@ -86,7 +94,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
           </Box>
         </button>
       </ReferendumDetailsModal>
-      <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
+      <Box gap={3} padding={4} horizontalAlign="end" shrink={0}>
         <Slot
           id={referendumVotingTaskActionSlot}
           props={{ referendum, transaction, dateThresholds: DefaultDateThresholds }}

@@ -22,34 +22,45 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
   const { t } = useI18n();
   const input = useUnit(fellowshipEvidenceFeature.input);
 
-  const buttonNodes = (
-    <Box direction="row" gap={1}>
-      <EvidenceVotingModal evidence={evidence} aye={false}>
-        <FilledIconButton variant="negative" icon="thumbDown" disabled={disabled} />
-      </EvidenceVotingModal>
-
-      <EvidenceVotingModal evidence={evidence} aye={true}>
-        <FilledIconButton variant="positive" icon="thumbUp" disabled={disabled} />
-      </EvidenceVotingModal>
-    </Box>
-  );
-
   if (variant === 'large') {
     return (
-      <Box direction="row" gap={4} width="100%">
-        <EvidenceVotingModal evidence={evidence} aye={false}>
-          <ButtonCard pallet="negative" icon="thumbDown" fullWidth disabled={disabled}>
-            {t('fellowship.voting.nay')}
-          </ButtonCard>
-        </EvidenceVotingModal>
-        <EvidenceVotingModal evidence={evidence} aye={true}>
-          <ButtonCard pallet="positive" icon="thumbUp" fullWidth disabled={disabled}>
-            {t('fellowship.voting.aye')}
-          </ButtonCard>
-        </EvidenceVotingModal>
+      <Box fillContainer gap={4}>
+        <Box direction="row" gap={4} width="100%">
+          <EvidenceVotingModal evidence={evidence} aye={false}>
+            <ButtonCard pallet="negative" icon="negative" fullWidth disabled={disabled}>
+              {t('fellowship.voting.notGood')}
+            </ButtonCard>
+          </EvidenceVotingModal>
+          <EvidenceVotingModal evidence={evidence} aye={true}>
+            <ButtonCard pallet="positive" icon="positive" fullWidth disabled={disabled}>
+              {t('fellowship.voting.good')}
+            </ButtonCard>
+          </EvidenceVotingModal>
+        </Box>
       </Box>
     );
   }
+
+  const buttonNodes = (
+    <Box direction="row" gap={1}>
+      {!disabled && (
+        <>
+          <EvidenceVotingModal evidence={evidence} aye={false}>
+            <FilledIconButton variant="negative" icon="negative" disabled={disabled} />
+          </EvidenceVotingModal>
+          <EvidenceVotingModal evidence={evidence} aye={true}>
+            <FilledIconButton variant="positive" icon="positive" disabled={disabled} />
+          </EvidenceVotingModal>
+        </>
+      )}
+      {disabled && (
+        <>
+          <FilledIconButton variant="negative" icon="negative" disabled={disabled} />
+          <FilledIconButton variant="positive" icon="positive" disabled={disabled} />
+        </>
+      )}
+    </Box>
+  );
 
   if (variant === 'small' && nonNullable(input)) {
     return (
