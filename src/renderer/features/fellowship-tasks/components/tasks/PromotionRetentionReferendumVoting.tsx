@@ -76,11 +76,11 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
     if (!currentTrack || !relatedTracks || !proposerMember) return '';
 
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
+    const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
+
     return t(string, {
       name: proposerIdentity.name,
-      rank: toRomanNumeral(
-        trackService.getRankFromTrack(relatedTracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention'),
-      ),
+      rank: toRomanNumeral(trackService.getRankFromTrack(relatedTracks, proposerMember, trackName)),
     });
   }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember]);
 

@@ -623,8 +623,8 @@
         "retain": "Should {name} be retained at Rank {rank}?",
         "votingTitle": {
           "rank": "Is it good enough for Rank {rank}?",
-          "whitelist": "Is it good enough to be whitelisted?",
-          "rfc": "Is it good enough to be approved?"
+          "rfc": "Is it good enough to be approved?",
+          "whitelist": "Is it good enough to be whitelisted?"
         }
       }
     },
@@ -674,11 +674,11 @@
         "good": "Good",
         "notGood": "Not Good"
       },
-      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "modalTitle": "What do others think?",
       "noVotes": "Nobody has voted yet",
       "showHistoryButton": "View more",
       "subtitle": "Other members find the evidence to be ",
+      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."

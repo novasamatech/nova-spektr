@@ -71,21 +71,20 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
 
     if (!relatedTracks || !proposerMember) return '';
 
-    let title = '';
-    title = t('fellowship.tasks.titles.votingTitle.rank', {
-      rank: trackService.getRankFromTrack(relatedTracks, proposerMember, isPromotion ? 'Promotion' : 'Retention'),
-    });
+    const trackName = isPromotion ? 'Promotion' : 'Retention';
 
     if (isRFCProposal) {
-      title = t('fellowship.tasks.titles.votingTitle.rfc');
+      return t('fellowship.tasks.titles.votingTitle.rfc');
     }
 
     //todo detect whitelist
     // if (isWhitelist) {
-    //   title = t('fellowship.tasks.titles.votingTitle.whitelist');
+    // return t('fellowship.tasks.titles.votingTitle.whitelist');
     // }
 
-    return title;
+    return t('fellowship.tasks.titles.votingTitle.rank', {
+      rank: trackService.getRankFromTrack(relatedTracks, proposerMember, trackName),
+    });
   }, [referendum, input, tracks]);
 
   if (nonNullable(referendum) && referendumService.isCompleted(referendum)) {
