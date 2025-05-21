@@ -167,7 +167,7 @@ sample({
     const accountsMap = groupBy(accounts, (a) => a.accountId);
     const accountsToDeleteMap = dictionary(accountsToDelete, 'accountId');
 
-    const isDublicated = accounts.find(
+    const isDuplicated = accounts.find(
       (acc) =>
         accountsToDeleteMap[acc.accountId] &&
         !accountUtils.isWatchOnlyAccount(acc) &&
@@ -175,7 +175,7 @@ sample({
         acc.walletId !== walletId,
     );
 
-    if (isDublicated) return [walletId];
+    if (isDuplicated) return [walletId];
 
     const multisigAccounts = accounts.filter(
       (acc) =>
