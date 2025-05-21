@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -53,10 +53,16 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
 
   let title = '';
   if (isPromotion && nonNullable(member?.rank)) {
-    title = t('fellowship.evidenceModal.titlePromotion', { name: memberIdentity?.name, rank: member?.rank + 1 });
+    title = t('fellowship.evidenceModal.titlePromotion', {
+      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
+      rank: member?.rank + 1,
+    });
   }
   if (isRetention) {
-    title = t('fellowship.evidenceModal.titleRetention', { name: memberIdentity?.name, rank: member?.rank });
+    title = t('fellowship.evidenceModal.titleRetention', {
+      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
+      rank: member?.rank,
+    });
   }
 
   const rank = useMemo(() => {
