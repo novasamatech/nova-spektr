@@ -83,7 +83,7 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
     // }
 
     return t('fellowship.tasks.titles.votingTitle.rank', {
-      rank: trackService.getRankFromTrack(relatedTracks, proposerMember, trackName),
+      rank: trackService.getProposalTrack(relatedTracks, proposerMember, trackName),
     });
   }, [referendum, input, tracks]);
 

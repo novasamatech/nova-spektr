@@ -1,13 +1,15 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
-import { ButtonCard } from '@/shared/ui';
+import { ButtonCard, SmallTitleText } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
+import { Card } from '@/features/fellowship-referendum-details';
 import { fellowshipEvidenceFeature } from '../model/feature';
+import { members } from '../model/members';
 
 import { EvidenceVotingModal } from './EvidenceVotingModal';
 
@@ -22,6 +24,26 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
   const { t } = useI18n();
   const input = useUnit(fellowshipEvidenceFeature.input);
 
+  const isPromotion = evidence.wish === 'Promotion';
+  const isRetention = evidence.wish === 'Retention';
+
+  const member = useStoreMap({
+    store: members.$list,
+    keys: [evidence.accountId],
+    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
+  });
+
+  let title = '';
+
+  if (nonNullable(member) && isPromotion) {
+    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: member?.rank + 1 });
+  }
+
+  if (nonNullable(member) && isRetention) {
+    title = t('fellowship.tasks.titles.votingTitle.rank', { rank: member?.rank });
+  }
+
+  let component = null;
   const buttonNodes = (
     <Box direction="row" gap={1}>
       <EvidenceVotingModal evidence={evidence} aye={false}>
@@ -35,7 +57,7 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
   );
 
   if (variant === 'large') {
-    return (
+    component = (
       <Box fillContainer gap={4}>
         <Box direction="row" gap={4} width="100%">
           <EvidenceVotingModal evidence={evidence} aye={false}>
@@ -54,7 +76,7 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
   }
 
   if (variant === 'small' && nonNullable(input)) {
-    return (
+    component = (
       <Box
         verticalAlign={nonNullable(endBlock) ? 'space-between' : 'flex-end'}
         horizontalAlign="flex-end"
@@ -68,5 +90,12 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
     );
   }
 
-  return null;
+  return (
+    <Card>
+      <Box fillContainer gap={6} padding={6}>
+        <SmallTitleText>{title}</SmallTitleText>
+        {component}
+      </Box>
+    </Card>
+  );
 });

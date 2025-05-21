@@ -221,7 +221,7 @@ function originNameFromTrack(track: Track): string {
   return capitalize(track.name);
 }
 
-export const getRankFromTrack = (tracks: Track[], proposerMember: Member, wish: 'Promotion' | 'Retention'): number => {
+export const getProposalTrack = (tracks: Track[], proposerMember: Member, wish: 'Promotion' | 'Retention'): number => {
   if (wish === 'Retention') {
     const currentTrack = tracks.find(t => t.id === proposerMember.rank);
     return currentTrack?.id ?? 0;
@@ -250,5 +250,5 @@ export const trackService = {
   rankSatisfiesVotingThreshold,
   getReferendumTrackFromRank,
   originNameFromTrack,
-  getRankFromTrack,
+  getProposalTrack,
 };

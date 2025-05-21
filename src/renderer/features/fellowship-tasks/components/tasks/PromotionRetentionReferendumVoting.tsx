@@ -80,13 +80,13 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
 
     return t(string, {
       name: proposerIdentity.name,
-      rank: toRomanNumeral(trackService.getRankFromTrack(relatedTracks, proposerMember, trackName)),
+      rank: toRomanNumeral(trackService.getProposalTrack(relatedTracks, proposerMember, trackName)),
     });
   }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember]);
 
   const rank = useMemo(() => {
     if (!currentTrack || !relatedTracks || !proposerMember) return null;
-    const rank = trackService.getRankFromTrack(
+    const rank = trackService.getProposalTrack(
       relatedTracks,
       proposerMember,
       isPromotionTrack ? 'Promotion' : 'Retention',
