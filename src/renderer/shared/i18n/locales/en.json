@@ -839,10 +839,12 @@
     "advanced": {
       "fields": {
         "approveCurve": "Approve curve",
+        "beneficiary": "Beneficiary",
         "callHash": "Call hash",
         "deposit": "Deposit",
         "electorate": "Electorate",
         "proposer": "Proposer",
+        "requested": "Requested",
         "supportCurve": "Support curve",
         "turnout": "Turnout"
       },
@@ -909,6 +911,7 @@
       "advanced": "Advanced",
       "aye": "Aye",
       "ayes": "Ayes",
+      "beneficiary": "Beneficiary:",
       "delegatingHint": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
       "multishardHint": "Part of the accounts from the shared account is delegated, you can vote with the available accounts, ask your delegate to vote or remove delegation to be able to vote directly.",
       "nay": "Nay",
@@ -916,6 +919,7 @@
       "proposer": "Proposer:",
       "proxyRestrictionMessage": "Please add a new proxy connections to voting",
       "remove": "Remove vote",
+      "requested": "Requested: {amount} {asset}",
       "revote": "Revote",
       "support": "Support",
       "threshold": "Threshold",
@@ -1349,7 +1353,7 @@
         "title": "{ walletName } is not connected"
       },
       "rejected": "Rejected",
-      "signTitle_one": "Scan with { walletName }",
+      "signTitle_one": "Confirm with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },

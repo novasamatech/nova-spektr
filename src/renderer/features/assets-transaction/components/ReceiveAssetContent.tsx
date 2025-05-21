@@ -29,7 +29,9 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   if (!selectedAccount) return null;
 
   const address = toAddress(selectedAccount.accountId, { prefix: chain.addressPrefix });
-  const legacyAddress = toAddress(selectedAccount.accountId, { prefix: chain.addressPrefix }); // TODO: add legacy address
+  const legacyAddress = toAddress(selectedAccount.accountId, {
+    prefix: chain.legacyAddressPrefix ?? chain.addressPrefix,
+  });
   const isUnifiedAddress = address !== legacyAddress;
 
   const handleCopy = (address: string, type: StatusType) => {

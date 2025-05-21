@@ -7205,6 +7205,87 @@
     ]
   },
   {
+    "name": "Westend Asset Hub (TESTNET)",
+    "addressPrefix": 42,
+    "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": [
+      "testnet",
+      "multisig",
+      "governance",
+      "regular_proxy",
+      "pure_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://asset-hub-westend-rpc.dwellir.com",
+        "name": "Dwellir"
+      },
+      {
+        "url": "wss://westmint-rpc-tn.dwellir.com",
+        "name": "Dwellir Tunisia"
+      },
+      {
+        "url": "wss://sys.ibp.network/asset-hub-westend",
+        "name": "IBP1"
+      },
+      {
+        "url": "wss://asset-hub-westend.dotters.network",
+        "name": "IBP2"
+      },
+      {
+        "url": "wss://westend-asset-hub-rpc.polkadot.io",
+        "name": "Parity"
+      },
+      {
+        "url": "wss://asset-hub-westend.rpc.permanence.io",
+        "name": "Permanence DAO EU"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Westend",
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "type": "native",
+        "staking": "relaychain",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://westmint.statescan.io/#/accounts/{address}",
+        "event": "https://westmint.statescan.io/#/events/{event}"
+      }
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-westend-prod.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-polkadot-prod.novasama-tech.org"
+        }
+      ]
+    }
+  },
+  {
     "name": "Avail",
     "specName": "avail",
     "addressPrefix": 42,

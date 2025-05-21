@@ -3,7 +3,10 @@ import uniq from 'lodash/uniq';
 import { spread } from 'patronum';
 
 import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { dictionary } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
 import { proxyModel } from '@/entities/proxy';
@@ -94,6 +97,8 @@ split({
   },
 });
 
+const walletsRemoved = createEvent<Wallet['id']>();
+
 sample({
   clock: [forgetWallet, forgetWcWallet],
   source: {
@@ -109,7 +114,7 @@ sample({
   clock: findProxiedWalletsFx.doneData,
   target: spread({
     proxiesToDelete: proxyModel.events.proxiesRemoved,
-    proxiedWalletsToDelete: walletModel.events.walletsRemoved,
+    proxiedWalletsToDelete: series(walletsRemoved),
     proxiedAccountsToDelete: balanceModel.events.balancesRemoved,
     proxyGroupsToDelete: proxyModel.events.proxyGroupsRemoved,
   }),
@@ -133,9 +138,29 @@ sample({
 });
 
 sample({
-  clock: forgetSimpleWallet,
+  clock: [forgetSimpleWallet, forgetWcWallet],
   fn: (wallet) => wallet.id,
-  target: walletModel.events.walletRemoved,
+  target: walletsRemoved,
+});
+
+sample({
+  clock: walletsRemoved,
+  source: accounts.$list,
+  fn: (accounts, walletId) => {
+    const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
+    const accountsMap = dictionary(accounts, 'accountId');
+    const accountsToDeleteMap = dictionary(accountsToDelete, 'accountId');
+
+    const multisigAccounts = accounts.filter(
+      (acc) =>
+        accountUtils.isMultisigAccount(acc) &&
+        acc.signatories.some((s) => accountsToDeleteMap[s.accountId]) &&
+        acc.signatories.filter((s) => accountsMap[s.accountId]).length === 1,
+    );
+
+    return [walletId, ...multisigAccounts.map((a) => a.walletId)];
+  },
+  target: walletModel.events.walletsRemoved,
 });
 
 sample({

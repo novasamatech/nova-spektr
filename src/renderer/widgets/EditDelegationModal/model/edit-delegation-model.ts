@@ -78,7 +78,7 @@ const $activeDelegations = combine(
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 
-    return delegations[delegate.accountId] || {};
+    return delegations[delegate.address] || {};
   },
 );
 
@@ -218,12 +218,12 @@ sample({
         balance: amount || '0',
         conviction: conviction || 'None',
         previousConviction: activeDelegations[address].conviction || 'None',
-        target: target?.accountId || '',
+        target: target?.address || '',
         tracks,
         undelegateTracks:
-          activeTracks[target!.accountId]?.[
-            toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })
-          ].map(Number) || [],
+          activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })].map(
+            Number,
+          ) || [],
       });
     });
   },
@@ -374,7 +374,7 @@ sample({
           chain: walletData.chain!,
           asset: asset!,
           tracks,
-          target: target?.accountId || '',
+          target: target?.address || '',
           transferable: transferableAmount(
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
