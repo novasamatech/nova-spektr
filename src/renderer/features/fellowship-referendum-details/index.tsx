@@ -4,14 +4,14 @@ import {
   ReferendumDetailsModal,
   referendumActionsSlot,
   referendumAdditionalHighPriorityInfoSlot,
-  referendumAdditionalLowPriorityInfoSlot,
+  referendumAdditionalInfoSlot,
 } from './components/ReferendumDetailsModal';
 import { fellowshipReferendumsDetailsFeature } from './model/feature';
 
 export {
   fellowshipReferendumsDetailsFeature,
   referendumAdditionalHighPriorityInfoSlot,
-  referendumAdditionalLowPriorityInfoSlot,
+  referendumAdditionalInfoSlot,
   referendumActionsSlot,
   evidenceActionsSlot,
   Card,

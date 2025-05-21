@@ -18,7 +18,6 @@ type Props = {
 
 export const ReferendumDescription = memo(({ referendum }: Props) => {
   useFlow(details.flow, { referendum });
-
   const { t } = useI18n();
 
   const referendumMeta = useUnit(details.$referendumMeta);
@@ -55,7 +54,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>
-            <Markdown>{evidence ?? ''}</Markdown>
+            <Markdown>{evidence.content ?? ''}</Markdown>
           </Box>
         </Card>
       ) : null}

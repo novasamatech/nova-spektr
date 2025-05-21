@@ -11,6 +11,7 @@ import {
   PUBLIC_KEY_LENGTH_BYTES,
   SS58_DEFAULT_PREFIX,
 } from './constants';
+import { nullable } from './functions';
 import { truncate } from './strings';
 
 /**
@@ -25,6 +26,8 @@ import { truncate } from './strings';
  * @returns {String}
  */
 export const toAddress = (value: string, params?: { chunk?: number; prefix?: number }): Address => {
+  if (nullable(value)) return '';
+
   const chunkValue = params?.chunk;
   const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 

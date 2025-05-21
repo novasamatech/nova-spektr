@@ -7,7 +7,7 @@ import { member } from '@/domains/collectives';
 import { accountService, identity } from '@/domains/network';
 
 import { fellowshipTasksFeature } from './feature';
-
+import { identityModel } from './identity';
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
 const $account = fellowshipTasksFeature.input.map(store => (store ? store.account : null));
 
@@ -17,13 +17,7 @@ const $hasPermission = $account.map(account => {
 
 const $hasAccount = $account.map(nonNullable);
 
-const $identities = combine(fellowshipTasksFeature.input, identity.$list, (featureInput, list) => {
-  if (nullable(featureInput)) return {};
-
-  return list[featureInput.chainId] ?? {};
-});
-
-const $identity = combine($member, $identities, (member, identities) => {
+const $identity = combine($member, identityModel.$identities, (member, identities) => {
   if (nullable(member)) return null;
 
   return identities[member.accountId] ?? null;

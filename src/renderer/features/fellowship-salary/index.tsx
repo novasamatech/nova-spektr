@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button } from '@/shared/ui';
+import { ButtonCard } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { basketUtils } from '@/entities/basket';
 import { salarySlot } from '@/features/fellowship-evidence-salary';
@@ -44,9 +44,9 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
     return (
       <>
         {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
-        <Button size="sm" disabled={!canVote} onClick={() => salaryRequest.saveToBasket()}>
+        <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryRequest.saveToBasket()}>
           {t('fellowship.tasks.task.requestSalary.request')}
-        </Button>
+        </ButtonCard>
       </>
     );
   } else {
@@ -54,9 +54,9 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
       <>
         {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
         <SalaryRegisterModal>
-          <Button size="sm" disabled={!canVote}>
+          <ButtonCard size="sm" disabled={!canVote}>
             {t('fellowship.tasks.task.requestSalary.request')}
-          </Button>
+          </ButtonCard>
         </SalaryRegisterModal>
       </>
     );
@@ -71,16 +71,16 @@ fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
 
   if (canSaveToBasket) {
     return (
-      <Button size="sm" disabled={!canVote} onClick={() => salaryInduct.saveToBasket()}>
+      <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryInduct.saveToBasket()}>
         {t('fellowship.tasks.task.requestSalaryInduct.request')}
-      </Button>
+      </ButtonCard>
     );
   } else {
     return (
       <SalaryInductModal>
-        <Button size="sm" disabled={!canVote}>
+        <ButtonCard size="sm" disabled={!canVote}>
           {t('fellowship.tasks.task.requestSalaryInduct.request')}
-        </Button>
+        </ButtonCard>
       </SalaryInductModal>
     );
   }
@@ -94,17 +94,17 @@ fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
 
   if (canSaveToBasket) {
     return (
-      <Button size="sm" disabled={!canVote} onClick={() => salaryPayout.saveToBasket()}>
+      <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryPayout.saveToBasket()}>
         {t('fellowship.tasks.task.requestPayout.request')}
-      </Button>
+      </ButtonCard>
     );
   }
 
   return (
     <SalaryRegisterModal>
-      <Button size="sm" disabled={!canVote}>
+      <ButtonCard size="sm" disabled={!canVote}>
         {t('fellowship.tasks.task.requestPayout.request')}
-      </Button>
+      </ButtonCard>
     </SalaryRegisterModal>
   );
 });
