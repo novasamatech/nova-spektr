@@ -218,77 +218,6 @@
     }
   },
   {
-    "name": "Westend (TESTNET)",
-    "specName": "westend",
-    "addressPrefix": 42,
-    "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
-    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "regular_proxy",
-      "pure_proxy"
-    ],
-    "nodes": [
-      {
-        "url": "wss://westend-rpc.dwellir.com",
-        "name": "Dwellir node"
-      },
-      {
-        "url": "wss://rpc.ibp.network/westend",
-        "name": "IBP1 node"
-      },
-      {
-        "url": "wss://westend.dotters.network",
-        "name": "IBP2 node"
-      },
-      {
-        "url": "wss://westend.public.curie.radiumblock.co/ws",
-        "name": "RadiumBlock node"
-      }
-    ],
-    "assets": [
-      {
-        "name": "Westend",
-        "assetId": 0,
-        "symbol": "WND",
-        "precision": 12,
-        "type": "native",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
-        }
-      }
-    ],
-    "explorers": [
-      {
-        "name": "Subscan",
-        "extrinsic": "https://westend.subscan.io/extrinsic/{hash}",
-        "account": "https://westend.subscan.io/account/{address}",
-        "multisig": "https://westend.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
-      }
-    ],
-    "externalApi": {
-      "staking": [
-        {
-          "type": "subquery",
-          "url": "https://subquery-history-westend-prod.novasama-tech.org/"
-        }
-      ],
-      "history": [
-        {
-          "type": "subquery",
-          "url": "https://subquery-history-westend-prod.novasama-tech.org/"
-        }
-      ],
-      "proxy": [
-        {
-          "type": "subquery",
-          "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
-        }
-      ]
-    }
-  },
-  {
     "name": "Kusama Asset Hub",
     "specName": "kusama",
     "addressPrefix": 2,
@@ -6595,7 +6524,6 @@
     "options": [
       "testnet",
       "multisig",
-      "governance",
       "regular_proxy",
       "pure_proxy"
     ],
@@ -6624,7 +6552,6 @@
         "symbol": "WND",
         "precision": 12,
         "type": "native",
-        "staking": "relaychain",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
@@ -6656,6 +6583,12 @@
         {
           "type": "subquery",
           "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-westend-prod.novasama-tech.org"
         }
       ]
     },
