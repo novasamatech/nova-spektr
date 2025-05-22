@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { ButtonCard } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
@@ -30,6 +31,8 @@ fellowshipSalaryFeature.inject(salarySlot, () => {
 });
 
 fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
+  useFlow(salaryRequest.flow, null);
+
   const { t } = useI18n();
   const account = useUnit(salaryRequest.$account);
   const input = useUnit(fellowshipSalaryFeature.input);
