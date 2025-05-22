@@ -228,6 +228,13 @@
     "chooseOptionLabel": "Choose an option"
   },
   "dynamicDerivations": {
+    "exportKeys": {
+      "closeButton": "Close",
+      "downloadButton": "Download as a txt-file",
+      "downloadSuccessPopup": "Keys exported",
+      "modalTitle": "Export keys",
+      "qrCodeTitle": "Scan the QR code with Polkadot Vault"
+    },
     "importKeys": {
       "backButton": "Back",
       "continueButton": "Continue",

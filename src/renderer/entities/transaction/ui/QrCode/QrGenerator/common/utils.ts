@@ -1,12 +1,12 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
-import { decodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
 import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq/raptorq';
 
-import { type Address, type ChainId } from '@/shared/core';
+import { type Address, type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
-import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
+import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
 import {
@@ -165,4 +165,32 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
     new Uint8Array([Command.DynamicDerivationsRequestV1]),
     dynamicDerivationsRequest,
   );
+};
+
+export const createDynamicDerivationExportPayload = (
+  walletName: string,
+  publicKey: Address,
+  derivations: (VaultChainAccount | VaultShardAccount)[],
+  chains: Record<ChainId, Chain>,
+) => {
+  const payload = EXPORT_ADDRESS.encode({
+    ExportAddrs: 'V1',
+    payload: [
+      {
+        name: walletName,
+        multiSigner: {
+          MultiSigner: CryptoTypeString.SR25519,
+          public: decodeAddress(publicKey, false, 1),
+        },
+        derivedKeys: derivations.map((d) => ({
+          address: encodeAddress(d.accountId, chains[d.chainId].addressPrefix),
+          derivationPath: d.derivationPath,
+          genesisHash: hexToU8a(d.chainId),
+          encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
+        })),
+      },
+    ],
+  });
+
+  return u8aConcat(SUBSTRATE_ID, CRYPTO_STUB, new Uint8Array([Command.DynamicDerivationsExport]), payload);
 };
