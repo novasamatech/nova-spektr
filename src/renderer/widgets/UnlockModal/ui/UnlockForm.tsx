@@ -1,11 +1,12 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
+import { type DropdownResult } from '@/shared/ui/Dropdowns/common/types';
 import { Address, AssetBalance } from '@/shared/ui-entities';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
@@ -13,6 +14,7 @@ import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
+import { type AccountWithClaim } from '@/features/governance/types/structs';
 import { unlockFormAggregate } from '../aggregates/unlockForm';
 
 type Props = {
@@ -87,20 +89,32 @@ const AccountsSelector = () => {
     return null;
   }
 
-  const options = accounts.map(({ account, balance }) => {
-    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+  const options = useMemo(
+    () =>
+      accounts.map(({ account, balance }) => {
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-    return {
-      id: account.id,
-      value: account,
-      element: (
-        <div className="flex flex-grow justify-between" key={account.id}>
-          <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
-          <AssetBalance value={balance} asset={network.asset} className="w-min" />
-        </div>
-      ),
-    };
-  });
+        return {
+          id: account.id,
+          value: account,
+          element: (
+            <div className="flex flex-grow justify-between" key={account.id}>
+              <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
+              <AssetBalance value={balance} asset={network.asset} className="w-min" />
+            </div>
+          ),
+        };
+      }),
+    [accounts, chain],
+  );
+
+  const selectedIds = useMemo(() => {
+    return shards.value.map((a) => a.id);
+  }, [shards.value]);
+
+  const onSelect = (values: DropdownResult<AccountWithClaim>[]) => {
+    shards.onChange(values.map(({ value }) => value));
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -109,9 +123,9 @@ const AccountsSelector = () => {
         placeholder={t('operation.selectAccount')}
         multiPlaceholder={t('governance.operations.selectPlaceholder')}
         invalid={shards.hasError()}
-        selectedIds={shards.value.map((a) => a.id)}
+        selectedIds={selectedIds}
         options={options}
-        onChange={(values) => shards.onChange(values.map(({ value }) => value))}
+        onChange={onSelect}
       />
       <InputHint variant="error" active={shards.hasError()}>
         {t(shards.errorText())}
