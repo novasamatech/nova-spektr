@@ -115,6 +115,22 @@ export const MultiSelect = ({
                 key={id}
                 value={{ id, value }}
                 className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
+                onClick={(e) => {
+                  /**
+                   * A workaround against the bug in headlessui that triggers a
+                   * synthetic click on input with an old value and causes an
+                   * infinite loop of changes
+                   *
+                   * https://github.com/tailwindlabs/headlessui/issues/3476
+                   * https://github.com/tailwindlabs/headlessui/issues/3507
+                   * https://github.com/tailwindlabs/headlessui/issues/3520
+                   * https://github.com/tailwindlabs/headlessui/issues/3562
+                   * https://github.com/tailwindlabs/headlessui/issues/3655
+                   */
+                  if (e.target instanceof HTMLInputElement) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 {({ selected }) => (
                   <div
