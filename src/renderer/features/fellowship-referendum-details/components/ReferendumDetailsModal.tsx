@@ -14,7 +14,6 @@ import { AdditionalInfo } from './AdditionalInfo';
 import { MemberProfile } from './MemberProfile';
 import { ReferendumDescription } from './ReferendumDescription';
 
-//todo remove all about this
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
@@ -52,7 +51,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
                 <ReferendumDescription referendum={referendum} />
               </Box>
               <Box width="350px" shrink={0} gap={4}>
-                {/* <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} /> */}
+                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
 
                 <MemberProfile referendum={referendum} />
 

@@ -6,18 +6,13 @@ import { nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService, track, trackService } from '@/domains/collectives';
-import {
-  Card,
-  referendumActionsSlot,
-  referendumAdditionalHighPriorityInfoSlot,
-} from '@/features/fellowship-referendum-details';
+import { Card, referendumActionsSlot } from '@/features/fellowship-referendum-details';
 import { referendumVotingTaskActionSlot } from '@/features/fellowship-tasks';
 
 import { ReferendumEndTimer } from './components/ReferendumEndTimer';
 import { VotingActions } from './components/VotingActions';
 import { VotingButtons } from './components/VotingButtons';
 import { VotingConfirmation } from './components/VotingConfirmation';
-import { WalletVotingInfo } from './components/WalletVotingInfo';
 import { fellowshipVotingFeature } from './model/feature';
 import { fellowship } from './model/fellowship';
 import { members } from './model/members';
@@ -32,10 +27,6 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
       <VotingActions referendum={referendum} transaction={transaction} />
     </>
   );
-});
-
-fellowshipVotingFeature.inject(referendumAdditionalHighPriorityInfoSlot, ({ referendumId }) => {
-  return <WalletVotingInfo referendumId={referendumId} />;
 });
 
 fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
