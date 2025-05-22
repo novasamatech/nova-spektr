@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ConfirmModal, FootnoteText, SmallTitleText } from '@/shared/ui';
@@ -15,9 +13,10 @@ type Props = {
 export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) => {
   const { t } = useI18n();
 
-  useEffect(() => {
-    forgetWalletModel.events.callbacksChanged({ onDeleteFinished: onForget });
-  }, [onForget]);
+  const forgetWallet = () => {
+    onForget();
+    forgetWalletModel.events.forgetWallet(wallet);
+  };
 
   return (
     <ConfirmModal
@@ -27,7 +26,7 @@ export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) 
       confirmPallet="error"
       panelClass="w-[240px]"
       onClose={onClose}
-      onConfirm={() => forgetWalletModel.events.forgetWallet(wallet)}
+      onConfirm={forgetWallet}
     >
       <SmallTitleText align="center" className="mb-2">
         {t('walletDetails.common.removeWalletTitle')}

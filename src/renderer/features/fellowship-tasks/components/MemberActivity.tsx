@@ -78,7 +78,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
                 DEFAULT_VALUE
               )
             ) : (
-              <Skeleton width={20} height={5} />
+              <Skeleton width="8ch" height="1lh" />
             )}
           </FootnoteText>
         </Box>
@@ -102,7 +102,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
                 DEFAULT_VALUE
               )
             ) : (
-              <Skeleton width={20} height={5} />
+              <Skeleton width="8ch" height="1lh" />
             )}
           </FootnoteText>
         </Box>
