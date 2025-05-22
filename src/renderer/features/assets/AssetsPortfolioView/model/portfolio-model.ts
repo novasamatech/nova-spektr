@@ -60,8 +60,10 @@ const $tokens = combine(
     const tokens: AssetByChains[] = [];
 
     for (const token of defaultTokens) {
-      const filteredChains = token.chains.filter((chain) => {
-        return accountService.filterAccountOnChain(accounts, chains[chain.chainId]);
+      const filteredChains = token.chains.filter((tokenChain) => {
+        const chain = chains[tokenChain.chainId];
+        if (!chain) return false;
+        return accountService.filterAccountOnChain(accounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -91,12 +93,13 @@ const $activeTokens = combine(
     for (const token of tokens) {
       const filteredChains = token.chains.filter((c) => {
         const connection = connections[c.chainId];
+        const chain = chains[c.chainId];
 
         if (nullable(connection)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
-        if (nullable(chains[c.chainId])) return false;
+        if (nullable(chain)) return false;
         if (isMultisigWallet) {
-          return networkUtils.isMultisigSupported(chains[c.chainId].options);
+          return networkUtils.isMultisigSupported(chain.options);
         }
 
         return filteredAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
@@ -180,16 +183,16 @@ const $sortedTokens = combine(
   {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
-    $hideZeroBalances: $hideZeroBalances,
+    hideZeroBalances: $hideZeroBalances,
     filteredTokens: $filteredTokensWithBalance,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+  ({ query, activeTokensWithBalance, filteredTokens, hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query
       ? filteredTokens
-      : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
+      : tokensService.hideZeroBalances(hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
