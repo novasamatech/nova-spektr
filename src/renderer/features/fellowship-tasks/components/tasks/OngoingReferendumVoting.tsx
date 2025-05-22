@@ -4,17 +4,14 @@ import { useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
-import { votes } from '../../model/voting';
 import { tasksService } from '../../service';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
-import { VoteBadge } from '../VoteBadge';
 
 export interface DateThresholds {
   urgent: number;
@@ -51,17 +48,10 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     keys: [referendum.id],
     fn: (meta, [id]) => meta[id] ?? null,
   });
-  const vote = useStoreMap({
-    store: votes.$memberVotes,
-    keys: [referendum.id],
-    fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
-  });
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
   //todo: whitelist detection might be implemented better
   const isWhitelist = !isRFCProposal;
-
-  const voted = nonNullable(vote);
 
   const content = useMemo(
     () =>
@@ -88,7 +78,6 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
                 {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
               </SmallTitleText>
               <TaskLabels tags={tags} />
-              {voted && <VoteBadge active />}
             </Box>
             <FootnoteText as="div">{content}</FootnoteText>
           </Box>

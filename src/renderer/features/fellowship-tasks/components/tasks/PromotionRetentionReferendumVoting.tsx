@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService, track, trackService } from '@/domains/collectives';
@@ -13,11 +13,9 @@ import { evidenceModel } from '../../model/evidence';
 import { fellowshipTasksFeature } from '../../model/feature';
 import { identityModel } from '../../model/identity';
 import { members } from '../../model/members';
-import { votes } from '../../model/voting';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
-import { VoteBadge } from '../VoteBadge';
 
 import { DefaultDateThresholds, LooseDateThresholds, referendumVotingTaskActionSlot } from './OngoingReferendumVoting';
 
@@ -35,13 +33,7 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
   const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
   const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
   const tracks = useUnit(track.$list);
-  const vote = useStoreMap({
-    store: votes.$memberVotes,
-    keys: [referendum.id],
-    fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
-  });
 
-  const voted = nonNullable(vote);
   const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
   const proposerAccountId = referendumService.getProposer(referendum);
   const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
@@ -112,7 +104,6 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
                     <Skeleton width="30ch" height="1lh" />
                   )}
                   <TaskLabels tags={tags} />
-                  {voted && <VoteBadge active />}
                 </Box>
                 {!evidenceSummary?.summary && pending && <Skeleton height="3lh" width="85%" />}
                 <FootnoteText as="div">
