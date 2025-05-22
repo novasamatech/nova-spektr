@@ -106,7 +106,11 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
             <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
               <Box gap={3}>
                 <Box direction="row" gap={3}>
-                  <SmallTitleText className="truncate">{title}</SmallTitleText>
+                  {title ? (
+                    <SmallTitleText className="truncate">{title}</SmallTitleText>
+                  ) : (
+                    <Skeleton width="30ch" height="1lh" />
+                  )}
                   <TaskLabels tags={tags} />
                   {voted && <VoteBadge active />}
                 </Box>

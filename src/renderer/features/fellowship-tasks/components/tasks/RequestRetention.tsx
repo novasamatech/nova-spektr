@@ -33,7 +33,7 @@ export const RequestRetention = () => {
       <Box alignSelf="flex-start" shrink={0}>
         <BadgeIcon iconName="submitRetentionEvidence" />
       </Box>
-      <Box gap={3} grow={1}>
+      <Box gap={3} grow={1} alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.retention.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.retention.description', { rank: toRomanNumeral(track?.id ?? 0) })}

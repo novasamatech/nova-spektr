@@ -22,7 +22,7 @@ export const RequestPromotion = () => {
       <Box alignSelf="flex-start" shrink={0}>
         <BadgeIcon iconName="submitPromotionEvidence" />
       </Box>
-      <Box grow={1} gap={3}>
+      <Box grow={1} gap={3} alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.promotion.title')}</SmallTitleText>
         <Box direction="row" gap={2.5}>
           {currentTrack ? <CollectiveRank rank={currentTrack.id} showName /> : null}
