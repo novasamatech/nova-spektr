@@ -1,5 +1,5 @@
-import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, useId } from 'react';
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
+import { useId, useMemo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
@@ -45,7 +45,10 @@ export const MultiSelect = ({
   theme = 'light',
 }: Props) => {
   const id = useId();
-  const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
+  const selectedOptions = useMemo(
+    () => options.filter((option) => selectedIds?.includes(option.id)),
+    [options, selectedIds],
+  );
 
   const getSelectButtonElement = () => {
     // if one option selected we show that option
@@ -82,7 +85,7 @@ export const MultiSelect = ({
     <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
       {({ open }) => (
         <div className={cnTw('relative', className)}>
-          <Listbox.Button
+          <ListboxButton
             id={id}
             className={cnTw(
               open && SelectButtonStyle[theme].open,
@@ -97,36 +100,35 @@ export const MultiSelect = ({
           >
             {getSelectButtonElement()}
             <Icon name={open ? 'up' : 'down'} size={16} />
-          </Listbox.Button>
+          </ListboxButton>
 
-          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <Listbox.Options
-              className={cnTw(
-                OptionsContainerStyle,
-                OptionsContainerStyleTheme[theme],
-                position !== 'auto' && ViewClass[position],
-              )}
-            >
-              {options.map(({ id, value, element }) => (
-                <Listbox.Option
-                  key={id}
-                  value={{ id, value }}
-                  className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
-                >
-                  {({ selected }) => (
-                    <div
-                      className={cnTw(
-                        'pointer-events-none w-full',
-                        selected ? 'text-text-primary' : 'text-text-secondary',
-                      )}
-                    >
-                      <Checkbox checked={selected}>{element}</Checkbox>
-                    </div>
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
-          </Transition>
+          <ListboxOptions
+            className={cnTw(
+              OptionsContainerStyle,
+              OptionsContainerStyleTheme[theme],
+              position !== 'auto' && ViewClass[position],
+            )}
+            transition
+          >
+            {options.map(({ id, value, element }) => (
+              <ListboxOption
+                key={id}
+                value={{ id, value }}
+                className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
+              >
+                {({ selected }) => (
+                  <div
+                    className={cnTw(
+                      'pointer-events-none w-full',
+                      selected ? 'text-text-primary' : 'text-text-secondary',
+                    )}
+                  >
+                    <Checkbox checked={selected}>{element}</Checkbox>
+                  </div>
+                )}
+              </ListboxOption>
+            ))}
+          </ListboxOptions>
         </div>
       )}
     </Listbox>
