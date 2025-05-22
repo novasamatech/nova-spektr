@@ -1,5 +1,5 @@
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
-import { useId, useMemo } from 'react';
+import { Listbox, Transition } from '@headlessui/react';
+import { Fragment, useId, useMemo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
@@ -85,7 +85,7 @@ export const MultiSelect = ({
     <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
       {({ open }) => (
         <div className={cnTw('relative', className)}>
-          <ListboxButton
+          <Listbox.Button
             id={id}
             className={cnTw(
               open && SelectButtonStyle[theme].open,
@@ -100,51 +100,52 @@ export const MultiSelect = ({
           >
             {getSelectButtonElement()}
             <Icon name={open ? 'up' : 'down'} size={16} />
-          </ListboxButton>
+          </Listbox.Button>
 
-          <ListboxOptions
-            className={cnTw(
-              OptionsContainerStyle,
-              OptionsContainerStyleTheme[theme],
-              position !== 'auto' && ViewClass[position],
-            )}
-            transition
-          >
-            {options.map(({ id, value, element }) => (
-              <ListboxOption
-                key={id}
-                value={{ id, value }}
-                className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
-                onClick={(e) => {
-                  /**
-                   * A workaround against the bug in headlessui that triggers a
-                   * synthetic click on input with an old value and causes an
-                   * infinite loop of changes
-                   *
-                   * https://github.com/tailwindlabs/headlessui/issues/3476
-                   * https://github.com/tailwindlabs/headlessui/issues/3507
-                   * https://github.com/tailwindlabs/headlessui/issues/3520
-                   * https://github.com/tailwindlabs/headlessui/issues/3562
-                   * https://github.com/tailwindlabs/headlessui/issues/3655
-                   */
-                  if (e.target instanceof HTMLInputElement) {
-                    e.preventDefault();
-                  }
-                }}
-              >
-                {({ selected }) => (
-                  <div
-                    className={cnTw(
-                      'pointer-events-none w-full',
-                      selected ? 'text-text-primary' : 'text-text-secondary',
-                    )}
-                  >
-                    <Checkbox checked={selected}>{element}</Checkbox>
-                  </div>
-                )}
-              </ListboxOption>
-            ))}
-          </ListboxOptions>
+          <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <Listbox.Options
+              className={cnTw(
+                OptionsContainerStyle,
+                OptionsContainerStyleTheme[theme],
+                position !== 'auto' && ViewClass[position],
+              )}
+            >
+              {options.map(({ id, value, element }) => (
+                <Listbox.Option
+                  key={id}
+                  value={{ id, value }}
+                  className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
+                  onClick={(e) => {
+                    /**
+                     * A workaround against the bug in headlessui that triggers
+                     * a synthetic click on input with an old value and causes
+                     * an infinite loop of changes
+                     *
+                     * https://github.com/tailwindlabs/headlessui/issues/3476
+                     * https://github.com/tailwindlabs/headlessui/issues/3507
+                     * https://github.com/tailwindlabs/headlessui/issues/3520
+                     * https://github.com/tailwindlabs/headlessui/issues/3562
+                     * https://github.com/tailwindlabs/headlessui/issues/3655
+                     */
+                    if (e.target instanceof HTMLInputElement) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  {({ selected }) => (
+                    <div
+                      className={cnTw(
+                        'pointer-events-none w-full',
+                        selected ? 'text-text-primary' : 'text-text-secondary',
+                      )}
+                    >
+                      <Checkbox checked={selected}>{element}</Checkbox>
+                    </div>
+                  )}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Transition>
         </div>
       )}
     </Listbox>
