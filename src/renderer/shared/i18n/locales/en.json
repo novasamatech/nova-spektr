@@ -641,6 +641,7 @@
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
+      "aye": "Aye",
       "confirmation": {
         "fee": "Network fee",
         "promotionTrack": "Promotion",
@@ -674,15 +675,15 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
-      "emptyListDescription": "Other members will appear here once they vote",
-      "emptyListTitle": "Nobody has voted for this option yet",
+      "emptyListDescription": "Members will appear here once opinions are submitted",
+      "emptyListTitle": "No opinions yet",
       "level": {
         "controversial": "Controversial",
         "good": "Good",
         "notGood": "Not Good"
       },
       "modalTitle": "What do others think?",
-      "noVotes": "Nobody has voted yet",
+      "noVotes": "No opinions have been submitted yet",
       "showHistoryButton": "View more",
       "subtitle": "Other members find the evidence to be ",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
