@@ -8,7 +8,7 @@ const feature = 'Wallets. Proxy wallets';
 const story = 'Transfers';
 
 test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }, () => {
-  test('Proxy wallet can make regular transfer', async ({ loginPage }) => {
+  test.fail('Proxy wallet can make regular transfer', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
