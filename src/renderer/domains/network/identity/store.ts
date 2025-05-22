@@ -13,7 +13,7 @@ import { type AccountIdentity } from './types';
 
 const fetchPool = createAsyncTaskPool({
   poolSize: 1,
-  retryCount: 5,
+  retryCount: 15,
   retryDelay: 2000,
 });
 
