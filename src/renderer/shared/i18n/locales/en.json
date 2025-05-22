@@ -661,6 +661,7 @@
       "good": "Good",
       "nay": "Nay",
       "notGood": "Not Good",
+      "revote": "Revote ",
       "summary": "What do others think?",
       "threshold": "Threshold",
       "title": "Vote on",
