@@ -6,11 +6,10 @@ import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/util
 import { Alert, Button, Duration, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { memberService, salaryService } from '@/domains/collectives';
+import { memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
-import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
 import { EvidencePostFlowModal } from './EvidencePostFlowModal';
@@ -27,12 +26,9 @@ export const RetentionInfo = memo(() => {
   const showAttention = useUnit(evidenceInfo.$showAttention);
   const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
   const hasPromotionEvidence = useUnit(evidenceInfo.$hasPromotionEvidence);
-  const claimStatus = useUnit(memberSalary.$memberClaimStatus);
 
   const isCoreMember = nonNullable(currentMember) && memberService.isCoreMember(currentMember);
-  const isInducted = nonNullable(claimStatus) && salaryService.isInducted(claimStatus);
-  const disabled =
-    nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isCoreMember || !isInducted;
+  const disabled = nullable(account) || !accountService.hasPermissionToMakeActions(account) || !isCoreMember;
 
   useEffect(() => {
     if (input?.api && leftToDemotion) {

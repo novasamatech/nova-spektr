@@ -20,7 +20,7 @@ export const RequestSalaryInduct = () => {
       <Box alignSelf="flex-start" shrink={0}>
         <BadgeIcon iconName="requestSalary" />
       </Box>
-      <Box gap={3} width="100%">
+      <Box gap={3} width="100%" alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalaryInduct.description', {

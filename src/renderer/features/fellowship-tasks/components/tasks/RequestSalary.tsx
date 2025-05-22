@@ -34,7 +34,7 @@ export const RequestSalary = () => {
       <Box alignSelf="flex-start" shrink={0}>
         <BadgeIcon iconName="withdrawSalary" />
       </Box>
-      <Box gap={3} grow={1}>
+      <Box gap={3} grow={1} alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalary.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalary.description', {
