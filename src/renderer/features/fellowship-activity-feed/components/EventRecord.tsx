@@ -1,40 +1,27 @@
-import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { createSlot } from '@/shared/di';
-import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { AsyncItem, Box } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
-import { identityService } from '@/domains/network';
-import { identityModel } from '../model/identity';
-
-import { getDescription } from './utils';
 
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
-type Props = {
+export interface ActivityFeedRecord {
   event: FeedRecord;
   chain: Chain;
+  duration: number;
+  name?: string;
+  description?: string;
   withFullAccountInfo?: boolean;
-};
+}
 
-const now = Date.now();
+type Props = ActivityFeedRecord;
 
-export const EventRecord = memo(({ event, chain, withFullAccountInfo }: Props) => {
-  const { t } = useI18n();
-  const identities = useUnit(identityModel.$list);
-  const identity = identities[event.accountId];
-
-  const name = identity ? identityService.getFullName(identity) : undefined;
-
-  const description = getDescription(event, t);
-
-  const duration = (now - event.at.getTime()) / 1000;
-
+export const EventRecord = memo(({ event, chain, duration, name, description, withFullAccountInfo }: Props) => {
   return (
     <AsyncItem fallback={<Box width="100%" height="48px"></Box>}>
       <div className="flex flex-col gap-1 px-5">
