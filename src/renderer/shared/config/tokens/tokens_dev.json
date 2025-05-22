@@ -75,26 +75,6 @@
         }
       },
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 1,
-        "assetSymbol": "DOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "101"
-        }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 2,
-        "assetSymbol": "sDOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "1001"
-        }
-      },
-      {
         "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
         "name": "Polkadot Asset Hub",
         "assetId": 0,
@@ -332,32 +312,6 @@
         }
       },
       {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 1,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x01000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "100000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 1,
-        "assetSymbol": "KSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x04000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0xcceae7f3b9947cdb67369c026ef78efa5f34a08fe5808d373c04421ecf4f1aaf",
         "name": "Amplitude",
         "assetId": 1,
@@ -494,19 +448,6 @@
           "currencyIdScale": "0x0209",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 5,
-        "assetSymbol": "RMRK",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x1f000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
           "transfersEnabled": true
         }
       }
@@ -727,16 +668,6 @@
         }
       },
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 14,
-        "assetSymbol": "USDT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "102"
-        }
-      },
-      {
         "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
         "name": "Polkadot Asset Hub",
         "assetId": 1,
@@ -887,19 +818,6 @@
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 3,
-        "assetSymbol": "KAR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x03000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "100000000000",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -976,19 +894,6 @@
       {
         "chainId": "0xa85cfb9b9fd4d622a5b28289a02347af987d8f73fa3108450e2b4a11c1ce5755",
         "name": "Basilisk",
-        "assetId": 2,
-        "assetSymbol": "aSEEDk",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x02000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "10000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
         "assetId": 2,
         "assetSymbol": "aSEEDk",
         "type": "orml",
@@ -1106,19 +1011,6 @@
         "type": "native"
       },
       {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 4,
-        "assetSymbol": "BNC",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0e000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
         "chainId": "0x5d3c298622d5634ed019bf61ea4b71655030015bde9beb0d6a24743714462c86",
         "name": "Pendulum",
         "assetId": 16,
@@ -1177,19 +1069,6 @@
           "currencyIdScale": "0x0102000000",
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 4,
-        "assetSymbol": "LKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x04000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "500000000",
           "transfersEnabled": true
         }
       }
@@ -1273,16 +1152,6 @@
         }
       },
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 17,
-        "assetSymbol": "PHA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "115"
-        }
-      },
-      {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "Hydration",
         "assetId": 20,
@@ -1301,19 +1170,6 @@
         "assetId": 0,
         "assetSymbol": "PHA",
         "type": "native"
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 7,
-        "assetSymbol": "PHA",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x07000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "10000000000",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -1547,19 +1403,6 @@
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 7,
-        "assetSymbol": "vsKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x10000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -1708,19 +1551,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "76100021443485661246318545281171740067"
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 5,
-        "assetSymbol": "HKO",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x05000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "500000000000",
-          "transfersEnabled": true
         }
       }
     ]
@@ -2214,19 +2044,6 @@
           "existentialDeposit": "100000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 8,
-        "assetSymbol": "vKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x0f000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
       }
     ]
   },
@@ -2308,7 +2125,7 @@
       "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MGX.svg",
       "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MGX.svg"
     },
-    "symbol": "MGX",
+    "symbol": "xcMGX",
     "isTestToken": false,
     "chains": [
       {
@@ -2319,19 +2136,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "118095707745084482624853002839493125353"
-        }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 0,
-        "assetSymbol": "MGX",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x00000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
         }
       }
     ]
@@ -2344,7 +2148,7 @@
       "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/TUR.svg",
       "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/TUR.svg"
     },
-    "symbol": "TUR",
+    "symbol": "xcTUR",
     "isTestToken": false,
     "chains": [
       {
@@ -2355,26 +2159,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "133300872918374599700079037156071917454"
-        }
-      },
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 0,
-        "assetSymbol": "TUR",
-        "type": "native"
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 3,
-        "assetSymbol": "TUR",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x07000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
         }
       }
     ]
@@ -2400,19 +2184,6 @@
           "currencyIdScale": "0x0207",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "1000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 6,
-        "assetSymbol": "ZLK",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x1a000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
           "transfersEnabled": true
         }
       }
@@ -2576,16 +2347,6 @@
         "typeExtras": {
           "assetId": "18446744073709551616"
         }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 3,
-        "assetSymbol": "ACA",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "108"
-        }
       }
     ]
   },
@@ -2621,16 +2382,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "18446744073709551618"
-        }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 5,
-        "assetSymbol": "LDOT",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "110"
         }
       },
       {
@@ -2691,16 +2442,6 @@
         "typeExtras": {
           "assetId": "18446744073709551617"
         }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 4,
-        "assetSymbol": "aSEEDp",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "104"
-        }
       }
     ]
   },
@@ -2743,16 +2484,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "18446744073709551619"
-        }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 6,
-        "assetSymbol": "GLMR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "114"
         }
       },
       {
@@ -2828,13 +2559,6 @@
         "typeExtras": {
           "assetId": "32615670524745285411807346420584982855"
         }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 0,
-        "assetSymbol": "PARA",
-        "type": "native"
       }
     ]
   },
@@ -2933,16 +2657,6 @@
         }
       },
       {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 12,
-        "assetSymbol": "INTR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "120"
-        }
-      },
-      {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
         "name": "Hydration",
         "assetId": 17,
@@ -3010,16 +2724,6 @@
         "assetId": 0,
         "assetSymbol": "ASTR",
         "type": "native"
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 16,
-        "assetSymbol": "ASTR",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "112"
-        }
       },
       {
         "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
@@ -3140,16 +2844,6 @@
         "type": "statemine",
         "typeExtras": {
           "assetId": "18446744073709551620"
-        }
-      },
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 13,
-        "assetSymbol": "iBTC",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "122"
         }
       },
       {
@@ -3797,28 +3491,6 @@
     ]
   },
   {
-    "name": "Clover Finance",
-    "precision": 18,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/CLV.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/CLV.svg"
-    },
-    "symbol": "CLV",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xe61a41c53f5dcd0beb09df93b34402aada44cb05117b71059cce40a2723a4e97",
-        "name": "Parallel",
-        "assetId": 15,
-        "assetSymbol": "CLV",
-        "type": "statemine",
-        "typeExtras": {
-          "assetId": "130"
-        }
-      }
-    ]
-  },
-  {
     "name": "DED",
     "precision": 10,
     "priceId": "dot-is-ded",
@@ -4285,6 +3957,28 @@
     ]
   },
   {
+    "name": "GIGADOT",
+    "precision": 12,
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/GIGADOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/GIGADOT.svg"
+    },
+    "symbol": "GIGADOT",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
+        "name": "Polkadot Asset Hub",
+        "assetId": 25,
+        "assetSymbol": "GIGADOT",
+        "type": "statemine",
+        "typeExtras": {
+          "assetId": "50000092"
+        }
+      }
+    ]
+  },
+  {
     "name": "Zeitgeist",
     "precision": 10,
     "priceId": "zeitgeist",
@@ -4622,6 +4316,7 @@
   {
     "name": "tBTC",
     "precision": 18,
+    "priceId": "tbtc",
     "icon": {
       "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/tBTC.svg",
       "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/tBTC.svg"
@@ -4672,7 +4367,7 @@
   },
   {
     "name": "LINK",
-    "precision": 12,
+    "precision": 18,
     "priceId": "chainlink",
     "icon": {
       "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/LINK.svg",
@@ -4748,6 +4443,56 @@
     ]
   },
   {
+    "name": "GIGADOT",
+    "precision": 18,
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/GIGADOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/GIGADOT.svg"
+    },
+    "symbol": "GIGADOT",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 58,
+        "assetSymbol": "GIGADOT",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x45000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "aDOT",
+    "precision": 10,
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+    },
+    "symbol": "aDOT",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 60,
+        "assetSymbol": "aDOT",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0xe9030000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "0",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
     "name": "Interlay DOT",
     "precision": 10,
     "icon": {
@@ -4768,31 +4513,6 @@
           "currencyIdType": "InterbtcPrimitivesCurrencyId",
           "existentialDeposit": "0",
           "transfersEnabled": false
-        }
-      }
-    ]
-  },
-  {
-    "name": "s Kusama",
-    "precision": 12,
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/sKSM.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/sKSM.svg"
-    },
-    "symbol": "sKSM",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x0f62b701fb12d02237a33b84818c11f621653d2b1614c777973babf4652b535d",
-        "name": "Turing",
-        "assetId": 6,
-        "assetSymbol": "sKSM",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x06000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "500000000",
-          "transfersEnabled": true
         }
       }
     ]
@@ -4884,32 +4604,6 @@
         "assetId": 0,
         "assetSymbol": "HEI",
         "type": "native"
-      }
-    ]
-  },
-  {
-    "name": "Etherium",
-    "precision": 18,
-    "priceId": "ethereum",
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/ETH.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/ETH.svg"
-    },
-    "symbol": "ETH",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0xd611f22d291c5b7b69f1e105cca03352984c344c4421977efaa4cbdd1834e2aa",
-        "name": "Mangata X",
-        "assetId": 2,
-        "assetSymbol": "ETH",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x01000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "0",
-          "transfersEnabled": true
-        }
       }
     ]
   },

@@ -222,7 +222,7 @@ type SubscriptionParams = {
 export const feedSubscriptionResource = createSubscriptionResource<SubscriptionParams, FeedRecord[]>({
   pool: ({ palletType, chain }) => `${palletType}-${chain.chainId}`,
   fn({ chain, palletType }, callback) {
-    const url = chain.externalApi?.collectives.find(x => x.type === 'subquery')?.url;
+    const url = chain.externalApi?.collectives?.find(x => x.type === 'subquery')?.url;
     if (nullable(url)) {
       throw new Error(`Collectives indexer doesn't support ${chain.name} chain`);
     }
