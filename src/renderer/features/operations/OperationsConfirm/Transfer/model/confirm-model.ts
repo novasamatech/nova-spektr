@@ -10,7 +10,7 @@ import {
   type Transaction,
   type Wallet,
 } from '@/shared/core';
-import { nonNullable, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
@@ -85,7 +85,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
                 balances,
                 store.proxiedAccount.accountId,
                 store.chain.chainId,
-                store.asset.assetId.toFixed(),
+                getNativeAsset(store.chain.assets).assetId.toFixed(),
               ),
             ),
         },
@@ -106,7 +106,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.signatory.accountId,
               store.chain.chainId,
-              store.chain.assets[0].assetId.toFixed(),
+              getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
           ),
       } as TransferSignatoryFeeStore,
@@ -125,7 +125,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.proxiedAccount?.accountId || store.account.accountId,
               store.chain.chainId,
-              store.chain.assets[0].assetId.toFixed(),
+              getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
           ),
           balance: transferableAmount(
@@ -153,7 +153,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
         xcmFee: store.xcmFee,
         deliveryFee: store.deliveryFee,
         isProxy: !!store.proxiedAccount,
-        isNative: store.chain.assets[0].assetId === store.asset.assetId,
+        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
         isXcm: store.xcmChain.chainId !== store.chain.chainId,
         balance: {
           native: transferableAmount(
@@ -161,7 +161,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.account.accountId,
               store.chain.chainId,
-              store.chain.assets[0].assetId.toFixed(),
+              getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
           ),
           balance: transferableAmount(
@@ -189,7 +189,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
         xcmFee: store.xcmFee,
         deliveryFee: store.deliveryFee,
         isProxy: !!store.proxiedAccount,
-        isNative: store.chain.assets[0].assetId === store.asset.assetId,
+        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
         isXcm: store.xcmChain.chainId !== store.chain.chainId,
         balance: {
           native: transferableAmount(
@@ -197,7 +197,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.account.accountId,
               store.chain.chainId,
-              store.chain.assets[0].assetId.toFixed(),
+              getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
           ),
           balance: transferableAmount(
@@ -225,7 +225,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
         xcmFee: store.xcmFee,
         deliveryFee: store.deliveryFee,
         isProxy: !!store.proxiedAccount,
-        isNative: store.chain.assets[0].assetId === store.asset.assetId,
+        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
         isXcm: store.xcmChain.chainId !== store.chain.chainId,
         balance: {
           native: transferableAmount(
@@ -233,7 +233,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
               balances,
               store.account.accountId,
               store.chain.chainId,
-              store.chain.assets[0].assetId.toFixed(),
+              getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
           ),
           balance: transferableAmount(
