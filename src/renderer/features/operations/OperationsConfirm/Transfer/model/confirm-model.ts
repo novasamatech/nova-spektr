@@ -231,7 +231,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
           native: transferableAmount(
             balanceUtils.getBalance(
               balances,
-              store.account.accountId,
+              (store.proxiedAccount || store.account).accountId,
               store.chain.chainId,
               getNativeAsset(store.chain.assets).assetId.toFixed(),
             ),
@@ -239,7 +239,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
           balance: transferableAmount(
             balanceUtils.getBalance(
               balances,
-              store.account.accountId,
+              (store.proxiedAccount || store.account).accountId,
               store.chain.chainId,
               store.asset.assetId.toFixed(),
             ),
