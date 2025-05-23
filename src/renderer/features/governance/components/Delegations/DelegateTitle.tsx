@@ -17,19 +17,19 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
 
   const delegateName = useStoreMap({
     store: identity.$list,
-    keys: [chain?.chainId, delegate.accountId, delegate.address],
-    fn: (identity, [chainId, accountId, address]) => {
+    keys: [chain?.chainId, delegate.address],
+    fn: (identity, [chainId, address]) => {
       if (nullable(chainId)) return null;
 
-      return delegate.name ?? identity[chainId]?.[toAccountId(address ?? accountId)]?.name ?? null;
+      return delegate.name ?? identity[chainId]?.[toAccountId(address)]?.name ?? null;
     },
   });
 
-  if (nullable(chain) || nullable(delegate.accountId)) return null;
+  if (nullable(chain) || nullable(delegate.address)) return null;
 
   return (
     <HeadlineText className={cnTw('w-full', className)}>
-      <Account hideAddress hideIcon title={delegateName || undefined} accountId={delegate.accountId} chain={chain} />
+      <Account hideAddress hideIcon title={delegateName || undefined} accountId={delegate.address} chain={chain} />
     </HeadlineText>
   );
 };

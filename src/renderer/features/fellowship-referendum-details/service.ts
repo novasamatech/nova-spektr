@@ -1,4 +1,5 @@
 import { type Track } from '@/domains/collectives';
+
 const getRankTitle = (rank: number, relatedTrack: Track[] | null | undefined) => {
   const name = relatedTrack?.find(t => t.id === rank)?.name;
 

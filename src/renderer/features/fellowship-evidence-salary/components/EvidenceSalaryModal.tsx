@@ -1,18 +1,19 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
-import { fellowshipSalaryFeature } from '../model/feature';
+import { fellowshipEvidenceSalaryFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-import { RetentionInfo } from './RetentionInfo';
-import { SalaryInfo } from './SalaryInfo';
+export const evidenceSlot = createSlot();
+export const salarySlot = createSlot();
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const featureInput = useUnit(fellowshipSalaryFeature.input);
+  const featureInput = useUnit(fellowshipEvidenceSalaryFeature.input);
   const currentMember = useUnit(profile.$member);
   const [tab, setTab] = useState('evidence');
 
@@ -36,10 +37,10 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
             </Tabs.List>
           </Box>
           <Tabs.Content value="evidence">
-            <RetentionInfo />
+            <Slot id={evidenceSlot} />
           </Tabs.Content>
           <Tabs.Content value="salary">
-            <SalaryInfo />
+            <Slot id={salarySlot} />
           </Tabs.Content>
         </Tabs>
       </Modal.Content>

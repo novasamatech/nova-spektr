@@ -12,7 +12,8 @@ export type Chain = {
   explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
-  externalApi?: Record<ExternalType, ExternalValue[]>;
+  legacyAddressPrefix?: number;
+  externalApi?: Partial<Record<ExternalType, ExternalValue[]>>;
   options?: ChainOptions[];
   additional?: Record<AdditionalType, `0x${string}`>;
 };

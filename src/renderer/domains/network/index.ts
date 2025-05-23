@@ -13,3 +13,5 @@ export type { AnyAccount, AnyAccountDraft, ChainAccount, UniversalAccount } from
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
 export type { AccountIdentity, IdentityMap } from './identity/types';
+
+export { block } from './block';

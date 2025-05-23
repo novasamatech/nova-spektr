@@ -36,7 +36,8 @@ function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank:
   let voted = 0;
   let agreementVote = 0;
 
-  const memberVotesMap = dictionary(votes, 'referendumId');
+  const memberVotes = votes.filter(v => v.accountId === member.accountId);
+  const memberVotesMap = dictionary(memberVotes, 'referendumId');
 
   for (const referendum of possibleReferendums) {
     const memberVote = memberVotesMap[referendum.referendumId];

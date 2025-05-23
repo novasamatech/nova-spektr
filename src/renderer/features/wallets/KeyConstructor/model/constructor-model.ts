@@ -84,7 +84,9 @@ const $constructorForm = createForm<FormValues>({
     },
     keyName: {
       init: '',
-      rules: [{ name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean }],
+      rules: [
+        { name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean },
+      ],
     },
     derivationPath: {
       init: '',
@@ -239,7 +241,7 @@ sample({
 sample({
   clock: $chain,
   source: $constructorForm.fields.keyType.$value,
-  filter: (_, chain) => nonNullable(chain),
+  filter: (keyType, chain) => nonNullable(keyType) && nonNullable(chain),
   fn: (keyType, chain) => {
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 

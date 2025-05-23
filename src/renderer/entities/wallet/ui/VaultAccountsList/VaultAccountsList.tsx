@@ -49,16 +49,18 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                           addressPrefix={chain.addressPrefix}
                           onClick={isSharded ? () => onShardClick?.(account) : undefined}
                         >
-                          <AccountExplorers accountId={accountId} chain={chain}>
-                            <Box gap={0.5}>
-                              <FootnoteText className="text-text-tertiary">
-                                {t('general.explorers.derivationTitle')}
-                              </FootnoteText>
-                              <HelpText className="break-all text-text-secondary">
-                                {accountUtils.getDerivationPath(account)}
-                              </HelpText>
-                            </Box>
-                          </AccountExplorers>
+                          {!isSharded && (
+                            <AccountExplorers accountId={accountId} chain={chain}>
+                              <Box gap={0.5}>
+                                <FootnoteText className="text-text-tertiary">
+                                  {t('general.explorers.derivationTitle')}
+                                </FootnoteText>
+                                <HelpText className="break-all text-text-secondary">
+                                  {accountUtils.getDerivationPath(account)}
+                                </HelpText>
+                              </Box>
+                            </AccountExplorers>
+                          )}
                         </DerivedAccount>
                       </li>
                     );

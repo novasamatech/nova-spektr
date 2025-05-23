@@ -10,7 +10,7 @@ import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
 
 type Props = {
-  feed: FeedRecord[];
+  feed: (FeedRecord & { description?: string; duration: number; name?: string })[];
   limit: number;
   withFullAccountInfo?: boolean;
 };
@@ -32,6 +32,9 @@ export const ActivityListView = ({ limit, feed, withFullAccountInfo }: PropsWith
         <EventRecord
           key={`${event.block}-${event.accountId}-${event.type}`}
           event={event}
+          description={event.description}
+          duration={event.duration}
+          name={event.name}
           chain={input.chain}
           withFullAccountInfo={withFullAccountInfo}
         />

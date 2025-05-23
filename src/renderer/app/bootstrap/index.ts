@@ -99,7 +99,9 @@ export const bootstrap = () => {
 
     import('@/features/fellowship-activity-feed').then(({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature),
     import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),
-    import('@/features/fellowship-evidence-salary').then(({ fellowshipSalaryFeature }) => fellowshipSalaryFeature),
+    import('@/features/fellowship-evidence-salary').then(({ fellowshipEvidenceSalaryFeature }) => fellowshipEvidenceSalaryFeature),
+    import('@/features/fellowship-evidence').then(({ fellowshipEvidenceFeature }) => fellowshipEvidenceFeature),
+    import('@/features/fellowship-salary').then(({ fellowshipSalaryFeature }) => fellowshipSalaryFeature),
     import('@/features/fellowship-members').then(({ fellowshipMembersFeature }) => fellowshipMembersFeature),
     import('@/features/fellowship-profile').then(({ fellowshipProfileFeature }) => fellowshipProfileFeature),
     import('@/features/fellowship-referendum-details').then(({ fellowshipReferendumsDetailsFeature }) => fellowshipReferendumsDetailsFeature),

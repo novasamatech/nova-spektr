@@ -1,11 +1,9 @@
 import { chainsService } from '@/shared/api/network';
-import { type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type ChainId, type VaultChainAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
-export const exportKeysUtils = {
-  getExportStructure,
-};
+import { downloadFiles } from './download-multiple-files';
 
 const IMPORT_FILE_VERSION = 1;
 
@@ -37,3 +35,22 @@ function accountToDerivationExport(account: VaultChainAccount | VaultShardAccoun
 
   return `${derivationPath}: ${account.name} [${account.keyType}]\n`;
 }
+
+function exportVaultWallet(
+  wallet: Wallet,
+  rootAccountId: AccountId,
+  accounts: (VaultChainAccount | VaultShardAccount[])[],
+) {
+  const exportStructure = getExportStructure(rootAccountId, accounts);
+
+  downloadFiles([
+    {
+      blob: new Blob([exportStructure], { type: 'text/plain' }),
+      fileName: `${wallet.name}.txt`,
+    },
+  ]);
+}
+
+export const exportKeysUtils = {
+  exportVaultWallet,
+};

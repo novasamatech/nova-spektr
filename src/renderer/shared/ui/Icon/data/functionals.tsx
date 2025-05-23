@@ -27,9 +27,11 @@ import MagicIcon from '@/shared/assets/images/functionals/magic.svg?jsx';
 import MinusCircleIcon from '@/shared/assets/images/functionals/minus-circle.svg?jsx';
 import MoreIcon from '@/shared/assets/images/functionals/more.svg?jsx';
 import MultisigOutlineIcon from '@/shared/assets/images/functionals/multisig-outline.svg?jsx';
+import NegativeIcon from '@/shared/assets/images/functionals/negative.svg?jsx';
 import OpenGovDelegationsIcon from '@/shared/assets/images/functionals/opengov-delegations.svg?jsx';
 import OpenGovLockIcon from '@/shared/assets/images/functionals/opengov-lock.svg?jsx';
 import OpenGovVotingLockIcon from '@/shared/assets/images/functionals/opengov-voting-lock.svg?jsx';
+import PositiveIcon from '@/shared/assets/images/functionals/positive.svg?jsx';
 import PromoteVotingIcon from '@/shared/assets/images/functionals/promote-voting.svg?jsx';
 import PromoteIcon from '@/shared/assets/images/functionals/promote.svg?jsx';
 import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
@@ -108,6 +110,8 @@ const FunctionalImages = {
   withdraw: { svg: WithdrawIcon },
   requestSalary: { svg: RequestSalaryIcon },
   promoteVoting: { svg: PromoteVotingIcon },
+  positive: { svg: PositiveIcon },
+  negative: { svg: NegativeIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

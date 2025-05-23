@@ -180,6 +180,12 @@ sample({
 });
 
 sample({
+  source: parseFileContentFx.done,
+  fn: () => null,
+  target: $validationError,
+});
+
+sample({
   source: parseFileContentFx.fail,
   fn: ({ error }: SampleFnError) => ({ error: error.error }),
   target: $validationError,

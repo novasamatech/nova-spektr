@@ -370,6 +370,7 @@ export const walletModel = {
     walletHidden,
     walletHiddenSuccess: hideWalletFx.done,
     walletRemovedSuccess: removeWalletFx.done,
+    walletsRemovedSuccess: removeWalletsFx.done,
     walletsRemoved,
     walletRestored,
     walletRestoredSuccess: restoreWalletFx.done,
@@ -378,6 +379,6 @@ export const walletModel = {
   __test: {
     $rawWallets,
     walletCreatedFx: createWalletFx,
-    removeWalletFx,
+    removeWalletsFx,
   },
 };

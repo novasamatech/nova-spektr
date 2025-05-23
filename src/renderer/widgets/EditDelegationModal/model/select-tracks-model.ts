@@ -135,8 +135,8 @@ sample({
 
       for (const [track, vote] of Object.entries(voteList)) {
         const isDelegateExist = votingService.isDelegating(vote) && delegate;
-        const isCurrentDelegate = isDelegateExist && toAccountId(delegate.accountId) === toAccountId(vote.target);
-        const isOtherDelegate = isDelegateExist && toAccountId(delegate.accountId) !== toAccountId(vote.target);
+        const isCurrentDelegate = isDelegateExist && toAccountId(delegate.address) === toAccountId(vote.target);
+        const isOtherDelegate = isDelegateExist && toAccountId(delegate.address) !== toAccountId(vote.target);
 
         if ((votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) || isOtherDelegate) {
           activeTracks.add(track);
@@ -184,6 +184,14 @@ sample({
     return [...tracks, track];
   },
   target: $tracks,
+});
+
+sample({
+  clock: formInitiated,
+  source: $availableAccounts,
+  filter: (accounts) => accounts.length > 0,
+  fn: (accounts) => [accounts.at(0)!],
+  target: $accounts,
 });
 
 sample({
