@@ -159,12 +159,7 @@ const $memberEvidenceTasks = combine(
   }): TaskDescription[] => {
     if (!evidencePopulated || nullable(member) || !memberService.isCoreMember(member)) return [];
 
-    if (
-      nonNullable(leftToDemotion) &&
-      leftToDemotion > 0 &&
-      hasRetentionEvidence === false &&
-      hasPromotionEvidence === false
-    ) {
+    if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
       return [
         {
           id: 'evidence',
@@ -180,7 +175,8 @@ const $memberEvidenceTasks = combine(
       memberService.canPromote(member) &&
       nonNullable(leftToPromotion) &&
       leftToPromotion === 0 &&
-      hasPromotionEvidence === false
+      hasPromotionEvidence === false &&
+      hasRetentionEvidence === false
     ) {
       return [
         {
