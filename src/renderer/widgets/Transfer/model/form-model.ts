@@ -25,6 +25,7 @@ import {
   toAddress,
   transferableAmount,
   validateAddress,
+  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
@@ -367,7 +368,7 @@ const $signatories = combine(
           chain.assets[0].assetId.toString(),
         );
 
-        return { signer: signatory, balance: transferableAmount(balance) };
+        return { signer: signatory, balance: withdrawableAmount(balance) };
       });
 
       acc.push(balancedSignatories);
