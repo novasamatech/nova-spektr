@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import init, { Encoder } from 'raptorq/raptorq';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
@@ -30,6 +31,7 @@ export const QrDerivationsExportGenerator = ({
   delay = DEFAULT_FRAME_DELAY,
 }: Props) => {
   const chains = useUnit(networkModel.$chains);
+  const [encoder, setEncoder] = useState<Encoder>();
 
   const payload = useMemo(
     () =>
@@ -37,9 +39,22 @@ export const QrDerivationsExportGenerator = ({
     [walletName, rootAccountId, derivations, chains],
   );
 
-  const image = useGenerator(payload, skipEncoding, delay, bgColor);
+  const createEncoder = useCallback(async () => {
+    try {
+      await init();
+      setEncoder(Encoder.with_defaults(payload, 128));
+    } catch (error) {
+      console.error('Failed to create encoder:', error);
+    }
+  }, [payload]);
 
-  if (!payload || !image) {
+  useEffect(() => {
+    createEncoder();
+  }, [createEncoder]);
+
+  const image = useGenerator(payload, skipEncoding, delay, bgColor, encoder);
+
+  if (!image) {
     return null;
   }
 
