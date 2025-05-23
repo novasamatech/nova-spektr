@@ -40,7 +40,7 @@ const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
-const walletHidden = createEvent<Wallet>();
+const walletHidden = createEvent<ID>();
 const walletRemoved = createEvent<ID>();
 const walletsRemoved = createEvent<ID[]>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
@@ -278,6 +278,13 @@ sample({
 
 sample({
   clock: walletHidden,
+  source: $allWallets,
+  filter: (wallets, walletId) => {
+    return wallets.some((wallet) => wallet.id === walletId);
+  },
+  fn: (wallets, walletId) => {
+    return wallets.find((wallet) => wallet.id === walletId)!;
+  },
   target: hideWalletFx,
 });
 

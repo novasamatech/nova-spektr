@@ -5,12 +5,7 @@
     "addressPrefix": 0,
     "chainId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg",
-    "options": [
-      "multisig",
-      "governance",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "governance", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://polkadot-rpc.dwellir.com",
@@ -116,12 +111,7 @@
     "addressPrefix": 2,
     "chainId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama.svg",
-    "options": [
-      "multisig",
-      "governance",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "governance", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://kusama-rpc.dwellir.com",
@@ -223,13 +213,7 @@
     "addressPrefix": 42,
     "chainId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "multisig",
-      "governance",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["testnet", "multisig", "governance", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://westend-rpc.dwellir.com",
@@ -301,11 +285,7 @@
     "chainId": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_Asset_Hub.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://asset-hub-kusama-rpc.dwellir.com",
@@ -985,12 +965,7 @@
     "chainId": "0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonriver.svg",
-    "options": [
-      "multisig",
-      "ethereum_based",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "ethereum_based", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://moonriver-rpc.dwellir.com",
@@ -2785,12 +2760,7 @@
     "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Moonbeam.svg",
-    "options": [
-      "multisig",
-      "ethereum_based",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "ethereum_based", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://wss.api.moonbeam.network",
@@ -3456,11 +3426,7 @@
     "chainId": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://asset-hub-polkadot-rpc.dwellir.com",
@@ -4056,11 +4022,7 @@
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Hydration.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://hydradx-rpc.dwellir.com",
@@ -5369,11 +5331,7 @@
     "addressPrefix": 42,
     "chainId": "0x70255b4d28de0fc4e1a193d7e175ad1ccef431598211c55538f1018651a0344e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/AlephZero.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://ws.azero.dev",
@@ -5730,9 +5688,7 @@
     "addressPrefix": 42,
     "chainId": "0x6408de7737c59c238890533af25896a2c20608d8b380bb01029acb392781063e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Rococo_Testnet.svg",
-    "options": [
-      "testnet"
-    ],
+    "options": ["testnet"],
     "nodes": [
       {
         "url": "wss://rococo-rpc.polkadot.io/",
@@ -6055,11 +6011,7 @@
     "addressPrefix": 42,
     "chainId": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Bittensor.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://entrypoint-finney.opentensor.ai:443",
@@ -6269,9 +6221,7 @@
     "chainId": "0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Collectives.svg",
-    "options": [
-      "regular_proxy"
-    ],
+    "options": ["regular_proxy"],
     "nodes": [
       {
         "url": "wss://sys.ibp.network/collectives-polkadot",
@@ -6343,11 +6293,7 @@
     "chainId": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_People.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://polkadot-people-rpc.polkadot.io",
@@ -6408,11 +6354,7 @@
     "chainId": "0xc1af4cb4eb3918e5db15086c0cc5ec17fb334f728b7c65dd44bfe1e174ff8b3f",
     "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_People.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://kusama-people-rpc.polkadot.io",
@@ -6576,9 +6518,7 @@
     "chainId": "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/BridgeHub_Testnet.svg",
-    "options": [
-      "testnet"
-    ],
+    "options": ["testnet"],
     "nodes": [
       {
         "url": "wss://westend-bridge-hub-rpc.dwellir.com",
@@ -6622,12 +6562,7 @@
     "chainId": "0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Mythos.svg",
-    "options": [
-      "multisig",
-      "ethereum_based",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "ethereum_based", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://polkadot-mythos-rpc.polkadot.io",
@@ -6691,11 +6626,7 @@
     "addressPrefix": 42,
     "chainId": "0xb91746b45e0346cc2f815a520b9c6cb4d5c0902af848db0a80f85932d2e8276a",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Avail.svg",
-    "options": [
-      "multisig",
-      "regular_proxy",
-      "pure_proxy"
-    ],
+    "options": ["multisig", "regular_proxy", "pure_proxy"],
     "nodes": [
       {
         "url": "wss://mainnet-rpc.avail.so/ws",
@@ -6759,13 +6690,7 @@
     "addressPrefix": 42,
     "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "governance",
-      "pure_proxy",
-      "regular_proxy",
-      "multisig"
-    ],
+    "options": ["testnet", "governance", "pure_proxy", "regular_proxy", "multisig"],
     "nodes": [
       {
         "url": "wss://rpc-test-network-1.novasama-tech.org",
@@ -6808,9 +6733,7 @@
     "chainId": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_People.svg",
-    "options": [
-      "testnet"
-    ],
+    "options": ["testnet"],
     "nodes": [
       {
         "url": "wss://people-westend-rpc.dwellir.com",
@@ -6845,10 +6768,7 @@
     "addressPrefix": 42,
     "chainId": "0x5647d37b8ac3ea2259c6697ec255347d6f473d052bfec59c641d751538d43442",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "regular_proxy"
-    ],
+    "options": ["testnet", "regular_proxy"],
     "nodes": [
       {
         "url": "wss://westend-collectives-a-parachain.novasama-tech.org",
@@ -6878,16 +6798,89 @@
     }
   },
   {
+    "name": "Westend Asset Hub (TESTNET)",
+    "addressPrefix": 42,
+    "specName": "westmint",
+    "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
+    "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
+    "options": ["testnet", "multisig", "governance", "regular_proxy", "pure_proxy"],
+    "nodes": [
+      {
+        "url": "wss://asset-hub-westend-rpc.dwellir.com",
+        "name": "Dwellir"
+      },
+      {
+        "url": "wss://westmint-rpc-tn.dwellir.com",
+        "name": "Dwellir Tunisia"
+      },
+      {
+        "url": "wss://sys.ibp.network/asset-hub-westend",
+        "name": "IBP1"
+      },
+      {
+        "url": "wss://asset-hub-westend.dotters.network",
+        "name": "IBP2"
+      },
+      {
+        "url": "wss://westend-asset-hub-rpc.polkadot.io",
+        "name": "Parity"
+      },
+      {
+        "url": "wss://asset-hub-westend.rpc.permanence.io",
+        "name": "Permanence DAO EU"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Westend",
+        "assetId": 0,
+        "symbol": "WND",
+        "precision": 12,
+        "type": "native",
+        "staking": "relaychain",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Statescan",
+        "account": "https://westmint.statescan.io/#/accounts/{address}",
+        "event": "https://westmint.statescan.io/#/events/{event}"
+      }
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
+        }
+      ],
+      "staking": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-history-westend-prod.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-polkadot-prod.novasama-tech.org"
+        }
+      ]
+    }
+  },
+  {
     "name": "Westend Collectives",
     "specName": "westend",
     "addressPrefix": 42,
     "chainId": "0x713daf193a6301583ff467be736da27ef0a72711b248927ba413f573d2b38e44",
     "parentId": "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Westend_Testnet.svg",
-    "options": [
-      "testnet",
-      "regular_proxy"
-    ],
+    "options": ["testnet", "regular_proxy"],
     "nodes": [
       {
         "url": "wss://collectives-westend-rpc.dwellir.com",
