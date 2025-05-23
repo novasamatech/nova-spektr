@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
+import { toAddress, toRomanNumeral, truncate } from '@/shared/lib/utils';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService, track, trackService } from '@/domains/collectives';
@@ -28,64 +28,21 @@ type Props = {
 export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipTasksFeature.input);
   const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
   const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
   const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
-  const tracks = useUnit(track.$list);
 
   const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
   const proposerAccountId = referendumService.getProposer(referendum);
   const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
-
-  const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
-
-  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
 
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
 
   const dateThresholds = isRetentionTrack ? LooseDateThresholds : DefaultDateThresholds;
 
-  const proposerIdentity = useStoreMap({
-    store: identityModel.$identities,
-    keys: [referendum],
-    fn: (identities, [referendum]) => {
-      const proposer = referendumService.getProposer(referendum);
-      return proposer ? identities[proposer] : null;
-    },
-  });
-
-  const proposerMember = useStoreMap({
-    store: members.$list,
-    keys: [proposerAccountId],
-    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
-  });
-
-  const title = useMemo(() => {
-    if (!proposerIdentity) return '';
-
-    if (!currentTrack || !relatedTracks || !proposerMember) return '';
-
-    const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
-    const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
-
-    return t(string, {
-      name: proposerIdentity.name,
-      rank: toRomanNumeral(trackService.getProposalTrack(relatedTracks, proposerMember, trackName)),
-    });
-  }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember]);
-
-  const rank = useMemo(() => {
-    if (!currentTrack || !relatedTracks || !proposerMember) return null;
-    const rank = trackService.getProposalTrack(
-      relatedTracks,
-      proposerMember,
-      isPromotionTrack ? 'Promotion' : 'Retention',
-    );
-
-    return rank;
-  }, [currentTrack, relatedTracks, isPromotionTrack, isRetentionTrack, proposerMember]);
+  const title = useTitle({ referendum });
+  const rank = useRank({ referendum });
 
   return (
     <Box direction="row" gap={2}>
@@ -98,11 +55,7 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
             <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
               <Box gap={3}>
                 <Box direction="row" gap={3}>
-                  {title ? (
-                    <SmallTitleText className="truncate">{title}</SmallTitleText>
-                  ) : (
-                    <Skeleton width="30ch" height="1lh" />
-                  )}
+                  <SmallTitleText className="truncate">{title}</SmallTitleText>
                   <TaskLabels tags={tags} />
                 </Box>
                 {!evidenceSummary?.summary && pending && <Skeleton height="3lh" width="85%" />}
@@ -122,3 +75,78 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
     </Box>
   );
 });
+
+const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
+  const { t } = useI18n();
+
+  const input = useUnit(fellowshipTasksFeature.input);
+  const tracks = useUnit(track.$list);
+
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  const chain = input?.chain ?? null;
+  const relatedTracks = chain ? tracks.fellowship?.[chain.chainId] : null;
+
+  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
+
+  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+  const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
+
+  const proposerIdentity = useStoreMap({
+    store: identityModel.$identities,
+    keys: [referendum],
+    fn: (identities, [referendum]) => {
+      const proposer = referendumService.getProposer(referendum);
+      return proposer ? identities[proposer] : null;
+    },
+  });
+
+  const proposerMember = useStoreMap({
+    store: members.$list,
+    keys: [proposerAccountId],
+    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
+  });
+
+  return useMemo(() => {
+    if (!currentTrack || !relatedTracks || !proposerMember) return '';
+
+    const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
+    const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
+
+    return t(string, {
+      name: proposerIdentity?.name ?? truncate(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix })),
+      rank: toRomanNumeral(trackService.getProposalTrack(relatedTracks, proposerMember, trackName)),
+    });
+  }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember, chain]);
+};
+
+const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
+  const input = useUnit(fellowshipTasksFeature.input);
+  const tracks = useUnit(track.$list);
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  const chain = input?.chain ?? null;
+  const relatedTracks = chain ? tracks.fellowship?.[chain.chainId] : null;
+
+  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
+
+  const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+  const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
+
+  const proposerMember = useStoreMap({
+    store: members.$list,
+    keys: [proposerAccountId],
+    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
+  });
+
+  return useMemo(() => {
+    if (!currentTrack || !relatedTracks || !proposerMember) return null;
+    const rank = trackService.getProposalTrack(
+      relatedTracks,
+      proposerMember,
+      isPromotionTrack ? 'Promotion' : 'Retention',
+    );
+
+    return rank;
+  }, [currentTrack, relatedTracks, isPromotionTrack, isRetentionTrack, proposerMember]);
+};
