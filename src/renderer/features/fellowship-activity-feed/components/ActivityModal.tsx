@@ -23,8 +23,6 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
   'name-desc': { field: 'name', direction: 'desc' },
 };
 
-const now = Date.now();
-
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
@@ -38,6 +36,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const deferredQuery = useDeferredValue(query);
 
   const clearSearch = () => setQuery('');
+
+  const now = Date.now();
 
   const records = useMemo(
     () =>

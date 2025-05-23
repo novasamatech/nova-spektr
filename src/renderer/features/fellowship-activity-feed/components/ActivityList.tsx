@@ -9,13 +9,12 @@ import { activityFeed } from '../model/list';
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
 
-const now = Date.now();
-
 export const ActivityList = memo(() => {
   const { t } = useI18n();
 
   const feed = useUnit(activityFeed.$activityFeed);
   const identities = useUnit(identityModel.$list);
+  const now = Date.now();
 
   const records = useMemo(
     () =>
