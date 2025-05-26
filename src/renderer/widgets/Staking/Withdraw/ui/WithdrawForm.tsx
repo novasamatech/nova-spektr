@@ -1,8 +1,8 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
@@ -20,7 +20,7 @@ type Props = {
 };
 
 export const WithdrawForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$withdrawForm);
+  const { submit } = useForm(formModel.form);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -46,14 +46,14 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
 const ProxyFeeAlert = () => {
   const {
     fields: { shards },
-  } = useForm(formModel.$withdrawForm);
+  } = useForm(formModel.form);
 
   const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) {
+  if (!network || !proxyWallet || !shards.hasError) {
     return null;
   }
 
@@ -66,7 +66,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.resetErrors}
+      onClose={shards.reset}
     />
   );
 };
@@ -76,7 +76,7 @@ const AccountsSelector = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$withdrawForm);
+  } = useForm(formModel.form);
 
   const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
@@ -115,13 +115,13 @@ const AccountsSelector = () => {
         label={t('staking.bond.accountLabel')}
         placeholder={t('staking.bond.accountPlaceholder')}
         multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        invalid={shards.hasError()}
+        invalid={shards.hasError}
         selectedIds={shards.value.map(accountService.uniqId)}
         options={options}
         onChange={(values) => shards.onChange(values.map(({ value }) => value))}
       />
-      <InputHint variant="error" active={shards.hasError()}>
-        {t(shards.errorText())}
+      <InputHint variant="error" active={shards.hasError}>
+        {t(shards.errorMessage)}
       </InputHint>
     </div>
   );
@@ -132,7 +132,7 @@ const Signatories = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$withdrawForm);
+  } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
@@ -148,8 +148,8 @@ const Signatories = () => {
       signatories={signatories[0]}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
       onChange={signatory.onChange}
     />
   );
@@ -160,7 +160,7 @@ const Amount = () => {
 
   const {
     fields: { amount },
-  } = useForm(formModel.$withdrawForm);
+  } = useForm(formModel.form);
 
   const withdrawBalance = useUnit(formModel.$withdrawBalance);
   const isStakingLoading = useUnit(formModel.$isStakingLoading);
@@ -174,15 +174,15 @@ const Amount = () => {
     <div className="flex flex-col gap-y-2">
       <AmountInput
         disabled
-        invalid={amount.hasError()}
+        invalid={amount.hasError}
         value={formatBalance(amount.value, network.asset.precision).value}
         balance={isStakingLoading ? null : withdrawBalance}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
       />
-      <InputHint active={amount.hasError()} variant="error">
-        {t(amount.errorText())}
+      <InputHint active={amount.hasError} variant="error">
+        {t(amount.errorMessage)}
       </InputHint>
     </div>
   );
@@ -193,7 +193,7 @@ const FeeSection = () => {
 
   const {
     fields: { shards },
-  } = useForm(formModel.$withdrawForm);
+  } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
