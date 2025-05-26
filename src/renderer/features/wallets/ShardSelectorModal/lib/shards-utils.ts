@@ -7,7 +7,7 @@ import {
 } from '@/shared/core';
 import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
@@ -131,21 +131,39 @@ function getStructForVault(
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
-    const { total: _total, checked: _checked, ...chains } = chainMap;
+  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, rootData) => {
+    const { total: _total, checked: _checked, ...chains } = rootData;
 
     for (const chain of Object.values(chains)) {
-      const { accounts, sharded = {} } = chain;
-      Object.assign(acc, accounts);
+      const { accounts: chainAccounts, sharded } = chain;
 
-      for (const shard of Object.values(sharded)) {
-        const { total: _total, checked: _checked, ...shards } = shard;
-        Object.assign(acc, shards);
+      for (const [accountId, isSelected] of Object.entries(chainAccounts)) {
+        if (isSelected) {
+          acc[accountId as AccountId] = true;
+        }
+      }
+
+      for (const shardData of Object.values(sharded)) {
+        const { total: _total, checked: _checked, ...shards } = shardData;
+
+        for (const [accountId, isSelected] of Object.entries(shards)) {
+          if (isSelected) {
+            acc[accountId as AccountId] = true;
+          }
+        }
       }
     }
 
     return acc;
   }, {});
 
-  return accounts.filter((account) => selectedMap[account.accountId]);
+  return accounts.filter((account) => {
+    if (accountService.isChainAccount(account)) {
+      const rootAccountId = Object.keys(struct)[0] as AccountId;
+      const chainData = struct[rootAccountId]?.[account.chainId];
+      return chainData?.accounts[account.accountId] === true;
+    }
+
+    return selectedMap[account.accountId] === true;
+  });
 }
