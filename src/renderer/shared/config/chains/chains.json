@@ -6545,7 +6545,6 @@
     "options": [
       "testnet",
       "multisig",
-      "governance",
       "regular_proxy",
       "pure_proxy"
     ],
