@@ -573,6 +573,7 @@ export const formModel = {
   $coreTx,
   $tx,
   $multisigTx,
+  $route,
   $isMultisig,
   $isChainConnected,
   $isStakingLoading: subscribeStakingFx.pending,

@@ -9,6 +9,7 @@ export { MultisigDepositWithLabel } from './MultisigDepositWithLabel/MultisigDep
 export { ProxyDeposit } from './ProxyDeposit/ProxyDeposit';
 export { ProxyDepositLabel } from './ProxyDepositLabel/ProxyDepositLabel';
 export { FeeWithLabel } from './FeeWithLabel/FeeWithLabel';
+export { FeeWithLabelWithoutDataLoading } from './FeeWithLabel/FeeWithLabel';
 export { XcmFeeWithLabel } from './XcmFeeWithLabel/XcmFeeWithLabel';
 export { TransactionTitle } from './TransactionTitle/TransactionTitle';
 export { DeliveryFee } from './DeliveryFee/DeliveryFee';
