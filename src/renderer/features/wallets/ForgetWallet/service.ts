@@ -1,5 +1,6 @@
-import { accountService, AnyAccount } from '@/domains/network';
-import { AccountNode } from '@/domains/network/account/types';
+import { type AccountNode, type AnyAccount, accountService } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
+
 export const forgetService = {
   findParentAccounts,
 };
@@ -17,25 +18,25 @@ function findParentAccounts(graph: Map<AnyAccount, AccountNode>, account: AnyAcc
   const result = new Set<AnyAccount>();
 
   for (const node of graph.values()) {
+    let pathParents: AnyAccount[] = [];
+
     accountService.traverseGraph(node, {
       enter(node) {
         if (node.account === account) {
-          return false;
+          for (const parent of pathParents) {
+            result.add(parent);
+          }
+
+          return false; // Stop traversing this path
         }
 
-        // const childrenWithPermission = node.children.filter((c) =>
-        //   accountService.hasPermissionToMakeActions(c.account),
-        // );
-        // console.log('childrenWithPermission', { node });
+        const childrenWithPermission = node.children.filter((c) => !accountUtils.isWatchOnlyAccount(c.account));
 
-        if (node.children.length === 1) {
-          result.add(node.account);
-        } else if (node.children.length > 1) {
-          result.clear();
+        if (childrenWithPermission.length === 1) {
+          pathParents.push(node.account);
+        } else if (childrenWithPermission.length > 1) {
+          pathParents = []; // Clear the path
         }
-      },
-      exit(node) {
-        result.delete(node.account);
       },
     });
   }

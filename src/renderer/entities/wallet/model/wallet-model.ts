@@ -1,4 +1,4 @@
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
@@ -40,9 +40,7 @@ const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
-const walletHidden = createEvent<ID>();
 const walletRemoved = createEvent<ID>();
-const walletsRemoved = createEvent<ID[]>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
 const updateWalletWithDB = createEvent<Wallet>();
@@ -169,26 +167,6 @@ const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   return wallet;
 });
 
-const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
-  const walletIds: ID[] = [];
-  const accountsToRemove: AnyAccount[] = [];
-
-  for (const wallet of wallets) {
-    walletIds.push(wallet.id);
-    accountsToRemove.push(...wallet.accounts);
-  }
-
-  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountsToRemove)]);
-
-  return walletIds;
-});
-
-const hideWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(wallet.id, { isHidden: true });
-
-  return wallet;
-});
-
 const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(wallet.id, { isHidden: false });
 
@@ -234,6 +212,8 @@ sample({
   target: $rawWallets,
 });
 
+// Remove
+
 sample({
   clock: walletRemoved,
   source: $allWallets,
@@ -246,16 +226,28 @@ sample({
   target: removeWalletFx,
 });
 
-sample({
-  clock: walletsRemoved,
+const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> => {
+  const walletIds: ID[] = [];
+  const accountsToRemove: AnyAccount[] = [];
+
+  for (const wallet of wallets) {
+    walletIds.push(wallet.id);
+    accountsToRemove.push(...wallet.accounts);
+  }
+
+  await Promise.all([storageService.wallets.deleteAll(walletIds), accounts.deleteAccounts(accountsToRemove)]);
+
+  return walletIds;
+});
+
+const walletsRemovedFx = attach({
   source: $allWallets,
-  filter: (wallets, walletIds) => {
-    return wallets.some((wallet) => walletIds.includes(wallet.id));
+  effect: (wallets, walletIds: ID[]) => {
+    const filteredWallets = wallets.filter((wallet) => walletIds.includes(wallet.id));
+    if (filteredWallets.length === 0) return;
+
+    return removeWalletsFx(filteredWallets);
   },
-  fn: (wallets, walletIds) => {
-    return wallets.filter((wallet) => walletIds.includes(wallet.id));
-  },
-  target: removeWalletsFx,
 });
 
 sample({
@@ -276,24 +268,29 @@ sample({
   target: $rawWallets,
 });
 
-sample({
-  clock: walletHidden,
+// Hide
+
+const hideWalletFx = createEffect(async (walletId: ID): Promise<ID> => {
+  await storageService.wallets.update(walletId, { isHidden: true });
+
+  return walletId;
+});
+
+const walletHiddenFx = attach({
   source: $allWallets,
-  filter: (wallets, walletId) => {
-    return wallets.some((wallet) => wallet.id === walletId);
+  effect: (wallets, walletId: ID) => {
+    if (!wallets.some((wallet) => wallet.id === walletId)) return;
+
+    return hideWalletFx(walletId);
   },
-  fn: (wallets, walletId) => {
-    return wallets.find((wallet) => wallet.id === walletId)!;
-  },
-  target: hideWalletFx,
 });
 
 sample({
   clock: hideWalletFx.doneData,
   source: $rawWallets,
-  fn: (wallets, walletToHide) => {
+  fn: (wallets, walletIdToHide) => {
     return wallets.map((wallet) => {
-      return wallet.id === walletToHide.id ? { ...wallet, isHidden: true } : wallet;
+      return wallet.id === walletIdToHide ? { ...wallet, isHidden: true } : wallet;
     });
   },
   target: $rawWallets,
@@ -361,6 +358,8 @@ export const walletModel = {
   createWallets: createWalletsFx,
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
+  walletHidden: walletHiddenFx,
+  walletsRemoved: walletsRemovedFx,
 
   events: {
     watchOnlyCreated,
@@ -374,11 +373,7 @@ export const walletModel = {
     updateWallet,
     updateWalletWithDB,
     walletRemoved,
-    walletHidden,
-    walletHiddenSuccess: hideWalletFx.done,
     walletRemovedSuccess: removeWalletFx.done,
-    walletsRemovedSuccess: removeWalletsFx.done,
-    walletsRemoved,
     walletRestored,
     walletRestoredSuccess: restoreWalletFx.done,
   },

@@ -288,7 +288,7 @@ sample({
   fn: (proxiedAccounts) => {
     return [...proxiedAccounts.map((p) => p.walletId)];
   },
-  target: walletModel.events.walletsRemoved,
+  target: walletModel.walletsRemoved,
 });
 
 sample({

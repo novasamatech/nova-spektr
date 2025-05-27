@@ -40,8 +40,8 @@ const wallet: Wallet = {
   id: 1,
   name: 'My wallet',
   isActive: false,
-  type: WalletType.WATCH_ONLY,
-  signingType: SigningType.WATCH_ONLY,
+  type: WalletType.POLKADOT_VAULT,
+  signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
       id: '1',
@@ -70,8 +70,8 @@ const proxiedWallet = {
   id: 2,
   name: 'My second wallet',
   isActive: true,
-  type: WalletType.POLKADOT_VAULT,
-  signingType: SigningType.POLKADOT_VAULT,
+  type: WalletType.PROXIED,
+  signingType: SigningType.WATCH_ONLY,
   accounts: [
     {
       id: 3,
@@ -92,19 +92,6 @@ const proxiedWallet = {
 };
 
 describe('features/wallets/ForgetModel', () => {
-  test('should call success callback after wallet delete', async () => {
-    const spyCallback = jest.fn();
-
-    const scope = fork({
-      values: new Map().set(walletModel.__test.$rawWallets, [wallet]),
-    });
-
-    await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
-    await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
-
-    expect(spyCallback).toHaveBeenCalled();
-  });
-
   test('should delete wallet and accounts', async () => {
     const spyDeleteWallet = jest.fn();
     const spyDeleteAccounts = jest.fn().mockImplementation((accounts: AnyAccount[]) => accounts);
@@ -121,7 +108,6 @@ describe('features/wallets/ForgetModel', () => {
       ],
     });
 
-    await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
     expect(spyDeleteWallet).toHaveBeenCalledWith([wallet]);
@@ -160,8 +146,8 @@ describe('features/wallets/ForgetModel', () => {
 
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
+    expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
-    expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
   });
 });
