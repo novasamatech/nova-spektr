@@ -72,11 +72,8 @@ const $era = restore(eraSet, null);
 const $stakingUnsub = createStore<() => void>(noop);
 const $eraUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<AnyAccount[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
-
-// const $withdrawBalance = createStore<string>(ZERO_BALANCE);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
@@ -210,9 +207,9 @@ const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
-    shards: $shards,
+    shards: form.fields.shards.$value,
     network: $networkStore,
     signatories: $selectedSignatories,
   },
@@ -273,12 +270,13 @@ const $accounts = combine(
   {
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
-    shards: $shards,
+    shards: form.fields.shards.$value,
     era: $era,
     staking: $staking,
     balances: balanceModel.$balances,
   },
   ({ network, wallet, era, shards, staking, balances }) => {
+    console.log('1338 pisos $accounts', { network, wallet, era, shards, staking, balances });
     if (!wallet || !network || !staking) return [];
 
     const { chain, asset } = network;
@@ -293,6 +291,21 @@ const $accounts = combine(
         balances: { balance: transferableAmount(balance), withdraw },
       };
     });
+  },
+);
+
+const $withdrawBalance = combine(
+  {
+    accounts: $accounts,
+  },
+  ({ accounts }) => {
+    if (accounts.length === 0) return ZERO_BALANCE;
+
+    return accounts.reduce((acc, { balances: { withdraw } }) => {
+      if (!withdraw) return acc;
+
+      return new BN(withdraw).add(new BN(acc)).toString();
+    }, ZERO_BALANCE);
   },
 );
 
@@ -329,7 +342,7 @@ const $signatoryBalance = combine(
     signatories: $signatories,
   },
   ({ signatory, signatories }) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
+    const match = signatories[0]?.find(({ signer }) => signer.id === signatory?.id);
 
     return match?.balance || ZERO_BALANCE;
   },
@@ -420,13 +433,14 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length > 0,
-  fn: ({ chain, shards }) => ({
-    shards,
-    networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
-  }),
+  fn: ({ chain, shards }) => {
+    return {
+      shards,
+      networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
+    };
+  },
   target: spread({
-    shards: $shards,
+    shards: form.fields.shards.change,
     networkStore: $networkStore,
   }),
 });
@@ -436,7 +450,7 @@ sample({
   source: {
     networkStore: $networkStore,
     api: $api,
-    shards: $shards,
+    shards: form.fields.shards.$value,
   },
   filter: ({ networkStore, api }) => {
     return Boolean(networkStore) && Boolean(api);
@@ -470,24 +484,9 @@ sample({
   target: $eraUnsub,
 });
 
-const $withdrawBalance = combine(
-  {
-    accounts: $accounts,
-  },
-  ({ accounts }) => {
-    if (accounts.length === 0) return ZERO_BALANCE;
-
-    return accounts.reduce((acc, { balances: { withdraw } }) => {
-      if (!withdraw) return acc;
-
-      return new BN(withdraw).add(new BN(acc)).toString();
-    }, ZERO_BALANCE);
-  },
-);
-
 sample({
   clock: formInitiated,
-  source: $shards,
+  source: form.fields.shards.$value,
   filter: (shards) => shards.length > 0,
   target: form.fields.shards.change,
 });
@@ -502,11 +501,6 @@ sample({
 sample({
   clock: form.fields.shards.change,
   target: form.fields.amount.reset,
-});
-
-sample({
-  clock: form.fields.amount.change,
-  target: form.fields.shards.reset,
 });
 
 sample({
@@ -581,6 +575,13 @@ sample({
 });
 
 sample({
+  clock: [formInitiated, $withdrawBalance],
+  source: $withdrawBalance,
+  fn: (withdrawBalance, _) => withdrawBalance,
+  target: form.fields.amount.change,
+});
+
+sample({
   clock: formSubmitted,
   target: attach({
     source: $stakingUnsub,
@@ -598,7 +599,7 @@ sample({
 
 sample({
   clock: formCleared,
-  target: [form.reset, $shards.reinit],
+  target: form.reset,
 });
 
 export const formModel = {

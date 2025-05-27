@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -47,35 +48,32 @@ export const Withdraw = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      isOpen={isModalOpen}
-      title={
+    <Modal isOpen={isModalOpen} size="md" onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
         <OperationTitle
           title={t('staking.withdraw.title', { asset: networkStore.chain.assets[0].symbol })}
           chainId={networkStore.chain.chainId}
         />
-      }
-      onClose={closeModal}
-    >
-      {withdrawUtils.isInitStep(step) && <WithdrawForm onGoBack={closeModal} />}
-      {withdrawUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => withdrawModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {withdrawUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => withdrawModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+      </Modal.Title>
+      <Modal.Content>
+        {withdrawUtils.isInitStep(step) && <WithdrawForm onGoBack={closeModal} />}
+        {withdrawUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => withdrawModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {withdrawUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => withdrawModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };
