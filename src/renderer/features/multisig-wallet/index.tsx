@@ -40,7 +40,13 @@ accountSDK(multisigWalletFeature, {
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
       return account.signatories
-        .flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId))
+        .flatMap(signatory =>
+          accounts.filter(a =>
+            accountUtils.isProxiedAccount(a)
+              ? a.proxyAccountId === signatory.accountId
+              : a.accountId === signatory.accountId,
+          ),
+        )
         .concat(children);
     }
     return children;
