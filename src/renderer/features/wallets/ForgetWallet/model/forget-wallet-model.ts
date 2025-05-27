@@ -62,17 +62,15 @@ sample({
   fn: ({ accounts, chains }, { id: walletId }) => {
     const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
 
-    const accountFromGraph = new Set<number>();
+    const walletIdFromGraph = new Set<number>();
 
     for (const chain of Object.values(chains)) {
       if (!networkUtils.isMultisigSupported(chain.options)) {
         continue;
       }
 
-      const graph = accountService.createAccountGraphs(
-        accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a)),
-        chain,
-      );
+      const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
+      const graph = accountService.createAccountGraphs(filteredAccounts, chain);
 
       for (const account of accountsToDelete) {
         if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
@@ -80,12 +78,12 @@ sample({
         const accountsList = forgetService.findParentAccounts(graph, account);
 
         for (const a of accountsList) {
-          accountFromGraph.add(a.walletId);
+          walletIdFromGraph.add(a.walletId);
         }
       }
     }
 
-    return { walletToHidden: walletId, walletsToRemove: Array.from(accountFromGraph) };
+    return { walletToHidden: walletId, walletsToRemove: Array.from(walletIdFromGraph) };
   },
   target: spread({
     walletToHidden: walletModel.walletHidden,
@@ -110,14 +108,12 @@ sample({
       return [walletId];
     }
 
-    const accountFromGraph = new Set<number>();
+    const walletIdFromGraph = new Set<number>();
 
     for (const chain of Object.values(chains)) {
       // Should we avoid WatchOnlyAccount in createAccountGraphs by default?
-      const graph = accountService.createAccountGraphs(
-        accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a)),
-        chain,
-      );
+      const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
+      const graph = accountService.createAccountGraphs(filteredAccounts, chain);
 
       for (const account of accountsToDelete) {
         if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
@@ -125,12 +121,12 @@ sample({
         const accountsList = forgetService.findParentAccounts(graph, account);
 
         for (const a of accountsList) {
-          accountFromGraph.add(a.walletId);
+          walletIdFromGraph.add(a.walletId);
         }
       }
     }
 
-    return [...Array.from(accountFromGraph), walletId];
+    return [...Array.from(walletIdFromGraph), walletId];
   },
   target: walletsRemovedFx,
 });

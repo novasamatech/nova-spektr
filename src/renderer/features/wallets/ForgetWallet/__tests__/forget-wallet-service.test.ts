@@ -5,7 +5,6 @@ import { accounts } from './mocks';
 
 describe('forgetService.findParentAccounts', () => {
   let testGraph: Map<AnyAccount, AccountNode>;
-
   beforeEach(() => {
     testGraph = new Map();
   });
@@ -236,7 +235,7 @@ describe('forgetService.findParentAccounts', () => {
     expect(result).toHaveLength(1);
   });
 
-  it('should NOT include unrelated single-child parents', () => {
+  it('should not include unrelated single-child parents', () => {
     // Tree 1: Contains our target
     const targetNode: AccountNode = {
       account: accounts.walletConnect,
@@ -269,7 +268,7 @@ describe('forgetService.findParentAccounts', () => {
     expect(result).toHaveLength(1);
   });
 
-  it('should handle complex hierarchy correctly (corrected version)', () => {
+  it('should handle complex hierarchy correctly', () => {
     // Create: GrandParent -> Parent -> Target
     const targetNode: AccountNode = {
       account: accounts.walletConnect,
@@ -299,7 +298,6 @@ describe('forgetService.findParentAccounts', () => {
 
     testGraph.set(accounts.proxy1, grandParentNode);
     testGraph.set(accounts.multisig2, unrelatedParentNode);
-
     const result = forgetService.findParentAccounts(testGraph, accounts.walletConnect);
 
     // Should only include parents from the path to target
