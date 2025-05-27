@@ -131,39 +131,40 @@ function getStructForVault(
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, rootData) => {
+  const selectedByChain = new Map<ChainId, Set<AccountId>>();
+
+  for (const rootData of Object.values(struct)) {
     const { total: _total, checked: _checked, ...chains } = rootData;
+    for (const [chainId, chainData] of Object.entries(chains)) {
+      const selected = new Set<AccountId>();
 
-    for (const chain of Object.values(chains)) {
-      const { accounts: chainAccounts, sharded } = chain;
-
-      for (const [accountId, isSelected] of Object.entries(chainAccounts)) {
+      for (const [accountId, isSelected] of Object.entries(chainData.accounts)) {
         if (isSelected) {
-          acc[accountId as AccountId] = true;
+          selected.add(accountId as AccountId);
         }
       }
 
-      for (const shardData of Object.values(sharded)) {
-        const { total: _total, checked: _checked, ...shards } = shardData;
+      for (const shardData of Object.values(chainData.sharded)) {
+        if (typeof shardData === 'number') continue;
 
-        for (const [accountId, isSelected] of Object.entries(shards)) {
-          if (isSelected) {
-            acc[accountId as AccountId] = true;
+        for (const [accountId, isSelected] of Object.entries(shardData)) {
+          if (accountId !== 'total' && accountId !== 'checked' && isSelected) {
+            selected.add(accountId as AccountId);
           }
         }
       }
-    }
 
-    return acc;
-  }, {});
+      if (selected.size > 0) {
+        selectedByChain.set(chainId as ChainId, selected);
+      }
+    }
+  }
 
   return accounts.filter((account) => {
     if (accountService.isChainAccount(account)) {
-      const rootAccountId = Object.keys(struct)[0] as AccountId;
-      const chainData = struct[rootAccountId]?.[account.chainId];
-      return chainData?.accounts[account.accountId] === true;
+      return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
     }
 
-    return selectedMap[account.accountId] === true;
+    return Array.from(selectedByChain.values()).some((selected) => selected.has(account.accountId));
   });
 }
