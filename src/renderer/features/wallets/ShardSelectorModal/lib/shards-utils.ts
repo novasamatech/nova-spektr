@@ -158,11 +158,15 @@ function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
     }
   }
 
+  const selectedAccounts = Array.from(selectedByChain.values()).reduce((set, item) => {
+    return new Set<AccountId>([...set, ...item]);
+  }, new Set<AccountId>());
+
   return accounts.filter((account) => {
     if (accountService.isChainAccount(account)) {
       return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
     }
 
-    return Array.from(selectedByChain.values()).some((selected) => selected.has(account.accountId));
+    return selectedAccounts.has(account.accountId);
   });
 }
