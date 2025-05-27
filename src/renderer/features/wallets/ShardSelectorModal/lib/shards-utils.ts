@@ -7,7 +7,7 @@ import {
 } from '@/shared/core';
 import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
@@ -131,21 +131,42 @@ function getStructForVault(
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
-    const { total: _total, checked: _checked, ...chains } = chainMap;
+  const selectedByChain = new Map<ChainId, Set<AccountId>>();
 
-    for (const chain of Object.values(chains)) {
-      const { accounts, sharded = {} } = chain;
-      Object.assign(acc, accounts);
+  for (const rootData of Object.values(struct)) {
+    const { total: _total, checked: _checked, ...chains } = rootData;
+    for (const [chainId, chainData] of Object.entries(chains)) {
+      const selected = new Set<AccountId>();
 
-      for (const shard of Object.values(sharded)) {
-        const { total: _total, checked: _checked, ...shards } = shard;
-        Object.assign(acc, shards);
+      for (const [accountId, isSelected] of Object.entries(chainData.accounts)) {
+        if (isSelected) {
+          selected.add(accountId as AccountId);
+        }
       }
+
+      for (const shardData of Object.values(chainData.sharded)) {
+        const { total: _total, checked: _checked, ...shards } = shardData;
+
+        for (const [accountId, isSelected] of Object.entries(shards)) {
+          if (isSelected) {
+            selected.add(accountId as AccountId);
+          }
+        }
+      }
+
+      selectedByChain.set(chainId as ChainId, selected);
+    }
+  }
+
+  const selectedAccounts = Array.from(selectedByChain.values()).reduce((set, item) => {
+    return new Set<AccountId>([...set, ...item]);
+  }, new Set<AccountId>());
+
+  return accounts.filter((account) => {
+    if (accountService.isChainAccount(account)) {
+      return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
     }
 
-    return acc;
-  }, {});
-
-  return accounts.filter((account) => selectedMap[account.accountId]);
+    return selectedAccounts.has(account.accountId);
+  });
 }
