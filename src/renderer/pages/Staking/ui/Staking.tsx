@@ -259,6 +259,8 @@ export const Staking = () => {
     [[], []],
   );
 
+  const isMultipleAccountsSelected = selectedNominators.length > 1;
+
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
 
@@ -275,7 +277,9 @@ export const Staking = () => {
     });
 
     const model = {
-      [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
+      [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
+        ? Operations.bondNominateModelShards.events.flowStarted
+        : Operations.bondNominateModel.events.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
@@ -380,7 +384,7 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
-      <Operations.BondNominate />
+      {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
       <Operations.BondExtra />
       <Operations.Unstake />
       <Operations.Nominate />
