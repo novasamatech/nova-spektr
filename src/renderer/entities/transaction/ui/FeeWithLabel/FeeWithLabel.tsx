@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Fee } from '../Fee/Fee';
+import { FeeWithoutDataLoading } from '../FeeWithoutDataLoading/Fee';
 
 type Props = ComponentProps<typeof Fee> & {
   label?: string;
@@ -21,6 +22,25 @@ export const FeeWithLabel = ({ label, wrapperClassName, ...feeProps }: Props) =>
       testId={TEST_IDS.OPERATIONS.ESTIMATE_FEE}
     >
       <Fee {...feeProps} />
+    </DetailRow>
+  );
+};
+
+type PropsWithoutDataLoading = ComponentProps<typeof FeeWithoutDataLoading> & {
+  label?: string;
+  wrapperClassName?: string;
+};
+
+export const FeeWithLabelWithoutDataLoading = ({ label, wrapperClassName, ...feeProps }: PropsWithoutDataLoading) => {
+  const { t } = useI18n();
+
+  return (
+    <DetailRow
+      label={<FootnoteText className="text-text-tertiary">{label || t('operation.networkFee')}</FootnoteText>}
+      className={cnTw('text-text-primary', wrapperClassName)}
+      testId={TEST_IDS.OPERATIONS.ESTIMATE_FEE}
+    >
+      <FeeWithoutDataLoading {...feeProps} />
     </DetailRow>
   );
 };

@@ -24,12 +24,13 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel } from '@/features/governance';
 import { type NetworkStore } from '../lib/types';
@@ -41,11 +42,7 @@ export type FormParams = {
 };
 
 type FormSubmitEvent = {
-  transaction: {
-    wrappedTx: Transaction;
-    multisigTx?: Transaction;
-    coreTx: Transaction;
-  };
+  transaction: Transaction;
   formData: FormParams & {
     signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
@@ -61,10 +58,7 @@ const stakingSet = createEvent<StakingMap>();
 const eraSet = createEvent<number>();
 const formCleared = createEvent();
 
-const feeChanged = createEvent<string>();
-const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $staking = restore(stakingSet, null);
@@ -74,11 +68,9 @@ const $eraUnsub = createStore<() => void>(noop);
 
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
+const $chain = $networkStore.map((network) => network?.chain ?? null);
 
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -201,35 +193,43 @@ const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
 
 // Computed
 
-const $txWrappers = combine(
-  {
-    wallet: walletSelect.$selectedWallet,
-    wallets: walletModel.$wallets,
-    initiator: form.fields.initiator.$value,
-    network: $networkStore,
-    signatory: form.fields.signatory.$value,
-  },
-  ({ wallet, initiator, wallets, network, signatory }) => {
-    if (!wallet || !network || !initiator || !signatory) return [];
+const $txWrappers = createTxWrappers({
+  initiator: form.fields.initiator.$value,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: $chain,
+  signatory: form.fields.signatory.$value,
+});
 
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
+// const $txWrappers = combine(
+//   {
+//     wallet: walletSelect.$selectedWallet,
+//     wallets: walletModel.$wallets,
+//     initiator: form.fields.initiator.$value,
+//     network: $networkStore,
+//     signatory: form.fields.signatory.$value,
+//   },
+//   ({ wallet, initiator, wallets, network, signatory }) => {
+//     if (!wallet || !network || !initiator || !signatory) return [];
 
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
-      },
-    });
+//     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
+//       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
+//       accountFn: (a, w) => {
+//         const isBase = accountUtils.isVaultBaseAccount(a);
+//         const isPolkadotVault = walletUtils.isPolkadotVault(w);
 
-    return transactionService.getTxWrappers({
-      wallet,
-      wallets: filteredWallets || [],
-      account: initiator,
-      signatories: [signatory],
-    });
-  },
-);
+//         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
+//       },
+//     });
+
+//     return transactionService.getTxWrappers({
+//       wallet,
+//       wallets: filteredWallets || [],
+//       account: initiator,
+//       signatories: [signatory],
+//     });
+//   },
+// );
 
 const $realAccount = combine(
   {
@@ -298,42 +298,28 @@ const $withdrawBalance = combine(
   },
 );
 
-const $signatories = combine(
-  {
-    network: $networkStore,
-    txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
-  },
-  ({ network, txWrappers, balances }) => {
-    if (!network) return [];
-
-    const { chain, asset } = network;
-
-    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
-      if (!transactionService.hasMultisig([wrapper])) return acc;
-
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
-  },
-);
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
 
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    signatories: $signatories,
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  ({ signatory, signatories }) => {
-    const match = signatories[0]?.find(({ signer }) => signer.id === signatory?.id);
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    return match?.balance || ZERO_BALANCE;
+    return transferableAmount(balance);
   },
 );
 
@@ -361,14 +347,14 @@ const $api = combine(
   },
 );
 
-const $pureTx = combine(
+const $coreTx = combine(
   {
     network: $networkStore,
     form: form.$values,
     isConnected: $isChainConnected,
   },
   ({ network, form, isConnected }) => {
-    if (!network || !isConnected || !form.initiator) return undefined;
+    if (!network || !isConnected || !form.initiator) return null;
 
     return transactionBuilder.buildWithdraw({
       chain: network.chain,
@@ -378,34 +364,23 @@ const $pureTx = combine(
   { skipVoid: false },
 );
 
-const $transaction = combine(
-  {
-    apis: networkModel.$apis,
-    networkStore: $networkStore,
-    pureTx: $pureTx,
-    txWrappers: $txWrappers,
-  },
-  ({ apis, networkStore, pureTx, txWrappers }) => {
-    if (!networkStore || !pureTx) return undefined;
-
-    return transactionService.getWrappedTransaction({
-      api: apis[networkStore.chain.chainId],
-      transaction: pureTx,
-      txWrappers,
-    });
-  },
-  { skipVoid: false },
-);
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: networkSelectorModel.$governanceChain,
+  transaction: $coreTx,
+});
 
 const $canSubmit = combine(
   {
-    isFormValid: createStore(true), // todo check all fields? form should export isValid?
-    isFeeLoading: $isFeeLoading,
+    isFeeLoading: $pendingFee,
     isStakingLoading: subscribeStakingFx.pending,
     isEraLoading: subscribeEraFx.pending,
   },
-  ({ isFormValid, isFeeLoading, isStakingLoading, isEraLoading }) => {
-    return isFormValid && !isFeeLoading && !isStakingLoading && !isEraLoading;
+  ({ isFeeLoading, isStakingLoading, isEraLoading }) => {
+    return !isFeeLoading && !isStakingLoading && !isEraLoading;
   },
 );
 
@@ -523,10 +498,10 @@ sample({
     amount: $withdrawBalance,
     realAccount: $realAccount,
     network: $networkStore,
-    transaction: $transaction,
+    transaction: $tx,
     isProxy: $isProxy,
-    fee: $fee,
-    totalFee: $totalFee,
+    fee: $fee.map((fee) => fee.toString()),
+    totalFee: $fee.map((fee) => fee.toString()),
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ network, transaction }) => {
@@ -536,11 +511,7 @@ sample({
     const { initiator, ...rest } = formData;
 
     return {
-      transaction: {
-        wrappedTx: transaction!.wrappedTx,
-        multisigTx: transaction!.multisigTx,
-        coreTx: transaction!.coreTx,
-      },
+      transaction: transaction!,
       formData: {
         ...fee,
         ...rest,
@@ -586,18 +557,22 @@ export const formModel = {
   $proxyWallet,
   $signatories,
   $txWrappers,
+  $balances: balanceModel.$balances,
 
-  $accounts: $account,
+  $account,
   $availableBalance,
   $withdrawBalance,
   $proxyBalance,
 
   $fee,
+  $pendingFee,
   $multisigDeposit,
 
   $api,
   $networkStore,
-  $transaction,
+  $coreTx,
+  $tx,
+  $multisigTx,
   $isMultisig,
   $isChainConnected,
   $isStakingLoading: subscribeStakingFx.pending,
@@ -607,11 +582,7 @@ export const formModel = {
   events: {
     formInitiated,
     formCleared,
-
-    feeChanged,
-    totalFeeChanged,
     multisigDepositChanged,
-    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,

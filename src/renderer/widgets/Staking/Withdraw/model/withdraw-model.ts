@@ -1,7 +1,6 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -24,10 +23,6 @@ const $step = createStore<Step>(Step.NONE);
 
 const $withdrawData = createStore<WithdrawData | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
-
-const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
@@ -59,29 +54,13 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  fn: ({ transaction, formData }) => {
-    const wrappedTx = transaction.wrappedTx;
-    const multisigTx = transaction.multisigTx;
-    const coreTx = transaction.coreTx;
-
-    return {
-      wrappedTx,
-      coreTx,
-      multisigTx,
-      store: formData,
-    };
-  },
-  target: spread({
-    wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
-    coreTx: $coreTx,
-    store: $withdrawData,
-  }),
+  fn: ({ formData }) => formData,
+  target: $withdrawData,
 });
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTx: $coreTx },
+  source: { networkStore: $networkStore, coreTx: formModel.$coreTx },
   filter: ({ networkStore }, { formData }) => Boolean(networkStore) && Boolean(formData.initiator),
   fn: ({ networkStore, coreTx }, { formData }) => ({
     event: [
@@ -106,7 +85,7 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    wrappedTx: $wrappedTx,
+    wrappedTx: formModel.$tx,
   },
   filter: ({ withdrawData, networkStore, wrappedTx }) => {
     return Boolean(withdrawData) && Boolean(networkStore) && Boolean(wrappedTx) && Boolean(withdrawData?.initiator);
@@ -135,9 +114,9 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    multisigTx: $multisigTx,
-    coreTx: $coreTx,
-    wrappedTx: $wrappedTx,
+    multisigTx: formModel.$multisigTx,
+    coreTx: formModel.$coreTx,
+    wrappedTx: formModel.$tx,
   },
   filter: ({ withdrawData, networkStore, wrappedTx, coreTx }) => {
     return (
@@ -192,7 +171,7 @@ sample({
   clock: txSaved,
   source: {
     store: $withdrawData,
-    coreTx: $coreTx,
+    coreTx: formModel.$coreTx,
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTx, txWrappers }) => {

@@ -1,16 +1,18 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { type DropdownOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabelWithoutDataLoading } from '@/entities/transaction/ui/FeeWithLabel/FeeWithLabel';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
@@ -80,7 +82,7 @@ const AccountsSelector = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const account = useUnit(formModel.$accounts);
+  const account = useUnit(formModel.$account);
   const network = useUnit(formModel.$networkStore);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
@@ -142,15 +144,28 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const balances = useUnit(formModel.$balances);
 
   if (!isMultisig || !network) {
     return null;
   }
 
+  const signatoryWithBalance = useMemo(() => {
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
+
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
+      signatories={signatoryWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
@@ -202,7 +217,8 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$transaction);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!network || !initiator.value) {
@@ -220,13 +236,11 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithoutDataLoading
         label={t('staking.networkFee', { count: 1 })}
-        api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
+        fee={fee.toString()}
+        isLoading={pendingFee}
       />
 
       {/* {transactions && transactions.length > 1 && (
