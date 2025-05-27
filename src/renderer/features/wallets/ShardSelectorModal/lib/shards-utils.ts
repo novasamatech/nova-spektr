@@ -145,18 +145,16 @@ function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
       }
 
       for (const shardData of Object.values(chainData.sharded)) {
-        if (typeof shardData === 'number') continue;
+        const { total: _total, checked: _checked, ...data } = shardData;
 
-        for (const [accountId, isSelected] of Object.entries(shardData)) {
-          if (accountId !== 'total' && accountId !== 'checked' && isSelected) {
+        for (const [accountId, isSelected] of Object.entries(data)) {
+          if (isSelected) {
             selected.add(accountId as AccountId);
           }
         }
       }
 
-      if (selected.size > 0) {
-        selectedByChain.set(chainId as ChainId, selected);
-      }
+      selectedByChain.set(chainId as ChainId, selected);
     }
   }
 
