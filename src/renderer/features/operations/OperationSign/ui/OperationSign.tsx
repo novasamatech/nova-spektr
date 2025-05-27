@@ -31,6 +31,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   }
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
+    console.log('[OperationSign] onSignResult called with:', { signatures, txPayloads });
     signModel.events.dataReceived({ signatures, txPayloads });
     onSuccess?.();
   };

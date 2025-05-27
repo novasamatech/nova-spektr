@@ -16,7 +16,7 @@ export type NetworkStore = {
 };
 
 export type WithdrawData = {
-  initiator: AnyAccount | null;
+  shards: AnyAccount[];
   proxiedAccount?: ProxiedAccount;
   signatory: AnyAccount | null;
   amount: string;

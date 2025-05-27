@@ -6,7 +6,6 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { SignatorySelector } from '@/entities/operations';
@@ -32,8 +31,7 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
-        {/* todo seems like we don't need to select anything if we have only 1 account */}
-        {/* <AccountsSelector /> */}
+        <AccountsSelector />
         <Signatories />
         <Amount />
       </form>
@@ -47,7 +45,7 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { initiator },
+    fields: { shards },
   } = useForm(formModel.form);
 
   const fee = useUnit(formModel.$fee);
@@ -55,7 +53,7 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !initiator.hasError) {
+  if (!network || !proxyWallet || !shards.hasError) {
     return null;
   }
 
@@ -68,7 +66,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={initiator.reset}
+      onClose={shards.reset}
     />
   );
 };
@@ -77,25 +75,23 @@ const AccountsSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator },
+    fields: { shards },
   } = useForm(formModel.form);
 
-  const account = useUnit(formModel.$accounts);
+  const accounts = useUnit(formModel.$accounts);
   const network = useUnit(formModel.$networkStore);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!network || !account || walletUtils.isFlexibleMultisig(wallet)) {
+  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 
-  const options: DropdownOption[] = [];
-  if (account) {
-    const { account: currentAccount, balances } = account;
-    const isShard = accountUtils.isVaultShardAccount(currentAccount);
-    const address = toAddress(currentAccount.accountId, { prefix: network.chain.addressPrefix });
-    const id = accountService.uniqId(currentAccount);
+  const options = accounts.map(({ account, balances }) => {
+    const isShard = accountUtils.isVaultShardAccount(account);
+    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+    const id = accountService.uniqId(account);
 
-    options.push({
+    return {
       id,
       value: account,
       element: (
@@ -104,14 +100,14 @@ const AccountsSelector = () => {
             size={20}
             type="short"
             address={address}
-            name={isShard ? toShortAddress(address, 16) : currentAccount.name}
+            name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
           <AssetBalance value={balances.withdraw} asset={network.asset} />
         </div>
       ),
-    });
-  }
+    };
+  });
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -119,18 +115,17 @@ const AccountsSelector = () => {
         label={t('staking.bond.accountLabel')}
         placeholder={t('staking.bond.accountPlaceholder')}
         multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        invalid={initiator.hasError}
-        selectedIds={initiator.value ? [accountService.uniqId(initiator.value)] : []}
+        invalid={shards.hasError}
+        selectedIds={shards.value.map(accountService.uniqId)}
         options={options}
-        onChange={(values) => initiator.onChange(values[0].value)}
+        onChange={(values) => shards.onChange(values.map(({ value }) => value))}
       />
-      <InputHint variant="error" active={initiator.hasError}>
-        {t(initiator.errorMessage)}
+      <InputHint variant="error" active={shards.hasError}>
+        {t(shards.errorMessage)}
       </InputHint>
     </div>
   );
 };
-AccountsSelector.displayName = 'AccountsSelector';
 
 const Signatories = () => {
   const { t } = useI18n();
@@ -197,15 +192,15 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator },
+    fields: { shards },
   } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$transaction);
+  const transactions = useUnit(formModel.$transactions);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!network || !initiator.value) {
+  if (!network || shards.value.length === 0) {
     return null;
   }
 
@@ -215,21 +210,21 @@ const FeeSection = () => {
         <MultisigDepositWithLabel
           api={api}
           asset={network.chain.assets[0]}
-          threshold={(initiator.value as MultisigAccount).threshold || 1}
+          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}
 
       <FeeWithLabel
-        label={t('staking.networkFee', { count: 1 })}
+        label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx}
+        transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
 
-      {/* {transactions && transactions.length > 1 && (
+      {transactions && transactions.length > 1 && (
         <FeeWithLabel
           label={t('staking.networkFeeTotal')}
           api={api}
@@ -239,7 +234,7 @@ const FeeSection = () => {
           onFeeChange={formModel.events.totalFeeChanged}
           onFeeLoading={formModel.events.isFeeLoadingChanged}
         />
-      )} */}
+      )}
     </div>
   );
 };

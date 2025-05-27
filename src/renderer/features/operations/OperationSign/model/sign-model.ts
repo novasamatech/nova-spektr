@@ -23,6 +23,7 @@ const flow = createGate();
 
 const formInitiated = createEvent<Input>();
 const dataReceived = createEvent<SignatureData>();
+
 const formSubmitted = createEvent<SignatureData>();
 
 const $signStore = createStore<Input | null>(null).reset([formSubmitted, flow.close]);
@@ -121,6 +122,10 @@ sample({
 
 sample({
   clock: once({ source: dataReceived, reset: formInitiated }),
+  fn: (data) => {
+    console.log('[SignModel] formSubmitted triggered with data:', data);
+    return data;
+  },
   target: formSubmitted,
 });
 
