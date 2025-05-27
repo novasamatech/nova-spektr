@@ -30,7 +30,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
   const [statusType, setStatusType] = useState<StatusType | null>(null);
 
   const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-  const legacyAddress = toAddress(account.accountId, { prefix: chain.addressPrefix }); // TODO: add legacy address
+  const legacyAddress = toAddress(account.accountId, { prefix: chain.legacyAddressPrefix ?? chain.addressPrefix });
   const title = isPopupDetails ? 'receive.unfiedAddress.newUnifiedTitle' : 'receive.unfiedAddress.compareAddressTitle';
 
   const handleChecked = () => {
@@ -72,7 +72,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
               <Box gap={1}>
                 <FootnoteText className="text-text-secondary">{t('receive.unfiedAddress.legacyFormat')}</FootnoteText>
                 <FootnoteText>
-                  <Address showIcon={false} variant="truncate" address={address} />
+                  <Address showIcon={false} variant="truncate" address={legacyAddress} />
                 </FootnoteText>
               </Box>
               <Button variant="text" size="sm" onClick={() => handleCopy(legacyAddress, 'legacy')}>
