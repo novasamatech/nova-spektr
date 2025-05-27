@@ -39,7 +39,6 @@ accountSDK(multisigWalletFeature, {
   },
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
-      console.log('test', { account, children, signatories: account.signatories });
       return account.signatories
         .flatMap(signatory => accounts.filter(a => a.accountId === signatory.accountId))
         .concat(children);

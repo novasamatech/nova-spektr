@@ -122,10 +122,6 @@ sample({
 
 sample({
   clock: once({ source: dataReceived, reset: formInitiated }),
-  fn: (data) => {
-    console.log('[SignModel] formSubmitted triggered with data:', data);
-    return data;
-  },
   target: formSubmitted,
 });
 
