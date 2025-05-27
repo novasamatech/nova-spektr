@@ -23,31 +23,33 @@ export const FilledIconButton = memo(
         className={cnTw(
           'flex appearance-none flex-col items-center gap-2 rounded-lg px-4 py-3',
           'disabled:pointer-events-none disabled:bg-secondary-button-background',
-          { 'opacity-30': !checked },
           {
             'pointer-events-auto': !checked,
-            'bg-badge-green-background text-text-positive hover:opacity-90 active:opacity-100': variant === 'positive',
-            'bg-badge-red-background text-text-negative hover:opacity-90 active:opacity-100': variant === 'negative',
+          },
+          {
+            'bg-alert-background-negative text-text-negative active:bg-secondary-negative-button-background-active':
+              variant === 'negative',
+            'bg-alert-background-positive text-text-positive active:bg-secondary-positive-button-background-active':
+              variant === 'positive',
+          },
+          {
+            'bg-label-background-red': variant === 'negative' && marked,
+            'hover:bg-badge-red-background': variant === 'negative' && !marked,
+            'bg-label-background-green': variant === 'positive' && marked,
+            'hover:bg-badge-green-background': variant === 'positive' && !marked,
           },
         )}
         onClick={onClick}
         onMouseOver={onMouseOver}
         onMouseLeave={onMouseLeave}
       >
-        {marked && (
-          <div
-            className={cnTw('absolute top-1 h-1.5 w-1.5 rounded-full', {
-              'right-2 bg-icon-positive': variant === 'positive',
-              'left-1 bg-icon-negative': variant === 'negative',
-            })}
-          />
-        )}
         <Icon
           name={icon}
           size={16}
           className={cnTw({
-            'text-icon-positive': variant === 'positive' && !disabled,
             'text-icon-negative': variant === 'negative' && !disabled,
+            'text-icon-positive': variant === 'positive' && !disabled,
+            'text-icon-button': marked && !disabled,
           })}
         />
       </button>

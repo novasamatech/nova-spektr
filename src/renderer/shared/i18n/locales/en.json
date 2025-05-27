@@ -228,6 +228,13 @@
     "chooseOptionLabel": "Choose an option"
   },
   "dynamicDerivations": {
+    "exportKeys": {
+      "closeButton": "Close",
+      "downloadButton": "Download as a txt-file",
+      "downloadSuccessPopup": "Keys exported",
+      "modalTitle": "Export keys",
+      "qrCodeTitle": "Scan the QR code with Polkadot Vault"
+    },
     "importKeys": {
       "backButton": "Back",
       "continueButton": "Continue",
@@ -346,6 +353,12 @@
       },
       "viewList": "View list"
     },
+    "additional": {
+      "evidenceSource": "Evidence source",
+      "polkassembly": "Polkassembly",
+      "subsquare": "Subsquare",
+      "title": "Additional"
+    },
     "basket": {
       "salaryInduct": "Activate salary",
       "salaryPayout": "Withdraw salary",
@@ -369,13 +382,14 @@
       "dateOfInitialInduction": "Date of initial induction:",
       "dateOfLastReport": "Date of last report:",
       "matrixUsername": "Matrix username:",
-      "member": "Member",
+      "member": "Member stats",
       "memberDetails": "Member details",
       "polkadotAddress": "Polkadot address:",
       "promotedAt": "(promotion executed on <time/>)",
-      "titlePromotion": "Promote to rank",
-      "titleRetention": "Retain on rank",
-      "votingRecord": "Voting record"
+      "titlePromotion": "Should {name} be promoted to Rank {rank}?",
+      "titleRetention": "Should {name} be retained at Rank {rank}?",
+      "votingRecord": "Voting record",
+      "votingTitle": "Is it good enough for rank {rank}?"
     },
     "fellow_one": "{ count } Member",
     "fellow_other": "{ count } Members",
@@ -550,9 +564,9 @@
       "emptyTitle": "All tasks completed",
       "general": "General",
       "labels": {
-        "controversial": "Tiebreaker",
-        "importantVote": "Kingmaker",
-        "urgent": "Last call"
+        "controversial": "TIEBREAKER",
+        "importantVote": "OPINION MATTERS",
+        "urgent": "LAST CALL"
       },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
@@ -610,6 +624,15 @@
         "retentionVoting": {
           "title": "Review retention evidence"
         }
+      },
+      "titles": {
+        "promote": "Should {name} be promoted to Rank {rank}?",
+        "retain": "Should {name} be retained at Rank {rank}?",
+        "votingTitle": {
+          "rank": "Is it good enough for Rank {rank}?",
+          "rfc": "Is it good enough to be approved?",
+          "whitelist": "Is it good enough to be whitelisted?"
+        }
       }
     },
     "title": "Fellowship",
@@ -635,8 +658,11 @@
         "noAccount": "Account for voting not found",
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
+      "good": "Good",
       "nay": "Nay",
-      "summary": "Summary",
+      "notGood": "Not Good",
+      "revote": "Revote ",
+      "summary": "What do others think?",
       "threshold": "Threshold",
       "title": "Vote on",
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
@@ -650,9 +676,18 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
-      "emptyList": "There is no vote history",
-      "modalTitle": "Vote history",
-      "showHistoryButton": "View vote history",
+      "emptyListDescription": "Members will appear here once opinions are submitted",
+      "emptyListTitle": "No opinions yet",
+      "level": {
+        "controversial": "Controversial",
+        "good": "Good",
+        "notGood": "Not Good"
+      },
+      "modalTitle": "What do others think?",
+      "noVotes": "No opinions have been submitted yet",
+      "showHistoryButton": "View more",
+      "subtitle": "Other members find the evidence to be ",
+      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."

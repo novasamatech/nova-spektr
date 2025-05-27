@@ -175,7 +175,8 @@ const $memberEvidenceTasks = combine(
       memberService.canPromote(member) &&
       nonNullable(leftToPromotion) &&
       leftToPromotion === 0 &&
-      hasPromotionEvidence === false
+      hasPromotionEvidence === false &&
+      hasRetentionEvidence === false
     ) {
       return [
         {

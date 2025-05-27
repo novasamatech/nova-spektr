@@ -1,7 +1,8 @@
 import { type ComponentProps, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { TextBase } from '@/shared/ui/Typography';
 import { Box, Label } from '@/shared/ui-kit';
 
 const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] => {
@@ -43,10 +44,14 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
   const { t } = useI18n();
 
   return (
-    <Label variant={pickRankColor(rank)}>
+    <Label variant={pickRankColor(rank)} className="rounded px-1">
       <Box direction="row" gap={1}>
-        {showName ? t(getRankTitle(rank)) : null}
-        <span>{rank ? toRomanNumeral(rank) : null}</span>
+        <span className="text-text-primary">{nonNullable(rank) ? toRomanNumeral(rank) : null}</span>
+        {showName ? (
+          <TextBase className="text-text-primary" as="span">
+            {t(getRankTitle(rank))}
+          </TextBase>
+        ) : null}
       </Box>
     </Label>
   );

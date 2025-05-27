@@ -8,7 +8,7 @@ import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { shardsModel, shardsUtils } from '@/features/wallets';
 import { tokensService } from '../lib/tokensService';
@@ -60,8 +60,10 @@ const $tokens = combine(
     const tokens: AssetByChains[] = [];
 
     for (const token of defaultTokens) {
-      const filteredChains = token.chains.filter((chain) => {
-        return accountService.filterAccountsOnChain(accounts, chains[chain.chainId]);
+      const filteredChains = token.chains.filter((tokenChain) => {
+        const chain = chains[tokenChain.chainId];
+        if (!chain) return false;
+        return accountService.filterAccountsOnChain(accounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -85,21 +87,18 @@ const $activeTokens = combine(
   ({ connections, chains, tokens, wallet, filteredAccounts }) => {
     if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(filteredAccounts)) return DEFAULT_LIST;
 
-    const isMultisigWallet = walletUtils.isMultisig(wallet);
     const activeTokens: AssetByChains[] = [];
 
     for (const token of tokens) {
       const filteredChains = token.chains.filter((c) => {
         const connection = connections[c.chainId];
+        const chain = chains[c.chainId];
 
         if (nullable(connection)) return false;
+        if (nullable(chain)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
-        if (nullable(chains[c.chainId])) return false;
-        if (isMultisigWallet) {
-          return networkUtils.isMultisigSupported(chains[c.chainId].options);
-        }
 
-        return filteredAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
+        return accountService.filterAccountOnChain(filteredAccounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -180,16 +179,16 @@ const $sortedTokens = combine(
   {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
-    $hideZeroBalances: $hideZeroBalances,
+    hideZeroBalances: $hideZeroBalances,
     filteredTokens: $filteredTokensWithBalance,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+  ({ query, activeTokensWithBalance, filteredTokens, hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query
       ? filteredTokens
-      : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
+      : tokensService.hideZeroBalances(hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },

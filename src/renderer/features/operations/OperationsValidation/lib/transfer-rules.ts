@@ -17,7 +17,7 @@ export const TransferRules = {
   account: {
     noProxyFee: (source: Store<TransferAccountStore>) => ({
       name: 'noProxyFee',
-      errorText: 'transfer.noSignatoryError',
+      errorText: 'transfer.notEnoughBalanceForFeeError',
       source,
       validator: (_a: Account | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;

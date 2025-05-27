@@ -22,7 +22,6 @@ const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 
 const $identities = combine(identity.$list, fellowshipReferendumsDetailsFeature.input, (identities, input) => {
   if (nullable(input)) return {};
-
   return identities[input.chainId] ?? {};
 });
 
@@ -50,7 +49,7 @@ const $evidence = combine(
 
     if (referendumService.isOngoing(referendum) && referendum.proposal) {
       if (referendum.proposal.type === 'Evidence') {
-        return evidences.find(x => x.accountId === proposer)?.content ?? null;
+        return evidences.find(x => x.accountId === proposer) ?? null;
       }
     }
 

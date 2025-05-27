@@ -14,9 +14,18 @@ type Props = {
   isActive: boolean;
   accountId: AccountId;
   chain: Chain;
+  hideExplorers?: boolean;
 };
 
-export const RankedAccount = ({ name, rank, isActive, accountId, chain, children }: PropsWithChildren<Props>) => {
+export const RankedAccount = ({
+  name,
+  rank,
+  isActive,
+  accountId,
+  chain,
+  children,
+  hideExplorers,
+}: PropsWithChildren<Props>) => {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   return (
@@ -35,7 +44,7 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
               <Indicator active={isActive} />
             </div>
           </div>
-          <AccountExplorers accountId={accountId} chain={chain} />
+          {!hideExplorers && <AccountExplorers accountId={accountId} chain={chain} />}
         </div>
       </div>
       {children}

@@ -1,13 +1,5 @@
-import {
-  KeyType,
-  type PolkadotVaultWallet,
-  type VaultChainAccount,
-  type VaultShardAccount,
-  type Wallet,
-} from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { KeyType, type PolkadotVaultWallet, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { accountUtils } from '@/entities/wallet';
-import { downloadFiles, exportKeysUtils } from '@/features/wallets/ExportKeys';
 
 import { ForgetStep, ReconnectStep } from './constants';
 import { type VaultMap } from './types';
@@ -23,7 +15,6 @@ export const wcDetailsUtils = {
 export const walletDetailsUtils = {
   isForgetModalOpen,
   getVaultAccountsMap,
-  exportVaultWallet,
   getMainAccounts,
 };
 
@@ -66,18 +57,6 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
 
     return acc;
   }, {});
-}
-
-function exportVaultWallet(wallet: Wallet, rootAccountId: AccountId, accounts: VaultMap) {
-  const accountsFlat = Object.values(accounts).flat();
-  const exportStructure = exportKeysUtils.getExportStructure(rootAccountId, accountsFlat);
-
-  downloadFiles([
-    {
-      blob: new Blob([exportStructure], { type: 'text/plain' }),
-      fileName: `${wallet.name}.txt`,
-    },
-  ]);
 }
 
 function getMainAccounts(accounts: (VaultChainAccount | VaultShardAccount[])[]): VaultChainAccount[] {

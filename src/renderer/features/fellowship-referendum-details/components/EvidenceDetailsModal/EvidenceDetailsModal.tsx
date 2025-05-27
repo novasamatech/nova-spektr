@@ -1,34 +1,21 @@
 import { type PropsWithChildren, memo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
-import { useI18n } from '@/shared/i18n';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
-import { Card } from '../Card';
+import { AdditionalInfo } from '../AdditionalInfo';
 import { MemberProfile } from '../MemberProfile';
 
 import { Content } from './Content';
 
 type Props = PropsWithChildren<{
   evidence: Evidence;
+  title: string;
 }>;
 
 export const evidenceActionsSlot = createSlot<{ evidence: Evidence }>();
 
-export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
-  const { t } = useI18n();
-
-  const isPromotion = evidence.wish === 'Promotion';
-  const isRetention = evidence.wish === 'Retention';
-
-  let title = '';
-  if (isPromotion) {
-    title = t('fellowship.evidenceModal.titlePromotion');
-  }
-  if (isRetention) {
-    title = t('fellowship.evidenceModal.titleRetention');
-  }
-
+export const EvidenceDetailsModal = memo(({ evidence, children, title }: Props) => {
   return (
     <Modal size="xl" height="full">
       <Modal.Trigger>{children}</Modal.Trigger>
@@ -41,11 +28,9 @@ export const EvidenceDetailsModal = memo(({ evidence, children }: Props) => {
           <Box gap={4} shrink={0}>
             <MemberProfile evidence={evidence} />
 
-            <Card>
-              <Box direction="row" gap={2} padding={6}>
-                <Slot id={evidenceActionsSlot} props={{ evidence }} />
-              </Box>
-            </Card>
+            <Slot id={evidenceActionsSlot} props={{ evidence }} />
+
+            <AdditionalInfo evidenceHash={evidence.hash} />
           </Box>
         </div>
       </Modal.Content>

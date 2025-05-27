@@ -241,7 +241,7 @@ sample({
 sample({
   clock: $chain,
   source: $constructorForm.fields.keyType.$value,
-  filter: (_, chain) => nonNullable(chain),
+  filter: (keyType, chain) => nonNullable(keyType) && nonNullable(chain),
   fn: (keyType, chain) => {
     const type = keyType === KeyType.MAIN ? '' : `//${keyType}`;
 
