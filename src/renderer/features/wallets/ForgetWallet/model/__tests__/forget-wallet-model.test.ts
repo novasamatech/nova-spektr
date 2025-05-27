@@ -77,6 +77,7 @@ const proxiedWallet = {
       id: 3,
       type: 'chain',
       accountId: '0x01',
+      proxiedAccountId: '0x01',
       proxyAccountId: createAccountId('proxied account'),
       chainId: TEST_CHAIN_ID,
       delay: 0,
@@ -117,9 +118,13 @@ describe('features/wallets/ForgetModel', () => {
     jest.spyOn(storageService.proxies, 'deleteAll').mockResolvedValue([1]);
     jest.spyOn(storageService.proxyGroups, 'deleteAll').mockResolvedValue([1]);
 
+    const spyDeleteWallets = jest.fn();
+    const spyDeleteAccounts = jest.fn().mockImplementation((accounts: AnyAccount[]) => accounts);
+
     const scope = fork({
       values: new Map()
         .set(walletModel.__test.$rawWallets, [wallet, proxiedWallet])
+        .set(walletModel.$allWallets, [wallet, proxiedWallet])
         .set(accounts.__test.$list, [...wallet.accounts, ...proxiedWallet.accounts])
         .set(proxyModel.$proxies, {
           '0x01': [
@@ -142,9 +147,15 @@ describe('features/wallets/ForgetModel', () => {
             totalDeposit: '10005100',
           },
         ]),
+      handlers: [
+        [accounts.deleteAccounts, spyDeleteAccounts],
+        [walletModel.walletsRemoved, spyDeleteWallets],
+      ],
     });
 
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
+
+    expect(spyDeleteWallets).toHaveBeenCalledWith([wallet.id, proxiedWallet.id]);
 
     expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
