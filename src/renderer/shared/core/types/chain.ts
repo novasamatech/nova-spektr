@@ -13,7 +13,7 @@ export type Chain = {
   icon: string;
   addressPrefix: number;
   legacyAddressPrefix?: number;
-  externalApi?: Record<ExternalType, ExternalValue[]>;
+  externalApi?: Partial<Record<ExternalType, ExternalValue[]>>;
   options?: ChainOptions[];
   additional?: Record<AdditionalType, `0x${string}`>;
 };

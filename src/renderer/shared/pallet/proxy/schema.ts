@@ -37,6 +37,8 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'SudoUncheckedSetCode',
   'Owner',
   'ParaRegistration',
+  'OldAuction',
+  'OldIdentityJudgement',
   'OldParaRegistration',
 );
 

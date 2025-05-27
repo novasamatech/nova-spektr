@@ -20,7 +20,7 @@ import { networkModel } from '@/entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
@@ -60,6 +60,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
+  const [isExportModalOpen, toggleExportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
@@ -129,7 +130,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     {
       icon: 'export' as IconNames,
       title: t('walletDetails.vault.export'),
-      onClick: () => walletDetailsUtils.exportVaultWallet(wallet, wallet.rootAccountId, accountsMap),
+      onClick: toggleExportModal,
     },
     {
       icon: 'forget' as IconNames,
@@ -257,6 +258,12 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
         existingKeys={Object.values(accountsMap).flat(2)}
         onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
+      />
+      <ExportKeysModal
+        isOpen={isExportModalOpen}
+        wallet={wallet}
+        accounts={Object.values(accountsMap).flat()}
+        onClose={toggleExportModal}
       />
       <DerivationsAddressModal
         isOpen={isScanModalOpen}

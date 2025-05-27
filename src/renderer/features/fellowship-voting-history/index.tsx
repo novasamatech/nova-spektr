@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { Card, referendumAdditionalLowPriorityInfoSlot } from '@/features/fellowship-referendum-details';
+import { Card, referendumAdditionalInfoSlot } from '@/features/fellowship-referendum-details';
 
 import { VotingHistory } from './components/VotingHistory';
 import { VotingSummary } from './components/VotingSummary';
@@ -9,7 +9,7 @@ import { fellowshipVotingHistoryFeature } from './model/feature';
 
 export { fellowshipVotingHistoryFeature };
 
-fellowshipVotingHistoryFeature.inject(referendumAdditionalLowPriorityInfoSlot, ({ referendumId }) => {
+fellowshipVotingHistoryFeature.inject(referendumAdditionalInfoSlot, ({ referendum }) => {
   const { t } = useI18n();
 
   return (
@@ -18,10 +18,10 @@ fellowshipVotingHistoryFeature.inject(referendumAdditionalLowPriorityInfoSlot, (
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
           <SmallTitleText>{t('fellowship.voting.summary')}</SmallTitleText>
 
-          <VotingHistory referendumId={referendumId} />
+          <VotingHistory referendumId={referendum.id} />
         </Box>
 
-        <VotingSummary />
+        <VotingSummary referendum={referendum} />
       </Box>
     </Card>
   );
