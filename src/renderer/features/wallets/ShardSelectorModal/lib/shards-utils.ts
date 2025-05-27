@@ -145,9 +145,9 @@ function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
       }
 
       for (const shardData of Object.values(chainData.sharded)) {
-        const { total: _total, checked: _checked, ...data } = shardData;
+        const { total: _total, checked: _checked, ...shards } = shardData;
 
-        for (const [accountId, isSelected] of Object.entries(data)) {
+        for (const [accountId, isSelected] of Object.entries(shards)) {
           if (isSelected) {
             selected.add(accountId as AccountId);
           }
