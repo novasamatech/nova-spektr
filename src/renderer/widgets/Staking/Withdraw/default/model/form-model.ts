@@ -32,7 +32,6 @@ import { type StakingMap, eraService, useStakingData } from '@/entities/staking'
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { networkSelectorModel } from '@/features/governance';
 import { type NetworkStore } from '../lib/types';
 
 export type FormParams = {
@@ -149,7 +148,7 @@ const form: Form<FormParams> = createForm<FormParams>({
 const $availableBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    chain: networkSelectorModel.$governanceChain,
+    chain: $chain,
     balances: balanceModel.$balances,
     accounts: accounts.$list,
   },
@@ -369,7 +368,7 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: accounts.$list,
-  chain: networkSelectorModel.$governanceChain,
+  chain: $chain,
   transaction: $coreTx,
 });
 
