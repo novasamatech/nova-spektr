@@ -4018,8 +4018,7 @@
   {
     "name": "Hydration",
     "specName": "polkadot",
-    "addressPrefix": 0,
-    "legacyAddressPrefix": 63,
+    "addressPrefix": 63,
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Hydration.svg",
@@ -5613,23 +5612,6 @@
           "currencyIdScale": "0x0908",
           "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
           "existentialDeposit": "10000000000000",
-          "transfersEnabled": true
-        }
-      },
-      {
-        "name": "vBNC",
-        "assetId": 12,
-        "symbol": "vBNC",
-        "precision": 12,
-        "type": "orml",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vBNC.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vBNC.svg"
-        },
-        "typeExtras": {
-          "currencyIdScale": "0x0101",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000",
           "transfersEnabled": true
         }
       }

@@ -4070,8 +4070,7 @@
   {
     "name": "Hydration",
     "specName": "polkadot",
-    "addressPrefix": 0,
-    "legacyAddressPrefix": 63,
+    "addressPrefix": 63,
     "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
     "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
     "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Hydration.svg",
@@ -5623,23 +5622,6 @@
           "existentialDeposit": "10000000000000",
           "transfersEnabled": true
         }
-      },
-      {
-        "name": "vBNC",
-        "assetId": 12,
-        "symbol": "vBNC",
-        "precision": 12,
-        "type": "orml",
-        "icon": {
-          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/vBNC.svg",
-          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/vBNC.svg"
-        },
-        "typeExtras": {
-          "currencyIdScale": "0x0101",
-          "currencyIdType": "BifrostPrimitivesCurrencyCurrencyId",
-          "existentialDeposit": "10000000000",
-          "transfersEnabled": true
-        }
       }
     ],
     "explorers": [
@@ -6286,9 +6268,6 @@
           "url": "https://subquery-collectives-polkadot-stg.novasama-tech.org"
         }
       ]
-    },
-    "additional": {
-      "identityChain": "0x67fa177a097bfa18f77ea95ab56e9bcdfeb0e5b8a40e46298bb93e16b6fc5008"
     }
   },
   {
@@ -6573,7 +6552,6 @@
         "symbol": "WND",
         "precision": 12,
         "type": "native",
-        "staking": "relaychain",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
@@ -6605,6 +6583,12 @@
         {
           "type": "subquery",
           "url": "https://subquery-proxy-westend-stg.novasama-tech.org"
+        }
+      ],
+      "governance-delegations": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-governance-westend-prod.novasama-tech.org"
         }
       ]
     },
