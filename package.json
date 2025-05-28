@@ -165,7 +165,7 @@
     "@headlessui/tailwindcss": "^0.1.2",
     "@jonasgeiler/tsc-files": "2.3.1",
     "@peterek/vite-plugin-favicons": "2.1.0",
-    "@playwright/test": "^1.49.1",
+    "@playwright/test": "^1.52.0",
     "@storybook/addon-a11y": "8.6.12",
     "@storybook/addon-essentials": "8.6.12",
     "@storybook/addon-interactions": "8.6.12",

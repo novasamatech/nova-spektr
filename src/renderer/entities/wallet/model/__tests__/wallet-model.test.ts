@@ -65,7 +65,7 @@ describe('entities/wallet/model/wallet-model', () => {
       handlers: [[accounts.deleteAccounts, accoutsDeleteSpy]],
     });
 
-    await allSettled(walletModel.events.walletsRemoved, { scope, params: [removedWallet.id] });
+    await allSettled(walletModel.walletsRemoved, { scope, params: [removedWallet.id] });
 
     expect(accoutsDeleteSpy).toHaveBeenCalledWith(removedAccounts);
     expect(scope.getState(walletModel.__test.$rawWallets)).toEqual(remainingWallets);

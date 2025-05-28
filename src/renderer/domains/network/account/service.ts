@@ -101,7 +101,7 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
     const existingNode = nodes.get(account);
     if (existingNode) return existingNode;
 
-    const children = accountCollectChildrenPipeline([], { account, accounts });
+    const children = accountCollectChildrenPipeline([], { account, accounts: chainAccounts });
     const node: AccountNode = {
       account,
       children: children.map(createNode),
@@ -242,4 +242,5 @@ export const accountService = {
   findSignatories,
   findInitiators,
   findRoute,
+  traverseGraph,
 };
