@@ -274,6 +274,9 @@ export const Staking = () => {
       return selectedNominators.includes(address);
     });
 
+    //todo probably here is the best place to check
+    // if shards.length === 1 then CAS, else  old version
+
     const model = {
       [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
