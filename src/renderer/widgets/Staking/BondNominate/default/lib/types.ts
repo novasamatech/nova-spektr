@@ -18,7 +18,7 @@ export type WalletData = {
 };
 
 export type BondNominateData = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
   destination: Address;

@@ -1,15 +1,16 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
   isStringsMatchQuery,
+  nullable,
   stakeableAmount,
   toAddress,
   transferableAmount,
@@ -22,7 +23,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
   destination: Address;
@@ -67,134 +68,92 @@ const $feeData = restore(feeDataChanged, {
   multisigDeposit: ZERO_BALANCE,
 });
 
-const $bondForm = createForm<FormParams>({
+const form: Form<FormParams> = createForm<FormParams>({
   fields: {
-    shards: {
-      init: [] as AnyAccount[],
-      rules: [
-        {
-          name: 'noProxyFee',
+    initiator: {
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             feeData: $feeData,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
-          validator: (_s, _f, { isProxy, proxyBalance, feeData }) => {
-            if (!isProxy) return true;
-
-            return new BN(feeData.fee).lte(new BN(proxyBalance));
+          fn: (_v, _f, { feeData, isProxy, proxyBalance }) => {
+            if (isProxy && new BN(feeData.fee).gt(new BN(proxyBalance))) {
+              return { message: 'transfer.notEnoughBalanceForFeeError' };
+            }
           },
-        },
-        {
-          name: 'noBondBalance',
-          errorText: 'staking.bond.noBondBalanceError',
-          source: combine({
-            isProxy: $isProxy,
-            network: $networkStore,
-            accountsBalances: $accountsBalances,
-          }),
-          validator: (shards, form, { isProxy, network, accountsBalances }) => {
-            if (isProxy || shards.length === 1) return true;
-
-            const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
-
-            return shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
-          },
-        },
-      ],
+        };
+      },
     },
     signatory: {
-      init: null,
-      rules: [
-        {
-          name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
-          source: $isMultisig,
-          validator: (signatory, _, isMultisig) => {
-            if (!signatory || !isMultisig) return true;
-
-            return Object.keys(signatory).length > 0;
-          },
-        },
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          validator: (_s, _f, { feeData, isMultisig, signatoryBalance }) => {
-            if (!isMultisig) return true;
-
-            return new BN(feeData.multisigDeposit).add(new BN(feeData.fee)).lte(new BN(signatoryBalance));
+          fn: (signatory, _f, { feeData, isMultisig, signatoryBalance }) => {
+            const isNotEnoughMultisigTokens =
+              isMultisig && new BN(feeData.multisigDeposit).add(new BN(feeData.fee)).gt(new BN(signatoryBalance));
+            if (isNotEnoughMultisigTokens) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     amount: {
-      init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
-        },
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
-        },
-        {
-          name: 'notEnoughBalance',
-          errorText: 'staking.notEnoughBalanceError',
+      defaultValue: '',
+      validator: () => {
+        return {
           source: combine({
             network: $networkStore,
             bondBalanceRange: $bondBalanceRange,
-          }),
-          validator: (value, _, { network, bondBalanceRange }) => {
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
-
-            return amountBN.lte(new BN(bondBalance));
-          },
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
-          source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
-            network: $networkStore,
             accountsBalances: $accountsBalances,
           }),
-          validator: (value, form, { network, feeData, isMultisig, accountsBalances }) => {
-            if (isMultisig) return true;
+          fn: (amount, _f, { network, bondBalanceRange, feeData, isMultisig, accountsBalances }) => {
+            if (nullable(amount) || amount === '') {
+              return { message: 'transfer.requiredAmountError' };
+            }
+
+            if (amount === ZERO_BALANCE) {
+              return { message: 'transfer.notZeroAmountError' };
+            }
+
+            const amountBN = new BN(formatAmount(amount, network.asset.precision));
+            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
+            const isNotEnoughBalance = amountBN.gt(new BN(bondBalance));
+            if (isNotEnoughBalance) {
+              return { message: 'staking.notEnoughBalanceError' };
+            }
 
             const feeBN = new BN(feeData.fee);
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-
-            return form.shards.every((_: AnyAccount, index: number) => {
-              return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
-            });
+            const isNotEnoughBalanceForFee = !isMultisig && amountBN.add(feeBN).gt(new BN(accountsBalances[0]));
+            if (isNotEnoughBalanceForFee) {
+              return { message: 'transfer.notEnoughBalanceForFeeError' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     destination: {
-      init: '' as Address,
-      rules: [
-        {
-          name: 'required',
-          errorText: 'proxy.addProxy.proxyAddressRequiredError',
+      defaultValue: '' as Address,
+      validator: () => {
+        return {
           source: $destinationType,
-          validator: (value, _, destinationType) => {
-            if (destinationType === RewardsDestination.RESTAKE) return true;
-
-            return validateAddress(value);
+          fn: (destination, _, destinationType) => {
+            if (destinationType === RewardsDestination.TRANSFERABLE && !validateAddress(destination)) {
+              return { message: 'staking.bond.incorrectAddressError' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
   },
   validateOn: ['submit'],
@@ -297,11 +256,10 @@ const $api = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $bondForm.$isValid,
     isFeeLoading: $isFeeLoading,
   },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
+  ({ isFeeLoading }) => {
+    return !isFeeLoading;
   },
 );
 
@@ -309,7 +267,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: $bondForm.reset,
+  target: form.reset,
 });
 
 sample({
@@ -329,8 +287,8 @@ sample({
   clock: formInitiated,
   source: $shards,
   filter: (shards) => shards.length > 0,
-  fn: (shards) => shards,
-  target: $bondForm.fields.shards.onChange,
+  fn: (shards) => shards[0],
+  target: form.fields.initiator.change,
 });
 
 sample({
@@ -346,11 +304,11 @@ sample({
 sample({
   source: {
     accounts: $accounts,
-    shards: $bondForm.fields.shards.$value,
+    initiator: form.fields.initiator.$value,
   },
-  fn: ({ accounts, shards }) => {
+  fn: ({ accounts, initiator }) => {
     return accounts.reduce<string[]>((acc, { account, balance }) => {
-      if (shards.includes(account)) acc.push(balance);
+      if (initiator?.id === account.id) acc.push(balance);
 
       return acc;
     }, []);
@@ -375,7 +333,7 @@ sample({
 });
 
 sample({
-  clock: $bondForm.fields.signatory.onChange,
+  clock: form.fields.signatory.change,
   source: $signatories,
   filter: (signatories) => !isEmpty(signatories),
   fn: (signatories, signatory) => {
@@ -387,13 +345,8 @@ sample({
 });
 
 sample({
-  clock: $bondForm.fields.shards.onChange,
-  target: $bondForm.fields.amount.resetErrors,
-});
-
-sample({
-  clock: $bondForm.fields.amount.onChange,
-  target: $bondForm.fields.shards.resetErrors,
+  clock: form.fields.initiator.change,
+  target: form.fields.amount.reset,
 });
 
 sample({
@@ -422,7 +375,7 @@ sample({
 // Submit
 
 sample({
-  clock: $bondForm.$values.updates,
+  clock: form.$values.updates,
   source: $networkStore,
   filter: (networkStore) => Boolean(networkStore),
   fn: (_, formData) => formData,
@@ -430,17 +383,18 @@ sample({
 });
 
 sample({
-  clock: $bondForm.formValidated,
+  clock: form.submit.doneData,
   target: formSubmitted,
 });
 
 sample({
   clock: formCleared,
-  target: [$bondForm.reset, $shards.reinit],
+  target: form.reset,
 });
 
 export const formModel = {
-  $bondForm,
+  form,
+
   $proxyWallet,
   $signatories,
   $destinationAccounts,

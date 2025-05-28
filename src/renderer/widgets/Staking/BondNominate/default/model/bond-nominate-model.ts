@@ -195,16 +195,15 @@ sample({
   source: $walletData,
   filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
   fn: (walletData, bondData) => {
-    return bondData!.shards.map((shard) => {
-      return transactionBuilder.buildBondNominate({
-        chain: walletData!.chain,
-        asset: walletData!.chain.assets[0],
-        accountId: shard.accountId,
-        amount: bondData!.amount,
-        destination: bondData!.destination,
-        nominators: bondData!.validators.map(({ address }) => address),
-      });
+    const tx = transactionBuilder.buildBondNominate({
+      chain: walletData!.chain,
+      asset: walletData!.chain.assets[0],
+      accountId: bondData!.initiator!.accountId,
+      amount: bondData!.amount,
+      destination: bondData!.destination,
+      nominators: bondData!.validators.map(({ address }) => address),
     });
+    return [tx];
   },
   target: $pureTxs,
 });
@@ -306,13 +305,14 @@ sample({
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
   fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
+    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper | null;
 
     return {
       event: [
         {
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
+          shards: [bondData!.initiator!],
           ...bondData!,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
@@ -346,9 +346,9 @@ sample({
     return {
       event: {
         signingPayloads:
-          transactions?.map((tx, index) => ({
+          transactions?.map((tx) => ({
             chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index],
+            account: wrapper ? wrapper.proxyAccount : bondData!.initiator!,
             signatory: bondData!.signatory,
             transaction: tx.wrappedTx,
           })) || [],
@@ -376,7 +376,7 @@ sample({
     event: {
       ...signParams,
       chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.bondData!.shards[0],
+      account: bondFlowData.bondData!.initiator!,
       signatory: bondFlowData.bondData!.signatory,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
