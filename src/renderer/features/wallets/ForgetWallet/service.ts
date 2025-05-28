@@ -1,5 +1,4 @@
 import { type AccountNode, type AnyAccount, accountService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
 
 export const forgetService = {
   findParentAccounts,
@@ -30,11 +29,9 @@ function findParentAccounts(graph: Map<AnyAccount, AccountNode>, account: AnyAcc
           return false; // Stop traversing this path
         }
 
-        const childrenWithPermission = node.children.filter((c) => !accountUtils.isWatchOnlyAccount(c.account));
-
-        if (childrenWithPermission.length === 1) {
+        if (node.children.length === 1) {
           pathParents.push(node.account);
-        } else if (childrenWithPermission.length > 1) {
+        } else if (node.children.length > 1) {
           pathParents = []; // Clear the path
         }
       },
