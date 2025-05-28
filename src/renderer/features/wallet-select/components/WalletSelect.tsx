@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -9,7 +10,6 @@ import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/sha
 import { walletSelect } from '@/aggregates/wallet-select';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
-import { TEST_IDS } from '@/shared/constants';
 
 const {
   views: { WalletFiatBalance },
