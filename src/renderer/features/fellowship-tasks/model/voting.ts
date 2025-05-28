@@ -11,6 +11,8 @@ import { memberProfile } from './memberProfile';
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
 
+const $members = fellowship.$store.map(s => s?.members ?? []);
+
 const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => {
   if (nullable(member)) return [];
   return voting.filter(v => v.accountId === member.accountId);
@@ -18,18 +20,18 @@ const $memberVotes = combine(memberProfile.$member, $votes, (member, voting) => 
 
 const votesRequested = attachToFeatureInput(
   fellowshipTasksFeature,
-  combine({ referendums: $referendums, member: memberProfile.$member }),
+  combine({ referendums: $referendums, members: $members }),
 );
 
 sample({
   clock: votesRequested,
-  fn({ input, data: { referendums, member } }) {
+  fn({ input, data: { referendums, members } }) {
     return {
       palletType: input.palletType,
       api: input.api,
       chain: input.chain,
       referendums: referendums.map(r => r.id),
-      accounts: member?.accountId ? [member.accountId] : [],
+      accounts: members.map(m => m.accountId),
     };
   },
   target: voting.request,

@@ -34,10 +34,13 @@ sample({
   target: [member.subscribe, track.request],
 });
 
-sample({
-  clock: fellowshipSalaryFeature.stopped,
-  target: member.unsubscribe,
-});
+// this produces a crash because this feature is stopped during tasks
+// accordion hide and there is infinite loop because of member.pending
+// todo: uncomment when new subscription logic is implemented
+// sample({
+//   clock: fellowshipSalaryFeature.stopped,
+//   target: member.unsubscribe,
+// });
 
 sample({
   clock: memberUpdate,

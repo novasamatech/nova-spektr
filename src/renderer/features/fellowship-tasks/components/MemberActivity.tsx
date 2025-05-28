@@ -2,7 +2,7 @@ import { useStoreMap } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
@@ -60,7 +60,14 @@ export const MemberActivity = memo(({ accountId }: Props) => {
   return (
     <Box direction="row" gap={4}>
       <Box direction="row" gap={2} verticalAlign="center">
-        <Icon size={16} name="checkmarkCutout" className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'} />
+        <Icon
+          size={16}
+          name={isActivityFit ? 'positive' : 'negative'}
+          className={cnTw({
+            'text-icon-positive': isActivityFit,
+            'text-icon-negative': !isActivityFit,
+          })}
+        />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText>
@@ -71,7 +78,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
                 DEFAULT_VALUE
               )
             ) : (
-              <Skeleton width={20} height={5} />
+              <Skeleton width="8ch" height="1lh" />
             )}
           </FootnoteText>
         </Box>
@@ -79,8 +86,11 @@ export const MemberActivity = memo(({ accountId }: Props) => {
       <Box direction="row" gap={2} verticalAlign="center">
         <Icon
           size={16}
-          name="checkmarkCutout"
-          className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
+          name={isAgreementFit ? 'positive' : 'negative'}
+          className={cnTw({
+            'text-icon-positive': isAgreementFit,
+            'text-icon-negative': !isAgreementFit,
+          })}
         />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
@@ -92,7 +102,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
                 DEFAULT_VALUE
               )
             ) : (
-              <Skeleton width={20} height={5} />
+              <Skeleton width="8ch" height="1lh" />
             )}
           </FootnoteText>
         </Box>

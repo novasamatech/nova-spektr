@@ -18,7 +18,7 @@ const tagLabels: Record<string, { text: string; color: LabelVariant }> = {
   },
   importantVote: {
     text: 'fellowship.tasks.labels.importantVote',
-    color: 'purple',
+    color: 'green',
   },
 };
 
@@ -28,7 +28,7 @@ export const TaskLabels = memo(({ tags }: Props) => {
   return tags.map(tag => {
     const labelConfig = tagLabels[tag];
     return (
-      <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
+      <Label key={tag} variant={labelConfig?.color ?? 'gray'} className="border border-filter-border bg-white">
         {t(labelConfig?.text ?? tag)}
       </Label>
     );

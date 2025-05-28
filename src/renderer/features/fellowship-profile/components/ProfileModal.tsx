@@ -27,11 +27,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   const identity = useUnit(profile.$identity);
   const salary = useUnit(memberSalary.$memberSalary);
 
-  const disabled =
-    nullable(member) ||
-    nullable(featureInput) ||
-    nullable(account) ||
-    !accountService.hasPermissionToMakeActions(account);
+  const disabled = nullable(member) || nullable(featureInput) || nullable(account);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -40,7 +36,8 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
 
   const address = toAddress(member.accountId, { prefix: featureInput.chain.addressPrefix });
   const active = memberService.isCoreMember(member) && member.isActive;
-  const setActiveDisabled = !memberService.canChangeActiveState(member);
+  const setActiveDisabled =
+    !accountService.hasPermissionToMakeActions(account) || !memberService.canChangeActiveState(member);
 
   return (
     <Modal size="md" height="fit">

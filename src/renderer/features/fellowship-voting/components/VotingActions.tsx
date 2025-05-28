@@ -3,7 +3,6 @@ import { memo, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { CollectiveReferendumVoteChart } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
@@ -21,7 +20,6 @@ type Props = {
 
 export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-  const [highlight, setHighlight] = useState<'Aye' | 'Nay' | null>(null);
 
   const account = useUnit(votingStatus.$votingAccount);
   const maxRank = useUnit(votingStatus.$maxRank);
@@ -98,36 +96,25 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
       <Box direction="row" gap={1} horizontalAlign="center">
         <VotingButtonWithTooltip
           variant="negative"
-          icon="thumbDown"
+          icon="negative"
           disabled={disabled}
           isVoted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
           onClick={nay}
-          onHighlight={e => setHighlight(e)}
         />
         <VotingButtonWithTooltip
           variant="positive"
-          icon="thumbUp"
+          icon="positive"
           disabled={disabled}
           isVoted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
           onClick={aye}
-          onHighlight={e => setHighlight(e)}
         />
       </Box>
-      <div className="w-[102px]">
-        <CollectiveReferendumVoteChart
-          referendum={referendum}
-          pending={!!referendum}
-          votes={memberVoteWeight}
-          voted={referendumVote?.decision}
-          highlight={highlight}
-        />
-      </div>
       {decision ? (
         <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
       ) : null}
