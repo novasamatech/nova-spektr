@@ -3,6 +3,8 @@ import { type Page } from '@playwright/test';
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { type WalletModalElements } from '../_elements/WalletModalElements';
+import { MultisigModalWindow } from './MultisigModalWindow';
+import { MultisigModalElements } from '../_elements/MultisigModalElements';
 
 export class WalletModalWindow extends BaseModal<WalletModalElements> {
   public previousPage: BasePage;
@@ -12,15 +14,18 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
     this.previousPage = previousPage;
   }
 
-  public async openWalletModelWindow(): Promise<WalletModalWindow> {
+  public async openWalletModalWindow(): Promise<WalletModalWindow> {
     await this.previousPage.click(this.previousPage.pageElements.url);
 
     return this;
   }
 
-  public async clickOnAddButton(): Promise<WalletModalWindow> {
-    await this.click(this.pageElements.addButton);
 
-    return this;
+  public async openMultisigModalWindow(): Promise<MultisigModalWindow> {
+    await this.page.getByRole('button', { name: 'Add' }).click();
+    await this.page.getByRole('menuitem', { name: 'Multisig' }).click();
+
+    return new MultisigModalWindow(this.page, new MultisigModalElements(), this.previousPage);
   }
 }
+

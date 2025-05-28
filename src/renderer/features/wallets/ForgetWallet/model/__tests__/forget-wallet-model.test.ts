@@ -1,22 +1,15 @@
 import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
-import { storageService } from '@/shared/api/storage';
-import {
-  AccountType,
-  CryptoType,
-  ProxyVariant,
-  SigningType,
-  type VaultBaseAccount,
-  type Wallet,
-  WalletType,
-} from '@/shared/core';
-import { TEST_ACCOUNTS, TEST_CHAIN_ID } from '@/shared/lib/utils';
-import { createAccountId } from '@/shared/mocks';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { AccountType, CryptoType, ProxyVariant, SigningType, type Wallet, WalletType } from '@/shared/core';
+import { polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
+import { proxiesModel } from '@/features/proxies';
 import { forgetWalletModel } from '../forget-wallet-model';
 
 vi.mock('@/entities/multisig', () => ({
@@ -40,29 +33,29 @@ const wallet: Wallet = {
   id: 1,
   name: 'My wallet',
   isActive: false,
-  type: WalletType.WATCH_ONLY,
-  signingType: SigningType.WATCH_ONLY,
+  type: WalletType.POLKADOT_VAULT,
+  signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
       id: '1',
       walletId: 1,
-      type: 'universal',
+      type: 'chain',
+      chainId: polkadotChainId,
       signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
-      accountType: AccountType.BASE,
       name: 'first account',
-      accountId: TEST_ACCOUNTS[0],
-    } satisfies VaultBaseAccount,
+      accountId: '0x03' as AccountId,
+    } as AnyAccount,
     {
       id: '2',
       walletId: 1,
-      type: 'universal',
+      type: 'chain',
+      chainId: polkadotChainId,
       signingType: SigningType.POLKADOT_VAULT,
       cryptoType: CryptoType.SR25519,
-      accountType: AccountType.BASE,
       name: 'second account',
-      accountId: createAccountId('proxied account'),
-    } satisfies VaultBaseAccount,
+      accountId: '0x02' as AccountId,
+    },
   ],
 };
 
@@ -70,41 +63,33 @@ const proxiedWallet = {
   id: 2,
   name: 'My second wallet',
   isActive: true,
-  type: WalletType.POLKADOT_VAULT,
-  signingType: SigningType.POLKADOT_VAULT,
+  type: WalletType.PROXIED,
+  signingType: SigningType.WATCH_ONLY,
   accounts: [
     {
       id: 3,
       type: 'chain',
       accountId: '0x01',
-      proxyAccountId: createAccountId('proxied account'),
-      chainId: TEST_CHAIN_ID,
+      proxiedAccountId: '0x01',
+      proxyAccountId: '0x02',
+      chainId: polkadotChainId,
       delay: 0,
       proxyType: 'Any',
-      proxyVariant: ProxyVariant.REGULAR,
+      proxyVariant: ProxyVariant.PURE,
       walletId: 2,
       name: 'proxied',
       accountType: AccountType.PROXIED,
       chainType: 0,
       cryptoType: 0,
-    },
+    } as unknown as AnyAccount,
   ],
 };
 
+const mockChains = {
+  [polkadotChainId]: polkadotChain,
+};
+
 describe('features/wallets/ForgetModel', () => {
-  test('should call success callback after wallet delete', async () => {
-    const spyCallback = jest.fn();
-
-    const scope = fork({
-      values: new Map().set(walletModel.__test.$rawWallets, [wallet]),
-    });
-
-    await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: spyCallback } });
-    await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
-
-    expect(spyCallback).toHaveBeenCalled();
-  });
-
   test('should delete wallet and accounts', async () => {
     const spyDeleteWallet = jest.fn();
     const spyDeleteAccounts = jest.fn().mockImplementation((accounts: AnyAccount[]) => accounts);
@@ -121,47 +106,36 @@ describe('features/wallets/ForgetModel', () => {
       ],
     });
 
-    await allSettled(forgetWalletModel.events.callbacksChanged, { scope, params: { onDeleteFinished: () => {} } });
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
     expect(spyDeleteWallet).toHaveBeenCalledWith([wallet]);
   });
 
   test('should delete proxied accounts, wallets and proxyGroups', async () => {
-    jest.spyOn(storageService.proxies, 'deleteAll').mockResolvedValue([1]);
-    jest.spyOn(storageService.proxyGroups, 'deleteAll').mockResolvedValue([1]);
+    jest.spyOn(accountService, 'createAccountGraphs').mockImplementation(() => {
+      return new Map<AnyAccount, AccountNode>([
+        [wallet.accounts[1], { account: wallet.accounts[1], children: [] }],
+        [
+          proxiedWallet.accounts[0],
+          { account: proxiedWallet.accounts[0], children: [{ account: wallet.accounts[1], children: [] }] },
+        ],
+      ]);
+    });
+
+    const spyProxies = vi.fn();
 
     const scope = fork({
       values: new Map()
         .set(walletModel.__test.$rawWallets, [wallet, proxiedWallet])
         .set(accounts.__test.$list, [...wallet.accounts, ...proxiedWallet.accounts])
-        .set(proxyModel.$proxies, {
-          '0x01': [
-            {
-              id: 1,
-              accountId: '0x00',
-              proxiedAccountId: '0x01',
-              chainId: TEST_CHAIN_ID,
-              proxyType: 'Any',
-              delay: 0,
-            },
-          ],
-        })
-        .set(proxyModel.$proxyGroups, [
-          {
-            id: 1,
-            walletId: 2,
-            proxiedAccountId: '0x01',
-            chainId: TEST_CHAIN_ID,
-            totalDeposit: '10005100',
-          },
-        ]),
+        .set(networkModel.$chains, mockChains),
+      handlers: [[proxiesModel.findAllProxies, spyProxies]],
     });
 
     await allSettled(forgetWalletModel.events.forgetWallet, { scope, params: wallet });
 
+    expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
     expect(scope.getState(proxyModel.$proxyGroups)).toEqual([]);
     expect(scope.getState(proxyModel.$proxies)).toEqual({});
-    expect(scope.getState(walletModel.__test.$rawWallets)).toEqual([]);
   });
 });
