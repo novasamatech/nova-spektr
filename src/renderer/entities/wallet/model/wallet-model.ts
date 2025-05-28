@@ -212,7 +212,7 @@ sample({
   target: $rawWallets,
 });
 
-// Remove
+// Remove wallet
 
 sample({
   clock: walletRemoved,
@@ -268,7 +268,7 @@ sample({
   target: $rawWallets,
 });
 
-// Hide
+// Hide wallet
 
 const hideWalletFx = createEffect(async (walletId: ID): Promise<ID> => {
   await storageService.wallets.update(walletId, { isHidden: true });

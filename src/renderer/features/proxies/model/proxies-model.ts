@@ -286,7 +286,7 @@ sample({
   clock: proxiedAccountsRemoved,
   filter: (proxiedAccounts) => proxiedAccounts.length > 0,
   fn: (proxiedAccounts) => {
-    return [...proxiedAccounts.map((p) => p.walletId)];
+    return proxiedAccounts.map((p) => p.walletId);
   },
   target: walletModel.walletsRemoved,
 });
