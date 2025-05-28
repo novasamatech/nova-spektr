@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -38,6 +39,7 @@ export const WalletSelect = () => {
       <Popover.Trigger>
         <button
           type="button"
+          data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
           className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         >
           <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
