@@ -4,13 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
-import { type Account, type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { identity } from '@/domains/network';
+import { type AnyAccount, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -203,7 +203,7 @@ export const Staking = () => {
   }, [activeWallet, accounts]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends Account>(address: Address, account: T): NominatorInfo<T> => ({
+    const getInfo = <T extends AnyAccount>(address: Address, account: T): NominatorInfo<T> => ({
       address,
       account,
       stash: staking[address]?.stash,
@@ -259,6 +259,8 @@ export const Staking = () => {
     [[], []],
   );
 
+  const isMultipleAccountsSelected = selectedNominators.length > 1;
+
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
 
@@ -274,16 +276,15 @@ export const Staking = () => {
       return selectedNominators.includes(address);
     });
 
-    //todo probably here is the best place to check
-    // if shards.length === 1 then CAS, else  old version
-
     const model = {
       [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
-      [StakeOperations.WITHDRAW]: Operations.withdrawModel.events.flowStarted,
+      [StakeOperations.WITHDRAW]: isMultipleAccountsSelected
+        ? Operations.withdrawShardsModel.events.flowStarted
+        : Operations.withdrawModel.events.flowStarted,
       [StakeOperations.SET_PAYEE]: Operations.payeeModel.events.flowStarted,
     };
 
@@ -388,7 +389,7 @@ export const Staking = () => {
       <Operations.Unstake />
       <Operations.Nominate />
       <Operations.Restake />
-      <Operations.Withdraw />
+      {isMultipleAccountsSelected ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
       <Operations.Payee />
     </>
   );
