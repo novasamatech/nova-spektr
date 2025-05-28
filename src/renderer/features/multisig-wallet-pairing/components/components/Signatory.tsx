@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
@@ -237,6 +238,7 @@ export const Signatory = ({
         <Box width="100%">
           <Field text={t('createMultisigAccount.signatoryAddress')}>
             <Combobox
+              data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
               placeholder={t('createMultisigAccount.signatorySelection')}
               invalid={isDuplicate}
               value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
