@@ -1,5 +1,5 @@
-export { BondNominate, bondNominateModel } from './BondNominate';
-export { BondNominateShards, bondNominateModelShards } from './BondNominateShards';
+export { BondNominate, bondNominateModel } from './BondNominate/default';
+export { BondNominateShards, bondNominateModelShards } from './BondNominate/shards';
 export { BondExtra, bondExtraModel } from './BondExtra';
 export { Nominate, nominateModel } from './Nominate';
 export { Payee, payeeModel } from './Payee';
