@@ -19,9 +19,6 @@ import { type ChainId } from '@/shared/core';
  * @returns {Object}
  */
 export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpcProvider {
-  const endpoints = config.endpoints.map(endpoint => (typeof endpoint === 'string' ? endpoint : endpoint.uri));
-  const provider = getUniversalProvider(chainId, endpoints);
-
   const getFormattedStatus = (status: typeof provider.status): StatusChange => {
     switch (status.type) {
       case 'connecting':
@@ -41,9 +38,15 @@ export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpc
   //   return JSON.stringify({ jsonrpc: '2.0', ...msg });
   // };
 
+  const endpoints = config.endpoints.map(endpoint => (typeof endpoint === 'string' ? endpoint : endpoint.uri));
+  const provider = getUniversalProvider(chainId, endpoints);
+
   provider.on('status', status => {
+    console.log('=== status ', status);
     config.onStatusChanged?.(getFormattedStatus(status));
   });
+
+  provider.connect();
 
   const send = (message: string) => {
     provider.send(message);

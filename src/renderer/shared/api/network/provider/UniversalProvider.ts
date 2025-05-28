@@ -1,3 +1,4 @@
+import noop from 'lodash/noop';
 import mitt, { type Emitter } from 'mitt';
 
 import { type ChainId } from '@/shared/core';
@@ -30,16 +31,16 @@ type RegistryEvents = {
   };
 };
 
-const DEFAULT_TIMEOUT = 3500;
+const TIMEOUT = 3500;
+const RECONNECT_DELAY = 3500;
 
 class UniversalProvider {
-  // readonly #endpoints: string[] = [];
-  // #endpointIndex = 0;
+  readonly #endpoints: string[] = [];
+  #endpointIndex = 0;
 
-  // @ts-expect-error not used
-  readonly #timeout: number;
-  readonly #reconnectDelay = 1_000;
-  readonly #maxReconnectAttempts = 3;
+  readonly #timeout: number = TIMEOUT;
+  readonly #reconnectDelay: number = RECONNECT_DELAY;
+  readonly #maxReconnectAttempts = 2;
   #reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   #reconnectAttempts = 0;
 
@@ -55,35 +56,25 @@ class UniversalProvider {
   // =========================== Public API ===========================
   // ==================================================================
 
-  constructor(endpoints: string[], timeout = DEFAULT_TIMEOUT) {
+  constructor(endpoints: string[], timeout = TIMEOUT) {
     this.#timeout = timeout;
-    // this.#endpoints = endpoints;
-
-    this.connect();
+    this.#endpoints = endpoints;
   }
 
   connect() {
-    // const nextEndpoint = endpoint || this.#endpoints.at(this.#endpointIndex % this.#endpoints.length);
+    if (nonNullable(this.#socket)) return;
 
-    if (nonNullable(this.#socket)) {
-      throw new Error('Web Socket already exists');
-    }
-
-    // console.info(`Trying to connect URL: ${nextEndpoint}`);
     this.#attemptToConnect();
   }
 
   disconnect() {
-    if (nullable(this.#socket)) {
-      throw new Error('WebSocket is not initialized');
-    }
+    if (nullable(this.#socket)) return;
 
     console.info(`Disconnecting from URL: ${this.#socket.url}`);
 
-    this.#socket.removeEventListener('open', this.#openListener);
-    this.#socket.removeEventListener('close', this.#closeListener);
-    this.#socket.removeEventListener('error', this.#errorListener);
-    this.#socket.removeEventListener('message', this.#messageListener);
+    this.#socket.removeEventListener('close', this.#closeHandler);
+    this.#socket.removeEventListener('error', this.#errorHandler);
+    this.#socket.removeEventListener('message', this.#messageHandler);
 
     if (this.#socket.readyState === WebSocket.OPEN || this.#socket.readyState === WebSocket.CONNECTING) {
       this.#socket.close(1000, 'Internal disconnect');
@@ -91,15 +82,12 @@ class UniversalProvider {
 
     this.#socket = null;
     this.#reconnectAttempts = 0;
-    this.#unsubscribeAll();
     this.#clearReconnectTimer();
     this.#updateStatus({ type: 'close', event: null });
   }
 
   send(message: string) {
-    if (nullable(this.#socket)) {
-      throw new Error('Connection is not initialized');
-    }
+    if (nullable(this.#socket)) return;
 
     if (this.#socket.readyState === WebSocket.CONNECTING) {
       this.#messageQueue.push(message);
@@ -110,12 +98,7 @@ class UniversalProvider {
     }
   }
 
-  /*
-   * Switch to a specific endpoint or use the next one from initial endpoints
-   */
-  switch(endpoint?: string) {
-    console.log('Switched to ', endpoint);
-  }
+  switch(_endpoint?: string) {}
 
   on<K extends keyof RegistryEvents>(key: K, cb: (value: RegistryEvents[K]) => void) {
     this.#events.on(key, cb);
@@ -146,25 +129,88 @@ class UniversalProvider {
   // ==================================================================
 
   #attemptToConnect() {
-    this.#updateStatus({ type: 'connecting', uri: this.#socket?.url ?? '' });
     this.#clearReconnectTimer();
 
-    try {
-      this.#socket = new WebSocket('ws://localhost:8080');
-      // this.#socket = new WebSocket(nextEndpoint);
+    this.#createWebSocket(this.#nextEndpoint)
+      .then((socket) => {
+        this.#socket = socket;
 
-      this.#socket.addEventListener('open', this.#openListener);
-      this.#socket.addEventListener('close', this.#closeListener);
-      this.#socket.addEventListener('error', this.#errorListener);
-      this.#socket.addEventListener('message', this.#messageListener);
+        this.#openHandler();
 
-      // this.#endpointIndex++;
-    } catch (error) {
-      console.error('WebSocket connection error: ', error);
+        this.#socket.addEventListener('close', this.#closeHandler);
+        this.#socket.addEventListener('error', this.#errorHandler);
+        this.#socket.addEventListener('message', this.#messageHandler);
+      })
+      .catch((error) => {
+        console.error('WebSocket connection error: ', error);
 
-      this.#updateStatus({ type: 'error', event: null });
-      this.#attemptToReconnect();
+        this.#attemptToReconnect();
+      });
+  }
+
+  #createWebSocket(url: URL): Promise<WebSocket> {
+    if (!url.origin.startsWith('ws://') && !url.origin.startsWith('wss://')) {
+      throw new Error('Invalid WebSocket URL protocol');
     }
+
+    this.#updateStatus({ type: 'connecting', uri: url.href });
+
+    return new Promise((resolve, reject) => {
+      let socket: WebSocket;
+      let timeoutToken: ReturnType<typeof setTimeout> | undefined = undefined;
+
+      try {
+        // Failing URL cannot be caught via try_catch
+        socket = new WebSocket(url);
+      } catch {
+        reject(new Error('WebSocket initialization failed'));
+        return;
+      }
+
+      const initialCleanup = () => {
+        clearTimeout(timeoutToken);
+        socket.removeEventListener('open', onOpen);
+        socket.removeEventListener('error', onError);
+      };
+
+      const forceSocketClose = () => {
+        try {
+          socket.addEventListener('error', noop, { once: true });
+          socket.close(1000, 'Timeout disconnect');
+        } catch {
+          // skip error
+        }
+      };
+
+      const onOpen = () => {
+        initialCleanup();
+        resolve(socket);
+      };
+
+      const onError = (event: Event | null) => {
+        initialCleanup();
+
+        if (event === null) {
+          socket.close();
+        }
+
+        this.#updateStatus({ type: event ? 'error' : 'close', event: null });
+
+        // Delay rejection for error cases to allow status propagation
+        setTimeout(() => reject(new Error('Could not establish connection')), event ? 300 : 0);
+      };
+
+      timeoutToken = setTimeout(() => {
+        initialCleanup();
+        forceSocketClose();
+
+        this.#updateStatus({ type: 'error', event: { type: 'timeout' } as Event });
+        reject(new Error('Timeout disconnect'));
+      }, this.#timeout);
+
+      socket.addEventListener('open', onOpen);
+      socket.addEventListener('error', onError);
+    });
   }
 
   #clearReconnectTimer() {
@@ -176,33 +222,35 @@ class UniversalProvider {
 
   #attemptToReconnect() {
     if (this.#reconnectAttempts >= this.#maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached, switching the endpoint');
-      // TODO: try another endpoint
+      console.info('Max reconnection attempts reached, switching the endpoint');
+
       this.disconnect();
+      this.#endpointIndex++;
+      this.#attemptToConnect();
     } else {
       const delay = this.#reconnectDelay * Math.pow(2, ++this.#reconnectAttempts - 1);
 
-      this.#reconnectTimer = setTimeout(this.#attemptToConnect, delay);
+      this.#reconnectTimer = setTimeout(() => this.#attemptToConnect(), delay);
     }
   }
 
-  #openListener = () => {
+  #openHandler = () => {
     this.#updateStatus({ type: 'open', uri: this.#socket?.url ?? '' });
     this.#reconnectAttempts = 0;
     this.#flushMessageQueue();
   };
 
-  #closeListener = (event: CloseEvent | null = null) => {
+  #closeHandler = (event: CloseEvent | null = null) => {
     this.#updateStatus({ type: 'close', event });
     this.#attemptToReconnect();
   };
 
-  #errorListener = (event: Event | null = null) => {
+  #errorHandler = (event: Event | null = null) => {
     this.#updateStatus({ type: 'error', event });
     this.#attemptToReconnect();
   };
 
-  #messageListener = (event: MessageEvent) => {
+  #messageHandler = (event: MessageEvent) => {
     this.#events.emit('message', event.data);
   };
 
@@ -211,22 +259,18 @@ class UniversalProvider {
     this.#events.emit('status', data);
   }
 
-  #unsubscribeAll() {
-    for (const unsubFns of this.#subscribers.values()) {
-      for (const fn of unsubFns) {
-        fn();
-      }
-    }
-
-    this.#subscribers.clear();
-  }
-
   #flushMessageQueue() {
     for (const message of this.#messageQueue) {
       this.send(message);
     }
 
     this.#messageQueue = [];
+  }
+
+  get #nextEndpoint() {
+    const nextEndpoint = this.#endpoints.at(this.#endpointIndex % this.#endpoints.length);
+
+    return new URL(nextEndpoint ?? '');
   }
 
   get status() {
@@ -243,7 +287,8 @@ const ProvidersMap = new Map<ChainId, UniversalProvider>();
  * Provider that orchestrate WebSocket connection for PAPI and PJS running at
  * the same time
  *
- * @param args Chain ID and RpcConfig
+ * @param chainId Chain ID
+ * @param args RpcConfig
  *
  * @returns {Object}
  */
