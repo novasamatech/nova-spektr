@@ -32,11 +32,10 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store || !store.initiator) return undefined;
+    if (!store || !store.initiator) return null;
 
     return walletUtils.getWalletById(wallets, store.initiator.walletId);
   },
-  { skipVoid: false },
 );
 
 sample({ clock: stepChanged, target: $step });
@@ -61,7 +60,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: { networkStore: $networkStore, coreTx: formModel.$coreTx },
-  filter: ({ networkStore }, { formData }) => Boolean(networkStore) && Boolean(formData.initiator),
+  filter: ({ networkStore }, { formData }) => nonNullable(networkStore) && nonNullable(formData.initiator),
   fn: ({ networkStore, coreTx }, { formData }) => ({
     event: [
       {
@@ -88,7 +87,12 @@ sample({
     wrappedTx: formModel.$tx,
   },
   filter: ({ withdrawData, networkStore, wrappedTx }) => {
-    return Boolean(withdrawData) && Boolean(networkStore) && Boolean(wrappedTx) && Boolean(withdrawData?.initiator);
+    return (
+      nonNullable(withdrawData) &&
+      nonNullable(networkStore) &&
+      nonNullable(wrappedTx) &&
+      nonNullable(withdrawData?.initiator)
+    );
   },
   fn: ({ withdrawData, networkStore, wrappedTx }) => ({
     event: {
@@ -120,12 +124,12 @@ sample({
   },
   filter: ({ withdrawData, networkStore, wrappedTx, coreTx }) => {
     return (
-      Boolean(withdrawData) &&
-      Boolean(wrappedTx) &&
-      Boolean(coreTx) &&
-      Boolean(networkStore) &&
-      Boolean(withdrawData?.initiator) &&
-      Boolean(withdrawData?.signatory)
+      nonNullable(withdrawData) &&
+      nonNullable(wrappedTx) &&
+      nonNullable(coreTx) &&
+      nonNullable(networkStore) &&
+      nonNullable(withdrawData?.initiator) &&
+      nonNullable(withdrawData?.signatory)
     );
   },
   fn: ({ withdrawData, networkStore, multisigTx, coreTx, wrappedTx }, signParams) => ({
@@ -175,7 +179,7 @@ sample({
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTx, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => [
     {

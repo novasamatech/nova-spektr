@@ -430,7 +430,7 @@ sample({
 sample({
   clock: formInitiated,
   source: $api,
-  filter: (api): api is ApiPromise => Boolean(api),
+  filter: (api): api is ApiPromise => nonNullable(api),
   target: subscribeEraFx,
 });
 

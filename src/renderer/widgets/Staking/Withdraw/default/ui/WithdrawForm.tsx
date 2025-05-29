@@ -8,7 +8,7 @@ import { formatBalance, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
 import { balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabelWithoutDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -173,24 +173,12 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabelWithoutDataLoading
+      <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
         asset={network.chain.assets[0]}
         fee={fee.toString()}
         isLoading={pendingFee}
       />
-
-      {/* {transactions && transactions.length > 1 && (
-        <FeeWithLabel
-          label={t('staking.networkFeeTotal')}
-          api={api}
-          asset={network.chain.assets[0]}
-          multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
-          onFeeChange={formModel.events.totalFeeChanged}
-          onFeeLoading={formModel.events.isFeeLoadingChanged}
-        />
-      )} */}
     </div>
   );
 };
