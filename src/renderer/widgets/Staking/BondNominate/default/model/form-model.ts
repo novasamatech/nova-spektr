@@ -2,7 +2,14 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import {
+  type Address,
+  type Asset,
+  type Chain,
+  type ProxyTxWrapper,
+  RewardsDestination,
+  WrapperKind,
+} from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -15,10 +22,11 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createSignatoriesStore } from '@/shared/transactions';
+import { createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type WalletData } from '../lib/types';
@@ -37,12 +45,6 @@ const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
 
-const txWrapperChanged = createEvent<{
-  proxyAccount: AnyAccount | null;
-  signatories: AnyAccount[][];
-  isProxy: boolean;
-  isMultisig: boolean;
-}>();
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
@@ -53,7 +55,6 @@ const $destinationType = restore(destinationTypeChanged, RewardsDestination.REST
 
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
@@ -158,6 +159,14 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $txWrappers = createTxWrappers({
+  initiator: form.fields.initiator.$value,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: $chain,
+  signatory: form.fields.signatory.$value,
+});
+
 // Computed
 
 const $proxyWallet = combine(
@@ -167,11 +176,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
+    if (!isProxy || !proxyAccount) return null;
 
-    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId) ?? null;
   },
-  { skipVoid: false },
 );
 
 const $accountBalance = combine(
@@ -281,11 +289,19 @@ sample({
 });
 
 sample({
-  clock: txWrapperChanged,
+  clock: $txWrappers,
+  fn: (txWrappers) => {
+    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
+
+    return {
+      proxyAccount: proxyWrapper?.proxyAccount || null,
+      isProxy: transactionService.hasProxy(txWrappers),
+      isMultisig: transactionService.hasMultisig(txWrappers),
+    };
+  },
   target: spread({
     isProxy: $isProxy,
     isMultisig: $isMultisig,
-    signatories: $availableSignatories,
     proxyAccount: $proxyAccount,
   }),
 });
@@ -353,6 +369,7 @@ sample({
 export const formModel = {
   form,
 
+  $txWrappers,
   $proxyWallet,
   $signatories,
   $destinationAccounts,
@@ -376,7 +393,6 @@ export const formModel = {
     destinationQueryChanged,
     destinationTypeChanged,
 
-    txWrapperChanged,
     feeDataChanged,
     isFeeLoadingChanged,
   },

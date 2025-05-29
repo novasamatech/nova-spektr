@@ -1,8 +1,3 @@
-import { type Chain, type Wallet } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
-import { transactionService } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-
 import { Step } from './types';
 
 export const bondUtils = {
@@ -13,8 +8,6 @@ export const bondUtils = {
   isSignStep,
   isSubmitStep,
   isBasketStep,
-
-  getTxWrappers,
 };
 
 function isNoneStep(step: Step): boolean {
@@ -43,30 +36,4 @@ function isSubmitStep(step: Step): boolean {
 
 function isBasketStep(step: Step): boolean {
   return step === Step.BASKET;
-}
-
-type TxWrapperParams = {
-  chain: Chain;
-  wallet: Wallet;
-  wallets: Wallet[];
-  account: AnyAccount;
-  signatories: AnyAccount[];
-};
-function getTxWrappers({ chain, wallet, wallets, account, signatories }: TxWrapperParams) {
-  const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-    walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-    accountFn: (a, w) => {
-      const isBase = accountUtils.isVaultBaseAccount(a);
-      const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-      return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
-    },
-  });
-
-  return transactionService.getTxWrappers({
-    wallet,
-    wallets: filteredWallets || [],
-    account,
-    signatories,
-  });
 }

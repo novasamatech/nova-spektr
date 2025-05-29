@@ -3,21 +3,13 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import {
-  type MultisigTxWrapper,
-  type ProxyTxWrapper,
-  type Transaction,
-  type TxWrapper,
-  WrapperKind,
-} from '@/shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, WrapperKind } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -41,7 +33,6 @@ const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFini
 const $bondNominateData = createStore<BondNominateData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
 const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
@@ -83,7 +74,7 @@ const $transactions = combine(
   {
     api: $api,
     pureTxs: $pureTxs,
-    txWrappers: $txWrappers,
+    txWrappers: formModel.$txWrappers,
   },
   ({ api, pureTxs, txWrappers }) => {
     if (!api) return undefined;
@@ -124,48 +115,6 @@ sample({
 });
 
 // Transaction & Form
-
-sample({
-  clock: [flowStarted, formModel.output.formChanged],
-  source: {
-    walletData: $walletData,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets }, data) => {
-    const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
-
-    return bondUtils.getTxWrappers({
-      chain: walletData!.chain,
-      wallet: walletData!.wallet,
-      wallets,
-      account: walletData!.shards[0],
-      signatories,
-    });
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
-      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
-
-      return acc;
-    }, []);
-
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      signatories,
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
-    };
-  },
-  target: formModel.events.txWrapperChanged,
-});
 
 sample({
   clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
@@ -220,7 +169,7 @@ sample({
 });
 
 sample({
-  clock: $txWrappers,
+  clock: formModel.$txWrappers,
   source: $api,
   filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
@@ -300,7 +249,7 @@ sample({
     bondData: $bondNominateData,
     feeData: $feeData,
     walletData: $walletData,
-    txWrappers: $txWrappers,
+    txWrappers: formModel.$txWrappers,
     coreTxs: $pureTxs,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
@@ -335,7 +284,7 @@ sample({
     bondData: $bondNominateData,
     walletData: $walletData,
     transactions: $transactions,
-    txWrappers: $txWrappers,
+    txWrappers: formModel.$txWrappers,
   },
   filter: ({ bondData, walletData, transactions }) => {
     return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
@@ -416,7 +365,7 @@ sample({
   source: {
     store: $walletData,
     coreTxs: $pureTxs,
-    txWrappers: $txWrappers,
+    txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTxs, txWrappers }) => {
     return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);

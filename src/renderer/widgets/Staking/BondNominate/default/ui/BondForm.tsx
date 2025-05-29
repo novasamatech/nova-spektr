@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 import { type FormEvent, useMemo, useState } from 'react';
 
 import { type Address, RewardsDestination } from '@/shared/core';
@@ -68,7 +69,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={() => {}}
+      onClose={noop}
     />
   );
 };
