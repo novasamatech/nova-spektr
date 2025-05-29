@@ -4,16 +4,12 @@ import { type FormEvent, useMemo } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
-import { Button, InputHint, MultiSelect } from '@/shared/ui';
-import { type DropdownOption } from '@/shared/ui/types';
-import { AssetBalance } from '@/shared/ui-entities';
-import { accountService } from '@/domains/network';
+import { formatBalance, transferableAmount } from '@/shared/lib/utils';
+import { Button, InputHint } from '@/shared/ui';
 import { balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabelWithoutDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -33,8 +29,6 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
-        {/* todo seems like we don't need to select anything if we have only 1 account */}
-        {/* <AccountsSelector /> */}
         <Signatories />
         <Amount />
       </form>
@@ -74,65 +68,6 @@ const ProxyFeeAlert = () => {
   );
 };
 
-const AccountsSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const account = useUnit(formModel.$account);
-  const network = useUnit(formModel.$networkStore);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  if (!network || !account || walletUtils.isFlexibleMultisig(wallet)) {
-    return null;
-  }
-
-  const options: DropdownOption[] = [];
-  if (account) {
-    const { account: currentAccount, balances } = account;
-    const isShard = accountUtils.isVaultShardAccount(currentAccount);
-    const address = toAddress(currentAccount.accountId, { prefix: network.chain.addressPrefix });
-    const id = accountService.uniqId(currentAccount);
-
-    options.push({
-      id,
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : currentAccount.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balances.withdraw} asset={network.asset} />
-        </div>
-      ),
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <MultiSelect
-        label={t('staking.bond.accountLabel')}
-        placeholder={t('staking.bond.accountPlaceholder')}
-        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        invalid={initiator.hasError}
-        selectedIds={initiator.value ? [accountService.uniqId(initiator.value)] : []}
-        options={options}
-        onChange={(values) => initiator.onChange(values[0].value)}
-      />
-      <InputHint variant="error" active={initiator.hasError}>
-        {t(initiator.errorMessage)}
-      </InputHint>
-    </div>
-  );
-};
-AccountsSelector.displayName = 'AccountsSelector';
-
 const Signatories = () => {
   const { t } = useI18n();
 
@@ -145,11 +80,11 @@ const Signatories = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const balances = useUnit(formModel.$balances);
 
-  if (!isMultisig || !network) {
-    return null;
-  }
-
   const signatoryWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
     return signatories.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
@@ -161,6 +96,9 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
+  if (!isMultisig || !network) {
+    return null;
+  }
   return (
     <SignatorySelector
       signatory={signatory.value}

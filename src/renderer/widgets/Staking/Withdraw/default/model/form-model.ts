@@ -375,11 +375,12 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
 const $canSubmit = combine(
   {
     isFeeLoading: $pendingFee,
+    isFormValid: form.$isValid,
     isStakingLoading: subscribeStakingFx.pending,
     isEraLoading: subscribeEraFx.pending,
   },
-  ({ isFeeLoading, isStakingLoading, isEraLoading }) => {
-    return !isFeeLoading && !isStakingLoading && !isEraLoading;
+  ({ isFeeLoading, isStakingLoading, isEraLoading, isFormValid }) => {
+    return !isFeeLoading && !isStakingLoading && !isEraLoading && isFormValid;
   },
 );
 
@@ -506,16 +507,12 @@ sample({
   filter: ({ network, transaction }) => {
     return nonNullable(network) && nonNullable(transaction);
   },
-  fn: ({ amount, realAccount, transaction, isProxy, ...fee }, formData) => {
-    const { initiator, ...rest } = formData;
-
+  fn: ({ realAccount, transaction, isProxy, ...rest }, formData) => {
     return {
       transaction: transaction!,
       formData: {
-        ...fee,
         ...rest,
-        amount,
-        initiator,
+        ...formData,
         ...(isProxy && { proxiedAccount: realAccount as ProxiedAccount }),
       },
     };
