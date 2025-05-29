@@ -4,7 +4,7 @@ import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain } from '@/shared/core';
-import { createForm } from '@/shared/forms';
+import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -42,11 +42,6 @@ const isFeeLoadingChanged = createEvent<boolean>();
 const $shards = createStore<AnyAccount[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $accountsBalances = createStore<string[]>([]);
-const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
-const $proxyBalance = createStore<string>(ZERO_BALANCE);
-
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
@@ -55,7 +50,7 @@ const $isMultisig = createStore<boolean>(false);
 const $feeData = restore(feeDataChanged, { fee: ZERO_BALANCE, totalFee: ZERO_BALANCE, multisigDeposit: ZERO_BALANCE });
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const form = createForm<FormParams>({
+const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     shards: {
       defaultValue: [],
@@ -208,6 +203,55 @@ const $accounts = combine(
   },
 );
 
+const $accountsBalances = combine(
+  {
+    accounts: $accounts,
+    shards: form.fields.shards.$value,
+  },
+  ({ accounts, shards }) => {
+    return accounts.reduce<string[]>((acc, { account, balance }) => {
+      if (shards.includes(account)) acc.push(balance);
+
+      return acc;
+    }, []);
+  },
+);
+
+const $bondBalanceRange = combine($accountsBalances, (accountsBalances) => {
+  if (accountsBalances.length === 0) return ZERO_BALANCE;
+
+  const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
+    if (!balance) return acc;
+
+    return new BN(balance).lt(new BN(acc)) ? balance : acc;
+  }, accountsBalances[0]);
+
+  return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+});
+
+const $proxyBalance = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  ({ isProxy, network, proxyAccount, balances }) => {
+    if (!isProxy || !network || !proxyAccount) {
+      return ZERO_BALANCE;
+    }
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccount.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
+
 const $signatories = combine(
   {
     network: $networkStore,
@@ -230,6 +274,20 @@ const $signatories = combine(
 
       return acc;
     }, []);
+  },
+);
+
+const $signatoryBalance = combine(
+  {
+    signatories: $signatories,
+    signatory: form.fields.signatory.$value,
+  },
+  ({ signatories, signatory }) => {
+    if (isEmpty(signatories)) return ZERO_BALANCE;
+
+    const match = signatories[0].find(({ signer }: { signer: AnyAccount }) => signer.id === signatory?.id);
+
+    return match?.balance || ZERO_BALANCE;
   },
 );
 
@@ -293,49 +351,6 @@ sample({
 });
 
 sample({
-  source: {
-    accounts: $accounts,
-    shards: form.fields.shards.$value,
-  },
-  fn: ({ accounts, shards }) => {
-    return accounts.reduce<string[]>((acc, { account, balance }) => {
-      if (shards.includes(account)) acc.push(balance);
-
-      return acc;
-    }, []);
-  },
-  target: $accountsBalances,
-});
-
-sample({
-  source: $accountsBalances,
-  fn: (accountsBalances) => {
-    if (accountsBalances.length === 0) return ZERO_BALANCE;
-
-    const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
-      if (!balance) return acc;
-
-      return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, accountsBalances[0]);
-
-    return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
-  },
-  target: $bondBalanceRange,
-});
-
-sample({
-  clock: form.fields.signatory.change,
-  source: $signatories,
-  filter: (signatories: { signer: AnyAccount; balance: string }[][]) => !isEmpty(signatories),
-  fn: (signatories: { signer: AnyAccount; balance: string }[][], signatory: AnyAccount | null) => {
-    const match = signatories[0].find(({ signer }: { signer: AnyAccount }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
-  },
-  target: $signatoryBalance,
-});
-
-sample({
   clock: form.fields.shards.change,
   fn: () => [],
   target: form.fields.amount.setErrors,
@@ -345,29 +360,6 @@ sample({
   clock: form.fields.amount.change,
   fn: () => [],
   target: form.fields.shards.setErrors,
-});
-
-sample({
-  source: {
-    isProxy: $isProxy,
-    proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  filter: ({ isProxy, network, proxyAccount }) => {
-    return isProxy && Boolean(network) && Boolean(proxyAccount);
-  },
-  fn: ({ balances, network, proxyAccount }) => {
-    const balance = balanceUtils.getBalance(
-      balances,
-      proxyAccount!.accountId,
-      network!.chain.chainId,
-      network!.asset.assetId.toString(),
-    );
-
-    return transferableAmount(balance);
-  },
-  target: $proxyBalance,
 });
 
 // Submit
