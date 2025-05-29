@@ -25,10 +25,7 @@ type Status = WsConnecting | WsOpen | WsError | WsClose;
 
 type RegistryEvents = {
   status: Status;
-
-  message: {
-    event: MessageEvent;
-  };
+  message: MessageEvent['data'];
 };
 
 const TIMEOUT = 3500;
@@ -62,7 +59,7 @@ class UniversalProvider {
   }
 
   connect() {
-    if (nonNullable(this.#socket)) return;
+    if (this.#status.type !== 'close') return;
 
     this.#attemptToConnect();
   }
@@ -87,11 +84,9 @@ class UniversalProvider {
   }
 
   send(message: string) {
-    if (nullable(this.#socket)) return;
-
-    if (this.#socket.readyState === WebSocket.CONNECTING) {
+    if (this.#status.type === 'connecting') {
       this.#messageQueue.push(message);
-    } else if (this.#socket.readyState === WebSocket.OPEN) {
+    } else if (this.#status.type === 'open' && nonNullable(this.#socket)) {
       this.#socket.send(message);
     } else {
       throw new Error('WebSocket is not connected or connecting');
@@ -135,11 +130,11 @@ class UniversalProvider {
       .then((socket) => {
         this.#socket = socket;
 
-        this.#openHandler();
-
         this.#socket.addEventListener('close', this.#closeHandler);
         this.#socket.addEventListener('error', this.#errorHandler);
         this.#socket.addEventListener('message', this.#messageHandler);
+
+        this.#openHandler();
       })
       .catch((error) => {
         console.error('WebSocket connection error: ', error);

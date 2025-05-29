@@ -48,14 +48,6 @@ export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpc
 
   provider.connect();
 
-  const send = (message: string) => {
-    provider.send(message);
-  };
-
-  const disconnect = () => {
-    provider.disconnect();
-  };
-
   const switchFn = (uri?: string) => {
     provider.switch(uri);
   };
@@ -64,5 +56,14 @@ export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpc
     return getFormattedStatus(provider.status);
   };
 
-  return Object.assign(() => ({ send, disconnect }), { switch: switchFn, getStatus });
+  const papiProvider = (onMessage: (message: string) => void) => {
+    provider.on('message', onMessage);
+
+    return {
+      send: (message: string) => provider.send(message),
+      disconnect: () => provider.disconnect(),
+    };
+  };
+
+  return Object.assign(papiProvider, { switch: switchFn, getStatus });
 }
