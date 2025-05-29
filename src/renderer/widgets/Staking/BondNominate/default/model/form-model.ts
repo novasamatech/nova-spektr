@@ -22,13 +22,14 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
+import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { validatorsModel } from '@/features/staking';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -60,6 +61,8 @@ const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
+
+const $validators = restore(validatorsModel.output.formSubmitted, []);
 
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $feeData = restore(feeDataChanged, {
@@ -254,10 +257,42 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
+
+const $coreTx = combine(
+  {
+    chain: $chain,
+    initiator: form.fields.initiator.$value,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+    validators: $validators,
+  },
+  ({ chain, initiator, amount, destination, validators }) => {
+    if (nullable(destination) || nullable(chain) || nullable(initiator)) {
+      return null;
+    }
+
+    return transactionBuilder.buildBondNominate({
+      chain: chain,
+      asset: chain.assets[0],
+      accountId: initiator!.accountId,
+      amount: amount,
+      destination: destination,
+      nominators: validators.map(({ address }) => address),
+    });
+  },
+);
+
+const { $fee, $pendingFee, $tx, $multisigTx } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
 
 const $canSubmit = combine(
   {
@@ -382,6 +417,11 @@ export const formModel = {
   $feeData,
   $isFeeLoading,
 
+  $fee,
+  $pendingFee,
+  $multisigTx,
+  $tx,
+  $coreTx,
   $api,
   $networkStore,
   $isMultisig,

@@ -9,7 +9,7 @@ import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -32,8 +32,6 @@ const $step = createStore<Step>(Step.NONE);
 const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
 const $bondNominateData = createStore<BondNominateData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
-
-const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
@@ -70,33 +68,14 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $transactions = combine(
-  {
-    api: $api,
-    pureTxs: $pureTxs,
-    txWrappers: formModel.$txWrappers,
-  },
-  ({ api, pureTxs, txWrappers }) => {
-    if (!api) return undefined;
-
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
-  },
-  { skipVoid: false },
-);
-
 const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
-    coreTxs: $pureTxs,
+    coreTx: formModel.$coreTx,
     transactions: operationsModel.$multisigTransactions,
   },
-  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
+  ({ apis, coreTx, transactions }) =>
+    coreTx && operationsUtils.isMultisigAlreadyExists({ apis, coreTxs: [coreTx], transactions }),
 );
 
 // Max validators
@@ -140,30 +119,12 @@ sample({
 });
 
 sample({
-  clock: $bondNominateData.updates,
-  source: $walletData,
-  filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
-  fn: (walletData, bondData) => {
-    const tx = transactionBuilder.buildBondNominate({
-      chain: walletData!.chain,
-      asset: walletData!.chain.assets[0],
-      accountId: bondData!.initiator!.accountId,
-      amount: bondData!.amount,
-      destination: bondData!.destination,
-      nominators: bondData!.validators.map(({ address }) => address),
-    });
-    return [tx];
-  },
-  target: $pureTxs,
-});
-
-sample({
-  clock: $transactions,
+  clock: formModel.$tx,
   source: $api,
-  filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
-  fn: (api, transactions) => ({
+  filter: (api, transaction) => nonNullable(api) && nonNullable(transaction),
+  fn: (api, transaction) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transaction!,
   }),
   target: getTransactionFeeFx,
 });
@@ -191,11 +152,10 @@ sample({
 sample({
   clock: getTransactionFeeFx.doneData,
   source: {
-    transactions: $transactions,
     feeData: $feeData,
   },
-  fn: ({ transactions, feeData }, fee) => {
-    const totalFee = new BN(fee).muln(transactions!.length).toString();
+  fn: ({ feeData }, fee) => {
+    const totalFee = new BN(fee).toString();
 
     return { ...feeData, fee, totalFee };
   },
@@ -250,10 +210,10 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: formModel.$txWrappers,
-    coreTxs: $pureTxs,
+    coreTx: formModel.$coreTx,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
+  fn: ({ bondData, feeData, walletData, txWrappers, coreTx }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper | null;
 
     return {
@@ -266,7 +226,7 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTx: coreTxs[0],
+          coreTx: coreTx,
         },
       ],
       step: Step.CONFIRM,
@@ -283,24 +243,25 @@ sample({
   source: {
     bondData: $bondNominateData,
     walletData: $walletData,
-    transactions: $transactions,
+    transaction: formModel.$tx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ bondData, walletData, transaction }) => {
+    return Boolean(bondData) && Boolean(walletData) && Boolean(transaction);
   },
-  fn: ({ bondData, walletData, transactions, txWrappers }) => {
+  fn: ({ bondData, walletData, transaction, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
-        signingPayloads:
-          transactions?.map((tx) => ({
+        signingPayloads: [
+          {
             chain: walletData!.chain,
             account: wrapper ? wrapper.proxyAccount : bondData!.initiator!,
             signatory: bondData!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
+            transaction: transaction!,
+          },
+        ],
       },
       step: Step.SIGN,
     };
@@ -316,10 +277,12 @@ sample({
   source: {
     bondData: $bondNominateData,
     walletData: $walletData,
-    transactions: $transactions,
+    multisigTx: formModel.$multisigTx,
+    coreTx: formModel.$coreTx,
+    wrappedTx: formModel.$tx,
   },
-  filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ bondData, walletData, coreTx, wrappedTx }) => {
+    return nonNullable(bondData) && nonNullable(walletData) && nonNullable(coreTx) && nonNullable(wrappedTx);
   },
   fn: (bondFlowData, signParams) => ({
     event: {
@@ -327,9 +290,9 @@ sample({
       chain: bondFlowData.walletData!.chain,
       account: bondFlowData.bondData!.initiator!,
       signatory: bondFlowData.bondData!.signatory,
-      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      coreTxs: [bondFlowData.coreTx!],
+      wrappedTxs: [bondFlowData.wrappedTx!],
+      multisigTxs: bondFlowData.multisigTx ? [bondFlowData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
@@ -364,20 +327,22 @@ sample({
   clock: txSaved,
   source: {
     store: $walletData,
-    coreTxs: $pureTxs,
+    coreTx: formModel.$coreTx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  filter: ({ store, coreTx, txWrappers }) => {
+    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
-      coreTx,
-      txWrappers,
-      createdAt: Date.now(),
-    })),
-
+  fn: ({ store, coreTx, txWrappers }) => {
+    return [
+      {
+        initiatorAccountId: store!.shards[0].accountId,
+        coreTx: coreTx!,
+        txWrappers,
+        createdAt: Date.now(),
+      },
+    ];
+  },
   target: basketOperations.addTransactions,
 });
 
