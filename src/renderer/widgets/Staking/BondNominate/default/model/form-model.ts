@@ -1,6 +1,5 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
@@ -16,10 +15,12 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { createSignatoriesStore } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -50,13 +51,14 @@ const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
+
+const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $feeData = restore(feeDataChanged, {
@@ -93,10 +95,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _f, { feeData, isMultisig, signatoryBalance }) => {
-            // if (nullable(signatory)) {
-            //   return { message: 'transfer.noSignatoryError' };
-            // }
+          fn: (_v, _f, { feeData, isMultisig, signatoryBalance }) => {
             const isNotEnoughMultisigTokens =
               isMultisig && new BN(feeData.multisigDeposit).add(new BN(feeData.fee)).gt(new BN(signatoryBalance));
             if (isNotEnoughMultisigTokens) {
@@ -178,7 +177,7 @@ const $proxyWallet = combine(
 const $accountBalance = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
     balances: balanceModel.$balances,
   },
@@ -193,28 +192,28 @@ const $accountBalance = combine(
   },
 );
 
-const $signatories = combine(
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
+
+const $signatoryBalance = combine(
   {
-    network: $networkStore,
-    availableSignatories: $availableSignatories,
+    signatory: form.fields.signatory.$value,
     balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  ({ network, availableSignatories, balances }) => {
-    if (!network) return [];
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    const { chain, asset } = network;
-
-    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
-      const balancedSignatories = signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
+    return transferableAmount(balance);
   },
 );
 
@@ -302,18 +301,6 @@ const $bondBalanceRange = combine(
     return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
   },
 );
-
-sample({
-  clock: form.fields.signatory.change,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
-  },
-  target: $signatoryBalance,
-});
 
 sample({
   clock: form.fields.initiator.change,
