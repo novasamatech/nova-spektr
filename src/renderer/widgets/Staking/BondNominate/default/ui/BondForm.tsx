@@ -51,7 +51,7 @@ const ProxyFeeAlert = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const feeData = useUnit(formModel.$feeData);
+  const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
@@ -60,7 +60,7 @@ const ProxyFeeAlert = () => {
     return null;
   }
 
-  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -251,9 +251,10 @@ const FeeSection = () => {
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
-  const feeData = useUnit(formModel.$feeData);
-  const isFeeLoading = useUnit(formModel.$isFeeLoading);
+  const fee = useUnit(formModel.$fee);
+  const isFeeLoading = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
@@ -282,8 +283,8 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={multisigDeposit ?? undefined} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit ?? undefined} />
           </div>
         </DetailRow>
       )}
@@ -296,8 +297,8 @@ const FeeSection = () => {
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+            <AssetBalance value={fee} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={fee.toString()} />
           </div>
         )}
       </DetailRow>

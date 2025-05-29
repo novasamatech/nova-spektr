@@ -24,9 +24,3 @@ export type BondNominateData = {
   destination: Address;
   validators: Validator[];
 };
-
-export type FeeData = {
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-};

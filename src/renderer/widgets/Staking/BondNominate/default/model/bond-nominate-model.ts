@@ -1,9 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, WrapperKind } from '@/shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
@@ -17,7 +16,7 @@ import { submitModel, submitUtils } from '@/features/operations/OperationSubmit'
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
-import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
+import { type BondNominateData, Step, type WalletData } from '../lib/types';
 
 import { formModel } from './form-model';
 
@@ -31,22 +30,13 @@ const $step = createStore<Step>(Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
 const $bondNominateData = createStore<BondNominateData | null>(null).reset(flowFinished);
-const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
-
+const $multisigDeposit = createStore<string | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $maxValidators = createStore<number>(0);
 
 const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
   return validatorsService.getMaxValidators(api);
-});
-
-type FeeParams = {
-  api: ApiPromise;
-  transaction: Transaction;
-};
-const getTransactionFeeFx = createEffect(({ api, transaction }: FeeParams): Promise<string> => {
-  return transactionService.getTransactionFee(transaction, api);
 });
 
 type DepositParams = {
@@ -119,17 +109,6 @@ sample({
 });
 
 sample({
-  clock: formModel.$tx,
-  source: $api,
-  filter: (api, transaction) => nonNullable(api) && nonNullable(transaction),
-  fn: (api, transaction) => ({
-    api: api!,
-    transaction: transaction!,
-  }),
-  target: getTransactionFeeFx,
-});
-
-sample({
   clock: formModel.$txWrappers,
   source: $api,
   filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
@@ -145,33 +124,8 @@ sample({
 });
 
 sample({
-  clock: getTransactionFeeFx.pending,
-  target: formModel.events.isFeeLoadingChanged,
-});
-
-sample({
-  clock: getTransactionFeeFx.doneData,
-  source: {
-    feeData: $feeData,
-  },
-  fn: ({ feeData }, fee) => {
-    const totalFee = new BN(fee).toString();
-
-    return { ...feeData, fee, totalFee };
-  },
-  target: $feeData,
-});
-
-sample({
   clock: getMultisigDepositFx.doneData,
-  source: $feeData,
-  fn: (feeData, multisigDeposit) => ({ ...feeData, multisigDeposit }),
-  target: $feeData,
-});
-
-sample({
-  clock: $feeData.updates,
-  target: formModel.events.feeDataChanged,
+  target: [$multisigDeposit, formModel.events.multisigDepositChanged],
 });
 
 // Steps
@@ -207,13 +161,14 @@ sample({
   clock: validatorsModel.output.formSubmitted,
   source: {
     bondData: $bondNominateData,
-    feeData: $feeData,
+    fee: formModel.$fee,
     walletData: $walletData,
     txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
+    multisigDeposit: $multisigDeposit,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTx }) => {
+  fn: ({ bondData, fee, walletData, txWrappers, coreTx, multisigDeposit }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper | null;
 
     return {
@@ -222,8 +177,10 @@ sample({
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           shards: [bondData!.initiator!],
+          fee: fee.toString(),
+          totalFee: fee.toString(),
+          multisigDeposit: multisigDeposit!,
           ...bondData!,
-          ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
           coreTx: coreTx,

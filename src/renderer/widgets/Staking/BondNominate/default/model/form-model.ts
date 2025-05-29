@@ -46,9 +46,6 @@ const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
 
-const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
-const isFeeLoadingChanged = createEvent<boolean>();
-
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $destinationQuery = restore(destinationQueryChanged, '');
@@ -60,16 +57,12 @@ const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
+const multisigDepositChanged = createEvent<string>();
+const $multisigDeposit = restore(multisigDepositChanged, null);
+
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const $validators = restore(validatorsModel.output.formSubmitted, []);
-
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
-const $feeData = restore(feeDataChanged, {
-  fee: ZERO_BALANCE,
-  totalFee: ZERO_BALANCE,
-  multisigDeposit: ZERO_BALANCE,
-});
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -78,12 +71,12 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
-          fn: (_v, _f, { feeData, isProxy, proxyBalance }) => {
-            if (isProxy && new BN(feeData.fee).gt(new BN(proxyBalance))) {
+          fn: (_v, _f, { fee, isProxy, proxyBalance }) => {
+            if (isProxy && fee.gt(new BN(proxyBalance))) {
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
           },
@@ -95,13 +88,13 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
+            multisigDeposit: $multisigDeposit,
           }),
-          fn: (_v, _f, { feeData, isMultisig, signatoryBalance }) => {
-            const isNotEnoughMultisigTokens =
-              isMultisig && new BN(feeData.multisigDeposit).add(new BN(feeData.fee)).gt(new BN(signatoryBalance));
+          fn: (_v, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+            const isNotEnoughMultisigTokens = isMultisig && multisigDeposit.add(fee).gt(new BN(signatoryBalance));
             if (isNotEnoughMultisigTokens) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
@@ -116,11 +109,11 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             network: $networkStore,
             bondBalanceRange: $bondBalanceRange,
-            feeData: $feeData,
+            fee: $fee,
             isMultisig: $isMultisig,
             accountBalance: $accountBalance,
           }),
-          fn: (amount, _f, { network, bondBalanceRange, feeData, isMultisig, accountBalance }) => {
+          fn: (amount, _f, { network, bondBalanceRange, fee, isMultisig, accountBalance }) => {
             if (nullable(amount) || amount === '') {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -136,8 +129,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            const feeBN = new BN(feeData.fee);
-            const isNotEnoughBalanceForFee = !isMultisig && amountBN.add(feeBN).gt(new BN(accountBalance));
+            const isNotEnoughBalanceForFee = !isMultisig && amountBN.add(fee).gt(new BN(accountBalance));
             if (isNotEnoughBalanceForFee) {
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
@@ -296,10 +288,10 @@ const { $fee, $pendingFee, $tx, $multisigTx } = createComplexTxStore({
 
 const $canSubmit = combine(
   {
-    isFeeLoading: $isFeeLoading,
+    isFeePending: $pendingFee,
   },
-  ({ isFeeLoading }) => {
-    return !isFeeLoading;
+  ({ isFeePending }) => {
+    return !isFeePending;
   },
 );
 
@@ -422,9 +414,7 @@ export const formModel = {
   $bondBalanceRange,
   $proxyBalance,
 
-  $feeData,
-  $isFeeLoading,
-
+  $multisigDeposit,
   $fee,
   $pendingFee,
   $multisigTx,
@@ -440,9 +430,7 @@ export const formModel = {
     formCleared,
     destinationQueryChanged,
     destinationTypeChanged,
-
-    feeDataChanged,
-    isFeeLoadingChanged,
+    multisigDepositChanged,
   },
   output: {
     formSubmitted,
