@@ -28,8 +28,6 @@ export const BondExtra = () => {
     bondExtraModel.output.flowFinished,
   );
 
-  console.log('bond extra', { step, walletData, initiatorWallet });
-
   if (!walletData) {
     return null;
   }
