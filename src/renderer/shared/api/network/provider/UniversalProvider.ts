@@ -2,7 +2,7 @@ import noop from 'lodash/noop';
 import mitt, { type Emitter } from 'mitt';
 
 import { type ChainId } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 
 type WsConnecting = {
   type: 'connecting';
@@ -41,7 +41,7 @@ class UniversalProvider {
   #reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   #reconnectAttempts = 0;
 
-  #messageQueue: string[] = [];
+  // #messageQueue: string[] = [];
 
   #socket: WebSocket | null = null;
   #status: Status = { type: 'close', event: null };
@@ -59,13 +59,13 @@ class UniversalProvider {
   }
 
   connect() {
-    if (this.#status.type !== 'close') return;
+    if (this.#status.type !== 'close') return Promise.reject();
 
-    this.#attemptToConnect();
+    return this.#attemptToConnect();
   }
 
   disconnect() {
-    if (nullable(this.#socket)) return;
+    if (this.#status.type === 'close' || nullable(this.#socket)) return;
 
     console.info(`Disconnecting from URL: ${this.#socket.url}`);
 
@@ -84,13 +84,15 @@ class UniversalProvider {
   }
 
   send(message: string) {
-    if (this.#status.type === 'connecting') {
-      this.#messageQueue.push(message);
-    } else if (this.#status.type === 'open' && nonNullable(this.#socket)) {
-      this.#socket.send(message);
-    } else {
-      throw new Error('WebSocket is not connected or connecting');
-    }
+    if (nullable(this.#socket)) return;
+
+    this.#socket.send(message);
+    // if (this.#status.type === 'connecting') {
+    //   this.#messageQueue.push(message);
+    // } else if (this.#status.type === 'open' && nonNullable(this.#socket)) {
+    // } else {
+    //   throw new Error('WebSocket is not connected or connecting');
+    // }
   }
 
   switch(_endpoint?: string) {}
@@ -126,7 +128,7 @@ class UniversalProvider {
   #attemptToConnect() {
     this.#clearReconnectTimer();
 
-    this.#createWebSocket(this.#nextEndpoint)
+    return this.#createWebSocket(this.#nextEndpoint)
       .then((socket) => {
         this.#socket = socket;
 
@@ -232,7 +234,7 @@ class UniversalProvider {
   #openHandler = () => {
     this.#updateStatus({ type: 'open', uri: this.#socket?.url ?? '' });
     this.#reconnectAttempts = 0;
-    this.#flushMessageQueue();
+    // this.#flushMessageQueue();
   };
 
   #closeHandler = (event: CloseEvent | null = null) => {
@@ -254,13 +256,13 @@ class UniversalProvider {
     this.#events.emit('status', data);
   }
 
-  #flushMessageQueue() {
-    for (const message of this.#messageQueue) {
-      this.send(message);
-    }
-
-    this.#messageQueue = [];
-  }
+  // #flushMessageQueue() {
+  //   for (const message of this.#messageQueue) {
+  //     this.send(message);
+  //   }
+  //
+  //   this.#messageQueue = [];
+  // }
 
   get #nextEndpoint() {
     const nextEndpoint = this.#endpoints.at(this.#endpointIndex % this.#endpoints.length);

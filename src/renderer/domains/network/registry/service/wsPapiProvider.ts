@@ -8,6 +8,8 @@ import {
 import { getUniversalProvider } from '@/shared/api/network';
 import { type ChainId } from '@/shared/core';
 
+// import { getProxyHandler } from './proxyHandler';
+
 /**
  * Create WS provider for PAPI. Use UniversalProvider internally to handle
  * WebSocket connection. WsJsonRpcProvider extends JsonRpcProvider that's being
@@ -58,6 +60,19 @@ export function getWsPapi(chainId: ChainId, config: WsProviderConfig): WsJsonRpc
 
   const papiProvider = (onMessage: (message: string) => void) => {
     provider.on('message', onMessage);
+
+    // const { send, connect, disconnect } = getProxyHandler(message => {
+    //   console.log('=== message ', message);
+    // });
+    //
+    // provider.connect().then(() => {
+    //   connect(xxx => {
+    //     return {
+    //       send: (message: string) => provider.send(message),
+    //       disconnect: () => provider.disconnect(),
+    //     };
+    //   });
+    // });
 
     return {
       send: (message: string) => provider.send(message),
