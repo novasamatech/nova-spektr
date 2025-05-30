@@ -72,6 +72,30 @@ sample({
 });
 
 sample({
+  clock: $chainVoteHistory,
+  source: networkSelectorModel.$governanceChainId,
+  filter: nonNullable,
+  fn: (chainId: ChainId, history) => {
+    const voters = new Set<string>();
+
+    for (const historyList of Object.values(history)) {
+      for (const vote of historyList) {
+        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+        for (const vote1 of splitVotes) {
+          voters.add(vote1.voter);
+        }
+      }
+    }
+
+    return {
+      chainId,
+      accounts: Array.from(voters) as AccountId[],
+    };
+  },
+  target: identity.request,
+});
+
+sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
   source: networkSelectorModel.$governanceChainId,
   filter: nonNullable,
