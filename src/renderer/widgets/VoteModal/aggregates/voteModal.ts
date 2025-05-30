@@ -139,7 +139,19 @@ sample({
   target: $step,
 });
 
-// Flow management
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => Step.NONE,
+  target: $step,
+});
+
+const $voteSuccess = createStore(false).reset(flow.close);
+
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => true,
+  target: $voteSuccess,
+});
 
 sample({
   clock: flow.open,
@@ -310,6 +322,7 @@ export const voteModalAggregate = {
   $hasDelegatedTrack,
 
   $step,
+  $voteSuccess,
 
   events: {
     txSaved,

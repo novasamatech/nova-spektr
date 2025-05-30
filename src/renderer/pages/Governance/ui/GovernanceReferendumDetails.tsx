@@ -90,6 +90,7 @@ export const GovernanceReferendumDetails = () => {
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowVoteModal(false)}
+            onSuccess={() => setShowVoteModal(false)}
           />
         )}
 
@@ -102,6 +103,7 @@ export const GovernanceReferendumDetails = () => {
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}
+            onVoteSuccess={() => setShowRevoteModal(false)}
           />
         )}
 
