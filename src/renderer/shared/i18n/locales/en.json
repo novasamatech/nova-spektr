@@ -389,7 +389,10 @@
       "titlePromotion": "Should {name} be promoted to Rank {rank}?",
       "titleRetention": "Should {name} be retained at Rank {rank}?",
       "votingRecord": "Voting record",
-      "votingTitle": "Is it good enough for rank {rank}?"
+      "votingTitle": "Is it good enough for rank {rank}?",
+      "additionalContext": "Additional context provided",
+      "noAdditionalContext": "No additional context provided",
+      "by": "By:"
     },
     "fellow_one": "{ count } Member",
     "fellow_other": "{ count } Members",
@@ -591,6 +594,7 @@
         "promotionVoting": {
           "mergedPullRequests": "Merged",
           "noEvidence": "No evidence provided",
+          "noEvidenceDescription": "This member didn’t submit evidence. Consider this when evaluating the request.",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
