@@ -46,6 +46,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
 
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   }, [referendums, member, maxRank, votes, notMemberOrNotCoreMember]);
+  const isActivityLoaded = nonNullable(activity);
 
   if (notMemberOrNotCoreMember) return null;
 
@@ -53,9 +54,9 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     memberService.getActivityAndAgreementThresholds(member.rank);
 
   const isActivityFit =
-    nullable(activityThreshold) || (nonNullable(activity.activity) && activity.activity >= activityThreshold);
+    nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
   const isAgreementFit =
-    nullable(agreementThreshold) || (nonNullable(activity.agreement) && activity.agreement >= agreementThreshold);
+    nullable(agreementThreshold) || (nonNullable(activity?.agreement) && activity?.agreement >= agreementThreshold);
 
   return (
     <Box direction="row" gap={4}>
@@ -71,11 +72,15 @@ export const MemberActivity = memo(({ accountId }: Props) => {
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText>
-            {nonNullable(activity.activity) ? (
-              nonNullable(activityThreshold) ? (
-                `${activity.activity}/${activityThreshold}%`
+            {isActivityLoaded ? (
+              nonNullable(activity.activity) ? (
+                nonNullable(activityThreshold) ? (
+                  `${activity.activity}/${activityThreshold}%`
+                ) : (
+                  DEFAULT_VALUE
+                )
               ) : (
-                DEFAULT_VALUE
+                t('fellowship.n/a')
               )
             ) : (
               <Skeleton width="8ch" height="1lh" />
@@ -95,11 +100,15 @@ export const MemberActivity = memo(({ accountId }: Props) => {
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText>
-            {nonNullable(activity.agreement) ? (
-              nonNullable(agreementThreshold) ? (
-                `${activity.agreement}/${agreementThreshold}%`
+            {isActivityLoaded ? (
+              nonNullable(activity.agreement) ? (
+                nonNullable(agreementThreshold) ? (
+                  `${activity.agreement}/${agreementThreshold}%`
+                ) : (
+                  DEFAULT_VALUE
+                )
               ) : (
-                DEFAULT_VALUE
+                t('fellowship.n/a')
               )
             ) : (
               <Skeleton width="8ch" height="1lh" />
