@@ -37,8 +37,6 @@ const $voteHistory = combine(
   ({ history, identities, chainId }) => {
     if (!chainId) return {};
 
-    console.log({ identities, history });
-
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
 
     for (const [referendumId, historyList] of Object.entries(history)) {
