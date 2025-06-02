@@ -18,7 +18,6 @@ import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
@@ -235,14 +234,13 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     api,
     chain,
     asset: chain.assets[0],
-    account: account!,
+    initiator: account!,
     existingVote: coreTx.args.vote,
     signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    multisigTx: null,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies VoteConfirm;
 });
 
@@ -262,15 +260,14 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     api,
     chain,
     id: transaction.id,
-    account: account!,
+    initiator: account!,
     asset: chain.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
     signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    multisigTx: null,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies RemoveVoteConfirm;
 });
 
