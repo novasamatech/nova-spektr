@@ -1,8 +1,10 @@
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Referendum, type ReferendumId } from '@/shared/core';
+import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identity } from '@/domains/network';
 import { voteHistoryModel } from '@/entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -11,7 +13,6 @@ import { type AggregatedVoteHistory } from '../types/structs';
 import { votingPowerSorting } from '../utils/votingPowerSorting';
 
 import { listAggregate } from './list';
-import { proposerIdentityAggregate } from './proposerIdentity';
 
 const flow = createGate<{ referendum: Referendum }>();
 
@@ -31,9 +32,9 @@ const $voteHistory = combine(
   {
     history: $chainVoteHistory,
     chainId: networkSelectorModel.$governanceChainId,
-    proposers: proposerIdentityAggregate.$proposers,
+    identities: identity.$list,
   },
-  ({ history, proposers, chainId }) => {
+  ({ history, identities, chainId }) => {
     if (!chainId) return {};
 
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
@@ -44,7 +45,7 @@ const $voteHistory = combine(
 
         return splitVotes.map((vote) => ({
           ...vote,
-          name: proposers[vote.voter]?.parent.name ?? null,
+          name: identities[chainId]?.[vote.voter as AccountId]?.name ?? null,
         }));
       });
 
@@ -69,11 +70,38 @@ sample({
 });
 
 sample({
+  clock: $chainVoteHistory,
+  source: networkSelectorModel.$governanceChainId,
+  filter: nonNullable,
+  fn: (chainId: ChainId, history) => {
+    const voters = new Set<string>();
+
+    for (const historyList of Object.values(history)) {
+      for (const vote of historyList) {
+        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+        for (const vote1 of splitVotes) {
+          voters.add(vote1.voter);
+        }
+      }
+    }
+
+    return {
+      chainId,
+      accounts: Array.from(voters) as AccountId[],
+    };
+  },
+  target: identity.request,
+});
+
+sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
-  fn: ({ result }) => ({
-    addresses: result.map((x) => x.voter),
+  source: networkSelectorModel.$governanceChainId,
+  filter: nonNullable,
+  fn: (chainId: ChainId, { result }: { result: { voter: string }[] }) => ({
+    chainId,
+    accounts: result.map((x) => x.voter as AccountId),
   }),
-  target: proposerIdentityAggregate.events.requestProposers,
+  target: identity.request,
 });
 
 sample({
