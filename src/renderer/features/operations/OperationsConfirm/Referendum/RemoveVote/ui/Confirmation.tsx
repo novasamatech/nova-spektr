@@ -16,7 +16,7 @@ import {
 } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { Fee } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
@@ -57,11 +57,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
     return null;
   }
 
-  const { asset, wrappedTransactions, api, votes } = confirm.meta;
-  const vote = votes[0].vote;
+  const { asset, tx, coreTx, api, initiator, votes } = confirm.meta;
+  const vote = votes.at(0)?.vote;
   const tracks = votes.map(({ track }) => Number(track));
 
-  if (!voteTransactionService.isRemoveVoteTransaction(wrappedTransactions.coreTx)) {
+  if (!voteTransactionService.isRemoveVoteTransaction(coreTx)) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
@@ -73,8 +73,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const conviction = vote && votingService.getAccountVoteConviction(vote);
   const votingPower = vote && votingService.calculateAccountVotePower(vote);
 
-  const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
+  const address = toAddress(initiator.accountId, { prefix: confirm.meta.chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
+  const proxiedAccount = confirm.meta.route.find(accountUtils.isProxiedAccount);
 
   return (
     <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
@@ -105,9 +106,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
       <TransactionDetails
         chain={confirm.meta.chain}
         wallets={wallets}
-        initiator={[confirm.accounts.initiator]}
-        signatory={confirm.accounts.signer}
-        proxied={confirm.accounts.proxied || undefined}
+        initiator={[confirm.meta.initiator]}
+        signatory={confirm.meta.signatory}
+        proxied={proxiedAccount || undefined}
       >
         {votingPower && amount && conviction ? (
           <>
@@ -127,7 +128,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         )}
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
-          <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />
+          <Fee api={api} asset={asset} transaction={tx} />
         </DetailRow>
       </TransactionDetails>
 
@@ -138,7 +139,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
+              type={confirm.wallets.signatory?.type}
               onClick={() => {
                 confirmModel.events.sign();
               }}

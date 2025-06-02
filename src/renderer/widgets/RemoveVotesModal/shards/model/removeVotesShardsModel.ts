@@ -1,21 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import uniq from 'lodash/uniq';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
-import { lockPeriodsModel, locksModel, votingAggregate } from '@/features/governance';
+import { locksModel, votingAggregate } from '@/features/governance';
 import { createMultipleTxStore } from '@/features/governance/lib/createMultipleTxStore';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
-import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
+import { type RemoveVoteConfirm, removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 
 const flow = createGate<{
   votes: {
@@ -38,10 +36,6 @@ const flow = createGate<{
 
 // Account
 
-const selectAccount = createEvent<AnyAccount>();
-
-const $pickedAccount = restore(selectAccount, null).reset(flow.close);
-
 const $availableAccounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
   if (nullable(wallet) || nullable(votes.length) || nullable(chain)) return [];
 
@@ -52,65 +46,22 @@ const $availableAccounts = combine(walletModel.$activeWallet, flow.state, (walle
   });
 });
 
-const $accounts = combine($availableAccounts, $pickedAccount, (availableAccounts, pickedAccount) => {
-  if (nonNullable(pickedAccount)) return [pickedAccount];
-
-  return availableAccounts;
-});
-
-const $initiatorWallet = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
+const $initiatorWallet = combine($availableAccounts, walletModel.$wallets, (accounts, wallets) => {
   const account = accounts.at(0);
   if (nullable(account)) return null;
 
   return walletUtils.getWalletById(wallets, account.walletId) ?? null;
 });
 
-// Signatory
-
-const selectSignatory = createEvent<AnyAccount>();
-
-const $signatory = createStore<AnyAccount | null>(null);
-
-const $signatories = combine($accounts, walletModel.$wallets, (accounts, wallets) => {
-  const account = accounts.at(0);
-  if (nullable(account)) return [];
-
-  const multisigAcc = accountUtils.isProxiedAccount(account)
-    ? walletUtils.getAccountBy(wallets, (a) => a.accountId === account.proxyAccountId)
-    : account;
-
-  if (nullable(multisigAcc) || !accountUtils.isMultisigAccount(multisigAcc)) {
-    return [];
-  }
-
-  const acc = multisigAcc.signatories.map((signatory) =>
-    walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
-  );
-
-  return acc.filter((option) => option !== null);
-});
-
-const $votesList = combine($accounts, flow.state, (accounts, { votes, chain }) => {
+const $votesList = combine($availableAccounts, flow.state, (accounts, { votes, chain }) => {
   return accounts.map((account) => {
     return votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain?.addressPrefix }));
   });
 });
 
-sample({
-  clock: $signatories,
-  filter: $signatories.map((x) => x.length < 2),
-  fn: (s) => s.at(0) ?? null,
-  target: $signatory,
-});
-
-sample({
-  clock: selectSignatory,
-  target: $signatory,
-});
-
 // Transaction
 
-const $coreTxs = combine(flow.state, $accounts, ({ chain, votes }, accounts) => {
+const $coreTxs = combine(flow.state, $availableAccounts, ({ chain, votes }, accounts) => {
   if (nullable(accounts) || nullable(chain) || nullable(votes)) return [];
 
   return accounts.map((account) =>
@@ -122,13 +73,12 @@ const $coreTxs = combine(flow.state, $accounts, ({ chain, votes }, accounts) => 
   );
 });
 
-const { $wrappedTxs, $txWrappers } = createMultipleTxStore({
+const { $wrappedTxs } = createMultipleTxStore({
   $api: flow.state.map(({ api }) => api),
   $chain: flow.state.map(({ chain }) => chain),
   $activeWallet: walletModel.$activeWallet.map((wallet) => wallet ?? null),
   $wallets: walletModel.$wallets,
-  $signatory,
-  $accounts,
+  $accounts: $availableAccounts,
   $coreTxs,
 });
 
@@ -139,18 +89,17 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    accounts: $accounts,
-    transactions: $wrappedTxs,
-    txWrappers: $txWrappers,
+    accounts: $availableAccounts,
+    transactions: $coreTxs,
   },
-  fn: ({ accounts, transactions, txWrappers }) => {
+  fn: ({ accounts, transactions }) => {
     if (nullable(accounts) || nullable(transactions)) return [];
 
     return accounts.map((account, index) => {
       return {
         initiatorAccountId: account.accountId,
-        coreTx: transactions[index].coreTx,
-        txWrappers: txWrappers[index],
+        coreTx: transactions[index],
+        txWrappers: [],
         createdAt: Date.now(),
       };
     });
@@ -202,14 +151,13 @@ sample({
 // Flow management
 
 sample({
-  clock: [flow.open, $accounts, $signatory, $wrappedTxs],
+  clock: [flow.open, $availableAccounts, $wrappedTxs],
   source: {
     state: flow.state,
-    accounts: $accounts,
-    signatory: $signatory,
+    accounts: $availableAccounts,
     wrappedTxs: $wrappedTxs,
   },
-  fn: ({ accounts, signatory, wrappedTxs, state: { votes, api, asset, chain } }): RemoveVoteConfirm[] => {
+  fn: ({ accounts, wrappedTxs, state: { votes, api, asset, chain } }): RemoveVoteConfirm[] => {
     if (
       nullable(votes) ||
       nullable(accounts.length) ||
@@ -224,12 +172,15 @@ sample({
     return accounts.map<RemoveVoteConfirm>((account, index) => ({
       id: index,
       api,
-      chain,
       asset,
-      account,
-      signatory,
+      chain,
+      initiator: account,
       votes: votes.filter((vote) => vote.voter === account.accountId),
-      wrappedTransactions: wrappedTxs[index],
+      signatory: null,
+      route: [account],
+      tx: wrappedTxs[index].wrappedTx,
+      coreTx: wrappedTxs[index].coreTx!,
+      multisigTx: wrappedTxs[index].multisigTx ?? null,
     }));
   },
   target: removeVoteConfirmModel.events.fillConfirm,
@@ -244,11 +195,11 @@ sample({
     }
 
     return {
-      signingPayloads: Object.values(confirms).map(({ meta, accounts }) => ({
-        account: accounts.initiator,
+      signingPayloads: Object.values(confirms).map(({ meta }) => ({
+        account: meta.initiator,
         chain: meta.chain,
-        transaction: meta.wrappedTransactions.wrappedTx,
-        signatory: accounts.signer,
+        transaction: meta.tx,
+        signatory: meta.signatory,
       })),
     };
   },
@@ -266,13 +217,12 @@ sample({
     return {
       signatures: signParams.signatures,
       txPayloads: signParams.txPayloads,
-
       chain: meta.chain,
-      account: meta.account,
+      account: meta.initiator,
       signatory: meta.signatory,
-      wrappedTxs: [meta.wrappedTransactions.wrappedTx],
-      coreTxs: [meta.wrappedTransactions.coreTx],
-      multisigTxs: meta.wrappedTransactions.multisigTx ? [meta.wrappedTransactions.multisigTx] : [],
+      wrappedTxs: [meta.tx],
+      coreTxs: [meta.coreTx],
+      multisigTxs: meta.multisigTx ? [meta.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,
@@ -296,29 +246,19 @@ sample({
 
 sample({
   clock: flow.close,
-  target: [removeVoteConfirmModel.events.resetConfirm, $signatory.reinit],
+  target: [removeVoteConfirmModel.events.resetConfirm],
 });
 
 // Aggregate
 
-export const removeVotesModalAggregate = {
+export const removeVotesShardsModel = {
   $initiatorWallet,
-  $lockPeriods: lockPeriodsModel.$lockPeriods,
-
-  $availableAccounts,
-  $pickedAccount,
-  $accounts,
-
-  $step,
-  $signatory,
-  $signatories,
   $votesList,
+  $step,
 
   events: {
     txSaved,
     setStep,
-    selectAccount,
-    selectSignatory,
   },
 
   gates: {
