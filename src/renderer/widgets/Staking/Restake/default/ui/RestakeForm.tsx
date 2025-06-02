@@ -5,13 +5,11 @@ import { type FormEvent } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { Button, InputHint, MultiSelect } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { formatBalance } from '@/shared/lib/utils';
+import { Button, InputHint } from '@/shared/ui';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -31,7 +29,6 @@ export const ReturnToStakeForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
-        <AccountsSelector />
         <Signatories />
         <Amount />
       </form>
@@ -45,7 +42,7 @@ export const ReturnToStakeForm = ({ onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const fee = useUnit(formModel.$fee);
@@ -53,7 +50,7 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError) {
+  if (!network || !proxyWallet || !initiator.hasError) {
     return null;
   }
 
@@ -68,61 +65,6 @@ const ProxyFeeAlert = () => {
       symbol={network.asset.symbol}
       onClose={noop}
     />
-  );
-};
-
-const AccountsSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { shards },
-  } = useForm(formModel.form);
-
-  const accounts = useUnit(formModel.$accounts);
-  const network = useUnit(formModel.$networkStore);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
-    return null;
-  }
-
-  const options = accounts.map(({ account, balances }) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
-
-    return {
-      id: account.id.toString(),
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balances.stake} asset={network.asset} />
-        </div>
-      ),
-    };
-  });
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <MultiSelect
-        label={t('staking.bond.accountLabel')}
-        placeholder={t('staking.bond.accountPlaceholder')}
-        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        invalid={shards.hasError}
-        selectedIds={shards.value.map((acc) => acc.id.toString())}
-        options={options}
-        onChange={(values) => shards.onChange(values.map(({ value }) => value))}
-      />
-      <InputHint variant="error" active={shards.hasError}>
-        {t(shards.errorMessage)}
-      </InputHint>
-    </div>
   );
 };
 
@@ -191,15 +133,15 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transactions = useUnit(formModel.$transactions);
+  const transaction = useUnit(formModel.$transaction);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!network || shards.value.length === 0) {
+  if (!network || !initiator) {
     return null;
   }
 
@@ -209,27 +151,26 @@ const FeeSection = () => {
         <MultisigDepositWithLabel
           api={api}
           asset={network.chain.assets[0]}
-          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
+          threshold={(initiator.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
       )}
 
       <FeeWithLabel
-        label={t('staking.networkFee', { count: shards.value.length || 1 })}
+        label={t('staking.networkFee', { count: 1 })}
         api={api}
         asset={network.chain.assets[0]}
-        transaction={transactions?.[0]?.wrappedTx}
+        transaction={transaction?.wrappedTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
 
-      {transactions && transactions.length > 1 && (
+      {transaction && (
         <FeeWithLabel
           label={t('staking.networkFeeTotal')}
           api={api}
           asset={network.chain.assets[0]}
-          multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
+          transaction={transaction.wrappedTx}
           onFeeChange={formModel.events.totalFeeChanged}
           onFeeLoading={formModel.events.isFeeLoadingChanged}
         />

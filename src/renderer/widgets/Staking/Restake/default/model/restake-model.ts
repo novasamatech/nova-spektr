@@ -67,7 +67,7 @@ sample({
       wrappedTxs,
       coreTxs,
       multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
-      store: formData,
+      store: { ...formData, shards: [formData.initiator!] },
     };
   },
   target: spread({
@@ -86,6 +86,7 @@ sample({
     event: [
       {
         ...formData,
+        shards: [formData.initiator!],
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTxs![0],
