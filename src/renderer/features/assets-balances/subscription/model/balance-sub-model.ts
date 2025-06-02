@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { attach, combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import mapValues from 'lodash/mapValues';
-import { once, previous, spread } from 'patronum';
+import { previous, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { balanceMapper, storageService } from '@/shared/api/storage';
@@ -134,17 +134,13 @@ sample({
   target: $subscriptions,
 });
 
-const $walletAndChains = combine({
-  wallet: walletSelect.$selectedWallet,
-  chains: networkModel.$chains,
-});
-
 sample({
-  clock: once($walletAndChains.map(({ wallet, chains }) =>
-    nonNullable(wallet) && Object.keys(chains).length > 0
-  )),
-  source: $walletAndChains,
-  fn: ({wallet, chains}) => ({
+  source: {
+    wallet: walletSelect.$selectedWallet,
+    chains: networkModel.$chains,
+  },
+  filter: ({ wallet, chains }) => nonNullable(wallet) && nonNullable(chains),
+  fn: ({ wallet, chains }) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
     walletToSub: wallet!,
   }),
