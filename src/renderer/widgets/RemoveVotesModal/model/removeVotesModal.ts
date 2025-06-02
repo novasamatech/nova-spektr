@@ -53,12 +53,6 @@ const $availableAccounts = combine(walletSelect.$selectedAccounts, flow.state, (
   );
 });
 
-// const $initiators = combine($availableAccounts, $pickedAccount, (availableAccounts, pickedAccount) => {
-//   if (nonNullable(pickedAccount)) return [pickedAccount];
-
-//   return availableAccounts;
-// });
-
 // initiators
 
 const $initiators = combine($availableAccounts, $pickedAccount, (availableAccounts, pickedAccount) => {
@@ -81,30 +75,12 @@ const $votesList = combine($initiators, flow.state, (initiators, { votes }) => {
 });
 
 const $initiator = $initiators.map((accounts) => accounts.at(0) ?? null);
+
 // Signatory
 
 const selectSignatory = createEvent<AnyAccount>();
 
 const $selectedSignatory = restore(selectSignatory, null).reset(flow.close);
-
-// const $signatories = combine($initiators, walletModel.$wallets, (accounts, wallets) => {
-//   const account = accounts.at(0);
-//   if (nullable(account)) return [];
-
-//   const multisigAcc = accountUtils.isProxiedAccount(account)
-//     ? walletUtils.getAccountBy(wallets, (a) => a.accountId === account.proxyAccountId)
-//     : account;
-
-//   if (nullable(multisigAcc) || !accountUtils.isMultisigAccount(multisigAcc)) {
-//     return [];
-//   }
-
-//   const acc = multisigAcc.signatories.map((signatory) =>
-//     walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
-//   );
-
-//   return acc.filter((option) => option !== null);
-// });
 
 const $signatories = createSignatoriesStore({
   chain: networkSelectorModel.$governanceChain,
