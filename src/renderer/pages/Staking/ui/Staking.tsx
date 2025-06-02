@@ -259,6 +259,9 @@ export const Staking = () => {
     [[], []],
   );
 
+  const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  const isMultipleStakes = totalStakes.length > 1;
+
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
 
@@ -278,7 +281,9 @@ export const Staking = () => {
       [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleStakes
+        ? Operations.restakeModelShards.events.flowStarted
+        : Operations.restakeModel.events.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]: Operations.withdrawModel.events.flowStarted,
       [StakeOperations.SET_PAYEE]: Operations.payeeModel.events.flowStarted,
@@ -291,7 +296,6 @@ export const Staking = () => {
     });
   };
 
-  const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
   const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
@@ -385,6 +389,7 @@ export const Staking = () => {
       <Operations.Unstake />
       <Operations.Nominate />
       <Operations.Restake />
+      {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
       <Operations.Withdraw />
       <Operations.Payee />
     </>
