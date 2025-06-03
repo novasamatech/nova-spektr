@@ -23,14 +23,14 @@ function getReferendumsSinceLastProof(referendums: ReferendumMeta[], member: Cor
 }
 
 function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank: number, votes: Vote[]) {
-  if (referendums.length === 0) return { activity: null, agreement: null };
+  if (referendums.length === 0) return { activity: null, agreement: null, isLoading: false };
 
   const possibleReferendums = referendums.filter(r =>
     trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track),
   );
 
   if (referendums.length > 0 && possibleReferendums.length === 0) {
-    return { activity: 100, agreement: 100 };
+    return { activity: 100, agreement: 100, isLoading: false };
   }
 
   let voted = 0;
@@ -50,7 +50,7 @@ function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank:
   const activity = possibleReferendums.length ? Math.round((voted / possibleReferendums.length) * 100) : 0;
   const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
 
-  return { activity, agreement };
+  return { activity, agreement, isLoading: false };
 }
 
 export const referendumMetaService = {

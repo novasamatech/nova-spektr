@@ -192,14 +192,22 @@ const Activity = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
+  if (activityInfo.isLoading) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
 };
 
 const Agreement = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
+  if (activityInfo.isLoading) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
 };
 
 const NextRankTimeout = () => {

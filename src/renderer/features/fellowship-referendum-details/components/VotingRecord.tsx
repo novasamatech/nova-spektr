@@ -58,7 +58,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {nonNullable(activity?.activity) ? (
+            {activity.isLoading ? (
+              <Skeleton height={5} />
+            ) : nonNullable(activity.activity) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
                   {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
@@ -68,7 +70,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                 </CaptionText>
               </Box>
             ) : (
-              <Skeleton height={5} />
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
             )}
           </Box>
         </Box>
@@ -83,7 +85,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {nonNullable(activity?.agreement) ? (
+            {activity.isLoading ? (
+              <Skeleton height={5} />
+            ) : nonNullable(activity.agreement) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
                   {nonNullable(agreementThreshold)
@@ -95,7 +99,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                 </CaptionText>
               </Box>
             ) : (
-              <Skeleton height={5} />
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
             )}
           </Box>
         </Box>

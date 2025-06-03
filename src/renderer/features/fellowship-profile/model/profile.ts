@@ -14,9 +14,9 @@ import { fellowship } from './fellowship';
 
 const requestIdentityFx = attach({ effect: identity.request });
 
-const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
+const $tracks = fellowship.$store.map(store => store?.tracks);
 const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta);
-const $votes = fellowship.$store.map(store => store?.voting ?? []);
+const $votes = fellowship.$store.map(store => store?.voting);
 const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
@@ -24,7 +24,7 @@ const $account = fellowshipProfileFeature.input.map(store => (store ? store.acco
 const $isAccountExist = fellowshipProfileFeature.input.map(store => nonNullable(store?.account));
 
 const $memberVotes = combine($member, $votes, (member, voting) => {
-  if (nullable(member)) return null;
+  if (nullable(member) || nullable(voting)) return null;
   return voting.filter(v => v.accountId === member.accountId);
 });
 
@@ -41,7 +41,7 @@ const $identity = combine($member, $identities, (member, identities) => {
 });
 
 const $track = combine($member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
+  if (nullable(member) || nullable(tracks)) return null;
 
   return tracks.find(t => t.id === member.rank) ?? null;
 });
@@ -97,7 +97,15 @@ const $activityInfo = combine(
     votes: $memberVotes,
   },
   ({ referendums, member, maxRank, votes }) => {
-    if (nullable(referendums) || nullable(member) || nullable(votes)) return null;
+    if (nullable(referendums) || nullable(member) || nullable(votes)) {
+      return { activity: null, agreement: null, isLoading: true };
+    }
+
+    console.log({
+      input: { referendums, member, maxRank, votes },
+      output: referendumMetaService.getActivityInfo(referendums, member, maxRank, votes),
+    });
+
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   },
 );
