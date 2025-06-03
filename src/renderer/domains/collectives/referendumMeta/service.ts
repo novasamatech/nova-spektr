@@ -28,7 +28,7 @@ function getActivityInfo(
   maxRank: number,
   votes: Vote[] | undefined,
 ) {
-  if (!referendums) return { activity: null, agreement: null, isLoading: true };
+  if (!referendums || !votes) return { activity: null, agreement: null, isLoading: true };
 
   if (referendums.length === 0) return { activity: null, agreement: null, isLoading: false };
 
