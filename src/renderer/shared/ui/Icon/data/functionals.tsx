@@ -15,6 +15,7 @@ import DetailsIcon from '@/shared/assets/images/functionals/details.svg?jsx';
 import EditKeysIcon from '@/shared/assets/images/functionals/edit-keys.svg?jsx';
 import EditIcon from '@/shared/assets/images/functionals/edit.svg?jsx';
 import EmptyIdenticonIcon from '@/shared/assets/images/functionals/empty-identicon.svg?jsx';
+import EmptyIcon from '@/shared/assets/images/functionals/empty.svg?jsx';
 import EvidenceIcon from '@/shared/assets/images/functionals/evidence.svg?jsx';
 import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
 import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
@@ -112,6 +113,7 @@ const FunctionalImages = {
   promoteVoting: { svg: PromoteVotingIcon },
   positive: { svg: PositiveIcon },
   negative: { svg: NegativeIcon },
+  empty: { svg: EmptyIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
