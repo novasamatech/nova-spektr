@@ -23,7 +23,7 @@ function getReferendumsSinceLastProof(referendums: ReferendumMeta[], member: Cor
 }
 
 function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank: number, votes: Vote[]) {
-  if (referendums.length === 0) return null;
+  if (referendums.length === 0) return { activity: null, agreement: null };
 
   const possibleReferendums = referendums.filter(r =>
     trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track),
