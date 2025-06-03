@@ -152,7 +152,7 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$transaction);
+  const transaction = useUnit(formModel.$tx);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!network || !initiator) {
@@ -174,21 +174,10 @@ const FeeSection = () => {
         label={t('staking.networkFee', { count: 1 })}
         api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx}
+        transaction={transaction}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
       />
-
-      {transaction && (
-        <FeeWithLabel
-          label={t('staking.networkFeeTotal')}
-          api={api}
-          asset={network.chain.assets[0]}
-          transaction={transaction.wrappedTx}
-          onFeeChange={formModel.events.totalFeeChanged}
-          onFeeLoading={formModel.events.isFeeLoadingChanged}
-        />
-      )}
     </div>
   );
 };

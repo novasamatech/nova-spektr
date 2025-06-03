@@ -25,7 +25,7 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
-import { createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -62,7 +62,6 @@ const stakingSet = createEvent<StakingMap>();
 const formCleared = createEvent();
 
 const feeChanged = createEvent<string>();
-const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
@@ -77,10 +76,7 @@ const $isProxy = createStore<boolean>(false);
 const $restakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $selectedSignatories = createStore<AnyAccount[]>([]);
 
@@ -99,7 +95,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyBalance: $proxyBalance,
           }),
           fn: (_v, _f, { isProxy, proxyBalance, fee }) => {
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
+            if (isProxy && fee.gt(new BN(proxyBalance))) {
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
           },
@@ -118,7 +114,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (signatory, _f, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
             const isNotEnoughMultisigTokens =
-              isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance));
+              isMultisig && new BN(multisigDeposit).add(fee).gt(new BN(signatoryBalance));
             if (isNotEnoughMultisigTokens) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
@@ -272,7 +268,7 @@ const $api = combine(
   },
 );
 
-const $pureTx = combine(
+const $coreTx = combine(
   {
     network: $networkStore,
     form: form.$values,
@@ -290,27 +286,18 @@ const $pureTx = combine(
   },
 );
 
-const $transaction = combine(
-  {
-    apis: networkModel.$apis,
-    networkStore: $networkStore,
-    pureTx: $pureTx,
-    txWrappers: $txWrappers,
-  },
-  ({ apis, networkStore, pureTx, txWrappers }) => {
-    if (nullable(networkStore) || nullable(pureTx)) return null;
-
-    return transactionService.getWrappedTransaction({
-      api: apis[networkStore.chain.chainId],
-      transaction: pureTx,
-      txWrappers,
-    });
-  },
-);
+const { $fee, $pendingFee, $tx, $multisigTx } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
 
 const $canSubmit = combine(
   {
-    isFeeLoading: $isFeeLoading,
+    isFeeLoading: $pendingFee,
     isStakingLoading: subscribeStakingFx.pending,
   },
   ({ isFeeLoading, isStakingLoading }) => {
@@ -462,6 +449,17 @@ sample({
   target: $proxyBalance,
 });
 
+sample({
+  clock: $fee.updates,
+  fn: (fee) => fee.toString(),
+  target: feeChanged,
+});
+
+sample({
+  clock: $pendingFee.updates,
+  target: isFeeLoadingChanged,
+});
+
 // Submit
 
 sample({
@@ -469,30 +467,30 @@ sample({
   source: {
     realAccount: $realAccount,
     network: $networkStore,
-    transaction: $transaction,
+    tx: $tx,
+    multisigTx: $multisigTx,
+    coreTx: $coreTx,
     isProxy: $isProxy,
     fee: $fee,
-    totalFee: $totalFee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, transaction }) => {
-    return nonNullable(network) && nonNullable(transaction);
-  },
-  fn: ({ realAccount, network, transaction, isProxy, fee, totalFee, multisigDeposit }, formData) => {
+  filter: ({ network, tx, multisigTx, coreTx }) =>
+    nonNullable(network) && nonNullable(tx) && nonNullable(multisigTx) && nonNullable(coreTx),
+  fn: ({ realAccount, network, tx, multisigTx, coreTx, isProxy, fee, multisigDeposit }, formData) => {
     const { initiator } = formData;
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
       transactions: [
         {
-          wrappedTx: transaction!.wrappedTx,
-          multisigTx: transaction!.multisigTx,
-          coreTx: transaction!.coreTx,
+          wrappedTx: tx!,
+          multisigTx: multisigTx!,
+          coreTx: coreTx!,
         },
       ],
       formData: {
-        fee,
-        totalFee,
+        fee: fee.toString(),
+        totalFee: fee.toString(),
         multisigDeposit,
         ...formData,
         initiator: realAccount,
@@ -533,7 +531,7 @@ export const formModel = {
 
   $api,
   $networkStore,
-  $transaction,
+  $tx,
   $isMultisig,
   $isChainConnected,
   $isStakingLoading: subscribeStakingFx.pending,
@@ -544,7 +542,6 @@ export const formModel = {
     formCleared,
 
     feeChanged,
-    totalFeeChanged,
     multisigDepositChanged,
     isFeeLoadingChanged,
   },
