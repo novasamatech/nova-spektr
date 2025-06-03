@@ -15,7 +15,7 @@ import { fellowship } from './fellowship';
 const requestIdentityFx = attach({ effect: identity.request });
 
 const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
-const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta ?? {});
+const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta);
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
@@ -85,7 +85,7 @@ const $referendumsSinceLastProof = combine(
   },
   ({ referendums, member }) => {
     if (!member || !memberService.isCoreMember(member)) return null;
-    return referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member);
+    return referendums && referendumMetaService.getReferendumsSinceLastProof(Object.values(referendums), member);
   },
 );
 
@@ -103,9 +103,7 @@ const $activityInfo = combine(
 );
 
 const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
-const $pendingReferendums = $referendumsSinceLastProof.map(
-  referendumsList => nullable(referendumsList) || !referendumsList.length,
-);
+const $pendingReferendums = $referendumsSinceLastProof.map(referendumsList => nullable(referendumsList));
 const $pendingVotes = $memberVotes.map(memberVotes => nullable(memberVotes));
 
 export const profile = {
