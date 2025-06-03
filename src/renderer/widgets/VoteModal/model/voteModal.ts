@@ -110,7 +110,19 @@ sample({
   target: $step,
 });
 
-// Flow management
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => Step.NONE,
+  target: $step,
+});
+
+const $voteSuccess = createStore(false).reset(flow.close);
+
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => true,
+  target: $voteSuccess,
+});
 
 sample({
   clock: flow.open,
@@ -291,6 +303,7 @@ export const voteModal = {
   $canSubmit: voteForm.$canSubmit,
 
   $step,
+  $voteSuccess,
 
   events: {
     txSaved,

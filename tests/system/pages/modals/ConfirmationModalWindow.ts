@@ -16,6 +16,11 @@ export class ConfirmationModalWindow extends BaseModal<ConfirmationModalElements
   }
 
   public async confirm(): Promise<SigningModalWindow> {
+    const alert = this.page.getByTestId('alert');
+    if (await alert.isVisible()) {
+      const alertText = await alert.textContent();
+      throw new Error(`Alert found on the page with text: ${alertText}`);
+    }
     await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
 
     return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);

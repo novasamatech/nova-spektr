@@ -45,5 +45,8 @@ export const TEST_IDS = {
     PROPOSAL_ID: 'governance-proposal-id',
     PROPOSAL_VOTE_DETAILS: 'governance-proposal-vote-details',
   },
+  MULTISIG: {
+    SIGNATORY_COMBOBOX: 'multisig-signatory-combobox',
+  },
   CLOSE_BUTTON: 'Icon:close',
 } as const;
