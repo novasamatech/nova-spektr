@@ -28,16 +28,16 @@ function getActivityInfo(
   maxRank: number,
   votes: Vote[] | undefined,
 ) {
-  if (!referendums || !votes) return { activity: null, agreement: null, isLoading: true };
+  if (!referendums || !votes) return null;
 
-  if (referendums.length === 0) return { activity: null, agreement: null, isLoading: false };
+  if (referendums.length === 0) return { activity: null, agreement: null };
 
   const possibleReferendums = referendums.filter(r =>
     trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track),
   );
 
   if (referendums.length > 0 && possibleReferendums.length === 0) {
-    return { activity: 100, agreement: 100, isLoading: false };
+    return { activity: 100, agreement: 100 };
   }
 
   let voted = 0;
@@ -57,7 +57,7 @@ function getActivityInfo(
   const activity = possibleReferendums.length ? Math.round((voted / possibleReferendums.length) * 100) : 0;
   const agreement = voted ? Math.round((agreementVote / voted) * 100) : 0;
 
-  return { activity, agreement, isLoading: false };
+  return { activity, agreement };
 }
 
 export const referendumMetaService = {

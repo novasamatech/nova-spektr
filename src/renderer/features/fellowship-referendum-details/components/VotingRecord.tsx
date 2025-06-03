@@ -58,7 +58,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {activity.isLoading ? (
+            {nullable(activity) ? (
               <Skeleton height={5} />
             ) : nonNullable(activity.activity) ? (
               <Box direction="row" verticalAlign="end">
@@ -85,7 +85,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {activity.isLoading ? (
+            {nullable(activity) ? (
               <Skeleton height={5} />
             ) : nonNullable(activity.agreement) ? (
               <Box direction="row" verticalAlign="end">

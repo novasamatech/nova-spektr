@@ -16,7 +16,7 @@ const requestIdentityFx = attach({ effect: identity.request });
 
 const $tracks = fellowship.$store.map(store => store?.tracks);
 const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta);
-const $votes = fellowship.$store.map(store => store?.voting);
+const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
 const $member = fellowshipProfileFeature.input.map(store => (store ? store.member : null));
@@ -98,7 +98,7 @@ const $activityInfo = combine(
   },
   ({ referendums, member, maxRank, votes }) => {
     if (nullable(referendums) || nullable(member) || nullable(votes)) {
-      return { activity: null, agreement: null, isLoading: true };
+      return null;
     }
 
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);

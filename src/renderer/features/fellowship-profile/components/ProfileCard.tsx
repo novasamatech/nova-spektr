@@ -195,7 +195,7 @@ const Activity = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  if (activityInfo.isLoading) {
+  if (nullable(activityInfo)) {
     return <Skeleton height="1lh" />;
   }
 
@@ -206,7 +206,7 @@ const Agreement = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  if (activityInfo.isLoading) {
+  if (nullable(activityInfo)) {
     return <Skeleton height="1lh" />;
   }
 
