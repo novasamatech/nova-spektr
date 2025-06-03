@@ -176,7 +176,7 @@ sample({
       chain,
       initiator: account,
       votes: votes.filter((vote) => vote.voter === account.accountId),
-      signatory: null,
+      signatory: account,
       route: [account],
       tx: wrappedTxs[index].wrappedTx,
       coreTx: wrappedTxs[index].coreTx!,

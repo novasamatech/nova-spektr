@@ -16,7 +16,7 @@ import { walletUtils } from '@/entities/wallet';
 export type TxConfirmInfo = {
   id?: number;
   initiator: AnyAccount;
-  signatory: AnyAccount | null;
+  signatory: AnyAccount;
   route: AnyAccount[];
   chain: Chain;
   tx: Transaction;
