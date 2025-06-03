@@ -378,21 +378,21 @@
       }
     },
     "evidenceModal": {
+      "additionalContext": "Additional context provided",
+      "by": "By:",
       "currentRank": "Current rank:",
       "dateOfInitialInduction": "Date of initial induction:",
       "dateOfLastReport": "Date of last report:",
       "matrixUsername": "Matrix username:",
       "member": "Member stats",
       "memberDetails": "Member details",
+      "noAdditionalContext": "No additional context provided",
       "polkadotAddress": "Polkadot address:",
       "promotedAt": "(promotion executed on <time/>)",
       "titlePromotion": "Should {name} be promoted to Rank {rank}?",
       "titleRetention": "Should {name} be retained at Rank {rank}?",
       "votingRecord": "Voting record",
-      "votingTitle": "Is it good enough for rank {rank}?",
-      "additionalContext": "Additional context provided",
-      "noAdditionalContext": "No additional context provided",
-      "by": "By:"
+      "votingTitle": "Is it good enough for rank {rank}?"
     },
     "fellow_one": "{ count } Member",
     "fellow_other": "{ count } Members",
