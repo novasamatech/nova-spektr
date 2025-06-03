@@ -81,7 +81,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: { networkStore: $networkStore, coreTxs: $coreTxs },
-  filter: ({ networkStore }) => Boolean(networkStore),
+  filter: ({ networkStore }) => nonNullable(networkStore),
   fn: ({ networkStore, coreTxs }, { formData }) => ({
     event: [
       {
@@ -108,7 +108,7 @@ sample({
     wrappedTxs: $wrappedTxs,
   },
   filter: ({ restakeStore, networkStore, wrappedTxs }) => {
-    return Boolean(restakeStore) && Boolean(networkStore) && Boolean(wrappedTxs);
+    return nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(wrappedTxs);
   },
   fn: ({ restakeStore, networkStore, wrappedTxs }) => ({
     event: {
@@ -138,10 +138,10 @@ sample({
   },
   filter: (transferData) => {
     return (
-      Boolean(transferData.restakeStore) &&
-      Boolean(transferData.wrappedTxs) &&
-      Boolean(transferData.coreTxs) &&
-      Boolean(transferData.networkStore)
+      nonNullable(transferData.restakeStore) &&
+      nonNullable(transferData.wrappedTxs) &&
+      nonNullable(transferData.coreTxs) &&
+      nonNullable(transferData.networkStore)
     );
   },
   fn: (transferData, signParams) => ({
@@ -191,7 +191,7 @@ sample({
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+    return nonNullable(store) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
   fn: ({ store, coreTxs, txWrappers }) => {
     const account = store!.shards.at(0);

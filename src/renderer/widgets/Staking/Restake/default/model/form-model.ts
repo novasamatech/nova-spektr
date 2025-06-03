@@ -328,7 +328,7 @@ sample({
 sample({
   clock: formInitiated,
   source: $api,
-  filter: (api): api is ApiPromise => Boolean(api),
+  filter: (api): api is ApiPromise => nonNullable(api),
   target: getMinNominatorBondFx,
 });
 
@@ -378,7 +378,7 @@ sample({
     networkStore: $networkStore,
     initiator: form.fields.initiator.$value,
   },
-  filter: ({ staking, networkStore }) => Boolean(staking) && Boolean(networkStore),
+  filter: ({ staking, networkStore }) => nonNullable(staking) && nonNullable(networkStore),
   fn: ({ staking, networkStore, initiator }) => {
     if (nullable(initiator)) return ZERO_BALANCE;
 
@@ -482,10 +482,8 @@ sample({
     fee: $fee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, tx, multisigTx, coreTx }) =>
-    nonNullable(network) && nonNullable(tx) && nonNullable(multisigTx) && nonNullable(coreTx),
+  filter: ({ network, tx, coreTx }) => nonNullable(network) && nonNullable(tx) && nonNullable(coreTx),
   fn: ({ realAccount, network, tx, multisigTx, coreTx, isProxy, fee, multisigDeposit }, formData) => {
-    const { initiator } = formData;
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
@@ -501,9 +499,8 @@ sample({
         totalFee: fee.toString(),
         multisigDeposit,
         ...formData,
-        initiator: realAccount,
         amount,
-        ...(isProxy && { proxiedAccount: initiator as ProxiedAccount }),
+        ...(isProxy && { proxiedAccount: realAccount as ProxiedAccount }),
       },
     };
   },
