@@ -101,11 +101,6 @@ const $activityInfo = combine(
       return { activity: null, agreement: null, isLoading: true };
     }
 
-    console.log({
-      input: { referendums, member, maxRank, votes },
-      output: referendumMetaService.getActivityInfo(referendums, member, maxRank, votes),
-    });
-
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   },
 );
