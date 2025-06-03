@@ -4,11 +4,12 @@ import { memo } from 'react';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Alert, Markdown } from '@/shared/ui';
+import { FootnoteText, Icon, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 
+import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
 
 type Props = {
@@ -17,7 +18,6 @@ type Props = {
 
 export const ReferendumDescription = memo(({ referendum }: Props) => {
   useFlow(details.flow, { referendum });
-  const { t } = useI18n();
 
   const referendumMeta = useUnit(details.$referendumMeta);
   const pendingEvidence = useUnit(details.$pendingEvidence);
@@ -35,7 +35,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
   return (
     <>
-      {shouldRenderEvidencePending ? <Skeleton height="8lh" width="100%" /> : null}
+      {shouldRenderEvidencePending ? <Skeleton height="16lh" width="100%" /> : null}
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>
@@ -44,11 +44,24 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
         </Card>
       ) : null}
 
-      <Alert
-        active={shouldRenderEvidenceAlert}
-        variant="warn"
-        title={t('fellowship.tasks.task.promotionVoting.noEvidence')}
-      />
+      {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
+
+      <AdditionalContext description={referendumMeta?.description} />
     </>
   );
 });
+
+export const NoEvidence = () => {
+  const { t } = useI18n();
+  return (
+    <Card>
+      <Box padding={[43, 10]} gap={2} horizontalAlign="center" verticalAlign="center">
+        <Icon size={64} name="empty" className="mb-4" />
+        <SmallTitleText>{t('fellowship.tasks.task.promotionVoting.noEvidence')}</SmallTitleText>
+        <FootnoteText className="text-center text-text-tertiary">
+          {t('fellowship.tasks.task.promotionVoting.noEvidenceDescription')}
+        </FootnoteText>
+      </Box>
+    </Card>
+  );
+};
