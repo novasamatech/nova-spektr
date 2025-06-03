@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
 import { noop } from 'lodash';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { formatBalance, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
@@ -78,6 +79,19 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const balances = useUnit(balanceModel.$balances);
+
+  const signatoriesWithBalance = useMemo(() => {
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network!.chain.chainId,
+        network!.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
 
   if (!isMultisig || !network) {
     return null;
@@ -86,7 +100,7 @@ const Signatories = () => {
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
+      signatories={signatoriesWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}

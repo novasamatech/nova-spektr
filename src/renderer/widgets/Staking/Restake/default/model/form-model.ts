@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import isEmpty from 'lodash/isEmpty';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
@@ -26,7 +25,8 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { createSignatoriesStore } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
@@ -75,7 +75,6 @@ const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
 const $restakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $fee = restore(feeChanged, ZERO_BALANCE);
@@ -84,6 +83,8 @@ const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const $selectedSignatories = createStore<AnyAccount[]>([]);
+
+const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
@@ -263,32 +264,11 @@ const $account = combine(
   },
 );
 
-const $signatories = combine(
-  {
-    network: $networkStore,
-    txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
-  },
-  ({ network, txWrappers, balances }) => {
-    if (!network) return [];
-
-    const { chain, asset } = network;
-
-    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
-      if (!transactionService.hasMultisig([wrapper])) return acc;
-
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
-  },
-);
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
 
 const $isChainConnected = combine(
   {
@@ -438,17 +418,24 @@ sample({
   target: $restakeBalanceRange,
 });
 
-sample({
-  clock: form.fields.signatory.change,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  target: $signatoryBalance,
-});
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
 
 sample({
   clock: form.fields.signatory.$value,
