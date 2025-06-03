@@ -3,7 +3,7 @@ import { and, or } from 'patronum';
 
 import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
 import { type Referendum, evidence, referendum, referendumMeta, referendumService } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
@@ -32,7 +32,7 @@ const $referendumMeta = combine($meta, $referendum, (meta, referendum) => {
 });
 
 const $proposer = $referendum.map(referendum => {
-  if (nullable(referendum) || referendumService.isCompleted(referendum)) return null;
+  if (nullable(referendum)) return null;
   return referendumService.getProposer(referendum);
 });
 
@@ -47,13 +47,7 @@ const $evidence = combine(
   ({ referendum, evidences, proposer }) => {
     if (nullable(referendum)) return null;
 
-    if (referendumService.isOngoing(referendum) && referendum.proposal) {
-      if (referendum.proposal.type === 'Evidence') {
-        return evidences.find(x => x.accountId === proposer) ?? null;
-      }
-    }
-
-    return null;
+    return evidences.find(x => x.accountId === proposer) ?? null;
   },
 );
 
@@ -91,6 +85,16 @@ const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetai
 
 sample({
   clock: proposeEvidenceRequested,
+  source: { referendum: $referendum, meta: $referendumMeta },
+  fn: ({ referendum, meta }, input) => {
+    if (nonNullable(referendum) && referendumService.isCompleted(referendum) && nonNullable(meta)) {
+      return {
+        ...input,
+        blockHash: meta.blockHash,
+      };
+    }
+    return input;
+  },
   target: requestEvidenceFx,
 });
 
