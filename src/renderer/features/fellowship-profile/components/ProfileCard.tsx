@@ -128,7 +128,6 @@ const Member = () => {
   const member = useUnit(profile.$member);
   const identity = useUnit(profile.$identity);
   const input = useUnit(fellowshipProfileFeature.input);
-  const pendingActivityInfo = useUnit(profile.$pendingActivityInfo);
 
   if (nullable(member)) return null;
 
@@ -177,8 +176,12 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
+          <SmallTitleText>
+            <Activity />
+          </SmallTitleText>
+          <SmallTitleText>
+            <Agreement />
+          </SmallTitleText>
           <SmallTitleText>
             <NextRankTimeout />
           </SmallTitleText>
