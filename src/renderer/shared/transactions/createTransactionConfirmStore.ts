@@ -59,7 +59,7 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
       const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
       if (!initiatorWallet) return acc;
 
-      const signatoryWallet = meta.signatory && walletUtils.getWalletById(wallets, meta.signatory.walletId);
+      const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
 
       acc[meta.id ?? index] = {
         meta,
