@@ -388,7 +388,6 @@ export const Staking = () => {
       <Operations.BondExtra />
       <Operations.Unstake />
       <Operations.Nominate />
-      <Operations.Restake />
       {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
       <Operations.Withdraw />
       <Operations.Payee />
