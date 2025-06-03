@@ -25,13 +25,13 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
-import { createSignatoriesStore } from '@/shared/transactions';
+import { createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
@@ -180,35 +180,13 @@ const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> =>
 
 // Computed
 
-const $txWrappers = combine(
-  {
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-    initiator: form.fields.initiator.$value,
-    network: $networkStore,
-    signatories: $selectedSignatories,
-  },
-  ({ wallet, initiator, wallets, network, signatories }) => {
-    if (!wallet || !network || !initiator) return [];
-
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
-      },
-    });
-
-    return transactionService.getTxWrappers({
-      wallet,
-      wallets: filteredWallets || [],
-      account: initiator,
-      signatories,
-    });
-  },
-);
+const $txWrappers = createTxWrappers({
+  initiator: form.fields.initiator.$value,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: $chain,
+  signatory: form.fields.signatory.$value,
+});
 
 const $realAccount = combine(
   {
