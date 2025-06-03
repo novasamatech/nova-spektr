@@ -1,21 +1,22 @@
-import { type MouseEventHandler, memo } from 'react';
+import { type MouseEventHandler, type PropsWithChildren, memo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
 
-type Props = {
+type Props = PropsWithChildren<{
   variant: 'positive' | 'negative';
   icon: IconNames;
   checked?: boolean;
   marked?: boolean;
   disabled?: boolean;
+  fullWidth?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   onMouseOver?: MouseEventHandler<HTMLButtonElement>;
   onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
-};
+}>;
 
 export const FilledIconButton = memo(
-  ({ variant, disabled, checked, marked, icon, onClick, onMouseOver, onMouseLeave }: Props) => {
+  ({ variant, disabled, checked, marked, icon, onClick, onMouseOver, onMouseLeave, children, fullWidth }: Props) => {
     return (
       <button
         type="button"
@@ -38,6 +39,9 @@ export const FilledIconButton = memo(
             'bg-label-background-green': variant === 'positive' && marked,
             'hover:bg-badge-green-background': variant === 'positive' && !marked,
           },
+          {
+            'w-full': fullWidth,
+          },
         )}
         onClick={onClick}
         onMouseOver={onMouseOver}
@@ -52,6 +56,17 @@ export const FilledIconButton = memo(
             'text-icon-button': marked && !disabled,
           })}
         />
+        {children ? (
+          <span
+            className={cnTw('text-button-large', {
+              'text-icon-negative': variant === 'negative' && !disabled,
+              'text-icon-positive': variant === 'positive' && !disabled,
+              'text-icon-button': marked && !disabled,
+            })}
+          >
+            {children}
+          </span>
+        ) : null}
       </button>
     );
   },

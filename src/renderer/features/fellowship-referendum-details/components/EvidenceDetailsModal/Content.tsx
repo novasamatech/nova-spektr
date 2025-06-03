@@ -8,6 +8,7 @@ import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { Card } from '../Card';
+import { NoEvidence } from '../ReferendumDescription';
 
 type Props = {
   evidence: Evidence;
@@ -36,6 +37,10 @@ export const Content = memo(({ evidence }: Props) => {
         </Box>
       </Card>
     );
+  }
+
+  if (nullable(content?.content)) {
+    return <NoEvidence />;
   }
 
   return (
