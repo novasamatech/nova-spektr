@@ -43,7 +43,7 @@ export const BondForm = ({ onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const feeData = useUnit(formModel.$feeData);
@@ -51,7 +51,7 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError) {
+  if (!network || !proxyWallet || !initiator.hasError) {
     return null;
   }
 
@@ -64,7 +64,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.reset}
+      onClose={initiator.reset}
     />
   );
 };
@@ -133,7 +133,7 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
@@ -143,7 +143,7 @@ const FeeSection = () => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (!network || shards.value.length === 0) {
+  if (!network || !initiator.value) {
     return null;
   }
 
@@ -175,11 +175,7 @@ const FeeSection = () => {
       )}
 
       <DetailRow
-        label={
-          <FootnoteText className="text-text-tertiary">
-            {t('staking.networkFee', { count: shards.value.length || 1 })}
-          </FootnoteText>
-        }
+        label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
         className="text-text-primary"
       >
         {isFeeLoading ? (
@@ -191,22 +187,6 @@ const FeeSection = () => {
           </div>
         )}
       </DetailRow>
-
-      {shards.value.length > 1 && (
-        <DetailRow
-          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          className="text-text-primary"
-        >
-          {isFeeLoading ? (
-            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-          ) : (
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
-              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
-            </div>
-          )}
-        </DetailRow>
-      )}
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -22,25 +21,35 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
-import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
+import { type BondExtraData, type FeeData, Step, type WalletDataShards } from '../lib/types';
 
 import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<WalletData>();
+const flowStarted = createEvent<WalletDataShards>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
+const $walletDataShards = restore<WalletDataShards | null>(flowStarted, null).reset(flowFinished);
+const $walletData = $walletDataShards.map((data) => {
+  if (!data) return null;
+
+  return {
+    initiator: data.shards[0],
+    chain: data.chain,
+    wallet: data.wallet,
+  };
+});
+
 const $bondExtraData = createStore<BondExtraData | null>(null).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
-const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
+const $pureTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 type FeeParams = {
   api: ApiPromise;
@@ -69,22 +78,20 @@ const $api = combine(
   { skipVoid: false },
 );
 
-const $transactions = combine(
+const $transaction = combine(
   {
     api: $api,
-    pureTxs: $pureTxs,
+    pureTx: $pureTx,
     txWrappers: $txWrappers,
   },
-  ({ api, pureTxs, txWrappers }) => {
-    if (!api) return undefined;
+  ({ api, pureTx, txWrappers }) => {
+    if (!api || !pureTx) return undefined;
 
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
+    return transactionService.getWrappedTransaction({
+      api,
+      transaction: pureTx,
+      txWrappers,
+    });
   },
   { skipVoid: false },
 );
@@ -97,7 +104,7 @@ sample({
     walletData: $walletData,
     wallets: walletModel.$wallets,
   },
-  filter: ({ walletData }) => Boolean(walletData),
+  filter: ({ walletData }) => nonNullable(walletData) && nonNullable(walletData?.initiator),
   fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
@@ -105,7 +112,7 @@ sample({
       chain: walletData!.chain,
       wallet: walletData!.wallet,
       wallets,
-      account: walletData!.shards[0],
+      account: walletData!.initiator!,
       signatories,
     });
   },
@@ -146,27 +153,28 @@ sample({
 sample({
   clock: $bondExtraData.updates,
   source: $walletData,
-  filter: (walletData, bondExtraData) => Boolean(walletData) && Boolean(bondExtraData),
+  filter: (walletData, bondExtraData) =>
+    nonNullable(walletData) && nonNullable(bondExtraData) && nonNullable(bondExtraData?.initiator),
   fn: (walletData, bondExtraData) => {
-    return bondExtraData!.shards.map((shard) => {
-      return transactionBuilder.buildBondExtra({
-        chain: walletData!.chain,
-        asset: walletData!.chain.assets[0],
-        accountId: shard.accountId,
-        amount: bondExtraData!.amount,
-      });
+    if (!bondExtraData || !bondExtraData.initiator) return null;
+
+    return transactionBuilder.buildBondExtra({
+      chain: walletData!.chain,
+      asset: walletData!.chain.assets[0],
+      accountId: bondExtraData.initiator.accountId,
+      amount: bondExtraData.amount,
     });
   },
-  target: $pureTxs,
+  target: $pureTx,
 });
 
 sample({
-  clock: $transactions,
+  clock: $transaction,
   source: $api,
-  filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
-  fn: (api, transactions) => ({
+  filter: (api, transaction) => nonNullable(api) && nonNullable(transaction),
+  fn: (api, transaction) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transaction!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -174,7 +182,7 @@ sample({
 sample({
   clock: $txWrappers,
   source: $api,
-  filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
+  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
 
@@ -194,11 +202,10 @@ sample({
 sample({
   clock: getTransactionFeeFx.doneData,
   source: {
-    transactions: $transactions,
     feeData: $feeData,
   },
-  fn: ({ transactions, feeData }, fee) => {
-    const totalFee = new BN(fee).muln(transactions!.length).toString();
+  fn: ({ feeData }, fee) => {
+    const totalFee = fee; // Single transaction now, so total fee equals fee
 
     return { ...feeData, fee, totalFee };
   },
@@ -223,6 +230,11 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
+  fn: (data) => ({
+    initiator: data.shards[0],
+    chain: data.chain,
+    wallet: data.wallet,
+  }),
   target: formModel.events.formInitiated,
 });
 
@@ -239,22 +251,23 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,
-    coreTxs: $pureTxs,
+    coreTx: $pureTx,
   },
-  filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
+  filter: ({ bondData, walletData }) =>
+    nonNullable(bondData) && nonNullable(walletData) && nonNullable(bondData?.initiator),
+  fn: ({ bondData, feeData, walletData, txWrappers, coreTx }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: [
         {
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...bondData!,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTx: coreTxs[0],
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
+          shards: [bondData!.initiator!],
+          coreTx,
         },
       ],
       step: Step.CONFIRM,
@@ -271,24 +284,27 @@ sample({
   source: {
     bondData: $bondExtraData,
     walletData: $walletData,
-    transactions: $transactions,
+    transactions: $transaction,
     txWrappers: $txWrappers,
   },
   filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+    return (
+      nonNullable(bondData) && nonNullable(walletData) && nonNullable(transactions) && nonNullable(bondData?.initiator)
+    );
   },
   fn: ({ bondData, walletData, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
-        signingPayloads:
-          transactions?.map((tx, index) => ({
+        signingPayloads: [
+          {
             chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.shards[index],
+            account: wrapper ? wrapper.proxyAccount : bondData!.initiator!,
             signatory: bondData!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
+            transaction: transactions!.wrappedTx,
+          },
+        ],
       },
       step: Step.SIGN,
     };
@@ -304,23 +320,34 @@ sample({
   source: {
     bondData: $bondExtraData,
     walletData: $walletData,
-    transactions: $transactions,
+    transactions: $transaction,
   },
   filter: ({ bondData, walletData, transactions }) => {
-    return Boolean(bondData) && Boolean(walletData) && Boolean(transactions);
+    return (
+      nonNullable(bondData) &&
+      nonNullable(walletData) &&
+      nonNullable(transactions) &&
+      nonNullable(bondData?.initiator) &&
+      nonNullable(bondData?.signatory) &&
+      nonNullable(transactions?.coreTx) &&
+      nonNullable(transactions?.wrappedTx) &&
+      nonNullable(transactions?.multisigTx)
+    );
   },
-  fn: (bondFlowData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: bondFlowData.walletData!.chain,
-      account: bondFlowData.bondData!.shards[0],
-      signatory: bondFlowData.bondData!.signatory,
-      coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
-    },
-    step: Step.SUBMIT,
-  }),
+  fn: (bondFlowData, signParams) => {
+    return {
+      event: {
+        ...signParams,
+        chain: bondFlowData.walletData!.chain,
+        account: bondFlowData.bondData!.initiator!,
+        signatory: bondFlowData.bondData!.signatory!,
+        coreTxs: [bondFlowData.transactions!.coreTx],
+        wrappedTxs: [bondFlowData.transactions!.wrappedTx],
+        multisigTxs: [bondFlowData.transactions!.multisigTx!],
+      },
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
@@ -352,19 +379,17 @@ sample({
   clock: txSaved,
   source: {
     store: $walletData,
-    coreTxs: $pureTxs,
+    coreTx: $pureTx,
     txWrappers: $txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  filter: ({ store, coreTx, txWrappers }) => {
+    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers) && nonNullable(store?.initiator);
   },
-  fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
-      coreTx,
-      txWrappers,
-      createdAt: Date.now(),
-    })),
+  fn: ({ store, coreTx, txWrappers }) => {
+    if (!store || !coreTx || !store.initiator) return [];
+
+    return [{ initiatorAccountId: store.initiator!.accountId, coreTx, txWrappers, createdAt: Date.now() }];
+  },
   target: basketOperations.addTransactions,
 });
 

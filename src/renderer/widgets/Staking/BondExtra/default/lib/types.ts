@@ -10,14 +10,20 @@ export const enum Step {
   BASKET,
 }
 
-export type WalletData = {
+export type WalletDataShards = {
   wallet: Wallet;
   shards: AnyAccount[];
   chain: Chain;
 };
 
+export type WalletData = {
+  wallet: Wallet;
+  initiator: AnyAccount | null;
+  chain: Chain;
+};
+
 export type BondExtraData = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
 };

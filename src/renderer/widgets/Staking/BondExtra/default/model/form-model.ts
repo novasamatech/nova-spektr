@@ -20,7 +20,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
 };
@@ -39,7 +39,6 @@ const txWrapperChanged = createEvent<{
 const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
 const isFeeLoadingChanged = createEvent<boolean>();
 
-const $shards = createStore<AnyAccount[]>([]);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $availableSignatories = createStore<AnyAccount[][]>([]);
@@ -52,8 +51,8 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
-    shards: {
-      defaultValue: [],
+    initiator: {
+      defaultValue: null,
       validator: () => {
         return {
           source: combine({
@@ -61,23 +60,25 @@ const form: Form<FormParams> = createForm<FormParams>({
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
             network: $networkStore,
-            accountsBalances: $accountsBalances,
+            initiatorBalance: $initiatorBalance,
           }),
           fn: (
-            shards: AnyAccount[],
+            initiator: AnyAccount | null,
             form: FormParams,
-            { feeData, isProxy, proxyBalance, network, accountsBalances },
+            { feeData, isProxy, proxyBalance, network, initiatorBalance },
           ) => {
+            if (!initiator) {
+              return { message: 'staking.bond.noInitiatorError' };
+            }
+
             if (isProxy && new BN(feeData.fee).gt(new BN(proxyBalance))) {
               return { message: 'staking.bond.noBondBalanceError' };
             }
 
-            if (isProxy && shards.length > 1) {
+            if (isProxy && form.amount) {
               const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
 
-              const hasEnoughBalance = shards.every((_, index) => amountBN.lte(new BN(accountsBalances[index])));
-
-              if (!hasEnoughBalance) {
+              if (amountBN.gt(new BN(initiatorBalance))) {
                 return { message: 'staking.bond.noBondBalanceError' };
               }
             }
@@ -115,12 +116,12 @@ const form: Form<FormParams> = createForm<FormParams>({
             bondBalanceRange: $bondBalanceRange,
             feeData: $feeData,
             isMultisig: $isMultisig,
-            accountsBalances: $accountsBalances,
+            initiatorBalance: $initiatorBalance,
           }),
           fn: (
             value: string,
             form: FormParams,
-            { network, bondBalanceRange, feeData, isMultisig, accountsBalances },
+            { network, bondBalanceRange, feeData, isMultisig, initiatorBalance },
           ) => {
             if (nullable(value)) {
               return { message: 'transfer.requiredAmountError' };
@@ -137,13 +138,10 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            if (!isMultisig) {
+            if (!isMultisig && form.initiator) {
               const feeBN = new BN(feeData.fee);
-              const hasInsufficientBalance = !form.shards.every((_: AnyAccount, index: number) => {
-                return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
-              });
 
-              if (hasInsufficientBalance) {
+              if (amountBN.add(feeBN).gt(new BN(initiatorBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             }
@@ -174,59 +172,41 @@ const $proxyWallet = combine(
 //todo use $bondForm.$isValid in the future
 const $isValid = combine(
   {
-    shardsErrors: form.fields.shards.$errors,
+    initiatorErrors: form.fields.initiator.$errors,
     signatoryErrors: form.fields.signatory.$errors,
     amountErrors: form.fields.amount.$errors,
   },
-  ({ shardsErrors, signatoryErrors, amountErrors }) => {
-    return shardsErrors.length === 0 && signatoryErrors.length === 0 && amountErrors.length === 0;
+  ({ initiatorErrors, signatoryErrors, amountErrors }) => {
+    return initiatorErrors.length === 0 && signatoryErrors.length === 0 && amountErrors.length === 0;
   },
 );
 
-const $accounts = combine(
+const $account = combine(
   {
     network: $networkStore,
     wallet: walletModel.$activeWallet,
-    shards: $shards,
+    initiator: form.fields.initiator.$value,
     balances: balanceModel.$balances,
   },
-  ({ network, wallet, shards, balances }) => {
-    if (!wallet || !network) return [];
+  ({ network, wallet, initiator, balances }) => {
+    if (!wallet || !network || !initiator) return null;
 
     const { chain, asset } = network;
 
-    return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
 
-      return { account: shard, balance: stakeableAmount(balance) };
-    });
+    return { account: initiator, balance: stakeableAmount(balance) };
   },
 );
 
-const $accountsBalances = combine(
-  {
-    accounts: $accounts,
-    shards: form.fields.shards.$value,
-  },
-  ({ accounts, shards }) => {
-    return accounts.reduce<string[]>((acc, { account, balance }) => {
-      if (shards.includes(account)) acc.push(balance);
+const $initiatorBalance = combine($account, (account) => {
+  return account?.balance || ZERO_BALANCE;
+});
 
-      return acc;
-    }, []);
-  },
-);
+const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
+  if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
 
-const $bondBalanceRange = combine($accountsBalances, (accountsBalances) => {
-  if (accountsBalances.length === 0) return ZERO_BALANCE;
-
-  const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
-    if (!balance) return acc;
-
-    return new BN(balance).lt(new BN(acc)) ? balance : acc;
-  }, accountsBalances[0]);
-
-  return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+  return [ZERO_BALANCE, initiatorBalance];
 });
 
 const $proxyBalance = combine(
@@ -321,23 +301,14 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length > 0,
-  fn: ({ chain, shards }) => ({
-    shards,
+  filter: ({ chain, initiator }) => Boolean(getRelaychainAsset(chain.assets)) && Boolean(initiator),
+  fn: ({ chain, initiator }) => ({
+    initiator,
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
   }),
   target: spread({
-    shards: $shards,
     networkStore: $networkStore,
   }),
-});
-
-sample({
-  clock: formInitiated,
-  source: $shards,
-  filter: (shards: AnyAccount[]) => shards.length > 0,
-  fn: (shards: AnyAccount[]) => shards,
-  target: form.fields.shards.change,
 });
 
 sample({
@@ -351,7 +322,7 @@ sample({
 });
 
 sample({
-  clock: form.fields.shards.change,
+  clock: form.fields.initiator.change,
   fn: () => [],
   target: form.fields.amount.setErrors,
 });
@@ -359,7 +330,7 @@ sample({
 sample({
   clock: form.fields.amount.change,
   fn: () => [],
-  target: form.fields.shards.setErrors,
+  target: form.fields.initiator.setErrors,
 });
 
 // Submit
@@ -379,7 +350,7 @@ sample({
 
 sample({
   clock: formCleared,
-  target: [form.reset, $shards.reinit],
+  target: [form.reset],
 });
 
 export const formModel = {
@@ -387,8 +358,8 @@ export const formModel = {
   $proxyWallet,
   $signatories,
 
-  $accounts,
-  $accountsBalances,
+  $account,
+  $initiatorBalance,
   $bondBalanceRange,
   $proxyBalance,
 
