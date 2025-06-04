@@ -1,25 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import React, { Suspense, lazy } from 'react';
 
-import { type Account, type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
-import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button } from '@/shared/ui';
-import { AccountSelectModal } from '@/shared/ui-entities';
-import { Modal } from '@/shared/ui-kit';
-import { basketUtils } from '@/entities/basket';
-import { OperationTitle } from '@/entities/chain';
-import { OperationResult } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
-import { SignatorySelectModal } from '@/features/multisig-operations';
-import { OperationSign, OperationSubmit } from '@/features/operations';
-import { RemoveVoteConfirmation } from '@/features/operations/OperationsConfirm';
 import { removeVotesModel } from '../model/removeVotesModal';
-import { RemoveVotesShardsModal } from '../shards/components/RemoveVotesShardsModal';
+
+const RemoveVotesShardsModal = lazy(() =>
+  import('../shards/components/RemoveVotesShardsModal').then(({ RemoveVotesShardsModal }) => ({
+    default: RemoveVotesShardsModal,
+  })),
+);
+const RemoveVotesDefaultModal = lazy(() =>
+  import('./RemoveVotesDefault').then(({ RemoveVotesDefaultModal }) => ({
+    default: RemoveVotesDefaultModal,
+  })),
+);
 
 type Props = {
   /**
@@ -46,167 +42,19 @@ export const RemoveVotesModal = ({ single, votes, chain, asset, api, onClose }: 
     api,
   });
 
-  const { t } = useI18n();
-  const step = useUnit(removeVotesModel.$step);
-  const initiatorWallet = useUnit(removeVotesModel.$initiatorWallet);
   const votesList = useUnit(removeVotesModel.$votesList);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), onClose);
-  const [isBasketModalOpen, closeBasketModal] = useModalClose(isStep(step, Step.BASKET), onClose);
-
-  // if there are multiple voters then show shards modal
-  if (votesList.length > 1 && !single) {
-    return <RemoveVotesShardsModal votes={votes} chain={chain} asset={asset} api={api} onClose={onClose} />;
-  }
-
-  if (isStep(step, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
-  }
-
-  if (isStep(step, Step.BASKET)) {
-    return (
-      <OperationResult
-        isOpen={isBasketModalOpen}
-        variant="success"
-        autoCloseTimeout={2000}
-        title={t('operation.addedToBasket')}
-        onClose={closeBasketModal}
-      />
-    );
-  }
-
   return (
-    <>
-      <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={onClose}>
-        <Modal.Title close>
-          <OperationTitle title={t('operations.modalTitles.removeVoteOn')} chainId={chain.chainId}></OperationTitle>
-        </Modal.Title>
-        <Modal.Content>
-          {isStep(step, Step.CONFIRM) && votesList.length === 1 && (
-            <RemoveVoteConfirmation
-              secondaryActionButton={
-                nonNullable(initiatorWallet) &&
-                basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => removeVotesModel.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )
-              }
-            />
-          )}
-
-          {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => removeVotesModel.events.setStep(Step.CONFIRM)} />}
-        </Modal.Content>
-      </Modal>
-
-      <VoteSignatorySelect
-        asset={asset}
-        chain={chain}
-        onSelect={removeVotesModel.events.selectSignatory}
-        onCancel={closeModal}
-      />
-
-      {single ? (
-        <VoteAccountSelect
-          asset={asset}
-          chain={chain}
-          onSelect={removeVotesModel.events.selectAccount}
-          onCancel={closeModal}
-        />
-      ) : null}
-    </>
-  );
-};
-
-type SignatoryProps = {
-  chain: Chain;
-  asset: Asset;
-  onSelect: (signatory: Account) => void;
-  onCancel: VoidFunction;
-};
-
-const VoteSignatorySelect = ({ chain, asset, onSelect, onCancel }: SignatoryProps) => {
-  const signatory = useUnit(removeVotesModel.$signatory);
-  const signatories = useUnit(removeVotesModel.$signatories);
-  const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
-  const [isSelectSignatoryOpen, setIsSelectSignatoryOpen] = useState(shouldPickSignatory);
-  const [isSelectSignatoryClosed, setIsSelectSignatoryClosed] = useState(false);
-
-  const handleSelectSignatoryClose = () => {
-    setIsSelectSignatoryOpen(false);
-    setIsSelectSignatoryClosed(true);
-  };
-
-  useEffect(() => {
-    if (shouldPickSignatory) {
-      if (isSelectSignatoryClosed) {
-        onCancel();
-      } else {
-        setIsSelectSignatoryOpen(true);
-      }
-    }
-  }, [shouldPickSignatory, isSelectSignatoryClosed, isSelectSignatoryClosed, setIsSelectSignatoryOpen, onCancel]);
-
-  return (
-    <SignatorySelectModal
-      isOpen={isSelectSignatoryOpen}
-      accounts={signatories}
-      chain={chain}
-      nativeAsset={asset}
-      onClose={handleSelectSignatoryClose}
-      onSelect={(a) => {
-        onSelect(a);
-        setIsSelectSignatoryOpen(false);
-      }}
-    />
-  );
-};
-
-type AccountProps = {
-  chain: Chain;
-  asset: Asset;
-  onSelect: (signatory: Account) => void;
-  onCancel: VoidFunction;
-};
-
-const VoteAccountSelect = ({ asset, chain, onCancel, onSelect }: AccountProps) => {
-  const { t } = useI18n();
-
-  const account = useUnit(removeVotesModel.$pickedAccount);
-  const accounts = useUnit(removeVotesModel.$availableAccounts);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  const shouldPickAccount = nullable(account) && accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet);
-  const [isSelectAccountOpen, setIsSelectAccountOpen] = useState(shouldPickAccount);
-  const [isSelectAccountClosed, setIsSelectAccountClosed] = useState(false);
-
-  const handleSelectAccountClose = () => {
-    setIsSelectAccountOpen(false);
-    setIsSelectAccountClosed(true);
-  };
-
-  useEffect(() => {
-    if (shouldPickAccount) {
-      if (isSelectAccountClosed) {
-        onCancel();
-      } else {
-        setIsSelectAccountOpen(true);
-      }
-    }
-  }, [shouldPickAccount, isSelectAccountClosed, isSelectAccountClosed, setIsSelectAccountOpen, onCancel]);
-
-  return (
-    <AccountSelectModal
-      isOpen={isSelectAccountOpen}
-      asset={asset}
-      chain={chain}
-      title={t('governance.voting.selectAccountTitle')}
-      options={accounts.map((account) => ({ account }))}
-      onSelect={(a) => {
-        onSelect(a);
-        setIsSelectAccountOpen(false);
-      }}
-      onToggle={handleSelectAccountClose}
-    />
+    <div>
+      {votesList.length > 1 && !single ? (
+        <Suspense fallback={null}>
+          <RemoveVotesShardsModal votes={votes} chain={chain} asset={asset} api={api} onClose={onClose} />
+        </Suspense>
+      ) : (
+        <Suspense fallback={null}>
+          <RemoveVotesDefaultModal single={single} chain={chain} asset={asset} onClose={onClose} />
+        </Suspense>
+      )}
+    </div>
   );
 };
