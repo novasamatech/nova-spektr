@@ -27,15 +27,15 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     store: fellowship.$store,
     keys: [],
     fn: store => ({
-      meta: store?.referendumMeta && Object.values(store.referendumMeta),
-      votes: store?.voting,
+      meta: store?.referendumMeta ? Object.values(store.referendumMeta) : null,
+      votes: store?.voting ?? null,
       maxRank: store?.maxRank ?? 0,
     }),
   });
 
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
-  const referendums = meta && referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  const referendums = meta ? referendumMetaService.getReferendumsSinceLastProof(meta, member) : null;
 
   const activity = referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
 
