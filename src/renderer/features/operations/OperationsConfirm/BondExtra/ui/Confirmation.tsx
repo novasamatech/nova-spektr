@@ -2,14 +2,13 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AccountsModal, StakingPopover } from '@/entities/staking';
+import { StakingPopover } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
@@ -39,29 +38,17 @@ export const Confirmation = ({
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
+  const { amount, asset, chain, fee, initiator, signatory, route, multisigDeposit } = confirmStore.meta;
 
-  if (!confirmStore || !initiatorWallet) {
+  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
+
+  if (!confirmStore || !confirmStore.wallets.initiator) {
     return null;
   }
 
-  const amountValue = config.withFormatAmount
-    ? formatAmount(confirmStore.amount, confirmStore.asset.precision)
-    : confirmStore.amount;
+  const amountValue = config.withFormatAmount ? formatAmount(amount, asset.precision) : amount;
 
   return (
     <>
@@ -72,23 +59,23 @@ export const Confirmation = ({
           <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
               value={amountValue}
-              asset={confirmStore.asset}
+              asset={asset}
               className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
             />
-            <AssetFiatBalance asset={confirmStore.asset} amount={amountValue} className="text-headline" />
+            <AssetFiatBalance asset={asset} amount={amountValue} className="text-headline" />
           </div>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails
-          chain={confirmStore.chain}
+          chain={chain}
           wallets={wallets}
-          initiator={confirmStore.shards}
-          signatory={confirmStore.signatory}
-          proxied={confirmStore.proxiedAccount}
+          initiator={[initiator]}
+          signatory={signatory}
+          proxied={proxiedAccount}
         >
-          {accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {accountUtils.isMultisigAccount(initiator) && (
             <DetailRow
               className="text-text-primary"
               label={
@@ -107,37 +94,21 @@ export const Confirmation = ({
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+                <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
+                <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
               </div>
             </DetailRow>
           )}
 
           <DetailRow
             className="text-text-primary"
-            label={
-              <FootnoteText className="text-text-tertiary">
-                {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
-              </FootnoteText>
-            }
+            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+              <AssetBalance value={fee} asset={chain.assets[0]} />
+              <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
             </div>
           </DetailRow>
-
-          {confirmStore.shards.length > 1 && (
-            <DetailRow
-              className="text-text-primary"
-              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
-              </div>
-            </DetailRow>
-          )}
 
           <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
             <StakingPopover.Item>{t('staking.confirmation.hintNewRewards')}</StakingPopover.Item>
@@ -156,22 +127,23 @@ export const Confirmation = ({
             {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
-                type={(signerWallet || initiatorWallet).type}
-                onClick={confirmModel.output.formSubmitted}
+                type={confirmStore.wallets.signatory?.type}
+                onClick={confirmModel.events.startSigning}
               />
             )}
           </div>
         </div>
       </div>
 
-      <AccountsModal
+      {/* TODO: seems like we don't need this modal as shards are solved with Confirmation Slider and not inside exact instance of Confirmation */}
+      {/* <AccountsModal
         isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
-        chainId={confirmStore.chain.chainId}
-        asset={confirmStore.asset}
-        addressPrefix={confirmStore.chain.addressPrefix}
+        accounts={accountService.filterAccountsByWallet(accounts, walletId)}
+        chainId={chain.chainId}
+        asset={asset}
+        addressPrefix={chain.addressPrefix}
         onClose={toggleAccounts}
-      />
+      /> */}
     </>
   );
 };

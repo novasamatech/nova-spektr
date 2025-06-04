@@ -12,7 +12,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { Step, type WalletDataShards } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -142,25 +142,37 @@ sample({
     walletData: $walletData,
     txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
+    tx: formModel.$tx,
+    route: formModel.$route,
+    multisigTx: formModel.$multisigTx,
   },
-  filter: ({ formParams, walletData }) =>
-    nonNullable(formParams) && nonNullable(walletData) && nonNullable(formParams?.initiator),
-  fn: ({ formParams, fee, multisigDeposit, walletData, txWrappers, coreTx }) => {
+  filter: ({ formParams, walletData, tx, route, coreTx }) =>
+    nonNullable(formParams) &&
+    nonNullable(walletData) &&
+    nonNullable(formParams?.initiator) &&
+    nonNullable(tx) &&
+    nonNullable(route) &&
+    nonNullable(coreTx),
+  fn: ({ formParams, fee, multisigDeposit, walletData, txWrappers, coreTx, tx, route, multisigTx }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: [
         {
           ...formParams!,
+          initiator: formParams!.initiator!,
+          signatory: formParams!.signatory!,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
-          shards: [formParams!.initiator!],
-          coreTx,
-        },
+          tx: tx!,
+          coreTx: coreTx!,
+          route,
+          multisigTx: multisigTx,
+        } satisfies BondExtraConfirm,
       ],
       step: Step.CONFIRM,
     };
@@ -172,7 +184,7 @@ sample({
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.events.startSigning,
   source: {
     formParams: formModel.form.$values,
     walletData: $walletData,

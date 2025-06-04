@@ -9,6 +9,7 @@ import {
   type Connection,
   type Transaction,
   TransactionType,
+  WrapperKind,
 } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
@@ -17,6 +18,7 @@ import { eraService, useStakingData, validatorsService } from '@/entities/stakin
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
+  type BondExtraConfirm,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
   nominateConfirmModel,
@@ -26,7 +28,6 @@ import {
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 import {
-  type BondExtraInput,
   type BondNominateInput,
   type NominateInput,
   type PayeeInput,
@@ -89,15 +90,19 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: transaction.coreTx.args.maxAdditional,
-    description: '',
-    signatory: null,
-
+    signatory: account!,
     fee,
-    totalFee: '0',
+    totalFee: fee.toString(),
     multisigDeposit: '0',
-  } as BondExtraInput;
+    initiator: account!,
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.signer,
+    ),
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: transaction.coreTx,
+  } satisfies BondExtraConfirm;
 });
 
 const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis, connections }: DataParams) => {
