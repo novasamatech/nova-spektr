@@ -14,8 +14,8 @@ import { fellowship } from './fellowship';
 
 const requestIdentityFx = attach({ effect: identity.request });
 
-const $tracks = fellowship.$store.map(store => store?.tracks);
-const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta);
+const $tracks = fellowship.$store.map(store => store?.tracks ?? null);
+const $referendumMeta = fellowship.$store.map(store => store?.referendumMeta ?? null);
 const $votes = fellowship.$store.map(store => store?.voting ?? []);
 const $maxRank = fellowship.$store.map(store => store?.maxRank ?? 0);
 
