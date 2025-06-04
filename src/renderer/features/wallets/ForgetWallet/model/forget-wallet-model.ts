@@ -2,7 +2,6 @@ import { attach, createEffect, createEvent, sample, split } from 'effector';
 import { spread } from 'patronum';
 
 import { type MultisigAccount, type Wallet } from '@/shared/core';
-import { waitFor } from '@/shared/effector';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { useForgetMultisig } from '@/entities/multisig';
@@ -35,12 +34,6 @@ split({
     multisigWallet: forgetMultisigWallet,
     __: forgetSimpleWallet,
   },
-});
-
-sample({
-  clock: [forgetSimpleWallet, forgetMultisigWallet],
-  fn: (wallet) => wallet.accounts.map((a) => a.accountId),
-  target: balanceModel.events.balancesRemoved,
 });
 
 sample({
@@ -131,15 +124,17 @@ sample({
   target: walletsRemovedFx,
 });
 
-const readyForProxies = waitFor({
-  clock: proxiesModel.findAllProxies.pending,
-  source: walletsRemovedFx.done,
-  filter: (val): val is boolean => !val,
-  reset: walletsRemovedFx.done,
+sample({
+  clock: walletsRemovedFx,
+  source: accounts.$list,
+  fn: (accounts, walletIds) => {
+    return accounts.filter((a) => walletIds.includes(a.walletId)).map((a) => a.accountId);
+  },
+  target: balanceModel.events.balancesRemoved,
 });
 
 sample({
-  clock: readyForProxies,
+  clock: walletsRemovedFx.done,
   target: proxiesModel.findAllProxies,
 });
 
