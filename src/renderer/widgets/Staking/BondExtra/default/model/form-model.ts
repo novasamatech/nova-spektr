@@ -1,6 +1,5 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -13,10 +12,13 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -30,24 +32,22 @@ const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
+const multisigDepositChanged = createEvent<string>();
+
 const txWrapperChanged = createEvent<{
   proxyAccount: AnyAccount | null;
   signatories: AnyAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
-const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
+const $chain = $networkStore.map((network) => network?.chain ?? null);
 
-const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
-
-const $feeData = restore(feeDataChanged, { fee: ZERO_BALANCE, totalFee: ZERO_BALANCE, multisigDeposit: ZERO_BALANCE });
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -56,7 +56,7 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
             network: $networkStore,
@@ -65,13 +65,13 @@ const form: Form<FormParams> = createForm<FormParams>({
           fn: (
             initiator: AnyAccount | null,
             form: FormParams,
-            { feeData, isProxy, proxyBalance, network, initiatorBalance },
+            { fee, isProxy, proxyBalance, network, initiatorBalance },
           ) => {
             if (!initiator) {
               return { message: 'staking.bond.noInitiatorError' };
             }
 
-            if (isProxy && new BN(feeData.fee).gt(new BN(proxyBalance))) {
+            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
               return { message: 'staking.bond.noBondBalanceError' };
             }
 
@@ -92,15 +92,16 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             isMultisig: $isMultisig,
-            feeData: $feeData,
+            fee: $fee,
+            multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory: AnyAccount | null, _: FormParams, { isMultisig, feeData, signatoryBalance }) => {
+          fn: (signatory: AnyAccount | null, _: FormParams, { isMultisig, fee, multisigDeposit, signatoryBalance }) => {
             if (isMultisig && signatory && Object.keys(signatory).length === 0) {
               return { message: 'transfer.noSignatoryError' };
             }
 
-            if (isMultisig && new BN(feeData.multisigDeposit).add(new BN(feeData.fee)).gt(new BN(signatoryBalance))) {
+            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },
@@ -114,15 +115,11 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             network: $networkStore,
             bondBalanceRange: $bondBalanceRange,
-            feeData: $feeData,
+            fee: $fee,
             isMultisig: $isMultisig,
             initiatorBalance: $initiatorBalance,
           }),
-          fn: (
-            value: string,
-            form: FormParams,
-            { network, bondBalanceRange, feeData, isMultisig, initiatorBalance },
-          ) => {
+          fn: (value: string, form: FormParams, { network, bondBalanceRange, fee, isMultisig, initiatorBalance }) => {
             if (nullable(value)) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -139,9 +136,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             if (!isMultisig && form.initiator) {
-              const feeBN = new BN(feeData.fee);
-
-              if (amountBN.add(feeBN).gt(new BN(initiatorBalance))) {
+              if (amountBN.add(fee).gt(new BN(initiatorBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             }
@@ -151,6 +146,12 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
   },
   validateOn: ['submit'],
+});
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
 });
 
 // Computed
@@ -169,22 +170,10 @@ const $proxyWallet = combine(
   { skipVoid: false },
 );
 
-//todo use $bondForm.$isValid in the future
-const $isValid = combine(
-  {
-    initiatorErrors: form.fields.initiator.$errors,
-    signatoryErrors: form.fields.signatory.$errors,
-    amountErrors: form.fields.amount.$errors,
-  },
-  ({ initiatorErrors, signatoryErrors, amountErrors }) => {
-    return initiatorErrors.length === 0 && signatoryErrors.length === 0 && amountErrors.length === 0;
-  },
-);
-
 const $account = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
     balances: balanceModel.$balances,
   },
@@ -232,42 +221,22 @@ const $proxyBalance = combine(
   },
 );
 
-const $signatories = combine(
-  {
-    network: $networkStore,
-    availableSignatories: $availableSignatories,
-    balances: balanceModel.$balances,
-  },
-  ({ network, availableSignatories, balances }) => {
-    if (!network) return [];
-
-    const { chain, asset } = network;
-
-    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
-      const balancedSignatories = signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
-  },
-);
-
 const $signatoryBalance = combine(
   {
-    signatories: $signatories,
     signatory: form.fields.signatory.$value,
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  ({ signatories, signatory }) => {
-    if (isEmpty(signatories)) return ZERO_BALANCE;
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    const match = signatories[0].find(({ signer }: { signer: AnyAccount }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
+    return transferableAmount(balance);
   },
 );
 
@@ -277,15 +246,60 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
+);
+
+const $coreTx = combine(
+  {
+    network: $networkStore,
+    formParams: form.$values,
+  },
+  ({ network, formParams }) => {
+    if (!formParams || !formParams.initiator) return null;
+
+    return transactionBuilder.buildBondExtra({
+      chain: network!.chain,
+      asset: network!.asset,
+      accountId: formParams.initiator.accountId,
+      amount: formParams.amount,
+    });
+  },
+);
+
+const $txWrappers = createTxWrappers({
+  initiator: form.fields.initiator.$value,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: $chain,
+  signatory: form.fields.signatory.$value,
+});
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
+
+//todo use $bondForm.$isValid in the future
+const $isValid = combine(
+  {
+    initiatorErrors: form.fields.initiator.$errors,
+    signatoryErrors: form.fields.signatory.$errors,
+    amountErrors: form.fields.amount.$errors,
+  },
+  ({ initiatorErrors, signatoryErrors, amountErrors }) => {
+    return initiatorErrors.length === 0 && signatoryErrors.length === 0 && amountErrors.length === 0;
+  },
 );
 
 const $canSubmit = combine(
   {
     isFormValid: $isValid,
-    isFeeLoading: $isFeeLoading,
+    isFeeLoading: $pendingFee,
   },
   ({ isFormValid, isFeeLoading }) => {
     return isFormValid && !isFeeLoading;
@@ -316,7 +330,6 @@ sample({
   target: spread({
     isProxy: $isProxy,
     isMultisig: $isMultisig,
-    signatories: $availableSignatories,
     proxyAccount: $proxyAccount,
   }),
 });
@@ -363,10 +376,16 @@ export const formModel = {
   $bondBalanceRange,
   $proxyBalance,
 
-  $feeData,
-  $isFeeLoading,
+  $fee,
+  $multisigDeposit,
+  $pendingFee,
+  $tx,
+  $multisigTx,
+  $route,
 
   $api,
+  $coreTx,
+  $txWrappers,
   $networkStore,
   $isMultisig,
   $canSubmit,
@@ -376,8 +395,7 @@ export const formModel = {
     formCleared,
 
     txWrapperChanged,
-    feeDataChanged,
-    isFeeLoadingChanged,
+    multisigDepositChanged,
   },
   output: {
     formSubmitted,

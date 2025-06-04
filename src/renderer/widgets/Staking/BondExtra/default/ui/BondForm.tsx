@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
+import { formatBalance, stakeableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
@@ -46,7 +47,7 @@ const ProxyFeeAlert = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const feeData = useUnit(formModel.$feeData);
+  const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
@@ -55,7 +56,7 @@ const ProxyFeeAlert = () => {
     return null;
   }
 
-  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -79,6 +80,23 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const balances = useUnit(balanceModel.$balances);
+
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: stakeableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
 
   if (!isMultisig || !network) {
     return null;
@@ -87,7 +105,7 @@ const Signatories = () => {
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
+      signatories={signatoriesWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
@@ -137,8 +155,9 @@ const FeeSection = () => {
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
-  const feeData = useUnit(formModel.$feeData);
-  const isFeeLoading = useUnit(formModel.$isFeeLoading);
+  const fee = useUnit(formModel.$fee);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const isFeeLoading = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -168,8 +187,8 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit} />
           </div>
         </DetailRow>
       )}
@@ -182,8 +201,8 @@ const FeeSection = () => {
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+            <AssetBalance value={fee} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={fee.toString()} />
           </div>
         )}
       </DetailRow>
