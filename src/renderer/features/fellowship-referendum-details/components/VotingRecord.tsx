@@ -27,15 +27,15 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     store: fellowship.$store,
     keys: [],
     fn: store => ({
-      meta: Object.values(store?.referendumMeta ?? {}),
-      votes: store?.voting ?? [],
+      meta: store?.referendumMeta ? Object.values(store.referendumMeta) : null,
+      votes: store?.voting ?? null,
       maxRank: store?.maxRank ?? 0,
     }),
   });
 
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
-  const referendums = referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  const referendums = meta ? referendumMetaService.getReferendumsSinceLastProof(meta, member) : null;
 
   const activity = referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
 
@@ -58,7 +58,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {nonNullable(activity?.activity) ? (
+            {nullable(activity) ? (
+              <Skeleton height={5} />
+            ) : nonNullable(activity.activity) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
                   {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
@@ -68,7 +70,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                 </CaptionText>
               </Box>
             ) : (
-              <Skeleton height={5} />
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
             )}
           </Box>
         </Box>
@@ -83,7 +85,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {nonNullable(activity?.agreement) ? (
+            {nullable(activity) ? (
+              <Skeleton height={5} />
+            ) : nonNullable(activity.agreement) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
                   {nonNullable(agreementThreshold)
@@ -95,7 +99,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                 </CaptionText>
               </Box>
             ) : (
-              <Skeleton height={5} />
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
             )}
           </Box>
         </Box>
