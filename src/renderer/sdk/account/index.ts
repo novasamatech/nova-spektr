@@ -9,5 +9,6 @@ export const accountSDK = createSDK({
   },
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,
+    validateRouteBalances: accountService.validateRouteBalancesTransformer,
   },
 });

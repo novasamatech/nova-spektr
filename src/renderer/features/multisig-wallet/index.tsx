@@ -4,9 +4,10 @@ import { $features } from '@/shared/config/features';
 import { type Transaction, TransactionType, WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { multisigUtils } from '@/entities/multisig';
 import { networkUtils } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
@@ -17,7 +18,7 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
-import { multisigService } from './services/multisigTransaction';
+import { multisigService } from './services/multisig';
 import { type MultisigTransaction } from './types';
 
 export { walletActionsSlot };
@@ -50,6 +51,24 @@ accountSDK(multisigWalletFeature, {
         .concat(children);
     }
     return children;
+  },
+  validateRouteBalances({ account, api, route, balances, chainId, assetId, index }) {
+    if (accountUtils.isMultisigAccount(account)) {
+      const deposit = multisigService.getMultisigDeposit(account.threshold, api);
+      const payer = route.at(index + 1);
+
+      if (nullable(payer)) {
+        return { account, message: 'Multisig signatory payer not found' };
+      }
+      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, assetId.toString());
+      if (nullable(balance)) {
+        return { account, message: 'Balance not found' };
+      }
+
+      if (withdrawableAmountBN(balance).lt(deposit)) {
+        return { account, message: 'Insufficient funds for multisig deposit' };
+      }
+    }
   },
 });
 

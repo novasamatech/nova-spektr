@@ -1,5 +1,7 @@
-import { type Chain, CryptoType } from '@/shared/core';
-import { createAnyOf, createPipeline } from '@/shared/di';
+import { type ApiPromise } from '@polkadot/api';
+
+import { type Balance, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { nullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
 
@@ -11,10 +13,24 @@ import {
   type UniversalAccount,
 } from './types';
 
+type ValidationError = { account: AnyAccount; message: string };
+
 const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
+const validateRouteBalancesTransformer = createTransformer<
+  {
+    route: AnyAccount[];
+    account: AnyAccount;
+    index: number;
+    balances: Balance[];
+    chainId: ChainId;
+    assetId: number;
+    api: ApiPromise;
+  },
+  ValidationError
+>();
 
 /**
  * ATTENTION! This method is the source of stable id for different types of
@@ -217,11 +233,33 @@ function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAcc
   return stack;
 }
 
+type BalanceValidationParams = {
+  route: AnyAccount[];
+  balances: Balance[];
+  chainId: ChainId;
+  assetId: number;
+  api: ApiPromise;
+};
+
+function validateRouteBalances({ api, route, balances, chainId, assetId }: BalanceValidationParams) {
+  const errors: ValidationError[] = [];
+
+  for (const [index, account] of route.entries()) {
+    const error = validateRouteBalancesTransformer({ route, account, index, balances, chainId, assetId, api });
+    if (error) {
+      errors.push(error);
+    }
+  }
+
+  return errors;
+}
+
 export const accountService = {
   accountAvailabilityOnChainAnyOf,
   accountActionPermissionAnyOf,
   accountCanSignMultipleAnyOf,
   accountCollectChildrenPipeline,
+  validateRouteBalancesTransformer,
 
   uniqId,
 
@@ -243,4 +281,8 @@ export const accountService = {
   findInitiators,
   findRoute,
   traverseGraph,
+
+  // validations
+
+  validateRouteBalances,
 };
