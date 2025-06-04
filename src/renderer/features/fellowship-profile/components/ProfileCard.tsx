@@ -128,7 +128,6 @@ const Member = () => {
   const member = useUnit(profile.$member);
   const identity = useUnit(profile.$identity);
   const input = useUnit(fellowshipProfileFeature.input);
-  const pendingActivityInfo = useUnit(profile.$pendingActivityInfo);
 
   if (nullable(member)) return null;
 
@@ -177,8 +176,12 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
+          <SmallTitleText>
+            <Activity />
+          </SmallTitleText>
+          <SmallTitleText>
+            <Agreement />
+          </SmallTitleText>
           <SmallTitleText>
             <NextRankTimeout />
           </SmallTitleText>
@@ -192,14 +195,22 @@ const Activity = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
+  if (nullable(activityInfo)) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
 };
 
 const Agreement = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
+  if (nullable(activityInfo)) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
 };
 
 const NextRankTimeout = () => {
