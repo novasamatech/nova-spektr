@@ -99,7 +99,8 @@ sample({
 });
 
 export const governancePageAggregate = {
-  $all: $displayedCurrentReferendums,
+  $currentReferendums: readonly($currentReferendums),
+  $displayedReferendums: readonly($displayedCurrentReferendums),
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
   $isSearching: filterModel.$query.map((x) => x.length > 0),
