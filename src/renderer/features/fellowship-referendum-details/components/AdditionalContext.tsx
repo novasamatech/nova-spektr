@@ -1,8 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
-import Markdown from 'react-markdown';
 
-import { Icon } from '@/shared/ui';
+import { Icon, Markdown } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
 import { Account } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit/Box/Box';
