@@ -75,7 +75,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
             {isActivityLoaded ? (
               nonNullable(activity.activity) ? (
                 nonNullable(activityThreshold) ? (
-                  `${activity.activity}/${activityThreshold}%`
+                  `${Math.min(activity.activity, activityThreshold)}/${activityThreshold}%`
                 ) : (
                   DEFAULT_VALUE
                 )
@@ -103,7 +103,7 @@ export const MemberActivity = memo(({ accountId }: Props) => {
             {isActivityLoaded ? (
               nonNullable(activity.agreement) ? (
                 nonNullable(agreementThreshold) ? (
-                  `${activity.agreement}/${agreementThreshold}%`
+                  `${Math.min(activity.agreement, agreementThreshold)}/${agreementThreshold}%`
                 ) : (
                   DEFAULT_VALUE
                 )

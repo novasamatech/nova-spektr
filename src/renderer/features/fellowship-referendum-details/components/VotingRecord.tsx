@@ -61,7 +61,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
             {nonNullable(activity?.activity) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
-                  {nonNullable(activityThreshold) ? activity?.activity.toString() : '100'}
+                  {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
                 </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {activityThreshold || '100'}%
@@ -86,7 +86,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
             {nonNullable(activity?.agreement) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
-                  {nonNullable(agreementThreshold) ? activity?.agreement.toString() : '100'}
+                  {nonNullable(agreementThreshold)
+                    ? Math.min(activity?.agreement, agreementThreshold).toString()
+                    : '100'}
                 </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {agreementThreshold || '100'}%
