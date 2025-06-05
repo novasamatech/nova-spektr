@@ -47,6 +47,7 @@ type EvidenceContentRequestParams = {
   api: ApiPromise;
   chainId: ChainId;
   accountId: AccountId;
+  blockHash?: string;
 };
 
 export const evidenceContentResource = createRemoteResource<EvidenceContentRequestParams, EvidenceContent | null>({
@@ -55,8 +56,11 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     key: ({ palletType, chainId, accountId }) => `${palletType}:${chainId}:${accountId}`,
     ttl: 30 * 1000,
   },
-  async fn({ palletType, api, chainId, accountId }) {
-    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, [accountId]);
+  async fn({ palletType, api, chainId, accountId, blockHash }) {
+    const apiInstance = blockHash ? await api.at(blockHash) : api;
+    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, apiInstance as ApiPromise, [
+      accountId,
+    ]);
     const evidence = evidences.at(0);
 
     if (evidence?.evidence) {

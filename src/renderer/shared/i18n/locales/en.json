@@ -378,12 +378,15 @@
       }
     },
     "evidenceModal": {
+      "additionalContext": "Additional context provided",
+      "by": "By:",
       "currentRank": "Current rank:",
       "dateOfInitialInduction": "Date of initial induction:",
       "dateOfLastReport": "Date of last report:",
       "matrixUsername": "Matrix username:",
       "member": "Member stats",
       "memberDetails": "Member details",
+      "noAdditionalContext": "No additional context provided",
       "polkadotAddress": "Polkadot address:",
       "promotedAt": "(promotion executed on <time/>)",
       "titlePromotion": "Should {name} be promoted to Rank {rank}?",
@@ -591,6 +594,7 @@
         "promotionVoting": {
           "mergedPullRequests": "Merged",
           "noEvidence": "No evidence provided",
+          "noEvidenceDescription": "This member didn’t submit evidence. Consider this when evaluating the request.",
           "pullRequests": "PRs",
           "title": "Review promotion evidence"
         },
@@ -661,7 +665,6 @@
       "good": "Good",
       "nay": "Nay",
       "notGood": "Not Good",
-      "revote": "Revote ",
       "summary": "What do others think?",
       "threshold": "Threshold",
       "title": "Vote on",

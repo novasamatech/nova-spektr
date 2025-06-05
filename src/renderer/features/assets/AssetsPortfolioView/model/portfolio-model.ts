@@ -98,7 +98,7 @@ const $activeTokens = combine(
         if (nullable(chain)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
 
-        return accountService.filterAccountOnChain(filteredAccounts, chain).length > 0;
+        return accountService.filterAccountsOnChain(filteredAccounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
