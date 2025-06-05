@@ -46,10 +46,10 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   type ConfirmMap = Record<ID, ConfirmItem<Input>>;
 
   const init = createEvent<Input[]>();
+  const startSigning = createEvent();
   const addConfirms = createEvent<Input[]>();
   const replaceWithConfirm = createEvent<Input>();
   const resetConfirm = createEvent();
-  const startSigning = createEvent();
 
   const $store = restore<Input[]>(init, []);
 
@@ -124,9 +124,9 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
     $isMultisigExists,
 
     init,
-    startSigning,
     addConfirms,
     replaceWithConfirm,
     resetConfirm,
+    startSigning,
   };
 };

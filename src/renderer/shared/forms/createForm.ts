@@ -41,7 +41,6 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
   const shouldValidateOnChange = validateOn.includes('change');
   const fields: Record<string, FormField<any>> = {};
   const values: Record<string, Store<any>> = {};
-  const validators: Record<string, ReturnType<Required<FieldConfig<any, any>>['validator']>> = {};
 
   const reset = createEvent();
   const setForm = createEvent<Partial<Fields>>();
@@ -68,20 +67,30 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
     values[key] = $value;
   }
 
+  const errorStores = Object.values(fields).map((field) => field.$errors);
+  const $isValid = combine(errorStores, (allErrors) => {
+    return allErrors.every((errors) => errors.length === 0);
+  });
+
   const $values = combine(values);
 
-  Promise.resolve().then(() => {
+  const validatorsPromise = Promise.resolve().then(() => {
+    const validators: Record<string, ReturnType<Required<FieldConfig<any, any>>['validator']>> = {};
+
     for (const [key, field] of entries(config.fields)) {
       if (!field) continue;
       if (field.validator) {
         validators[key] = field.validator();
       }
     }
+
+    return validators;
   });
 
   const validateFx: F['validate'] = attach({
     source: $values,
     async effect(values) {
+      const validators = await validatorsPromise;
       const validatorsList = Object.entries(validators);
 
       const requests = validatorsList.map(([key, validator]) => {
@@ -202,6 +211,7 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
 
   return {
     $values: $values as F['$values'],
+    $isValid,
     fields: fields as F['fields'],
     setForm,
     submit: submitFx as unknown as F['submit'],

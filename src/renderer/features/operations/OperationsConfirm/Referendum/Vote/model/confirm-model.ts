@@ -24,11 +24,11 @@ export const confirmModel = {
   $isMultisigExists: confirmStore.$isMultisigExists,
 
   events: {
-    startSigning: confirmStore.startSigning,
+    init: confirmStore.init,
     addConfirms: confirmStore.addConfirms,
     replaceWithConfirm: confirmStore.replaceWithConfirm,
-    fillConfirm: confirmStore.init,
     resetConfirm: confirmStore.resetConfirm,
+    startSigning: confirmStore.startSigning,
 
     submitStarted: submitModel.events.formInitiated,
     submitFinished: submitModel.output.formSubmitted,

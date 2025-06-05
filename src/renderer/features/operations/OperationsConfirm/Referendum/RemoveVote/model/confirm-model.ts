@@ -1,17 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent } from 'effector';
 
 import { type AccountVote, type Asset, type ReferendumId, type TrackId } from '@/shared/core';
+import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import {
-  type ConfirmInfo,
-  createTransactionConfirmStore,
-} from '@/features/operations/OperationsConfirm/lib/createTransactionConfirmStore';
 
-export type RemoveVoteConfirm = ConfirmInfo & {
+export type RemoveVoteConfirm = TxConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
   votes: {
@@ -20,8 +16,6 @@ export type RemoveVoteConfirm = ConfirmInfo & {
     vote?: AccountVote;
   }[];
 };
-
-const sign = createEvent();
 
 const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
   $wallets: walletModel.$wallets,
@@ -34,10 +28,10 @@ export const confirmModel = {
   $isMultisigExists: confirmStore.$isMultisigExists,
 
   events: {
-    sign,
+    startSigning: confirmStore.startSigning,
     addConfirms: confirmStore.addConfirms,
     replaceWithConfirm: confirmStore.replaceWithConfirm,
-    fillConfirm: confirmStore.fillConfirm,
+    init: confirmStore.init,
     resetConfirm: confirmStore.resetConfirm,
 
     submitStarted: submitModel.events.formInitiated,

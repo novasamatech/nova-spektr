@@ -13,6 +13,7 @@ export type Form<Fields> = {
     [K in keyof Fields]: FormField<Fields[K]>;
   };
   $values: Store<Fields>;
+  $isValid: Store<boolean>;
   reset: EventCallable<void>;
   setForm: EventCallable<Partial<Fields>>;
   submit: Effect<void, Fields, Record<string, ValidationError[]>>;

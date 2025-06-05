@@ -49,8 +49,10 @@ function getOperationStatus(referendum: OngoingReferendum) {
   return 'deciding';
 }
 
-function getProposer(referendum: OngoingReferendum) {
-  if (referendum.proposal?.type === 'Evidence') {
+function getProposer(referendum: Referendum) {
+  if (isKilled(referendum)) return null;
+
+  if (isOngoing(referendum) && referendum.proposal?.type === 'Evidence') {
     return referendum.proposal.accountId;
   }
 
