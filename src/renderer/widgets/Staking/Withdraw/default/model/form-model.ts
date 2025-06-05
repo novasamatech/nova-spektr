@@ -42,8 +42,10 @@ export type FormParams = {
 
 type FormSubmitEvent = {
   transaction: Transaction;
-  formData: FormParams & {
-    signatory: AnyAccount | null;
+  formData: {
+    amount: string;
+    initiator: AnyAccount;
+    signatory: AnyAccount;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     totalFee: string;
@@ -84,6 +86,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (_s, _f, { fee, isProxy, proxyBalance }) => {
             if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
+              console.log('transfer.notEnoughBalanceForFeeError');
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
           },
@@ -102,10 +105,12 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
+              console.log('proxy.addProxy.notEnoughMultisigTokens');
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
 
             if (signatory && Object.keys(signatory).length <= 0) {
+              console.log('proxy.addProxy.noSignatoryError');
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
           },
@@ -123,10 +128,12 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (value, form, { fee, isMultisig, availableBalance }) => {
             if (!value) {
+              console.log('transfer.requiredAmountError');
               return { message: 'transfer.requiredAmountError' };
             }
 
             if (value === ZERO_BALANCE) {
+              console.log('transfer.notZeroAmountError');
               return { message: 'transfer.notZeroAmountError' };
             }
 
@@ -134,6 +141,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               const isEnough = new BN(fee).lte(new BN(availableBalance.balance));
 
               if (!isEnough) {
+                console.log('transfer.notEnoughBalanceForFeeError');
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             }
@@ -273,6 +281,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length > 0,
+  fn: (signatories) => signatories.at(0)!,
+  target: form.fields.signatory.change,
+});
+
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
@@ -350,6 +365,7 @@ const $canSubmit = combine(
     isEraLoading: subscribeEraFx.pending,
   },
   ({ isFeeLoading, isStakingLoading, isEraLoading, isFormValid }) => {
+    console.log({ isEraLoading, isStakingLoading, isFeeLoading, isFormValid });
     return !isFeeLoading && !isStakingLoading && !isEraLoading && isFormValid;
   },
 );
@@ -484,6 +500,8 @@ sample({
         ...rest,
         ...formData,
         ...(isProxy && { proxiedAccount: realAccount as ProxiedAccount }),
+        initiator: formData.initiator!,
+        signatory: formData.signatory!,
       },
     };
   },
