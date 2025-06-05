@@ -142,7 +142,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               isDefault={Boolean(secondaryActionButton)}
               type={confirm.wallets.signatory?.type}
               onClick={() => {
-                confirmModel.events.sign();
+                confirmModel.events.startSigning();
               }}
             />
           )}

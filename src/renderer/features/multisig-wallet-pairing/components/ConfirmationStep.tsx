@@ -8,7 +8,7 @@ import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
@@ -85,7 +85,7 @@ export const ConfirmationStep = () => {
                   threshold={threshold.value}
                   onDepositChange={flowModel.events.multisigDepositChanged}
                 />
-                <FeeWithLabel
+                <FeeWithLabelWithDataLoading
                   api={api}
                   asset={chain.assets[0]}
                   transaction={fakeTx}

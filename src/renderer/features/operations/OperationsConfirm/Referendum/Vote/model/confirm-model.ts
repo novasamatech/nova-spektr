@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent } from 'effector';
 
 import { type AccountVote, type Asset } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
@@ -14,8 +13,6 @@ export type VoteConfirm = TxConfirmInfo & {
   existingVote: AccountVote | null;
 };
 
-const sign = createEvent();
-
 const confirmStore = createTransactionConfirmStore<VoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
@@ -27,11 +24,11 @@ export const confirmModel = {
   $isMultisigExists: confirmStore.$isMultisigExists,
 
   events: {
-    sign,
+    init: confirmStore.init,
     addConfirms: confirmStore.addConfirms,
     replaceWithConfirm: confirmStore.replaceWithConfirm,
-    fillConfirm: confirmStore.fillConfirm,
     resetConfirm: confirmStore.resetConfirm,
+    startSigning: confirmStore.startSigning,
 
     submitStarted: submitModel.events.formInitiated,
     submitFinished: submitModel.output.formSubmitted,

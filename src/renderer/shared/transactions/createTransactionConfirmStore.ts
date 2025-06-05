@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, combine, createEvent, createStore, sample } from 'effector';
+import { type Store, combine, createEvent, restore, sample } from 'effector';
 
 import {
   type Chain,
@@ -45,12 +45,13 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 }: Params) => {
   type ConfirmMap = Record<ID, ConfirmItem<Input>>;
 
-  const fillConfirm = createEvent<Input[]>();
+  const init = createEvent<Input[]>();
+  const startSigning = createEvent();
   const addConfirms = createEvent<Input[]>();
   const replaceWithConfirm = createEvent<Input>();
   const resetConfirm = createEvent();
 
-  const $store = createStore<Input[]>([]);
+  const $store = restore<Input[]>(init, []);
 
   const $confirmMap = combine($store, $wallets, (store, wallets) => {
     if (!wallets.length) return {};
@@ -74,11 +75,6 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   });
 
   const $confirms = $confirmMap.map((confirmMap) => Object.values(confirmMap));
-
-  sample({
-    clock: fillConfirm,
-    target: $store,
-  });
 
   sample({
     clock: addConfirms,
@@ -130,9 +126,10 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
     $confirms,
     $isMultisigExists,
 
-    fillConfirm,
+    init,
     addConfirms,
     replaceWithConfirm,
     resetConfirm,
+    startSigning,
   };
 };

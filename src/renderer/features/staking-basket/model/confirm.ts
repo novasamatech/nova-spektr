@@ -9,6 +9,7 @@ import {
   type Connection,
   type Transaction,
   TransactionType,
+  WrapperKind,
 } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
@@ -25,6 +26,7 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
+import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
 import {
   type BondExtraInput,
   type BondNominateInput,
@@ -32,7 +34,6 @@ import {
   type PayeeInput,
   type RestakeInput,
   type UnstakeInput,
-  type WithdrawInput,
 } from '../types/confirm';
 
 type DataParams = {
@@ -203,14 +204,19 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
+    signatory: account!,
+    initiator: account!,
     amount,
-    description: '',
-
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+    ),
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } as WithdrawInput;
+  } satisfies WithdrawConfirm;
 });
 
 sample({
@@ -239,7 +245,7 @@ sample({
 sample({
   clock: prepareWithdrawDataFx.doneData,
   fn: (data) => [data],
-  target: withdrawConfirmModel.events.formInitiated,
+  target: withdrawConfirmModel.events.init,
 });
 
 sample({
@@ -266,6 +272,7 @@ sample({
 });
 
 sample({
+  // @ts-expect-error just to merge updates
   clock: prepareBondNominateDataFx.doneData,
   fn: (data) => [data],
   target: bondNominateConfirmModel.events.formInitiated,

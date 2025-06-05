@@ -44,7 +44,7 @@ export const confirmModel = {
   $eraLength,
   $apis: networkModel.$apis,
   events: {
-    formInitiated: confirmStore.fillConfirm,
+    formInitiated: confirmStore.init,
   },
   output: {
     formSubmitted,
