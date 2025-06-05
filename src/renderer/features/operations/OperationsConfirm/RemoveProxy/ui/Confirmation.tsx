@@ -7,7 +7,7 @@ import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -92,7 +92,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           />
         )}
 
-        <FeeWithLabel
+        <FeeWithLabelWithDataLoading
           api={api}
           asset={confirmStore.chain!.assets[0]}
           transaction={confirmStore.transaction}

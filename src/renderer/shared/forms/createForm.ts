@@ -67,6 +67,11 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
     values[key] = $value;
   }
 
+  const errorStores = Object.values(fields).map((field) => field.$errors);
+  const $isValid = combine(errorStores, (allErrors) => {
+    return allErrors.every((errors) => errors.length === 0);
+  });
+
   const $values = combine(values);
 
   const validatorsPromise = Promise.resolve().then(() => {
@@ -206,6 +211,7 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
 
   return {
     $values: $values as F['$values'],
+    $isValid,
     fields: fields as F['fields'],
     setForm,
     submit: submitFx as unknown as F['submit'],

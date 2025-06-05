@@ -76,7 +76,11 @@ export const RemoveVotesShardsModal = ({ votes, chain, asset, api, onClose }: Pr
                     {t('operation.addToBasket')}
                   </Button>
                 )}
-                <SignButton isDefault type={initiatorWallet?.type} onClick={removeVoteConfirmModel.events.sign} />
+                <SignButton
+                  isDefault
+                  type={initiatorWallet?.type}
+                  onClick={removeVoteConfirmModel.events.startSigning}
+                />
               </div>
             }
             count={votesList.length}

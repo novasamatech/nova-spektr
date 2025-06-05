@@ -12,7 +12,12 @@ import { Box, Field, Input, Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
-import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import {
+  DeliveryFeeWithLabel,
+  FeeWithLabelWithDataLoading,
+  MultisigDepositWithLabel,
+  XcmFeeWithLabel,
+} from '@/entities/transaction';
 import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
@@ -316,7 +321,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithDataLoading
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction?.wrappedTx || fakeTx}

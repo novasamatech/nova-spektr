@@ -169,7 +169,7 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.sign,
+  clock: removeVoteConfirmModel.events.startSigning,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -241,7 +241,7 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.sign,
+  clock: removeVoteConfirmModel.events.startSigning,
   source: { confirms: removeVoteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
     if (!confirms) {

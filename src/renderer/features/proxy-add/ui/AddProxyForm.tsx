@@ -12,7 +12,12 @@ import { accountService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
+import {
+  FeeWithLabelWithDataLoading,
+  MultisigDepositWithLabel,
+  ProxyDeposit,
+  ProxyDepositLabel,
+} from '@/entities/transaction';
 import { AccountAddress, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
@@ -294,7 +299,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithDataLoading
         api={api}
         asset={chain.value.assets[0]}
         transaction={fakeTx}

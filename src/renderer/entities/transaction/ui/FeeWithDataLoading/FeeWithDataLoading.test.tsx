@@ -5,7 +5,7 @@ import { vi } from 'vitest';
 import { type Asset, type Transaction } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { Fee } from './Fee';
+import { FeeWithDataLoading } from './FeeWithDataLoading';
 
 vi.mock('@/shared/i18n', () => ({
   useI18n: jest.fn().mockReturnValue({
@@ -34,7 +34,7 @@ describe('entities/transaction/ui/Fee', () => {
     const api = { isReady: Promise.resolve().then(() => api) } as ApiPromise;
 
     await act(async () => {
-      render(<Fee api={api} asset={asset} transaction={tx} />);
+      render(<FeeWithDataLoading api={api} asset={asset} transaction={tx} />);
     });
 
     const value = screen.getByText('12');
