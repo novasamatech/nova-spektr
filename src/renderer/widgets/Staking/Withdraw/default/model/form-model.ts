@@ -200,36 +200,6 @@ const $txWrappers = createTxWrappers({
   signatory: form.fields.signatory.$value,
 });
 
-// const $txWrappers = combine(
-//   {
-//     wallet: walletSelect.$selectedWallet,
-//     wallets: walletModel.$wallets,
-//     initiator: form.fields.initiator.$value,
-//     network: $networkStore,
-//     signatory: form.fields.signatory.$value,
-//   },
-//   ({ wallet, initiator, wallets, network, signatory }) => {
-//     if (!wallet || !network || !initiator || !signatory) return [];
-
-//     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-//       walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-//       accountFn: (a, w) => {
-//         const isBase = accountUtils.isVaultBaseAccount(a);
-//         const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-//         return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, network.chain);
-//       },
-//     });
-
-//     return transactionService.getTxWrappers({
-//       wallet,
-//       wallets: filteredWallets || [],
-//       account: initiator,
-//       signatories: [signatory],
-//     });
-//   },
-// );
-
 const $realAccount = combine(
   {
     txWrappers: $txWrappers,

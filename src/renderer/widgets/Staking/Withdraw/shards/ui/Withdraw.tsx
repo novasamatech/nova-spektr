@@ -73,6 +73,9 @@ export const Withdraw = () => {
           onGoBack={() => withdrawModel.events.stepChanged(Step.INIT)}
         />
       )}
+
+      {/* todo: add slider for shards in some future (probably not) */}
+
       {withdrawUtils.isSignStep(step) && (
         <OperationSign onGoBack={() => withdrawModel.events.stepChanged(Step.CONFIRM)} />
       )}

@@ -85,7 +85,7 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.sign,
+  clock: voteConfirmModel.events.startSigning,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -217,7 +217,7 @@ sample({
 // Data bindings
 
 sample({
-  clock: voteConfirmModel.events.sign,
+  clock: voteConfirmModel.events.startSigning,
   source: {
     confirms: voteConfirmModel.$confirmMap,
   },

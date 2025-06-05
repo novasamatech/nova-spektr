@@ -9,7 +9,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { withdrawConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type WithdrawConfirm, withdrawConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type NetworkStore, Step, type WithdrawData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -81,27 +81,32 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs },
+  source: { networkStore: $networkStore, coreTxs: $coreTxs, multisigTxs: $multisigTxs },
   filter: ({ networkStore }) => Boolean(networkStore),
-  fn: ({ networkStore, coreTxs }, { formData }) => ({
-    event: [
-      {
+  fn: ({ networkStore, coreTxs, multisigTxs }, { formData }) => ({
+    event: formData.shards.map((shard, index) => {
+      return {
         ...formData,
+        signatory: shard,
+        initiator: shard,
+        route: [shard],
+        tx: coreTxs![index],
+        multisigTx: multisigTxs![index],
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTxs![0],
-      },
-    ],
+        coreTx: coreTxs![index],
+      } satisfies WithdrawConfirm;
+    }),
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.events.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.events.startSigning,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,

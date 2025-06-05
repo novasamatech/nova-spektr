@@ -59,28 +59,40 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTx: formModel.$coreTx },
-  filter: ({ networkStore }, { formData }) => nonNullable(networkStore) && nonNullable(formData.initiator),
-  fn: ({ networkStore, coreTx }, { formData }) => ({
+  source: {
+    networkStore: $networkStore,
+    coreTx: formModel.$coreTx,
+    route: formModel.$route,
+    tx: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
+  },
+  filter: ({ networkStore }, { formData }) =>
+    nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory),
+  fn: ({ networkStore, coreTx, route, tx, multisigTx }, { formData }) => ({
     event: [
       {
         ...formData,
-        shards: [formData.initiator!],
+        initiator: formData.initiator!,
+        signatory: formData.signatory!,
+        // shards: [formData.initiator!],
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTx!,
+        route: route,
+        tx: tx!,
+        multisigTx: multisigTx,
       },
     ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.events.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.events.startSigning,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
