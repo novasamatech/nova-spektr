@@ -44,17 +44,13 @@ export const RemoveVotesModal = ({ single, votes, chain, asset, api, onClose }: 
 
   const votesList = useUnit(removeVotesModel.$votesList);
 
-  return (
-    <div>
-      {votesList.length > 1 && !single ? (
-        <Suspense fallback={null}>
-          <RemoveVotesShardsModal votes={votes} chain={chain} asset={asset} api={api} onClose={onClose} />
-        </Suspense>
-      ) : (
-        <Suspense fallback={null}>
-          <RemoveVotesDefaultModal single={single} chain={chain} asset={asset} onClose={onClose} />
-        </Suspense>
-      )}
-    </div>
+  return votesList.length > 1 && !single ? (
+    <Suspense fallback={null}>
+      <RemoveVotesShardsModal votes={votes} chain={chain} asset={asset} api={api} onClose={onClose} />
+    </Suspense>
+  ) : (
+    <Suspense fallback={null}>
+      <RemoveVotesDefaultModal single={single} chain={chain} asset={asset} onClose={onClose} />
+    </Suspense>
   );
 };
