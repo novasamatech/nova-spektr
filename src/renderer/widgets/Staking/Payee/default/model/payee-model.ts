@@ -1,54 +1,39 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import {
-  type Account,
-  type MultisigTxWrapper,
-  type ProxyTxWrapper,
-  type Transaction,
-  type TxWrapper,
-  WrapperKind,
-} from '@/shared/core';
+import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { payeeUtils } from '../lib/payee-utils';
-import { type FeeData, type PayeeData, Step, type WalletData } from '../lib/types';
+import { type FeeData, type FormInput, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<WalletData>();
+const flowStarted = createEvent<FormInput>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
-const $payeeData = createStore<PayeeData | null>(null).reset(flowFinished);
+const $walletDataShards = restore<FormInput | null>(flowStarted, null).reset(flowFinished);
+const $walletData = $walletDataShards.map((data) => ({
+  wallet: data!.wallet,
+  initiator: data!.shards[0],
+  chain: data!.chain,
+}));
+
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
-const $pureTxs = createStore<Transaction[]>([]).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
-
-type FeeParams = {
-  api: ApiPromise;
-  transaction: Transaction;
-};
-const getTransactionFeeFx = createEffect(({ api, transaction }: FeeParams): Promise<string> => {
-  return transactionService.getTransactionFee(transaction, api);
-});
 
 type DepositParams = {
   api: ApiPromise;
@@ -64,109 +49,12 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
-const $transactions = combine(
-  {
-    api: $api,
-    pureTxs: $pureTxs,
-    txWrappers: $txWrappers,
-  },
-  ({ api, pureTxs, txWrappers }) => {
-    if (!api) return undefined;
-
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
-  },
-  { skipVoid: false },
-);
-
-// Transaction & Form
-
 sample({
-  clock: [flowStarted, formModel.output.formChanged],
-  source: {
-    walletData: $walletData,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => Boolean(walletData),
-  fn: ({ walletData, wallets }, data) => {
-    const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
-
-    return payeeUtils.getTxWrappers({
-      chain: walletData!.chain,
-      wallet: walletData!.wallet,
-      wallets,
-      account: walletData!.shards[0],
-      signatories,
-    });
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<Account[][]>((acc, wrapper) => {
-      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
-
-      return acc;
-    }, []);
-
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      signatories,
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
-    };
-  },
-  target: formModel.events.txWrapperChanged,
-});
-
-sample({
-  clock: formModel.output.formChanged,
-  target: $payeeData,
-});
-
-sample({
-  clock: $payeeData.updates,
-  source: $walletData,
-  filter: (walletData, payeeData) => Boolean(walletData) && Boolean(payeeData),
-  fn: (walletData, payeeData) => {
-    return payeeData!.shards.map((shard) => {
-      return transactionBuilder.buildSetPayee({
-        chain: walletData!.chain,
-        accountId: shard.accountId,
-        destination: payeeData!.destination,
-      });
-    });
-  },
-  target: $pureTxs,
-});
-
-sample({
-  clock: $transactions,
-  source: $api,
-  filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
-  fn: (api, transactions) => ({
-    api: api!,
-    transaction: transactions![0].wrappedTx,
-  }),
-  target: getTransactionFeeFx,
-});
-
-sample({
-  clock: $txWrappers,
+  clock: formModel.$txWrappers,
   source: $api,
   filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
@@ -181,34 +69,10 @@ sample({
 });
 
 sample({
-  clock: getTransactionFeeFx.pending,
-  target: formModel.events.isFeeLoadingChanged,
-});
-
-sample({
-  clock: getTransactionFeeFx.doneData,
-  source: {
-    transactions: $transactions,
-    feeData: $feeData,
-  },
-  fn: ({ transactions, feeData }, fee) => {
-    const totalFee = new BN(fee).muln(transactions!.length).toString();
-
-    return { ...feeData, fee, totalFee };
-  },
-  target: $feeData,
-});
-
-sample({
   clock: getMultisigDepositFx.doneData,
   source: $feeData,
   fn: (feeData, multisigDeposit) => ({ ...feeData, multisigDeposit }),
   target: $feeData,
-});
-
-sample({
-  clock: $feeData.updates,
-  target: formModel.events.feeDataChanged,
 });
 
 // Steps
@@ -229,14 +93,14 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    payeeData: $payeeData,
+    payeeData: formModel.form.$values,
     feeData: $feeData,
     walletData: $walletData,
-    txWrappers: $txWrappers,
-    coreTxs: $pureTxs,
+    txWrappers: formModel.$txWrappers,
+    coreTx: formModel.$coreTx,
   },
   filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, txWrappers, coreTxs }) => {
+  fn: ({ payeeData, feeData, walletData, txWrappers, coreTx }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -246,9 +110,12 @@ sample({
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...payeeData!,
           ...feeData,
+
+          signatory: payeeData!.signatory!,
+          shards: [payeeData!.initiator!],
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTx: coreTxs[0],
+          ...(wrapper && { initiator: wrapper.proxyAccount }),
+          coreTx,
         },
       ],
       step: Step.CONFIRM,
@@ -263,25 +130,27 @@ sample({
 sample({
   clock: confirmModel.output.formSubmitted,
   source: {
-    payeeData: $payeeData,
+    payeeData: formModel.form.$values,
     walletData: $walletData,
-    transactions: $transactions,
-    txWrappers: $txWrappers,
+    transaction: formModel.$tx,
+    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ payeeData, walletData, transactions }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transaction }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transaction);
   },
-  fn: ({ payeeData, walletData, transactions, txWrappers }) => {
+  fn: ({ payeeData, walletData, transaction, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
-        signingPayloads: transactions!.map((tx, index) => ({
-          chain: walletData!.chain,
-          account: wrapper ? wrapper.proxyAccount : payeeData!.shards[index],
-          signatory: payeeData!.signatory,
-          transaction: tx.wrappedTx,
-        })),
+        signingPayloads: [
+          {
+            chain: walletData!.chain,
+            account: wrapper ? wrapper.proxyAccount : payeeData!.initiator!,
+            signatory: payeeData!.signatory!,
+            transaction: transaction!,
+          },
+        ],
       },
       step: Step.SIGN,
     };
@@ -295,22 +164,24 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    payeeData: $payeeData,
+    payeeData: formModel.form.$values,
     walletData: $walletData,
-    transactions: $transactions,
+    transaction: formModel.$tx,
+    coreTx: formModel.$coreTx,
+    multisigTx: formModel.$multisigTx,
   },
-  filter: ({ payeeData, walletData, transactions }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transactions);
+  filter: ({ payeeData, walletData, transaction }) => {
+    return Boolean(payeeData) && Boolean(walletData) && Boolean(transaction);
   },
   fn: (payeeFlowData, signParams) => ({
     event: {
       ...signParams,
       chain: payeeFlowData.walletData!.chain,
-      account: payeeFlowData.payeeData!.shards[0],
-      signatory: payeeFlowData.payeeData!.signatory,
-      coreTxs: payeeFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: payeeFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: payeeFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      account: payeeFlowData.payeeData!.initiator!,
+      signatory: payeeFlowData.payeeData!.signatory!,
+      coreTxs: [payeeFlowData.coreTx!],
+      wrappedTxs: [payeeFlowData.transaction!],
+      multisigTxs: [payeeFlowData.multisigTx!],
     },
     step: Step.SUBMIT,
   }),
@@ -345,22 +216,24 @@ sample({
   clock: txSaved,
   source: {
     store: $walletData,
-    coreTxs: $pureTxs,
-    txWrappers: $txWrappers,
+    coreTx: formModel.$coreTx,
+    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  filter: ({ store, coreTx, txWrappers }) => {
+    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) => {
-    const account = store!.shards.at(0);
-    if (!account) throw new Error('Account not found');
+  fn: ({ store, coreTx, txWrappers }) => {
+    const account = store!.initiator;
+    if (!account) throw new Error('Initiator account not found');
 
-    return coreTxs!.map((coreTx) => ({
-      initiatorAccountId: account.accountId,
-      coreTx,
-      txWrappers,
-      createdAt: Date.now(),
-    }));
+    return [
+      {
+        initiatorAccountId: account.accountId,
+        coreTx: coreTx!,
+        txWrappers,
+        createdAt: Date.now(),
+      },
+    ];
   },
   target: basketOperations.addTransactions,
 });

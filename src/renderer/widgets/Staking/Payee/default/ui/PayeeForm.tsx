@@ -1,27 +1,18 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import {
-  Button,
-  Combobox,
-  DetailRow,
-  FootnoteText,
-  Icon,
-  Identicon,
-  InputHint,
-  MultiSelect,
-  RadioGroup,
-} from '@/shared/ui';
+import { formatBalance, stakeableAmount, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup, Select } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
@@ -56,19 +47,19 @@ export const PayeeForm = ({ onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
-  const feeData = useUnit(formModel.$feeData);
+  const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError) {
+  if (!network || !proxyWallet || !initiator.hasError) {
     return null;
   }
 
-  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -77,7 +68,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.reset}
+      onClose={initiator.reset}
     />
   );
 };
@@ -86,7 +77,7 @@ const AccountsSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const accounts = useUnit(formModel.$accounts);
@@ -121,17 +112,16 @@ const AccountsSelector = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <MultiSelect
+      <Select
         label={t('staking.bond.accountLabel')}
         placeholder={t('staking.bond.accountPlaceholder')}
-        multiPlaceholder={t('staking.bond.manyAccountsPlaceholder')}
-        invalid={shards.hasError}
-        selectedIds={shards.value.map((acc) => acc.id.toString())}
+        invalid={initiator.hasError}
+        selectedId={initiator.value?.id.toString() || ''}
         options={options}
-        onChange={(values) => shards.onChange(values.map(({ value }) => value))}
+        onChange={(value) => initiator.onChange(value?.value || null)}
       />
-      <InputHint variant="error" active={shards.hasError}>
-        {shards.errorMessage}
+      <InputHint variant="error" active={initiator.hasError}>
+        {initiator.errorMessage}
       </InputHint>
     </div>
   );
@@ -146,6 +136,24 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
 
+  const balances = useUnit(balanceModel.$balances);
+
+  const signatoryWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: stakeableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
+
   if (!isMultisig || !network) {
     return null;
   }
@@ -153,7 +161,7 @@ const Signatories = () => {
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
+      signatories={signatoryWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
@@ -263,17 +271,17 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
-  const feeData = useUnit(formModel.$feeData);
-  const isFeeLoading = useUnit(formModel.$isFeeLoading);
+  const fee = useUnit(formModel.$fee);
+  const isFeeLoading = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
 
-  if (!network || shards.value.length === 0) {
+  if (!network || !initiator.value) {
     return null;
   }
 
@@ -298,45 +306,13 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit} />
           </div>
         </DetailRow>
       )}
 
-      <DetailRow
-        label={
-          <FootnoteText className="text-text-tertiary">
-            {t('staking.networkFee', { count: shards.value.length || 1 })}
-          </FootnoteText>
-        }
-        className="text-text-primary"
-      >
-        {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-        ) : (
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
-          </div>
-        )}
-      </DetailRow>
-
-      {shards.value.length > 1 && (
-        <DetailRow
-          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          className="text-text-primary"
-        >
-          {isFeeLoading ? (
-            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-          ) : (
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
-              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
-            </div>
-          )}
-        </DetailRow>
-      )}
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
     </div>
   );
 };

@@ -1,4 +1,5 @@
-import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
@@ -43,10 +44,14 @@ type TxWrapperParams = {
   chain: Chain;
   wallet: Wallet;
   wallets: Wallet[];
-  account: Account;
-  signatories: Account[];
+  account: AnyAccount | null;
+  signatories: AnyAccount[];
 };
 function getTxWrappers({ chain, wallet, wallets, account, signatories }: TxWrapperParams) {
+  if (!account) {
+    return [];
+  }
+
   const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
     walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
     accountFn: (a, w) => {
