@@ -23,6 +23,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type Confirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
 import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
@@ -303,11 +304,10 @@ sample({
     walletData: $walletData,
     txWrappers: $txWrappers,
     coreTxs: $pureTxs,
+    transactions: $transactions,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ bondData, feeData, walletData, coreTxs, transactions }) => {
     return {
       event: [
         {
@@ -315,10 +315,13 @@ sample({
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...bondData!,
           ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          initiator: bondData!.shards[0],
+          signatory: bondData!.signatory!,
+          route: [bondData!.shards[0]],
           coreTx: coreTxs[0],
-        },
+          tx: coreTxs[0],
+          multisigTx: transactions![0].multisigTx!,
+        } satisfies Confirm,
       ],
       step: Step.CONFIRM,
     };

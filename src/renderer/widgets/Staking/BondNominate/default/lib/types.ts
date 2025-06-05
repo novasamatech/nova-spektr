@@ -18,8 +18,8 @@ export type WalletData = {
 };
 
 export type BondNominateData = {
-  initiator: AnyAccount | null;
-  signatory: AnyAccount | null;
+  initiator: AnyAccount;
+  signatory: AnyAccount;
   amount: string;
   destination: Address;
   validators: Validator[];

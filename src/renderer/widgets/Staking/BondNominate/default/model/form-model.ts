@@ -277,7 +277,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
@@ -385,9 +385,6 @@ sample({
 
 sample({
   clock: form.$values.updates,
-  source: $networkStore,
-  filter: (networkStore) => Boolean(networkStore),
-  fn: (_, formData) => formData,
   target: formChanged,
 });
 
@@ -420,6 +417,7 @@ export const formModel = {
   $multisigTx,
   $tx,
   $coreTx,
+  $route,
   $api,
   $networkStore,
   $isMultisig,

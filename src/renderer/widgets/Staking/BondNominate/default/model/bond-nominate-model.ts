@@ -92,7 +92,7 @@ sample({
     bondData: $bondNominateData,
   },
   filter: ({ step, bondData }, data) => {
-    return (!bondUtils.isNoneStep(step) && Boolean(bondData)) || typeof data !== 'number';
+    return (!bondUtils.isNoneStep(step) && nonNullable(bondData)) || typeof data !== 'number';
   },
   fn: ({ bondData }, data) => {
     if (typeof data === 'number') {
@@ -103,7 +103,13 @@ sample({
       return { ...bondData!, validators: data! };
     }
 
-    return { ...data!, validators: bondData?.validators || [] };
+    return {
+      initiator: data!.initiator!,
+      signatory: data!.signatory!,
+      amount: data!.amount,
+      destination: data!.destination,
+      validators: bondData?.validators ?? [],
+    };
   },
   target: $bondNominateData,
 });
@@ -111,7 +117,7 @@ sample({
 sample({
   clock: formModel.$txWrappers,
   source: $api,
-  filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
+  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
 
@@ -165,25 +171,26 @@ sample({
     walletData: $walletData,
     txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
+    tx: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
+    route: formModel.$route,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, fee, walletData, txWrappers, coreTx, multisigDeposit }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper | null;
-
+  filter: ({ bondData, walletData }) => nonNullable(bondData) && nonNullable(walletData),
+  fn: ({ bondData, fee, walletData, coreTx, multisigDeposit, tx, multisigTx, route }) => {
     return {
       event: [
         {
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
-          shards: [bondData!.initiator!],
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit!,
+          coreTx: coreTx!,
+          tx: tx!,
+          multisigTx: multisigTx!,
+          route,
           ...bondData!,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTx: coreTx,
         },
       ],
       step: Step.CONFIRM,
