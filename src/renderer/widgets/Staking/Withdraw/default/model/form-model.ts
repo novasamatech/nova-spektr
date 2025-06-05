@@ -42,8 +42,10 @@ export type FormParams = {
 
 type FormSubmitEvent = {
   transaction: Transaction;
-  formData: FormParams & {
-    signatory: AnyAccount | null;
+  formData: {
+    amount: string;
+    initiator: AnyAccount;
+    signatory: AnyAccount;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     totalFee: string;
@@ -273,6 +275,13 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length > 0,
+  fn: (signatories) => signatories.at(0)!,
+  target: form.fields.signatory.change,
+});
+
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
@@ -484,6 +493,8 @@ sample({
         ...rest,
         ...formData,
         ...(isProxy && { proxiedAccount: realAccount as ProxiedAccount }),
+        initiator: formData.initiator!,
+        signatory: formData.signatory!,
       },
     };
   },
