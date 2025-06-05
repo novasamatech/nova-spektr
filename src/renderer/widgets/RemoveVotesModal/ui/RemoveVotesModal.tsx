@@ -4,7 +4,7 @@ import React, { Suspense, lazy } from 'react';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { removeVotesModel } from '../model/removeVotesModal';
+import { removeVotesModel } from '../default/model/removeVotesModal';
 
 const RemoveVotesShardsModal = lazy(() =>
   import('../shards/components/RemoveVotesShardsModal').then(({ RemoveVotesShardsModal }) => ({
@@ -12,7 +12,7 @@ const RemoveVotesShardsModal = lazy(() =>
   })),
 );
 const RemoveVotesDefaultModal = lazy(() =>
-  import('./RemoveVotesDefault').then(({ RemoveVotesDefaultModal }) => ({
+  import('../default/components/RemoveVotesDefault').then(({ RemoveVotesDefaultModal }) => ({
     default: RemoveVotesDefaultModal,
   })),
 );
