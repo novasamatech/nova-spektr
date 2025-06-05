@@ -1,8 +1,12 @@
+import '@xyflow/react/dist/style.css';
+
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+
+import { AccountsStructure } from './AccountsStructure';
 
 type Props = {
   onClose?: () => void;
@@ -10,7 +14,6 @@ type Props = {
 
 export const AccountsStructureModal = ({ onClose }: Props) => {
   const { t } = useI18n();
-
   const [isOpen, setIsOpen] = useState(false);
 
   const onToggle = useCallback(
@@ -28,12 +31,8 @@ export const AccountsStructureModal = ({ onClose }: Props) => {
     <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
-        <div className="flex h-full flex-col">
-          <div className="mb-4 flex-1 rounded-lg bg-gray-100 p-4">
-            <div className="flex h-full items-center justify-center text-gray-500">
-              {t('Accounts structure content will be displayed here')}
-            </div>
-          </div>
+        <div className="h-[600px]">
+          <AccountsStructure />
         </div>
       </Modal.Content>
       <Modal.Trigger>
