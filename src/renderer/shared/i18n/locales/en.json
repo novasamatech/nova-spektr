@@ -2148,5 +2148,9 @@
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
+  },
+  "accountsStructure": {
+    "modalTitle": "Overview account",
+    "button": "Open overview"
   }
 }

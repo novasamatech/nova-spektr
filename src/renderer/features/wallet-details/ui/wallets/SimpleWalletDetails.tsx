@@ -14,6 +14,7 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
@@ -114,8 +115,12 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
         {t('walletDetails.common.title')}
       </Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
+        <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
           <WalletCardLg wallet={wallet} />
+
+          <div className="shrink-0">
+            <AccountsStructureModal />
+          </div>
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
