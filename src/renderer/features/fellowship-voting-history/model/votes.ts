@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 import { and, combineEvents, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { voting } from '@/domains/collectives';
 
@@ -16,9 +16,10 @@ const $voting = fellowshipModel.$store.map(store => store?.voting ?? []);
 const $members = fellowshipModel.$store.map(store => store?.members ?? []);
 
 const $votesList = combine($voting, flow.state, (votes, { referendumId }) => {
-  if (nullable(referendumId)) return [];
-
-  return votes.filter(vote => vote.referendumId === referendumId) ?? [];
+  if (referendumId) {
+    return votes.filter(vote => vote.referendumId === referendumId) ?? [];
+  }
+  return votes;
 });
 
 const requestVotes = combineEvents({
