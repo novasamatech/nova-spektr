@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   formatAmount,
   getRelaychainAsset,
@@ -14,14 +14,15 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   destination: Address;
 };
 
@@ -33,8 +34,8 @@ const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
 
 const txWrapperChanged = createEvent<{
-  proxyAccount: Account | null;
-  signatories: Account[][];
+  proxyAccount: AnyAccount | null;
+  signatories: AnyAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -43,7 +44,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -52,8 +53,8 @@ const $bondBalanceRange = createStore<string | string[]>('0');
 const $signatoryBalance = createStore<string>('0');
 const $proxyBalance = createStore<string>('0');
 
-const $availableSignatories = createStore<Account[][]>([]);
-const $proxyAccount = createStore<Account | null>(null);
+const $availableSignatories = createStore<AnyAccount[][]>([]);
+const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
@@ -63,7 +64,7 @@ const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $payeeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as AnyAccount[],
       rules: [
         {
           name: 'noProxyFee',
@@ -191,7 +192,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
