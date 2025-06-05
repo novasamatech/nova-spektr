@@ -43,9 +43,9 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     memberService.getActivityAndAgreementThresholds(member.rank);
 
   const isActivityFit =
-    nullable(activityThreshold) || (nonNullable(activity.activity) && activity.activity >= activityThreshold);
+    nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
   const isAgreementFit =
-    nullable(agreementThreshold) || (nonNullable(activity.agreement) && activity.agreement >= agreementThreshold);
+    nullable(agreementThreshold) || (nonNullable(activity?.agreement) && activity?.agreement >= agreementThreshold);
 
   return (
     <Box direction="row" width="100%">
@@ -58,9 +58,11 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {nonNullable(activity.activity) ? (
+            {nonNullable(activity?.activity) ? (
               <Box direction="row" verticalAlign="end">
-                <SmallTitleText>{nonNullable(activityThreshold) ? activity.activity.toString() : '100'}</SmallTitleText>
+                <SmallTitleText>
+                  {nonNullable(activityThreshold) ? activity?.activity.toString() : '100'}
+                </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {activityThreshold || '100'}%
                 </CaptionText>
@@ -81,10 +83,10 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {nonNullable(activity.agreement) ? (
+            {nonNullable(activity?.agreement) ? (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
-                  {nonNullable(agreementThreshold) ? activity.agreement.toString() : '100'}
+                  {nonNullable(agreementThreshold) ? activity?.agreement.toString() : '100'}
                 </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {agreementThreshold || '100'}%

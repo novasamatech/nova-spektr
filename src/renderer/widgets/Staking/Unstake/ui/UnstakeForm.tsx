@@ -9,7 +9,7 @@ import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { accountService } from '@/domains/network';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
@@ -215,7 +215,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithDataLoading
         label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
         asset={network.chain.assets[0]}
@@ -225,7 +225,7 @@ const FeeSection = () => {
       />
 
       {transactions && transactions.length > 1 && (
-        <FeeWithLabel
+        <FeeWithLabelWithDataLoading
           label={t('staking.networkFeeTotal')}
           api={api}
           asset={network.chain.assets[0]}

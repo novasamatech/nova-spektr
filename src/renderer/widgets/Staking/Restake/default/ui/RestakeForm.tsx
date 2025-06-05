@@ -172,6 +172,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
+        // @ts-expect-error TODO
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction}

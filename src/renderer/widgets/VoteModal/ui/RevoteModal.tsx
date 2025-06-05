@@ -1,4 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -21,18 +22,26 @@ type Props = {
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
+  onVoteSuccess?: VoidFunction;
 };
 
-export const RevoteModal = ({ referendum, asset, chain, onClose }: Props) => {
+export const RevoteModal = ({ referendum, asset, chain, onClose, onVoteSuccess }: Props) => {
   const { t } = useI18n();
 
   useGate(voteModal.gates.flow, { type: 'revote', referendum });
 
   const step = useUnit(voteModal.$step);
+  const voteSuccess = useUnit(voteModal.$voteSuccess);
   const initiatorWallet = useUnit(voteForm.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);
+
+  useEffect(() => {
+    if (voteSuccess) {
+      onVoteSuccess?.();
+    }
+  }, [voteSuccess, onVoteSuccess]);
 
   if (isStep(step, Step.SUBMIT)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;

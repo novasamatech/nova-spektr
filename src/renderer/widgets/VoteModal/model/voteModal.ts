@@ -85,7 +85,7 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.sign,
+  clock: voteConfirmModel.events.startSigning,
   fn: () => Step.SIGN,
   target: $step,
 });
@@ -110,7 +110,19 @@ sample({
   target: $step,
 });
 
-// Flow management
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => Step.NONE,
+  target: $step,
+});
+
+const $voteSuccess = createStore(false).reset(flow.close);
+
+sample({
+  clock: voteConfirmModel.events.submitFinished,
+  fn: () => true,
+  target: $voteSuccess,
+});
 
 sample({
   clock: flow.open,
@@ -205,7 +217,7 @@ sample({
 // Data bindings
 
 sample({
-  clock: voteConfirmModel.events.sign,
+  clock: voteConfirmModel.events.startSigning,
   source: {
     confirms: voteConfirmModel.$confirmMap,
   },
@@ -291,6 +303,7 @@ export const voteModal = {
   $canSubmit: voteForm.$canSubmit,
 
   $step,
+  $voteSuccess,
 
   events: {
     txSaved,
