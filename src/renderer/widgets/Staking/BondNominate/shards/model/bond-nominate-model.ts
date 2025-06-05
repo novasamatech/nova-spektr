@@ -23,7 +23,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { type Confirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
+import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
 import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
@@ -321,7 +321,7 @@ sample({
           coreTx: coreTxs[0],
           tx: coreTxs[0],
           multisigTx: transactions![0].multisigTx!,
-        } satisfies Confirm,
+        } satisfies BondNominateConfirm,
       ],
       step: Step.CONFIRM,
     };

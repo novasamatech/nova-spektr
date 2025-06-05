@@ -7,7 +7,7 @@ import { networkModel } from '@/entities/network';
 import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
 
-export type Confirm = TxConfirmInfo & {
+export type BondNominateConfirm = TxConfirmInfo & {
   validators: Validator[];
   amount: string;
   destination: Address;
@@ -19,7 +19,7 @@ export type Confirm = TxConfirmInfo & {
 
 const formSubmitted = createEvent();
 
-const confirmStore = createTransactionConfirmStore<Confirm>({
+const confirmStore = createTransactionConfirmStore<BondNominateConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
   $multisigTransactions: operationsModel.$multisigTransactions,
