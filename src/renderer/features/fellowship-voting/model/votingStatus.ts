@@ -30,6 +30,25 @@ const $accountsVotes = restore(
   [],
 );
 
+const votesRequested = attachToFeatureInput(
+  fellowshipVotingFeature,
+  combine({ referendums: $referendums, members: $members }),
+);
+
+sample({
+  clock: votesRequested,
+  fn({ input, data: { referendums, members } }) {
+    return {
+      palletType: input.palletType,
+      api: input.api,
+      chain: input.chain,
+      referendums: referendums.map(r => r.id),
+      accounts: members.map(m => m.accountId),
+    };
+  },
+  target: voting.request,
+});
+
 sample({
   clock: fellowshipVotingFeature.running,
   fn: ({ palletType, api, chain, account }) => ({
