@@ -9,8 +9,8 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -160,8 +160,6 @@ const FeeSection = () => {
   const isFeeLoading = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-
   if (!network || !initiator.value) {
     return null;
   }
@@ -193,19 +191,7 @@ const FeeSection = () => {
         </DetailRow>
       )}
 
-      <DetailRow
-        label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-        className="text-text-primary"
-      >
-        {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-        ) : (
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={fee.toString()} />
-          </div>
-        )}
-      </DetailRow>
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
     </div>
   );
 };
