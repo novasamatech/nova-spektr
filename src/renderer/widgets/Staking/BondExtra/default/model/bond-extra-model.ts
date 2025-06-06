@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -51,52 +50,8 @@ const $api = combine(
     apis: networkModel.$apis,
     walletData: $walletData,
   },
-  ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
-  },
-  { skipVoid: false },
+  ({ apis, walletData }) => (walletData ? apis[walletData.chain.chainId] : null),
 );
-
-const $transaction = combine(
-  {
-    api: $api,
-    coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
-  },
-  ({ api, coreTx, txWrappers }) => {
-    if (!api || !coreTx) return undefined;
-
-    return transactionService.getWrappedTransaction({
-      api,
-      transaction: coreTx,
-      txWrappers,
-    });
-  },
-  { skipVoid: false },
-);
-
-// Transaction & Form
-
-sample({
-  clock: formModel.$txWrappers.updates,
-  fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
-      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
-
-      return acc;
-    }, []);
-
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      signatories,
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
-    };
-  },
-  target: formModel.events.txWrapperChanged,
-});
 
 sample({
   clock: formModel.$txWrappers,
@@ -140,7 +95,6 @@ sample({
     fee: formModel.$fee,
     multisigDeposit: formModel.$multisigDeposit,
     walletData: $walletData,
-    txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     route: formModel.$route,
@@ -153,9 +107,7 @@ sample({
     nonNullable(tx) &&
     nonNullable(route) &&
     nonNullable(coreTx),
-  fn: ({ formParams, fee, multisigDeposit, walletData, txWrappers, coreTx, tx, route, multisigTx }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ formParams, fee, multisigDeposit, walletData, coreTx, tx, route, multisigTx }) => {
     return {
       event: [
         {
@@ -165,7 +117,6 @@ sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           tx: tx!,
@@ -178,28 +129,28 @@ sample({
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.events.startSigning,
+  clock: confirmModel.startSigning,
   source: {
     formParams: formModel.form.$values,
     walletData: $walletData,
-    transactions: $transaction,
+    transaction: formModel.$tx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ formParams, walletData, transactions }) => {
+  filter: ({ formParams, walletData, transaction }) => {
     return (
       nonNullable(formParams) &&
       nonNullable(walletData) &&
-      nonNullable(transactions) &&
+      nonNullable(transaction) &&
       nonNullable(formParams?.initiator)
     );
   },
-  fn: ({ formParams, walletData, transactions, txWrappers }) => {
+  fn: ({ formParams, walletData, transaction, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -209,7 +160,7 @@ sample({
             chain: walletData!.chain,
             account: wrapper ? wrapper.proxyAccount : formParams!.initiator!,
             signatory: formParams!.signatory,
-            transaction: transactions!.wrappedTx,
+            transaction: transaction!,
           },
         ],
       },
@@ -227,30 +178,31 @@ sample({
   source: {
     formParams: formModel.form.$values,
     walletData: $walletData,
-    transactions: $transaction,
+    tx: formModel.$tx,
+    coreTx: formModel.$coreTx,
+    multisigTx: formModel.$multisigTx,
   },
-  filter: ({ formParams, walletData, transactions }) => {
+  filter: ({ formParams, walletData, tx, coreTx }) => {
     return (
       nonNullable(formParams) &&
       nonNullable(walletData) &&
-      nonNullable(transactions) &&
+      nonNullable(tx) &&
+      nonNullable(coreTx) &&
       nonNullable(formParams?.initiator) &&
       nonNullable(formParams?.signatory) &&
-      nonNullable(transactions?.coreTx) &&
-      nonNullable(transactions?.wrappedTx) &&
-      nonNullable(transactions?.multisigTx)
+      nonNullable(coreTx)
     );
   },
-  fn: ({ formParams, walletData, transactions }, signParams) => {
+  fn: ({ formParams, walletData, tx, coreTx, multisigTx }, signParams) => {
     return {
       event: {
         ...signParams,
         chain: walletData!.chain,
         account: formParams.initiator!,
         signatory: formParams.signatory!,
-        coreTxs: [transactions!.coreTx],
-        wrappedTxs: [transactions!.wrappedTx],
-        multisigTxs: [transactions!.multisigTx!],
+        coreTxs: [coreTx!],
+        wrappedTxs: [tx!],
+        multisigTxs: [multisigTx!],
       },
       step: Step.SUBMIT,
     };

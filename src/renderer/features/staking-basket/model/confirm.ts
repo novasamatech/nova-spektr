@@ -249,7 +249,7 @@ sample({
 sample({
   clock: prepareWithdrawDataFx.doneData,
   fn: (data) => [data],
-  target: withdrawConfirmModel.events.init,
+  target: withdrawConfirmModel.init,
 });
 
 sample({
@@ -307,7 +307,7 @@ sample({
 sample({
   clock: prepareBondExtraDataFx.doneData,
   fn: (data) => [data],
-  target: bondExtraConfirmModel.events.formInitiated,
+  target: bondExtraConfirmModel.init,
 });
 
 sample({

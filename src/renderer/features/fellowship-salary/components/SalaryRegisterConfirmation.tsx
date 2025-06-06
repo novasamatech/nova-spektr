@@ -19,7 +19,7 @@ export const SalaryRegisterConfirmation = ({ fee, account, wallets, chain, asset
   const { t } = useI18n();
 
   return (
-    <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
+    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
       <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
     </TransactionDetails>
   );

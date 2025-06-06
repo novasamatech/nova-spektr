@@ -8,7 +8,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { withdrawConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type WithdrawConfirm, withdrawConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type NetworkStore, Step, type WithdrawData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -74,25 +74,24 @@ sample({
         ...formData,
         initiator: formData.initiator!,
         signatory: formData.signatory!,
-        // shards: [formData.initiator!],
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTx!,
         route: route,
         tx: tx!,
         multisigTx: multisigTx,
-      },
+      } satisfies WithdrawConfirm,
     ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.init,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.events.startSigning,
+  clock: confirmModel.startSigning,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,

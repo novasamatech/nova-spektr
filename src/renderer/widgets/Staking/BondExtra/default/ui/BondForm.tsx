@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
@@ -65,7 +66,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={initiator.reset}
+      onClose={noop}
     />
   );
 };
@@ -79,7 +80,6 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const balances = useUnit(balanceModel.$balances);
 
   const signatoriesWithBalance = useMemo(() => {
@@ -98,7 +98,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!network) {
     return null;
   }
 

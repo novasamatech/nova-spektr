@@ -125,13 +125,13 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.startSigning,
+  clock: removeVoteConfirmModel.startSigning,
   fn: () => Step.SIGN,
   target: $step,
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.submitStarted,
+  clock: removeVoteConfirmModel.submitStarted,
   fn: () => Step.SUBMIT,
   target: $step,
 });
@@ -183,11 +183,11 @@ sample({
       multisigTx: wrappedTxs[index].multisigTx ?? null,
     }));
   },
-  target: removeVoteConfirmModel.events.init,
+  target: removeVoteConfirmModel.init,
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.startSigning,
+  clock: removeVoteConfirmModel.startSigning,
   source: { confirms: removeVoteConfirmModel.$confirmMap },
   fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
     if (!confirms) {
@@ -229,12 +229,12 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.submitFinished,
+  clock: removeVoteConfirmModel.submitFinished,
   target: locksModel.events.subscribeLocks,
 });
 
 sample({
-  clock: removeVoteConfirmModel.events.submitFinished,
+  clock: removeVoteConfirmModel.submitFinished,
   source: $availableAccounts,
   fn: (accounts) => {
     const accountIds = accounts.filter(nonNullable).map((a) => a.accountId);
@@ -246,7 +246,7 @@ sample({
 
 sample({
   clock: flow.close,
-  target: [removeVoteConfirmModel.events.resetConfirm],
+  target: [removeVoteConfirmModel.resetConfirm],
 });
 
 // Aggregate

@@ -251,11 +251,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, accounts, wallets }) => {
-    if (!isProxy || accounts.length === 0) return undefined;
+    if (!isProxy || accounts.length === 0) return null;
 
     return walletUtils.getWalletById(wallets, accounts[0].walletId);
   },
-  { skipVoid: false },
 );
 
 const $accounts = combine(
@@ -343,7 +342,7 @@ const $pureTxs = combine(
     isConnected: $isChainConnected,
   },
   ({ network, form, isConnected }) => {
-    if (!network || !isConnected) return undefined;
+    if (!network || !isConnected) return null;
 
     return form.shards.map((shard) => {
       return transactionBuilder.buildWithdraw({
@@ -352,7 +351,6 @@ const $pureTxs = combine(
       });
     });
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -363,7 +361,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ apis, networkStore, pureTxs, txWrappers }) => {
-    if (!networkStore || !pureTxs) return undefined;
+    if (!networkStore || !pureTxs) return null;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -373,7 +371,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(
@@ -397,7 +394,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length > 0,
+  filter: ({ chain, shards }) => nonNullable(getRelaychainAsset(chain.assets)) && shards.length > 0,
   fn: ({ chain, shards }) => ({
     shards,
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
@@ -416,7 +413,7 @@ sample({
     shards: $shards,
   },
   filter: ({ networkStore, api }) => {
-    return Boolean(networkStore) && Boolean(api);
+    return nonNullable(networkStore) && nonNullable(api);
   },
   fn: ({ networkStore, api, shards }) => {
     const addresses = shards.map((shard) => toAddress(shard.accountId, { prefix: networkStore!.chain.addressPrefix }));
@@ -433,7 +430,7 @@ sample({
 sample({
   clock: formInitiated,
   source: $api,
-  filter: (api): api is ApiPromise => Boolean(api),
+  filter: (api): api is ApiPromise => nonNullable(api),
   target: subscribeEraFx,
 });
 
@@ -449,7 +446,7 @@ sample({
 
 sample({
   clock: $accountsBalances,
-  filter: (balances) => Boolean(balances),
+  filter: (balances) => nonNullable(balances),
   fn: (balances) => {
     if (balances.length === 0) return ZERO_BALANCE;
 
@@ -537,7 +534,7 @@ sample({
     proxyAccounts: $realAccounts,
   },
   filter: ({ isProxy, network, proxyAccounts }) => {
-    return isProxy && Boolean(network) && proxyAccounts.length > 0;
+    return isProxy && nonNullable(network) && proxyAccounts.length > 0;
   },
   fn: ({ balances, network, proxyAccounts }) => {
     const balance = balanceUtils.getBalance(
@@ -567,7 +564,7 @@ sample({
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ network, transactions }) => {
-    return Boolean(network) && Boolean(transactions);
+    return nonNullable(network) && nonNullable(transactions);
   },
   fn: ({ amount, realAccounts, transactions, isProxy, ...fee }, formData) => {
     const { shards, ...rest } = formData;

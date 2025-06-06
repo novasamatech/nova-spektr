@@ -21,12 +21,11 @@ const confirmStore = createTransactionConfirmStore<BondExtraConfirm>({
 export const confirmModel = {
   $confirmStore: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirms: confirmStore.$confirms,
 
-  events: {
-    formInitiated: confirmStore.init,
-    startSigning: confirmStore.startSigning,
-    addConfirms: confirmStore.addConfirms,
-    replaceWithConfirm: confirmStore.replaceWithConfirm,
-    resetConfirm: confirmStore.resetConfirm,
-  },
+  init: confirmStore.init,
+  startSigning: confirmStore.startSigning,
+  addConfirms: confirmStore.addConfirms,
+  replaceWithConfirm: confirmStore.replaceWithConfirm,
+  resetConfirm: confirmStore.resetConfirm,
 };

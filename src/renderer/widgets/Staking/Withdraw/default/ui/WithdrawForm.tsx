@@ -6,7 +6,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
-import { balanceUtils } from '@/entities/balance';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
@@ -78,7 +78,7 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const balances = useUnit(formModel.$balances);
+  const balances = useUnit(balanceModel.$balances);
 
   const signatoryWithBalance = useMemo(() => {
     if (!network) {
