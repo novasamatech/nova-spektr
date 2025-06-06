@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
+import { type MultisigTxWrapper, WrapperKind } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
@@ -10,7 +10,7 @@ import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SubmitInput, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { Step, type WalletDataShards } from '../lib/types';
 
@@ -88,7 +88,7 @@ sample({
   target: stepChanged,
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     formParams: formModel.form.$values,
@@ -100,31 +100,40 @@ sample({
     route: formModel.$route,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ formParams, walletData, tx, route, coreTx }) =>
+}).filterMap(({ formParams, walletData, tx, route, coreTx, fee, multisigDeposit, multisigTx }) => {
+  if (
     nonNullable(formParams) &&
     nonNullable(walletData) &&
-    nonNullable(formParams?.initiator) &&
+    nonNullable(formParams.initiator) &&
     nonNullable(tx) &&
     nonNullable(route) &&
-    nonNullable(coreTx),
-  fn: ({ formParams, fee, multisigDeposit, walletData, coreTx, tx, route, multisigTx }) => {
+    nonNullable(coreTx) &&
+    nonNullable(formParams.signatory)
+  ) {
+    return [
+      {
+        ...formParams,
+        initiator: formParams.initiator,
+        signatory: formParams.signatory,
+        fee: fee.toString(),
+        totalFee: fee.toString(),
+        multisigDeposit,
+        chain: walletData.chain,
+        asset: getRelaychainAsset(walletData.chain.assets)!,
+        tx: tx,
+        coreTx: coreTx,
+        route,
+        multisigTx: multisigTx,
+      } satisfies BondExtraConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
     return {
-      event: [
-        {
-          ...formParams!,
-          initiator: formParams!.initiator!,
-          signatory: formParams!.signatory!,
-          fee: fee.toString(),
-          totalFee: fee.toString(),
-          multisigDeposit,
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
-          tx: tx!,
-          coreTx: coreTx!,
-          route,
-          multisigTx: multisigTx,
-        } satisfies BondExtraConfirm,
-      ],
+      event,
       step: Step.CONFIRM,
     };
   },
@@ -134,46 +143,42 @@ sample({
   }),
 });
 
-sample({
+const startSigningEvent = sample({
   clock: confirmModel.startSigning,
   source: {
     formParams: formModel.form.$values,
     walletData: $walletData,
-    transaction: formModel.$tx,
-    txWrappers: formModel.$txWrappers,
+    tx: formModel.$tx,
+    proxiedAccount: formModel.$proxiedAccount,
   },
-  filter: ({ formParams, walletData, transaction }) => {
-    return (
-      nonNullable(formParams) &&
-      nonNullable(walletData) &&
-      nonNullable(transaction) &&
-      nonNullable(formParams?.initiator)
-    );
-  },
-  fn: ({ formParams, walletData, transaction, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      event: {
-        signingPayloads: [
-          {
-            chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : formParams!.initiator!,
-            signatory: formParams!.signatory,
-            transaction: transaction!,
-          },
-        ],
+}).filterMap(({ formParams: { initiator, signatory }, walletData, tx, proxiedAccount }) => {
+  if (nonNullable(walletData) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory)) {
+    return [
+      {
+        chain: walletData.chain,
+        account: proxiedAccount || initiator,
+        signatory,
+        transaction: tx,
       },
-      step: Step.SIGN,
-    };
-  },
+    ];
+  }
+});
+
+sample({
+  clock: startSigningEvent,
+  fn: (signingPayloads) => ({
+    event: {
+      signingPayloads,
+    },
+    step: Step.SIGN,
+  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
-sample({
+const submitEvent = sample({
   clock: signModel.output.formSubmitted,
   source: {
     formParams: formModel.form.$values,
@@ -182,31 +187,34 @@ sample({
     coreTx: formModel.$coreTx,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ formParams, walletData, tx, coreTx }) => {
-    return (
-      nonNullable(formParams) &&
-      nonNullable(walletData) &&
-      nonNullable(tx) &&
-      nonNullable(coreTx) &&
-      nonNullable(formParams?.initiator) &&
-      nonNullable(formParams?.signatory) &&
-      nonNullable(coreTx)
-    );
-  },
-  fn: ({ formParams, walletData, tx, coreTx, multisigTx }, signParams) => {
+  fn: (source, signParams) => ({ source, signParams }),
+}).filterMap(({ signParams, source: { formParams, walletData, tx, coreTx, multisigTx } }) => {
+  if (
+    nonNullable(formParams) &&
+    nonNullable(walletData) &&
+    nonNullable(tx) &&
+    nonNullable(coreTx) &&
+    nonNullable(formParams.initiator) &&
+    nonNullable(formParams.signatory) &&
+    nonNullable(walletData.chain)
+  ) {
     return {
-      event: {
-        ...signParams,
-        chain: walletData!.chain,
-        account: formParams.initiator!,
-        signatory: formParams.signatory!,
-        coreTxs: [coreTx!],
-        wrappedTxs: [tx!],
-        multisigTxs: [multisigTx!],
-      },
-      step: Step.SUBMIT,
-    };
-  },
+      ...signParams,
+      chain: walletData.chain,
+      account: formParams.initiator,
+      coreTxs: [coreTx],
+      wrappedTxs: [tx],
+      multisigTxs: [multisigTx!],
+    } satisfies SubmitInput;
+  }
+});
+
+sample({
+  clock: submitEvent,
+  fn: (event) => ({
+    event,
+    step: Step.SUBMIT,
+  }),
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
