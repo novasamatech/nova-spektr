@@ -38,10 +38,10 @@ import { NetworkInfo } from './NetworkInfo';
 import { NominatorsList } from './NominatorsList';
 
 // Lazy-loaded components
-const LazyBondExtra = lazy(() => import('@/widgets/Staking').then((module) => ({ default: module.BondExtra })));
+const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 
 const LazyBondExtraShards = lazy(() =>
-  import('@/widgets/Staking').then((module) => ({ default: module.BondExtraShards })),
+  import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
 );
 
 export const Staking = () => {
