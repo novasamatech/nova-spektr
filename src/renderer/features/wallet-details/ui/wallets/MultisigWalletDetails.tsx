@@ -11,7 +11,7 @@ import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import { type AccountNode as AccountNodeType, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
@@ -19,6 +19,7 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
@@ -51,6 +52,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
+  const features = useUnit($features);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -59,6 +61,20 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
   const multisigAccount = walletAccounts.find(accountUtils.isMultisigAccount);
   assert(multisigAccount, 'Multisig account not found.');
+
+  const pkdt = Object.values(chains).find(c => c.name === 'Polkadot');
+  const accountGraph = useMemo(() => {
+    if (!pkdt || !multisigAccount) return new Map();
+    const graph = accountService.createAccountGraphs(accountList, pkdt);
+    const firstAccountData = graph.get(multisigAccount);
+    if (!firstAccountData) return new Map();
+
+    console.log({ firstAccountData });
+
+    const filteredGraph = new Map<string, AccountNodeType>();
+    filteredGraph.set(multisigAccount.id, firstAccountData);
+    return filteredGraph;
+  }, [accountList, pkdt, multisigAccount]);
 
   // Check for deprecated multichain multisig accounts
 
@@ -104,7 +120,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   // TODO: remove it when flexible multisig is supported
-  const features = useUnit($features);
 
   if (canCreatePureProxy) {
     features.flexibleMultisig
@@ -251,7 +266,12 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         </Modal.Title>
         <Modal.HeaderContent>
           <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
-            <WalletCardLg wallet={wallet} />
+            <div className="flex items-center justify-between">
+              <WalletCardLg wallet={wallet} />
+              <div className="shrink-0">
+                {features.accountsStructure && <AccountsStructureModal accountGraph={accountGraph} />}
+              </div>
+            </div>
             <div className="flex items-center">
               <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
               <div className="flex items-center text-footnote">

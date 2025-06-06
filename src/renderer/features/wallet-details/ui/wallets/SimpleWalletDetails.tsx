@@ -9,6 +9,7 @@ import { Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AccountNode as AccountNodeType, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -39,6 +40,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
+  const allAccounts = useUnit(accounts.$list);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const features = useUnit($features);
@@ -106,10 +108,35 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     </Dropdown>
   );
 
-  const accounts = useMemo(
+  const accountsIds = useMemo(
     () => (firstAccount ? Object.values(chains).map(chain => [chain, firstAccount.accountId] as const) : []),
     [chains, firstAccount],
   );
+
+  const pkdt = Object.values(allChains).find(c => c.name === 'Polkadot');
+  if (pkdt && firstAccount) {
+    const graph = accountService.createAccountGraphs(allAccounts, pkdt);
+    console.log({
+      pkdt,
+      allAccounts,
+      allChains,
+      graph,
+      firstAccount,
+      firstAccountInGraph: graph.get(firstAccount),
+      wallet,
+    });
+  }
+
+  const accountGraph = useMemo(() => {
+    if (!pkdt || !firstAccount) return new Map();
+    const graph = accountService.createAccountGraphs(allAccounts, pkdt);
+    const firstAccountData = graph.get(firstAccount);
+    if (!firstAccountData) return new Map();
+
+    const filteredGraph = new Map<string, AccountNodeType>();
+    filteredGraph.set(firstAccount.id, firstAccountData);
+    return filteredGraph;
+  }, [allAccounts, pkdt, firstAccount]);
 
   return (
     <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
@@ -120,12 +147,14 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
         <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
           <WalletCardLg wallet={wallet} />
 
-          <div className="shrink-0">{features.accountsStructure && <AccountsStructureModal />}</div>
+          <div className="shrink-0">
+            {features.accountsStructure && <AccountsStructureModal accountGraph={accountGraph} />}
+          </div>
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <ChainAccountsList accounts={accounts} />
+          <ChainAccountsList accounts={accountsIds} />
         ) : (
           <Tabs value={tab} onChange={setTab}>
             <Box padding={[0, 5]} shrink={0}>
@@ -135,7 +164,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
               </Tabs.List>
             </Box>
             <Tabs.Content value="accounts">
-              <ChainAccountsList accounts={accounts} />
+              <ChainAccountsList accounts={accountsIds} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
               {hasProxies ? (

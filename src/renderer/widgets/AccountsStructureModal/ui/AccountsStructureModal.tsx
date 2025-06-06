@@ -2,6 +2,7 @@ import '@xyflow/react/dist/style.css';
 
 import { useCallback, useState } from 'react';
 
+import { type AccountNode } from '@/domains/network';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
@@ -9,10 +10,11 @@ import { Modal } from '@/shared/ui-kit';
 import { AccountsStructure } from './AccountsStructure';
 
 type Props = {
+  accountGraph: Map<string, AccountNode>;
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ onClose }: Props) => {
+export const AccountsStructureModal = ({ accountGraph, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -32,7 +34,7 @@ export const AccountsStructureModal = ({ onClose }: Props) => {
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="h-[600px]">
-          <AccountsStructure />
+          <AccountsStructure accountGraph={accountGraph} />
         </div>
       </Modal.Content>
       <Modal.Trigger>
