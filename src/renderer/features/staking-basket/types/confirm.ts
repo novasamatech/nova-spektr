@@ -71,21 +71,6 @@ export type PayeeInput = {
   coreTx?: Transaction | null;
 };
 
-export type UnstakeInput = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-  shards: AnyAccount[];
-  proxiedAccount?: ProxiedAccount;
-  signatory: AnyAccount | null;
-  amount: string;
-  description: string;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-};
-
 export type RestakeInput = {
   id?: number;
   chain: Chain;

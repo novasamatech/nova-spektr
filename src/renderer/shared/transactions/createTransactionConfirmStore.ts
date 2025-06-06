@@ -119,8 +119,11 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
     },
   );
 
+  const $confirms = $confirmMap.map((confirmMap) => Object.values(confirmMap));
+
   return {
     $confirmMap,
+    $confirms,
     $isMultisigExists,
 
     init,

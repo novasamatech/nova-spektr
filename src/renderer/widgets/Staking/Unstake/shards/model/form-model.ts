@@ -365,7 +365,7 @@ const $pureTxs = combine(
     isConnected: $isChainConnected,
   },
   ({ network, form, staking, minBond, isConnected }) => {
-    if (!network || !isConnected) return undefined;
+    if (!network || !isConnected) return null;
 
     const amount = formatAmount(form.amount, network.asset.precision);
 
@@ -383,7 +383,6 @@ const $pureTxs = combine(
       });
     });
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -394,7 +393,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ apis, networkStore, pureTxs, txWrappers }) => {
-    if (!networkStore || !pureTxs) return undefined;
+    if (!networkStore || !pureTxs) return null;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -404,7 +403,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(

@@ -26,6 +26,7 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
+import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
 import {
   type BondExtraInput,
@@ -33,7 +34,6 @@ import {
   type NominateInput,
   type PayeeInput,
   type RestakeInput,
-  type UnstakeInput,
 } from '../types/confirm';
 
 type DataParams = {
@@ -156,14 +156,21 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: coreTx.args.value,
-    description: '',
+    api: apis[chain.chainId],
+    signatory: account!,
+    initiator: account!,
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+    ),
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
-    totalFee: '0',
+    totalFee: fee,
     multisigDeposit: '0',
-  } as UnstakeInput;
+  } satisfies UnstakeConfirm;
 });
 
 const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {

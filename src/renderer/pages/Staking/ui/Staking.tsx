@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
@@ -36,6 +36,12 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
+
+const LazyUnstakeShards = lazy(() =>
+  import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
+);
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -279,7 +285,10 @@ export const Staking = () => {
     const model = {
       [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
-      [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
+      [StakeOperations.UNSTAKE]:
+        selectedNominators.length > 1
+          ? Operations.unstakeModelShards.events.flowStarted
+          : Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
@@ -386,7 +395,7 @@ export const Staking = () => {
 
       <Operations.BondNominate />
       <Operations.BondExtra />
-      <Operations.Unstake />
+      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
       <Operations.Nominate />
       <Operations.Restake />
       {totalStakes.length > 1 ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
