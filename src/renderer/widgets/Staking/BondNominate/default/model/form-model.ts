@@ -423,15 +423,11 @@ export const formModel = {
   $isMultisig,
   $canSubmit,
 
-  events: {
-    formInitiated,
-    formCleared,
-    destinationQueryChanged,
-    destinationTypeChanged,
-    multisigDepositChanged,
-  },
-  output: {
-    formSubmitted,
-    formChanged,
-  },
+  formInitiated,
+  formCleared,
+  destinationQueryChanged,
+  destinationTypeChanged,
+  multisigDepositChanged,
+  formSubmitted,
+  formChanged,
 };

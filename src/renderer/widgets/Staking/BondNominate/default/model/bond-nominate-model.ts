@@ -86,7 +86,7 @@ sample({
 // Transaction & Form
 
 sample({
-  clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModel.formChanged, validatorsModel.output.formSubmitted],
   source: {
     step: $step,
     bondData: $bondNominateData,
@@ -131,7 +131,7 @@ sample({
 
 sample({
   clock: getMultisigDepositFx.doneData,
-  target: [$multisigDeposit, formModel.events.multisigDepositChanged],
+  target: [$multisigDeposit, formModel.multisigDepositChanged],
 });
 
 // Steps
@@ -140,7 +140,7 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
 sample({
@@ -150,7 +150,7 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   source: $walletData,
   filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
   fn: ({ chain }) => ({
@@ -197,13 +197,13 @@ sample({
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     bondData: $bondNominateData,
     walletData: $walletData,
@@ -269,7 +269,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.formCleared, validatorsModel.events.formCleared],
 });
 
 sample({

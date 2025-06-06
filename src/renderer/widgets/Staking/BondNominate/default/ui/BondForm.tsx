@@ -214,7 +214,7 @@ const Destination = () => {
       onChange={(option) => {
         setActiveOptionId(option.id);
         destination.onChange(option.value.value);
-        formModel.events.destinationTypeChanged(option.value.type);
+        formModel.destinationTypeChanged(option.value.type);
       }}
     >
       <RadioGroup.Option option={options[0]} />
@@ -227,7 +227,7 @@ const Destination = () => {
             options={destinationOptions}
             invalid={destination.hasError}
             prefixElement={prefixElement}
-            onInput={formModel.events.destinationQueryChanged}
+            onInput={formModel.destinationQueryChanged}
             onChange={({ value }) => {
               setPayout(value);
               destination.onChange(value);

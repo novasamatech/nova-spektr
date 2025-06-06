@@ -279,7 +279,7 @@ sample({
 sample({
   clock: prepareBondNominateDataFx.doneData,
   fn: (data) => [data],
-  target: bondNominateConfirmModel.events.formInitiated,
+  target: bondNominateConfirmModel.init,
 });
 
 sample({

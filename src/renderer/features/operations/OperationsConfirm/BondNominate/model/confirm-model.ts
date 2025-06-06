@@ -1,5 +1,5 @@
 import { type BN } from '@polkadot/util';
-import { combine, createEvent } from 'effector';
+import { combine } from 'effector';
 
 import { type Address, type Asset, type ChainId, type Validator } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
@@ -16,8 +16,6 @@ export type BondNominateConfirm = TxConfirmInfo & {
   multisigDeposit: string;
   asset: Asset;
 };
-
-const formSubmitted = createEvent();
 
 const confirmStore = createTransactionConfirmStore<BondNominateConfirm>({
   $wallets: walletModel.$wallets,
@@ -43,10 +41,7 @@ export const confirmModel = {
   $isMultisigExists: confirmStore.$isMultisigExists,
   $eraLength,
   $apis: networkModel.$apis,
-  events: {
-    formInitiated: confirmStore.init,
-  },
-  output: {
-    formSubmitted,
-  },
+
+  init: confirmStore.init,
+  startSigning: confirmStore.startSigning,
 };
