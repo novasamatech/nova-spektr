@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -25,31 +25,21 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
 
-  const confirmStore = useStoreMap({
-    store: confirmModel.$confirmStore,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
+  const confirms = useUnit(confirmModel.$confirms);
+  const confirmStore = confirms[id];
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirmStore) {
     return null;
   }
+
+  const { asset, destination, chain, initiator, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
+  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+
+  const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
     <>
@@ -61,15 +51,15 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails
-          chain={confirmStore.chain}
+          chain={chain}
           wallets={wallets}
-          initiator={confirmStore.shards}
-          signatory={confirmStore.signatory}
-          proxied={confirmStore.proxiedAccount}
+          initiator={initiators}
+          signatory={signatory}
+          proxied={proxiedAccount}
         >
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
-            {confirmStore.destination ? (
-              <Account accountId={toAccountId(confirmStore.destination)} chain={confirmStore.chain} variant="short" />
+            {destination ? (
+              <Account accountId={toAccountId(destination)} chain={chain} variant="short" />
             ) : (
               <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
             )}
@@ -77,7 +67,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {initiator && accountUtils.isMultisigAccount(initiator) && (
             <DetailRow
               className="text-text-primary"
               label={
@@ -96,34 +86,30 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+                <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
+                <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
               </div>
             </DetailRow>
           )}
 
           <DetailRow
             className="text-text-primary"
-            label={
-              <FootnoteText className="text-text-tertiary">
-                {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
-              </FootnoteText>
-            }
+            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+              <AssetBalance value={fee} asset={chain.assets[0]} />
+              <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
             </div>
           </DetailRow>
 
-          {confirmStore.shards.length > 1 && (
+          {totalFee !== fee && (
             <DetailRow
               className="text-text-primary"
               label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
+                <AssetBalance value={totalFee} asset={chain.assets[0]} />
+                <AssetFiatBalance asset={chain.assets[0]} amount={totalFee} />
               </div>
             </DetailRow>
           )}
@@ -142,8 +128,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
             {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
-                type={(signerWallet || initiatorWallet).type}
-                onClick={confirmModel.output.formSubmitted}
+                type={confirmStore.wallets.signatory?.type || confirmStore.wallets.initiator.type}
+                onClick={() => confirmModel.events.startSigning()}
               />
             )}
           </div>
@@ -152,10 +138,10 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <AccountsModal
         isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
-        chainId={confirmStore.chain.chainId}
-        asset={confirmStore.asset}
-        addressPrefix={confirmStore.chain.addressPrefix}
+        accounts={initiators}
+        chainId={chain.chainId}
+        asset={asset}
+        addressPrefix={chain.addressPrefix}
         onClose={toggleAccounts}
       />
     </>

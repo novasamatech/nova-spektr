@@ -26,12 +26,11 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
+import { type PayeeConfirm, type WithdrawConfirm } from '@/features/operations/OperationsConfirm';
 import {
   type BondExtraInput,
   type BondNominateInput,
   type NominateInput,
-  type PayeeInput,
   type RestakeInput,
   type UnstakeInput,
 } from '../types/confirm';
@@ -138,13 +137,21 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
+    initiator: account!,
+    signatory: account!,
+
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+    ),
 
     fee,
-  } as PayeeInput;
+    totalFee: fee,
+    multisigDeposit: '0',
+  } satisfies PayeeConfirm;
 });
 
 const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -419,7 +426,7 @@ sample({
 sample({
   clock: preparePayeeDataFx.doneData,
   fn: (data) => [data],
-  target: payeeConfirmModel.events.formInitiated,
+  target: payeeConfirmModel.events.init,
 });
 
 export const confirm = {

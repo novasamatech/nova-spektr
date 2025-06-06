@@ -11,7 +11,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type PayeeConfirm, payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { type FeeData, type FormInput, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -98,37 +98,37 @@ sample({
     walletData: $walletData,
     txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
+    tx: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
   },
   filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, txWrappers, coreTx }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ payeeData, feeData, walletData, coreTx, tx, multisigTx }) => {
     return {
       event: [
         {
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...payeeData!,
           ...feeData,
-
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
           signatory: payeeData!.signatory!,
-          shards: [payeeData!.initiator!],
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { initiator: wrapper.proxyAccount }),
-          coreTx,
-        },
+          initiator: payeeData!.initiator!,
+          route: [payeeData!.initiator!],
+          coreTx: coreTx!,
+          tx: tx!,
+          multisigTx: multisigTx,
+        } satisfies PayeeConfirm,
       ],
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.events.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.events.startSigning,
   source: {
     payeeData: formModel.form.$values,
     walletData: $walletData,
