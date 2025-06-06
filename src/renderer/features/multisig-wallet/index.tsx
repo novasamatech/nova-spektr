@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { balanceService } from '@/shared/api/balances';
 import { $features } from '@/shared/config/features';
 import { type Transaction, TransactionType, WalletIconType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
@@ -52,7 +53,7 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
-  validateRouteBalances({ account, api, route, balances, chainId, assetId, index }) {
+  validateRouteBalances({ account, api, route, balances, chainId, asset, index }) {
     if (accountUtils.isMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
       const payer = route.at(index + 1);
@@ -60,14 +61,18 @@ accountSDK(multisigWalletFeature, {
       if (nullable(payer)) {
         return { account, message: 'Multisig signatory payer not found' };
       }
-      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, assetId.toString());
+      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, asset.assetId.toString());
       if (nullable(balance)) {
         return { account, message: 'Balance not found' };
       }
 
-      if (withdrawableAmountBN(balance).lt(deposit)) {
-        return { account, message: 'Insufficient funds for multisig deposit' };
-      }
+      return balanceService.getExistentialDeposit(api, asset).then(existentialDeposit => {
+        const spend = existentialDeposit.add(deposit);
+        if (withdrawableAmountBN(balance).lt(spend)) {
+          return { account, message: 'Insufficient funds for multisig deposit' };
+        }
+        return null;
+      });
     }
   },
 });
