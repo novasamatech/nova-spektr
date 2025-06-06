@@ -66,24 +66,27 @@ sample({
     tx: formModel.$tx,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ networkStore }, { formData }) =>
-    nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory),
-  fn: ({ networkStore, coreTx, route, tx, multisigTx }, { formData }) => ({
-    event: [
-      {
-        ...formData,
-        initiator: formData.initiator!,
-        signatory: formData.signatory!,
-        chain: networkStore!.chain,
-        asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTx!,
-        route: route,
-        tx: tx!,
-        multisigTx: multisigTx,
-      } satisfies WithdrawConfirm,
-    ],
-    step: Step.CONFIRM,
-  }),
+  filter: ({ networkStore }, { formData }) => {
+    return nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory);
+  },
+  fn: ({ networkStore, coreTx, route, tx, multisigTx }, { formData }) => {
+    return {
+      event: [
+        {
+          ...formData,
+          initiator: formData.initiator!,
+          signatory: formData.signatory!,
+          chain: networkStore!.chain,
+          asset: getRelaychainAsset(networkStore!.chain.assets)!,
+          coreTx: coreTx!,
+          route: route,
+          tx: tx!,
+          multisigTx: multisigTx,
+        } satisfies WithdrawConfirm,
+      ],
+      step: Step.CONFIRM,
+    };
+  },
   target: spread({
     event: confirmModel.init,
     step: stepChanged,

@@ -186,6 +186,13 @@ const FeeSection = () => {
 const ActionsSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
+  const { submit } = useForm(formModel.form);
+
+  const submitForm = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+  };
+
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
@@ -193,7 +200,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+      <Button form="transfer-form" type="submit" disabled={!canSubmit} onClick={submitForm}>
         {t('transfer.continueButton')}
       </Button>
     </div>
