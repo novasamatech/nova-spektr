@@ -96,7 +96,7 @@ export const Confirmation = ({
         <TransactionDetails
           chain={confirmStore.meta.chain}
           wallets={wallets}
-          initiator={[confirmStore.meta.initiator]}
+          initiator={confirms.map((confirm) => confirm.meta.initiator)}
           signatory={confirmStore.meta.signatory}
           proxied={proxiedAccount}
         >
