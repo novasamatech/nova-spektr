@@ -256,20 +256,21 @@ const $api = combine(
 const $coreTx = combine(
   {
     chain: $chain,
-    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     amount: form.fields.amount.$value,
     destination: form.fields.destination.$value,
     validators: $validators,
+    networkStore: $networkStore,
   },
-  ({ chain, initiator, amount, destination, validators }) => {
-    if (nullable(destination) || nullable(chain) || nullable(initiator)) {
+  ({ chain, signatory, amount, destination, validators, networkStore }) => {
+    if (nullable(destination) || nullable(chain) || nullable(signatory) || nullable(networkStore)) {
       return null;
     }
 
     return transactionBuilder.buildBondNominate({
       chain: chain,
-      asset: chain.assets[0],
-      accountId: initiator!.accountId,
+      asset: networkStore.asset,
+      accountId: signatory.accountId,
       amount: amount,
       destination: destination,
       nominators: validators.map(({ address }) => address),
