@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { formatAmount, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -74,6 +74,8 @@ export const Confirmation = ({
     : confirmStore.meta.amount;
 
   const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+
+  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
 
   return (
     <>
@@ -148,11 +150,8 @@ export const Confirmation = ({
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.meta.multisigDeposit} asset={confirmStore.meta.chain.assets[0]} />
-                <AssetFiatBalance
-                  asset={confirmStore.meta.chain.assets[0]}
-                  amount={confirmStore.meta.multisigDeposit}
-                />
+                <AssetBalance value={confirmStore.meta.multisigDeposit} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.multisigDeposit} />
               </div>
             </DetailRow>
           )}
@@ -166,8 +165,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.meta.fee} asset={confirmStore.meta.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.meta.chain.assets[0]} amount={confirmStore.meta.fee} />
+              <AssetBalance value={confirmStore.meta.fee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
             </div>
           </DetailRow>
 
@@ -177,8 +176,8 @@ export const Confirmation = ({
               label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.meta.totalFee} asset={confirmStore.meta.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.meta.chain.assets[0]} amount={confirmStore.meta.totalFee} />
+                <AssetBalance value={confirmStore.meta.totalFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.totalFee} />
               </div>
             </DetailRow>
           )}
