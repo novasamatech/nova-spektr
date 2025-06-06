@@ -53,9 +53,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $multisigAlreadyExists = combine(
