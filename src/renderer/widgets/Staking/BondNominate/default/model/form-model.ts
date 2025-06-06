@@ -288,10 +288,11 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
 
 const $canSubmit = combine(
   {
+    isValid: form.$isValid,
     isFeePending: $pendingFee,
   },
-  ({ isFeePending }) => {
-    return !isFeePending;
+  ({ isValid, isFeePending }) => {
+    return isValid && !isFeePending;
   },
 );
 
