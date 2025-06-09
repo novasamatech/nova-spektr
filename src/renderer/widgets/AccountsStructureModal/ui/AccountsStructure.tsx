@@ -2,9 +2,9 @@ import {
   Background,
   BackgroundVariant,
   Controls,
-  Edge,
+  type Edge,
   MarkerType,
-  Node,
+  type Node,
   Position,
   ReactFlow,
   useEdgesState,
@@ -60,7 +60,7 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       newNodes.push({
         id: nodeId,
         type: 'accountNode',
-        data: { 
+        data: {
           label: node.account.name,
           account: node.account,
         },
@@ -70,7 +70,7 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       });
 
       // Create edges for each child
-      node.children.forEach((child) => {
+      for (const child of node.children) {
         const edgeId = `e${nodeId}-${child.account.id}`;
         newEdges.push({
           id: edgeId,
@@ -78,7 +78,7 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
           target: child.account.id,
           type: 'smoothstep',
           animated: false,
-          style: { 
+          style: {
             stroke: '#363643',
             strokeWidth: 2,
           },
@@ -89,23 +89,23 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
             color: '#363643',
           },
         });
-      });
+      }
 
       // Process children with vertical spacing
       let currentYOffset = yOffset;
-      node.children.forEach((child) => {
+      for (const child of node.children) {
         const childHeight = calculateSubtreeHeight(child);
         processNode(child, column + 1, currentYOffset);
         currentYOffset += childHeight * NODE_SPACING;
-      });
+      }
 
       return node.children.length;
     };
 
     // Find root nodes (nodes that are not children of any other node)
-    const rootNodes = Array.from(accountGraph.values()).filter(node => {
+    const rootNodes = Array.from(accountGraph.values()).filter((node) => {
       for (const otherNode of accountGraph.values()) {
-        if (otherNode.children.some(child => child.account.id === node.account.id)) {
+        if (otherNode.children.some((child) => child.account.id === node.account.id)) {
           return false;
         }
       }
@@ -114,11 +114,11 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
 
     // Process all root nodes
     let currentYOffset = 0;
-    rootNodes.forEach((node) => {
+    for (const node of rootNodes) {
       const height = calculateSubtreeHeight(node);
       processNode(node, 0, currentYOffset);
       currentYOffset += height * NODE_SPACING;
-    });
+    }
 
     setNodes(newNodes);
     setEdges(newEdges);
@@ -128,14 +128,14 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
     <ReactFlow
       nodes={nodes}
       edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       fitView
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}
       proOptions={{ hideAttribution: true }}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
     >
       <Controls showInteractive={false} />
       <Background variant={BackgroundVariant.Dots} gap={20} size={0.75} color="#363643" bgColor="#F9F9F9" />
