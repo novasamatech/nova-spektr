@@ -47,7 +47,7 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-[600px]">
-          <div className="absolute left-2 top-2 z-10 w-[200px]">
+          <div className="absolute left-4 top-4 z-10 w-[200px]">
             <ChainSelector />
           </div>
 

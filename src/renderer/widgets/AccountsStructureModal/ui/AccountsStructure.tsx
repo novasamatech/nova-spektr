@@ -58,7 +58,8 @@ export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
       visited.add(node.account.id);
 
       const nodeId = node.account.id;
-      const x = column * LEVEL_SPACING;
+      // Start from the right side (negative x values)
+      const x = -column * LEVEL_SPACING;
       const y = yOffset;
 
       newNodes.push({
@@ -68,17 +69,19 @@ export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
           account: node.account,
         },
         position: { x, y },
-        sourcePosition: Position.Right,
-        targetPosition: Position.Left,
+        // Swap source and target positions
+        sourcePosition: Position.Left,
+        targetPosition: Position.Right,
       });
 
       // Create edges for each child
       for (const child of node.children) {
-        const edgeId = `e${nodeId}-${child.account.id}`;
+        const edgeId = `e${child.account.id}-${nodeId}`;
         newEdges.push({
           id: edgeId,
-          source: nodeId,
-          target: child.account.id,
+          // Swap source and target
+          source: child.account.id,
+          target: nodeId,
           type: 'smoothstep',
           animated: false,
           style: {
