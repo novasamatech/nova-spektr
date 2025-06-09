@@ -32,7 +32,13 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
         <div className="flex flex-col gap-1">
           <div className="text-md font-medium">{getAccountType(data.account)}</div>
           <div className="text-sm text-text-secondary">
-            <Address address={toAddress(data.account.accountId)} title={data.account.name} variant="short" showIcon />
+            <Address
+              address={toAddress(data.account.accountId)}
+              title={data.account.name}
+              variant="short"
+              showIcon
+              iconSize={24}
+            />
           </div>
         </div>
 
