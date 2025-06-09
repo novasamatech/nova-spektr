@@ -297,11 +297,12 @@ const $signatories = createSignatoriesStore({
 
 const $canSubmit = combine(
   {
+    isFormValid: form.$isValid,
     isFeeLoading: $pendingFee,
     isStakingLoading: subscribeStakingFx.pending,
   },
-  ({ isFeeLoading, isStakingLoading }) => {
-    return !isFeeLoading && !isStakingLoading;
+  ({ isFormValid, isFeeLoading, isStakingLoading }) => {
+    return isFormValid && !isFeeLoading && !isStakingLoading;
   },
 );
 
