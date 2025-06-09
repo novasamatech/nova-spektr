@@ -42,14 +42,20 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 };
 
 multisigOperationsSDK(governanceOperationDetailFeature, {
-  title: ({ operation }) => {
+  icon({ operation }) {
+    const transaction = operation.transaction;
+    const icon = transaction?.type && getOperationIcon(transaction.type);
+    if (icon) {
+      return icon;
+    }
+  },
+  title({ operation }) {
     const transaction = operation.transaction;
 
     const title = transaction?.type && getOperationTitle(transaction.type);
-    const icon = transaction?.type && getOperationIcon(transaction.type);
 
     if (title) {
-      return <GovernanceOperationTitle operation={operation} title={title} icon={icon} />;
+      return <GovernanceOperationTitle operation={operation} title={title} />;
     }
 
     return null;

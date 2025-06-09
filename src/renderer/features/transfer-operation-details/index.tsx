@@ -25,6 +25,15 @@ transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }
 });
 
 multisigOperationsSDK(transferOperationDetailFeature, {
+  icon({ operation }) {
+    const transaction = operation.transaction;
+    if (isTransferTransaction(transaction)) {
+      return 'transferMst';
+    }
+    if (isXcmTransaction(transaction)) {
+      return 'crossChain';
+    }
+  },
   title({ operation }) {
     const transaction = operation.transaction;
 

@@ -20,7 +20,6 @@ export const XcmTransferOperationTitle = ({ operation }: Props) => {
       <TransactionTitle
         className="flex-1 overflow-hidden"
         title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
-        icon="crossChain"
       />
 
       {asset && amount && (

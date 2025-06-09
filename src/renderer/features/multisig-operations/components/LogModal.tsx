@@ -14,6 +14,8 @@ import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 
+import { OperationIcon } from './OperationIcon';
+
 type Props = {
   operation: MultisigOperation;
   account?: MultisigAccount;
@@ -91,6 +93,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
       <Modal.Title close>{t('log.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <OperationIcon operation={operation} />
           <Slot id={logTitleSlot} props={{ operation }} />
 
           <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />

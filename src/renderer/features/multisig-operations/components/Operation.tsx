@@ -7,6 +7,7 @@ import { type MultisigOperation } from '@/domains/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 
 import { OperationFullInfo } from './OperationFullInfo';
+import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
@@ -25,6 +26,9 @@ export const Operation = memo(({ operation, account }: Props) => {
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
           <OperationTitleDate operation={operation} />
+
+          <OperationIcon operation={operation} />
+
           <Slot id={operationTitleSlot} props={{ operation: operation }} />
           <OperationTitleStatus operation={operation} />
         </div>

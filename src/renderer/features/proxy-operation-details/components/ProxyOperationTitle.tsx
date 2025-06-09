@@ -22,7 +22,7 @@ export const ProxyOperationTitle = ({ operation, title }: Props) => {
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} icon="proxyMst" />
+      <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} />
 
       {asset && amount && (
         <Box width="160px" direction="row" gap={2} verticalAlign="center">
