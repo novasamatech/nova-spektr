@@ -12,16 +12,16 @@ import {
 } from '@xyflow/react';
 import { useEffect } from 'react';
 
-import { type AccountNode as AccountNodeType, type AnyAccount } from '@/domains/network';
+import { type AccountNode, type AnyAccount } from '@/domains/network';
 
-import { AccountNode } from './AccountNode';
+import { AccountStructureNode } from './AccountStructureNode';
 
 const nodeTypes = {
-  accountNode: AccountNode,
+  accountNode: AccountStructureNode,
 };
 
 interface AccountsStructureProps {
-  rootNode: AccountNodeType | null;
+  rootNode: AccountNode | null;
 }
 
 type AccountNodeData = {
@@ -47,13 +47,13 @@ export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
     const visited = new Set<string>();
 
     // First pass: calculate total height needed for each node's subtree
-    const calculateSubtreeHeight = (node: AccountNodeType): number => {
+    const calculateSubtreeHeight = (node: AccountNode): number => {
       if (node.children.length === 0) return 1;
       return node.children.reduce((sum, child) => sum + calculateSubtreeHeight(child), 0);
     };
 
     // Second pass: position nodes
-    const processNode = (node: AccountNodeType, column: number, yOffset: number): number => {
+    const processNode = (node: AccountNode, column: number, yOffset: number): number => {
       if (visited.has(node.account.id)) return 0;
       visited.add(node.account.id);
 

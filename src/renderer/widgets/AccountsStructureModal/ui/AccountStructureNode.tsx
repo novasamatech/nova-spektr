@@ -5,15 +5,14 @@ import { toAddress } from '@/shared/lib/utils';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AnyAccount } from '@/domains/network';
 
-interface AccountNodeProps {
+interface AccountStructureNodeProps {
   data: {
-    label: string;
     account: AnyAccount;
   };
   id: string;
 }
 
-export const AccountNode = ({ data, id }: AccountNodeProps) => {
+export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) => {
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
@@ -29,7 +28,7 @@ export const AccountNode = ({ data, id }: AccountNodeProps) => {
         {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
         <div className="flex flex-col gap-1">
-          <div className="text-md font-medium">{data.label}</div>
+          <div className="text-md font-medium">{data.account.name}</div>
           <div className="text-sm text-text-secondary">
             <Address address={toAddress(data.account.accountId)} variant="short" showIcon />
           </div>
