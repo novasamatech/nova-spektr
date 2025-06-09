@@ -282,8 +282,8 @@ export const Staking = () => {
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: isMultipleStakes
-        ? Operations.restakeModelShards.events.flowStarted
-        : Operations.restakeModel.events.flowStarted,
+        ? Operations.restakeModelShards.flowStarted
+        : Operations.restakeModel.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
         totalStakes.length > 1

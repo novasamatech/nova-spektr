@@ -542,15 +542,10 @@ export const formModel = {
   $isStakingLoading: subscribeStakingFx.pending,
   $canSubmit,
 
-  events: {
-    formInitiated,
-    formCleared,
-
-    feeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
-  },
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  formCleared,
+  feeChanged,
+  multisigDepositChanged,
+  isFeeLoadingChanged,
+  formSubmitted,
 };

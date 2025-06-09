@@ -209,7 +209,7 @@ const FeeSection = () => {
           api={api}
           asset={network.chain.assets[0]}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
+          onDepositChange={formModel.multisigDepositChanged}
         />
       )}
 
@@ -218,8 +218,8 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
+        onFeeChange={formModel.feeChanged}
+        onFeeLoading={formModel.isFeeLoadingChanged}
       />
 
       {transactions && transactions.length > 1 && (
@@ -229,8 +229,8 @@ const FeeSection = () => {
           asset={network.chain.assets[0]}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
-          onFeeChange={formModel.events.totalFeeChanged}
-          onFeeLoading={formModel.events.isFeeLoadingChanged}
+          onFeeChange={formModel.totalFeeChanged}
+          onFeeLoading={formModel.isFeeLoadingChanged}
         />
       )}
     </div>

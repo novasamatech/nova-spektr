@@ -166,7 +166,7 @@ const FeeSection = () => {
           api={api}
           asset={network.chain.assets[0]}
           threshold={(initiator.value as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
+          onDepositChange={formModel.multisigDepositChanged}
         />
       )}
 
@@ -176,8 +176,8 @@ const FeeSection = () => {
         api={api}
         asset={network.chain.assets[0]}
         transaction={transaction}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
+        onFeeChange={formModel.feeChanged}
+        onFeeLoading={formModel.isFeeLoadingChanged}
       />
     </div>
   );
