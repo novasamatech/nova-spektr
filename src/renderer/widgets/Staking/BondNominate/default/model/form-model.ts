@@ -2,20 +2,14 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import {
-  type Address,
-  type Asset,
-  type Chain,
-  type ProxyTxWrapper,
-  RewardsDestination,
-  WrapperKind,
-} from '@/shared/core';
+import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
   formatAmount,
   getRelaychainAsset,
   isStringsMatchQuery,
+  nonNullable,
   nullable,
   stakeableAmount,
   toAddress,
@@ -26,7 +20,7 @@ import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { validatorsModel } from '@/features/staking';
@@ -326,14 +320,15 @@ sample({
 });
 
 sample({
-  clock: $txWrappers,
-  fn: (txWrappers) => {
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
+  clock: $route,
+  fn: (route) => {
+    const proxyAccount = route.find(accountUtils.isProxiedAccount);
+    const isMultisigAccount = route.find(accountUtils.isMultisigAccount);
 
     return {
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
+      proxyAccount: proxyAccount ?? null,
+      isProxy: nonNullable(proxyAccount),
+      isMultisig: nonNullable(isMultisigAccount),
     };
   },
   target: spread({
