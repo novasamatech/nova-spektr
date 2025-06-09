@@ -5,7 +5,6 @@ import { debounce } from 'patronum';
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
@@ -45,11 +44,13 @@ const $input = combine(
     for (const account of wallet.accounts) {
       if (accountUtils.isProxiedAccount(account)) {
         const api = apis[account.chainId];
+        const chain = chains[account.chainId];
 
-        if (api) {
+        if (api && chain) {
           input.push({
             api,
-            accountId: account.accountId as AccountId,
+            chain,
+            accountId: account.accountId,
           });
         }
       } else {
@@ -61,7 +62,8 @@ const $input = combine(
           if (api) {
             input.push({
               api,
-              accountId: account.accountId as AccountId,
+              chain,
+              accountId: account.accountId,
             });
           }
         }

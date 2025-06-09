@@ -5,7 +5,7 @@ import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { accounts } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';

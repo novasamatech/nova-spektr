@@ -2,7 +2,6 @@ import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
 import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
@@ -44,7 +43,7 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 
 governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operation.transaction;
 
     if (
       transaction?.type &&
@@ -62,7 +61,7 @@ governanceOperationDetailFeature.inject(operationDetailsSlot, {
 
 governanceOperationDetailFeature.inject(operationDetailsSlot, {
   render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operation.transaction;
 
     if (
       transaction?.type &&
@@ -77,7 +76,7 @@ governanceOperationDetailFeature.inject(operationDetailsSlot, {
 });
 
 governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   const title = transaction?.type && getOperationTitle(transaction.type);
   const icon = transaction?.type && getOperationIcon(transaction.type);
@@ -91,7 +90,7 @@ governanceOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
 
 governanceOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   const title = transaction?.type && getOperationTitle(transaction.type);
   const icon = transaction?.type && getOperationIcon(transaction.type);

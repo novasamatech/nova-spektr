@@ -1,15 +1,19 @@
-import { type Chain, type FlexibleMultisigTransaction, type MultisigTransaction, type Wallet } from '@/shared/core';
+import { useUnit } from 'effector-react';
+
+import { type Chain, type MultisigAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, copyToClipboard, truncate } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { WalletIcon } from '@/entities/wallet';
+import { WalletIcon, accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation;
   wallets: Wallet[];
   chain: Chain;
 };
@@ -17,10 +21,14 @@ type Props = {
 const InteractionStyle =
   'rounded hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
-export const OperationAdvancedDetails = ({ tx, wallets, chain }: Props) => {
+export const OperationAdvancedDetails = ({ operation, wallets, chain }: Props) => {
   const { t } = useI18n();
-  const { signatories, indexCreated, blockCreated, deposit, depositor, callHash, callData } = tx;
+  const accounts = useUnit(walletSelect.$selectedAccounts);
+
+  const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
   const valueClass = 'text-text-secondary';
+  const multisigAccount = accounts.find(a => accountUtils.isMultisigAccount(a));
+  const signatories = (multisigAccount as MultisigAccount).signatories;
 
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(
     callHash,

@@ -4,8 +4,8 @@ import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
-import { accounts } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig';
+import { accounts, multisigOperation } from '@/domains/network';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
@@ -47,8 +47,8 @@ const populate = async () => {
   await accounts.populate();
   await walletModel.populate();
   multisigsModel.subscribe();
-  await proxyModel.populate();
-
+  proxyModel.populate();
+  multisigOperation.populate();
   governanceMetaProvider.populate();
 
   // TODO rework as populate effects

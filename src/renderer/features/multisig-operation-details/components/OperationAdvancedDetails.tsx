@@ -1,18 +1,18 @@
 import { useUnit } from 'effector-react';
 
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, copyToClipboard, toAddress, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
 import { WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 const InteractionStyle =

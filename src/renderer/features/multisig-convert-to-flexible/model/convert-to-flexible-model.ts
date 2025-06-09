@@ -11,7 +11,7 @@ import { type PathType, Paths } from '@/shared/routes';
 import { createMultisigDeposit, createTxStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';

@@ -1,7 +1,6 @@
 import { createFeature } from '@/shared/feature';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle } from '@/entities/transaction';
 import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
 
@@ -18,7 +17,7 @@ multisigOperationDetailsFeature.inject(operationDetailsSlot, {
 });
 
 multisigOperationDetailsFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   if (transaction && transaction.type) return null;
 
@@ -39,7 +38,7 @@ multisigOperationDetailsFeature.inject(operationDetailsSlot, {
 });
 
 multisigOperationDetailsFeature.inject(logTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   if (transaction && transaction.type) return null;
 

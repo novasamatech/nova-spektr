@@ -1,11 +1,11 @@
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance } from '@/shared/ui-entities';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import {
   TransactionTitle,
   getTransactionAmount,
   isTransferTransaction,
   isXcmTransaction,
+  useTransactionAsset,
 } from '@/entities/transaction';
 import {
   confirmTransactionInfoSlot,
@@ -18,7 +18,6 @@ import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
 import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
-import { useTransactionAsset } from './hooks/useTransactionAsset';
 import { transferOperationDetailFeature } from './model/feature';
 
 export { transferOperationDetailFeature };
@@ -26,7 +25,7 @@ export { transferOperationDetailFeature };
 transferOperationDetailFeature.inject(operationDetailsSlot, {
   order: 1,
   render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+    const transaction = operation.transaction;
 
     if (isTransferTransaction(transaction) || isXcmTransaction(transaction)) {
       return <TransferOperationDetails operation={operation} />;
@@ -37,7 +36,7 @@ transferOperationDetailFeature.inject(operationDetailsSlot, {
 });
 
 transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   if (isTransferTransaction(transaction)) {
     return <TransferOperationTitle operation={operation} />;
@@ -56,7 +55,7 @@ transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }
 
 transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
   const asset = useTransactionAsset(operation);
   const amount = transaction ? getTransactionAmount(transaction) : null;
 

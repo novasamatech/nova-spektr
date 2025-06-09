@@ -5,9 +5,10 @@ projects:
       - src/renderer/shared/api/governance/**
 
   SubQuery Proxy:
-    schema: https://subquery-proxy-polkadot-prod.novasama-tech.org
+    schema: https://subquery-proxy-polkadot-stg.novasama-tech.org
     include:
-      - src/renderer/entities/multisig/**
+      - src/renderer/domains/network/multisig-operation/**
+      - src/renderer/entities/multisig-accounts/**
       - src/renderer/entities/proxy/**
 
   SubQuery History:

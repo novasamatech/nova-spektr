@@ -1,39 +1,37 @@
 import { memo } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Accordion } from '@/shared/ui';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 
 import { OperationFullInfo } from './OperationFullInfo';
 
 type Props = {
-  tx: MultisigTransactionDS;
+  operation: MultisigOperation;
   account: MultisigAccount | null;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
 };
 
 export const operationTitleSlot = createSlot<SlotProps>();
 
-const Operation = memo(({ tx, account }: Props) => {
+export const Operation = memo(({ operation, account }: Props) => {
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
-          <OperationTitleDate operation={tx} />
-          <Slot id={operationTitleSlot} props={{ operation: tx }} />
-          <OperationTitleStatus operation={tx} />
+          <OperationTitleDate operation={operation} />
+          <Slot id={operationTitleSlot} props={{ operation: operation }} />
+          <OperationTitleStatus operation={operation} />
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo tx={tx} account={account} />
+        <OperationFullInfo operation={operation} account={account} />
       </Accordion.Content>
     </Accordion>
   );
 });
-
-export default Operation;

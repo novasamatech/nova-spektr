@@ -1,15 +1,15 @@
 import { useUnit } from 'effector-react';
 
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const OperationDetails = ({ operation }: Props) => {
