@@ -17,7 +17,7 @@ export const OperationTitleStatus = ({ operation }: Props) => {
   const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
 
   return (
-    <div className="flex w-[120px] justify-end">
+    <div className="flex w-[120px] shrink-0 justify-end">
       <Status status={operation.status} signed={approvals.length} threshold={account?.threshold || 0} />
     </div>
   );
