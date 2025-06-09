@@ -2,13 +2,13 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -114,15 +114,16 @@ sample({
 });
 
 sample({
-  clock: formModel.$txWrappers,
-  source: $api,
-  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
-  fn: (api, txWrappers) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
-
+  source: {
+    api: $api,
+    route: formModel.$route,
+  },
+  filter: ({ api, route }) => nonNullable(api) && nonNullable(route),
+  fn: ({ api, route }) => {
+    const multisig = route.find(accountUtils.isMultisigAccount);
     return {
       api: api!,
-      threshold: wrapper?.multisigAccount.threshold || 0,
+      threshold: multisig?.threshold ?? 0,
     };
   },
   target: getMultisigDepositFx,
@@ -168,7 +169,6 @@ sample({
     bondData: $bondNominateData,
     fee: formModel.$fee,
     walletData: $walletData,
-    txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     multisigTx: formModel.$multisigTx,
@@ -207,20 +207,17 @@ sample({
     bondData: $bondNominateData,
     walletData: $walletData,
     transaction: formModel.$tx,
-    txWrappers: formModel.$txWrappers,
   },
   filter: ({ bondData, walletData, transaction }) => {
     return Boolean(bondData) && Boolean(walletData) && Boolean(transaction);
   },
-  fn: ({ bondData, walletData, transaction, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ bondData, walletData, transaction }) => {
     return {
       event: {
         signingPayloads: [
           {
             chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : bondData!.initiator!,
+            account: bondData!.initiator,
             signatory: bondData!.signatory,
             transaction: transaction!,
           },
