@@ -209,11 +209,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
+    if (!isProxy || !proxyAccount) return null;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
-  { skipVoid: false },
 );
 
 const $accounts = combine(
@@ -290,9 +289,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(

@@ -75,9 +75,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -87,7 +86,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ api, pureTxs, txWrappers }) => {
-    if (!api) return undefined;
+    if (!api) return null;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -97,7 +96,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 const $multisigAlreadyExists = combine(
