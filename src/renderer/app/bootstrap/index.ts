@@ -114,8 +114,6 @@ export const bootstrap = () => {
     import('@/features/governance-operation-details').then(({ governanceOperationDetailFeature }) => governanceOperationDetailFeature),
     import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
 
-    import('@/features/multisig-operation-details').then(({ multisigOperationDetailsFeature }) => multisigOperationDetailsFeature),
-
     import('@/features/transfer-operation-details').then(({ transferOperationDetailFeature }) => transferOperationDetailFeature),
     import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),
 

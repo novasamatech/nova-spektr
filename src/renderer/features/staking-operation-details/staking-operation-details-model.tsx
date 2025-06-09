@@ -3,7 +3,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
 import { TransactionTitle } from '@/entities/transaction';
-import { logTitleSlot, operationDetailsSlot, operationTitleSlot } from '@/features/multisig-operations';
+import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { PayeeOperationDetails } from './components/PayeeOperationDetails';
 import { StakingOperationTitle } from './components/StakingOperationTitle';
@@ -41,8 +41,33 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   return Icon[transactionType];
 };
 
-stakingOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
+multisigOperationsSDK(stakingOperationDetailFeature, {
+  title({ operation }) {
+    const transaction = operation.transaction;
+
+    const title = transaction?.type && getOperationTitle(transaction.type);
+    const icon = transaction?.type && getOperationIcon(transaction.type);
+
+    if (title) {
+      return <StakingOperationTitle operation={operation} title={title} icon={icon} />;
+    }
+
+    return null;
+  },
+  logTitle({ operation }) {
+    const { t } = useI18n();
+    const transaction = operation.transaction;
+
+    const title = transaction?.type && getOperationTitle(transaction.type);
+    const icon = transaction?.type && getOperationIcon(transaction.type);
+
+    if (title) {
+      return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon={icon} />;
+    }
+
+    return null;
+  },
+  details({ operation }) {
     const transaction = operation.transaction;
 
     if (
@@ -58,47 +83,10 @@ stakingOperationDetailFeature.inject(operationDetailsSlot, {
       return <PayeeOperationDetails operation={operation} />;
     }
 
-    return null;
-  },
-  order: 1,
-});
-
-stakingOperationDetailFeature.inject(operationDetailsSlot, {
-  render: ({ operation }) => {
-    const transaction = operation.transaction;
-
     if (transaction?.type && [TransactionType.BOND, TransactionType.NOMINATE].includes(transaction.type)) {
       return <ValidatorsOperationDetails operation={operation} />;
     }
 
     return null;
   },
-  order: 2,
-});
-
-stakingOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = operation.transaction;
-
-  const title = transaction?.type && getOperationTitle(transaction.type);
-  const icon = transaction?.type && getOperationIcon(transaction.type);
-
-  if (title) {
-    return <StakingOperationTitle operation={operation} title={title} icon={icon} />;
-  }
-
-  return null;
-});
-
-stakingOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
-  const { t } = useI18n();
-  const transaction = operation.transaction;
-
-  const title = transaction?.type && getOperationTitle(transaction.type);
-  const icon = transaction?.type && getOperationIcon(transaction.type);
-
-  if (title) {
-    return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon={icon} />;
-  }
-
-  return null;
 });

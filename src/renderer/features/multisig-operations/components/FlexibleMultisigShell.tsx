@@ -80,7 +80,7 @@ export const FlexibleMultisigShell = memo(({ operation, account }: Props) => {
         </div>
         <Signatories signatories={signatories} connection={extendedChain} events={events} chain={extendedChain} />
 
-        <Details operation={operation} chain={extendedChain} />
+        <Details operation={operation} />
       </Plate>
     </div>
   );
@@ -175,16 +175,15 @@ const Signatories = memo(({ signatories, connection, events, chain }: Signatorie
   );
 });
 
-const Details = ({ operation, chain }: { operation: MultisigOperation; chain: Chain }) => {
+const Details = ({ operation }: { operation: MultisigOperation }) => {
   const { t } = useI18n();
-  const wallets = useUnit(walletModel.$wallets);
 
   return (
     <Accordion>
       <Accordion.Trigger>{t('operation.detailsTitle')}</Accordion.Trigger>
       <Accordion.Content>
         <div className="mt-3">
-          <OperationAdvancedDetails operation={operation} chain={chain} wallets={wallets} />
+          <OperationAdvancedDetails operation={operation} />
         </div>
       </Accordion.Content>
     </Accordion>

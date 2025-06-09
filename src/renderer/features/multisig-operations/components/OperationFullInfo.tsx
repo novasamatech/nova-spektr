@@ -12,6 +12,8 @@ import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 
+import { OperationAdvancedDetails } from './OperationAdvancedDetails';
+import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
 import CallDataModal from './modals/CallDataModal';
@@ -88,7 +90,11 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
         </div>
 
         <div className="flex w-full flex-col gap-y-1">
-          <Slot id={operationDetailsSlot} props={{ operation: operation }} />{' '}
+          <OperationDetails operation={operation} />
+
+          <Slot id={operationDetailsSlot} props={{ operation: operation }} />
+
+          <OperationAdvancedDetails operation={operation} />
         </div>
 
         <div className="mt-3 flex items-center">
