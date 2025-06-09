@@ -268,6 +268,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
             <div className="flex items-center justify-between">
               <WalletCardLg wallet={wallet} />
+
               <div className="shrink-0">
                 {features.accountsStructure && <AccountsStructureModal accountGraph={accountGraph} />}
               </div>
