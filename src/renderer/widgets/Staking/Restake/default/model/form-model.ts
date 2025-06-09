@@ -110,8 +110,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             network: $networkStore,
             restakeBalanceRange: $restakeBalanceRange,
             account: $account,
+            fee: $fee,
           }),
-          fn: (amount, _f, { network, restakeBalanceRange, account }) => {
+          fn: (amount, _f, { network, restakeBalanceRange, account, fee }) => {
             if (nullable(amount) || amount === '') {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -127,7 +128,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            const isNotEnoughBalanceForFee = amountBN.gt(new BN(account.balances.balance));
+            const isNotEnoughBalanceForFee = fee.gt(new BN(account.balances.balance));
             if (isNotEnoughBalanceForFee) {
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
