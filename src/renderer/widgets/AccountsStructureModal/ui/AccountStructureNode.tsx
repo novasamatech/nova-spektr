@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
+import { SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
@@ -26,12 +27,12 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
       {/*  toolbar*/}
       {/*</NodeToolbar>*/}
 
-      <div className="border-stroke w-[250px] rounded-md border-2 bg-white px-4 py-2 shadow-md">
+      <div className="w-[250px] rounded-md bg-white shadow-md">
         {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
-        <div className="flex flex-col gap-1">
-          <div className="text-md font-medium">{getAccountType(data.account)}</div>
-          <div className="text-sm text-text-secondary">
+        <div className="flex flex-col">
+          <SmallTitleText className="border-stroke border-b px-4 py-2">{getAccountType(data.account)}</SmallTitleText>
+          <div className="px-4 py-2 text-sm text-text-secondary">
             <Address
               address={toAddress(data.account.accountId)}
               title={data.account.name}
