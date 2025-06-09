@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountsStructure } from './AccountsStructure';
@@ -36,17 +36,10 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
     [onClose],
   );
 
-  const accountGraph = useMemo(() => {
-    if (!selectedChain || !account) return new Map();
+  const rootNode = useMemo(() => {
+    if (!selectedChain || !account) return null;
     const graph = accountService.createAccountGraphs(accountList, selectedChain);
-    const firstAccountData = graph.get(account);
-    if (!firstAccountData) return new Map();
-
-    console.log({ firstAccountData });
-
-    const filteredGraph = new Map<string, AccountNode>();
-    filteredGraph.set(account.id, firstAccountData);
-    return filteredGraph;
+    return graph.get(account) ?? null;
   }, [accountList, selectedChain, account]);
 
   return (
@@ -58,7 +51,7 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
             <ChainSelector />
           </div>
 
-          <AccountsStructure accountGraph={accountGraph} />
+          <AccountsStructure rootNode={rootNode} />
         </div>
       </Modal.Content>
       <Modal.Trigger>

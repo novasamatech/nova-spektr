@@ -12,7 +12,7 @@ import {
 } from '@xyflow/react';
 import { useEffect } from 'react';
 
-import { type AccountNode as AccountNodeType } from '@/domains/network';
+import { type AccountNode as AccountNodeType, type AnyAccount } from '@/domains/network';
 
 import { AccountNode } from './AccountNode';
 
@@ -21,23 +21,27 @@ const nodeTypes = {
 };
 
 interface AccountsStructureProps {
-  accountGraph: Map<string, AccountNodeType>;
+  rootNode: AccountNodeType | null;
 }
 
 type AccountNodeData = {
-  label: string;
-  account: AccountNodeType['account'];
-  [key: string]: unknown;
+  account: AnyAccount;
 };
 
 const LEVEL_SPACING = 400;
 const NODE_SPACING = 150;
 
-export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
+export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   useEffect(() => {
+    if (!rootNode) {
+      setNodes([]);
+      setEdges([]);
+      return;
+    }
+
     const newNodes: Node<AccountNodeData>[] = [];
     const newEdges: Edge[] = [];
     const visited = new Set<string>();
@@ -61,7 +65,6 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
         id: nodeId,
         type: 'accountNode',
         data: {
-          label: node.account.name,
           account: node.account,
         },
         position: { x, y },
@@ -102,27 +105,12 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       return node.children.length;
     };
 
-    // Find root nodes (nodes that are not children of any other node)
-    const rootNodes = Array.from(accountGraph.values()).filter((node) => {
-      for (const otherNode of accountGraph.values()) {
-        if (otherNode.children.some((child) => child.account.id === node.account.id)) {
-          return false;
-        }
-      }
-      return true;
-    });
-
-    // Process all root nodes
-    let currentYOffset = 0;
-    for (const node of rootNodes) {
-      const height = calculateSubtreeHeight(node);
-      processNode(node, 0, currentYOffset);
-      currentYOffset += height * NODE_SPACING;
-    }
+    // Process the root node
+    processNode(rootNode, 0, 0);
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [accountGraph, setNodes, setEdges]);
+  }, [rootNode, setNodes, setEdges]);
 
   return (
     <ReactFlow
