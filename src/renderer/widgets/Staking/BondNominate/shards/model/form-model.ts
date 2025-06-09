@@ -460,18 +460,14 @@ export const formModel = {
   $isMultisig,
   $canSubmit,
 
-  events: {
-    formInitiated,
-    formCleared,
-    destinationQueryChanged,
-    destinationTypeChanged,
+  formInitiated,
+  formCleared,
+  destinationQueryChanged,
+  destinationTypeChanged,
 
-    txWrapperChanged,
-    feeDataChanged,
-    isFeeLoadingChanged,
-  },
-  output: {
-    formSubmitted,
-    formChanged,
-  },
+  txWrapperChanged,
+  feeDataChanged,
+  isFeeLoadingChanged,
+  formSubmitted,
+  formChanged,
 };

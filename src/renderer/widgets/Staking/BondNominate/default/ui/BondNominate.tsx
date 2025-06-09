@@ -22,10 +22,10 @@ export const BondNominate = () => {
   const walletData = useUnit(bondNominateModel.$walletData);
   const initiatorWallet = useUnit(bondNominateModel.$initiatorWallet);
 
-  const [isModalOpen, closeModal] = useModalClose(!bondUtils.isNoneStep(step), bondNominateModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!bondUtils.isNoneStep(step), bondNominateModel.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     bondUtils.isBasketStep(step),
-    bondNominateModel.output.flowFinished,
+    bondNominateModel.flowFinished,
   );
 
   if (!walletData) {
@@ -62,25 +62,21 @@ export const BondNominate = () => {
       onClose={closeModal}
     >
       {bondUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-      {bondUtils.isValidatorsStep(step) && (
-        <Validators onGoBack={() => bondNominateModel.events.stepChanged(Step.INIT)} />
-      )}
+      {bondUtils.isValidatorsStep(step) && <Validators onGoBack={() => bondNominateModel.stepChanged(Step.INIT)} />}
       {bondUtils.isConfirmStep(step) && (
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => bondNominateModel.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => bondNominateModel.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )
           }
-          onGoBack={() => bondNominateModel.events.stepChanged(Step.VALIDATORS)}
+          onGoBack={() => bondNominateModel.stepChanged(Step.VALIDATORS)}
         />
       )}
-      {bondUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => bondNominateModel.events.stepChanged(Step.CONFIRM)} />
-      )}
+      {bondUtils.isSignStep(step) && <OperationSign onGoBack={() => bondNominateModel.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

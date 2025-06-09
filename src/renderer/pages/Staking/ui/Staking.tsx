@@ -279,8 +279,8 @@ export const Staking = () => {
 
     const model = {
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
-        ? Operations.bondNominateModelShards.events.flowStarted
-        : Operations.bondNominateModel.events.flowStarted,
+        ? Operations.bondNominateModelShards.flowStarted
+        : Operations.bondNominateModel.flowStarted,
       [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,

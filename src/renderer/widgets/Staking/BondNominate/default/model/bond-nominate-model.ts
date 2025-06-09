@@ -318,12 +318,8 @@ export const bondNominateModel = {
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
   $multisigAlreadyExists,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  flowFinished,
 };

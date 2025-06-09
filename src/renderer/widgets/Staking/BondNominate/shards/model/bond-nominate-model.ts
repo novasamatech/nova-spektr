@@ -127,7 +127,7 @@ sample({
 // Transaction & Form
 
 sample({
-  clock: [flowStarted, formModel.output.formChanged],
+  clock: [flowStarted, formModel.formChanged],
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
@@ -165,11 +165,11 @@ sample({
       isMultisig: transactionService.hasMultisig(txWrappers),
     };
   },
-  target: formModel.events.txWrapperChanged,
+  target: formModel.txWrapperChanged,
 });
 
 sample({
-  clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModel.formChanged, validatorsModel.output.formSubmitted],
   source: {
     step: $step,
     bondData: $bondNominateData,
@@ -238,7 +238,7 @@ sample({
 
 sample({
   clock: getTransactionFeeFx.pending,
-  target: formModel.events.isFeeLoadingChanged,
+  target: formModel.isFeeLoadingChanged,
 });
 
 sample({
@@ -264,7 +264,7 @@ sample({
 
 sample({
   clock: $feeData.updates,
-  target: formModel.events.feeDataChanged,
+  target: formModel.feeDataChanged,
 });
 
 // Steps
@@ -273,7 +273,7 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
 sample({
@@ -283,7 +283,7 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   source: $walletData,
   filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
   fn: ({ chain }) => ({
@@ -396,7 +396,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.formCleared, validatorsModel.events.formCleared],
 });
 
 sample({
@@ -447,12 +447,8 @@ export const bondNominateModel = {
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
   $multisigAlreadyExists,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  flowFinished,
 };
