@@ -9,9 +9,7 @@ import {
   type Asset,
   type Chain,
   type ChainId,
-  type MultisigTxWrapper,
   type ProxiedAccount,
-  type ProxyTxWrapper,
   type Transaction,
 } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -30,8 +28,8 @@ import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
@@ -184,20 +182,73 @@ const $txWrappers = createTxWrappers({
   signatory: form.fields.signatory.$value,
 });
 
+const $isChainConnected = combine(
+  {
+    network: $networkStore,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ network, statuses }) => {
+    if (!network) return false;
+
+    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+  },
+);
+
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    network: $networkStore,
+  },
+  ({ apis, network }) => {
+    if (!network) return null;
+
+    return apis[network.chain.chainId] ?? null;
+  },
+);
+
+const $coreTx = combine(
+  {
+    network: $networkStore,
+    form: form.$values,
+    isConnected: $isChainConnected,
+  },
+  ({ network, form, isConnected }) => {
+    if (nullable(network) || nullable(form.initiator) || !isConnected) return null;
+
+    return transactionBuilder.buildRestake({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: form.initiator.accountId,
+      amount: form.amount || ZERO_BALANCE,
+    });
+  },
+);
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
+
 const $realAccount = combine(
   {
-    txWrappers: $txWrappers,
+    route: $route,
     initiator: form.fields.initiator.$value,
   },
-  ({ txWrappers, initiator }) => {
+  ({ route, initiator }) => {
     if (nullable(initiator)) return null;
-    if (txWrappers.length === 0) return initiator;
+    if (route.length === 0) return initiator;
 
-    if (transactionService.hasMultisig([txWrappers[0]])) {
-      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
+    const multisigAccount = route.find(accountUtils.isMultisigAccount);
+    if (multisigAccount) {
+      return multisigAccount;
     }
 
-    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
+    const proxyAccount = route.find(accountUtils.isProxiedAccount);
+    return proxyAccount ?? null;
   },
 );
 
@@ -242,57 +293,6 @@ const $signatories = createSignatoriesStore({
   chain: $chain,
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
-});
-
-const $isChainConnected = combine(
-  {
-    network: $networkStore,
-    statuses: networkModel.$connectionStatuses,
-  },
-  ({ network, statuses }) => {
-    if (!network) return false;
-
-    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
-  },
-);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    network: $networkStore,
-  },
-  ({ apis, network }) => {
-    if (!network) return null;
-
-    return apis[network.chain.chainId] ?? null;
-  },
-);
-
-const $coreTx = combine(
-  {
-    network: $networkStore,
-    form: form.$values,
-    isConnected: $isChainConnected,
-  },
-  ({ network, form, isConnected }) => {
-    if (nullable(network) || nullable(form.initiator) || !isConnected) return null;
-
-    return transactionBuilder.buildRestake({
-      chain: network.chain,
-      asset: network.asset,
-      accountId: form.initiator.accountId,
-      amount: form.amount || ZERO_BALANCE,
-    });
-  },
-);
-
-const { $fee, $pendingFee, $tx, $multisigTx } = createComplexTxStore({
-  api: $api,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-  accounts: accounts.$list,
-  chain: $chain,
-  transaction: $coreTx,
 });
 
 const $canSubmit = combine(
@@ -423,10 +423,10 @@ sample({
 });
 
 sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => ({
-    isProxy: transactionService.hasProxy(txWrappers),
-    isMultisig: transactionService.hasMultisig(txWrappers),
+  source: $route,
+  fn: (route) => ({
+    isProxy: nonNullable(route.find(accountUtils.isProxiedAccount)),
+    isMultisig: nonNullable(route.find(accountUtils.isMultisigAccount)),
   }),
   target: spread({
     isProxy: $isProxy,
