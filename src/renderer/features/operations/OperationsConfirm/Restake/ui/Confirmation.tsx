@@ -145,7 +145,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
                 type={(signerWallet || initiatorWallet).type}
-                onClick={confirmModel.output.formSubmitted}
+                onClick={confirmModel.formSubmitted}
               />
             )}
           </div>

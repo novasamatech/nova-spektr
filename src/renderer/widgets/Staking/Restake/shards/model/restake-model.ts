@@ -94,13 +94,13 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.formSubmitted,
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,

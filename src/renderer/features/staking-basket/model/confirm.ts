@@ -361,7 +361,7 @@ sample({
 sample({
   clock: prepareRestakeDataFx.doneData,
   fn: (data) => [data],
-  target: restakeConfirmModel.events.formInitiated,
+  target: restakeConfirmModel.formInitiated,
 });
 
 sample({
