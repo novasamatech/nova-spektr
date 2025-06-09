@@ -72,6 +72,14 @@ export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
         // Swap source and target positions
         sourcePosition: Position.Left,
         targetPosition: Position.Right,
+        // Add pink outline for root node using account ID
+        style:
+          nodeId === rootNode.account.id
+            ? {
+                outline: '2px solid #FF69B4',
+                borderRadius: '2px',
+              }
+            : undefined,
       });
 
       // Create edges for each child
