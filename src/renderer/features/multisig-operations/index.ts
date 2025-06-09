@@ -1,4 +1,4 @@
-export { logTitleSlot } from './components/LogModal';
+export { operationLogTitleTransformer } from './components/LogModal';
 export { operationTitleTransformer } from './components/Operation';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationIconTransformer } from './components/OperationIcon';

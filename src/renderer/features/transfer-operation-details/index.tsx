@@ -51,11 +51,7 @@ multisigOperationsSDK(transferOperationDetailFeature, {
 
     if (isTransferTransaction(transaction)) {
       return (
-        <TransactionTitle
-          className="overflow-hidden"
-          title={t('operations.titles.transfer', { asset: asset?.symbol })}
-          icon="transferMst"
-        >
+        <TransactionTitle className="overflow-hidden" title={t('operations.titles.transfer', { asset: asset?.symbol })}>
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
       );
@@ -66,14 +62,11 @@ multisigOperationsSDK(transferOperationDetailFeature, {
         <TransactionTitle
           className="overflow-hidden"
           title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
-          icon="transferMst"
         >
           {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
         </TransactionTitle>
       );
     }
-
-    return null;
   },
   details({ operation }) {
     const transaction = operation.transaction;

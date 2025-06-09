@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
+import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
 
@@ -21,18 +22,22 @@ export const operationTitleTransformer = createTransformer<{ operation: Multisig
 
 export const Operation = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const titleNode = useTransformer(operationTitleTransformer, { operation });
-  let title;
+  const externalTitleNode = useTransformer(operationTitleTransformer, { operation });
+  let titleNode;
 
-  if (titleNode) {
-    title = titleNode;
+  if (externalTitleNode) {
+    titleNode = externalTitleNode;
   } else {
-    if (operation.section && operation.method) {
-      const formattedMethod = formatSectionAndMethod(operation.section, operation.method);
-      title = <TransactionTitle title={formattedMethod} />;
-    } else {
-      title = <TransactionTitle title={t('operations.titles.unknown')} />;
-    }
+    const title =
+      operation.section && operation.method
+        ? formatSectionAndMethod(operation.section, operation.method)
+        : t('operations.titles.unknown');
+    titleNode = (
+      <>
+        <TransactionTitle className="flex-1" title={title} />
+        <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      </>
+    );
   }
 
   return (
@@ -42,7 +47,7 @@ export const Operation = memo(({ operation, account }: Props) => {
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
             <OperationIcon operation={operation} />
-            {title}
+            {titleNode}
           </div>
           <OperationTitleStatus operation={operation} />
         </div>

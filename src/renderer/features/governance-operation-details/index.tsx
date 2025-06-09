@@ -59,15 +59,10 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
   logTitle({ operation }) {
     const { t } = useI18n();
     const transaction = operation.transaction;
-
     const title = transaction?.type && getOperationTitle(transaction.type);
-    const icon = transaction?.type && getOperationIcon(transaction.type);
-
     if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon={icon} />;
+      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
-
-    return null;
   },
   details({ operation }) {
     const transaction = operation.transaction;

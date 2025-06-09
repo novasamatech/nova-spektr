@@ -59,14 +59,10 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
   logTitle({ operation }) {
     const { t } = useI18n();
     const transaction = operation.transaction;
-
     const title = transaction?.type && getOperationTitle(transaction.type);
-
     if (title) {
-      return <TransactionTitle className="overflow-hidden" title={t(title || '')} icon="proxyMst" />;
+      return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
-
-    return null;
   },
   details({ operation }) {
     const { t } = useI18n();

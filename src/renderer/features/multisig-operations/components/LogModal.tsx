@@ -1,17 +1,24 @@
 import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { type Account, type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
+import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { SS58_DEFAULT_PREFIX, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
+import {
+  SS58_DEFAULT_PREFIX,
+  formatSectionAndMethod,
+  getExtrinsicExplorer,
+  sortByDateAsc,
+  toAddress,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
+import { TransactionTitle } from '@/entities/transaction';
 import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 
 import { OperationIcon } from './OperationIcon';
@@ -51,12 +58,25 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
   }, {});
 };
 
-export const logTitleSlot = createSlot<{ operation: MultisigOperation }>();
+export const operationLogTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();
 
 const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }: Props) => {
   const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+
+  const externalTitleNode = useTransformer(operationLogTitleTransformer, { operation });
+  let titleNode;
+
+  if (externalTitleNode) {
+    titleNode = externalTitleNode;
+  } else {
+    const title =
+      operation.section && operation.method
+        ? formatSectionAndMethod(operation.section, operation.method)
+        : t('operations.titles.unknown');
+    titleNode = <TransactionTitle className="flex-1" title={title} />;
+  }
 
   const filteredWalletsMap = getFilteredWalletsMap(wallets);
   const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
@@ -93,8 +113,10 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
       <Modal.Title close>{t('log.title')}</Modal.Title>
       <Modal.Content>
         <div className="flex items-center justify-between gap-2 px-4 py-3">
-          <OperationIcon operation={operation} />
-          <Slot id={logTitleSlot} props={{ operation }} />
+          <div className="flex items-center gap-2">
+            <OperationIcon operation={operation} />
+            {titleNode}
+          </div>
 
           <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
         </div>
