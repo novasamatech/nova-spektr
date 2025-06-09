@@ -4,14 +4,7 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
-import {
-  type Address,
-  type Asset,
-  type Chain,
-  type ChainId,
-  type ProxiedAccount,
-  type Transaction,
-} from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -39,19 +32,10 @@ type FormParams = {
   amount: string;
 };
 
-type FormSubmitEvent = {
-  transactions: {
-    wrappedTx: Transaction;
-    multisigTx?: Transaction;
-    coreTx: Transaction;
-  }[];
-  formData: FormParams & {
-    signatory: AnyAccount | null;
-    proxiedAccount?: ProxiedAccount;
-    fee: string;
-    totalFee: string;
-    multisigDeposit: string;
-  };
+type FormSubmitEvent = FormParams & {
+  fee: string;
+  totalFee: string;
+  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<NetworkStore>();
@@ -474,35 +458,20 @@ sample({
 sample({
   clock: form.submit.doneData,
   source: {
-    realAccount: $realAccount,
     network: $networkStore,
-    tx: $tx,
-    multisigTx: $multisigTx,
-    coreTx: $coreTx,
-    isProxy: $isProxy,
     fee: $fee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, tx, coreTx }) => nonNullable(network) && nonNullable(tx) && nonNullable(coreTx),
-  fn: ({ realAccount, network, tx, multisigTx, coreTx, isProxy, fee, multisigDeposit }, formData) => {
+  filter: ({ network }) => nonNullable(network),
+  fn: ({ network, fee, multisigDeposit }, formData) => {
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
-      transactions: [
-        {
-          wrappedTx: tx!,
-          multisigTx: multisigTx!,
-          coreTx: coreTx!,
-        },
-      ],
-      formData: {
-        fee: fee.toString(),
-        totalFee: fee.toString(),
-        multisigDeposit,
-        ...formData,
-        amount,
-        ...(isProxy && { proxiedAccount: realAccount as ProxiedAccount }),
-      },
+      fee: fee.toString(),
+      totalFee: fee.toString(),
+      multisigDeposit,
+      ...formData,
+      amount,
     };
   },
   target: formSubmitted,

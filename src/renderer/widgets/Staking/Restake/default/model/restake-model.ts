@@ -1,7 +1,6 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Transaction } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -26,9 +25,6 @@ const $step = createStore<Step>(Step.NONE);
 const $restakeStore = createStore<RestakeStore | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $initiatorWallet = combine(
@@ -37,11 +33,10 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return null;
 
     return walletUtils.getWalletById(wallets, store.shards[0].walletId);
   },
-  { skipVoid: false },
 );
 
 sample({ clock: stepChanged, target: $step });
@@ -59,24 +54,10 @@ sample({
 
 sample({
   clock: formModel.formSubmitted,
-  fn: ({ transactions, formData }) => {
-    const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
-    const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
-    const coreTxs = transactions.map((tx) => tx.coreTx);
-
-    return {
-      wrappedTxs,
-      coreTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
-      store: { ...formData, shards: [formData.initiator!] },
-    };
+  fn: (formData) => {
+    return { ...formData, shards: [formData.initiator!] };
   },
-  target: spread({
-    wrappedTxs: $wrappedTxs,
-    multisigTxs: $multisigTxs,
-    coreTxs: $coreTxs,
-    store: $restakeStore,
-  }),
+  target: $restakeStore,
 });
 
 sample({
@@ -89,7 +70,7 @@ sample({
     route: formModel.$route,
   },
   filter: ({ networkStore }) => nonNullable(networkStore),
-  fn: ({ networkStore, coreTx, tx, multisigTx, route }, { formData }) => ({
+  fn: ({ networkStore, coreTx, tx, multisigTx, route }, formData) => ({
     event: [
       {
         ...formData,
@@ -116,19 +97,21 @@ sample({
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
-    wrappedTxs: $wrappedTxs,
+    wrappedTx: formModel.$tx,
   },
-  filter: ({ restakeStore, networkStore, wrappedTxs }) => {
-    return nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(wrappedTxs);
+  filter: ({ restakeStore, networkStore, wrappedTx }) => {
+    return nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(wrappedTx);
   },
-  fn: ({ restakeStore, networkStore, wrappedTxs }) => ({
+  fn: ({ restakeStore, networkStore, wrappedTx }) => ({
     event: {
-      signingPayloads: wrappedTxs!.map((tx, index) => ({
-        chain: networkStore!.chain,
-        account: restakeStore!.shards[index],
-        signatory: restakeStore!.signatory,
-        transaction: tx!,
-      })),
+      signingPayloads: [
+        {
+          chain: networkStore!.chain,
+          account: restakeStore!.shards[0],
+          signatory: restakeStore!.signatory,
+          transaction: wrappedTx!,
+        },
+      ],
     },
     step: Step.SIGN,
   }),
@@ -143,15 +126,15 @@ sample({
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
-    multisigTxs: $multisigTxs,
-    wrappedTxs: $wrappedTxs,
-    coreTxs: $coreTxs,
+    multisigTx: formModel.$multisigTx,
+    wrappedTx: formModel.$tx,
+    coreTx: formModel.$coreTx,
   },
   filter: (transferData) => {
     return (
       nonNullable(transferData.restakeStore) &&
-      nonNullable(transferData.wrappedTxs) &&
-      nonNullable(transferData.coreTxs) &&
+      nonNullable(transferData.wrappedTx) &&
+      nonNullable(transferData.coreTx) &&
       nonNullable(transferData.networkStore)
     );
   },
@@ -161,9 +144,9 @@ sample({
       chain: transferData.networkStore!.chain,
       account: transferData.restakeStore!.shards[0],
       signatory: transferData.restakeStore!.signatory,
-      wrappedTxs: transferData.wrappedTxs!,
-      coreTxs: transferData.coreTxs!,
-      multisigTxs: transferData.multisigTxs || [],
+      wrappedTxs: [transferData.wrappedTx!],
+      coreTxs: [transferData.coreTx!],
+      multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
@@ -198,23 +181,25 @@ sample({
   clock: txSaved,
   source: {
     store: $restakeStore,
-    coreTxs: $coreTxs,
+    coreTx: formModel.$coreTx,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTxs) && nonNullable(txWrappers);
+  filter: ({ store, coreTx, txWrappers }) => {
+    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
-  fn: ({ store, coreTxs, txWrappers }) => {
+  fn: ({ store, coreTx, txWrappers }) => {
     const account = store!.shards.at(0);
     if (!account) throw new Error('Account not found');
 
-    return coreTxs!.map((coreTx) => ({
-      coreTx,
-      txWrappers,
-      groupId: Date.now(),
-      initiatorAccountId: account.accountId,
-      createdAt: Date.now(),
-    }));
+    return [
+      {
+        coreTx: coreTx!,
+        txWrappers,
+        groupId: Date.now(),
+        initiatorAccountId: account.accountId,
+        createdAt: Date.now(),
+      },
+    ];
   },
   target: basketOperations.addTransactions,
 });
