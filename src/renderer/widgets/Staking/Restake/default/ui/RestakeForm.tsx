@@ -152,8 +152,9 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$tx);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
 
   if (!network || !initiator) {
     return null;
@@ -172,12 +173,9 @@ const FeeSection = () => {
 
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
-        // @ts-expect-error TODO
-        api={api}
         asset={network.chain.assets[0]}
-        transaction={transaction}
-        onFeeChange={formModel.feeChanged}
-        onFeeLoading={formModel.isFeeLoadingChanged}
+        fee={fee.toString()}
+        isLoading={pendingFee}
       />
     </div>
   );

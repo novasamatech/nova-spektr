@@ -43,9 +43,7 @@ const formSubmitted = createEvent<FormSubmitEvent>();
 const stakingSet = createEvent<StakingMap>();
 const formCleared = createEvent();
 
-const feeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $staking = restore(stakingSet, null);
@@ -442,17 +440,6 @@ sample({
   target: $proxyBalance,
 });
 
-sample({
-  clock: $fee.updates,
-  fn: (fee) => fee.toString(),
-  target: feeChanged,
-});
-
-sample({
-  clock: $pendingFee.updates,
-  target: isFeeLoadingChanged,
-});
-
 // Submit
 
 sample({
@@ -504,6 +491,7 @@ export const formModel = {
   $proxyBalance,
 
   $fee,
+  $pendingFee,
   $multisigDeposit,
 
   $api,
@@ -516,8 +504,6 @@ export const formModel = {
 
   formInitiated,
   formCleared,
-  feeChanged,
   multisigDepositChanged,
-  isFeeLoadingChanged,
   formSubmitted,
 };
