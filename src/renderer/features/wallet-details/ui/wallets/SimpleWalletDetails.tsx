@@ -9,7 +9,6 @@ import { Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
-import { type AccountNode as AccountNodeType, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -40,7 +39,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
-  const allAccounts = useUnit(accounts.$list);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const features = useUnit($features);
@@ -113,31 +111,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     [chains, firstAccount],
   );
 
-  const pkdt = Object.values(allChains).find(c => c.name === 'Polkadot');
-  if (pkdt && firstAccount) {
-    const graph = accountService.createAccountGraphs(allAccounts, pkdt);
-    console.log({
-      pkdt,
-      allAccounts,
-      allChains,
-      graph,
-      firstAccount,
-      firstAccountInGraph: graph.get(firstAccount),
-      wallet,
-    });
-  }
-
-  const accountGraph = useMemo(() => {
-    if (!pkdt || !firstAccount) return new Map();
-    const graph = accountService.createAccountGraphs(allAccounts, pkdt);
-    const firstAccountData = graph.get(firstAccount);
-    if (!firstAccountData) return new Map();
-
-    const filteredGraph = new Map<string, AccountNodeType>();
-    filteredGraph.set(firstAccount.id, firstAccountData);
-    return filteredGraph;
-  }, [allAccounts, pkdt, firstAccount]);
-
   return (
     <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close action={ActionButton}>
@@ -148,7 +121,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
 
           <div className="shrink-0">
-            {features.accountsStructure && <AccountsStructureModal accountGraph={accountGraph} />}
+            {features.accountsStructure && firstAccount && <AccountsStructureModal account={firstAccount} />}
           </div>
         </div>
       </Modal.HeaderContent>
