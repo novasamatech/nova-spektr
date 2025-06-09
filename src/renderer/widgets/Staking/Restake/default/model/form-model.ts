@@ -526,7 +526,9 @@ export const formModel = {
   $proxyWallet,
   $signatories,
   $txWrappers,
-
+  $coreTx,
+  $route,
+  $multisigTx,
   $account,
   $restakeBalanceRange,
   $proxyBalance,

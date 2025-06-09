@@ -3,6 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -25,24 +26,19 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const wallets = useUnit(walletModel.$wallets);
 
   const confirmStore = useStoreMap({
-    store: confirmModel.$confirmStore,
+    store: confirmModel.$confirmMap,
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
+  // TODO use confirms from the createTransactionConfirmStore
+  const confirms = useStoreMap(confirmModel.$confirmMap, (confirmMap) => Object.values(confirmMap));
 
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
+  const initiatorWallet = confirmStore.wallets.initiator;
+  const signerWallet = confirmStore.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
+  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
@@ -58,24 +54,28 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
           <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
-              value={confirmStore.amount}
-              asset={confirmStore.asset}
+              value={confirmStore.meta.amount}
+              asset={confirmStore.meta.asset}
               className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
             />
-            <AssetFiatBalance asset={confirmStore.asset} amount={confirmStore.amount} className="text-headline" />
+            <AssetFiatBalance
+              asset={confirmStore.meta.asset}
+              amount={confirmStore.meta.amount}
+              className="text-headline"
+            />
           </div>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails
-          chain={confirmStore.chain}
+          chain={confirmStore.meta.chain}
           wallets={wallets}
-          initiator={confirmStore.shards}
-          signatory={confirmStore.signatory}
-          proxied={confirmStore.proxiedAccount}
+          initiator={confirms.map((confirm) => confirm.meta.initiator)}
+          signatory={confirmStore.meta.signatory}
+          proxied={proxiedAccount}
         >
-          {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {isMultisigExists && (
             <DetailRow
               className="text-text-primary"
               label={
@@ -94,8 +94,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+                <AssetBalance value={confirmStore.meta.multisigDeposit} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.multisigDeposit} />
               </div>
             </DetailRow>
           )}
@@ -103,25 +103,25 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           <DetailRow
             label={
               <FootnoteText className="text-text-tertiary">
-                {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
+                {t('staking.networkFee', { count: confirms.length || 1 })}
               </FootnoteText>
             }
             className="text-text-primary"
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+              <AssetBalance value={confirmStore.meta.fee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
             </div>
           </DetailRow>
 
-          {confirmStore.shards.length > 1 && (
+          {confirms.length > 1 && (
             <DetailRow
               label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
               className="text-text-primary"
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
+                <AssetBalance value={confirmStore.meta.totalFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.totalFee} />
               </div>
             </DetailRow>
           )}
@@ -145,7 +145,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
                 type={(signerWallet || initiatorWallet).type}
-                onClick={confirmModel.formSubmitted}
+                onClick={confirmModel.startSigning}
               />
             )}
           </div>
@@ -154,11 +154,11 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <AccountsModal
         isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
+        accounts={confirms.map((confirm) => confirm.meta.initiator)}
         amounts={['0']}
-        chainId={confirmStore.chain.chainId}
-        asset={confirmStore.asset}
-        addressPrefix={confirmStore.chain.addressPrefix}
+        chainId={confirmStore.meta.chain.chainId}
+        asset={confirmStore.meta.asset}
+        addressPrefix={confirmStore.meta.chain.addressPrefix}
         onClose={toggleAccounts}
       />
     </>

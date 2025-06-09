@@ -10,6 +10,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { restakeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
 import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -80,28 +81,38 @@ sample({
 
 sample({
   clock: formModel.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs },
+  source: {
+    networkStore: $networkStore,
+    coreTx: formModel.$coreTx,
+    tx: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
+    route: formModel.$route,
+  },
   filter: ({ networkStore }) => nonNullable(networkStore),
-  fn: ({ networkStore, coreTxs }, { formData }) => ({
+  fn: ({ networkStore, coreTx, tx, multisigTx, route }, { formData }) => ({
     event: [
       {
         ...formData,
-        shards: [formData.initiator!],
+        initiator: formData.initiator!,
+        signatory: formData.signatory!,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTxs![0],
-      },
+        coreTx: coreTx!,
+        route: route,
+        tx: tx!,
+        multisigTx: multisigTx!,
+      } satisfies RestakeConfirm,
     ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
