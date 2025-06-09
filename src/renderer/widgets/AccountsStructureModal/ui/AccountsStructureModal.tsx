@@ -23,8 +23,6 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const accountList = useUnit(accounts.$list);
 
-  console.log({ selectedChain });
-
   const onToggle = useCallback(
     (value: boolean) => {
       setIsOpen(value);
@@ -39,8 +37,11 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
   const rootNode = useMemo(() => {
     if (!selectedChain || !account) return null;
     const graph = accountService.createAccountGraphs(accountList, selectedChain);
+    console.log({ graph });
     return graph.get(account) ?? null;
   }, [accountList, selectedChain, account]);
+
+  console.log({ rootNode });
 
   return (
     <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>

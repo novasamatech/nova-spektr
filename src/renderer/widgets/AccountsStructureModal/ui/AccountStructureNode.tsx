@@ -1,9 +1,11 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
 import { useMemo } from 'react';
 
+import { SigningType } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AnyAccount } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 interface AccountStructureNodeProps {
   data: {
@@ -28,12 +30,9 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
         {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
         <div className="flex flex-col gap-1">
-          <div className="text-md font-medium">{data.account.name}</div>
+          <div className="text-md font-medium">{getAccountType(data.account)}</div>
           <div className="text-sm text-text-secondary">
             <Address address={toAddress(data.account.accountId)} title={data.account.name} variant="short" showIcon />
-          </div>
-          <div className="text-xs text-text-tertiary">
-            {data.account.type === 'chain' ? 'Chain Account' : 'Universal Account'}
           </div>
         </div>
 
@@ -56,3 +55,33 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
     </>
   );
 };
+
+function getAccountType(account: AnyAccount) {
+  if (accountUtils.isWcAccount(account)) {
+    return 'WalletConnect';
+  }
+  if (accountUtils.isProxiedAccount(account)) {
+    return 'Proxied';
+  }
+  if (accountUtils.isMultisigAccount(account)) {
+    return 'Multisig';
+  }
+
+  // Show wallet type based on signingType
+  switch (account.signingType) {
+    case SigningType.POLKADOT_VAULT:
+      return 'Vault';
+    case SigningType.EXTENSION:
+      return 'Polkadot.js Extension';
+    case SigningType.PARITY_SIGNER:
+      return 'Parity Signer';
+    case SigningType.WALLET_CONNECT:
+      return 'WalletConnect';
+    case SigningType.WATCH_ONLY:
+      return 'Watch Only';
+    case SigningType.MULTISIG:
+      return 'Multisig';
+    default:
+      return account.type;
+  }
+}
