@@ -26,7 +26,7 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
       {/*  toolbar*/}
       {/*</NodeToolbar>*/}
 
-      <div className="border-stroke rounded-md border-2 bg-white px-4 py-2 shadow-md">
+      <div className="border-stroke w-[250px] rounded-md border-2 bg-white px-4 py-2 shadow-md">
         {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
         <div className="flex flex-col gap-1">
