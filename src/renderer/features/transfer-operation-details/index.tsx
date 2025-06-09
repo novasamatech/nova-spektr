@@ -36,16 +36,12 @@ multisigOperationsSDK(transferOperationDetailFeature, {
   },
   title({ operation }) {
     const transaction = operation.transaction;
-
     if (isTransferTransaction(transaction)) {
       return <TransferOperationTitle operation={operation} />;
     }
-
     if (isXcmTransaction(transaction)) {
       return <XcmTransferOperationTitle operation={operation} />;
     }
-
-    return null;
   },
   logTitle({ operation }) {
     const { t } = useI18n();

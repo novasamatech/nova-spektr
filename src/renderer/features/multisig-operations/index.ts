@@ -1,5 +1,5 @@
 export { logTitleSlot } from './components/LogModal';
-export { operationTitleSlot } from './components/Operation';
+export { operationTitleTransformer } from './components/Operation';
 export { operationDetailsSlot } from './components/OperationFullInfo';
 export { operationIconTransformer } from './components/OperationIcon';
 export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmation';

@@ -1,10 +1,13 @@
-import { memo } from 'react';
+import { type ReactNode, memo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
+import { createTransformer, useTransformer } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
+import { TransactionTitle } from '@/entities/transaction';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
@@ -14,13 +17,24 @@ type Props = {
   account: MultisigAccount | null;
 };
 
-type SlotProps = {
-  operation: MultisigOperation;
-};
-
-export const operationTitleSlot = createSlot<SlotProps>();
+export const operationTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();
 
 export const Operation = memo(({ operation, account }: Props) => {
+  const { t } = useI18n();
+  const titleNode = useTransformer(operationTitleTransformer, { operation });
+  let title;
+
+  if (titleNode) {
+    title = titleNode;
+  } else {
+    if (operation.section && operation.method) {
+      const formattedMethod = formatSectionAndMethod(operation.section, operation.method);
+      title = <TransactionTitle title={formattedMethod} />;
+    } else {
+      title = <TransactionTitle title={t('operations.titles.unknown')} />;
+    }
+  }
+
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
@@ -28,8 +42,7 @@ export const Operation = memo(({ operation, account }: Props) => {
           <OperationTitleDate operation={operation} />
 
           <OperationIcon operation={operation} />
-
-          <Slot id={operationTitleSlot} props={{ operation: operation }} />
+          {title}
           <OperationTitleStatus operation={operation} />
         </div>
       </Accordion.Button>

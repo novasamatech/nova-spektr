@@ -3,14 +3,14 @@ import {
   logTitleSlot,
   operationDetailsSlot,
   operationIconTransformer,
-  operationTitleSlot,
+  operationTitleTransformer,
 } from '@/features/multisig-operations';
 
 export const multisigOperationsSDK = createSDK({
   required: {
     icon: operationIconTransformer,
     logTitle: logTitleSlot,
-    title: operationTitleSlot,
+    title: operationTitleTransformer,
     details: operationDetailsSlot,
   },
 });

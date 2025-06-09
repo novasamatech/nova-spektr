@@ -50,14 +50,11 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
   },
   title({ operation }) {
     const transaction = operation.transaction;
-
     const title = transaction?.type && getOperationTitle(transaction.type);
 
     if (title) {
       return <ProxyOperationTitle operation={operation} title={title} />;
     }
-
-    return null;
   },
   logTitle({ operation }) {
     const { t } = useI18n();
