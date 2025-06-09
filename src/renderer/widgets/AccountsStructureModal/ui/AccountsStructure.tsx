@@ -2,13 +2,15 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  Edge,
   MarkerType,
+  Node,
   Position,
   ReactFlow,
   useEdgesState,
   useNodesState,
 } from '@xyflow/react';
-import { useMemo } from 'react';
+import { useEffect } from 'react';
 
 import { type AccountNode as AccountNodeType } from '@/domains/network';
 
@@ -22,13 +24,22 @@ interface AccountsStructureProps {
   accountGraph: Map<string, AccountNodeType>;
 }
 
+type AccountNodeData = {
+  label: string;
+  account: AccountNodeType['account'];
+  [key: string]: unknown;
+};
+
 const LEVEL_SPACING = 400;
 const NODE_SPACING = 150;
 
 export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
-  const { nodes, edges } = useMemo(() => {
-    const nodes: any[] = [];
-    const edges: any[] = [];
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  useEffect(() => {
+    const newNodes: Node<AccountNodeData>[] = [];
+    const newEdges: Edge[] = [];
     const visited = new Set<string>();
 
     // First pass: calculate total height needed for each node's subtree
@@ -46,7 +57,7 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       const x = column * LEVEL_SPACING;
       const y = yOffset;
 
-      nodes.push({
+      newNodes.push({
         id: nodeId,
         type: 'accountNode',
         data: { 
@@ -61,7 +72,7 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       // Create edges for each child
       node.children.forEach((child) => {
         const edgeId = `e${nodeId}-${child.account.id}`;
-        edges.push({
+        newEdges.push({
           id: edgeId,
           source: nodeId,
           target: child.account.id,
@@ -109,16 +120,16 @@ export const AccountsStructure = ({ accountGraph }: AccountsStructureProps) => {
       currentYOffset += height * NODE_SPACING;
     });
 
-    return { nodes, edges };
-  }, [accountGraph]);
-
-  const [reactFlowNodes] = useNodesState(nodes);
-  const [reactFlowEdges] = useEdgesState(edges);
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, [accountGraph, setNodes, setEdges]);
 
   return (
     <ReactFlow
-      nodes={reactFlowNodes}
-      edges={reactFlowEdges}
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       fitView
       nodesDraggable={false}

@@ -1,26 +1,27 @@
 import '@xyflow/react/dist/style.css';
 
 import { useUnit } from 'effector-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AccountNode } from '@/domains/network';
+import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountsStructure } from './AccountsStructure';
 import { ChainSelector } from './ChainSelector';
 
 type Props = {
-  accountGraph: Map<string, AccountNode>;
+  account: AnyAccount;
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ accountGraph, onClose }: Props) => {
+export const AccountsStructureModal = ({ account, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
+  const accountList = useUnit(accounts.$list);
 
   console.log({ selectedChain });
 
@@ -34,6 +35,19 @@ export const AccountsStructureModal = ({ accountGraph, onClose }: Props) => {
     },
     [onClose],
   );
+
+  const accountGraph = useMemo(() => {
+    if (!selectedChain || !account) return new Map();
+    const graph = accountService.createAccountGraphs(accountList, selectedChain);
+    const firstAccountData = graph.get(account);
+    if (!firstAccountData) return new Map();
+
+    console.log({ firstAccountData });
+
+    const filteredGraph = new Map<string, AccountNode>();
+    filteredGraph.set(account.id, firstAccountData);
+    return filteredGraph;
+  }, [accountList, selectedChain, account]);
 
   return (
     <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>
