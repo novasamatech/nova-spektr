@@ -213,12 +213,12 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ network, form, isConnected }) => {
-    if (nullable(network) || nullable(form.initiator) || !isConnected) return null;
+    if (nullable(network) || nullable(form.signatory) || !isConnected) return null;
 
     return transactionBuilder.buildRestake({
       chain: network.chain,
       asset: network.asset,
-      accountId: form.initiator.accountId,
+      accountId: form.signatory.accountId,
       amount: form.amount || ZERO_BALANCE,
     });
   },
