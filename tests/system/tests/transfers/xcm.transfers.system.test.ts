@@ -3,12 +3,11 @@ import * as allure from 'allure-js-commons';
 import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { transferTestCases } from '../../utils/transferTestCases';
 
 const feature = 'Wallets. XCM transfers.';
 const story = 'Transfers';
 
-test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress1'] }, () => {
+test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
   {
     test(`Polkadot Vault, single wallet, can make regular xcm transfer on asset-hub`, async ({ loginPage }) => {
       await allure.feature(feature);
