@@ -106,7 +106,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
       <TransactionDetails
         chain={confirm.meta.chain}
         wallets={wallets}
-        initiator={[confirm.meta.initiator]}
+        initiators={[confirm.meta.initiator]}
         signatory={confirm.meta.signatory}
         proxied={proxiedAccount || undefined}
       >
@@ -141,7 +141,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
               isDefault={Boolean(secondaryActionButton)}
               type={confirm.wallets.signatory?.type}
               onClick={() => {
-                confirmModel.events.startSigning();
+                confirmModel.startSigning();
               }}
             />
           )}

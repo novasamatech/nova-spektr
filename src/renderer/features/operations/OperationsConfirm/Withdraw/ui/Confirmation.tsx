@@ -63,7 +63,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <TransactionDetails
           chain={chain}
           wallets={wallets}
-          initiator={[initiator]}
+          initiators={[initiator]}
           signatory={signatory}
           proxied={proxiedAccount}
         >
@@ -117,7 +117,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
                 type={confirmStore.wallets.signatory?.type}
-                onClick={() => confirmModel.events.startSigning()}
+                onClick={confirmModel.startSigning}
               />
             )}
           </div>

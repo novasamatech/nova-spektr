@@ -299,7 +299,7 @@ sample({
 sample({
   clock: prepareVoteDataFx.doneData,
   fn: (data) => [data],
-  target: voteConfirmModel.events.init,
+  target: voteConfirmModel.init,
 });
 
 sample({
@@ -330,7 +330,7 @@ sample({
 sample({
   clock: prepareRemoveVoteDataFx.doneData,
   fn: (data) => [data],
-  target: removeVoteConfirmModel.events.init,
+  target: removeVoteConfirmModel.init,
 });
 
 sample({

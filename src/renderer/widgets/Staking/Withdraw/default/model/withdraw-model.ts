@@ -88,13 +88,13 @@ sample({
     };
   },
   target: spread({
-    event: confirmModel.events.init,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.events.startSigning,
+  clock: confirmModel.startSigning,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,

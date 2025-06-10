@@ -6,8 +6,8 @@ import { type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nonNullableMap, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   type AggregatedReferendum,
   lockPeriodsModel,
@@ -85,13 +85,13 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.startSigning,
+  clock: voteConfirmModel.startSigning,
   fn: () => Step.SIGN,
   target: $step,
 });
 
 sample({
-  clock: voteConfirmModel.events.submitStarted,
+  clock: voteConfirmModel.submitStarted,
   source: $step,
   filter: (step) => isStep(step, Step.SIGN),
   fn: () => Step.SUBMIT,
@@ -111,7 +111,7 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.submitFinished,
+  clock: voteConfirmModel.submitFinished,
   fn: () => Step.NONE,
   target: $step,
 });
@@ -119,7 +119,7 @@ sample({
 const $voteSuccess = createStore(false).reset(flow.close);
 
 sample({
-  clock: voteConfirmModel.events.submitFinished,
+  clock: voteConfirmModel.submitFinished,
   fn: () => true,
   target: $voteSuccess,
 });
@@ -199,7 +199,7 @@ sample({
 
 sample({
   clock: flow.close,
-  target: voteConfirmModel.events.resetConfirm,
+  target: voteConfirmModel.resetConfirm,
 });
 
 sample({
@@ -217,7 +217,7 @@ sample({
 // Data bindings
 
 sample({
-  clock: voteConfirmModel.events.startSigning,
+  clock: voteConfirmModel.startSigning,
   source: {
     confirms: voteConfirmModel.$confirmMap,
   },
@@ -262,15 +262,15 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.submitFinished,
+  clock: voteConfirmModel.submitFinished,
   target: locksModel.events.subscribeLocks,
 });
 
 sample({
-  clock: voteConfirmModel.events.submitFinished,
+  clock: voteConfirmModel.submitFinished,
   source: {
     status: flow.status,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ status, wallet }) => status && nonNullable(wallet),
   fn: ({ wallet }) => {
@@ -282,7 +282,7 @@ sample({
 });
 
 sample({
-  clock: voteConfirmModel.events.submitFinished,
+  clock: voteConfirmModel.submitFinished,
   source: voteForm.$multisigTx,
   filter: (multisigTx, results) => nonNullable(multisigTx) && results[0]?.result === ExtrinsicResult.SUCCESS,
   fn: () => Paths.OPERATIONS,
