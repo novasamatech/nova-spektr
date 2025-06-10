@@ -28,6 +28,8 @@ export const Payee = () => {
     payeeModel.output.flowFinished,
   );
 
+  console.log('fucking payee');
+
   if (!walletData) {
     return null;
   }

@@ -12,7 +12,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type PayeeConfirm, payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { type FeeData, type FormInput, Step } from '../lib/types';
+import { type FormInput, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 
@@ -24,14 +24,9 @@ const txSaved = createEvent();
 
 const $step = createStore<Step>(Step.NONE);
 
-const $walletDataShards = restore<FormInput | null>(flowStarted, null).reset(flowFinished);
-const $walletData = $walletDataShards.map((data) => ({
-  wallet: data!.wallet,
-  initiator: data!.shards[0],
-  chain: data!.chain,
-}));
+const $walletData = restore<FormInput | null>(flowStarted, null).reset(flowFinished);
 
-const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
+const $multisigDeposit = createStore<string>('0');
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
@@ -70,9 +65,7 @@ sample({
 
 sample({
   clock: getMultisigDepositFx.doneData,
-  source: $feeData,
-  fn: (feeData, multisigDeposit) => ({ ...feeData, multisigDeposit }),
-  target: $feeData,
+  target: $multisigDeposit,
 });
 
 // Steps
@@ -94,34 +87,33 @@ const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     payeeData: formModel.form.$values,
-    feeData: $feeData,
+    multisigDeposit: $multisigDeposit,
     walletData: $walletData,
     coreTx: formModel.$coreTx,
     route: formModel.$route,
     tx: formModel.$tx,
+    fee: formModel.$fee,
     multisigTx: formModel.$multisigTx,
   },
-  fn: (data) => {
-    return data;
-  },
-}).filterMap(({ payeeData, feeData, walletData, coreTx, route, tx, multisigTx }) => {
+}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, tx, multisigTx, fee }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
     nonNullable(walletData) &&
     nonNullable(coreTx) &&
-    nonNullable(tx) &&
-    nonNullable(multisigTx)
+    nonNullable(tx)
   ) {
     return [
       {
         ...payeeData,
-        ...feeData,
+        multisigDeposit,
         chain: walletData.chain,
         asset: getRelaychainAsset(walletData.chain.assets)!,
         signatory: payeeData.signatory,
         initiator: payeeData.initiator,
         route: route,
+        fee: fee.toString(),
+        totalFee: fee.toString(),
         coreTx: coreTx,
         tx: tx,
         multisigTx: multisigTx,
@@ -186,7 +178,7 @@ sample({
   }),
 });
 
-sample({
+const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     payeeData: formModel.form.$values,
@@ -195,21 +187,38 @@ sample({
     coreTx: formModel.$coreTx,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ payeeData, walletData, transaction }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transaction);
-  },
-  fn: (payeeFlowData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: payeeFlowData.walletData!.chain,
-      account: payeeFlowData.payeeData!.initiator!,
-      signatory: payeeFlowData.payeeData!.signatory!,
-      coreTxs: [payeeFlowData.coreTx!],
-      wrappedTxs: [payeeFlowData.transaction!],
-      multisigTxs: [payeeFlowData.multisigTx!],
-    },
-    step: Step.SUBMIT,
+  fn: (source, signParams) => ({
+    ...source,
+    signParams,
   }),
+}).filterMap(({ payeeData, walletData, transaction, coreTx, multisigTx, signParams }) => {
+  if (
+    nonNullable(payeeData.initiator) &&
+    nonNullable(payeeData.signatory) &&
+    nonNullable(walletData) &&
+    nonNullable(transaction) &&
+    nonNullable(coreTx)
+  ) {
+    return {
+      ...signParams,
+      chain: walletData.chain,
+      account: payeeData.initiator,
+      signatory: payeeData.signatory,
+      coreTxs: [coreTx],
+      wrappedTxs: [transaction],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
@@ -240,20 +249,20 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $walletData,
     coreTx: formModel.$coreTx,
+    walletData: $walletData,
     txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+  filter: ({ coreTx, walletData, txWrappers }) => {
+    return nonNullable(coreTx) && nonNullable(walletData) && nonNullable(txWrappers);
   },
-  fn: ({ store, coreTx, txWrappers }) => {
-    const account = store!.initiator;
+  fn: ({ coreTx, walletData, txWrappers }) => {
+    const account = walletData!.shards[0].accountId;
     if (!account) throw new Error('Initiator account not found');
 
     return [
       {
-        initiatorAccountId: account.accountId,
+        initiatorAccountId: account,
         coreTx: coreTx!,
         txWrappers,
         createdAt: Date.now(),
