@@ -2,14 +2,12 @@ import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AccountsModal } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -30,120 +28,107 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
-
   if (!confirmStore) {
     return null;
   }
 
-  const { asset, destination, chain, initiator, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
+  const { destination, chain, initiator, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
   const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
 
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <>
-      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
-        <div className="mb-2 flex flex-col items-center gap-y-3">
-          <Icon className="text-icon-default" name="destinationConfirm" size={60} />
-        </div>
-
-        <MultisigExistsAlert active={isMultisigExists} />
-
-        <TransactionDetails
-          chain={chain}
-          wallets={wallets}
-          initiator={initiators}
-          signatory={signatory}
-          proxied={proxiedAccount}
-        >
-          <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
-            {destination ? (
-              <Account accountId={toAccountId(destination)} chain={chain} variant="short" />
-            ) : (
-              <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
-            )}
-          </DetailRow>
-
-          <hr className="w-full border-filter-border pr-2" />
-
-          {initiator && accountUtils.isMultisigAccount(initiator) && (
-            <DetailRow
-              className="text-text-primary"
-              label={
-                <>
-                  <Icon className="text-text-tertiary" name="lock" size={12} />
-                  <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0}>
-                        <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-                  </Tooltip>
-                </>
-              }
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
-                <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
-              </div>
-            </DetailRow>
-          )}
-
-          <DetailRow
-            className="text-text-primary"
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={fee} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
-            </div>
-          </DetailRow>
-
-          {totalFee !== fee && (
-            <DetailRow
-              className="text-text-primary"
-              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={totalFee} asset={chain.assets[0]} />
-                <AssetFiatBalance asset={chain.assets[0]} amount={totalFee} />
-              </div>
-            </DetailRow>
-          )}
-        </TransactionDetails>
-
-        <div className="mt-3 flex w-full justify-between">
-          {onGoBack && (
-            <Button variant="text" onClick={onGoBack}>
-              {t('operation.goBackButton')}
-            </Button>
-          )}
-
-          <div className="flex gap-4">
-            {secondaryActionButton}
-
-            {!hideSignButton && !isMultisigExists && (
-              <SignButton
-                isDefault={Boolean(secondaryActionButton)}
-                type={confirmStore.wallets.signatory?.type || confirmStore.wallets.initiator.type}
-                onClick={() => confirmModel.events.startSigning()}
-              />
-            )}
-          </div>
-        </div>
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+      <div className="mb-2 flex flex-col items-center gap-y-3">
+        <Icon className="text-icon-default" name="destinationConfirm" size={60} />
       </div>
 
-      <AccountsModal
-        isOpen={isAccountsOpen}
-        accounts={initiators}
-        chainId={chain.chainId}
-        asset={asset}
-        addressPrefix={chain.addressPrefix}
-        onClose={toggleAccounts}
-      />
-    </>
+      <MultisigExistsAlert active={isMultisigExists} />
+
+      <TransactionDetails
+        chain={chain}
+        wallets={wallets}
+        initiator={initiators}
+        signatory={signatory}
+        proxied={proxiedAccount}
+      >
+        <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
+          {destination ? (
+            <Account accountId={toAccountId(destination)} chain={chain} variant="short" />
+          ) : (
+            <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
+          )}
+        </DetailRow>
+
+        <hr className="w-full border-filter-border pr-2" />
+
+        {initiator && accountUtils.isMultisigAccount(initiator) && (
+          <DetailRow
+            className="text-text-primary"
+            label={
+              <>
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div tabIndex={0}>
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
+                </Tooltip>
+              </>
+            }
+          >
+            <div className="flex flex-col items-end gap-y-0.5">
+              <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
+              <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
+            </div>
+          </DetailRow>
+        )}
+
+        <DetailRow
+          className="text-text-primary"
+          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
+        >
+          <div className="flex flex-col items-end gap-y-0.5">
+            <AssetBalance value={fee} asset={chain.assets[0]} />
+            <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
+          </div>
+        </DetailRow>
+
+        {totalFee !== fee && (
+          <DetailRow
+            className="text-text-primary"
+            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
+          >
+            <div className="flex flex-col items-end gap-y-0.5">
+              <AssetBalance value={totalFee} asset={chain.assets[0]} />
+              <AssetFiatBalance asset={chain.assets[0]} amount={totalFee} />
+            </div>
+          </DetailRow>
+        )}
+      </TransactionDetails>
+
+      <div className="mt-3 flex w-full justify-between">
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
+
+        <div className="flex gap-4">
+          {secondaryActionButton}
+
+          {!hideSignButton && !isMultisigExists && (
+            <SignButton
+              isDefault={Boolean(secondaryActionButton)}
+              type={confirmStore.wallets.signatory?.type || confirmStore.wallets.initiator.type}
+              onClick={confirmModel.startSigning}
+            />
+          )}
+        </div>
+      </div>
+    </div>
   );
 };

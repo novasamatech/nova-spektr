@@ -426,7 +426,7 @@ sample({
 sample({
   clock: preparePayeeDataFx.doneData,
   fn: (data) => [data],
-  target: payeeConfirmModel.events.init,
+  target: payeeConfirmModel.init,
 });
 
 export const confirm = {

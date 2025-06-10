@@ -5,7 +5,7 @@ import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, stakeableAmount, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup, Select } from '@/shared/ui';
+import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -13,8 +13,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -33,7 +32,6 @@ export const PayeeForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
-        <AccountsSelector />
         <Signatories />
         <Destination />
       </form>
@@ -73,60 +71,6 @@ const ProxyFeeAlert = () => {
   );
 };
 
-const AccountsSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const accounts = useUnit(formModel.$accounts);
-  const network = useUnit(formModel.$networkStore);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
-    return null;
-  }
-
-  const options = accounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
-
-    return {
-      id: account.id.toString(),
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={network.asset} />
-        </div>
-      ),
-    };
-  });
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('staking.bond.accountLabel')}
-        placeholder={t('staking.bond.accountPlaceholder')}
-        invalid={initiator.hasError}
-        selectedId={initiator.value?.id.toString() || ''}
-        options={options}
-        onChange={(value) => initiator.onChange(value?.value || null)}
-      />
-      <InputHint variant="error" active={initiator.hasError}>
-        {initiator.errorMessage}
-      </InputHint>
-    </div>
-  );
-};
-
 const Signatories = () => {
   const {
     fields: { signatory },
@@ -134,7 +78,6 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
 
   const balances = useUnit(balanceModel.$balances);
 
@@ -154,7 +97,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!network) {
     return null;
   }
 

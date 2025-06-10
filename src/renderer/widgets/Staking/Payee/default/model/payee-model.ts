@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
+import { type MultisigTxWrapper, WrapperKind } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
@@ -90,67 +90,92 @@ sample({
   target: stepChanged,
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     payeeData: formModel.form.$values,
     feeData: $feeData,
     walletData: $walletData,
-    txWrappers: formModel.$txWrappers,
     coreTx: formModel.$coreTx,
+    route: formModel.$route,
     tx: formModel.$tx,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, coreTx, tx, multisigTx }) => {
+  fn: (data) => {
+    return data;
+  },
+}).filterMap(({ payeeData, feeData, walletData, coreTx, route, tx, multisigTx }) => {
+  if (
+    nonNullable(payeeData.initiator) &&
+    nonNullable(payeeData.signatory) &&
+    nonNullable(walletData) &&
+    nonNullable(coreTx) &&
+    nonNullable(tx) &&
+    nonNullable(multisigTx)
+  ) {
+    return [
+      {
+        ...payeeData,
+        ...feeData,
+        chain: walletData.chain,
+        asset: getRelaychainAsset(walletData.chain.assets)!,
+        signatory: payeeData.signatory,
+        initiator: payeeData.initiator,
+        route: route,
+        coreTx: coreTx,
+        tx: tx,
+        multisigTx: multisigTx,
+      } satisfies PayeeConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
     return {
-      event: [
-        {
-          ...payeeData!,
-          ...feeData,
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
-          signatory: payeeData!.signatory!,
-          initiator: payeeData!.initiator!,
-          route: [payeeData!.initiator!],
-          coreTx: coreTx!,
-          tx: tx!,
-          multisigTx: multisigTx,
-        } satisfies PayeeConfirm,
-      ],
+      event,
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.init,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
-sample({
-  clock: confirmModel.events.startSigning,
+const startSigning = sample({
+  clock: confirmModel.startSigning,
   source: {
     payeeData: formModel.form.$values,
     walletData: $walletData,
     transaction: formModel.$tx,
-    txWrappers: formModel.$txWrappers,
+    proxyAccount: formModel.$proxyAccount,
   },
-  filter: ({ payeeData, walletData, transaction }) => {
-    return Boolean(payeeData) && Boolean(walletData) && Boolean(transaction);
-  },
-  fn: ({ payeeData, walletData, transaction, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
+}).filterMap(({ payeeData, walletData, transaction, proxyAccount }) => {
+  if (
+    nonNullable(payeeData.initiator) &&
+    nonNullable(payeeData.signatory) &&
+    nonNullable(walletData) &&
+    nonNullable(transaction)
+  ) {
+    return [
+      {
+        chain: walletData.chain,
+        account: proxyAccount || payeeData.initiator,
+        signatory: payeeData.signatory,
+        transaction,
+      },
+    ];
+  }
+});
 
+sample({
+  clock: startSigning,
+  fn: (signingPayloads) => {
     return {
       event: {
-        signingPayloads: [
-          {
-            chain: walletData!.chain,
-            account: wrapper ? wrapper.proxyAccount : payeeData!.initiator!,
-            signatory: payeeData!.signatory!,
-            transaction: transaction!,
-          },
-        ],
+        signingPayloads,
       },
       step: Step.SIGN,
     };

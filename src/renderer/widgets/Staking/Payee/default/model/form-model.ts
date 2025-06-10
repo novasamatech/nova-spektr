@@ -2,20 +2,13 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import {
-  type Address,
-  type Asset,
-  type Chain,
-  type ProxyTxWrapper,
-  RewardsDestination,
-  WrapperKind,
-} from '@/shared/core';
+import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
   getRelaychainAsset,
   isStringsMatchQuery,
-  stakeableAmount,
+  nonNullable,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -24,7 +17,7 @@ import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type FormInput } from '../lib/types';
@@ -47,11 +40,6 @@ const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
-
-const $availableSignatories = createStore<AnyAccount[][]>([]);
-const $proxyAccount = createStore<AnyAccount | null>(null);
-const $isProxy = createStore<boolean>(false);
-const $isMultisig = createStore<boolean>(false);
 
 const multisigDepositChanged = createEvent<string>();
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
@@ -135,37 +123,6 @@ const form: Form<FormParams> = createForm<FormParams>({
 });
 
 // Computed
-
-const $proxyWallet = combine(
-  {
-    isProxy: $isProxy,
-    proxyAccount: $proxyAccount,
-    wallets: walletModel.$wallets,
-  },
-  ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
-
-    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
-  },
-  { skipVoid: false },
-);
-
-const $accounts = combine(
-  {
-    network: $networkStore,
-    wallet: walletSelect.$selectedWallet,
-    initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
-  },
-  ({ network, wallet, initiator, balances }) => {
-    if (!wallet || !network || !initiator) return [];
-
-    const { chain, asset } = network;
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
-
-    return [{ account: initiator, balance: stakeableAmount(balance) }];
-  },
-);
 
 const $signatories = createSignatoriesStore({
   chain: $chain,
@@ -285,6 +242,25 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $isProxy = $proxyAccount.map((account) => nonNullable(account));
+const $isMultisig = $route.map((route) =>
+  nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
+);
+
+const $proxyWallet = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    wallets: walletModel.$wallets,
+  },
+  ({ isProxy, proxyAccount, wallets }) => {
+    if (!isProxy || !proxyAccount) return null;
+
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
+  },
+);
+
 const $proxyBalance = combine(
   {
     isProxy: $isProxy,
@@ -293,7 +269,7 @@ const $proxyBalance = combine(
     network: $networkStore,
   },
   ({ isProxy, proxyAccount, balances, network }) => {
-    if (!isProxy || !proxyAccount || !network) return '0';
+    if (!isProxy || !proxyAccount || !network) return ZERO_BALANCE;
 
     const balance = balanceUtils.getBalance(
       balances,
@@ -311,9 +287,7 @@ const $canSubmit = combine(
     isFormValid: form.$isValid,
     isFeeLoading: $pendingFee,
   },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
-  },
+  ({ isFormValid, isFeeLoading }) => isFormValid && !isFeeLoading,
 );
 
 // Fields connections
@@ -333,32 +307,6 @@ sample({
   target: spread({
     initiator: form.fields.initiator.change,
     networkStore: $networkStore,
-  }),
-});
-
-sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
-      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
-
-      return acc;
-    }, []);
-
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      signatories,
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
-    };
-  },
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-    signatories: $availableSignatories,
-    proxyAccount: $proxyAccount,
   }),
 });
 
@@ -394,15 +342,15 @@ export const formModel = {
   $destinationQuery,
   $destinationType,
 
-  $accounts,
   $initiatorBalance,
   $bondBalanceRange,
   $proxyBalance,
-  $txWrappers,
+  $proxyAccount,
 
   $tx,
   $multisigTx,
   $coreTx,
+  $txWrappers,
   $route,
   $fee,
   $pendingFee,
