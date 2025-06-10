@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, WrapperKind } from '@/shared/core';
 import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
@@ -49,15 +48,13 @@ const $api = combine(
 );
 
 sample({
-  clock: formModel.$txWrappers,
+  clock: formModel.$multisigAccount,
   source: $api,
-  filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
-  fn: (api, txWrappers) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
-
+  filter: (api, multisigAccount) => nonNullable(api) && nonNullable(multisigAccount),
+  fn: (api, multisigAccount) => {
     return {
       api: api!,
-      threshold: wrapper?.multisigAccount.threshold || 0,
+      threshold: multisigAccount!.threshold || 0,
     };
   },
   target: getMultisigDepositFx,

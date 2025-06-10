@@ -9,6 +9,7 @@ import {
   getRelaychainAsset,
   isStringsMatchQuery,
   nonNullable,
+  nullable,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -210,16 +211,16 @@ const $signatoryBalance = combine(
 
 const $coreTx = combine(
   {
-    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     destination: form.fields.destination.$value,
     chain: $chain,
   },
-  ({ initiator, destination, chain }) => {
-    if (!initiator || !chain) return null;
+  ({ signatory, destination, chain }) => {
+    if (!signatory || !chain) return null;
 
     return transactionBuilder.buildSetPayee({
       chain,
-      accountId: initiator.accountId,
+      accountId: signatory.accountId,
       destination,
     });
   },
@@ -244,18 +245,18 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
-const $isMultisig = $route.map((route) =>
-  nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
-);
+
+const $multisigAccount = $route.map((route) => route.find((account) => accountUtils.isMultisigAccount(account)));
+
+const $isMultisig = $multisigAccount.map((account) => nonNullable(account));
 
 const $proxyWallet = combine(
   {
-    isProxy: $isProxy,
     proxyAccount: $proxyAccount,
     wallets: walletModel.$wallets,
   },
-  ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return null;
+  ({ proxyAccount, wallets }) => {
+    if (nullable(proxyAccount)) return null;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
@@ -367,6 +368,7 @@ export const formModel = {
   $api,
   $networkStore,
   $isMultisig,
+  $multisigAccount,
   $canSubmit,
 
   events: {

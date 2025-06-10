@@ -4,7 +4,7 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, stakeableAmount, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { formatBalance, stakeableAmount, toAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
@@ -13,7 +13,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { AccountAddress, ProxyWalletAlert } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -142,7 +142,6 @@ const Destination = () => {
   }));
 
   const destinationOptions = destinationAccounts.map((account) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {
@@ -150,13 +149,7 @@ const Destination = () => {
       value: address,
       element: (
         <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 20) : account.name}
-            canCopy={false}
-          />
+          <AccountAddress size={20} type="short" address={address} name={account.name} canCopy={false} />
         </div>
       ),
     };
