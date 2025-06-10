@@ -16,21 +16,21 @@ import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 type Props = PropsWithChildren<{
   wallets: Wallet[];
   chain: Chain;
-  initiator: AnyAccount[];
+  initiators: AnyAccount[];
   signatory: AnyAccount | null;
   proxied?: AnyAccount | null;
 }>;
 
-export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, signatory, children }: Props) => {
+export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, signatory, children }: Props) => {
   const { t } = useI18n();
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
   const initiatorWallet = useMemo(() => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
-      accountFn: a => a.id === initiator?.[0]?.id,
+      accountFn: a => a.id === initiators?.[0]?.id,
     });
-  }, [wallets, initiator]);
+  }, [wallets, initiators]);
 
   const signatoryWallet = useMemo(() => {
     return signatory
@@ -56,7 +56,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
   const shouldRenderSignatory =
     nonNullable(signatoryWallet) &&
     nonNullable(signatory) &&
-    (initiator.length !== 1 || initiator.every(i => i !== signatory));
+    (initiators.length !== 1 || initiators.every(i => i !== signatory));
 
   return (
     <dl className="flex w-full flex-col gap-y-4 text-footnote">
@@ -68,22 +68,22 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('proxy.details.account')}>
-            {initiator.length === 0 && (
+            {initiators.length === 0 && (
               <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                <CaptionText className="text-white">{initiator.length}</CaptionText>
+                <CaptionText className="text-white">{initiators.length}</CaptionText>
               </div>
             )}
-            {initiator.length === 1 && (
-              <AccountComponent variant="short" accountId={initiator[0]!.accountId} chain={chain} />
+            {initiators.length === 1 && (
+              <AccountComponent variant="short" accountId={initiators[0]!.accountId} chain={chain} />
             )}
-            {initiator.length > 1 && (
+            {initiators.length > 1 && (
               <button
                 type="button"
                 className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
                 onClick={toggleAccounts}
               >
                 <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                  <CaptionText className="text-white">{initiator.length}</CaptionText>
+                  <CaptionText className="text-white">{initiators.length}</CaptionText>
                 </div>
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
@@ -113,8 +113,8 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
           </DetailRow>
 
           <DetailRow label={t('transfer.signingAccount')}>
-            {initiator.length === 1 ? (
-              <AccountComponent accountId={initiator[0]!.accountId} chain={chain} />
+            {initiators.length === 1 ? (
+              <AccountComponent accountId={initiators[0]!.accountId} chain={chain} />
             ) : (
               <button
                 type="button"
@@ -122,7 +122,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
                 onClick={toggleAccounts}
               >
                 <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                  <CaptionText className="text-white">{initiator.length}</CaptionText>
+                  <CaptionText className="text-white">{initiators.length}</CaptionText>
                 </div>
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />
               </button>
@@ -147,7 +147,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiator, si
 
       <AccountsModal
         isOpen={isAccountsOpen}
-        accounts={initiator}
+        accounts={initiators}
         chainId={chain.chainId}
         asset={chain.assets[0]!}
         addressPrefix={chain.addressPrefix}

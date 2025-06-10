@@ -60,7 +60,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <TransactionDetails
         chain={chain}
         wallets={wallets}
-        initiator={confirms.map((c) => c.meta.initiator)}
+        initiators={confirms.map((c) => c.meta.initiator)}
         signatory={signatory}
         proxied={proxiedAccount}
       >

@@ -1,14 +1,17 @@
 import { useUnit } from 'effector-react';
+import noop from 'lodash/noop';
 import { type FormEvent, useMemo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, transferableAmount } from '@/shared/lib/utils';
-import { Button, InputHint } from '@/shared/ui';
+import { formatBalance, stakeableAmount } from '@/shared/lib/utils';
+import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
+import { AssetBalance } from '@/shared/ui-entities';
+import { Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -17,7 +20,7 @@ type Props = {
   onGoBack: () => void;
 };
 
-export const WithdrawForm = ({ onGoBack }: Props) => {
+export const BondForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
 
   const submitForm = (event: FormEvent) => {
@@ -63,7 +66,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={initiator.reset}
+      onClose={noop}
     />
   );
 };
@@ -77,10 +80,9 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const balances = useUnit(balanceModel.$balances);
 
-  const signatoryWithBalance = useMemo(() => {
+  const signatoriesWithBalance = useMemo(() => {
     if (!network) {
       return [];
     }
@@ -92,17 +94,18 @@ const Signatories = () => {
         network.chain.chainId,
         network.asset.assetId.toString(),
       );
-      return { signer: signatory, balance: transferableAmount(balance) };
+      return { signer: signatory, balance: stakeableAmount(balance) };
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!network) {
     return null;
   }
+
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatoryWithBalance}
+      signatories={signatoriesWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
@@ -119,9 +122,8 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.form);
 
-  const withdrawBalance = useUnit(formModel.$withdrawBalance);
-  const isStakingLoading = useUnit(formModel.$isStakingLoading);
   const network = useUnit(formModel.$networkStore);
+  const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
 
   if (!network) {
     return null;
@@ -130,13 +132,13 @@ const Amount = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        disabled
         invalid={amount.hasError}
-        value={formatBalance(amount.value, network.asset.precision).value}
-        balance={isStakingLoading ? null : withdrawBalance}
+        value={amount.value}
+        balance={bondBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        onChange={amount.onChange}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
@@ -152,10 +154,10 @@ const FeeSection = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
   const fee = useUnit(formModel.$fee);
-  const pendingFee = useUnit(formModel.$pendingFee);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const isFeeLoading = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!network || !initiator.value) {
@@ -165,33 +167,37 @@ const FeeSection = () => {
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={network.chain.assets[0]}
-          threshold={(initiator.value as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
+              </Tooltip>
+            </>
+          }
+        >
+          <div className="flex flex-col items-end gap-y-0.5">
+            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit} />
+          </div>
+        </DetailRow>
       )}
 
-      <FeeWithLabel
-        label={t('staking.networkFee', { count: 1 })}
-        asset={network.chain.assets[0]}
-        fee={fee.toString()}
-        isLoading={pendingFee}
-      />
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
     </div>
   );
 };
 
 const ActionsSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
-
-  const { submit } = useForm(formModel.form);
-
-  const submitForm = (event: FormEvent) => {
-    event.preventDefault();
-    submit();
-  };
 
   const canSubmit = useUnit(formModel.$canSubmit);
 
@@ -200,7 +206,7 @@ const ActionsSection = ({ onGoBack }: Props) => {
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit} onClick={submitForm}>
+      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
         {t('transfer.continueButton')}
       </Button>
     </div>

@@ -37,10 +37,16 @@ import { NetworkInfo } from './NetworkInfo';
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
 
+// Lazy-loaded components
 const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
 
 const LazyUnstakeShards = lazy(() =>
   import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
+);
+const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
+
+const LazyBondExtraShards = lazy(() =>
+  import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
 );
 
 export const Staking = () => {
@@ -284,11 +290,14 @@ export const Staking = () => {
 
     const model = {
       [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
-      [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]:
         selectedNominators.length > 1
           ? Operations.unstakeModelShards.events.flowStarted
           : Operations.unstakeModel.events.flowStarted,
+      [StakeOperations.BOND_EXTRA]:
+        selectedNominators.length > 1
+          ? Operations.bondExtraShardsModel.events.flowStarted
+          : Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
@@ -393,8 +402,8 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
+      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
       <Operations.BondNominate />
-      <Operations.BondExtra />
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
       <Operations.Nominate />
       <Operations.Restake />

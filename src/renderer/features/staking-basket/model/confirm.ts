@@ -18,6 +18,7 @@ import { eraService, useStakingData, validatorsService } from '@/entities/stakin
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import {
+  type BondExtraConfirm,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
   nominateConfirmModel,
@@ -29,7 +30,6 @@ import {
 import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
 import {
-  type BondExtraInput,
   type BondNominateInput,
   type NominateInput,
   type PayeeInput,
@@ -90,15 +90,19 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: transaction.coreTx.args.maxAdditional,
-    description: '',
-    signatory: null,
-
+    signatory: account!,
     fee,
-    totalFee: '0',
+    totalFee: fee.toString(),
     multisigDeposit: '0',
-  } as BondExtraInput;
+    initiator: account!,
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.signer,
+    ),
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: transaction.coreTx,
+  } satisfies BondExtraConfirm;
 });
 
 const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis, connections }: DataParams) => {
@@ -252,7 +256,7 @@ sample({
 sample({
   clock: prepareWithdrawDataFx.doneData,
   fn: (data) => [data],
-  target: withdrawConfirmModel.events.init,
+  target: withdrawConfirmModel.init,
 });
 
 sample({
@@ -310,7 +314,7 @@ sample({
 sample({
   clock: prepareBondExtraDataFx.doneData,
   fn: (data) => [data],
-  target: bondExtraConfirmModel.events.formInitiated,
+  target: bondExtraConfirmModel.init,
 });
 
 sample({

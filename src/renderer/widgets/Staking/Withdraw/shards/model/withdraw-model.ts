@@ -82,7 +82,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: { networkStore: $networkStore, coreTxs: $coreTxs, multisigTxs: $multisigTxs },
-  filter: ({ networkStore }) => Boolean(networkStore),
+  filter: ({ networkStore }) => nonNullable(networkStore),
   fn: ({ networkStore, coreTxs, multisigTxs }, { formData }) => ({
     event: formData.shards.map((shard, index) => {
       return {
@@ -100,20 +100,20 @@ sample({
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.init,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.events.startSigning,
+  clock: confirmModel.startSigning,
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
     wrappedTxs: $wrappedTxs,
   },
   filter: ({ withdrawData, networkStore, wrappedTxs }) => {
-    return Boolean(withdrawData) && Boolean(networkStore) && Boolean(wrappedTxs);
+    return nonNullable(withdrawData) && nonNullable(networkStore) && nonNullable(wrappedTxs);
   },
   fn: ({ withdrawData, networkStore, wrappedTxs }) => ({
     event: {
@@ -143,10 +143,10 @@ sample({
   },
   filter: (withdrawData) => {
     return (
-      Boolean(withdrawData.withdrawData) &&
-      Boolean(withdrawData.wrappedTxs) &&
-      Boolean(withdrawData.coreTxs) &&
-      Boolean(withdrawData.networkStore)
+      nonNullable(withdrawData.withdrawData) &&
+      nonNullable(withdrawData.wrappedTxs) &&
+      nonNullable(withdrawData.coreTxs) &&
+      nonNullable(withdrawData.networkStore)
     );
   },
   fn: (withdrawData, signParams) => ({
@@ -196,7 +196,7 @@ sample({
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+    return nonNullable(store) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
   fn: ({ store, coreTxs, txWrappers }) =>
     coreTxs!.map((coreTx) => ({
