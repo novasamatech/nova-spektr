@@ -59,8 +59,6 @@ const $unstakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
-const $selectedSignatory = createStore<AnyAccount | null>(null);
-
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -273,12 +271,6 @@ sample({
   target: form.fields.signatory.change,
 });
 
-sample({
-  clock: form.fields.signatory.$value,
-  filter: (signatory) => nonNullable(signatory),
-  target: $selectedSignatory,
-});
-
 const $txWrappers = createTxWrappers({
   initiator: form.fields.initiator.$value,
   wallets: walletModel.$wallets,
@@ -363,7 +355,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: [form.reset, $selectedSignatory.reinit],
+  target: form.reset,
 });
 
 sample({
@@ -447,7 +439,7 @@ sample({
     route: $route,
     fee: $fee.map((fee) => fee.toString()),
     multisigDeposit: $multisigDeposit,
-    selectedSignatory: $selectedSignatory,
+    selectedSignatory: form.fields.signatory.$value,
   },
   filter: ({ network, transaction, selectedSignatory }) => {
     return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory);
@@ -482,7 +474,7 @@ sample({
 export const formModel = {
   form,
   $signatories: $signatoriesWithBalance,
-  $selectedSignatory,
+  $selectedSignatory: form.fields.signatory.$value,
   $txWrappers,
   $route,
 

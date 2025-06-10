@@ -90,8 +90,7 @@ const formSubmitted = sample({
     nonNullable(formData.signatory) &&
     nonNullable(coreTx) &&
     nonNullable(networkStore) &&
-    nonNullable(api) &&
-    nonNullable(multisigTx)
+    nonNullable(api)
   ) {
     return [
       {

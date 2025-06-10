@@ -8,7 +8,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { StakingPopover, UnstakingDuration } from '@/entities/staking';
-import { FeeWithLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -83,29 +83,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               </>
             }
           >
-            <FeeWithLabel fee={multisigDeposit} asset={asset} />
+            <Fee fee={multisigDeposit} asset={asset} />
           </DetailRow>
         )}
 
-        <DetailRow
-          label={
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.networkFee', { count: confirms.length || 1 })}
-            </FootnoteText>
-          }
-          className="text-text-primary"
-        >
-          <FeeWithLabel fee={fee} asset={asset} />
-        </DetailRow>
+        <FeeWithLabel fee={fee} asset={asset} label={t('staking.networkFee', { count: confirms.length || 1 })} />
 
-        {confirms.length > 1 && (
-          <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-            className="text-text-primary"
-          >
-            <FeeWithLabel fee={totalFee} asset={asset} />
-          </DetailRow>
-        )}
+        {confirms.length > 1 && <FeeWithLabel fee={totalFee} asset={asset} label={t('staking.networkFeeTotal')} />}
 
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
           <StakingPopover.Item>
