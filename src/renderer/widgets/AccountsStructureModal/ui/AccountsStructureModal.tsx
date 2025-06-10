@@ -34,12 +34,15 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
     [onClose],
   );
 
+  const graph = useMemo(() => {
+    if (!selectedChain) return null;
+    return accountService.createAccountGraphs(accountList, selectedChain);
+  }, [accountList, selectedChain]);
+
   const rootNode = useMemo(() => {
-    if (!selectedChain || !account) return null;
-    const graph = accountService.createAccountGraphs(accountList, selectedChain);
-    console.log({ graph });
+    if (!graph || !account) return null;
     return graph.get(account) ?? null;
-  }, [accountList, selectedChain, account]);
+  }, [graph, account]);
 
   console.log({ rootNode });
 
