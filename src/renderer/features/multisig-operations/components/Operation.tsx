@@ -15,7 +15,7 @@ import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount | null;
+  account: MultisigAccount;
 };
 
 export const operationTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();

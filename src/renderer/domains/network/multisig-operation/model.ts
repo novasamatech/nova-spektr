@@ -54,6 +54,7 @@ const updateCallDataFx = attach({
         ...operation,
         section: decoded.section,
         method: decoded.method,
+        callData,
         transaction: decoded,
       };
 

@@ -12,8 +12,8 @@ import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
   isAddProxyTransaction,
-  isCreatePureProxyTransaction,
   isManageProxyTransaction,
+  isProxyTypeTransaction,
   isRemoveProxyTransaction,
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
@@ -39,19 +39,13 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 multisigOperationsSDK(proxyOperationDetailFeature, {
   icon({ operation }) {
     const transaction = operation.transaction;
-    if (
-      isAddProxyTransaction(transaction) ||
-      isRemoveProxyTransaction(transaction) ||
-      isCreatePureProxyTransaction(transaction) ||
-      isRemovePureProxyTransaction(transaction)
-    ) {
+    if (isProxyTypeTransaction(transaction)) {
       return 'proxyMst';
     }
   },
   title({ operation }) {
     const transaction = operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
-
     if (title) {
       return <ProxyOperationTitle operation={operation} title={title} />;
     }

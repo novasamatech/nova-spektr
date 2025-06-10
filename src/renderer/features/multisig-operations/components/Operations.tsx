@@ -42,7 +42,11 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  if (incompleteFlexibleMultisigTx && account) {
+  if (!account) {
+    return null;
+  }
+
+  if (incompleteFlexibleMultisigTx) {
     return <FlexibleMultisigShell operation={incompleteFlexibleMultisigTx} account={account} />;
   }
 

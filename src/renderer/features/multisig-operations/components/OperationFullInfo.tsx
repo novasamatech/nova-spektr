@@ -7,10 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { type MultisigOperation, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, accountService, accounts, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
@@ -21,7 +20,7 @@ import RejectTxModal from './modals/RejectTx';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount | null;
+  account: MultisigAccount;
 };
 
 type SlotProps = {
@@ -33,12 +32,7 @@ export const operationDetailsSlot = createSlot<SlotProps>();
 export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
   const { api, chain, connection, extendedChain } = useNetworkData(operation.chainId);
-
-  const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-
-  const events = operation.events;
-
+  const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
   const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
@@ -48,23 +42,19 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
     chain?.explorers,
   );
 
-  const setupCallData = async (callData: CallData) => {
-    if (!operation) return;
-
-    multisigOperation.updateCallData({ operation, callData });
-  };
-
-  const isRejectAvailable = wallets.some(wallet => {
-    const hasDepositor = wallet.accounts?.some(account => account.accountId === operation.depositor);
-
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && operation.status === 'pending';
+  const hasAccount = allAccounts.some(a => {
+    return a.accountId === operation.depositor && accountService.hasPermissionToMakeActions(a);
   });
 
-  if (!walletUtils.isMultisig(activeWallet)) return null;
+  const isRejectAvailable = operation.status === 'pending' && hasAccount;
 
-  const isFinalSigning = account && events.length === account.threshold - 1;
+  const isFinalSigning = account && operation.events.length === account.threshold - 1;
   const isApproveAvailable =
     !isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash));
+
+  const setupCallData = (callData: CallData) => {
+    multisigOperation.updateCallData({ operation, callData });
+  };
 
   return (
     <div className="flex flex-1">

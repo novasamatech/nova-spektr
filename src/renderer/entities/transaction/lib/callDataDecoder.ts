@@ -119,10 +119,7 @@ const parseSingle = (
   decoded: SubmittableExtrinsic<'promise'>,
   genesisHash: HexString,
 ): DecodedTransaction => {
-  console.log(`Start parsing call data for section ${section} and method ${method}`);
-
   const transactionType = getTransactionType(method, section);
-
   return getDecodedTransaction(accountId, decoded, method, section, genesisHash, transactionType);
 };
 
@@ -135,8 +132,6 @@ const getDecodedTransaction = (
   transactionType?: TransactionType,
 ): DecodedTransaction => {
   if (!transactionType) {
-    console.log(`Unknown transaction type with section ${section} and method ${method}`);
-
     return {
       accountId,
       method,
