@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import uniqBy from 'lodash/uniqBy';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
@@ -36,6 +36,13 @@ import { NetworkInfo } from './NetworkInfo';
 // TODO: will be much simpler when we refactor staking page
 // eslint-disable-next-line import-x/max-dependencies
 import { NominatorsList } from './NominatorsList';
+
+// Lazy-loaded components
+const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
+
+const LazyBondExtraShards = lazy(() =>
+  import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
+);
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -281,7 +288,10 @@ export const Staking = () => {
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
         ? Operations.bondNominateModelShards.flowStarted
         : Operations.bondNominateModel.flowStarted,
-      [StakeOperations.BOND_EXTRA]: Operations.bondExtraModel.events.flowStarted,
+      [StakeOperations.BOND_EXTRA]:
+        selectedNominators.length > 1
+          ? Operations.bondExtraShardsModel.events.flowStarted
+          : Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
@@ -388,7 +398,7 @@ export const Staking = () => {
       />
 
       {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
-      <Operations.BondExtra />
+      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
       <Operations.Unstake />
       <Operations.Nominate />
       <Operations.Restake />

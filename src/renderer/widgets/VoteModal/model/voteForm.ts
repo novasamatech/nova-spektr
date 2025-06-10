@@ -302,7 +302,7 @@ sample({
       multisigTx,
     };
   },
-  target: voteConfirmModel.events.replaceWithConfirm,
+  target: voteConfirmModel.replaceWithConfirm,
 });
 
 sample({

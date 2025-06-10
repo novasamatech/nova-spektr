@@ -27,14 +27,12 @@ export const confirmModel = {
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
 
-  events: {
-    startSigning: confirmStore.startSigning,
-    addConfirms: confirmStore.addConfirms,
-    replaceWithConfirm: confirmStore.replaceWithConfirm,
-    init: confirmStore.init,
-    resetConfirm: confirmStore.resetConfirm,
+  startSigning: confirmStore.startSigning,
+  addConfirms: confirmStore.addConfirms,
+  replaceWithConfirm: confirmStore.replaceWithConfirm,
+  init: confirmStore.init,
+  resetConfirm: confirmStore.resetConfirm,
 
-    submitStarted: submitModel.events.formInitiated,
-    submitFinished: submitModel.output.formSubmitted,
-  },
+  submitStarted: submitModel.events.formInitiated,
+  submitFinished: submitModel.output.formSubmitted,
 };
