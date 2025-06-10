@@ -1,16 +1,14 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ChainId } from '@/shared/core';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 
 const selectChain = createEvent<ChainId>();
 const resetChain = createEvent();
 
 const $selectedChainId = restore(selectChain, null);
 
-const $availableChains = networkModel.$chains.map((chains) => {
-  return Object.values(chains).filter((chain) => networkUtils.isGovernanceSupported(chain.options));
-});
+const $availableChains = networkModel.$chains.map((chains) => Object.values(chains));
 
 // Select first chain by default when available chains change
 sample({
