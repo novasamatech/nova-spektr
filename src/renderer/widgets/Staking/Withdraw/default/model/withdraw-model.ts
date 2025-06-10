@@ -199,7 +199,7 @@ sample({
     {
       initiatorAccountId: store!.initiator!.accountId,
       coreTx: coreTx!,
-      txWrappers: txWrappers!,
+      txWrappers: txWrappers,
       createdAt: Date.now(),
     },
   ],
