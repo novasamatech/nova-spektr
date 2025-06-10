@@ -1,27 +1,51 @@
-import { combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 
-import { type ChainId } from '@/shared/core';
+import { accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-
-const selectChain = createEvent<ChainId>();
-const resetChain = createEvent();
-
-const $selectedChainId = restore(selectChain, null);
 
 const $availableChains = networkModel.$chains.map((chains) => Object.values(chains));
 
-// Select first chain by default when available chains change
+const selectChain = createEvent<string>();
+const resetChain = createEvent();
+const setAccount = createEvent<AnyAccount | null>();
+
+const $selectedChainId = createStore<string | null>(null)
+  .on(selectChain, (_, chainId) => chainId)
+  .reset(resetChain);
+
+const $account = createStore<AnyAccount | null>(null)
+  .on(setAccount, (_, account) => account)
+  .reset(resetChain);
+
+// Filter available chains based on account
+const $filteredChains = combine(
+  {
+    chains: $availableChains,
+    account: $account,
+  },
+  ({ chains, account }) => {
+    if (!account) return chains;
+    return chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
+  },
+);
+
+// Set initial chain to first available one when account changes
 sample({
-  clock: $availableChains,
-  filter: (chains) => chains.length > 0,
-  fn: (chains) => chains[0].chainId,
+  clock: $filteredChains,
+  source: $selectedChainId,
+  filter: (selectedChainId, filteredChains) => {
+    if (!selectedChainId || !filteredChains.length) return true;
+    return !filteredChains.some((chain) => chain.chainId === selectedChainId);
+  },
+  fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
   target: selectChain,
 });
 
 const $selectedChain = combine(
   {
     chainId: $selectedChainId,
-    chains: $availableChains,
+    chains: $filteredChains,
   },
   ({ chainId, chains }) => {
     return chains.find((chain) => chain.chainId === chainId) ?? null;
@@ -49,11 +73,13 @@ const $network = combine(
 export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
-  $availableChains,
+  $availableChains: $filteredChains,
+  $filteredChains,
   $network,
 
   events: {
     selectChain,
     resetChain,
+    setAccount,
   },
-}; 
+};

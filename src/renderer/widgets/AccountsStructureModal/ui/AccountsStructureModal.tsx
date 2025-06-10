@@ -1,7 +1,7 @@
 import '@xyflow/react/dist/style.css';
 
 import { useUnit } from 'effector-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
@@ -22,6 +22,14 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const accountList = useUnit(accounts.$list);
+  const setAccount = useUnit(accountsStructureModel.events.setAccount);
+
+  useEffect(() => {
+    setAccount(account);
+    return () => {
+      setAccount(null);
+    };
+  }, [account, setAccount]);
 
   const onToggle = useCallback(
     (value: boolean) => {
@@ -44,15 +52,13 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
     return graph.get(account) ?? null;
   }, [graph, account]);
 
-  console.log({ rootNode });
-
   return (
     <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-[600px]">
           <div className="absolute left-4 top-4 z-10 w-[200px]">
-            <ChainSelector />
+            <ChainSelector account={account} />
           </div>
 
           <AccountsStructure rootNode={rootNode} />
