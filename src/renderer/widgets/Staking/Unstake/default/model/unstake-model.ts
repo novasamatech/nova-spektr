@@ -70,7 +70,7 @@ sample({
   }),
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     networkStore: $networkStore,
@@ -78,31 +78,53 @@ sample({
     multisigTx: $multisigTx,
     api: formModel.$api,
   },
-  filter: ({ networkStore, coreTx, api }) => {
-    return nonNullable(coreTx) && nonNullable(networkStore) && nonNullable(api);
+  fn: (source, { formData }) => {
+    return {
+      ...source,
+      formData,
+    };
   },
-  fn: ({ networkStore, api, coreTx, multisigTx }, { formData }) => ({
-    event: [
+}).filterMap(({ formData, multisigTx, networkStore, api, coreTx }) => {
+  if (
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory) &&
+    nonNullable(coreTx) &&
+    nonNullable(networkStore) &&
+    nonNullable(api) &&
+    nonNullable(multisigTx)
+  ) {
+    return [
       {
         ...formData,
-        chain: networkStore!.chain,
-        asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        api: api!,
-        tx: coreTx!,
-        coreTx: coreTx!,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        chain: networkStore.chain,
+        asset: getRelaychainAsset(networkStore.chain.assets)!,
+        api: api,
+        tx: coreTx,
+        coreTx: coreTx,
         multisigTx: multisigTx,
       },
-    ],
-    step: Step.CONFIRM,
-  }),
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.CONFIRM,
+    };
+  },
   target: spread({
-    event: confirmModel.events.init,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.events.startSigning,
+  clock: confirmModel.startSigning,
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
@@ -130,7 +152,7 @@ sample({
   }),
 });
 
-sample({
+const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     unstakeStore: $unstakeStore,
@@ -138,21 +160,32 @@ sample({
     multisigTx: $multisigTx,
     coreTx: $coreTx,
   },
-  filter: ({ unstakeStore, coreTx, networkStore }) => {
-    return nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(networkStore);
-  },
-  fn: (transferData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: transferData.networkStore!.chain,
-      account: transferData.unstakeStore!.initiator,
-      signatory: transferData.unstakeStore!.signatory!,
-      wrappedTxs: [transferData.coreTx!],
-      coreTxs: [transferData.coreTx!],
-      multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],
-    },
-    step: Step.SUBMIT,
+  fn: (source, signParams) => ({
+    ...source,
+    signParams,
   }),
+}).filterMap(({ unstakeStore, coreTx, multisigTx, networkStore, signParams }) => {
+  if (nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(networkStore)) {
+    return {
+      ...signParams,
+      chain: networkStore.chain,
+      account: unstakeStore.initiator,
+      signatory: unstakeStore.signatory,
+      wrappedTxs: [coreTx],
+      coreTxs: [coreTx],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,

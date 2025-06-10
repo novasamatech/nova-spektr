@@ -29,12 +29,7 @@ import {
 } from '@/features/operations/OperationsConfirm';
 import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
-import {
-  type BondNominateInput,
-  type NominateInput,
-  type PayeeInput,
-  type RestakeInput,
-} from '../types/confirm';
+import { type BondNominateInput, type NominateInput, type PayeeInput, type RestakeInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -343,7 +338,7 @@ sample({
 sample({
   clock: prepareUnstakeDataFx.doneData,
   fn: (data) => [data],
-  target: unstakeConfirmModel.events.formInitiated,
+  target: unstakeConfirmModel.formInitiated,
 });
 
 sample({

@@ -8,6 +8,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { StakingPopover, UnstakingDuration } from '@/entities/staking';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -36,7 +37,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const proxiedAccount = route.find(accountUtils.isProxiedAccount);
 
-  if (!confirmStore || !initiator) {
+  if (!confirmStore) {
     return null;
   }
 
@@ -82,10 +83,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               </>
             }
           >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={multisigDeposit} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={multisigDeposit} />
-            </div>
+            <FeeWithLabel fee={multisigDeposit} asset={asset} />
           </DetailRow>
         )}
 
@@ -97,10 +95,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           }
           className="text-text-primary"
         >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={asset} />
-            <AssetFiatBalance asset={asset} amount={fee} />
-          </div>
+          <FeeWithLabel fee={fee} asset={asset} />
         </DetailRow>
 
         {confirms.length > 1 && (
@@ -108,10 +103,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             className="text-text-primary"
           >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={totalFee} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={totalFee} />
-            </div>
+            <FeeWithLabel fee={totalFee} asset={asset} />
           </DetailRow>
         )}
 
@@ -140,7 +132,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
               type={confirmStore.wallets.signatory?.type}
-              onClick={confirmModel.events.startSigning}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

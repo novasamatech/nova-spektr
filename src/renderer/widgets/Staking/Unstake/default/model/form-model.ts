@@ -48,7 +48,6 @@ const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const stakingSet = createEvent<StakingMap>();
 
-const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
@@ -58,7 +57,6 @@ const $stakingUnsub = createStore<() => void>(noop);
 
 const $unstakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 
-const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
 const $selectedSignatory = createStore<AnyAccount | null>(null);
@@ -448,7 +446,6 @@ sample({
     multisigTx: $multisigTx,
     route: $route,
     fee: $fee.map((fee) => fee.toString()),
-    totalFee: $totalFee,
     multisigDeposit: $multisigDeposit,
     selectedSignatory: $selectedSignatory,
   },
@@ -464,6 +461,7 @@ sample({
       multisigTx,
       formData: {
         ...fee,
+        totalFee: fee.fee,
         amount,
         initiator: initiator!,
         signatory: selectedSignatory!,
@@ -508,8 +506,6 @@ export const formModel = {
 
   events: {
     formInitiated,
-
-    totalFeeChanged,
     multisigDepositChanged,
   },
   output: {
