@@ -28,8 +28,6 @@ export const PayeeForm = ({ onGoBack }: Props) => {
     submit();
   };
 
-  console.log('fucking payee form');
-
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
