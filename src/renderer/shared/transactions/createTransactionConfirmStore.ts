@@ -74,6 +74,8 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
     }, {});
   });
 
+  const $confirms = $confirmMap.map((confirmMap) => Object.values(confirmMap));
+
   sample({
     clock: addConfirms,
     source: $store,
@@ -118,8 +120,6 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
       return false;
     },
   );
-
-  const $confirms = $confirmMap.map((confirmMap) => Object.values(confirmMap));
 
   return {
     $confirms,

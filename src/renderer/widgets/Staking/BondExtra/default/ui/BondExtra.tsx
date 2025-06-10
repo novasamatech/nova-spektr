@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -47,35 +48,32 @@ export const BondExtra = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      isOpen={isModalOpen}
-      title={
+    <Modal isOpen={isModalOpen} size="md" onToggle={closeModal}>
+      <Modal.Title close>
         <OperationTitle
           title={t('staking.stakeMore.title', { asset: walletData.chain.assets[0].symbol })}
           chainId={walletData.chain.chainId}
         />
-      }
-      onClose={closeModal}
-    >
-      {bondExtraUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-      {bondExtraUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => bondExtraModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {bondExtraUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => bondExtraModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+      </Modal.Title>
+      <Modal.Content>
+        {bondExtraUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
+        {bondExtraUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => bondExtraModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => bondExtraModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {bondExtraUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => bondExtraModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };

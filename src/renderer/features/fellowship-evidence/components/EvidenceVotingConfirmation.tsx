@@ -69,7 +69,7 @@ export const EvidenceVotingConfirmation = memo(
             {t('governance.referendum.votes', { votes, count: votes })}
           </span>
         </Box>
-        <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
+        <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
           <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidenceType')}>{evidence.wish}</DetailRow>
           <DetailRow label={t('fellowship.salary.submitEvidenceVoteConfirm.vote')}>{vote}</DetailRow>
           {rankTitle && (

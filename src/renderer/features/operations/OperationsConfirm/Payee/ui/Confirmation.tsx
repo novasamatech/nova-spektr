@@ -48,7 +48,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
       <TransactionDetails
         chain={chain}
         wallets={wallets}
-        initiator={initiators}
+        initiators={initiators}
         signatory={signatory}
         proxied={proxiedAccount}
       >

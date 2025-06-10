@@ -91,7 +91,7 @@ export const Confirmation = ({
       <TransactionDetails
         chain={confirmStore.chain}
         wallets={wallets}
-        initiator={confirmStore.shards}
+        initiators={confirmStore.shards}
         signatory={confirmStore.signatory}
         proxied={confirmStore.proxiedAccount}
       >
