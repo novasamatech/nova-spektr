@@ -83,9 +83,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : undefined;
+    return walletData?.chain ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -95,7 +94,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ api, coreTxs, txWrappers }) => {
-    if (!api) return undefined;
+    if (!api) return null;
 
     return coreTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -105,7 +104,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 // Transaction & Form

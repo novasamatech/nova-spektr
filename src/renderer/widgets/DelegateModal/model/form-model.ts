@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { spread } from 'patronum';
 
-import { type Account, type Asset, type Chain, type Conviction } from '@/shared/core';
+import { type Asset, type Chain, type Conviction } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -13,30 +13,32 @@ import {
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   amount: string;
   conviction: Conviction;
   locks: Record<string, BN>;
 };
 
-const formInitiated = createEvent<WalletData & { shards: Account[] }>();
+const formInitiated = createEvent<WalletData & { shards: AnyAccount[] }>();
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
 const txWrapperChanged = createEvent<{
-  proxyAccount: Account | null;
-  signatories: Account[][];
+  proxyAccount: AnyAccount | null;
+  signatories: AnyAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -45,14 +47,14 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 
 const $delegateBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<Account[][]>([]);
-const $proxyAccount = createStore<Account | null>(null);
+const $availableSignatories = createStore<AnyAccount[][]>([]);
+const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
@@ -66,7 +68,7 @@ const $feeData = restore(feeDataChanged, {
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     shards: $shards,
     balances: balanceModel.$balances,
     trackLocks: locksAggregate.$trackLocks,
@@ -204,7 +206,7 @@ const $delegateForm = createForm<FormParams>({
             const feeBN = new BN(feeData.fee);
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
-            return form.shards.every((_: Account, index: number) => {
+            return form.shards.every((_: AnyAccount, index: number) => {
               return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
             });
           },
@@ -232,11 +234,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
+    if (!isProxy || !proxyAccount) return null;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
-  { skipVoid: false },
 );
 
 const $signatories = combine(
@@ -250,7 +251,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
@@ -270,9 +271,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(
