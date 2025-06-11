@@ -1,6 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState, useTransition } from 'react';
 
+import { $features } from '@/shared/config/features';
 import { type WalletConnectGroup } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -22,6 +23,7 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -57,6 +59,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
+  const features = useUnit($features);
   const [_, startTransition] = useTransition();
 
   const [tab, setTab] = useState('accounts');
@@ -127,6 +130,14 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     });
   };
 
+  // ToDo: implement acc selector in modal, here we have 1 acc per chain
+  const firstAccount = wallet.accounts.at(0);
+  const kusamaAccount = wallet.accounts.find(
+    a => a.chainId === '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+  );
+
+  console.log({ wallet });
+
   return (
     <>
       <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
@@ -142,6 +153,9 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
                 variant={connected ? 'success' : 'waiting'}
               />
             </WalletCardLg>
+
+            <div>{t('This is for testing purpose, only first kusama account')}</div>
+            {features.accountsStructure && kusamaAccount && <AccountsStructureModal account={kusamaAccount} />}
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
