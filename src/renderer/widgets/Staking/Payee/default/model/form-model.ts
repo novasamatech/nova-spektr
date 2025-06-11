@@ -55,24 +55,14 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
-            network: $networkStore,
-            initiatorBalance: $initiatorBalance,
           }),
-          fn: (
-            initiator: AnyAccount | null,
-            form: FormParams,
-            { isProxy, proxyBalance, fee, network, initiatorBalance }: any,
-          ) => {
+          fn: (initiator: AnyAccount | null, form: FormParams, { isProxy, proxyBalance, fee }: any) => {
             if (!initiator) {
               return { message: 'staking.bond.noAccountError' };
             }
 
             if (isProxy && !new BN(fee).lte(new BN(proxyBalance))) {
               return { message: 'proxy.addProxy.notEnoughProxyTokens' };
-            }
-
-            if (!isProxy && network && new BN(fee).gt(new BN(initiatorBalance))) {
-              return { message: 'staking.bond.noBondBalanceError' };
             }
           },
         };
