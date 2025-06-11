@@ -3,7 +3,6 @@ import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
-import { type ProxyTxWrapper, WrapperKind } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { accountService } from '@/domains/network';
@@ -85,12 +84,12 @@ sample({
     tracks: $tracks,
     initiator: formModel.form.fields.initiator.$value,
     target: $target,
-    txWrappers: formModel.$txWrappers,
     delegateData: $delegateData,
     coreTx: formModel.$coreTx,
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
     multisigTx: formModel.$multisigTx,
+    proxyAccount: formModel.$proxyAccount,
   },
   filter: ({ walletData, delegateData, initiator, step }) => {
     return (
@@ -101,20 +100,7 @@ sample({
       isStep(step, Step.INIT)
     );
   },
-  fn: ({
-    fee,
-    balances,
-    walletData,
-    txWrappers,
-    tracks,
-    target,
-    initiator,
-    delegateData,
-    coreTx,
-    multisigDeposit,
-    multisigTx,
-  }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
+  fn: ({ fee, balances, walletData, tracks, target, initiator, delegateData, coreTx, multisigDeposit, multisigTx }) => {
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
 
     return {
@@ -138,7 +124,6 @@ sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           locks: delegateData!.locks[initiator!.accountId],
           coreTx: coreTx!,
           initiator: initiator!,
@@ -162,7 +147,6 @@ sample({
     delegateData: $delegateData,
     walletData: formModel.$walletData,
     transaction: formModel.$tx,
-    txWrappers: formModel.$txWrappers,
     initiator: formModel.form.fields.initiator.$value,
     step: $step,
     coreTx: formModel.$coreTx,
@@ -170,21 +154,17 @@ sample({
   filter: ({ delegateData, walletData, step }) => {
     return nonNullable(delegateData) && nonNullable(walletData) && isStep(step, Step.CONFIRM);
   },
-  fn: ({ delegateData, walletData, txWrappers, initiator, transaction }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ delegateData, walletData, initiator, transaction }) => {
     return {
       event: {
-        signingPayloads: transaction
-          ? [
-              {
-                chain: walletData.chain!,
-                account: wrapper ? wrapper.proxyAccount : initiator!,
-                signatory: delegateData!.signatory,
-                transaction: transaction,
-              },
-            ]
-          : [],
+        signingPayloads: [
+          {
+            chain: walletData.chain!,
+            account: initiator!,
+            signatory: delegateData!.signatory,
+            transaction: transaction!,
+          },
+        ],
       },
       step: Step.SIGN,
     };

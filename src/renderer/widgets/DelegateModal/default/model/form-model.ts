@@ -436,6 +436,7 @@ export const formModel = {
 
   $walletData,
   $coreTx,
+  $proxyAccount,
 
   $txWrappers,
 
