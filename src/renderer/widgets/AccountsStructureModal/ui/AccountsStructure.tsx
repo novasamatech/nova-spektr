@@ -21,7 +21,8 @@ const nodeTypes = {
 };
 
 interface AccountsStructureProps {
-  rootNode: AccountNode | null;
+  account: AnyAccount;
+  graph: Map<AnyAccount, AccountNode>;
 }
 
 type AccountNodeData = {
@@ -31,28 +32,20 @@ type AccountNodeData = {
 const LEVEL_SPACING = 400;
 const NODE_SPACING = 150;
 
-export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
+export const AccountsStructure = ({ account, graph }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   useEffect(() => {
-    if (!rootNode) {
-      setNodes([]);
-      setEdges([]);
-      return;
-    }
-
     const newNodes: Node<AccountNodeData>[] = [];
     const newEdges: Edge[] = [];
     const visited = new Set<string>();
 
-    // First pass: calculate total height needed for each node's subtree
     const calculateSubtreeHeight = (node: AccountNode): number => {
       if (node.children.length === 0) return 1;
       return node.children.reduce((sum, child) => sum + calculateSubtreeHeight(child), 0);
     };
 
-    // Second pass: position nodes
     const processNode = (node: AccountNode, column: number, yOffset: number): number => {
       if (visited.has(node.account.id)) return 0;
       visited.add(node.account.id);
@@ -108,12 +101,15 @@ export const AccountsStructure = ({ rootNode }: AccountsStructureProps) => {
       return node.children.length;
     };
 
-    // Process the root node
-    processNode(rootNode, 0, 0);
+    // Get the root node from the graph using the provided account
+    const rootNode = graph.get(account);
+    if (rootNode) {
+      processNode(rootNode, 0, 0);
+    }
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [rootNode, setNodes, setEdges]);
+  }, [account, graph, setNodes, setEdges]);
 
   return (
     <ReactFlow

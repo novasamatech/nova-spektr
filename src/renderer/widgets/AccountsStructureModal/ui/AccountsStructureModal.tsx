@@ -3,10 +3,11 @@ import '@xyflow/react/dist/style.css';
 import { useUnit } from 'effector-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountsStructure } from './AccountsStructure';
@@ -42,15 +43,22 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
     [onClose],
   );
 
+  // const graph = useMemo(() => {
+  //   if (!selectedChain) return null;
+  //   return accountService.createAccountGraphs(accountList, selectedChain);
+  // }, [accountList, selectedChain]);
+
   const graph = useMemo(() => {
     if (!selectedChain) return null;
-    return accountService.createAccountGraphs(accountList, selectedChain);
+    return findNodesRelatedToAccount(accountList, account, selectedChain);
   }, [accountList, selectedChain]);
 
-  const rootNode = useMemo(() => {
-    if (!graph || !account) return null;
-    return graph.get(account) ?? null;
-  }, [graph, account]);
+  console.log({ graph });
+
+  // const rootNode = useMemo(() => {
+  //   if (!graph || !account) return null;
+  //   return graph.get(account) ?? null;
+  // }, [graph, account]);
 
   return (
     <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>
@@ -61,7 +69,7 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
             <ChainSelector account={account} />
           </div>
 
-          <AccountsStructure rootNode={rootNode} />
+          {graph && <AccountsStructure account={account} graph={graph} />}
         </div>
       </Modal.Content>
       <Modal.Trigger>
@@ -72,3 +80,25 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
     </Modal>
   );
 };
+
+function findNodesRelatedToAccount(
+  accounts: AnyAccount[],
+  account: AnyAccount,
+  chain: Chain,
+): Map<AnyAccount, AccountNode> {
+  const graph = accountService.createAccountGraphs(accounts, chain);
+  const result: Map<AnyAccount, AccountNode> = new Map();
+
+  for (const node of graph.values()) {
+    accountService.traverseGraph(node, {
+      enter(child) {
+        if (child.account === account) {
+          result.set(node.account, node);
+          return false;
+        }
+      },
+    });
+  }
+
+  return result;
+}
