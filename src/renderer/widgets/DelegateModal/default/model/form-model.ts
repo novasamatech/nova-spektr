@@ -3,7 +3,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Asset, type Chain, type Conviction, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
+import { type Asset, type Chain, type Conviction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -25,7 +25,7 @@ import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel } from '@/features/governance';
@@ -177,6 +177,12 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $walletData = combine({
+  wallet: walletSelect.$selectedWallet,
+  accounts: walletSelect.$selectedAccounts,
+  chain: networkSelectorModel.$governanceChain,
+});
+
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -225,36 +231,6 @@ const $delegateBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
   return [ZERO_BALANCE, initiatorBalance];
 });
 
-// Tx wrappers derived from common factory
-const $txWrappers = createTxWrappers({
-  chain: $chain,
-  wallet: walletSelect.$selectedWallet,
-  wallets: walletModel.$wallets,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-});
-
-// Derive proxy/multisig flags & proxy account from tx wrappers
-const $isProxy = $txWrappers.map((wrappers) => transactionService.hasProxy(wrappers));
-const $isMultisig = $txWrappers.map((wrappers) => transactionService.hasMultisig(wrappers));
-const $proxyAccount = $txWrappers.map((wrappers) => {
-  const proxyWrapper = wrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper | undefined;
-  return proxyWrapper?.proxyAccount || null;
-});
-
-const $walletData = combine({
-  wallet: walletSelect.$selectedWallet,
-  accounts: walletSelect.$selectedAccounts,
-  chain: networkSelectorModel.$governanceChain,
-});
-
-// Signatories list via shared factory
-const $signatories = createSignatoriesStore({
-  chain: $chain,
-  initiator: form.fields.initiator.$value,
-  accounts: accounts.$list,
-});
-
 const $coreTx = combine(
   {
     walletData: $walletData,
@@ -277,6 +253,22 @@ const $coreTx = combine(
   },
 );
 
+// Signatories list via shared factory
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
+
+// Tx wrappers derived from common factory
+const $txWrappers = createTxWrappers({
+  chain: $chain,
+  wallet: walletSelect.$selectedWallet,
+  wallets: walletModel.$wallets,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+});
+
 // Complex Tx store for fee & route calculation
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
@@ -287,6 +279,10 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
+const $isProxy = $proxyAccount.map((account) => nonNullable(account));
+
 // Multisig deposit calculation
 const $multisigThreshold = $route.map((route) => {
   const multisig = route.find(accountUtils.isMultisigAccount);
@@ -296,14 +292,6 @@ const $multisigThreshold = $route.map((route) => {
 const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
   $api: $api,
-});
-
-// Pre-select first signatory automatically
-sample({
-  clock: $signatories,
-  filter: (s) => s.length > 0,
-  fn: (s) => s.at(0)!,
-  target: form.fields.signatory.change,
 });
 
 const $proxyBalance = combine(
@@ -379,12 +367,20 @@ sample({
   target: form.reset,
 });
 
+// Pre-select first signatory automatically
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0)!,
+  target: form.fields.signatory.change,
+});
+
 sample({
   clock: formInitiated,
   filter: ({ chain, shards }) => nonNullable(getRelaychainAsset(chain.assets)) && shards.length > 0,
   fn: ({ chain, shards }) => ({
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
-    initiator: shards[0] ?? null,
+    initiator: shards[0],
   }),
   target: spread({
     initiator: form.fields.initiator.change,

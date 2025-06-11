@@ -3,13 +3,15 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nullable } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { DelegateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/Delegate';
 import { delegateModel } from '../model/delegate-model';
+import { formModel } from '../model/form-model';
 
 import { DelegateForm } from './DelegateForm';
 import { SelectTrackForm } from './SelectTracksForm';
@@ -18,7 +20,7 @@ export const Delegate = () => {
   const { t } = useI18n();
 
   const step = useUnit(delegateModel.$step);
-  const walletData = useUnit(delegateModel.$walletData);
+  const walletData = useUnit(formModel.$walletData);
   const initiatorWallet = useUnit(delegateModel.$initiatorWallet);
   const transaction = useUnit(delegateModel.$transactions);
 
@@ -69,29 +71,28 @@ export const Delegate = () => {
   const title = t('governance.addDelegation.title');
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="overflow-y-auto flex-1"
-      panelClass="max-h-[736px] w-fit flex flex-col"
-      isOpen={isModalOpen}
-      title={<OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />}
-      onClose={closeModal}
-    >
-      {isStep(step, Step.CONFIRM) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
-        />
-      )}
+    <Modal isOpen={isModalOpen} size="fit" height="lg" onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
+        <OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />
+      </Modal.Title>
 
-      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => delegateModel.events.stepChanged(Step.CONFIRM)} />}
-    </BaseModal>
+      <Modal.Content>
+        {isStep(step, Step.CONFIRM) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => delegateModel.events.stepChanged(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };
