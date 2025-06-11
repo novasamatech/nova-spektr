@@ -19,6 +19,7 @@ const confirmStore = createTransactionConfirmStore<RestakeConfirm>({
 });
 
 export const confirmModel = {
+  $confirms: confirmStore.$confirms,
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
 

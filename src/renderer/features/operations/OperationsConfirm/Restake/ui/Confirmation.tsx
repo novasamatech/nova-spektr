@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -25,14 +25,8 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
 
-  const confirmStore = useStoreMap({
-    store: confirmModel.$confirmMap,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  // TODO use confirms from the createTransactionConfirmStore
-  const confirms = useStoreMap(confirmModel.$confirmMap, (confirmMap) => Object.values(confirmMap));
+  const confirms = useUnit(confirmModel.$confirms);
+  const confirmStore = confirms[id];
 
   const initiatorWallet = confirmStore.wallets.initiator;
   const signerWallet = confirmStore.wallets.signatory;
