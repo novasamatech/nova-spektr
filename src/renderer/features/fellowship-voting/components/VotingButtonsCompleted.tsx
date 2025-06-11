@@ -19,7 +19,7 @@ type Props = {
   evidence?: Evidence | null;
 };
 
-export const VotingButtonsPast = memo(({ referendum }: Props) => {
+export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
   useFlow(votingStatus.flow, { referendumId: referendum?.id ?? null });
 
   const { t } = useI18n();

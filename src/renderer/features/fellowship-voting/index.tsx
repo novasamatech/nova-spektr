@@ -8,7 +8,7 @@ import { referendumVotingTaskActionSlot } from '@/features/fellowship-tasks';
 import { ReferendumEndTimer } from './components/ReferendumEndTimer';
 import { VotingActions } from './components/VotingActions';
 import { VotingButtons } from './components/VotingButtons';
-import { VotingButtonsPast } from './components/VotingButtonsPast';
+import { VotingButtonsCompleted } from './components/VotingButtonsCompleted';
 import { VotingConfirmation } from './components/VotingConfirmation';
 import { fellowshipVotingFeature } from './model/feature';
 import { fellowship } from './model/fellowship';
@@ -29,7 +29,7 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
   const voting = useUnit(votingStatus.$referendumVoting);
 
   if (nonNullable(referendum) && referendumService.isCompleted(referendum) && nonNullable(voting)) {
-    return <VotingButtonsPast referendum={referendum} evidence={evidence} />;
+    return <VotingButtonsCompleted referendum={referendum} evidence={evidence} />;
   }
 
   return <VotingButtons referendum={referendum} evidence={evidence} />;
