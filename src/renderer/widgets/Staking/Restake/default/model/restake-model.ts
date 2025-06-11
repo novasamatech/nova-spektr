@@ -60,7 +60,7 @@ sample({
   target: $restakeStore,
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.formSubmitted,
   source: {
     networkStore: $networkStore,
@@ -69,87 +69,115 @@ sample({
     multisigTx: formModel.$multisigTx,
     route: formModel.$route,
   },
-  filter: ({ networkStore }) => nonNullable(networkStore),
-  fn: ({ networkStore, coreTx, tx, multisigTx, route }, formData) => ({
-    event: [
+  fn: (source, formData) => ({ source, formData }),
+}).filterMap(({ formData, source: { networkStore, coreTx, tx, multisigTx, route } }) => {
+  if (
+    nonNullable(networkStore) &&
+    nonNullable(coreTx) &&
+    nonNullable(tx) &&
+    nonNullable(multisigTx) &&
+    nonNullable(route) &&
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory)
+  ) {
+    return [
       {
         ...formData,
-        initiator: formData.initiator!,
-        signatory: formData.signatory!,
-        chain: networkStore!.chain,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        chain: networkStore.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTx!,
+        coreTx: coreTx,
         route: route,
-        tx: tx!,
-        multisigTx: multisigTx!,
+        tx: tx,
+        multisigTx: multisigTx,
       } satisfies RestakeConfirm,
-    ],
-    step: Step.CONFIRM,
-  }),
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.CONFIRM,
+    };
+  },
   target: spread({
     event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
-sample({
+const confirmStartSigning = sample({
   clock: confirmModel.startSigning,
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
-    wrappedTx: formModel.$tx,
+    tx: formModel.$tx,
   },
-  filter: ({ restakeStore, networkStore, wrappedTx }) => {
-    return nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(wrappedTx);
-  },
-  fn: ({ restakeStore, networkStore, wrappedTx }) => ({
-    event: {
+}).filterMap(({ restakeStore, networkStore, tx }) => {
+  if (nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(tx)) {
+    return {
       signingPayloads: [
         {
-          chain: networkStore!.chain,
-          account: restakeStore!.shards[0],
-          signatory: restakeStore!.signatory,
-          transaction: wrappedTx!,
+          chain: networkStore.chain,
+          account: restakeStore.shards[0],
+          signatory: restakeStore.signatory,
+          transaction: tx,
         },
       ],
-    },
-    step: Step.SIGN,
-  }),
+    };
+  }
+});
+
+sample({
+  clock: confirmStartSigning,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SIGN,
+    };
+  },
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
-sample({
+const signFormSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
     multisigTx: formModel.$multisigTx,
-    wrappedTx: formModel.$tx,
+    tx: formModel.$tx,
     coreTx: formModel.$coreTx,
   },
-  filter: (transferData) => {
-    return (
-      nonNullable(transferData.restakeStore) &&
-      nonNullable(transferData.wrappedTx) &&
-      nonNullable(transferData.coreTx) &&
-      nonNullable(transferData.networkStore)
-    );
-  },
-  fn: (transferData, signParams) => ({
-    event: {
+  fn: (source, signParams) => ({ source, signParams }),
+}).filterMap(({ signParams, source: { restakeStore, networkStore, tx, coreTx, multisigTx } }) => {
+  if (nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(tx) && nonNullable(coreTx)) {
+    return {
       ...signParams,
-      chain: transferData.networkStore!.chain,
-      account: transferData.restakeStore!.shards[0],
-      signatory: transferData.restakeStore!.signatory,
-      wrappedTxs: [transferData.wrappedTx!],
-      coreTxs: [transferData.coreTx!],
-      multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],
-    },
-    step: Step.SUBMIT,
-  }),
+      chain: networkStore.chain,
+      account: restakeStore.shards[0],
+      signatory: restakeStore.signatory,
+      wrappedTxs: [tx],
+      coreTxs: [coreTx],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signFormSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
