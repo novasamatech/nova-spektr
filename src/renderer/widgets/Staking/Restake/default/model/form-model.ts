@@ -50,9 +50,6 @@ const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
-const $isMultisig = createStore<boolean>(false);
-const $isProxy = createStore<boolean>(false);
-
 const $restakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
@@ -109,10 +106,10 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             network: $networkStore,
             restakeBalanceRange: $restakeBalanceRange,
-            account: $account,
+            availableBalance: $availableBalance,
             fee: $fee,
           }),
-          fn: (amount, _f, { network, restakeBalanceRange, account, fee }) => {
+          fn: (amount, _f, { network, restakeBalanceRange, availableBalance, fee }) => {
             if (nullable(amount) || amount === '') {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -128,7 +125,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            const isNotEnoughBalanceForFee = fee.gt(new BN(account.balances.balance));
+            const isNotEnoughBalanceForFee = fee.gt(new BN(availableBalance.balance));
             if (isNotEnoughBalanceForFee) {
               return { message: 'transfer.notEnoughBalanceForFeeError' };
             }
@@ -235,6 +232,14 @@ const $realAccount = combine(
   },
 );
 
+const $isMultisig = $route.map((route) => {
+  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+});
+
+const $isProxy = $route.map((route) => {
+  return route.some((acc) => accountUtils.isProxiedAccount(acc));
+});
+
 const $proxyWallet = combine(
   {
     isProxy: $isProxy,
@@ -248,7 +253,7 @@ const $proxyWallet = combine(
   },
 );
 
-const $account = combine(
+const $availableBalance = combine(
   {
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
@@ -265,10 +270,7 @@ const $account = combine(
     const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
     const activeStake = staking[address]?.active || ZERO_BALANCE;
 
-    return {
-      account: initiator,
-      balances: { balance: transferableAmount(balance), stake: activeStake },
-    };
+    return { balance: transferableAmount(balance), stake: activeStake };
   },
 );
 
@@ -407,18 +409,6 @@ sample({
 });
 
 sample({
-  source: $route,
-  fn: (route) => ({
-    isProxy: nonNullable(route.find(accountUtils.isProxiedAccount)),
-    isMultisig: nonNullable(route.find(accountUtils.isMultisigAccount)),
-  }),
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-  }),
-});
-
-sample({
   source: {
     isProxy: $isProxy,
     balances: balanceModel.$balances,
@@ -487,7 +477,6 @@ export const formModel = {
   $coreTx,
   $route,
   $multisigTx,
-  $account,
   $restakeBalanceRange,
   $proxyBalance,
 
