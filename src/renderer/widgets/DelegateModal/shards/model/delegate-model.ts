@@ -30,7 +30,10 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { delegateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/Delegate';
+import {
+  type DelegateConfirm,
+  delegateConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm/Delegate';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -325,21 +328,26 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
+          signatory: delegateData!.signatory!,
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTxs[index],
-        };
+          initiator: shard,
+          route: [shard],
+          tx: coreTxs[index],
+          multisigTx: null,
+        } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
     walletData: $walletData,
