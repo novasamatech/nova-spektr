@@ -84,10 +84,10 @@ const formSubmitted = sample({
         signatory: formData.signatory,
         chain: networkStore.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
-        coreTx: coreTx,
-        route: route,
-        tx: tx,
-        multisigTx: multisigTx,
+        coreTx,
+        route,
+        tx,
+        multisigTx,
       } satisfies RestakeConfirm,
     ];
   }
