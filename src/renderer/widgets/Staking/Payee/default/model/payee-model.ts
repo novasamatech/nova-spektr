@@ -139,9 +139,8 @@ const startSigning = sample({
     payeeData: formModel.form.$values,
     walletData: $walletData,
     transaction: formModel.$tx,
-    proxyAccount: formModel.$proxyAccount,
   },
-}).filterMap(({ payeeData, walletData, transaction, proxyAccount }) => {
+}).filterMap(({ payeeData, walletData, transaction }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
@@ -151,7 +150,7 @@ const startSigning = sample({
     return [
       {
         chain: walletData.chain,
-        account: proxyAccount || payeeData.initiator,
+        account: payeeData.initiator,
         signatory: payeeData.signatory,
         transaction,
       },
