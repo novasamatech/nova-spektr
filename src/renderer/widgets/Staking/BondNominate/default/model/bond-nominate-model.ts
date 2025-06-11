@@ -72,7 +72,7 @@ const $multisigAlreadyExists = combine(
 sample({
   clock: $api.updates,
   source: $maxValidators,
-  filter: (maxValidators, api) => !maxValidators && Boolean(api),
+  filter: (maxValidators, api) => !maxValidators && nonNullable(api),
   fn: (_, api) => api!,
   target: getMaxValidatorsFx,
 });
