@@ -679,6 +679,7 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
+      "completedVotingVoted": "You have voted",
       "emptyListDescription": "Members will appear here once opinions are submitted",
       "emptyListTitle": "No opinions yet",
       "level": {
@@ -693,8 +694,7 @@
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
-      "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank.",
-      "completedVotingVoted": "You have voted"
+      "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
   "general": {
