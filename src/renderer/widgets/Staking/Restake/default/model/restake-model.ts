@@ -33,9 +33,9 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store?.initiator) return null;
 
-    return walletUtils.getWalletById(wallets, store.shards[0].walletId);
+    return walletUtils.getWalletById(wallets, store.initiator.walletId);
   },
 );
 
@@ -54,9 +54,6 @@ sample({
 
 sample({
   clock: formModel.formSubmitted,
-  fn: (formData) => {
-    return { ...formData, shards: [formData.initiator!] };
-  },
   target: $restakeStore,
 });
 
@@ -118,12 +115,17 @@ const confirmStartSigning = sample({
     tx: formModel.$tx,
   },
 }).filterMap(({ restakeStore, networkStore, tx }) => {
-  if (nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(tx)) {
+  if (
+    nonNullable(restakeStore?.initiator) &&
+    nonNullable(restakeStore?.signatory) &&
+    nonNullable(networkStore) &&
+    nonNullable(tx)
+  ) {
     return {
       signingPayloads: [
         {
           chain: networkStore.chain,
-          account: restakeStore.shards[0],
+          account: restakeStore.initiator,
           signatory: restakeStore.signatory,
           transaction: tx,
         },
@@ -157,11 +159,17 @@ const signFormSubmitted = sample({
   },
   fn: (source, signParams) => ({ source, signParams }),
 }).filterMap(({ signParams, source: { restakeStore, networkStore, tx, coreTx, multisigTx } }) => {
-  if (nonNullable(restakeStore) && nonNullable(networkStore) && nonNullable(tx) && nonNullable(coreTx)) {
+  if (
+    nonNullable(restakeStore?.initiator) &&
+    nonNullable(restakeStore?.signatory) &&
+    nonNullable(networkStore) &&
+    nonNullable(tx) &&
+    nonNullable(coreTx)
+  ) {
     return {
       ...signParams,
       chain: networkStore.chain,
-      account: restakeStore.shards[0],
+      account: restakeStore.initiator,
       signatory: restakeStore.signatory,
       wrappedTxs: [tx],
       coreTxs: [coreTx],
@@ -216,7 +224,7 @@ sample({
     return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => {
-    const account = store!.shards.at(0);
+    const account = store!.initiator;
     if (!account) throw new Error('Account not found');
 
     return [
