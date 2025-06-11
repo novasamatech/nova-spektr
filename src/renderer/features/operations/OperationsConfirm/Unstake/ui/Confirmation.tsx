@@ -33,9 +33,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const { amount, asset, chain, totalFee, fee, initiator, signatory, route, multisigDeposit, api } = confirmStore.meta;
+  const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api } = confirmStore.meta;
 
   const proxiedAccount = route.find(accountUtils.isProxiedAccount);
+  const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!confirmStore) {
     return null;
@@ -65,7 +66,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         signatory={signatory}
         proxied={proxiedAccount}
       >
-        {initiator && accountUtils.isMultisigAccount(initiator) && (
+        {multisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={

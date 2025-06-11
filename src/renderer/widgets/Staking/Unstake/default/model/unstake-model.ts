@@ -77,6 +77,7 @@ const formSubmitted = sample({
     coreTx: $coreTx,
     multisigTx: $multisigTx,
     api: formModel.$api,
+    tx: formModel.$tx,
   },
   fn: (source, { formData }) => {
     return {
@@ -84,13 +85,14 @@ const formSubmitted = sample({
       formData,
     };
   },
-}).filterMap(({ formData, multisigTx, networkStore, api, coreTx }) => {
+}).filterMap(({ formData, multisigTx, tx, networkStore, api, coreTx }) => {
   if (
     nonNullable(formData.initiator) &&
     nonNullable(formData.signatory) &&
     nonNullable(coreTx) &&
     nonNullable(networkStore) &&
-    nonNullable(api)
+    nonNullable(api) &&
+    nonNullable(tx)
   ) {
     return [
       {
@@ -100,7 +102,7 @@ const formSubmitted = sample({
         chain: networkStore.chain,
         asset: getRelaychainAsset(networkStore.chain.assets)!,
         api: api,
-        tx: coreTx,
+        tx: tx,
         coreTx: coreTx,
         multisigTx: multisigTx,
       },
