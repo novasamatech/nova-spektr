@@ -15,7 +15,7 @@ import {
   validateAddress,
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -133,23 +133,20 @@ const $signatories = createSignatoriesStore({
 
 const $destinationAccounts = combine(
   {
-    wallets: walletModel.$wallets,
+    accounts: accounts.$list,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, network, query }) => {
+  ({ accounts, network, query }) => {
     if (!network) return [];
 
-    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
-      const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-      if (isBaseAccount && isPvWallet) return false;
-
-      const isShardAccount = accountUtils.isVaultShardAccount(account);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return accounts.filter((account) => {
+      const hasPermission = accountService.hasPermissionToMakeActions(account);
+      const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+      const matchesQuery = isStringsMatchQuery(query, [account.name, address]);
 
-      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+      return hasPermission && isAvailableOnChain && matchesQuery;
     });
   },
 );
@@ -243,10 +240,12 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
-const $multisigAccount = $route.map((route) => route.find((account) => accountUtils.isMultisigAccount(account)));
+const $multisigAccount = $route.map(
+  (route) => route.find((account) => accountUtils.isMultisigAccount(account)) ?? null,
+);
 
 const $isMultisig = $multisigAccount.map((account) => nonNullable(account));
 

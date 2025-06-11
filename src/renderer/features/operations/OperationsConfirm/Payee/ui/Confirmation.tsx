@@ -8,6 +8,7 @@ import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities'
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -32,8 +33,9 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
     return null;
   }
 
-  const { destination, chain, initiator, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
-  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+  const { destination, chain, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
+  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
+  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
 
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
@@ -62,7 +64,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {initiator && accountUtils.isMultisigAccount(initiator) && (
+        {multisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={
@@ -87,26 +89,10 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           </DetailRow>
         )}
 
-        <DetailRow
-          className="text-text-primary"
-          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-        >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={chain.assets[0]} />
-            <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
-          </div>
-        </DetailRow>
+        <FeeWithLabel fee={fee} asset={chain.assets[0]} label={t('staking.networkFee', { count: 1 })} />
 
         {totalFee !== fee && (
-          <DetailRow
-            className="text-text-primary"
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={totalFee} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={totalFee} />
-            </div>
-          </DetailRow>
+          <FeeWithLabel fee={totalFee} asset={chain.assets[0]} label={t('staking.networkFeeTotal')} />
         )}
       </TransactionDetails>
 

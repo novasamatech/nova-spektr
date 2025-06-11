@@ -14,10 +14,10 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -154,11 +154,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
+    if (!isProxy || !proxyAccount) return null;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
-  { skipVoid: false },
 );
 
 const $accounts = combine(
@@ -208,23 +207,20 @@ const $signatories = combine(
 
 const $destinationAccounts = combine(
   {
-    wallets: walletModel.$wallets,
+    accounts: accounts.$list,
     network: $networkStore,
     query: $destinationQuery,
   },
-  ({ wallets, network, query }) => {
+  ({ accounts, network, query }) => {
     if (!network) return [];
 
-    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
-      const isPvWallet = walletUtils.isPolkadotVault(wallet);
-      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-      if (isBaseAccount && isPvWallet) return false;
-
-      const isShardAccount = accountUtils.isVaultShardAccount(account);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+    return accounts.filter((account) => {
+      const hasPermission = accountService.hasPermissionToMakeActions(account);
+      const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+      const matchesQuery = isStringsMatchQuery(query, [account.name, address]);
 
-      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+      return hasPermission && isAvailableOnChain && matchesQuery;
     });
   },
 );
@@ -235,9 +231,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(
