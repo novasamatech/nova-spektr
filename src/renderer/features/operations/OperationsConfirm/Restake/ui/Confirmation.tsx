@@ -9,6 +9,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { StakingPopover } from '@/entities/staking';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -90,30 +91,14 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           </DetailRow>
         )}
 
-        <DetailRow
-          label={
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.networkFee', { count: confirms.length || 1 })}
-            </FootnoteText>
-          }
-          className="text-text-primary"
-        >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={confirmStore.meta.fee} asset={nativeAsset} />
-            <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
-          </div>
-        </DetailRow>
+        <FeeWithLabel
+          fee={confirmStore.meta.fee}
+          asset={nativeAsset}
+          label={t('staking.networkFee', { count: confirms.length || 1 })}
+        />
 
         {confirms.length > 1 && (
-          <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-            className="text-text-primary"
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.meta.totalFee} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.totalFee} />
-            </div>
-          </DetailRow>
+          <FeeWithLabel fee={confirmStore.meta.totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />
         )}
 
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
