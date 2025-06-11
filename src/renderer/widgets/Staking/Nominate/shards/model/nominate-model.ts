@@ -287,36 +287,38 @@ sample({
     nominateData: $nominateData,
     feeData: $feeData,
     walletData: $walletData,
-    txWrappers: $txWrappers,
     coreTxs: $pureTxs,
+    api: $api,
   },
-  filter: ({ nominateData, walletData }) => Boolean(nominateData) && Boolean(walletData),
-  fn: ({ nominateData, feeData, walletData, txWrappers, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  filter: ({ nominateData, walletData }) =>
+    nonNullable(nominateData) && nonNullable(walletData) && nonNullable(walletData),
+  fn: ({ nominateData, feeData, walletData, coreTxs, api }) => {
     return {
-      event: [
-        {
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
-          ...nominateData!,
-          ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTxs: coreTxs[0],
-        },
-      ],
+      event: walletData?.shards.map((shard, index) => ({
+        chain: walletData!.chain,
+        asset: getRelaychainAsset(walletData!.chain.assets)!,
+        ...nominateData!,
+        ...feeData,
+        coreTx: coreTxs[index],
+
+        api: api!,
+        initiator: shard,
+        signatory: shard,
+        route: [shard],
+        tx: coreTxs[index],
+        multisigTx: null,
+      })),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     nominateData: $nominateData,
     walletData: $walletData,

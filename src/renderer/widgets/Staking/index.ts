@@ -1,6 +1,6 @@
 export { BondNominate, bondNominateModel } from './BondNominate';
 export { BondExtra, bondExtraModel, BondExtraShards, bondExtraShardsModel } from './BondExtra';
-export { Nominate, nominateModel } from './Nominate';
+export { Nominate, nominateModel, NominateShards, nominateShardsModel } from './Nominate';
 export { Payee, payeeModel } from './Payee';
 export { Restake, restakeModel } from './Restake';
 export { Withdraw, withdrawModel, WithdrawShards, withdrawShardsModel } from './Withdraw';

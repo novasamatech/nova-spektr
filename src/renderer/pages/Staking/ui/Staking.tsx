@@ -44,6 +44,12 @@ const LazyBondExtraShards = lazy(() =>
   import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
 );
 
+const LazyNominate = lazy(() => import('@/widgets/Staking').then(({ Nominate }) => ({ default: Nominate })));
+
+const LazyNominateShards = lazy(() =>
+  import('@/widgets/Staking').then(({ NominateShards }) => ({ default: NominateShards })),
+);
+
 export const Staking = () => {
   const { t } = useI18n();
 
@@ -291,7 +297,10 @@ export const Staking = () => {
           : Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
-      [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
+      [StakeOperations.NOMINATE]:
+        selectedNominators.length > 1
+          ? Operations.nominateShardsModel.events.flowStarted
+          : Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
         totalStakes.length > 1
           ? Operations.withdrawShardsModel.events.flowStarted
@@ -398,6 +407,7 @@ export const Staking = () => {
       <Operations.BondNominate />
       <Operations.Unstake />
       <Operations.Nominate />
+      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
       <Operations.Restake />
       {totalStakes.length > 1 ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
       <Operations.Payee />
