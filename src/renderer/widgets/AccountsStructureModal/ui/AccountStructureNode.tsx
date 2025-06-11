@@ -90,14 +90,16 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
       {/*  toolbar*/}
       {/*</NodeToolbar>*/}
 
-      <div className="flex rounded-md bg-white shadow-md">
-        <div className="w-1 rounded-l-md" style={{ background: stripeBackground }} />
+      <div className="flex overflow-hidden rounded-md bg-white shadow-md">
+        <div className="w-1" style={{ background: stripeBackground }} />
         <div className="w-[250px]">
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
           <div className="flex flex-col">
             <div style={{ background: data.isSelected ? titleBackground : 'transparent' }}>
-              <SmallTitleText className={`border-stroke border-b px-4 py-2 ${data.isSelected ? 'text-white' : 'text-text-secondary'}`}>
+              <SmallTitleText
+                className={`border-stroke border-b px-4 py-2 ${data.isSelected ? 'text-white' : 'text-text-secondary'}`}
+              >
                 {getAccountType(data.account)}
               </SmallTitleText>
             </div>
