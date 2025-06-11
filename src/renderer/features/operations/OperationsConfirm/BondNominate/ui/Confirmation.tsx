@@ -10,7 +10,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { AccountsModal, SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
@@ -62,7 +62,6 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
   if (!confirmStore || !initiatorWallet) {
@@ -219,15 +218,6 @@ export const Confirmation = ({
           </div>
         </div>
       </div>
-
-      <AccountsModal
-        isOpen={isAccountsOpen}
-        accounts={confirms.map((confirm) => confirm.meta.initiator)}
-        chainId={confirmStore.meta.chain.chainId}
-        asset={confirmStore.meta.asset}
-        addressPrefix={confirmStore.meta.chain.addressPrefix}
-        onClose={toggleAccounts}
-      />
 
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}
