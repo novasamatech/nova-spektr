@@ -23,6 +23,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { bondNominateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { validatorsModel } from '@/features/staking';
 import { bondUtils } from '../lib/bond-utils';
 import { type BondNominateData, type FeeData, Step, type WalletData } from '../lib/types';
@@ -74,9 +75,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData ? apis[walletData.chain.chainId] : undefined;
+    return walletData ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -86,7 +86,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ api, pureTxs, txWrappers }) => {
-    if (!api) return undefined;
+    if (!api) return null;
 
     return pureTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -96,7 +96,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 const $multisigAlreadyExists = combine(
@@ -126,7 +125,7 @@ sample({
 // Transaction & Form
 
 sample({
-  clock: [flowStarted, formModel.output.formChanged],
+  clock: [flowStarted, formModel.formChanged],
   source: {
     walletData: $walletData,
     wallets: walletModel.$wallets,
@@ -164,11 +163,11 @@ sample({
       isMultisig: transactionService.hasMultisig(txWrappers),
     };
   },
-  target: formModel.events.txWrapperChanged,
+  target: formModel.txWrapperChanged,
 });
 
 sample({
-  clock: [$maxValidators.updates, formModel.output.formChanged, validatorsModel.output.formSubmitted],
+  clock: [$maxValidators.updates, formModel.formChanged, validatorsModel.output.formSubmitted],
   source: {
     step: $step,
     bondData: $bondNominateData,
@@ -237,7 +236,7 @@ sample({
 
 sample({
   clock: getTransactionFeeFx.pending,
-  target: formModel.events.isFeeLoadingChanged,
+  target: formModel.isFeeLoadingChanged,
 });
 
 sample({
@@ -263,7 +262,7 @@ sample({
 
 sample({
   clock: $feeData.updates,
-  target: formModel.events.feeDataChanged,
+  target: formModel.feeDataChanged,
 });
 
 // Steps
@@ -272,7 +271,7 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
 sample({
@@ -282,7 +281,7 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   source: $walletData,
   filter: (walletData: WalletData | null): walletData is WalletData => Boolean(walletData),
   fn: ({ chain }) => ({
@@ -303,11 +302,10 @@ sample({
     walletData: $walletData,
     txWrappers: $txWrappers,
     coreTxs: $pureTxs,
+    transactions: $transactions,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, txWrappers, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ bondData, feeData, walletData, coreTxs, transactions }) => {
     return {
       event: [
         {
@@ -315,22 +313,25 @@ sample({
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...bondData!,
           ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          initiator: bondData!.shards[0],
+          signatory: bondData!.signatory!,
+          route: [bondData!.shards[0]],
           coreTx: coreTxs[0],
-        },
+          tx: coreTxs[0],
+          multisigTx: transactions![0].multisigTx!,
+        } satisfies BondNominateConfirm,
       ],
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     bondData: $bondNominateData,
     walletData: $walletData,
@@ -393,7 +394,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared, validatorsModel.events.formCleared],
+  target: [stepChanged, formModel.formCleared, validatorsModel.events.formCleared],
 });
 
 sample({
@@ -444,12 +445,8 @@ export const bondNominateModel = {
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
   $multisigAlreadyExists,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  flowFinished,
 };
