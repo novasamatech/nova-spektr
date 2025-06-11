@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
-import { operationsModel, operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
@@ -55,16 +54,6 @@ const $api = combine(
   ({ apis, walletData }) => {
     return walletData ? apis[walletData.chain.chainId] : null;
   },
-);
-
-const $multisigAlreadyExists = combine(
-  {
-    apis: networkModel.$apis,
-    coreTx: formModel.$coreTx,
-    transactions: operationsModel.$multisigTransactions,
-  },
-  ({ apis, coreTx, transactions }) =>
-    coreTx && operationsUtils.isMultisigAlreadyExists({ apis, coreTxs: [coreTx], transactions }),
 );
 
 // Max validators
@@ -316,7 +305,6 @@ export const bondNominateModel = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
-  $multisigAlreadyExists,
 
   flowStarted,
   stepChanged,
