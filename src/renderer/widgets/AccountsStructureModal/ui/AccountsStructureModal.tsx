@@ -61,7 +61,7 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
   // }, [graph, account]);
 
   return (
-    <Modal size="lg" isOpen={isOpen} onToggle={onToggle}>
+    <Modal size="full" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-[600px]">
