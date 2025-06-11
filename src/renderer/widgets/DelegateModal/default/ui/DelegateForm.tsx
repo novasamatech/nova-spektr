@@ -1,18 +1,19 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance, nonNullable } from '@/shared/lib/utils';
+import { formatAmount, formatBalance, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
@@ -70,7 +71,7 @@ const ProxyFeeAlert = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const feeData = useUnit(formModel.$feeData);
+  const fee = useUnit(formModel.$fee);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
@@ -79,7 +80,7 @@ const ProxyFeeAlert = () => {
     return null;
   }
 
-  const formattedFee = formatBalance(feeData.fee, network.asset.precision).value;
+  const formattedFee = formatBalance(fee, network.asset.precision).value;
   const formattedBalance = formatBalance(balance, network.asset.precision).value;
 
   return (
@@ -104,6 +105,24 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const isMultisig = useUnit(formModel.$isMultisig);
 
+  const balances = useUnit(balanceModel.$balances);
+
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
+
   if (!isMultisig || !network) {
     return null;
   }
@@ -111,7 +130,7 @@ const Signatories = () => {
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
+      signatories={signatoriesWithBalance}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
@@ -174,8 +193,9 @@ const FeeSection = () => {
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
-  const feeData = useUnit(formModel.$feeData);
-  const isFeeLoading = useUnit(formModel.$isFeeLoading);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const isMultisig = useUnit(formModel.$isMultisig);
   const account = useUnit(formModel.$account);
 
@@ -184,8 +204,6 @@ const FeeSection = () => {
     keys: [network?.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
-
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
@@ -233,25 +251,18 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
+            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit.toString()} />
           </div>
         </DetailRow>
       )}
 
-      <DetailRow
-        label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-        className="text-text-primary"
-      >
-        {isFeeLoading ? (
-          <FeeLoader fiatFlag={nonNullable(fiatFlag)} />
-        ) : (
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
-          </div>
-        )}
-      </DetailRow>
+      <FeeWithLabel
+        fee={fee.toString()}
+        isLoading={pendingFee}
+        asset={network.chain.assets[0]}
+        label={t('staking.networkFee', { count: 1 })}
+      />
     </div>
   );
 };

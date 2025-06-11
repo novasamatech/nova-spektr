@@ -24,7 +24,8 @@ import {
   votingService,
 } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<DelegateAccount>();
@@ -49,7 +50,7 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
 
 const $availableAccounts = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     delegations: delegationAggregate.$activeDelegations,
     network: delegationAggregate.$network,
     delegate: $delegate,
@@ -234,7 +235,7 @@ sample({
   source: {
     tracks: $tracks,
     network: delegationAggregate.$network,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ network, wallet }) => !!network && !!wallet,
   fn: ({ tracks, network, wallet }, _): CheckWeightParams => ({

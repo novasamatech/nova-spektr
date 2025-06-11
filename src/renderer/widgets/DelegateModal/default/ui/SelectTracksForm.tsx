@@ -21,7 +21,7 @@ import {
 import { accountUtils } from '@/entities/wallet';
 import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
-import { delegateModel } from '../model/delegate-model';
+import { formModel } from '../model/form-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
 type Props = {
@@ -258,7 +258,7 @@ const AccountsSelector = () => {
   const accounts = useUnit(selectTracksModel.$accounts);
   const availableAccounts = useUnit(selectTracksModel.$availableAccounts);
   const accountsBalances = useUnit(selectTracksModel.$accountsBalances);
-  const { wallet, chain } = useUnit(delegateModel.$walletData);
+  const { wallet, chain } = useUnit(formModel.$walletData);
 
   if (!wallet || !chain || availableAccounts.length <= 1) {
     return null;
