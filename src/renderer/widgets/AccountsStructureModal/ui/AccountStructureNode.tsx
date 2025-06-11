@@ -11,6 +11,7 @@ import { accountUtils } from '@/entities/wallet';
 interface AccountStructureNodeProps {
   data: {
     account: AnyAccount;
+    isSelected: boolean;
   };
   id: string;
 }
@@ -95,8 +96,8 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
           <div className="flex flex-col">
-            <div style={{ background: titleBackground }}>
-              <SmallTitleText className="border-stroke border-b px-4 py-2 text-white">
+            <div style={{ background: data.isSelected ? titleBackground : 'transparent' }}>
+              <SmallTitleText className={`border-stroke border-b px-4 py-2 ${data.isSelected ? 'text-white' : 'text-text-secondary'}`}>
                 {getAccountType(data.account)}
               </SmallTitleText>
             </div>

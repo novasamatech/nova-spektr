@@ -27,6 +27,7 @@ interface AccountsStructureProps {
 
 type AccountNodeData = {
   account: AnyAccount;
+  isSelected: boolean;
 };
 
 const LEVEL_SPACING = 400;
@@ -60,6 +61,7 @@ export const AccountsStructure = ({ account, graph }: AccountsStructureProps) =>
         type: 'accountNode',
         data: {
           account: node.account,
+          isSelected: node.account.id === account.id,
         },
         position: { x, y },
         // Swap source and target positions
