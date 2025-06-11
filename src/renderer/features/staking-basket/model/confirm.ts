@@ -28,8 +28,9 @@ import {
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
+import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
-import { type NominateInput, type PayeeInput, type RestakeInput, type UnstakeInput } from '../types/confirm';
+import { type NominateInput, type PayeeInput, type UnstakeInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -177,15 +178,19 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: transaction.coreTx.args.value,
-    description: '',
-    signatory: null,
-
+    signatory: account!,
+    initiator: account!,
+    route: transaction.txWrappers.map((wrapper) =>
+      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+    ),
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } as RestakeInput;
+  } satisfies RestakeConfirm;
 });
 
 const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -365,7 +370,7 @@ sample({
 sample({
   clock: prepareRestakeDataFx.doneData,
   fn: (data) => [data],
-  target: restakeConfirmModel.events.formInitiated,
+  target: restakeConfirmModel.init,
 });
 
 sample({

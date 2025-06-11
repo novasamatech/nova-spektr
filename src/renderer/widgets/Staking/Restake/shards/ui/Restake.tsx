@@ -21,10 +21,10 @@ export const Restake = () => {
   const networkStore = useUnit(restakeModel.$networkStore);
   const initiatorWallet = useUnit(restakeModel.$initiatorWallet);
 
-  const [isModalOpen, closeModal] = useModalClose(!restakeUtils.isNoneStep(step), restakeModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!restakeUtils.isNoneStep(step), restakeModel.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     restakeUtils.isBasketStep(step),
-    restakeModel.output.flowFinished,
+    restakeModel.flowFinished,
   );
 
   if (!networkStore) {
@@ -65,17 +65,15 @@ export const Restake = () => {
           secondaryActionButton={
             initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => restakeModel.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => restakeModel.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )
           }
-          onGoBack={() => restakeModel.events.stepChanged(Step.INIT)}
+          onGoBack={() => restakeModel.stepChanged(Step.INIT)}
         />
       )}
-      {restakeUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => restakeModel.events.stepChanged(Step.CONFIRM)} />
-      )}
+      {restakeUtils.isSignStep(step) && <OperationSign onGoBack={() => restakeModel.stepChanged(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

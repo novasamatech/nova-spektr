@@ -268,6 +268,7 @@ export const Staking = () => {
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  const isMultipleStakes = totalStakes.length > 1;
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
@@ -293,7 +294,9 @@ export const Staking = () => {
           ? Operations.bondExtraShardsModel.events.flowStarted
           : Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleStakes
+        ? Operations.restakeModelShards.flowStarted
+        : Operations.restakeModel.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
         totalStakes.length > 1
@@ -401,8 +404,8 @@ export const Staking = () => {
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
       <Operations.Unstake />
       <Operations.Nominate />
-      <Operations.Restake />
-      {totalStakes.length > 1 ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
+      {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
+      {isMultipleStakes ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
       <Operations.Payee />
     </>
   );
