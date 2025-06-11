@@ -20,7 +20,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { bondExtraUtils } from '../lib/bond-extra-utils';
 import { type BondExtraData, type FeeData, Step, type WalletData } from '../lib/types';
 
@@ -246,28 +246,33 @@ sample({
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
-      event: [
-        {
+      event: bondData!.shards.map((shard) => {
+        return {
           chain: walletData!.chain,
           asset: getRelaychainAsset(walletData!.chain.assets)!,
           ...bondData!,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper && { shards: [wrapper.proxyAccount] }),
+          initiator: shard,
+          signatory: bondData!.signatory!,
           coreTx: coreTxs[0],
-        },
-      ],
+          tx: coreTxs[0],
+          route: [shard],
+          multisigTx: coreTxs[0],
+        } satisfies BondExtraConfirm;
+      }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     bondData: $bondExtraData,
     walletData: $walletData,
