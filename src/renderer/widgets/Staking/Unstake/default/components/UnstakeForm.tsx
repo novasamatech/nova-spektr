@@ -76,9 +76,8 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !network || signatories.length < 2) {
+  if (!network || signatories.length < 2) {
     return null;
   }
 
