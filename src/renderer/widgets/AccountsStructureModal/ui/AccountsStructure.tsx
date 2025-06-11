@@ -101,15 +101,19 @@ export const AccountsStructure = ({ account, graph }: AccountsStructureProps) =>
       return node.children.length;
     };
 
-    // Get the root node from the graph using the provided account
-    const rootNode = graph.get(account);
-    if (rootNode) {
-      processNode(rootNode, 0, 0);
+    // Process all accounts from the graph
+    let currentYOffset = 0;
+    for (const [_, node] of graph) {
+      if (!visited.has(node.account.id)) {
+        const height = calculateSubtreeHeight(node);
+        processNode(node, 0, currentYOffset);
+        currentYOffset += height * NODE_SPACING;
+      }
     }
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [account, graph, setNodes, setEdges]);
+  }, [graph, setNodes, setEdges]);
 
   return (
     <ReactFlow
