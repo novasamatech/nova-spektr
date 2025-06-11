@@ -49,10 +49,6 @@ const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $shards = createStore<AnyAccount[]>([]);
 
-const $delegateBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
-const $proxyBalance = createStore<string>(ZERO_BALANCE);
-
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
@@ -203,20 +199,21 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
-// Computed
+// Computed stores that depend on form should be declared after form
 
-const $proxyWallet = combine(
-  {
-    isProxy: $isProxy,
-    proxyAccount: $proxyAccount,
-    wallets: walletModel.$wallets,
-  },
-  ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return null;
+const $delegateBalanceRange = combine($accountsBalances, (accountsBalances) => {
+  if (accountsBalances.length === 0) return ZERO_BALANCE;
 
-    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
-  },
-);
+  if (accountsBalances.length === 1) return accountsBalances[0];
+
+  const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
+    if (!balance) return acc;
+
+    return new BN(balance).lt(new BN(acc)) ? balance : acc;
+  }, accountsBalances[0]);
+
+  return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+});
 
 const $signatories = combine(
   {
@@ -240,6 +237,55 @@ const $signatories = combine(
 
       return acc;
     }, []);
+  },
+);
+
+const $proxyBalance = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  ({ isProxy, proxyAccount, balances, network }) => {
+    if (!isProxy || !network || !proxyAccount) return ZERO_BALANCE;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccount.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
+
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    signatories: $signatories,
+  },
+  ({ signatory, signatories }) => {
+    if (signatories.length === 0) return ZERO_BALANCE;
+
+    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
+    return match?.balance || ZERO_BALANCE;
+  },
+);
+
+// Computed
+
+const $proxyWallet = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    wallets: walletModel.$wallets,
+  },
+  ({ isProxy, proxyAccount, wallets }) => {
+    if (!isProxy || !proxyAccount) return null;
+
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
 );
 
@@ -299,59 +345,6 @@ sample({
     signatories: $availableSignatories,
     proxyAccount: $proxyAccount,
   }),
-});
-
-sample({
-  source: $accountsBalances,
-  fn: (accountsBalances) => {
-    if (accountsBalances.length === 0) return ZERO_BALANCE;
-
-    if (accountsBalances.length === 1) return accountsBalances[0];
-
-    const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
-      if (!balance) return acc;
-
-      return new BN(balance).lt(new BN(acc)) ? balance : acc;
-    }, accountsBalances[0]);
-
-    return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
-  },
-  target: $delegateBalanceRange,
-});
-
-sample({
-  clock: form.fields.signatory.change,
-  source: $signatories,
-  filter: (signatories) => signatories.length > 0,
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
-  },
-  target: $signatoryBalance,
-});
-
-sample({
-  source: {
-    isProxy: $isProxy,
-    proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  filter: ({ isProxy, network, proxyAccount }) => {
-    return isProxy && nonNullable(network) && nonNullable(proxyAccount);
-  },
-  fn: ({ balances, network, proxyAccount }) => {
-    const balance = balanceUtils.getBalance(
-      balances,
-      proxyAccount!.accountId,
-      network!.chain.chainId,
-      network!.asset.assetId.toString(),
-    );
-
-    return transferableAmount(balance);
-  },
-  target: $proxyBalance,
 });
 
 // Submit
