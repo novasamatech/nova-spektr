@@ -294,7 +294,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length > 0,
+  filter: ({ chain, shards }) => nonNullable(getRelaychainAsset(chain.assets)) && shards.length > 0,
   fn: ({ chain, shards }) => ({
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
     shards,
@@ -371,7 +371,7 @@ sample({
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {
-    return isProxy && Boolean(network) && Boolean(proxyAccount);
+    return isProxy && nonNullable(network) && nonNullable(proxyAccount);
   },
   fn: ({ balances, network, proxyAccount }) => {
     const balance = balanceUtils.getBalance(

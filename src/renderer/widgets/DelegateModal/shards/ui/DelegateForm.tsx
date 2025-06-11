@@ -4,7 +4,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance } from '@/shared/lib/utils';
+import { formatAmount, formatBalance, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -252,7 +252,7 @@ const FeeSection = () => {
         className="text-text-primary"
       >
         {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+          <FeeLoader fiatFlag={nonNullable(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
@@ -267,7 +267,7 @@ const FeeSection = () => {
           className="text-text-primary"
         >
           {isFeeLoading ? (
-            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+            <FeeLoader fiatFlag={nonNullable(fiatFlag)} />
           ) : (
             <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />

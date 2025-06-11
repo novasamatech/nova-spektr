@@ -1,10 +1,10 @@
 import { BN } from '@polkadot/util';
-import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance } from '@/shared/lib/utils';
+import { formatAmount, formatBalance, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -27,7 +27,7 @@ type Props = {
 
 export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
   const { t } = useI18n();
-  const { submit } = useForm(formModel.$delegateForm);
+  const { submit } = useForm(formModel.form);
   const network = useUnit(formModel.$networkStore);
 
   const submitForm = (event: FormEvent) => {
@@ -68,14 +68,14 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
 const ProxyFeeAlert = () => {
   const {
     fields: { shards },
-  } = useForm(formModel.$delegateForm);
+  } = useForm(formModel.form);
 
   const feeData = useUnit(formModel.$feeData);
   const balance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) {
+  if (!network || !proxyWallet || !shards.hasError) {
     return null;
   }
 
@@ -88,7 +88,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.resetErrors}
+      onClose={shards.reset}
     />
   );
 };
@@ -98,7 +98,7 @@ const Signatories = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$delegateForm);
+  } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
@@ -114,8 +114,8 @@ const Signatories = () => {
       signatories={signatories[0]}
       asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
       onChange={signatory.onChange}
     />
   );
@@ -124,7 +124,7 @@ const Signatories = () => {
 const Conviction = () => {
   const {
     fields: { conviction },
-  } = useForm(formModel.$delegateForm);
+  } = useForm(formModel.form);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -139,7 +139,7 @@ const Amount = () => {
 
   const {
     fields: { amount },
-  } = useForm(formModel.$delegateForm);
+  } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
   const delegateBalanceRange = useUnit(formModel.$delegateBalanceRange);
@@ -151,7 +151,7 @@ const Amount = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amount.hasError()}
+        invalid={amount.hasError}
         value={amount.value}
         balance={delegateBalanceRange}
         balancePlaceholder={t('general.input.availableLabel')}
@@ -159,8 +159,8 @@ const Amount = () => {
         asset={network.asset}
         onChange={amount.onChange}
       />
-      <InputHint active={amount.hasError()} variant="error">
-        {t(amount.errorText())}
+      <InputHint active={amount.hasError} variant="error">
+        {t(amount.errorMessage)}
       </InputHint>
     </div>
   );
@@ -171,7 +171,7 @@ const FeeSection = () => {
 
   const {
     fields: { shards, amount, conviction },
-  } = useForm(formModel.$delegateForm);
+  } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
   const feeData = useUnit(formModel.$feeData);
@@ -252,7 +252,7 @@ const FeeSection = () => {
         className="text-text-primary"
       >
         {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+          <FeeLoader fiatFlag={nonNullable(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
             <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
@@ -267,7 +267,7 @@ const FeeSection = () => {
           className="text-text-primary"
         >
           {isFeeLoading ? (
-            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
+            <FeeLoader fiatFlag={nonNullable(fiatFlag)} />
           ) : (
             <div className="flex flex-col items-end gap-y-0.5">
               <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
