@@ -7,8 +7,10 @@ import {
   type Node,
   Position,
   ReactFlow,
+  ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from '@xyflow/react';
 import { useEffect } from 'react';
 
@@ -31,11 +33,12 @@ type AccountNodeData = {
 };
 
 const LEVEL_SPACING = 400;
-const NODE_SPACING = 150;
+const NODE_SPACING = 115;
 
-export const AccountsStructure = ({ account, graph }: AccountsStructureProps) => {
+const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const { fitView } = useReactFlow();
 
   useEffect(() => {
     const newNodes: Node<AccountNodeData>[] = [];
@@ -64,17 +67,13 @@ export const AccountsStructure = ({ account, graph }: AccountsStructureProps) =>
           isSelected: node.account.id === account.id,
         },
         position: { x, y },
-        // Swap source and target positions
         sourcePosition: Position.Left,
         targetPosition: Position.Right,
       });
 
-      // Create edges for each child
       for (const child of node.children) {
-        const edgeId = `e${child.account.id}-${nodeId}`;
         newEdges.push({
-          id: edgeId,
-          // Swap source and target
+          id: `e${child.account.id}-${nodeId}`,
           source: child.account.id,
           target: nodeId,
           type: 'smoothstep',
@@ -115,14 +114,25 @@ export const AccountsStructure = ({ account, graph }: AccountsStructureProps) =>
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [graph, setNodes, setEdges]);
+
+    // Focus on the selected account node after nodes are set
+    setTimeout(() => {
+      fitView({
+        nodes: [{ id: account.id }],
+        padding: 0.5,
+        maxZoom: 1,
+        minZoom: 0.5,
+        includeHiddenNodes: true,
+      });
+    }, 0);
+  }, [graph, setNodes, setEdges, account.id, fitView]);
 
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
-      fitView
+      fitView={false}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}
@@ -135,3 +145,9 @@ export const AccountsStructure = ({ account, graph }: AccountsStructureProps) =>
     </ReactFlow>
   );
 };
+
+export const AccountsStructure = (props: AccountsStructureProps) => (
+  <ReactFlowProvider>
+    <AccountsStructureInner {...props} />
+  </ReactFlowProvider>
+);
