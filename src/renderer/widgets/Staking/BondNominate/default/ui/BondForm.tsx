@@ -5,15 +5,22 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, transferableAmount, validateAddress } from '@/shared/lib/utils';
+import {
+  formatBalance,
+  getNativeAsset,
+  toAddress,
+  toShortAddress,
+  transferableAmount,
+  validateAddress,
+} from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -255,11 +262,11 @@ const FeeSection = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-
   if (!network || !initiator.value) {
     return null;
   }
+
+  const nativeAsset = getNativeAsset(network.chain.assets);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -282,25 +289,18 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={multisigDeposit ?? undefined} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit ?? undefined} />
+            <AssetBalance value={multisigDeposit ?? undefined} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={multisigDeposit ?? undefined} />
           </div>
         </DetailRow>
       )}
 
-      <DetailRow
-        label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-        className="text-text-primary"
-      >
-        {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-        ) : (
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={fee.toString()} />
-          </div>
-        )}
-      </DetailRow>
+      <FeeWithLabel
+        label={t('staking.networkFee', { count: 1 })}
+        asset={nativeAsset}
+        fee={fee.toString()}
+        isLoading={isFeeLoading}
+      />
     </div>
   );
 };
