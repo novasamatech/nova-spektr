@@ -24,7 +24,7 @@ import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddre
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
   conviction: Conviction;
@@ -47,8 +47,6 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<AnyAccount[]>([]);
-
 const $availableSignatories = createStore<AnyAccount[][]>([]);
 const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
@@ -61,42 +59,10 @@ const $feeData = restore(feeDataChanged, {
   multisigDeposit: ZERO_BALANCE,
 });
 
-const $accounts = combine(
-  {
-    network: $networkStore,
-    wallet: walletSelect.$selectedWallet,
-    shards: $shards,
-    balances: balanceModel.$balances,
-    trackLocks: locksAggregate.$trackLocks,
-  },
-  ({ network, wallet, shards, balances, trackLocks }) => {
-    if (!wallet || !network) return [];
-
-    const { chain, asset } = network;
-
-    return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-      const lock = getLocksForAddress(address, trackLocks);
-
-      return {
-        account: shard,
-        balance: transferableAmountBN(balance),
-        lock,
-        available: balance ? locksService.getAvailableBalance(balance) : BN_ZERO,
-      };
-    });
-  },
-);
-
-const $accountsBalances = $accounts.map((accounts) => {
-  return accounts.map(({ available }) => available.toString());
-});
-
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
-    shards: {
-      defaultValue: [],
+    initiator: {
+      defaultValue: null,
       validator: () => {
         return {
           source: combine({
@@ -104,17 +70,20 @@ const form: Form<FormParams> = createForm<FormParams>({
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
             network: $networkStore,
-            accountsBalances: $accountsBalances,
+            initiatorBalance: $initiatorBalance,
           }),
-          fn: (shards, fields, { feeData, isProxy, proxyBalance, network, accountsBalances }) => {
+          fn: (initiator, fields, { feeData, isProxy, proxyBalance, network, initiatorBalance }) => {
+            if (!initiator) {
+              return { message: 'staking.bond.noInitiatorError' };
+            }
+
             if (isProxy) {
               if (new BN(feeData.fee).gt(new BN(proxyBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
-            } else if (shards.length > 1) {
+            } else if (fields.amount) {
               const amountBN = new BN(formatAmount(fields.amount, network.asset.precision));
-              const isEnough = shards.every((_, idx) => amountBN.lte(new BN(accountsBalances[idx])));
-              if (!isEnough) {
+              if (amountBN.gt(new BN(initiatorBalance))) {
                 return { message: 'staking.bond.noBondBalanceError' };
               }
             }
@@ -155,9 +124,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             isMultisig: $isMultisig,
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
-            accountsBalances: $accountsBalances,
+            initiatorBalance: $initiatorBalance,
           }),
-          fn: (value, fields, { feeData, isMultisig, network, delegateBalanceRange, accountsBalances }) => {
+          fn: (value, fields, { feeData, isMultisig, network, delegateBalanceRange, initiatorBalance }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -175,13 +144,9 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            if (!isMultisig) {
+            if (!isMultisig && fields.initiator) {
               const feeBN = new BN(feeData.fee);
-              const sufficient = fields.shards.every((_: AnyAccount, idx: number) => {
-                return amountBN.add(feeBN).lte(new BN(accountsBalances[idx]));
-              });
-
-              if (!sufficient) {
+              if (amountBN.add(feeBN).gt(new BN(initiatorBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             }
@@ -201,18 +166,40 @@ const form: Form<FormParams> = createForm<FormParams>({
 
 // Computed stores that depend on form should be declared after form
 
-const $delegateBalanceRange = combine($accountsBalances, (accountsBalances) => {
-  if (accountsBalances.length === 0) return ZERO_BALANCE;
+const $account = combine(
+  {
+    network: $networkStore,
+    wallet: walletSelect.$selectedWallet,
+    initiator: form.fields.initiator.$value,
+    balances: balanceModel.$balances,
+    trackLocks: locksAggregate.$trackLocks,
+  },
+  ({ network, wallet, initiator, balances, trackLocks }) => {
+    if (!wallet || !network || !initiator) return null;
 
-  if (accountsBalances.length === 1) return accountsBalances[0];
+    const { chain, asset } = network;
 
-  const minBondBalance = accountsBalances.reduce<string>((acc, balance) => {
-    if (!balance) return acc;
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
+    const address = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
+    const lock = getLocksForAddress(address, trackLocks);
 
-    return new BN(balance).lt(new BN(acc)) ? balance : acc;
-  }, accountsBalances[0]);
+    return {
+      account: initiator,
+      balance: transferableAmountBN(balance),
+      lock,
+      available: balance ? locksService.getAvailableBalance(balance) : BN_ZERO,
+    };
+  },
+);
 
-  return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+const $initiatorBalance = $account.map((account) => {
+  return account?.available.toString() || ZERO_BALANCE;
+});
+
+const $delegateBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
+  if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
+
+  return [ZERO_BALANCE, initiatorBalance];
 });
 
 const $signatories = combine(
@@ -321,20 +308,12 @@ sample({
   filter: ({ chain, shards }) => nonNullable(getRelaychainAsset(chain.assets)) && shards.length > 0,
   fn: ({ chain, shards }) => ({
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
-    shards,
+    initiator: shards[0] ?? null,
   }),
   target: spread({
-    shards: $shards,
+    initiator: form.fields.initiator.change,
     networkStore: $networkStore,
   }),
-});
-
-sample({
-  clock: formInitiated,
-  source: $shards,
-  filter: (shards) => shards.length > 0,
-  fn: (shards) => shards,
-  target: form.fields.shards.change,
 });
 
 sample({
@@ -351,10 +330,10 @@ sample({
 
 sample({
   clock: form.$values.updates,
-  source: { networkStore: $networkStore, accounts: $accounts },
-  filter: (networkStore) => nonNullable(networkStore),
-  fn: ({ accounts }, formData) => {
-    const locks = accounts.reduce((acc, val) => ({ ...acc, [val.account.accountId]: val.lock }), {});
+  source: { networkStore: $networkStore, account: $account },
+  filter: ({ networkStore, account }) => nonNullable(networkStore) && nonNullable(account),
+  fn: ({ account }, formData) => {
+    const locks = account ? { [account.account.accountId]: account.lock } : {};
 
     return { ...formData, locks };
   },
@@ -368,7 +347,7 @@ sample({
 
 sample({
   clock: formCleared,
-  target: [form.reset, $shards.reinit],
+  target: form.reset,
 });
 
 export const formModel = {
@@ -376,8 +355,8 @@ export const formModel = {
   $proxyWallet,
   $signatories,
 
-  $accounts,
-  $accountsBalances,
+  $account,
+  $initiatorBalance,
   $delegateBalanceRange,
   $proxyBalance,
 

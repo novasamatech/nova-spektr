@@ -6,11 +6,9 @@ import { Step, isStep, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { DelegateConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/Delegate';
-import { ConfirmSlider } from '@/features/operations/OperationsConfirm/common/ConfirmSlider';
 import { delegateModel } from '../model/delegate-model';
 
 import { DelegateForm } from './DelegateForm';
@@ -22,7 +20,7 @@ export const Delegate = () => {
   const step = useUnit(delegateModel.$step);
   const walletData = useUnit(delegateModel.$walletData);
   const initiatorWallet = useUnit(delegateModel.$initiatorWallet);
-  const transactions = useUnit(delegateModel.$transactions);
+  const transaction = useUnit(delegateModel.$transactions);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), delegateModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -64,14 +62,11 @@ export const Delegate = () => {
     );
   }
 
-  if (nullable(transactions)) {
+  if (nullable(transaction)) {
     return null;
   }
 
-  const title =
-    transactions.length > 1
-      ? t('operation.sign.title', { count: transactions.length })
-      : t('governance.addDelegation.title');
+  const title = t('governance.addDelegation.title');
 
   return (
     <BaseModal
@@ -82,7 +77,7 @@ export const Delegate = () => {
       title={<OperationTitle title={t(title)} chainId={walletData.chain!.chainId} />}
       onClose={closeModal}
     >
-      {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
+      {isStep(step, Step.CONFIRM) && (
         <Confirmation
           secondaryActionButton={
             initiatorWallet &&
@@ -94,30 +89,6 @@ export const Delegate = () => {
           }
           onGoBack={() => delegateModel.events.stepChanged(Step.INIT)}
         />
-      )}
-
-      {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-        <ConfirmSlider
-          count={transactions.length}
-          footer={
-            <div className="flex gap-2">
-              {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => delegateModel.events.txSaved()}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )}
-
-              <SignButton isDefault type={walletData.wallet?.type} onClick={delegateModel.events.txsConfirmed} />
-            </div>
-          }
-        >
-          {transactions.map((_, index) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <ConfirmSlider.Item key={index}>
-              <Confirmation id={index} hideSignButton />
-            </ConfirmSlider.Item>
-          ))}
-        </ConfirmSlider>
       )}
 
       {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => delegateModel.events.stepChanged(Step.CONFIRM)} />}

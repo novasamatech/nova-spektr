@@ -9,7 +9,7 @@ export type WalletData = {
 };
 
 export type DelegateData = {
-  shards: AnyAccount[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   tracks: number[];
   target: Address;
