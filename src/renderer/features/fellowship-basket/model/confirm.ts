@@ -3,20 +3,13 @@ import { BN } from '@polkadot/util';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import {
-  type Balance,
-  type BasketTransaction,
-  type Chain,
-  type ChainId,
-  type Connection,
-  TransactionType,
-  type Wallet,
-} from '@/shared/core';
+import { type Balance, type Chain, type ChainId, type Connection, TransactionType, type Wallet } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import {

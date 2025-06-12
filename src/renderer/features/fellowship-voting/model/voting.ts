@@ -2,11 +2,10 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
-import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { votingService } from '@/domains/collectives';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -155,11 +154,11 @@ sample({
 
     const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
 
-    // @ts-expect-error TODO fix id field
-    const newTransaction: BasketTransaction = {
+    const newTransaction: BasketTransactionDraft = {
       initiatorAccountId: account.accountId,
       coreTx,
       txWrappers,
+      createdAt: Date.now(),
     };
 
     return {

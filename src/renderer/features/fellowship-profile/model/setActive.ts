@@ -2,11 +2,10 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
 
-import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { memberService } from '@/domains/collectives';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -119,7 +118,7 @@ sample({
 // Basket
 
 const saveToBasket = createEvent();
-const basketSaveRequestCreated = createEvent<BasketTransaction | null>();
+const basketSaveRequestCreated = createEvent<BasketTransactionDraft | null>();
 
 sample({
   clock: saveToBasket,
@@ -133,11 +132,11 @@ sample({
       return null;
     }
 
-    // @ts-expect-error TODO fix id field
-    const tx: BasketTransaction = {
+    const tx: BasketTransactionDraft = {
       initiatorAccountId: account.accountId,
       coreTx: transactions.coreTx,
       txWrappers,
+      createdAt: Date.now(),
     };
 
     return tx;

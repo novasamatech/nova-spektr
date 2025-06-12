@@ -3,7 +3,6 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import {
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type Connection,
@@ -16,7 +15,7 @@ import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type BondExtraConfirm,
   type PayeeConfirm,

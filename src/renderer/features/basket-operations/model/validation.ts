@@ -4,7 +4,7 @@ import { attach, createEffect, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { uniq } from 'lodash';
 
-import { type BasketTransaction, type ID } from '@/shared/core';
+import { type ID } from '@/shared/core';
 import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
@@ -12,6 +12,7 @@ import { nonNullable, nullable, transferableAmountBN } from '@/shared/lib/utils'
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type ValidationResult } from '@/features/operations/OperationsValidation';
 
 import { basketOperationsFeature } from './feature';

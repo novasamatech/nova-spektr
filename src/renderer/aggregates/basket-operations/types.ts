@@ -1,7 +1,6 @@
+import { type ID } from '@/shared/core/types/general';
+import { type Transaction, type TxWrapper } from '@/shared/core/types/transaction';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-
-import { type ID } from './general';
-import { type Transaction, type TxWrapper } from './transaction';
 
 export type BasketTransaction = {
   id: ID;
@@ -11,6 +10,8 @@ export type BasketTransaction = {
   error?: ChainError;
   createdAt: number;
 };
+
+export type BasketTransactionDraft = Omit<BasketTransaction, 'id'>;
 
 export type ChainError = {
   type: 'chain';
