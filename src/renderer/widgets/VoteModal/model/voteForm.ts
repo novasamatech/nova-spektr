@@ -153,19 +153,19 @@ const $coreTx = combine(
     referendum: $referendum,
     existingVote: $existingVote,
     conviction: form.fields.conviction.$value,
-    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     amount: form.fields.amount.$value,
     decision: form.fields.decision.$value,
   },
-  ({ chain, referendum, initiator, amount, conviction, decision, existingVote }) => {
-    if (nullable(referendum) || nullable(chain) || nullable(initiator)) {
+  ({ chain, referendum, signatory, amount, conviction, decision, existingVote }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(signatory)) {
       return null;
     }
 
     if (existingVote) {
       return transactionBuilder.buildRevote({
         chain: chain,
-        accountId: initiator.accountId,
+        accountId: signatory.accountId,
         trackId: referendum.track,
         referendumId: referendum.referendumId,
         vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
@@ -174,7 +174,7 @@ const $coreTx = combine(
 
     return transactionBuilder.buildVote({
       chain: chain,
-      accountId: initiator.accountId,
+      accountId: signatory.accountId,
       trackId: referendum.track,
       referendumId: referendum.referendumId,
       vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),

@@ -1,6 +1,6 @@
 import { Step } from './types';
 
-export const bondExtraUtils = {
+export const payeeUtils = {
   isNoneStep,
   isInitStep,
   isConfirmStep,

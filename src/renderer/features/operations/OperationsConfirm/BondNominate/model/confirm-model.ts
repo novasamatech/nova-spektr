@@ -7,7 +7,6 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 
-
 export type BondNominateConfirm = TxConfirmInfo & {
   validators: Validator[];
   amount: string;

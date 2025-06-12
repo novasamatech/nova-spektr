@@ -20,7 +20,7 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type PayeeConfirm, payeeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { payeeUtils } from '../lib/payee-utils';
 import { type FeeData, type PayeeData, Step, type WalletData } from '../lib/types';
 
@@ -236,32 +236,33 @@ sample({
     coreTxs: $pureTxs,
   },
   filter: ({ payeeData, walletData }) => Boolean(payeeData) && Boolean(walletData),
-  fn: ({ payeeData, feeData, walletData, txWrappers, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ payeeData, feeData, walletData, coreTxs }) => {
     return {
-      event: [
-        {
-          chain: walletData!.chain,
-          asset: getRelaychainAsset(walletData!.chain.assets)!,
+      event: payeeData!.shards.map((shard, index) => {
+        return {
           ...payeeData!,
           ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper && { shards: [wrapper.proxyAccount] }),
-          coreTx: coreTxs[0],
-        },
-      ],
+          chain: walletData!.chain,
+          asset: getRelaychainAsset(walletData!.chain.assets)!,
+          initiator: shard,
+          signatory: shard,
+          route: [shard],
+          tx: coreTxs[index],
+          multisigTx: null,
+          coreTx: coreTxs[index],
+        } satisfies PayeeConfirm;
+      }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     payeeData: $payeeData,
     walletData: $walletData,

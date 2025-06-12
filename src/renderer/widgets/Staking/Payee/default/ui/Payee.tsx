@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -47,33 +48,30 @@ export const Payee = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      isOpen={isModalOpen}
-      title={
+    <Modal isOpen={isModalOpen} size="md" onToggle={(open: boolean) => !open && closeModal()}>
+      <Modal.Title close>
         <OperationTitle
           title={t('staking.destination.title', { asset: walletData.chain.assets[0].symbol })}
           chainId={walletData.chain.chainId}
         />
-      }
-      onClose={closeModal}
-    >
-      {payeeUtils.isInitStep(step) && <PayeeForm onGoBack={closeModal} />}
-      {payeeUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => payeeModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => payeeModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {payeeUtils.isSignStep(step) && <OperationSign onGoBack={() => payeeModel.events.stepChanged(Step.CONFIRM)} />}
-    </BaseModal>
+      </Modal.Title>
+      <Modal.Content>
+        {payeeUtils.isInitStep(step) && <PayeeForm onGoBack={closeModal} />}
+        {payeeUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => payeeModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => payeeModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {payeeUtils.isSignStep(step) && <OperationSign onGoBack={() => payeeModel.events.stepChanged(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };
