@@ -11,13 +11,13 @@ import {
   WrapperKind,
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { createTxWrappers } from '@/shared/transactions';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
@@ -80,24 +80,16 @@ const selectSignatory = createEvent<AnyAccount>();
 
 const $signatory = createStore<AnyAccount | null>(null);
 
-const $signatories = combine($walletData, walletModel.$wallets, (wallet, wallets) => {
-  const account = wallet.wallet?.accounts[0];
-
-  if (!account || !accountUtils.isMultisigAccount(account)) {
-    return [];
-  }
-
-  const a = account.signatories.map((signatory) =>
-    walletUtils.getAccountBy(wallets, (a) => a.accountId === signatory.accountId),
-  );
-
-  return a.filter((option) => option !== null);
+const $signatories = createSignatoriesStore({
+  chain: networkSelectorModel.$governanceChain,
+  initiator: $initiator,
+  accounts: accounts.$list,
 });
 
 sample({
   clock: $signatories,
-  filter: $signatories.map((x) => x.length < 2),
-  fn: (s) => s.at(0) ?? null,
+  filter: (signatories) => signatories.length > 0,
+  fn: (signatories) => signatories.at(0) ?? null,
   target: $signatory,
 });
 
