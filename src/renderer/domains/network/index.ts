@@ -15,3 +15,7 @@ export { identityService } from './identity/service';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
 export { block } from './block';
+
+export { multisigOperation } from './multisig-operation/model';
+export { multisigOperationService } from './multisig-operation/service';
+export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
