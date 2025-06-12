@@ -2,28 +2,20 @@ import { attach, createEffect, createEvent, sample, split } from 'effector';
 import { spread } from 'patronum';
 
 import { type MultisigAccount, type Wallet } from '@/shared/core';
-import { waitFor } from '@/shared/effector';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, multisigOperation } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { useForgetMultisig } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesModel } from '@/features/proxies';
 import { forgetService } from '../service';
-
-const { deleteMultisigTxs } = useForgetMultisig();
 
 const forgetWallet = createEvent<Wallet>();
 const forgetSimpleWallet = createEvent<Wallet>();
 const forgetMultisigWallet = createEvent<Wallet>();
 const forgetWcWallet = createEvent<Wallet>();
 
-const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
-  try {
-    await deleteMultisigTxs(account.accountId);
-  } catch (e) {
-    console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
-  }
+const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount) => {
+  return multisigOperation.removeOperationsForAccount(account.accountId);
 });
 
 split({
@@ -35,12 +27,6 @@ split({
     multisigWallet: forgetMultisigWallet,
     __: forgetSimpleWallet,
   },
-});
-
-sample({
-  clock: [forgetSimpleWallet, forgetMultisigWallet],
-  fn: (wallet) => wallet.accounts.map((a) => a.accountId),
-  target: balanceModel.events.balancesRemoved,
 });
 
 sample({
@@ -131,15 +117,17 @@ sample({
   target: walletsRemovedFx,
 });
 
-const readyForProxies = waitFor({
-  clock: proxiesModel.findAllProxies.pending,
-  source: walletsRemovedFx.done,
-  filter: (val): val is boolean => !val,
-  reset: walletsRemovedFx.done,
+sample({
+  clock: walletsRemovedFx,
+  source: accounts.$list,
+  fn: (accounts, walletIds) => {
+    return accounts.filter((a) => walletIds.includes(a.walletId)).map((a) => a.accountId);
+  },
+  target: balanceModel.events.balancesRemoved,
 });
 
 sample({
-  clock: readyForProxies,
+  clock: walletsRemovedFx.done,
   target: proxiesModel.findAllProxies,
 });
 

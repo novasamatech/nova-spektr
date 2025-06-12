@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
+import { isString } from 'lodash';
 
 import {
   type Account,
@@ -10,8 +11,6 @@ import {
   type DecodedTransaction,
   type Explorer,
   type HexString,
-  type MultisigEvent,
-  type MultisigTransaction,
   type ProxyType,
   type Signatory,
   type Transaction,
@@ -21,7 +20,7 @@ import {
 import { dictionary, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountService } from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -104,8 +103,13 @@ export const getSignatoryAccounts = (
   return result;
 };
 
+export const getAssetId = (operation: MultisigOperation) => {
+  const asset = operation.transaction?.args.assetId;
+  return isString(asset) ? asset : null;
+};
+
 export const getDestination = (
-  tx: MultisigTransaction,
+  tx: MultisigOperation,
   chains: Record<ChainId, Chain>,
   destinationChain?: ChainId,
 ): Address | undefined => {
@@ -120,14 +124,14 @@ export const getDestination = (
   return toAddress(tx.transaction.args.dest, { prefix: chain.addressPrefix });
 };
 
-export const getDestinationAccountId = (tx: MultisigTransaction): AccountId | undefined => {
+export const getDestinationAccountId = (tx: MultisigOperation): AccountId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.args.dest;
 };
 
-export const getPayee = (tx: MultisigTransaction): { Account: Address } | string | undefined => {
+export const getPayee = (tx: MultisigOperation): { Account: Address } | string | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
@@ -138,42 +142,42 @@ export const getPayee = (tx: MultisigTransaction): { Account: Address } | string
   return coreTx.args.payee;
 };
 
-export const getDelegate = (tx: MultisigTransaction): Address | undefined => {
+export const getDelegate = (tx: MultisigOperation): Address | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.args.delegate;
 };
 
-export const getDestinationChain = (tx: MultisigTransaction): ChainId | undefined => {
+export const getDestinationChain = (tx: MultisigOperation): ChainId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.args.destinationChain;
 };
 
-export const getSender = (tx: MultisigTransaction): AccountId | undefined => {
+export const getSender = (tx: MultisigOperation): AccountId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.accountId;
 };
 
-export const getSpawner = (tx: MultisigTransaction): AccountId | undefined => {
+export const getSpawner = (tx: MultisigOperation): AccountId | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.args.spawner;
 };
 
-export const getProxyType = (tx: MultisigTransaction): ProxyType | undefined => {
+export const getProxyType = (tx: MultisigOperation): ProxyType | undefined => {
   const coreTx = getCoreTx(tx);
   if (!coreTx) return undefined;
 
   return coreTx.args.proxyType;
 };
 
-export const getDelegationVotes = (tx: MultisigTransaction): string | undefined => {
+export const getDelegationVotes = (tx: MultisigOperation): string | undefined => {
   const coreTxDelegate = getCoreTx(tx);
   if (!coreTxDelegate) return undefined;
 
@@ -193,7 +197,7 @@ export const getDelegationVotes = (tx: MultisigTransaction): string | undefined 
   return balance.mul(conviction).toString();
 };
 
-export const getDelegationTarget = (tx: MultisigTransaction): string | undefined => {
+export const getDelegationTarget = (tx: MultisigOperation): string | undefined => {
   const coreTxDelegate = getCoreTx(tx);
   if (!coreTxDelegate) return undefined;
 
@@ -208,7 +212,7 @@ export const getDelegationTarget = (tx: MultisigTransaction): string | undefined
   return coreTx?.args.target;
 };
 
-export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefined => {
+export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined => {
   const coreTxDelegate = getCoreTx(tx);
   if (!coreTxDelegate) return undefined;
 
@@ -234,7 +238,7 @@ export const getDelegationTracks = (tx: MultisigTransaction): string[] | undefin
 
 export const getUndelegationData = (
   api: ApiPromise,
-  tx: MultisigTransaction,
+  tx: MultisigOperation,
 ): Promise<{ votes: string | undefined; target: string | undefined }> => {
   const coreTxDelegate = getCoreTx(tx);
   const emptyResult = { votes: undefined, target: undefined };
@@ -267,19 +271,19 @@ export const getUndelegationData = (
   });
 };
 
-export const getReferendumId = (tx: MultisigTransaction): string | undefined => {
+export const getReferendumId = (tx: MultisigOperation): string | undefined => {
   const coreTx = getCoreTx(tx);
 
   return coreTx?.args.referendum;
 };
 
-export const getVote = (tx: MultisigTransaction): TransactionVote | undefined => {
+export const getVote = (tx: MultisigOperation): TransactionVote | undefined => {
   const coreTx = getCoreTx(tx);
 
   return coreTx?.args.vote;
 };
 
-export const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransaction | undefined => {
+export const getCoreTx = (tx: MultisigOperation): Transaction | DecodedTransaction | undefined => {
   if (!tx.transaction) return undefined;
 
   if (isProxyTransaction(tx.transaction)) {
@@ -290,12 +294,12 @@ export const getCoreTx = (tx: MultisigTransaction): Transaction | DecodedTransac
 };
 
 export const getSignatoryStatus = (events: MultisigEvent[], signatory: AccountId) => {
-  const cancelEvent = events.find((e) => e.status === 'CANCELLED' && e.accountId === signatory);
+  const cancelEvent = events.find((e) => e.status === 'reject' && e.accountId === signatory);
   if (cancelEvent) {
     return cancelEvent.status;
   }
 
-  const signedEvent = events.find((e) => e.status === 'SIGNED' && e.accountId === signatory);
+  const signedEvent = events.find((e) => e.status === 'approve' && e.accountId === signatory);
   if (signedEvent) {
     return signedEvent.status;
   }

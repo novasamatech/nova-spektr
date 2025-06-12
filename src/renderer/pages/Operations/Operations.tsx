@@ -6,7 +6,7 @@ export const Operations = () => {
   const { t } = useI18n();
 
   return (
-    <div className="relative flex h-full flex-col items-center">
+    <div className="relative flex h-full flex-col items-center overflow-hidden">
       <Header title={t('operations.title')} />
 
       <OperationsList />
