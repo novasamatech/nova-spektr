@@ -7,9 +7,7 @@ import {
   type Account as AccountType,
   type Address,
   type Chain,
-  type FlexibleMultisigTransaction,
   type MultisigAccount,
-  type MultisigTransaction,
   type Transaction,
   type Validator,
   type Wallet,
@@ -21,10 +19,9 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { identity } from '@/domains/network';
+import { type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
@@ -42,14 +39,14 @@ import {
 import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation;
   account?: MultisigAccount;
   signatory?: AccountType;
   chain: Chain;
   api: ApiPromise;
 };
 
-export const Details = ({ api, tx, account, chain, signatory }: Props) => {
+export const Details = ({ api, operation, account, chain, signatory }: Props) => {
   const { t } = useI18n();
 
   const connection = useStoreMap({
@@ -61,27 +58,27 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
-  const payee = operationDetailsUtils.getPayee(tx);
-  const spawner = operationDetailsUtils.getSpawner(tx);
-  const delegate = operationDetailsUtils.getDelegate(tx);
-  const proxyType = operationDetailsUtils.getProxyType(tx);
-  const destinationChain = operationDetailsUtils.getDestinationChain(tx);
-  const destination = operationDetailsUtils.getDestination(tx, chains, destinationChain);
+  const payee = operationDetailsUtils.getPayee(operation);
+  const spawner = operationDetailsUtils.getSpawner(operation);
+  const delegate = operationDetailsUtils.getDelegate(operation);
+  const proxyType = operationDetailsUtils.getProxyType(operation);
+  const destinationChain = operationDetailsUtils.getDestinationChain(operation);
+  const destination = operationDetailsUtils.getDestination(operation, chains, destinationChain);
 
-  const delegationTarget = operationDetailsUtils.getDelegationTarget(tx);
-  const delegationTracks = operationDetailsUtils.getDelegationTracks(tx);
-  const delegationVotes = operationDetailsUtils.getDelegationVotes(tx);
+  const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
+  const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
+  const delegationVotes = operationDetailsUtils.getDelegationVotes(operation);
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
   const [undelegationTarget, setUndelegationTarget] = useState<Address>();
 
-  const referendumId = operationDetailsUtils.getReferendumId(tx);
-  const vote = operationDetailsUtils.getVote(tx);
+  const referendumId = operationDetailsUtils.getReferendumId(operation);
+  const vote = operationDetailsUtils.getVote(operation);
 
   const identities = useStoreMap({
     store: identity.$list,
-    keys: [tx.chainId],
+    keys: [operation.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
@@ -94,12 +91,12 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
     if (!api) return;
 
-    operationDetailsUtils.getUndelegationData(api, tx).then(({ votes, target }) => {
+    operationDetailsUtils.getUndelegationData(api, operation).then(({ votes, target }) => {
       setUndelegationVotes(votes);
       setUndelegationTarget(target);
       setIsUndelegationLoading(false);
     });
-  }, [api, tx]);
+  }, [api, operation]);
 
   const defaultAsset = chain?.assets?.[0];
 
@@ -109,14 +106,14 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
 
   const allValidators = Object.values(validatorsMap);
 
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operation.transaction;
 
   useEffect(() => {
     const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
 
     if (accounts.length === 0) return;
 
-    identity.request({ chainId: tx.chainId, accounts });
+    identity.request({ chainId: operation.chainId, accounts });
   }, [validatorsMap]);
 
   const startStakingValidators: Address[] =
@@ -151,7 +148,7 @@ export const Details = ({ api, tx, account, chain, signatory }: Props) => {
     }
 
     return { wallet, account };
-  }, [tx, wallets]);
+  }, [operation, wallets]);
 
   const hasSender = isXcmTransaction(transaction) || isTransferTransaction(transaction);
 

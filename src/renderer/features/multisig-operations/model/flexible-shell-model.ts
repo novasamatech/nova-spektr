@@ -1,6 +1,6 @@
 import { createEvent, restore, sample } from 'effector';
 
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 

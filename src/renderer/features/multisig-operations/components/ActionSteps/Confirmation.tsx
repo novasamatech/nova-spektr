@@ -2,20 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import {
-  type Account,
-  type Asset,
-  type Chain,
-  type FlexibleMultisigTransaction,
-  type MultisigAccount,
-  type MultisigTransaction,
-  type Transaction,
-} from '@/shared/core';
+import { type Account, type Asset, type Chain, type MultisigAccount, type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -27,11 +19,11 @@ import { Details } from '../Details';
 import { getIconName } from './transactionConfirmIcon';
 
 export const confirmTransactionInfoSlot = createSlot<{
-  operation: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation;
 }>();
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation;
   account: MultisigAccount;
   signAccount?: Account;
   chain: Chain;
@@ -39,7 +31,7 @@ type Props = {
   feeTx?: Transaction | null;
   onSign: () => void;
 };
-export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSign }: Props) => {
+export const Confirmation = ({ api, operation, account, chain, signAccount, feeTx, onSign }: Props) => {
   const { t } = useI18n();
   const [isFeeLoaded, setIsFeeLoaded] = useState(false);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -51,7 +43,7 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
   });
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operation.transaction;
   let asset: Asset | null = null;
   if (transaction) {
     if (transaction.args.assetId) {
@@ -84,10 +76,10 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: tx }} />}
+        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: operation }} />}
       </div>
 
-      <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />
+      <Details api={api} operation={operation} account={account} chain={chain} signatory={signAccount} />
       {signAccount && api && (
         <MultisigDepositWithLabel
           api={api}

@@ -10,7 +10,7 @@ import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { bootstrap } from './bootstrap';
-import { GraphqlProvider, MultisigChainProvider, StatusModalProvider } from './providers';
+import { GraphqlProvider, StatusModalProvider } from './providers';
 
 logger.init();
 bootstrap();
@@ -38,12 +38,10 @@ export const App = () => {
   }, [isLoadingWallets, wallets.length]);
 
   return (
-    <MultisigChainProvider>
-      <ConfirmDialogProvider>
-        <StatusModalProvider>
-          <GraphqlProvider>{appRoutes}</GraphqlProvider>
-        </StatusModalProvider>
-      </ConfirmDialogProvider>
-    </MultisigChainProvider>
+    <ConfirmDialogProvider>
+      <StatusModalProvider>
+        <GraphqlProvider>{appRoutes}</GraphqlProvider>
+      </StatusModalProvider>
+    </ConfirmDialogProvider>
   );
 };
