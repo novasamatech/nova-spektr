@@ -27,15 +27,15 @@ export const VotingRecord = memo(({ evidence }: Props) => {
     store: fellowship.$store,
     keys: [],
     fn: store => ({
-      meta: Object.values(store?.referendumMeta ?? {}),
-      votes: store?.voting ?? [],
+      meta: store?.referendumMeta ? Object.values(store.referendumMeta) : null,
+      votes: store?.voting ?? null,
       maxRank: store?.maxRank ?? 0,
     }),
   });
 
   if (nullable(member) || !memberService.isCoreMember(member)) return null;
 
-  const referendums = referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  const referendums = meta ? referendumMetaService.getReferendumsSinceLastProof(meta, member) : null;
 
   const activity = referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
 
@@ -58,17 +58,19 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {nonNullable(activity?.activity) ? (
+            {nullable(activity) ? (
+              <Skeleton height={5} />
+            ) : nullable(activity.activity) ? (
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
+            ) : (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
-                  {nonNullable(activityThreshold) ? activity?.activity.toString() : '100'}
+                  {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
                 </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {activityThreshold || '100'}%
                 </CaptionText>
               </Box>
-            ) : (
-              <Skeleton height={5} />
             )}
           </Box>
         </Box>
@@ -83,17 +85,21 @@ export const VotingRecord = memo(({ evidence }: Props) => {
           />
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {nonNullable(activity?.agreement) ? (
+            {nullable(activity) ? (
+              <Skeleton height={5} />
+            ) : nullable(activity.agreement) ? (
+              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
+            ) : (
               <Box direction="row" verticalAlign="end">
                 <SmallTitleText>
-                  {nonNullable(agreementThreshold) ? activity?.agreement.toString() : '100'}
+                  {nonNullable(agreementThreshold)
+                    ? Math.min(activity?.agreement, agreementThreshold).toString()
+                    : '100'}
                 </SmallTitleText>
                 <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {agreementThreshold || '100'}%
                 </CaptionText>
               </Box>
-            ) : (
-              <Skeleton height={5} />
             )}
           </Box>
         </Box>

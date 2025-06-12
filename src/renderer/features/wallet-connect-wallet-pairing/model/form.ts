@@ -7,7 +7,7 @@ import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from
 import { createFlow, waitFor } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';

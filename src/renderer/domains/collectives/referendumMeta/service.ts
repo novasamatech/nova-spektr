@@ -22,8 +22,10 @@ function getReferendumsSinceLastProof(referendums: ReferendumMeta[], member: Cor
   return referendums.filter(r => r.created >= member.lastProof);
 }
 
-function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank: number, votes: Vote[]) {
-  if (referendums.length === 0) return null;
+function getActivityInfo(referendums: ReferendumMeta[] | null, member: Member, maxRank: number, votes: Vote[] | null) {
+  if (!referendums || !votes) return null;
+
+  if (referendums.length === 0) return { activity: null, agreement: null };
 
   const possibleReferendums = referendums.filter(r =>
     trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, r.track),

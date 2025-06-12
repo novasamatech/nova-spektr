@@ -101,13 +101,14 @@ function createAccountGraphs(accounts: AnyAccount[], chain: Chain): Map<AnyAccou
     const existingNode = nodes.get(account);
     if (existingNode) return existingNode;
 
-    const children = accountCollectChildrenPipeline([], { account, accounts: chainAccounts });
     const node: AccountNode = {
       account,
-      children: children.map(createNode),
+      children: [],
     };
-
     nodes.set(account, node);
+
+    const children = accountCollectChildrenPipeline([], { account, accounts: chainAccounts });
+    node.children = children.map(createNode);
 
     return node;
   };
@@ -129,8 +130,13 @@ function traverseGraph(
     exit?: (node: AccountNode) => void;
   },
 ) {
+  const visited = new Set<AnyAccount>();
   const visitNode = (node: AccountNode) => {
+    if (visited.has(node.account)) return;
+
     if (visitor.enter(node) === false) return false;
+
+    visited.add(node.account);
 
     for (const child of node.children) {
       if (visitNode(child) === false) return false;

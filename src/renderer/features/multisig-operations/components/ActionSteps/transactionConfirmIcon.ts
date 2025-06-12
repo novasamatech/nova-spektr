@@ -57,7 +57,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 // TODO remove
-export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
+export const getIconName = (transaction: Transaction | DecodedTransaction | null): IconNames => {
   if (!transaction?.type) return 'unknownConfirm';
 
   if (isEditDelegationTransaction(transaction)) {

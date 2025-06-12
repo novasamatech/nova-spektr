@@ -276,7 +276,9 @@ export const Staking = () => {
     [[], []],
   );
 
+  const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  const isMultipleStakes = totalStakes.length > 1;
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
@@ -294,13 +296,17 @@ export const Staking = () => {
     });
 
     const model = {
-      [StakeOperations.BOND_NOMINATE]: Operations.bondNominateModel.events.flowStarted,
+      [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
+        ? Operations.bondNominateModelShards.flowStarted
+        : Operations.bondNominateModel.flowStarted,
       [StakeOperations.BOND_EXTRA]:
         selectedNominators.length > 1
           ? Operations.bondExtraShardsModel.events.flowStarted
           : Operations.bondExtraModel.events.flowStarted,
       [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: Operations.restakeModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleStakes
+        ? Operations.restakeModelShards.flowStarted
+        : Operations.restakeModel.flowStarted,
       [StakeOperations.NOMINATE]: Operations.nominateModel.events.flowStarted,
       [StakeOperations.WITHDRAW]:
         totalStakes.length > 1
@@ -407,12 +413,12 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
+      {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
-      <Operations.BondNominate />
       <Operations.Unstake />
       <Operations.Nominate />
-      <Operations.Restake />
-      <Suspense fallback={null}>{totalStakes.length > 1 ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
+      {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
+      <Suspense fallback={null}>{isMultipleStakes ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
     </>
   );

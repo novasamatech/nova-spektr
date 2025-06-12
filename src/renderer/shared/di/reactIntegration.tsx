@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type AnyOfIdentifier } from './createAnyOf';
 import { type PipelineIdentifier } from './createPipeline';
 import { type SlotIdentifier, type SlotProps } from './createSlot';
+import { type TransformerIdentifier } from './createTransformer';
 
 type IsVoid<T> = T extends void | undefined ? true : false;
 
@@ -64,4 +65,21 @@ export const useAnyOf = <Value,>(...[anyOf, value]: UseAnyOfArguments<Value>) =>
   useEffect(() => anyOf.updateHandlers.watch(update), []);
 
   return anyOf.check(fixedValue);
+};
+
+export type UseTransformerArguments<Input, Output, Meta> =
+  IsVoid<Meta> extends true
+    ? [pipeline: TransformerIdentifier<Input, Output, Meta>, input: Input, meta?: Meta]
+    : [pipeline: TransformerIdentifier<Input, Output, Meta>, input: Input, meta: Meta];
+
+export const useTransformer = <Input, Output, Meta>(
+  ...[transformer, input, meta]: UseTransformerArguments<Input, Output, Meta>
+) => {
+  const [_, update] = useForceUpdate();
+  const fixedMeta = (meta ?? undefined) as Exclude<Meta, void>;
+
+  // eslint-disable-next-line effector/no-watch
+  useEffect(() => transformer.updateHandlers.watch(update), []);
+
+  return transformer(input, fixedMeta);
 };
