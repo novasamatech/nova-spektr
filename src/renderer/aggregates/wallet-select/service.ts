@@ -52,7 +52,7 @@ const composeWalletMeta = (wallet: Wallet, accounts: AnyAccount[], chains: Recor
       }
 
       const chain = chains[account.chainId];
-      return toAddress(account.accountId, { prefix: chain.addressPrefix });
+      return toAddress(account.accountId, { prefix: chain?.addressPrefix });
     })
     .join(' ');
 };
