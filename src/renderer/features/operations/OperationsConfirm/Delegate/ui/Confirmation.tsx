@@ -38,9 +38,9 @@ export const Confirmation = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirm = confirms[id];
+  const confirmStore = confirms[id];
 
-  const { meta, wallets: confirmWallets } = confirm;
+  const { meta, wallets: confirmWallets } = confirmStore;
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
@@ -52,7 +52,7 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  if (!confirm || !confirmWallets?.initiator) {
+  if (!confirmStore || !confirmWallets?.initiator) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
@@ -60,10 +60,9 @@ export const Confirmation = ({
     );
   }
 
-  const initiator = meta.initiator;
-
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
+  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
@@ -116,7 +115,7 @@ export const Confirmation = ({
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {accountUtils.isMultisigAccount(initiator) && (
+          {multisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={

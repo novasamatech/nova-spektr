@@ -236,15 +236,15 @@ const $coreTx = combine(
     walletData: $walletData,
     target: $target,
     tracks: $tracks,
-    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     delegateData: $delegateData,
   },
-  ({ walletData, target, tracks, initiator, delegateData }) => {
-    if (!walletData.chain || !target || tracks.length === 0 || !initiator || !delegateData) return null;
+  ({ walletData, target, tracks, signatory, delegateData }) => {
+    if (!walletData.chain || !target || tracks.length === 0 || !signatory || !delegateData) return null;
 
     return transactionBuilder.buildDelegate({
       chain: walletData.chain,
-      accountId: initiator.accountId,
+      accountId: signatory.accountId,
       balance: (walletData.chain && formatAmount(delegateData.balance, walletData.chain.assets[0].precision)) || '0',
       conviction: delegateData.conviction || 'None',
       target: target.address || '',
