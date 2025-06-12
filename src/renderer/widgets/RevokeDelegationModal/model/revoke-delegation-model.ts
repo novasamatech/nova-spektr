@@ -445,14 +445,10 @@ export const revokeDelegationModel = {
   $signatory,
   $network: networkSelectorModel.$network,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-    txsConfirmed,
-    selectSignatory,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  txsConfirmed,
+  selectSignatory,
+  flowFinished,
 };

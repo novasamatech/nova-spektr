@@ -26,10 +26,10 @@ export const RevokeDelegation = () => {
   const signatories = useUnit(revokeDelegationModel.$signatories);
   const network = useUnit(revokeDelegationModel.$network);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     isStep(step, Step.BASKET),
-    revokeDelegationModel.output.flowFinished,
+    revokeDelegationModel.flowFinished,
   );
 
   const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
@@ -89,12 +89,12 @@ export const RevokeDelegation = () => {
               !shouldPickSignatory &&
               nonNullable(initiatorWallet) &&
               basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+                <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
               )
             }
-            onGoBack={() => revokeDelegationModel.events.stepChanged(Step.NONE)}
+            onGoBack={() => revokeDelegationModel.stepChanged(Step.NONE)}
           />
         )}
 
@@ -104,16 +104,12 @@ export const RevokeDelegation = () => {
             footer={
               <div className="flex gap-2">
                 {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+                  <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
                     {t('operation.addToBasket')}
                   </Button>
                 )}
 
-                <SignButton
-                  isDefault
-                  type={walletData.wallet?.type}
-                  onClick={revokeDelegationModel.events.txsConfirmed}
-                />
+                <SignButton isDefault type={walletData.wallet?.type} onClick={revokeDelegationModel.txsConfirmed} />
               </div>
             }
           >
@@ -125,9 +121,7 @@ export const RevokeDelegation = () => {
           </ConfirmSlider>
         )}
 
-        {isStep(step, Step.SIGN) && (
-          <OperationSign onGoBack={() => revokeDelegationModel.events.stepChanged(Step.CONFIRM)} />
-        )}
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => revokeDelegationModel.stepChanged(Step.CONFIRM)} />}
 
         <SignatorySelectModal
           isOpen={isSelectSignatoryOpen}
@@ -136,7 +130,7 @@ export const RevokeDelegation = () => {
           nativeAsset={network.asset}
           onClose={handleSelectSignatoryClose}
           onSelect={(a) => {
-            revokeDelegationModel.events.selectSignatory(a);
+            revokeDelegationModel.selectSignatory(a);
             setIsSelectSignatoryOpen(false);
           }}
         />
