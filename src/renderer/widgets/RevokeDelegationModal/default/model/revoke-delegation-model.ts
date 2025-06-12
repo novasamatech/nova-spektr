@@ -35,12 +35,6 @@ const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $walletData = combine({
-  wallet: walletSelect.$selectedWallet,
-  accounts: walletSelect.$selectedAccounts,
-  chain: networkSelectorModel.$governanceChain,
-});
-
 const $revokeDelegationData = createStore<RevokeDelegationData[]>([]);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
@@ -65,14 +59,14 @@ const getMultisigDepositFx = createEffect(({ api, threshold }: DepositParams): s
 const $api = combine(
   {
     apis: networkModel.$apis,
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
   },
-  ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : null;
+  ({ apis, chain }) => {
+    return chain ? apis[chain.chainId] : null;
   },
 );
 
-const $initiator = $walletData.map((data) => data.accounts.at(0) ?? null);
+const $initiator = walletSelect.$selectedAccounts.map((accounts) => accounts.at(0) ?? null);
 
 // Signatory
 
@@ -131,11 +125,11 @@ sample({
   clock: flowStarted,
   source: {
     activeTracks: delegationAggregate.$activeTracks,
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
   },
-  fn: ({ activeTracks, walletData }, { delegate, accounts }) => {
+  fn: ({ activeTracks, chain }, { delegate, accounts }) => {
     return accounts.map((account) => {
-      const address = toAddress(account.accountId, { prefix: walletData.chain?.addressPrefix });
+      const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
       const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
 
       return {
@@ -162,22 +156,20 @@ sample({
 sample({
   clock: flowStarted,
   source: {
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
     activeTracks: delegationAggregate.$activeTracks,
     revokeDelegationData: $revokeDelegationData,
   },
-  filter: ({ walletData, revokeDelegationData }) => {
-    return !!walletData.chain || revokeDelegationData.length > 0;
+  filter: ({ chain, revokeDelegationData }) => {
+    return !!chain || revokeDelegationData.length > 0;
   },
-  fn: ({ walletData, revokeDelegationData, activeTracks }) => {
+  fn: ({ chain, revokeDelegationData, activeTracks }) => {
     return revokeDelegationData.map((data) =>
       transactionBuilder.buildUndelegate({
-        chain: walletData.chain!,
+        chain: chain!,
         accountId: data.account!.accountId,
         tracks:
-          activeTracks[data.target][toAddress(data.account.accountId, { prefix: walletData.chain?.addressPrefix })].map(
-            Number,
-          ),
+          activeTracks[data.target][toAddress(data.account.accountId, { prefix: chain?.addressPrefix })].map(Number),
       }),
     );
   },
@@ -243,19 +235,19 @@ sample({
   source: {
     balances: balanceModel.$balances,
     feeData: $feeData,
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
     txWrappers: $txWrappers,
     revokeDelegationData: $revokeDelegationData,
     delegations: delegationAggregate.$activeDelegations,
     coreTxs: $coreTxs,
     signatory: $signatory,
   },
-  filter: ({ walletData, revokeDelegationData }) => {
-    return revokeDelegationData.length > 0 && !!walletData.wallet && !!walletData.chain;
+  filter: ({ chain, revokeDelegationData }) => {
+    return revokeDelegationData.length > 0 && !!chain;
   },
-  fn: ({ feeData, balances, walletData, txWrappers, revokeDelegationData, delegations, coreTxs }) => {
+  fn: ({ feeData, balances, chain, txWrappers, revokeDelegationData, delegations, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-    const asset = getRelaychainAsset(walletData.chain!.assets)!;
+    const asset = getRelaychainAsset(chain!.assets)!;
 
     return {
       event: revokeDelegationData.map((revokeData) => {
@@ -264,17 +256,12 @@ sample({
         const delegationData = Object.values(delegation)[0];
 
         return {
-          chain: walletData.chain!,
+          chain: chain!,
           asset: asset!,
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
           transferable: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              revokeData.account!.accountId,
-              walletData.chain!.chainId,
-              asset.assetId.toString(),
-            ),
+            balanceUtils.getBalance(balances, revokeData.account!.accountId, chain!.chainId, asset.assetId.toString()),
           ),
 
           ...revokeData!,
@@ -298,22 +285,22 @@ sample({
   clock: [confirmModel.output.formSubmitted, txsConfirmed],
   source: {
     revokeDelegationData: $revokeDelegationData,
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
     transactions: $transactions,
     txWrappers: $txWrappers,
     step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
-    return revokeDelegationData.length > 0 && !!walletData && !!transactions && isStep(step, Step.CONFIRM);
+  filter: ({ revokeDelegationData, chain, transactions, step }) => {
+    return revokeDelegationData.length > 0 && !!chain && !!transactions && isStep(step, Step.CONFIRM);
   },
-  fn: ({ revokeDelegationData, walletData, transactions, txWrappers }) => {
+  fn: ({ revokeDelegationData, chain, transactions, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
         signingPayloads:
           transactions?.map((tx, index) => ({
-            chain: walletData.chain!,
+            chain: chain!,
             account: wrapper ? wrapper.proxyAccount : revokeDelegationData[index]!.account,
             signatory: revokeDelegationData[0]!.signatory,
             transaction: tx.wrappedTx,
@@ -354,18 +341,18 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
     transactions: $transactions,
     revokeDelegationData: $revokeDelegationData,
     step: $step,
   },
-  filter: ({ revokeDelegationData, walletData, transactions, step }) => {
-    return !!revokeDelegationData && !!walletData && !!transactions && isStep(step, Step.SIGN);
+  filter: ({ revokeDelegationData, chain, transactions, step }) => {
+    return !!revokeDelegationData && !!chain && !!transactions && isStep(step, Step.SIGN);
   },
-  fn: ({ walletData, revokeDelegationData, transactions }, signParams) => ({
+  fn: ({ chain, revokeDelegationData, transactions }, signParams) => ({
     event: {
       ...signParams,
-      chain: walletData.chain!,
+      chain: chain!,
       account: revokeDelegationData[0]!.account,
       signatory: revokeDelegationData[0]!.signatory,
       coreTxs: transactions!.map((tx) => tx.coreTx),
@@ -396,18 +383,17 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    walletData: $walletData,
+    chain: networkSelectorModel.$governanceChain,
+    accounts: walletSelect.$selectedAccounts,
     coreTxs: $coreTxs,
     txWrappers: $txWrappers,
   },
-  filter: ({ walletData, coreTxs, txWrappers }) => {
-    return nonNullable(walletData.wallet) && nonNullable(coreTxs) && nonNullable(txWrappers);
+  filter: ({ chain, coreTxs, txWrappers }) => {
+    return nonNullable(chain) && nonNullable(coreTxs) && nonNullable(txWrappers);
   },
-  fn: ({ walletData, coreTxs, txWrappers }) => {
-    const accounts = walletData.chain
-      ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
-      : [];
-    const account = accounts.at(0);
+  fn: ({ chain, accounts, coreTxs, txWrappers }) => {
+    const chainAccounts = chain ? accountService.filterAccountsOnChain(accounts, chain) : [];
+    const account = chainAccounts.at(0);
     if (!account) throw new Error('Account not found');
 
     return coreTxs!.map((coreTx) => {
@@ -430,8 +416,9 @@ sample({
 
 export const revokeDelegationModel = {
   $step,
-  $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
+  $initiator,
+  $initiatorWallet: walletSelect.$selectedWallet,
+  $chain: networkSelectorModel.$governanceChain,
   $transactions,
   $signatories,
   $signatory,

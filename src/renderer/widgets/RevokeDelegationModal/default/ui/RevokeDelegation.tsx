@@ -19,7 +19,7 @@ export const RevokeDelegation = () => {
   const { t } = useI18n();
 
   const step = useUnit(revokeDelegationModel.$step);
-  const walletData = useUnit(revokeDelegationModel.$walletData);
+  const chain = useUnit(revokeDelegationModel.$chain);
   const initiatorWallet = useUnit(revokeDelegationModel.$initiatorWallet);
   const transactions = useUnit(revokeDelegationModel.$transactions);
   const signatory = useUnit(revokeDelegationModel.$signatory);
@@ -51,7 +51,7 @@ export const RevokeDelegation = () => {
     }
   }, [shouldPickSignatory, isSelectSignatoryClosed, isSelectSignatoryClosed, setIsSelectSignatoryOpen, closeModal]);
 
-  if (!walletData || !network) {
+  if (!chain || !network || !initiatorWallet) {
     return null;
   }
 
@@ -78,7 +78,7 @@ export const RevokeDelegation = () => {
   return (
     <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
       <Modal.Title close>
-        <OperationTitle title={t('governance.revokeDelegation.title')} chainId={walletData.chain!.chainId} />
+        <OperationTitle title={t('governance.revokeDelegation.title')} chainId={chain!.chainId} />
       </Modal.Title>
       <Modal.Content>
         {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
@@ -109,7 +109,7 @@ export const RevokeDelegation = () => {
                   </Button>
                 )}
 
-                <SignButton isDefault type={walletData.wallet?.type} onClick={revokeDelegationModel.txsConfirmed} />
+                <SignButton isDefault type={initiatorWallet.type} onClick={revokeDelegationModel.txsConfirmed} />
               </div>
             }
           >
