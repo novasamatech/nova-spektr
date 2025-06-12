@@ -10,6 +10,7 @@ import { Box, Tooltip } from '@/shared/ui-kit';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
@@ -152,30 +153,18 @@ export const Confirmation = ({
           </DetailRow>
         )}
 
-        <DetailRow
-          className="text-text-primary"
-          label={
-            <FootnoteText className="text-text-tertiary">
-              {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
-            </FootnoteText>
-          }
-        >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
-          </div>
-        </DetailRow>
+        <FeeWithLabel
+          fee={confirmStore.fee}
+          asset={confirmStore.chain.assets[0]}
+          label={t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
+        />
 
         {confirmStore.shards.length > 1 && (
-          <DetailRow
-            className="text-text-primary"
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
-            </div>
-          </DetailRow>
+          <FeeWithLabel
+            fee={confirmStore.totalFee}
+            asset={confirmStore.chain.assets[0]}
+            label={t('staking.networkFeeTotal')}
+          />
         )}
       </TransactionDetails>
 
