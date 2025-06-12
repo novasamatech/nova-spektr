@@ -1,20 +1,10 @@
-import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
-  type Account,
-  type MultisigTxWrapper,
-  type ProxyTxWrapper,
-  type Transaction,
-  type TxWrapper,
-  WrapperKind,
-} from '@/shared/core';
-import {
   Step,
-  formatAmount,
   getBalanceBn,
   getRelaychainAsset,
   isStep,
@@ -26,14 +16,11 @@ import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
-import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   delegateRegistryAggregate,
-  delegationAggregate,
   networkSelectorModel,
   tracksAggregate,
   votingAggregate,
@@ -42,152 +29,32 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { editDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { type DelegateData, type FeeData } from '../lib/types';
+import { type EditDelegationConfirmInput } from '@/features/operations/OperationsConfirm/EditDelegation/model/confirm-model';
+import { type DelegateData } from '../lib/types';
 
 import { formModel } from './form-model';
 import { selectTracksModel } from './select-tracks-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<{ delegate: DelegateAccount; accounts: Account[] }>();
+const flowStarted = createEvent<{ delegate: DelegateAccount; accounts: AnyAccount[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $walletData = combine({
-  wallet: walletSelect.$selectedWallet,
-  accounts: walletSelect.$selectedAccounts,
-  chain: networkSelectorModel.$governanceChain,
-});
+const { $walletData, $target, $tracks, $activeDelegations, $coreTx } = formModel;
 
-const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
-const $tracks = createStore<number[]>([]).reset(flowFinished);
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'initiator'> | null>(null).reset(
   flowFinished,
 );
-const $accounts = createStore<Account[]>([]).reset(flowFinished);
-const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
+
+const $accounts = createStore<AnyAccount[]>([]).reset(flowFinished);
+
 const $isUnchanged = createStore(false);
 
-const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
-const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
-
-const $activeDelegations = combine(
-  { delegations: delegationAggregate.$activeDelegations, delegate: $target },
-  ({ delegations, delegate }) => {
-    if (!delegate) return {};
-
-    return delegations[delegate.address] || {};
-  },
-);
-
-type FeeParams = {
-  api: ApiPromise;
-  transaction: Transaction;
-};
-const getTransactionFeeFx = createEffect(({ api, transaction }: FeeParams): Promise<string> => {
-  return transactionService.getTransactionFee(transaction, api);
-});
-
-type DepositParams = {
-  api: ApiPromise;
-  threshold: number;
-};
-const getMultisigDepositFx = createEffect(({ api, threshold }: DepositParams): string => {
-  return transactionService.getMultisigDeposit(threshold, api);
-});
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    walletData: $walletData,
-  },
-  ({ apis, walletData }) => {
-    if (!walletData.chain) return null;
-
-    return apis[walletData.chain.chainId] || null;
-  },
-);
-
-const $transaction = combine(
-  {
-    api: $api,
-    coreTx: $coreTx,
-    txWrappers: $txWrappers,
-  },
-  ({ api, coreTx, txWrappers }) => {
-    if (!api || !coreTx) return null;
-
-    return transactionService.getWrappedTransaction({
-      api,
-      transaction: coreTx,
-      txWrappers,
-    });
-  },
-);
-
-// Transaction & Form
-
-sample({
-  clock: formModel.output.formChanged,
-  source: {
-    walletData: $walletData,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => nonNullable(walletData.wallet),
-  fn: ({ walletData, wallets }, data) => {
-    const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
-
-    return transactionService.getTxWrappers({
-      wallet: walletData.wallet!,
-      wallets,
-      account: walletData.wallet!.accounts[0],
-      signatories,
-    });
-  },
-  target: $txWrappers,
-});
-
-sample({
-  clock: formModel.output.formChanged,
-  source: {
-    walletData: $walletData,
-    target: $target,
-    tracks: $tracks,
-    account: formModel.$account,
-    activeTracks: delegationAggregate.$activeTracks,
-    activeDelegations: $activeDelegations,
-  },
-  filter: ({ walletData, target, tracks, account }) => {
-    return nonNullable(walletData.chain) && nonNullable(target) && nonNullable(tracks.length) && nonNullable(account);
-  },
-  fn: ({ walletData, account, target, tracks, activeTracks, activeDelegations }, delegateData) => {
-    const shard = account!.account;
-    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
-    const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
-    const amount = delegateData!.isUnchanged
-      ? activeDelegations[address].balance.toString()
-      : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
-
-    return transactionBuilder.buildEditDelegation({
-      chain: walletData.chain!,
-      accountId: shard.accountId,
-      balance: amount || '0',
-      conviction: conviction || 'None',
-      previousConviction: activeDelegations[address].conviction || 'None',
-      target: target?.address || '',
-      tracks,
-      undelegateTracks:
-        activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })].map(
-          Number,
-        ) || [],
-    });
-  },
-  target: $coreTx,
-});
 
 sample({
   clock: formModel.output.formChanged,
@@ -207,85 +74,6 @@ sample({
   fn: ({ isUnchanged }) => isUnchanged,
   target: $isUnchanged,
 });
-
-sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => {
-    const signatories = txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
-      if (wrapper.kind === WrapperKind.MULTISIG) acc.push(wrapper.signatories);
-
-      return acc;
-    }, []);
-
-    const proxyWrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
-    return {
-      signatories,
-      proxyAccount: proxyWrapper?.proxyAccount || null,
-      isProxy: transactionService.hasProxy(txWrappers),
-      isMultisig: transactionService.hasMultisig(txWrappers),
-    };
-  },
-  target: formModel.events.txWrapperChanged,
-});
-
-sample({
-  clock: $transaction,
-  source: $api,
-  filter: (api, transaction) => nonNullable(api) && nonNullable(transaction),
-  fn: (api, transaction) => ({
-    api: api!,
-    transaction: transaction!.wrappedTx,
-  }),
-  target: getTransactionFeeFx,
-});
-
-sample({
-  clock: $txWrappers,
-  source: $api,
-  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
-  fn: (api, txWrappers) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
-
-    return {
-      api: api!,
-      threshold: wrapper?.multisigAccount.threshold || 0,
-    };
-  },
-  target: getMultisigDepositFx,
-});
-
-sample({
-  clock: getTransactionFeeFx.pending,
-  target: formModel.events.isFeeLoadingChanged,
-});
-
-sample({
-  clock: getTransactionFeeFx.doneData,
-  source: {
-    feeData: $feeData,
-  },
-  fn: ({ feeData }, fee) => {
-    const totalFee = new BN(fee).muln(1).toString();
-
-    return { ...feeData, fee, totalFee };
-  },
-  target: $feeData,
-});
-
-sample({
-  clock: getMultisigDepositFx.doneData,
-  source: $feeData,
-  fn: (feeData, multisigDeposit) => ({ ...feeData, multisigDeposit }),
-  target: $feeData,
-});
-
-sample({
-  clock: $feeData.updates,
-  target: formModel.events.feeDataChanged,
-});
-
-// Steps
 
 sample({ clock: stepChanged, target: $step });
 
@@ -333,15 +121,15 @@ sample({
   clock: formModel.output.formSubmitted,
   source: {
     balances: balanceModel.$balances,
-    feeData: $feeData,
+    fee: formModel.$fee,
     walletData: $walletData,
     tracks: $tracks,
     target: $target,
     account: formModel.$account,
-    txWrappers: $txWrappers,
     delegateData: $delegateData,
     activeDelegations: $activeDelegations,
     isUnchanged: $isUnchanged,
+    multisigDeposit: formModel.$multisigDeposit,
     coreTx: $coreTx,
     step: $step,
   },
@@ -352,10 +140,9 @@ sample({
     nonNullable(account) &&
     isStep(step, Step.INIT),
   fn: ({
-    feeData,
+    fee,
     balances,
     walletData,
-    txWrappers,
     tracks,
     target,
     account,
@@ -363,8 +150,8 @@ sample({
     coreTx,
     activeDelegations,
     isUnchanged,
+    multisigDeposit,
   }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
     const shard = account!.account;
 
@@ -386,12 +173,13 @@ sample({
             conviction: activeDelegations[address].conviction,
           }),
           previousConviction: activeDelegations[address].conviction,
-          ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
+          fee: fee.toString(),
+          totalFee: fee.toString(),
+          multisigDeposit: multisigDeposit.toString(),
+          shards: [shard],
           locks: delegateData!.locks[shard.accountId],
-          coreTx,
-        },
+          coreTx: coreTx!,
+        } satisfies EditDelegationConfirmInput,
       ],
       step: Step.CONFIRM,
     };
@@ -407,8 +195,7 @@ sample({
   source: {
     delegateData: $delegateData,
     walletData: $walletData,
-    transaction: $transaction,
-    txWrappers: $txWrappers,
+    transaction: formModel.$tx,
     account: formModel.$account,
     step: $step,
   },
@@ -421,17 +208,15 @@ sample({
       isStep(step, Step.CONFIRM)
     );
   },
-  fn: ({ delegateData, walletData, transaction, txWrappers, account }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ delegateData, walletData, transaction, account }) => {
     return {
       event: {
         signingPayloads: [
           {
             chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : account!.account,
+            account: account!.account,
             signatory: delegateData!.signatory,
-            transaction: transaction!.wrappedTx,
+            transaction: transaction!,
           },
         ],
       },
@@ -448,10 +233,12 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: $walletData,
-    transaction: $transaction,
+    transaction: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
     delegateData: $delegateData,
     accounts: $accounts,
     step: $step,
+    coreTx: $coreTx,
   },
   filter: ({ delegateData, walletData, transaction, step }) => {
     return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transaction) && isStep(step, Step.SIGN);
@@ -462,9 +249,9 @@ sample({
       chain: delegateFlowData.walletData.chain!,
       account: delegateFlowData.accounts[0],
       signatory: delegateFlowData.delegateData!.signatory,
-      coreTxs: [delegateFlowData.transaction!.coreTx],
-      wrappedTxs: [delegateFlowData.transaction!.wrappedTx],
-      multisigTxs: delegateFlowData.transaction!.multisigTx ? [delegateFlowData.transaction!.multisigTx] : [],
+      coreTxs: [delegateFlowData.coreTx!],
+      wrappedTxs: [delegateFlowData.transaction!],
+      multisigTxs: delegateFlowData.multisigTx ? [delegateFlowData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
@@ -545,7 +332,7 @@ sample({
   source: {
     walletData: $walletData,
     coreTx: $coreTx,
-    txWrappers: $txWrappers,
+    txWrappers: formModel.$txWrappers,
   },
   filter: ({ walletData, coreTx, txWrappers }) => {
     return nonNullable(walletData.wallet) && nonNullable(coreTx) && nonNullable(txWrappers);
@@ -579,7 +366,6 @@ export const editDelegationModel = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
-  $transactions: $transaction,
 
   events: {
     flowStarted,

@@ -18,7 +18,7 @@ import { networkModel } from '@/entities/network';
 import { operationsModel, operationsUtils } from '@/entities/operations';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
-type Input = {
+export type EditDelegationConfirmInput = {
   id?: number;
   chain: Chain;
   asset: Asset;
@@ -42,14 +42,14 @@ type Input = {
   coreTx?: Transaction | null;
 };
 
-const formInitiated = createEvent<Input[]>();
+const formInitiated = createEvent<EditDelegationConfirmInput[]>();
 const formSubmitted = createEvent();
 
 const $confirmStore = restore(formInitiated, null);
 
 const $storeMap = combine($confirmStore, (store) => {
   return (
-    store?.reduce<Record<number, Input>>(
+    store?.reduce<Record<number, EditDelegationConfirmInput>>(
       (acc, input, index) => ({
         ...acc,
         [input.id ?? index]: input,

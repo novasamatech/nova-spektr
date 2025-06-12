@@ -11,6 +11,7 @@ import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
+import { formModel } from '../model/form-model';
 
 import { DelegateForm } from './DelegateForm';
 import { SelectTrackForm } from './SelectTracksForm';
@@ -21,7 +22,7 @@ export const EditDelegation = () => {
   const step = useUnit(editDelegationModel.$step);
   const walletData = useUnit(editDelegationModel.$walletData);
   const initiatorWallet = useUnit(editDelegationModel.$initiatorWallet);
-  const transactions = useUnit(editDelegationModel.$transactions);
+  const tx = useUnit(formModel.$tx);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), editDelegationModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -59,7 +60,7 @@ export const EditDelegation = () => {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
 
-  if (nullable(transactions)) {
+  if (nullable(tx)) {
     return null;
   }
 

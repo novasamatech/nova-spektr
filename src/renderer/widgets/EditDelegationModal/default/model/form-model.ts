@@ -1,8 +1,8 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import isEmpty from 'lodash/isEmpty';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { type DelegateAccount } from '@/shared/api/governance';
 import { type Asset, type Chain, type Conviction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -12,16 +12,26 @@ import {
   getBalanceBn,
   getRelaychainAsset,
   nonNullable,
+  nullable,
   toAddress,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxWrappers,
+} from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type WalletData } from '../lib/types';
@@ -47,34 +57,16 @@ const formInitiated = createEvent<
     >;
   }
 >();
+
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
-
-const txWrapperChanged = createEvent<{
-  proxyAccount: AnyAccount | null;
-  signatories: AnyAccount[][];
-  isProxy: boolean;
-  isMultisig: boolean;
-}>();
-const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $previousConviction = createStore<Conviction>('None');
 
-const $availableSignatories = createStore<AnyAccount[][]>([]);
-const $proxyAccount = createStore<AnyAccount | null>(null);
-const $isProxy = createStore<boolean>(false);
-const $isMultisig = createStore<boolean>(false);
-
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
-const $feeData = restore(feeDataChanged, {
-  fee: ZERO_BALANCE,
-  totalFee: ZERO_BALANCE,
-  multisigDeposit: ZERO_BALANCE,
-});
+const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -83,19 +75,19 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
             network: $networkStore,
             initiatorBalance: $initiatorBalance,
           }),
-          fn: (initiator, fields, { feeData, isProxy, proxyBalance, network, initiatorBalance }) => {
+          fn: (initiator, fields, { fee, isProxy, proxyBalance, network, initiatorBalance }) => {
             if (!initiator) {
               return { message: 'staking.bond.noInitiatorError' };
             }
 
             if (isProxy) {
-              if (new BN(feeData.fee).gt(new BN(proxyBalance))) {
+              if (new BN(fee).gt(new BN(proxyBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             } else if (fields.amount) {
@@ -113,18 +105,19 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
+            multisigDeposit: $multisigDeposit,
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _fields, { feeData, isMultisig, signatoryBalance }) => {
+          fn: (signatory, _fields, { fee, multisigDeposit, isMultisig, signatoryBalance }) => {
             if (!isMultisig) return;
 
             if (!signatory || Object.keys(signatory).length === 0) {
               return { message: 'transfer.noSignatoryError' };
             }
 
-            const required = new BN(feeData.multisigDeposit).add(new BN(feeData.fee));
+            const required = new BN(multisigDeposit).add(new BN(fee));
             if (required.gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
@@ -137,13 +130,13 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => {
         return {
           source: combine({
-            feeData: $feeData,
+            fee: $fee,
             isMultisig: $isMultisig,
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
             initiatorBalance: $initiatorBalance,
           }),
-          fn: (value, fields, { feeData, isMultisig, network, delegateBalanceRange, initiatorBalance }) => {
+          fn: (value, fields, { fee, isMultisig, network, delegateBalanceRange, initiatorBalance }) => {
             if (fields.isUnchanged) return; // skip checks when unchanged
 
             if (!value) return { message: 'transfer.requiredAmountError' };
@@ -158,7 +151,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             if (!isMultisig && fields.initiator) {
-              const feeBN = new BN(feeData.fee);
+              const feeBN = new BN(fee);
               if (amountBN.add(feeBN).gt(new BN(initiatorBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
@@ -212,7 +205,149 @@ const $initiatorBalance = $account.map((account) => {
   return account?.available.toString() || ZERO_BALANCE;
 });
 
-// Computed
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    network: $networkStore,
+  },
+  ({ apis, network }) => {
+    return network ? apis[network.chain.chainId] : null;
+  },
+);
+
+const $delegateBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
+  if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
+
+  return [ZERO_BALANCE, initiatorBalance];
+});
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
+
+const $txWrappers = createTxWrappers({
+  initiator: form.fields.initiator.$value,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: $chain,
+  signatory: form.fields.signatory.$value,
+});
+
+// Shared stores moved from edit-delegation-model to avoid circular dependency -----------------
+
+// Wallet + chain data
+const $walletData = combine({
+  wallet: walletSelect.$selectedWallet,
+  accounts: walletSelect.$selectedAccounts,
+  chain: networkSelectorModel.$governanceChain,
+});
+
+// Selected delegate (target) and tracks
+const $target = createStore<DelegateAccount | null>(null);
+const $tracks = createStore<number[]>([]);
+
+// Active delegations for selected delegate
+const $activeDelegations = combine(
+  { delegations: delegationAggregate.$activeDelegations, delegate: $target },
+  ({ delegations, delegate }) => {
+    if (!delegate) return {};
+
+    return delegations[delegate.address] || {};
+  },
+);
+
+// Core transaction for edit-delegation flow -----------------------------------------------
+
+const $coreTx = combine(
+  {
+    walletData: $walletData,
+    target: $target,
+    tracks: $tracks,
+    account: $account,
+    activeTracks: delegationAggregate.$activeTracks,
+    activeDelegations: $activeDelegations,
+    amount: form.fields.amount.$value,
+    conviction: form.fields.conviction.$value,
+    isUnchanged: form.fields.isUnchanged.$value,
+  },
+  ({ walletData, target, tracks, account, activeTracks, activeDelegations, amount, conviction, isUnchanged }) => {
+    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || nullable(account)) {
+      return null;
+    }
+
+    const shard = account.account;
+    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+    const finalConviction = isUnchanged ? activeDelegations[address]?.conviction : conviction;
+    const finalAmount = isUnchanged
+      ? activeDelegations[address]?.balance.toString()
+      : walletData.chain && formatAmount(amount, walletData.chain.assets[0].precision);
+
+    return transactionBuilder.buildEditDelegation({
+      chain: walletData.chain!,
+      accountId: shard.accountId,
+      balance: finalAmount || '0',
+      conviction: finalConviction || 'None',
+      previousConviction: activeDelegations[address]?.conviction || 'None',
+      target: target!.address || '',
+      tracks,
+      undelegateTracks:
+        activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })]?.map(
+          Number,
+        ) || [],
+    });
+  },
+);
+
+// createComplexTxStore depends on $coreTx, so it should be defined after the declaration above
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  chain: $chain,
+  transaction: $coreTx,
+  accounts: accounts.$list,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+});
+
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
+const $isProxy = $proxyAccount.map((account) => nonNullable(account));
+
+// Multisig deposit calculation
+const $multisigThreshold = $route.map((route) => {
+  const multisig = route.find(accountUtils.isMultisigAccount);
+  if (!multisig) return null;
+
+  return multisig.threshold;
+});
+
+const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
+});
+
+const $proxyBalance = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  ({ isProxy, proxyAccount, balances, network }) => {
+    if (!isProxy || !network || !proxyAccount) return ZERO_BALANCE;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccount.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
 
 const $proxyWallet = combine(
   {
@@ -227,48 +362,33 @@ const $proxyWallet = combine(
   },
 );
 
-const $signatories = combine(
+const $signatoryBalance = combine(
   {
-    network: $networkStore,
-    availableSignatories: $availableSignatories,
+    signatory: form.fields.signatory.$value,
     balances: balanceModel.$balances,
-  },
-  ({ network, availableSignatories, balances }) => {
-    if (!network) return [];
-
-    const { chain, asset } = network;
-
-    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
-      const balancedSignatories = signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
-  },
-);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
     network: $networkStore,
   },
-  ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
   },
 );
 
 const $canSubmit = combine(
   {
     isFormValid: form.$isValid,
-    isFeeLoading: $isFeeLoading,
+    isFeePending: $pendingFee,
   },
-  ({ isFormValid, isFeeLoading }) => {
-    return isFormValid && !isFeeLoading;
+  ({ isFormValid, isFeePending }) => {
+    return isFormValid && !isFeePending;
   },
 );
 
@@ -290,6 +410,52 @@ sample({
     initiator: form.fields.initiator.change,
     networkStore: $networkStore,
   }),
+});
+
+// Submit
+
+sample({
+  clock: form.$values.updates,
+  source: { networkStore: $networkStore, account: $account },
+  filter: ({ networkStore, account }) => nonNullable(networkStore) && nonNullable(account),
+  fn: ({ account }, formData) => {
+    const locks = account ? { [account.account.accountId]: account.lock } : {};
+
+    return { ...formData, locks };
+  },
+  target: formChanged,
+});
+
+sample({
+  clock: form.submit.doneData,
+  target: formSubmitted,
+});
+
+sample({
+  clock: formCleared,
+  target: form.reset,
+});
+
+sample({
+  clock: formInitiated,
+  source: $networkStore,
+  filter: (network, { shards, activeDelegations }) => {
+    const balances = shards.map((shard) => {
+      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
+
+      return activeDelegations[address].balance;
+    });
+
+    return !!network && allEqual(balances, (a, b) => a.eq(b));
+  },
+  fn: (network, { shards, activeDelegations }) => {
+    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+    const balance = activeDelegations[address].balance.toString();
+    const precision = network!.asset.precision;
+
+    return getBalanceBn(balance, precision).toString();
+  },
+  target: form.fields.amount.change,
 });
 
 sample({
@@ -318,28 +484,6 @@ sample({
 sample({
   clock: formInitiated,
   source: $networkStore,
-  filter: (network, { shards, activeDelegations }) => {
-    const balances = shards.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-
-      return activeDelegations[address].balance;
-    });
-
-    return !!network && allEqual(balances, (a, b) => a.eq(b));
-  },
-  fn: (network, { shards, activeDelegations }) => {
-    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
-    const balance = activeDelegations[address].balance.toString();
-    const precision = network!.asset.precision;
-
-    return getBalanceBn(balance, precision).toString();
-  },
-  target: form.fields.amount.change,
-});
-
-sample({
-  clock: formInitiated,
-  source: $networkStore,
   fn: (network, { activeDelegations, shards }) => {
     const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
 
@@ -348,86 +492,11 @@ sample({
   target: $previousConviction,
 });
 
-sample({
-  clock: txWrapperChanged,
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-    signatories: $availableSignatories,
-    proxyAccount: $proxyAccount,
-  }),
-});
-
-// Reactive stores derived from data – declared after form so we can safely reference form fields
-
-const $delegateBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
-  if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
-
-  return [ZERO_BALANCE, initiatorBalance];
-});
-
-const $proxyBalance = combine(
-  {
-    isProxy: $isProxy,
-    proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ isProxy, proxyAccount, balances, network }) => {
-    if (!isProxy || !network || !proxyAccount) return ZERO_BALANCE;
-
-    const balance = balanceUtils.getBalance(
-      balances,
-      proxyAccount.accountId,
-      network.chain.chainId,
-      network.asset.assetId.toString(),
-    );
-
-    return transferableAmount(balance);
-  },
-);
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    signatories: $signatories,
-  },
-  ({ signatory, signatories }) => {
-    if (isEmpty(signatories)) return ZERO_BALANCE;
-
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
-    return match?.balance || ZERO_BALANCE;
-  },
-);
-
-// Submit
-
-sample({
-  clock: form.$values.updates,
-  source: { networkStore: $networkStore, account: $account },
-  filter: ({ networkStore, account }) => nonNullable(networkStore) && nonNullable(account),
-  fn: ({ account }, formData) => {
-    const locks = account ? { [account.account.accountId]: account.lock } : {};
-
-    return { ...formData, locks };
-  },
-  target: formChanged,
-});
-
-sample({
-  clock: form.submit.doneData,
-  target: formSubmitted,
-});
-
-sample({
-  clock: formCleared,
-  target: form.reset,
-});
-
 export const formModel = {
   form,
   $proxyWallet,
   $signatories,
+  $txWrappers,
 
   $account,
   $initiatorBalance,
@@ -435,24 +504,36 @@ export const formModel = {
   $proxyBalance,
   $previousConviction,
 
-  $feeData,
-  $isFeeLoading,
+  $fee,
+  $pendingFee,
+  $tx,
+  $multisigTx,
+  $route,
+  $multisigDeposit,
 
   $api,
   $networkStore,
   $isMultisig,
   $canSubmit,
 
+  $proxyAccount,
+  $isProxy,
+
   events: {
     formInitiated,
     formCleared,
-
-    txWrapperChanged,
-    feeDataChanged,
-    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,
     formChanged,
   },
+
+  $signatoryBalance,
+
+  $walletData,
+  $target,
+  $tracks,
+  $activeDelegations,
+
+  $coreTx,
 };
