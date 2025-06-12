@@ -63,6 +63,7 @@ export const Confirmation = ({
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  const proxyAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
@@ -84,7 +85,7 @@ export const Confirmation = ({
           wallets={wallets}
           initiators={initiators}
           signatory={meta.signatory}
-          proxied={meta.route?.find(accountUtils.isProxiedAccount)}
+          proxied={proxyAccount}
         >
           <DetailRow label={t('governance.addDelegation.confirmation.target')}>
             <Account variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
