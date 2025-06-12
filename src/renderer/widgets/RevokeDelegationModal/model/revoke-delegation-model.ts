@@ -8,10 +8,10 @@ import {
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
-  type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { createTxWrappers } from '@/shared/transactions';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -44,7 +44,6 @@ const $walletData = combine({
 const $revokeDelegationData = createStore<RevokeDelegationData[]>([]);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
 const $coreTxs = createStore<Transaction[]>([]);
 
 type FeeParams = {
@@ -73,24 +72,7 @@ const $api = combine(
   },
 );
 
-const $transactions = combine(
-  {
-    api: $api,
-    coreTxs: $coreTxs,
-    txWrappers: $txWrappers,
-  },
-  ({ api, coreTxs, txWrappers }) => {
-    if (!api) return null;
-
-    return coreTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
-  },
-);
+const $initiator = $walletData.map((data) => data.accounts.at(0) ?? null);
 
 // Signatory
 
@@ -124,6 +106,33 @@ sample({
   target: $signatory,
 });
 
+const $txWrappers = createTxWrappers({
+  initiator: $initiator,
+  wallets: walletModel.$wallets,
+  wallet: walletSelect.$selectedWallet,
+  chain: networkSelectorModel.$governanceChain,
+  signatory: $signatory,
+});
+
+const $transactions = combine(
+  {
+    api: $api,
+    coreTxs: $coreTxs,
+    txWrappers: $txWrappers,
+  },
+  ({ api, coreTxs, txWrappers }) => {
+    if (!api) return null;
+
+    return coreTxs.map((tx) =>
+      transactionService.getWrappedTransaction({
+        api,
+        transaction: tx,
+        txWrappers,
+      }),
+    );
+  },
+);
+
 // Transaction & Form
 
 sample({
@@ -156,25 +165,6 @@ sample({
     return data.map((d) => ({ ...d, signatory }));
   },
   target: $revokeDelegationData,
-});
-
-sample({
-  clock: [flowStarted, $signatory.updates],
-  source: {
-    walletData: $walletData,
-    signatory: $signatory,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => !!walletData.wallet,
-  fn: ({ walletData, wallets, signatory }) => {
-    return transactionService.getTxWrappers({
-      wallet: walletData.wallet!,
-      wallets,
-      account: walletData.wallet!.accounts[0],
-      signatories: signatory ? [signatory] : [],
-    });
-  },
-  target: $txWrappers,
 });
 
 sample({
