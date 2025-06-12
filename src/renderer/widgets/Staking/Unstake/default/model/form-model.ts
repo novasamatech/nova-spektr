@@ -360,7 +360,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length === 1,
+  filter: ({ chain, shards }) => nonNullable(getRelaychainAsset(chain.assets)) && shards.length === 1,
   fn: ({ chain, shards }) => ({
     initiator: shards.at(0) ?? null,
     networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
@@ -378,7 +378,7 @@ const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> =>
 sample({
   clock: formInitiated,
   source: $api,
-  filter: (api): api is ApiPromise => Boolean(api),
+  filter: (api): api is ApiPromise => nonNullable(api),
   target: getMinNominatorBondFx,
 });
 

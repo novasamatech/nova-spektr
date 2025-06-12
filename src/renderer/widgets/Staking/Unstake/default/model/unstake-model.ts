@@ -132,7 +132,7 @@ sample({
     transaction: $coreTx,
   },
   filter: ({ unstakeStore, networkStore, transaction }) => {
-    return Boolean(unstakeStore) && Boolean(networkStore) && Boolean(transaction);
+    return nonNullable(unstakeStore) && nonNullable(networkStore) && nonNullable(transaction);
   },
   fn: ({ unstakeStore, networkStore, transaction }) => ({
     event: {
@@ -222,7 +222,7 @@ sample({
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ store, coreTx, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
+    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
   fn: ({ store, coreTx, txWrappers }) => {
     return [
