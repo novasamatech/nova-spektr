@@ -70,7 +70,7 @@ export const RevokeDelegation = () => {
     );
   }
 
-  if (transactions === undefined) {
+  if (nullable(transactions)) {
     return null;
   }
 
