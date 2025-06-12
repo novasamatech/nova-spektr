@@ -28,8 +28,10 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { editDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
-import { type EditDelegationConfirmInput } from '@/features/operations/OperationsConfirm/EditDelegation/model/confirm-model';
+import {
+  type EditDelegationConfirm,
+  editDelegationConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm';
 import { type DelegateData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -168,6 +170,7 @@ sample({
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
           ...delegateData!,
+          signatory: delegateData!.signatory!,
           ...(isUnchanged && {
             balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
             conviction: activeDelegations[address].conviction,
@@ -176,22 +179,25 @@ sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          shards: [shard],
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTx!,
-        } satisfies EditDelegationConfirmInput,
+          route: [shard],
+          multisigTx: null,
+          tx: coreTx!,
+          initiator: shard,
+        } satisfies EditDelegationConfirm,
       ],
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
     walletData: $walletData,

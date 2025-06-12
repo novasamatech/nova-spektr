@@ -41,7 +41,10 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { editDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import {
+  type EditDelegationConfirm,
+  editDelegationConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -347,6 +350,7 @@ sample({
     isUnchanged: $isUnchanged,
     coreTxs: $coreTxs,
     step: $step,
+    transactions: $transactions,
   },
   filter: ({ walletData, delegateData, step }) =>
     Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
@@ -362,6 +366,7 @@ sample({
     coreTxs,
     activeDelegations,
     isUnchanged,
+    transactions,
   }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
@@ -379,6 +384,7 @@ sample({
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
           ...delegateData!,
+          signatory: delegateData!.signatory!,
           ...(isUnchanged && {
             balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
             conviction: activeDelegations[address].conviction,
@@ -389,19 +395,23 @@ sample({
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTxs[index],
-        };
+          route: [shard],
+          multisigTx: null,
+          tx: transactions![index].wrappedTx,
+          initiator: shard,
+        } satisfies EditDelegationConfirm;
       }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
     walletData: $walletData,

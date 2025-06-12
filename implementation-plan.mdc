@@ -1,0 +1,21 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+## Edit Delegation Confirmation Refactor
+
+1. Type definition – **Done**
+   Created `EditDelegationConfirm` (extends `TxConfirmInfo`) with all operation-specific fields (balance, tracks, locks, etc.).
+
+2. Model rewrite – **Done**
+   Replaced legacy Effector logic with `createTransactionConfirmStore` in `confirm-model.ts`, exporting new public API and events.
+
+3. Index barrel – **Done**
+   No edits required; export path remains unchanged.
+
+4. UI refactor – **Done**
+   `ui/Confirmation.tsx` now pulls data from `confirmModel.$confirms`; adjusted props, lock-periods gate, fee rows, and `SignButton` to use `startSigning`.
+
+5. Cleanup – **Done**
+   Removed obsolete wallet lookup stores and legacy imports; ensured no remaining references to deprecated APIs.
