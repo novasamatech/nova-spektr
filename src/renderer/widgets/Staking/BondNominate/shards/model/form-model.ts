@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
-import { type Account, type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -15,14 +15,15 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   amount: string;
   destination: Address;
 };
@@ -35,8 +36,8 @@ const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
 
 const txWrapperChanged = createEvent<{
-  proxyAccount: Account | null;
-  signatories: Account[][];
+  proxyAccount: AnyAccount | null;
+  signatories: AnyAccount[][];
   isProxy: boolean;
   isMultisig: boolean;
 }>();
@@ -45,7 +46,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 const $destinationQuery = restore(destinationQueryChanged, '');
 const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
 
@@ -54,8 +55,8 @@ const $bondBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
 const $signatoryBalance = createStore<string>(ZERO_BALANCE);
 const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
-const $availableSignatories = createStore<Account[][]>([]);
-const $proxyAccount = createStore<Account | null>(null);
+const $availableSignatories = createStore<AnyAccount[][]>([]);
+const $proxyAccount = createStore<AnyAccount | null>(null);
 const $isProxy = createStore<boolean>(false);
 const $isMultisig = createStore<boolean>(false);
 
@@ -69,7 +70,7 @@ const $feeData = restore(feeDataChanged, {
 const $bondForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as AnyAccount[],
       rules: [
         {
           name: 'noProxyFee',
@@ -173,7 +174,7 @@ const $bondForm = createForm<FormParams>({
             const feeBN = new BN(feeData.fee);
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
-            return form.shards.every((_: Account, index: number) => {
+            return form.shards.every((_: AnyAccount, index: number) => {
               return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
             });
           },
@@ -208,11 +209,10 @@ const $proxyWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy || !proxyAccount) return undefined;
+    if (!isProxy || !proxyAccount) return null;
 
     return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
-  { skipVoid: false },
 );
 
 const $accounts = combine(
@@ -246,7 +246,7 @@ const $signatories = combine(
 
     const { chain, asset } = network;
 
-    return availableSignatories.reduce<{ signer: Account; balance: string }[][]>((acc, signatories) => {
+    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
       const balancedSignatories = signatories.map((signatory) => {
         const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
 
@@ -289,9 +289,8 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : undefined;
+    return network ? apis[network.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $canSubmit = combine(
@@ -459,18 +458,14 @@ export const formModel = {
   $isMultisig,
   $canSubmit,
 
-  events: {
-    formInitiated,
-    formCleared,
-    destinationQueryChanged,
-    destinationTypeChanged,
+  formInitiated,
+  formCleared,
+  destinationQueryChanged,
+  destinationTypeChanged,
 
-    txWrapperChanged,
-    feeDataChanged,
-    isFeeLoadingChanged,
-  },
-  output: {
-    formSubmitted,
-    formChanged,
-  },
+  txWrapperChanged,
+  feeDataChanged,
+  isFeeLoadingChanged,
+  formSubmitted,
+  formChanged,
 };

@@ -9,6 +9,7 @@ import {
   type Transaction,
   type Wallet,
 } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
@@ -53,22 +54,32 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 
   const $store = restore<Input[]>(init, []);
 
-  const $confirmMap = combine($store, $wallets, (store, wallets) => {
-    if (!wallets.length) return {};
+  const $confirms = combine($store, $wallets, (store, wallets): ConfirmItem<Input>[] => {
+    if (!wallets.length) return [];
 
-    return store.reduce<ConfirmMap>((acc, meta, index) => {
-      const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
-      if (!initiatorWallet) return acc;
+    return store
+      .map((meta) => {
+        const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
+        if (!initiatorWallet) return null;
 
-      const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
+        const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
 
-      acc[meta.id ?? index] = {
-        meta,
-        wallets: {
-          signatory: signatoryWallet || null,
-          initiator: initiatorWallet,
-        },
-      };
+        return {
+          meta,
+          wallets: {
+            signatory: signatoryWallet || null,
+            initiator: initiatorWallet,
+          },
+        };
+      })
+      .filter(nonNullable);
+  });
+
+  const $confirmMap = $confirms.map((confirms) => {
+    if (!confirms.length) return {};
+
+    return confirms.reduce<ConfirmMap>((acc, confirm, index) => {
+      acc[confirm.meta.id ?? index] = confirm;
 
       return acc;
     }, {});

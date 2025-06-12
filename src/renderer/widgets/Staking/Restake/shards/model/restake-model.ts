@@ -10,6 +10,7 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { restakeConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
 import { type NetworkStore, type RestakeStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -47,7 +48,7 @@ sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
 sample({
@@ -57,7 +58,7 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
@@ -79,28 +80,33 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs },
+  clock: formModel.formSubmitted,
+  source: { networkStore: $networkStore, coreTxs: $coreTxs, multisigTxs: $multisigTxs },
   filter: ({ networkStore }) => Boolean(networkStore),
-  fn: ({ networkStore, coreTxs }, { formData }) => ({
+  fn: ({ networkStore, coreTxs, multisigTxs }, { formData }) => ({
     event: [
       {
         ...formData,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTxs![0],
-      },
+        initiator: formData.shards[0],
+        signatory: formData.signatory!,
+        route: [formData.shards[0]],
+        tx: coreTxs![0],
+        multisigTx: multisigTxs![0],
+      } satisfies RestakeConfirm,
     ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
@@ -164,7 +170,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, formModel.events.formCleared],
+  target: [stepChanged, formModel.formCleared],
 });
 
 sample({
@@ -218,12 +224,8 @@ export const restakeModel = {
   $networkStore,
   $initiatorWallet,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  flowFinished,
 };
