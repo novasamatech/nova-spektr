@@ -12,6 +12,7 @@ function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
   return (
     Array.from(account.signatories)
       .map(s => s.accountId)
+      .filter(account => account !== signer)
       /**
        * Public keys of signers' wallets are compared byte-for-byte and sorted
        * ascending before being used to generate the multisig address. For
@@ -24,7 +25,6 @@ function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
        * the transaction will fail.
        */
       .sort((a, b) => a.localeCompare(b))
-      .filter(account => account !== signer)
   );
 }
 

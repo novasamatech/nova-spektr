@@ -65,7 +65,7 @@ const updateCallDataFx = attach({
   },
 });
 
-const removeOperationsForAccount = attach({
+const removeOperationsForAccountFx = attach({
   source: $list,
   effect(operations, accountId: AccountId) {
     const remove = scopeBind(removeTransactionsFx, { safe: true });
@@ -164,7 +164,7 @@ export const multisigOperation = {
   populate: populateFx,
   addOperations: addOperationsFx,
   updateOperations: updateOperationsFx,
-  removeOperationsForAccount,
+  removeOperationsForAccount: removeOperationsForAccountFx,
   updateCallData: updateCallDataFx,
   requestOperations: onchainOperations.request,
   subscribe: subscribeIndexerResource.subscribe,

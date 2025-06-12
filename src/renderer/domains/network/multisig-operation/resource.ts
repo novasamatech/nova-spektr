@@ -111,18 +111,14 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
   };
 }
 
-export async function fetchOperations(
-  url: string,
-  accountId: AccountId,
-  api: ApiPromise,
-): Promise<MultisigOperation[]> {
+async function fetchOperations(url: string, accountId: AccountId, api: ApiPromise): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
   const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
 
   return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, api));
 }
 
-export const multisigEvent = z.union([
+const multisigEvent = z.union([
   pjsSchema.tupleMap(
     ['accountId', pjsSchema.accountId],
     ['timepoint', multisigPallet.schema.multisigTimepoint],
@@ -201,9 +197,8 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
         blockCreated: multisig.when.height,
         indexCreated: multisig.when.index,
         deposit: multisig.deposit,
-        // TODO what should we do?
-        method: null,
-        section: null,
+        method: transaction?.method?.method ?? null,
+        section: transaction?.method?.section ?? null,
         timestamp,
         events,
         transaction: decodedTransaction,
@@ -216,7 +211,7 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
 
 export const subscribeIndexerResource = createSubscriptionResource<RequestParams[], MultisigOperation[]>({
   fn(params, callback) {
-    const unsubscribeFns = [];
+    const unsubscribeFns: VoidFunction[] = [];
 
     for (const { chain, accountId, api } of params) {
       const url = chain.externalApi?.proxy?.find(x => x.type === 'subquery')?.url;
@@ -235,11 +230,11 @@ export const subscribeIndexerResource = createSubscriptionResource<RequestParams
       unsubscribeFns.push(() => clearInterval(interval));
     }
 
-    return Promise.all(unsubscribeFns).then(fns => () => {
-      for (const fn of fns) {
+    return () => {
+      for (const fn of unsubscribeFns) {
         fn();
       }
-    });
+    };
   },
 });
 
