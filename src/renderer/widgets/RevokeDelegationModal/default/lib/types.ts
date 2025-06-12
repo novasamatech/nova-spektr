@@ -1,22 +1,12 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Address, type Chain, type Wallet } from '@/shared/core';
-
-export type WalletData = {
-  wallet: Wallet;
-  chain: Chain;
-};
+import { type Address } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 
 export type RevokeDelegationData = {
   target: Address;
-  account: Account;
-  signatory: Account | null;
+  account: AnyAccount;
+  signatory: AnyAccount | null;
   tracks: number[];
   locks: Record<string, BN>;
-};
-
-export type FeeData = {
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
 };
