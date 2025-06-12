@@ -1,7 +1,8 @@
 import { type TFunction } from 'i18next';
 
-import { type DecodedTransaction, type MultisigTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
+import { type MultisigOperation } from '@/domains/network';
 import { findCoreBatchAll, isEditDelegationTransaction } from '@/entities/transaction';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
@@ -67,7 +68,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
 export const getModalTransactionTitle = (
   crossChain: boolean,
   t: TFunction,
-  transaction?: Transaction | DecodedTransaction,
+  transaction?: Transaction | DecodedTransaction | null,
 ): string => {
   if (!transaction) return TRANSACTION_UNKNOWN;
 
@@ -97,9 +98,9 @@ export const getMultisigSignOperationTitle = (
   crossChain: boolean,
   t: TFunction,
   type?: TransactionType,
-  transaction?: MultisigTransaction,
+  operation?: MultisigOperation,
 ) => {
-  const innerTxTitle = getModalTransactionTitle(crossChain, t, transaction?.transaction);
+  const innerTxTitle = getModalTransactionTitle(crossChain, t, operation?.transaction);
 
   if (type === TransactionType.MULTISIG_AS_MULTI || type === TransactionType.MULTISIG_APPROVE_AS_MULTI) {
     return `${t('operations.modalTitles.approve')} ${t(innerTxTitle)}`;
