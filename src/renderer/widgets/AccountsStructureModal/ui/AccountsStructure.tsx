@@ -40,77 +40,114 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
+  // Create matrix of nodes and track connections
+  const matrix: AccountNodeData[][] = [];
+  const connections: { source: string; target: string }[] = [];
+  const visited = new Set<string>();
+
+  const processNodeForMatrix = (node: AccountNode, level: number) => {
+    if (visited.has(node.account.id)) return;
+    visited.add(node.account.id);
+
+    // Ensure level array exists
+    if (!matrix[level]) {
+      matrix[level] = [];
+    }
+
+    // Add node to current level
+    matrix[level].push({
+      account: node.account,
+      isSelected: node.account.id === account.id,
+    });
+
+    // Process children and add connections
+    for (const child of node.children) {
+      // Add connection for each parent-child relationship
+      connections.push({
+        source: child.account.id,
+        target: node.account.id,
+      });
+      
+      // Process child node in next level
+      processNodeForMatrix(child, level + 1);
+    }
+  };
+
+  // First, find root nodes (nodes that are not children of any other node)
+  const childIds = new Set<string>();
+  for (const [_, node] of graph) {
+    for (const child of node.children) {
+      childIds.add(child.account.id);
+    }
+  }
+
+  // Process root nodes first
+  for (const [_, node] of graph) {
+    if (!childIds.has(node.account.id) && !visited.has(node.account.id)) {
+      processNodeForMatrix(node, 0);
+    }
+  }
+
+  // Then process remaining nodes
+  for (const [_, node] of graph) {
+    if (!visited.has(node.account.id)) {
+      processNodeForMatrix(node, 0);
+    }
+  }
+
+  console.log('Graph:', graph);
+  console.log('Matrix:', matrix);
+  console.log('Connections:', connections);
+
+  // Stringified logs for sharing
+  // console.log('Stringified Graph:', JSON.stringify(Array.from(graph.entries()), null, 2));
+  // console.log('Stringified Matrix:', JSON.stringify(matrix, null, 2));
+  // console.log('Stringified Connections:', JSON.stringify(connections, null, 2));
+
   useEffect(() => {
     const newNodes: Node<AccountNodeData>[] = [];
     const newEdges: Edge[] = [];
-    const visited = new Set<string>();
 
-    const calculateSubtreeHeight = (node: AccountNode): number => {
-      if (node.children.length === 0) return 1;
-      return node.children.reduce((sum, child) => sum + calculateSubtreeHeight(child), 0);
-    };
+    // Create nodes from matrix
+    matrix.forEach((level, levelIndex) => {
+      level.forEach((nodeData, nodeIndex) => {
+        const x = -levelIndex * LEVEL_SPACING;
+        const y = nodeIndex * NODE_SPACING;
 
-    const processNode = (node: AccountNode, column: number, yOffset: number): number => {
-      if (visited.has(node.account.id)) return 0;
-      visited.add(node.account.id);
-
-      const nodeId = node.account.id;
-      // Start from the right side (negative x values)
-      const x = -column * LEVEL_SPACING;
-      const y = yOffset;
-
-      newNodes.push({
-        id: nodeId,
-        type: 'accountNode',
-        data: {
-          account: node.account,
-          isSelected: node.account.id === account.id,
-        },
-        position: { x, y },
-        sourcePosition: Position.Left,
-        targetPosition: Position.Right,
-      });
-
-      for (const child of node.children) {
-        newEdges.push({
-          id: `e${child.account.id}-${nodeId}`,
-          source: child.account.id,
-          target: nodeId,
-          type: 'smoothstep',
-          animated: false,
-          style: {
-            stroke: '#363643',
-            strokeWidth: 2,
+        newNodes.push({
+          id: nodeData.account.id,
+          type: 'accountNode',
+          data: {
+            account: nodeData.account,
+            isSelected: nodeData.isSelected,
           },
-          markerEnd: {
-            type: MarkerType.Arrow,
-            width: 20,
-            height: 20,
-            color: '#363643',
-          },
+          position: { x, y },
+          sourcePosition: Position.Left,
+          targetPosition: Position.Right,
         });
-      }
+      });
+    });
 
-      // Process children with vertical spacing
-      let currentYOffset = yOffset;
-      for (const child of node.children) {
-        const childHeight = calculateSubtreeHeight(child);
-        processNode(child, column + 1, currentYOffset);
-        currentYOffset += childHeight * NODE_SPACING;
-      }
-
-      return node.children.length;
-    };
-
-    // Process all accounts from the graph
-    let currentYOffset = 0;
-    for (const [_, node] of graph) {
-      if (!visited.has(node.account.id)) {
-        const height = calculateSubtreeHeight(node);
-        processNode(node, 0, currentYOffset);
-        currentYOffset += height * NODE_SPACING;
-      }
-    }
+    // Create edges from connections
+    connections.forEach(connection => {
+      newEdges.push({
+        id: `e${connection.source}-${connection.target}`,
+        source: connection.source,
+        target: connection.target,
+        type: 'smoothstep',
+        animated: false,
+        style: {
+          stroke: '#363643',
+          strokeWidth: 2,
+        },
+        markerEnd: {
+          type: MarkerType.Arrow,
+          width: 20,
+          height: 20,
+          color: '#363643',
+        },
+      });
+    });
 
     setNodes(newNodes);
     setEdges(newEdges);
