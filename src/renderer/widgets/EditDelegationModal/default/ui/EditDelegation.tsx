@@ -7,10 +7,9 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { ConfirmSlider, EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
+import { EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
 
 import { DelegateForm } from './DelegateForm';
@@ -71,7 +70,7 @@ export const EditDelegation = () => {
       </Modal.Title>
 
       <Modal.Content>
-        {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
+        {isStep(step, Step.CONFIRM) && (
           <Confirmation
             secondaryActionButton={
               initiatorWallet &&
@@ -83,32 +82,6 @@ export const EditDelegation = () => {
             }
             onGoBack={() => editDelegationModel.events.stepChanged(Step.INIT)}
           />
-        )}
-
-        {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-          <ConfirmSlider
-            count={transactions.length}
-            footer={
-              <div className="flex gap-2">
-                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
-                    {t('operation.addToBasket')}
-                  </Button>
-                )}
-                <SignButton
-                  isDefault
-                  type={walletData.wallet?.type}
-                  onClick={editDelegationModel.events.txsConfirmed}
-                />
-              </div>
-            }
-          >
-            {transactions.map((_, index) => (
-              <ConfirmSlider.Item key={index}>
-                <Confirmation id={index} hideSignButton />
-              </ConfirmSlider.Item>
-            ))}
-          </ConfirmSlider>
         )}
 
         {isStep(step, Step.SIGN) && (

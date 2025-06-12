@@ -1,12 +1,8 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
-import { Alert, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
+import { Alert, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import {
@@ -16,10 +12,8 @@ import {
   getTrackTitles,
   getTreasuryTrackDescription,
 } from '@/entities/governance';
-import { accountUtils } from '@/entities/wallet';
-import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
+import { networkSelectorModel } from '@/features/governance';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
-import { editDelegationModel } from '../model/edit-delegation-model';
 import { selectTracksModel } from '../model/select-tracks-model';
 
 type Props = {
@@ -32,7 +26,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
 
   const tracks = useUnit(selectTracksModel.$tracks);
-  const accounts = useUnit(selectTracksModel.$accounts);
+  const account = useUnit(selectTracksModel.$account);
   const votedTracks = useUnit(selectTracksModel.$votedTracks);
   const delegatedTracks = useUnit(selectTracksModel.$delegatedTracks);
   const tracksGroup = useUnit(selectTracksModel.$tracksGroup);
@@ -57,12 +51,10 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
 
           <hr className="w-full border-filter-border" />
 
-          <AccountsSelector />
-
           <div className="flex flex-1 flex-col gap-6 px-5">
             <div className="flex gap-3">
               <Button
-                disabled={accounts.length === 0}
+                disabled={!account}
                 pallet={getGroupPallet(allTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(allTracks, votedTracks))}
@@ -70,7 +62,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {t('governance.addDelegation.group.selectAll')}
               </Button>
               <Button
-                disabled={accounts.length === 0}
+                disabled={!account}
                 pallet={getGroupPallet(governanceTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(governanceTracks, votedTracks))}
@@ -78,7 +70,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {t('governance.addDelegation.group.governance')}
               </Button>
               <Button
-                disabled={accounts.length === 0}
+                disabled={!account}
                 pallet={getGroupPallet(treasuryTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(treasuryTracks, votedTracks))}
@@ -86,7 +78,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                 {t('governance.addDelegation.group.treasury')}
               </Button>
               <Button
-                disabled={accounts.length === 0}
+                disabled={!account}
                 pallet={getGroupPallet(fellowshipTracks, votedTracks, tracks)}
                 variant="chip"
                 onClick={() => selectTracksModel.events.tracksSelected(getTrackIds(fellowshipTracks, votedTracks))}
@@ -100,7 +92,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   <Checkbox
                     key={track.id}
                     checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
-                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    disabled={votedTracks.includes(track.id) || !account}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
                     <div className="flex w-full items-center justify-between">
@@ -122,7 +114,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   <Checkbox
                     key={track.id}
                     checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
-                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    disabled={votedTracks.includes(track.id) || !account}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
                     <div className="flex w-full items-center justify-between">
@@ -146,7 +138,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   <Checkbox
                     key={track.id}
                     checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
-                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    disabled={votedTracks.includes(track.id) || !account}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
                     <div className="flex w-full items-center justify-between">
@@ -170,7 +162,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
                   <Checkbox
                     key={track.id}
                     checked={tracks.includes(Number(track.id)) || votedTracks.includes(track.id)}
-                    disabled={votedTracks.includes(track.id) || accounts.length === 0}
+                    disabled={votedTracks.includes(track.id) || !account}
                     onChange={() => selectTracksModel.events.trackToggled(Number(track.id))}
                   >
                     <div className="flex w-full items-center justify-between">
@@ -196,7 +188,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
 
             <Alert
               variant="info"
-              active={accounts.length > 0 && delegatedTracks?.length > 0}
+              active={!!account && delegatedTracks?.length > 0}
               title={t('governance.addDelegation.delegatedTracksTitle')}
             >
               <Alert.Item withDot={false}>
@@ -208,7 +200,7 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
 
             <Alert
               variant="info"
-              active={accounts.length > 0 && votesToRemove.length > 0}
+              active={!!account && votesToRemove.length > 0}
               title={t('governance.addDelegation.votedTracksTitle')}
             >
               <Alert.Item withDot={false}>
@@ -240,9 +232,9 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
       </Modal.Content>
       <Modal.Footer>
         <Button
-          disabled={tracks.length === 0 || accounts.length === 0 || isMaxWeightReached || isMaxWeightLoading}
+          disabled={tracks.length === 0 || !account || isMaxWeightReached || isMaxWeightLoading}
           isLoading={isMaxWeightLoading}
-          onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts })}
+          onClick={() => selectTracksModel.output.formSubmitted({ tracks, accounts: account ? [account] : [] })}
         >
           {t('governance.addDelegation.continueButton')}
         </Button>
@@ -250,101 +242,3 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
     </Modal>
   );
 };
-
-const AccountsSelector = () => {
-  const { t } = useI18n();
-
-  const accounts = useUnit(selectTracksModel.$accounts);
-  const availableAccounts = useUnit(selectTracksModel.$availableAccounts);
-  const accountsBalances = useUnit(selectTracksModel.$accountsBalances);
-  const { wallet, chain } = useUnit(editDelegationModel.$walletData);
-
-  if (!wallet || !chain || availableAccounts.length <= 1) {
-    return null;
-  }
-
-  const groups = accountUtils.getAccountsAndShardGroups(availableAccounts);
-
-  const options =
-    groups.map((shards) => {
-      const isAccountWithShards = accountUtils.isAccountWithShards(shards);
-      if (isAccountWithShards) {
-        const groupValue = shards.reduce((acc, curr) => acc.add(new BN(accountsBalances[curr.accountId])), new BN(0));
-
-        return {
-          id: '',
-          value: '',
-          group: {
-            groupName: shards[0].name,
-            groupValue: (
-              <AssetBalance value={groupValue} asset={chain.assets[0]} className="text-footnote text-inherit" />
-            ),
-            list: shards.map((account) => ({
-              id: account.id.toString(),
-              value: account,
-              element: (
-                <Address
-                  address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
-                  variant="short"
-                  canCopy={false}
-                  showIcon
-                />
-              ),
-              additionalElement: (
-                <AccountInfo account={account} chain={chain} balance={accountsBalances[account.accountId]} />
-              ),
-            })),
-          },
-        };
-      }
-      const address = toAddress(shards.accountId, { prefix: chain.addressPrefix });
-
-      return {
-        id: shards.id.toString(),
-        value: shards,
-        element: <Address title={shards.name} address={address} variant="short" canCopy={false} showIcon />,
-        additionalElement: <AccountInfo account={shards} chain={chain} balance={accountsBalances[shards.accountId]} />,
-      };
-    }) || [];
-
-  return (
-    <>
-      <div className="flex items-end gap-6 px-5">
-        <div className="flex flex-1 flex-col gap-y-2">
-          <AccountsMultiSelector
-            label={t('governance.addDelegation.accountLabel')}
-            placeholder={t('governance.addDelegation.accountPlaceholder')}
-            multiPlaceholder={t('governance.addDelegation.manyAccountsPlaceholder')}
-            selectedIds={accounts.map(({ id }) => id.toString())}
-            options={options}
-            onChange={(values) => selectTracksModel.events.accountsChanged(values.map(({ value }) => value))}
-          />
-        </div>
-        <FootnoteText className="flex-1 text-text-tertiary">
-          {t('governance.addDelegation.multishardDescription')}
-        </FootnoteText>
-      </div>
-
-      <hr className="w-full border-filter-border" />
-    </>
-  );
-};
-
-type AccountProps = {
-  account: Account;
-  chain: Chain;
-  balance: string;
-};
-
-const AccountInfo = ({ account, chain, balance }: AccountProps) => (
-  <div className="flex w-full items-center text-center">
-    <div className="w-8">
-      <AccountExplorers accountId={account.accountId} chain={chain} />
-    </div>
-    <AssetBalance
-      value={balance}
-      asset={chain.assets[0]}
-      className="w-full text-right text-footnote text-text-secondary"
-    />
-  </div>
-);

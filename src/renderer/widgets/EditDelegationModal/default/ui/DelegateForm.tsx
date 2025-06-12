@@ -7,12 +7,12 @@ import { useI18n } from '@/shared/i18n';
 import { formatAmount, formatBalance } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
+import { Modal, Tooltip } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
-import { FeeLoader } from '@/entities/transaction';
+import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
@@ -50,7 +50,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
             <ProxyFeeAlert />
             <Signatories />
             <Amount />
-            <UnchangeCheckbox />
             <Conviction />
           </form>
 
@@ -68,7 +67,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { shards },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const feeData = useUnit(formModel.$feeData);
@@ -76,7 +75,7 @@ const ProxyFeeAlert = () => {
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError) {
+  if (!network || !proxyWallet || !initiator.hasError) {
     return null;
   }
 
@@ -89,7 +88,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.reset}
+      onClose={initiator.reset}
     />
   );
 };
@@ -168,37 +167,18 @@ const Amount = () => {
   );
 };
 
-const UnchangeCheckbox = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { isUnchanged },
-  } = useForm(formModel.form);
-  const accounts = useUnit(formModel.$accounts);
-
-  if (accounts.length < 2) return null;
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <Checkbox checked={isUnchanged.value} onChange={isUnchanged.onChange}>
-        <FootnoteText>{t('governance.addDelegation.unchangeLabel')}</FootnoteText>
-      </Checkbox>
-    </div>
-  );
-};
-
 const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards, amount, conviction },
+    fields: { initiator, amount, conviction },
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
   const feeData = useUnit(formModel.$feeData);
   const isFeeLoading = useUnit(formModel.$isFeeLoading);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const accounts = useUnit(formModel.$accounts);
+  const account = useUnit(formModel.$account);
   const previousConviction = useUnit(formModel.$previousConviction);
 
   const lockPeriods = useStoreMap({
@@ -207,11 +187,9 @@ const FeeSection = () => {
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-
   useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
-  if (!network || shards.value.length === 0 || accounts.length === 0) {
+  if (!network || !initiator.value || !account) {
     return null;
   }
 
@@ -219,26 +197,22 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {shards.value.length === 1 && (
-        <>
-          <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-            <BalanceDiff
-              from={accounts[0].balance}
-              to={new BN(accounts[0].balance).sub(amountValue)}
-              asset={network.asset}
-              lock={accounts[0].lock}
-            />
-          </DetailRow>
+      <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
+        <BalanceDiff
+          from={account.balance}
+          to={new BN(account.balance).sub(amountValue)}
+          asset={network.asset}
+          lock={account.lock}
+        />
+      </DetailRow>
 
-          <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <LockValueDiff asset={network.asset} from={accounts[0].lock} to={amountValue} />
-          </DetailRow>
+      <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
+        <LockValueDiff asset={network.asset} from={account.lock} to={amountValue} />
+      </DetailRow>
 
-          <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-            <LockPeriodDiff from={previousConviction} to={conviction.value} lockPeriods={lockPeriods} />
-          </DetailRow>
-        </>
-      )}
+      <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
+        <LockPeriodDiff from={previousConviction} to={conviction.value} lockPeriods={lockPeriods} />
+      </DetailRow>
 
       {isMultisig && (
         <DetailRow
@@ -265,39 +239,12 @@ const FeeSection = () => {
         </DetailRow>
       )}
 
-      <DetailRow
-        label={
-          <FootnoteText className="text-text-tertiary">
-            {t('staking.networkFee', { count: shards.value.length || 1 })}
-          </FootnoteText>
-        }
-        className="text-text-primary"
-      >
-        {isFeeLoading ? (
-          <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-        ) : (
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
-          </div>
-        )}
-      </DetailRow>
-
-      {shards.value.length > 1 && (
-        <DetailRow
-          label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-          className="text-text-primary"
-        >
-          {isFeeLoading ? (
-            <FeeLoader fiatFlag={Boolean(fiatFlag)} />
-          ) : (
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
-              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
-            </div>
-          )}
-        </DetailRow>
-      )}
+      <FeeWithLabel
+        fee={feeData.fee}
+        isLoading={isFeeLoading}
+        asset={network.chain.assets[0]}
+        label={t('staking.networkFee', { count: 1 })}
+      />
     </div>
   );
 };

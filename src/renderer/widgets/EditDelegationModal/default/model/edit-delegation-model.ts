@@ -64,13 +64,15 @@ const $walletData = combine({
 
 const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
 const $tracks = createStore<number[]>([]).reset(flowFinished);
-const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
+const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'initiator'> | null>(null).reset(
+  flowFinished,
+);
 const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isUnchanged = createStore(false);
 
 const $txWrappers = createStore<TxWrapper[]>([]).reset(flowFinished);
-const $coreTxs = createStore<Transaction[]>([]).reset(flowFinished);
+const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $activeDelegations = combine(
@@ -110,22 +112,20 @@ const $api = combine(
   },
 );
 
-const $transactions = combine(
+const $transaction = combine(
   {
     api: $api,
-    coreTxs: $coreTxs,
+    coreTx: $coreTx,
     txWrappers: $txWrappers,
   },
-  ({ api, coreTxs, txWrappers }) => {
-    if (!api) return null;
+  ({ api, coreTx, txWrappers }) => {
+    if (!api || !coreTx) return null;
 
-    return coreTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
+    return transactionService.getWrappedTransaction({
+      api,
+      transaction: coreTx,
+      txWrappers,
+    });
   },
 );
 
@@ -137,7 +137,7 @@ sample({
     walletData: $walletData,
     wallets: walletModel.$wallets,
   },
-  filter: ({ walletData }) => Boolean(walletData.wallet),
+  filter: ({ walletData }) => nonNullable(walletData.wallet),
   fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
@@ -149,6 +149,44 @@ sample({
     });
   },
   target: $txWrappers,
+});
+
+sample({
+  clock: formModel.output.formChanged,
+  source: {
+    walletData: $walletData,
+    target: $target,
+    tracks: $tracks,
+    account: formModel.$account,
+    activeTracks: delegationAggregate.$activeTracks,
+    activeDelegations: $activeDelegations,
+  },
+  filter: ({ walletData, target, tracks, account }) => {
+    return nonNullable(walletData.chain) && nonNullable(target) && nonNullable(tracks.length) && nonNullable(account);
+  },
+  fn: ({ walletData, account, target, tracks, activeTracks, activeDelegations }, delegateData) => {
+    const shard = account!.account;
+    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+    const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
+    const amount = delegateData!.isUnchanged
+      ? activeDelegations[address].balance.toString()
+      : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
+
+    return transactionBuilder.buildEditDelegation({
+      chain: walletData.chain!,
+      accountId: shard.accountId,
+      balance: amount || '0',
+      conviction: conviction || 'None',
+      previousConviction: activeDelegations[address].conviction || 'None',
+      target: target?.address || '',
+      tracks,
+      undelegateTracks:
+        activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })].map(
+          Number,
+        ) || [],
+    });
+  },
+  target: $coreTx,
 });
 
 sample({
@@ -192,51 +230,12 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formChanged,
-  source: {
-    walletData: $walletData,
-    target: $target,
-    tracks: $tracks,
-    accounts: $accounts,
-    activeTracks: delegationAggregate.$activeTracks,
-    activeDelegations: $activeDelegations,
-  },
-  filter: ({ walletData, target, tracks }) => {
-    return Boolean(walletData.chain) && Boolean(target) && Boolean(tracks.length);
-  },
-  fn: ({ walletData, accounts, target, tracks, activeTracks, activeDelegations }, delegateData) => {
-    return accounts.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
-      const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
-      const amount = delegateData!.isUnchanged
-        ? activeDelegations[address].balance.toString()
-        : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
-
-      return transactionBuilder.buildEditDelegation({
-        chain: walletData.chain!,
-        accountId: shard.accountId,
-        balance: amount || '0',
-        conviction: conviction || 'None',
-        previousConviction: activeDelegations[address].conviction || 'None',
-        target: target?.address || '',
-        tracks,
-        undelegateTracks:
-          activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })].map(
-            Number,
-          ) || [],
-      });
-    });
-  },
-  target: $coreTxs,
-});
-
-sample({
-  clock: $transactions,
+  clock: $transaction,
   source: $api,
-  filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
-  fn: (api, transactions) => ({
+  filter: (api, transaction) => nonNullable(api) && nonNullable(transaction),
+  fn: (api, transaction) => ({
     api: api!,
-    transaction: transactions![0].wrappedTx,
+    transaction: transaction!.wrappedTx,
   }),
   target: getTransactionFeeFx,
 });
@@ -244,7 +243,7 @@ sample({
 sample({
   clock: $txWrappers,
   source: $api,
-  filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
+  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
 
@@ -264,11 +263,10 @@ sample({
 sample({
   clock: getTransactionFeeFx.doneData,
   source: {
-    transactions: $transactions,
     feeData: $feeData,
   },
-  fn: ({ transactions, feeData }, fee) => {
-    const totalFee = new BN(fee).muln(transactions!.length).toString();
+  fn: ({ feeData }, fee) => {
+    const totalFee = new BN(fee).muln(1).toString();
 
     return { ...feeData, fee, totalFee };
   },
@@ -316,7 +314,7 @@ sample({
     walletData: $walletData,
     activeDelegations: $activeDelegations,
   },
-  filter: ({ walletData }) => Boolean(walletData.chain) && Boolean(walletData.wallet),
+  filter: ({ walletData }) => nonNullable(walletData.chain) && nonNullable(walletData.wallet),
   fn: ({ walletData, activeDelegations }, { tracks, accounts }) => ({
     event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts, activeDelegations },
     tracks,
@@ -338,18 +336,21 @@ sample({
     feeData: $feeData,
     walletData: $walletData,
     tracks: $tracks,
-    shards: $accounts,
     target: $target,
-    accounts: $accounts,
+    account: formModel.$account,
     txWrappers: $txWrappers,
     delegateData: $delegateData,
     activeDelegations: $activeDelegations,
     isUnchanged: $isUnchanged,
-    coreTxs: $coreTxs,
+    coreTx: $coreTx,
     step: $step,
   },
-  filter: ({ walletData, delegateData, step }) =>
-    Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT),
+  filter: ({ walletData, delegateData, step, account }) =>
+    nonNullable(delegateData) &&
+    nonNullable(walletData.wallet) &&
+    nonNullable(walletData.chain) &&
+    nonNullable(account) &&
+    isStep(step, Step.INIT),
   fn: ({
     feeData,
     balances,
@@ -357,20 +358,21 @@ sample({
     txWrappers,
     tracks,
     target,
-    shards,
+    account,
     delegateData,
-    coreTxs,
+    coreTx,
     activeDelegations,
     isUnchanged,
   }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
+    const shard = account!.account;
+
+    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
 
     return {
-      event: shards.map((shard, index) => {
-        const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
-
-        return {
+      event: [
+        {
           chain: walletData.chain!,
           asset: asset!,
           tracks,
@@ -388,9 +390,9 @@ sample({
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
           locks: delegateData!.locks[shard.accountId],
-          coreTx: coreTxs[index],
-        };
-      }),
+          coreTx,
+        },
+      ],
       step: Step.CONFIRM,
     };
   },
@@ -405,26 +407,33 @@ sample({
   source: {
     delegateData: $delegateData,
     walletData: $walletData,
-    transactions: $transactions,
+    transaction: $transaction,
     txWrappers: $txWrappers,
-    accounts: $accounts,
+    account: formModel.$account,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.CONFIRM);
+  filter: ({ delegateData, walletData, transaction, step, account }) => {
+    return (
+      nonNullable(delegateData) &&
+      nonNullable(walletData) &&
+      nonNullable(transaction) &&
+      nonNullable(account) &&
+      isStep(step, Step.CONFIRM)
+    );
   },
-  fn: ({ delegateData, walletData, transactions, txWrappers, accounts }) => {
+  fn: ({ delegateData, walletData, transaction, txWrappers, account }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
       event: {
-        signingPayloads:
-          transactions?.map((tx, index) => ({
+        signingPayloads: [
+          {
             chain: walletData.chain!,
-            account: wrapper ? wrapper.proxyAccount : accounts[index],
+            account: wrapper ? wrapper.proxyAccount : account!.account,
             signatory: delegateData!.signatory,
-            transaction: tx.wrappedTx,
-          })) || [],
+            transaction: transaction!.wrappedTx,
+          },
+        ],
       },
       step: Step.SIGN,
     };
@@ -439,13 +448,13 @@ sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: $walletData,
-    transactions: $transactions,
+    transaction: $transaction,
     delegateData: $delegateData,
     accounts: $accounts,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transactions, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.SIGN);
+  filter: ({ delegateData, walletData, transaction, step }) => {
+    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transaction) && isStep(step, Step.SIGN);
   },
   fn: (delegateFlowData, signParams) => ({
     event: {
@@ -453,9 +462,9 @@ sample({
       chain: delegateFlowData.walletData.chain!,
       account: delegateFlowData.accounts[0],
       signatory: delegateFlowData.delegateData!.signatory,
-      coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
-      wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
+      coreTxs: [delegateFlowData.transaction!.coreTx],
+      wrappedTxs: [delegateFlowData.transaction!.wrappedTx],
+      multisigTxs: delegateFlowData.transaction!.multisigTx ? [delegateFlowData.transaction!.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
@@ -499,7 +508,7 @@ sample({
   }),
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({
@@ -535,25 +544,27 @@ sample({
   clock: txSaved,
   source: {
     walletData: $walletData,
-    coreTxs: $coreTxs,
+    coreTx: $coreTx,
     txWrappers: $txWrappers,
   },
-  filter: ({ walletData, coreTxs, txWrappers }) => {
-    return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
+  filter: ({ walletData, coreTx, txWrappers }) => {
+    return nonNullable(walletData.wallet) && nonNullable(coreTx) && nonNullable(txWrappers);
   },
-  fn: ({ walletData, coreTxs, txWrappers }) => {
+  fn: ({ walletData, coreTx, txWrappers }) => {
     const accounts = walletData.chain
       ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
       : [];
     const account = accounts.at(0);
     if (!account) throw new Error('Account not found');
 
-    return coreTxs!.map((coreTx) => ({
-      initiatorAccountId: account.accountId,
-      coreTx,
-      txWrappers,
-      createdAt: Date.now(),
-    }));
+    return [
+      {
+        initiatorAccountId: account.accountId,
+        coreTx: coreTx!,
+        txWrappers,
+        createdAt: Date.now(),
+      },
+    ];
   },
   target: basketOperations.addTransactions,
 });
@@ -568,7 +579,7 @@ export const editDelegationModel = {
   $step,
   $walletData,
   $initiatorWallet: $walletData.map((data) => data?.wallet || null),
-  $transactions,
+  $transactions: $transaction,
 
   events: {
     flowStarted,

@@ -31,14 +31,14 @@ const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: AnyAcco
 const formSubmitted = createEvent<{ tracks: number[]; accounts: AnyAccount[] }>();
 const trackToggled = createEvent<number>();
 const tracksSelected = createEvent<number[]>();
-const accountsChanged = createEvent<AnyAccount[]>();
+const accountChanged = createEvent<AnyAccount>();
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $votedTracks = createStore<string[]>([]).reset(formInitiated);
 const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
-const $accounts = createStore<AnyAccount[]>([]).reset(formInitiated);
+const $account = createStore<AnyAccount | null>(null).reset(formInitiated);
 const $availableAccounts = createStore<AnyAccount[]>([]).reset(formInitiated);
 const $delegate = createStore<DelegateAccount | null>(null).reset(formInitiated);
 const $isMaxWeightReached = createStore(false).reset(formInitiated);
@@ -114,25 +114,38 @@ sample({
 });
 
 sample({
-  clock: [votingAggregate.$activeWalletVotes, $accounts],
+  clock: formInitiated,
+  source: $availableAccounts,
+  filter: (accounts) => accounts.length > 0,
+  fn: (accounts) => accounts.at(0)!,
+  target: $account,
+});
+
+sample({
+  clock: accountChanged,
+  target: $account,
+});
+
+sample({
+  clock: [votingAggregate.$activeWalletVotes, $account],
   source: {
     tracks: $tracks,
     votes: votingAggregate.$activeWalletVotes,
-    accounts: $accounts,
+    account: $account,
     delegate: $delegate,
   },
-  fn: ({ tracks, accounts, votes, delegate }) => {
+  fn: ({ tracks, votes, account, delegate }) => {
     const activeTracks = new Set<string>();
     const otherDelegatedTracks = new Set<string>();
     const currentDelegatedTracks = new Set<number>();
-    const accountsIds = new Set<AccountId>(accounts.map((a) => a.accountId));
+    const accountIds = new Set<AccountId>(account ? [account.accountId] : []);
 
     const votesToRemove: VotesToRemove[] = [];
 
     for (const [voterAccountId, voteList] of Object.entries(votes)) {
       const accountId = voterAccountId as AccountId;
 
-      if (!accountsIds.has(accountId as AccountId)) continue;
+      if (!accountIds.has(accountId as AccountId)) continue;
 
       for (const [track, vote] of Object.entries(voteList)) {
         const isDelegateExist = votingService.isDelegating(vote) && delegate;
@@ -185,19 +198,6 @@ sample({
     return [...tracks, track];
   },
   target: $tracks,
-});
-
-sample({
-  clock: formInitiated,
-  source: $availableAccounts,
-  filter: (accounts) => accounts.length > 0,
-  fn: (accounts) => [accounts.at(0)!],
-  target: $accounts,
-});
-
-sample({
-  clock: accountsChanged,
-  target: $accounts,
 });
 
 sample({
@@ -261,7 +261,7 @@ export const selectTracksModel = {
     return [...adminTracks, ...governanceTracks, ...treasuryTracks, ...fellowshipTracks];
   }),
 
-  $accounts,
+  $account,
   $availableAccounts,
   $accountsBalances,
   $chain: delegationAggregate.$network.map((network) => network?.chain || null),
@@ -272,7 +272,7 @@ export const selectTracksModel = {
     formInitiated,
     trackToggled,
     tracksSelected,
-    accountsChanged,
+    accountChanged,
   },
 
   output: {
