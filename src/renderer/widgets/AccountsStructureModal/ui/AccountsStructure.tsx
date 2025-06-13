@@ -67,7 +67,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         source: child.account.id,
         target: node.account.id,
       });
-      
+
       // Process child node in next level
       processNodeForMatrix(child, level + 1);
     }
@@ -109,11 +109,13 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
     const newEdges: Edge[] = [];
 
     // Create nodes from matrix
-    matrix.forEach((level, levelIndex) => {
+    for (const level of matrix) {
+      const levelIndex = matrix.indexOf(level);
       const levelHeight = level.length * NODE_SPACING;
       const startY = -levelHeight / 2; // Start from the top of the centered group
 
-      level.forEach((nodeData, nodeIndex) => {
+      for (const nodeData of level) {
+        const nodeIndex = level.indexOf(nodeData);
         const x = -levelIndex * LEVEL_SPACING;
         const y = startY + nodeIndex * NODE_SPACING;
 
@@ -128,11 +130,11 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           sourcePosition: Position.Left,
           targetPosition: Position.Right,
         });
-      });
-    });
+      }
+    }
 
     // Create edges from connections
-    connections.forEach(connection => {
+    for (const connection of connections) {
       newEdges.push({
         id: `e${connection.source}-${connection.target}`,
         source: connection.source,
@@ -150,7 +152,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           color: '#363643',
         },
       });
-    });
+    }
 
     setNodes(newNodes);
     setEdges(newEdges);
@@ -165,7 +167,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         includeHiddenNodes: true,
       });
     }, 0);
-  }, [graph, setNodes, setEdges, account.id, fitView]);
+  }, [graph, setNodes, setEdges, account.id, fitView, matrix, connections]);
 
   return (
     <ReactFlow
