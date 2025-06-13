@@ -4,10 +4,10 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Balance, type Chain, type ChainId, type Connection, TransactionType, type Wallet } from '@/shared/core';
-import { type AnyAccount, transactionService as t } from '@/domains/network';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
@@ -50,22 +50,23 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chainId];
 
-  const wrapped = await t.wrapLegacyTransaction(transaction.coreTx, transaction.route, api);
-
   return {
     api,
     chain,
     wallets,
     id: transaction.id,
-    asset: chain.assets[0],
-    account: account!,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     aye: coreTx.args.aye,
     poll: coreTx.args.poll,
     rank: coreTx.args.rank,
     fee: new BN(fee),
-    signatory: account!,
-    wrappedTransactions: wrapped,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: [],
   } satisfies CollectiveVoteConfirm;
 });
 
@@ -98,8 +99,9 @@ sample({
 
 sample({
   clock: prepareVoteFx.doneData,
+  filter: nonNullable,
   fn: data => [data],
-  target: fellowshipVotingConfirmModel.events.addConfirms,
+  target: fellowshipVotingConfirmModel.init,
 });
 
 // salary induct
@@ -120,16 +122,15 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
     chain,
     wallets,
     id: transaction.id,
-    asset: chain.assets[0],
-    account: account!,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: [],
   } satisfies CollectiveSalaryInductConfirm;
 });
 
@@ -162,8 +163,9 @@ sample({
 
 sample({
   clock: prepareSalaryInductFx.doneData,
+  filter: nonNullable,
   fn: data => [data],
-  target: fellowshipSalaryInductConfirmModel.events.addConfirms,
+  target: fellowshipSalaryInductConfirmModel.init,
 });
 
 // salary request
@@ -184,16 +186,15 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
     chain,
     wallets,
     id: transaction.id,
-    asset: chain.assets[0],
-    account: account!,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
   } satisfies CollectiveSalaryRequestConfirm;
 });
 
@@ -226,8 +227,9 @@ sample({
 
 sample({
   clock: prepareSalaryRequestFx.doneData,
+  filter: nonNullable,
   fn: data => [data],
-  target: fellowshipSalaryRequestConfirmModel.events.addConfirms,
+  target: fellowshipSalaryRequestConfirmModel.init,
 });
 
 // salary payout
@@ -248,17 +250,16 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
     chain,
     wallets,
     id: transaction.id,
-    asset: chain.assets[0],
-    account: account!,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
-    signatory: null,
     beneficiary: coreTx.args.beneficiary,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
   } satisfies CollectiveSalaryPayoutConfirm;
 });
 
@@ -291,8 +292,9 @@ sample({
 
 sample({
   clock: prepareSalaryPayoutFx.doneData,
+  filter: nonNullable,
   fn: data => [data],
-  target: fellowshipSalaryPayoutConfirmModel.events.addConfirms,
+  target: fellowshipSalaryPayoutConfirmModel.init,
 });
 
 // evidence
@@ -313,18 +315,17 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
     chain,
     wallets,
     id: transaction.id,
-    asset: chain.assets[0],
-    account: account!,
+    asset: getNativeAsset(chain.assets),
+    initiator: account!,
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
-    signatory: null,
     wish: coreTx.args.wish,
     evidence: coreTx.args.evidence,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
   } satisfies CollectiveSubmitEvidenceConfirm;
 });
 
@@ -358,7 +359,7 @@ sample({
 sample({
   clock: prepareEvidencePayoutFx.doneData,
   fn: data => [data],
-  target: fellowshipSubmitEvidenceConfirmModel.events.addConfirms,
+  target: fellowshipSubmitEvidenceConfirmModel.init,
 });
 
 // setting up env
