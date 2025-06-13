@@ -30,8 +30,9 @@ import {
   revokeDelegationConfirmModel,
   voteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
+import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
-import { type DelegateInput, type RevokeDelegationInput } from '../types/confirm';
+import { type DelegateInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -175,6 +176,9 @@ const prepareRevokeDelegationDataFx = createEffect(
       chains,
       accounts,
     );
+
+    assert(account, 'Signing account not found');
+
     const asset = chain.assets[0];
 
     const transferable = transferableAmount(
@@ -200,20 +204,26 @@ const prepareRevokeDelegationDataFx = createEffect(
       asset,
       transferable,
 
-      account: account!,
       balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
       conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-      target: delegation ? toAddress(delegation.data.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
+      delegate: delegation
+        ? toAddress(delegation.data.target, { prefix: chain.addressPrefix })
+        : coreTxs[0].args.target,
       tracks: coreTxs.map((t: Transaction) => t.args.track),
-      description: '',
       locks,
 
-      signatory: null,
+      initiator: account,
+      signatory: account,
+      route: [account],
+
+      tx: transaction.coreTx,
+      coreTx: transaction.coreTx,
+      multisigTx: null,
 
       fee,
       totalFee: '0',
       multisigDeposit: '0',
-    } satisfies RevokeDelegationInput;
+    } satisfies RevokeDelegationConfirm;
   },
 );
 
@@ -454,7 +464,7 @@ sample({
 sample({
   clock: prepareRevokeDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: revokeDelegationConfirmModel.formInitiated,
+  target: revokeDelegationConfirmModel.init,
 });
 
 export const confirm = {

@@ -24,6 +24,7 @@ import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/fe
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { revokeDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 import { type FeeData, type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
@@ -262,7 +263,6 @@ sample({
     return revokeDelegationData.length > 0 && !!walletData.wallet && !!walletData.chain;
   },
   fn: ({ feeData, balances, walletData, txWrappers, revokeDelegationData, delegations, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
 
     return {
@@ -285,25 +285,31 @@ sample({
             ),
           ),
 
-          ...revokeData!,
+          ...revokeData,
           ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [revokeData.account!] }),
+          initiator: revokeData.account,
+          signatory: revokeData.account,
+          delegate: revokeData.target,
           locks: revokeData.locks[revokeData.account!.accountId],
+          route: txWrappers.map((wrapper) =>
+            wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+          ),
           coreTx: coreTxs[0],
-        };
+          tx: coreTxs[0],
+          multisigTx: null,
+        } satisfies RevokeDelegationConfirm;
       }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     revokeDelegationData: $revokeDelegationData,
     walletData: $walletData,

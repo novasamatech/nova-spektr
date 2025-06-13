@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
-import { type Address, type ProxyTxWrapper, WrapperKind } from '@/shared/core';
+import { type Address } from '@/shared/core';
 import {
   Step,
   ZERO_BALANCE,
@@ -27,6 +27,7 @@ import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/fe
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { revokeDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 import { type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
@@ -186,16 +187,21 @@ sample({
     balances: balanceModel.$balances,
     fee: $fee,
     chain: networkSelectorModel.$governanceChain,
-    txWrappers: $txWrappers,
     revokeDelegationData: $revokeDelegationData,
     delegations: delegationAggregate.$activeDelegations,
     coreTx: $coreTx,
+    tx: $tx,
+    route: $route,
+    multisigTx: $multisigTx,
     initiator: $initiator,
     signatory: $signatory,
     delegate: $delegate,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ chain, revokeDelegationData, initiator, signatory, delegate }) =>
+  filter: ({ coreTx, tx, chain, revokeDelegationData, initiator, signatory, delegate }) =>
+    nonNullable(coreTx) &&
+    nonNullable(tx) &&
+    nonNullable(signatory) &&
     nonNullable(chain) &&
     nonNullable(revokeDelegationData) &&
     nonNullable(initiator) &&
@@ -205,16 +211,17 @@ sample({
     fee,
     balances,
     chain,
-    txWrappers,
     revokeDelegationData,
     delegations,
     coreTx,
+    route,
+    tx,
+    multisigTx,
     multisigDeposit,
     initiator,
     signatory,
     delegate,
   }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(chain!.assets)!;
     const delegation = delegations[delegate!];
     const delegationData = Object.values(delegation)[0];
@@ -229,30 +236,31 @@ sample({
           transferable: transferableAmount(
             balanceUtils.getBalance(balances, initiator!.accountId, chain!.chainId, asset.assetId.toString()),
           ),
-          ...revokeDelegationData!,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [initiator!] }),
-          account: initiator!,
-          signatory,
-          target: delegate!,
+          initiator: initiator!,
+          signatory: signatory!,
+          delegate: delegate!,
+          tracks: revokeDelegationData!.tracks,
           locks: revokeDelegationData!.locks[initiator!.accountId],
           coreTx: coreTx!,
+          route,
+          tx: tx!,
+          multisigTx,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit,
-        },
+        } satisfies RevokeDelegationConfirm,
       ],
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,
