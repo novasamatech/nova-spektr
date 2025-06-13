@@ -1,7 +1,7 @@
 import '@xyflow/react/dist/style.css';
 
 import { useUnit } from 'effector-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,8 +10,11 @@ import { Modal } from '@/shared/ui-kit';
 import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
-import { AccountsStructure } from './AccountsStructure';
 import { ChainSelector } from './ChainSelector';
+
+const AccountsStructure = lazy(() =>
+  import('./AccountsStructure').then((module) => ({ default: module.AccountsStructure })),
+);
 
 type Props = {
   account: AnyAccount;
@@ -57,7 +60,11 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
             <ChainSelector account={account} />
           </div>
 
-          {graph && <AccountsStructure account={account} graph={graph} />}
+          {graph && isOpen && (
+            <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
+              <AccountsStructure account={account} graph={graph} />
+            </Suspense>
+          )}
         </div>
       </Modal.Content>
       <Modal.Trigger>
