@@ -1,6 +1,8 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransaction, basketOperations } from '@/aggregates/basket-operations';
@@ -44,22 +46,25 @@ sample({
   source: {
     transactions: $transactions,
     chains: networkModel.$chains,
-    wallets: walletModel.$wallets,
+    accounts: accounts.$list,
   },
   filter: ({ transactions }) => Boolean(transactions) && transactions.length > 0,
-  fn: ({ transactions, wallets, chains }) => {
-    const signingPayloads = transactions.map((tx: BasketTransaction) => {
-      const accounts = walletUtils.getAccountsBy(wallets, account => {
-        return account.accountId === tx.initiatorAccountId && account.accountId === tx.coreTx.accountId;
-      });
+  fn: ({ transactions, accounts, chains }) => {
+    // TODO implement wrapping in basket context. Now basket only supports PV so it's not necessary.
+    const signingPayloads = transactions
+      .map(tx => {
+        const account = accounts.find(a => a.accountId === tx.initiatorAccountId);
+        const chain = chains[tx.coreTx.chainId];
+        if (nullable(account) || nullable(chain)) return null;
 
-      return {
-        chain: chains[tx.coreTx.chainId],
-        account: accounts[0],
-        transaction: tx.coreTx,
-        signatory: null,
-      };
-    });
+        return {
+          chain,
+          account,
+          transaction: tx.coreTx,
+          signatory: null,
+        };
+      })
+      .filter(nonNullable);
 
     return {
       event: { signingPayloads },

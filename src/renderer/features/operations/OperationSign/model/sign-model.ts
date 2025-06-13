@@ -111,6 +111,7 @@ const $signerWallet = combine(
 sample({
   clock: formInitiated,
   source: networkModel.$apis,
+  filter: (_, { signingPayloads }) => signingPayloads.length > 0,
   fn: (apis, input) => ({ input, apis }),
   target: splitTxsFx,
 });
