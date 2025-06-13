@@ -35,12 +35,64 @@ type AccountNodeData = {
 const LEVEL_SPACING = 400;
 const NODE_SPACING = 115;
 
+const createNode = (
+  nodeData: AccountNodeData,
+  levelIndex: number,
+  nodeIndex: number,
+  levelHeight: number,
+): Node<AccountNodeData> => {
+  const startY = -levelHeight / 2;
+  const x = -levelIndex * LEVEL_SPACING;
+  const y = startY + nodeIndex * NODE_SPACING;
+
+  return {
+    id: nodeData.account.id,
+    type: 'accountNode',
+    data: {
+      account: nodeData.account,
+      isSelected: nodeData.isSelected,
+    },
+    position: { x, y },
+    sourcePosition: Position.Left,
+    targetPosition: Position.Right,
+  };
+};
+
+const createEdge = (connection: { source: string; target: string }): Edge => ({
+  id: `e${connection.source}-${connection.target}`,
+  source: connection.source,
+  target: connection.target,
+  type: 'smoothstep',
+  animated: false,
+  style: {
+    stroke: '#363643',
+    strokeWidth: 2,
+  },
+  markerEnd: {
+    type: MarkerType.Arrow,
+    width: 20,
+    height: 20,
+    color: '#363643',
+  },
+});
+
+const createNodesFromMatrix = (matrix: AccountNodeData[][]): Node<AccountNodeData>[] => {
+  return matrix.reduce((acc, level, levelIndex) => {
+    const levelHeight = level.length * NODE_SPACING;
+    const levelNodes = level.map((nodeData, nodeIndex) => createNode(nodeData, levelIndex, nodeIndex, levelHeight));
+    return [...acc, ...levelNodes];
+  }, [] as Node<AccountNodeData>[]);
+};
+
+const createEdgesFromConnections = (connections: { source: string; target: string }[]): Edge[] => {
+  return connections.map(createEdge);
+};
+
 const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
-  // Memoize matrix and connections calculations
   const { matrix, connections } = useMemo(() => {
     const matrix: AccountNodeData[][] = [];
     const connections: { source: string; target: string }[] = [];
@@ -103,69 +155,20 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   console.log('Matrix:', matrix);
   console.log('Connections:', connections);
 
-  // Stringified logs for sharing
-  // console.log('Stringified Graph:', JSON.stringify(Array.from(graph.entries()), null, 2));
-  // console.log('Stringified Matrix:', JSON.stringify(matrix, null, 2));
-  // console.log('Stringified Connections:', JSON.stringify(connections, null, 2));
-
   useEffect(() => {
-    // Create nodes from matrix
-    const nodes = matrix.reduce((acc, level, levelIndex) => {
-      const levelHeight = level.length * NODE_SPACING;
-      const startY = -levelHeight / 2; // Start from the top of the centered group
-
-      const levelNodes = level.map((nodeData, nodeIndex) => {
-        const x = -levelIndex * LEVEL_SPACING;
-        const y = startY + nodeIndex * NODE_SPACING;
-
-        return {
-          id: nodeData.account.id,
-          type: 'accountNode',
-          data: {
-            account: nodeData.account,
-            isSelected: nodeData.isSelected,
-          },
-          position: { x, y },
-          sourcePosition: Position.Left,
-          targetPosition: Position.Right,
-        };
-      });
-
-      return [...acc, ...levelNodes];
-    }, [] as Node<AccountNodeData>[]);
-
-    // Create edges from connections
-    const edges = connections.map((connection) => ({
-      id: `e${connection.source}-${connection.target}`,
-      source: connection.source,
-      target: connection.target,
-      type: 'smoothstep',
-      animated: false,
-      style: {
-        stroke: '#363643',
-        strokeWidth: 2,
-      },
-      markerEnd: {
-        type: MarkerType.Arrow,
-        width: 20,
-        height: 20,
-        color: '#363643',
-      },
-    }));
+    const nodes = createNodesFromMatrix(matrix);
+    const edges = createEdgesFromConnections(connections);
 
     setNodes(nodes);
     setEdges(edges);
 
-    // Focus on the selected account node after nodes are set
-    setTimeout(() => {
-      fitView({
-        nodes: [{ id: account.id }],
-        padding: 0.5,
-        maxZoom: 1,
-        minZoom: 0.25,
-        includeHiddenNodes: true,
-      });
-    }, 0);
+    fitView({
+      nodes: [{ id: account.id }],
+      padding: 0.5,
+      maxZoom: 1,
+      minZoom: 0.25,
+      includeHiddenNodes: true,
+    });
   }, [graph, setNodes, setEdges, account.id, fitView, matrix, connections]);
 
   return (
