@@ -97,10 +97,13 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
     const matrix: AccountNodeData[][] = [];
     const connections: { source: string; target: string }[] = [];
     const visited = new Set<string>();
+    const nodeLevels = new Map<string, number>();
+    const processedConnections = new Set<string>();
 
     const processNodeForMatrix = (node: AccountNode, level: number) => {
       if (visited.has(node.account.id)) return;
       visited.add(node.account.id);
+      nodeLevels.set(node.account.id, level);
 
       // Ensure level array exists
       if (!matrix[level]) {
@@ -115,14 +118,41 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
 
       // Process children and add connections
       for (const child of node.children) {
-        // Add connection for each parent-child relationship
-        connections.push({
-          source: child.account.id,
-          target: node.account.id,
-        });
+        const connectionId = `${child.account.id}-${node.account.id}`;
 
-        // Process child node in next level
-        processNodeForMatrix(child, level + 1);
+        // Always add the connection if we haven't processed it yet
+        if (!processedConnections.has(connectionId)) {
+          connections.push({
+            source: child.account.id,
+            target: node.account.id,
+          });
+          processedConnections.add(connectionId);
+        }
+
+        // Check if child is already in a level
+        const childLevel = nodeLevels.get(child.account.id);
+        if (childLevel !== undefined) {
+          // If child is in a level <= current level, we need to move it to a higher level
+          if (childLevel <= level) {
+            const newLevel = level + 1;
+            // Remove child from its current level
+            matrix[childLevel] = matrix[childLevel].filter((n) => n.account.id !== child.account.id);
+            // Add child to new level
+            if (!matrix[newLevel]) {
+              matrix[newLevel] = [];
+            }
+            matrix[newLevel].push({
+              account: child.account,
+              isSelected: child.account.id === account.id,
+            });
+            nodeLevels.set(child.account.id, newLevel);
+            // Recursively process the child's children with the new level
+            processNodeForMatrix(child, newLevel);
+          }
+        } else {
+          // Process child node in next level
+          processNodeForMatrix(child, level + 1);
+        }
       }
     };
 
