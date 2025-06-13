@@ -15,7 +15,12 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxWrappers,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -48,16 +53,12 @@ const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const stakingSet = createEvent<StakingMap>();
 
-const multisigDepositChanged = createEvent<string>();
-
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
 const $unstakeBalanceRange = createStore<string | string[]>(ZERO_BALANCE);
-
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
@@ -428,6 +429,19 @@ sample({
   target: $unstakeBalanceRange,
 });
 
+// Multisig deposit calculation
+const $multisigThreshold = $route.map((route) => {
+  const multisig = route.find(accountUtils.isMultisigAccount);
+  if (!multisig) return null;
+
+  return multisig.threshold;
+});
+
+const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
+});
+
 // Submit
 
 sample({
@@ -444,7 +458,7 @@ sample({
   filter: ({ network, transaction, selectedSignatory }) => {
     return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory);
   },
-  fn: ({ network, transaction, selectedSignatory, multisigTx, ...fee }, formData) => {
+  fn: ({ network, transaction, selectedSignatory, multisigTx, multisigDeposit, ...fee }, formData) => {
     const { initiator, ...rest } = formData;
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
@@ -455,6 +469,7 @@ sample({
         ...fee,
         totalFee: fee.fee,
         amount,
+        multisigDeposit: multisigDeposit.toString(),
         initiator: initiator!,
         signatory: selectedSignatory!,
       },
@@ -498,7 +513,6 @@ export const formModel = {
 
   events: {
     formInitiated,
-    multisigDepositChanged,
   },
   output: {
     formSubmitted,
