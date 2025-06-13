@@ -16,7 +16,7 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -146,14 +146,6 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
   },
   validateOn: ['submit'],
-});
-
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
 });
 
 // Computed
@@ -398,7 +390,6 @@ sample({
 export const formModel = {
   form,
 
-  $txWrappers,
   $proxyWallet,
   $signatories,
   $destinationAccounts,

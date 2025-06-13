@@ -196,21 +196,16 @@ sample({
 
 sample({
   clock: txSaved,
-  source: {
-    store: $unstakeStore,
-    coreTxs: $coreTxs,
-    txWrappers: formModel.$txWrappers,
-  },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
+  source: $coreTxs,
+  filter: nonNullable,
+  fn: (coreTxs) => {
+    return (coreTxs ?? []).map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
-    })),
+    }));
+  },
   target: basketOperations.addTransactions,
 });
 

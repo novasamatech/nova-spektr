@@ -4,7 +4,7 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Balance, type Chain, type ChainId, type Connection, TransactionType, type Wallet } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, transactionService as t } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -50,6 +50,8 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
   const coreTx = basketOperationsService.getCoreTx(transaction);
   const api = apis[chainId];
 
+  const wrapped = await t.wrapLegacyTransaction(transaction.coreTx, transaction.route, api);
+
   return {
     api,
     chain,
@@ -62,12 +64,8 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
     poll: coreTx.args.poll,
     rank: coreTx.args.rank,
     fee: new BN(fee),
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    signatory: account!,
+    wrappedTransactions: wrapped,
   } satisfies CollectiveVoteConfirm;
 });
 

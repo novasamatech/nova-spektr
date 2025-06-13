@@ -13,7 +13,7 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -215,14 +215,6 @@ const $coreTx = combine(
   },
 );
 
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
-});
-
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -232,11 +224,10 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $proxiedAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
-const $isProxy = $proxiedAccount.map((account) => nonNullable(account));
-const $isMultisig = $route.map((route) =>
-  nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
-);
+const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount));
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount));
+const $isProxy = $proxiedAccount.map(nonNullable);
+const $isMultisig = $multisigAccount.map(nonNullable);
 
 const $proxyBalance = combine(
   {
@@ -360,8 +351,8 @@ export const formModel = {
 
   $api,
   $coreTx,
-  $txWrappers,
   $networkStore,
+  $multisigAccount,
   $isMultisig,
   $canSubmit,
 

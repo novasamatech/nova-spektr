@@ -88,21 +88,14 @@ const txSaved = createEvent();
 
 sample({
   clock: txSaved,
-  source: {
-    accounts: $availableAccounts,
-    transactions: $coreTxs,
-  },
-  fn: ({ accounts, transactions }) => {
-    if (nullable(accounts) || nullable(transactions)) return [];
-
-    return accounts.map((account, index) => {
-      return {
-        initiatorAccountId: account.accountId,
-        coreTx: transactions[index],
-        txWrappers: [],
-        createdAt: Date.now(),
-      };
-    });
+  source: $coreTxs,
+  fn: (transactions) => {
+    return transactions.map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
+      coreTx,
+      route: [],
+      createdAt: Date.now(),
+    }));
   },
   target: basketOperations.addTransactions,
 });

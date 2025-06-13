@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
@@ -216,23 +216,19 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $restakeStore,
     coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
-    const account = store!.initiator;
-    if (!account) throw new Error('Account not found');
+  filter: ({ coreTx }) => nonNullable(coreTx),
+  fn: ({ coreTx, route }) => {
+    if (nullable(coreTx)) return [];
 
     return [
       {
-        coreTx: coreTx!,
-        txWrappers,
+        coreTx,
+        route,
         groupId: Date.now(),
-        initiatorAccountId: account.accountId,
+        initiatorAccountId: coreTx.accountId,
         createdAt: Date.now(),
       },
     ];

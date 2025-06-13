@@ -6,7 +6,7 @@ import { type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nonNullableMap, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   type AggregatedReferendum,
@@ -43,16 +43,16 @@ sample({
   source: {
     initiator: voteForm.form.fields.initiator.$value,
     coreTx: voteForm.$coreTx,
-    txWrappers: voteForm.$txWrappers,
+    route: voteForm.$route,
   },
   filter: nonNullableMap,
-  fn: ({ initiator, coreTx, txWrappers }) => {
+  fn: ({ initiator, coreTx, route }) => {
     if (!initiator || !coreTx) return [];
 
-    const tx = {
+    const tx: BasketTransactionDraft = {
       initiatorAccountId: initiator.accountId,
       coreTx,
-      txWrappers,
+      route,
       createdAt: Date.now(),
     };
 

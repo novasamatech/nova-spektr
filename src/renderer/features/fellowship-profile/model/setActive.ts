@@ -46,7 +46,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+const { $fee, $wrappedTx } = createTxStore({
   $active: flow.status,
   $api,
   $activeWallet: $wallet,
@@ -118,35 +118,24 @@ sample({
 // Basket
 
 const saveToBasket = createEvent();
-const basketSaveRequestCreated = createEvent<BasketTransactionDraft | null>();
 
 sample({
   clock: saveToBasket,
-  source: {
-    transactions: $wrappedTx,
-    account: $account,
-    txWrappers: $txWrappers,
-  },
-  fn: ({ account, transactions, txWrappers }) => {
-    if (nullable(account) || nullable(transactions)) {
-      return null;
+  source: $wrappedTx,
+  fn: transactions => {
+    if (nullable(transactions)) {
+      return [];
     }
 
     const tx: BasketTransactionDraft = {
-      initiatorAccountId: account.accountId,
+      initiatorAccountId: transactions.coreTx.accountId,
       coreTx: transactions.coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     };
 
-    return tx;
+    return [tx];
   },
-  target: basketSaveRequestCreated,
-});
-
-sample({
-  clock: basketSaveRequestCreated.filter({ fn: nonNullable }),
-  fn: tx => [tx],
   target: basketOperations.addTransactions,
 });
 
@@ -157,7 +146,6 @@ export const setActive = {
   $wallet,
   $account,
   $wrappedTx,
-  $txWrappers,
   sign,
   saveToBasket,
 };

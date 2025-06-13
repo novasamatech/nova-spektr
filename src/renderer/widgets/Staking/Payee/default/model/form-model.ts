@@ -14,13 +14,12 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { type FormInput } from '../lib/types';
 
 export type FormParams = {
@@ -213,14 +212,6 @@ const $coreTx = combine(
   },
 );
 
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
-});
-
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -348,7 +339,6 @@ export const formModel = {
   $tx,
   $multisigTx,
   $coreTx,
-  $txWrappers,
   $route,
   $fee,
   $pendingFee,

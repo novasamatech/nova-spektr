@@ -55,7 +55,7 @@ const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, a
   return wallets.find(w => w.id === account.walletId) ?? null;
 });
 
-const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+const { $fee, $wrappedTx } = createTxStore({
   $active: flow.status,
   $api,
   $activeWallet: $votingWallet,
@@ -134,10 +134,9 @@ sample({
   source: {
     existing: basketOperations.$list,
     account: votingStatus.$votingAccount,
-    txWrappers: $txWrappers,
     coreTx: $coreTx,
   },
-  fn: ({ existing, account, txWrappers, coreTx }) => {
+  fn: ({ existing, account, coreTx }) => {
     if (nullable(account) || nullable(coreTx)) {
       return {
         add: [],
@@ -157,7 +156,7 @@ sample({
     const newTransaction: BasketTransactionDraft = {
       initiatorAccountId: account.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     };
 
@@ -200,7 +199,6 @@ export const voting = {
   flow,
   $fee,
   $wrappedTx,
-  $txWrappers,
   sign,
   saveToBasket,
   removeFromBasket,
