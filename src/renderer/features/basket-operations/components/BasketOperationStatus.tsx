@@ -2,7 +2,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
-import { type ChainError } from '../../../aggregates/basket-operations/types';
+import { type ChainError } from '@/aggregates/basket-operations';
 
 type Props = {
   validating?: boolean;
