@@ -62,18 +62,6 @@ const createEdge = (connection: { source: string; target: string }): Edge => ({
   id: `e${connection.source}-${connection.target}`,
   source: connection.source,
   target: connection.target,
-  type: 'smoothstep',
-  animated: false,
-  style: {
-    stroke: '#363643',
-    strokeWidth: 2,
-  },
-  markerEnd: {
-    type: MarkerType.Arrow,
-    width: 20,
-    height: 20,
-    color: '#363643',
-  },
 });
 
 const createNodesFromMatrix = (matrix: AccountNodeData[][]): Node<AccountNodeData>[] => {
@@ -193,9 +181,9 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
     setEdges(edges);
 
     fitView({
-      nodes: [{ id: account.id }],
+      nodes: [account],
       padding: 0.5,
-      maxZoom: 1,
+      maxZoom: 0.75,
       minZoom: 0.25,
       includeHiddenNodes: true,
     });
@@ -211,6 +199,17 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       nodesConnectable={false}
       elementsSelectable={false}
       proOptions={{ hideAttribution: true }}
+      defaultEdgeOptions={{
+        type: 'smoothstep',
+        animated: false,
+        style: { stroke: '#363643', strokeWidth: 2 },
+        markerEnd: {
+          type: MarkerType.Arrow,
+          width: 20,
+          height: 20,
+          color: '#363643',
+        },
+      }}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
     >
