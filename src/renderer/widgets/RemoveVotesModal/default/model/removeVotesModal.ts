@@ -97,7 +97,7 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $initiator, ({ chain, votes }, account) => {
+const $coreTx = combine(flow.state, $selectedSignatory, ({ chain, votes }, account) => {
   if (nullable(account) || nullable(chain) || nullable(votes)) return null;
 
   return transactionBuilder.buildRemoveVotes({

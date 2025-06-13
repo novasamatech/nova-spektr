@@ -3,8 +3,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { type AccountVote, type Asset } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 export type VoteConfirm = TxConfirmInfo & {
@@ -16,7 +16,7 @@ export type VoteConfirm = TxConfirmInfo & {
 const confirmStore = createTransactionConfirmStore<VoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operationsModel.$multisigTransactions,
+  $multisigTransactions: selectedWalletMultisigOperations.$list,
 });
 
 export const confirmModel = {

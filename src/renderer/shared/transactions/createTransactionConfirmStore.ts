@@ -1,15 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, restore, sample } from 'effector';
 
-import {
-  type Chain,
-  type ChainId,
-  type ID,
-  type MultisigTransaction,
-  type Transaction,
-  type Wallet,
-} from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type Chain, type ChainId, type ID, type Transaction, type Wallet } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { walletUtils } from '@/entities/wallet';
 
@@ -35,7 +29,7 @@ export type ConfirmItem<Input extends TxConfirmInfo = TxConfirmInfo> = {
 type Params = {
   $wallets: Store<Wallet[]>;
   $apis: Store<Record<ChainId, ApiPromise> | null>;
-  $multisigTransactions: Store<MultisigTransaction[]>;
+  $multisigTransactions: Store<MultisigOperation[]>;
 };
 
 export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
@@ -53,28 +47,36 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 
   const $store = restore<Input[]>(init, []);
 
-  const $confirmMap = combine($store, $wallets, (store, wallets) => {
-    if (!wallets.length) return {};
+  const $confirms = combine($store, $wallets, (store, wallets): ConfirmItem<Input>[] => {
+    if (!wallets.length) return [];
 
-    return store.reduce<ConfirmMap>((acc, meta, index) => {
-      const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
-      if (!initiatorWallet) return acc;
+    return store
+      .map((meta) => {
+        const initiatorWallet = walletUtils.getWalletById(wallets, meta.initiator.walletId);
+        if (!initiatorWallet) return null;
 
-      const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
+        const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
 
-      acc[meta.id ?? index] = {
-        meta,
-        wallets: {
-          signatory: signatoryWallet || null,
-          initiator: initiatorWallet,
-        },
-      };
+        return {
+          meta,
+          wallets: {
+            signatory: signatoryWallet || null,
+            initiator: initiatorWallet,
+          },
+        };
+      })
+      .filter(nonNullable);
+  });
+
+  const $confirmMap = $confirms.map((confirms) => {
+    if (!confirms.length) return {};
+
+    return confirms.reduce<ConfirmMap>((acc, confirm, index) => {
+      acc[confirm.meta.id ?? index] = confirm;
 
       return acc;
     }, {});
   });
-
-  const $confirms = $confirmMap.map((confirmMap) => Object.values(confirmMap));
 
   sample({
     clock: addConfirms,
@@ -122,8 +124,8 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   );
 
   return {
-    $confirms,
     $confirmMap,
+    $confirms,
     $isMultisigExists,
 
     init,

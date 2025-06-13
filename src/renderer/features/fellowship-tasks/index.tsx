@@ -11,7 +11,6 @@ export { requestPromotionTaskActionSlot } from './components/tasks/RequestPromot
 export { requestRetentionATaskActionSlot } from './components/tasks/RequestRetention';
 export { requestSalaryTaskActionSlot } from './components/tasks/RequestSalary';
 export { requestSalaryInductTaskActionSlot } from './components/tasks/RequestSalaryInduct';
-export { votes } from './model/voting';
 export { tasksService } from './service';
 
 export { fellowshipTasksFeature };
