@@ -110,9 +110,12 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
 
     // Create nodes from matrix
     matrix.forEach((level, levelIndex) => {
+      const levelHeight = level.length * NODE_SPACING;
+      const startY = -levelHeight / 2; // Start from the top of the centered group
+
       level.forEach((nodeData, nodeIndex) => {
         const x = -levelIndex * LEVEL_SPACING;
-        const y = nodeIndex * NODE_SPACING;
+        const y = startY + nodeIndex * NODE_SPACING;
 
         newNodes.push({
           id: nodeData.account.id,
