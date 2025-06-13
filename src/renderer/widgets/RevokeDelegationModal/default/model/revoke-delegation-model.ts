@@ -39,7 +39,6 @@ const txsConfirmed = createEvent();
 const $step = restore(stepChanged, Step.NONE);
 
 const $multisigDeposit = createStore(ZERO_BALANCE);
-const $revokeDelegationData = createStore<RevokeDelegationData | null>(null);
 
 type DepositParams = {
   api: ApiPromise;
@@ -59,7 +58,37 @@ const $api = combine(
   },
 );
 
-const $initiator = walletSelect.$selectedAccounts.map((accounts) => accounts.at(0) ?? null);
+const $initiator = createStore<AnyAccount | null>(null);
+const $delegate = createStore<Address | null>(null);
+
+const $revokeDelegationData = combine(
+  {
+    initiator: $initiator,
+    delegate: $delegate,
+    activeTracks: delegationAggregate.$activeTracks,
+    chain: networkSelectorModel.$governanceChain,
+  },
+  ({ initiator, delegate, activeTracks, chain }) => {
+    if (nullable(initiator) || nullable(delegate)) return null;
+
+    const address = toAddress(initiator.accountId, { prefix: chain?.addressPrefix });
+    const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
+
+    return {
+      tracks: tracksNumber,
+      locks: { [initiator.accountId]: new BN(0) },
+    } satisfies RevokeDelegationData;
+  },
+);
+
+sample({
+  clock: flowStarted,
+  fn: ({ delegate, accounts }) => ({ account: accounts.at(0) ?? null, delegate }),
+  target: spread({
+    account: $initiator,
+    delegate: $delegate,
+  }),
+});
 
 // Signatory
 
@@ -98,16 +127,19 @@ const $coreTx = combine(
     chain: networkSelectorModel.$governanceChain,
     activeTracks: delegationAggregate.$activeTracks,
     data: $revokeDelegationData,
+    initiator: $initiator,
     signatory: $signatory,
+    delegate: $delegate,
   },
-  ({ chain, activeTracks, data, signatory }) => {
-    if (nullable(chain) || nullable(data) || nullable(signatory)) return null;
+  ({ chain, activeTracks, data, initiator, signatory, delegate }) => {
+    if (nullable(chain) || nullable(data) || nullable(initiator) || nullable(signatory) || nullable(delegate)) {
+      return null;
+    }
 
     return transactionBuilder.buildUndelegate({
       chain,
       accountId: signatory.accountId,
-      tracks:
-        activeTracks[data.target][toAddress(data.account.accountId, { prefix: chain?.addressPrefix })].map(Number),
+      tracks: activeTracks[delegate][toAddress(initiator.accountId, { prefix: chain?.addressPrefix })].map(Number),
     });
   },
 );
@@ -119,41 +151,6 @@ const { $fee, $tx, $multisigTx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: networkSelectorModel.$governanceChain,
   transaction: $coreTx,
-});
-
-// Transaction & Form
-
-sample({
-  clock: flowStarted,
-  source: {
-    activeTracks: delegationAggregate.$activeTracks,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  fn: ({ activeTracks, chain }, { delegate, accounts }) => {
-    const account = accounts.at(0);
-    if (nullable(account)) return null;
-
-    const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
-    const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
-
-    return {
-      account,
-      signatory: null,
-      target: delegate,
-      tracks: tracksNumber,
-      locks: { [account.accountId]: new BN(0) },
-    };
-  },
-  target: $revokeDelegationData,
-});
-
-sample({
-  clock: $signatory.updates,
-  source: $revokeDelegationData,
-  fn: (data, signatory) => {
-    return { ...data!, signatory } satisfies RevokeDelegationData;
-  },
-  target: $revokeDelegationData,
 });
 
 sample({
@@ -194,16 +191,33 @@ sample({
     revokeDelegationData: $revokeDelegationData,
     delegations: delegationAggregate.$activeDelegations,
     coreTx: $coreTx,
+    initiator: $initiator,
     signatory: $signatory,
+    delegate: $delegate,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ chain, revokeDelegationData }) => nonNullable(chain) && nonNullable(revokeDelegationData),
-  fn: ({ fee, balances, chain, txWrappers, revokeDelegationData, delegations, coreTx, multisigDeposit }) => {
+  filter: ({ chain, revokeDelegationData, initiator, signatory, delegate }) =>
+    nonNullable(chain) &&
+    nonNullable(revokeDelegationData) &&
+    nonNullable(initiator) &&
+    nonNullable(signatory) &&
+    nonNullable(delegate),
+  fn: ({
+    fee,
+    balances,
+    chain,
+    txWrappers,
+    revokeDelegationData,
+    delegations,
+    coreTx,
+    multisigDeposit,
+    initiator,
+    signatory,
+    delegate,
+  }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(chain!.assets)!;
-
-    const target = revokeDelegationData!.target;
-    const delegation = delegations[target];
+    const delegation = delegations[delegate!];
     const delegationData = Object.values(delegation)[0];
 
     return {
@@ -214,17 +228,15 @@ sample({
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
           transferable: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              revokeDelegationData!.account!.accountId,
-              chain!.chainId,
-              asset.assetId.toString(),
-            ),
+            balanceUtils.getBalance(balances, initiator!.accountId, chain!.chainId, asset.assetId.toString()),
           ),
           ...revokeDelegationData!,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [revokeDelegationData!.account!] }),
-          locks: revokeDelegationData!.locks[revokeDelegationData!.account!.accountId],
+          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [initiator!] }),
+          account: initiator!,
+          signatory,
+          target: delegate!,
+          locks: revokeDelegationData!.locks[initiator!.accountId],
           coreTx: coreTx!,
           fee: fee.toString(),
           totalFee: fee.toString(),
@@ -243,15 +255,20 @@ sample({
 sample({
   clock: [confirmModel.output.formSubmitted, txsConfirmed],
   source: {
-    revokeDelegationData: $revokeDelegationData,
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,
     txWrappers: $txWrappers,
+    initiator: $initiator,
+    signatory: $signatory,
     step: $step,
   },
-  filter: ({ revokeDelegationData, chain, transaction, step }) =>
-    nonNullable(revokeDelegationData) && nonNullable(chain) && nonNullable(transaction) && isStep(step, Step.CONFIRM),
-  fn: ({ revokeDelegationData, chain, transaction, txWrappers }) => {
+  filter: ({ initiator, signatory, chain, transaction, step }) =>
+    nonNullable(initiator) &&
+    nonNullable(signatory) &&
+    nonNullable(chain) &&
+    nonNullable(transaction) &&
+    isStep(step, Step.CONFIRM),
+  fn: ({ initiator, signatory, chain, transaction, txWrappers }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
 
     return {
@@ -259,8 +276,8 @@ sample({
         signingPayloads: [
           {
             chain: chain!,
-            account: wrapper ? wrapper.proxyAccount : revokeDelegationData!.account,
-            signatory: revokeDelegationData!.signatory,
+            account: wrapper ? wrapper.proxyAccount : initiator!,
+            signatory,
             transaction: transaction!,
           },
         ],
@@ -304,21 +321,23 @@ sample({
     transaction: $tx,
     coreTx: $coreTx,
     multisigTx: $multisigTx,
-    revokeDelegationData: $revokeDelegationData,
+    initiator: $initiator,
+    signatory: $signatory,
     step: $step,
   },
-  filter: ({ revokeDelegationData, chain, transaction, coreTx, step }) =>
-    nonNullable(revokeDelegationData) &&
+  filter: ({ chain, transaction, coreTx, initiator, signatory, step }) =>
     nonNullable(chain) &&
     nonNullable(transaction) &&
     nonNullable(coreTx) &&
+    nonNullable(initiator) &&
+    nonNullable(signatory) &&
     isStep(step, Step.SIGN),
-  fn: ({ chain, revokeDelegationData, transaction, coreTx, multisigTx }, signParams) => ({
+  fn: ({ chain, transaction, coreTx, multisigTx, initiator, signatory }, signParams) => ({
     event: {
       ...signParams,
       chain: chain!,
-      account: revokeDelegationData!.account,
-      signatory: revokeDelegationData!.signatory,
+      account: initiator!,
+      signatory,
       coreTxs: [coreTx!],
       wrappedTxs: [transaction!],
       multisigTxs: multisigTx ? [multisigTx] : [],
