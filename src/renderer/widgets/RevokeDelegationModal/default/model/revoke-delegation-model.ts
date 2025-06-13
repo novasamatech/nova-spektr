@@ -72,10 +72,10 @@ const $revokeDelegationData = combine(
     if (nullable(initiator) || nullable(delegate)) return null;
 
     const address = toAddress(initiator.accountId, { prefix: chain?.addressPrefix });
-    const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
+    const tracks = activeTracks[delegate][address].map(Number);
 
     return {
-      tracks: tracksNumber,
+      tracks,
       locks: { [initiator.accountId]: new BN(0) },
     } satisfies RevokeDelegationData;
   },
@@ -125,13 +125,12 @@ const $txWrappers = createTxWrappers({
 const $coreTx = combine(
   {
     chain: networkSelectorModel.$governanceChain,
-    activeTracks: delegationAggregate.$activeTracks,
     data: $revokeDelegationData,
     initiator: $initiator,
     signatory: $signatory,
     delegate: $delegate,
   },
-  ({ chain, activeTracks, data, initiator, signatory, delegate }) => {
+  ({ chain, data, initiator, signatory, delegate }) => {
     if (nullable(chain) || nullable(data) || nullable(initiator) || nullable(signatory) || nullable(delegate)) {
       return null;
     }
@@ -139,7 +138,7 @@ const $coreTx = combine(
     return transactionBuilder.buildUndelegate({
       chain,
       accountId: signatory.accountId,
-      tracks: activeTracks[delegate][toAddress(initiator.accountId, { prefix: chain?.addressPrefix })].map(Number),
+      tracks: data.tracks,
     });
   },
 );
