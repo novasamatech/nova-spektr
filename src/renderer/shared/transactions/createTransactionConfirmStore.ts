@@ -124,8 +124,8 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   );
 
   return {
-    $confirms,
     $confirmMap,
+    $confirms,
     $isMultisigExists,
 
     init,

@@ -125,6 +125,9 @@ sample({
     account: $account,
     chain: $chain,
   },
+  filter: ({ transactions, api, account, chain }) => {
+    return nonNullable(api) && nonNullable(transactions) && nonNullable(account) && nonNullable(chain?.chainId);
+  },
   fn({ api, account, chain }) {
     return {
       palletType: 'fellowship' as const,

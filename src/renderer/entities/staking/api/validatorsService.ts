@@ -30,9 +30,13 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClie
 
   const mergedValidators = merge(stake, prefs);
 
-  const slashes = await getSlashingSpans(api, Object.keys(stake), era, isLightClient);
+  try {
+    const slashes = await getSlashingSpans(api, Object.keys(stake), era, isLightClient);
 
-  return merge(mergedValidators, slashes);
+    return merge(mergedValidators, slashes);
+  } catch {
+    return mergedValidators;
+  }
 }
 
 function getValidatorFunction(api: ApiPromise) {
