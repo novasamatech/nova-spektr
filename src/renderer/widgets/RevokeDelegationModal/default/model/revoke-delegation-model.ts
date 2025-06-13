@@ -35,7 +35,6 @@ const stepChanged = createEvent<Step>();
 const flowStarted = createEvent<{ delegate: Address; accounts: AnyAccount[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
-const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
@@ -181,8 +180,8 @@ sample({
   target: $step,
 });
 
-sample({
-  clock: [flowStarted, $revokeDelegationData.updates],
+const dataSubmitted = sample({
+  clock: flowStarted,
   source: {
     balances: balanceModel.$balances,
     fee: $fee,
@@ -198,16 +197,8 @@ sample({
     delegate: $delegate,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ coreTx, tx, chain, revokeDelegationData, initiator, signatory, delegate }) =>
-    nonNullable(coreTx) &&
-    nonNullable(tx) &&
-    nonNullable(signatory) &&
-    nonNullable(chain) &&
-    nonNullable(revokeDelegationData) &&
-    nonNullable(initiator) &&
-    nonNullable(signatory) &&
-    nonNullable(delegate),
-  fn: ({
+}).filterMap(
+  ({
     fee,
     balances,
     chain,
@@ -222,34 +213,52 @@ sample({
     signatory,
     delegate,
   }) => {
-    const asset = getRelaychainAsset(chain!.assets)!;
-    const delegation = delegations[delegate!];
-    const delegationData = Object.values(delegation)[0];
+    if (
+      nonNullable(coreTx) &&
+      nonNullable(tx) &&
+      nonNullable(signatory) &&
+      nonNullable(chain) &&
+      nonNullable(revokeDelegationData) &&
+      nonNullable(initiator) &&
+      nonNullable(signatory) &&
+      nonNullable(delegate)
+    ) {
+      const asset = getRelaychainAsset(chain.assets)!;
+      const delegation = delegations[delegate];
+      const delegationData = Object.values(delegation)[0];
 
-    return {
-      event: [
+      return [
         {
-          chain: chain!,
-          asset: asset!,
+          chain,
+          asset,
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
           transferable: transferableAmount(
-            balanceUtils.getBalance(balances, initiator!.accountId, chain!.chainId, asset.assetId.toString()),
+            balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString()),
           ),
-          initiator: initiator!,
-          signatory: signatory!,
-          delegate: delegate!,
-          tracks: revokeDelegationData!.tracks,
-          locks: revokeDelegationData!.locks[initiator!.accountId],
-          coreTx: coreTx!,
+          initiator,
+          signatory,
+          delegate,
+          tracks: revokeDelegationData.tracks,
+          locks: revokeDelegationData.locks[initiator.accountId],
+          coreTx,
           route,
-          tx: tx!,
+          tx,
           multisigTx,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit,
         } satisfies RevokeDelegationConfirm,
-      ],
+      ];
+    }
+  },
+);
+
+sample({
+  clock: dataSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.CONFIRM,
     };
   },
@@ -259,8 +268,8 @@ sample({
   }),
 });
 
-sample({
-  clock: [confirmModel.startSigning, txsConfirmed],
+const startSigning = sample({
+  clock: confirmModel.startSigning,
   source: {
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,
@@ -268,24 +277,32 @@ sample({
     signatory: $signatory,
     step: $step,
   },
-  filter: ({ initiator, signatory, chain, transaction, step }) =>
+}).filterMap(({ initiator, signatory, chain, transaction, step }) => {
+  if (
     nonNullable(initiator) &&
     nonNullable(signatory) &&
     nonNullable(chain) &&
     nonNullable(transaction) &&
-    isStep(step, Step.CONFIRM),
-  fn: ({ initiator, signatory, chain, transaction }) => {
+    isStep(step, Step.CONFIRM)
+  ) {
     return {
-      event: {
-        signingPayloads: [
-          {
-            chain: chain!,
-            account: initiator!,
-            signatory,
-            transaction: transaction!,
-          },
-        ],
-      },
+      signingPayloads: [
+        {
+          chain,
+          account: initiator,
+          signatory,
+          transaction,
+        },
+      ],
+    };
+  }
+});
+
+sample({
+  clock: startSigning,
+  fn: (signingPayloads) => {
+    return {
+      event: signingPayloads,
       step: Step.SIGN,
     };
   },
@@ -318,7 +335,7 @@ sample({
   target: votingAggregate.events.requestVoting,
 });
 
-sample({
+const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     chain: networkSelectorModel.$governanceChain,
@@ -329,25 +346,39 @@ sample({
     signatory: $signatory,
     step: $step,
   },
-  filter: ({ chain, transaction, coreTx, initiator, signatory, step }) =>
+  fn: (source, signParams) => ({
+    ...source,
+    signParams,
+  }),
+}).filterMap(({ chain, transaction, coreTx, multisigTx, initiator, signatory, step, signParams }) => {
+  if (
     nonNullable(chain) &&
     nonNullable(transaction) &&
     nonNullable(coreTx) &&
     nonNullable(initiator) &&
     nonNullable(signatory) &&
-    isStep(step, Step.SIGN),
-  fn: ({ chain, transaction, coreTx, multisigTx, initiator, signatory }, signParams) => ({
-    event: {
+    isStep(step, Step.SIGN)
+  ) {
+    return {
       ...signParams,
-      chain: chain!,
-      account: initiator!,
+      chain,
+      account: initiator,
       signatory,
-      coreTxs: [coreTx!],
-      wrappedTxs: [transaction!],
+      coreTxs: [coreTx],
+      wrappedTxs: [transaction],
       multisigTxs: multisigTx ? [multisigTx] : [],
-    },
-    step: Step.SUBMIT,
-  }),
+    };
+  }
+});
+
+sample({
+  clock: signSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
@@ -414,7 +445,6 @@ export const revokeDelegationModel = {
   flowStarted,
   stepChanged,
   txSaved,
-  txsConfirmed,
   selectSignatory,
   flowFinished,
 };
