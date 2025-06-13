@@ -454,7 +454,7 @@ sample({
 sample({
   clock: prepareRevokeDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: revokeDelegationConfirmModel.events.formInitiated,
+  target: revokeDelegationConfirmModel.formInitiated,
 });
 
 export const confirm = {

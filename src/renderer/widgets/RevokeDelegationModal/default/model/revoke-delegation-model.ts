@@ -246,13 +246,13 @@ sample({
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.formSubmitted, txsConfirmed],
   source: {
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,

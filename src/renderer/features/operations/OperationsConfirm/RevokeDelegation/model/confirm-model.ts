@@ -170,12 +170,8 @@ export const confirmModel = {
   $proxiedWallets,
   $signerWallets,
   $isMultisigExists,
-
   $apis,
-  events: {
-    formInitiated,
-  },
-  output: {
-    formSubmitted,
-  },
+
+  formInitiated,
+  formSubmitted,
 };
