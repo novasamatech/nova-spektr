@@ -109,21 +109,16 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   // console.log('Stringified Connections:', JSON.stringify(connections, null, 2));
 
   useEffect(() => {
-    const newNodes: Node<AccountNodeData>[] = [];
-    const newEdges: Edge[] = [];
-
     // Create nodes from matrix
-    for (const level of matrix) {
-      const levelIndex = matrix.indexOf(level);
+    const nodes = matrix.reduce((acc, level, levelIndex) => {
       const levelHeight = level.length * NODE_SPACING;
       const startY = -levelHeight / 2; // Start from the top of the centered group
 
-      for (const nodeData of level) {
-        const nodeIndex = level.indexOf(nodeData);
+      const levelNodes = level.map((nodeData, nodeIndex) => {
         const x = -levelIndex * LEVEL_SPACING;
         const y = startY + nodeIndex * NODE_SPACING;
 
-        newNodes.push({
+        return {
           id: nodeData.account.id,
           type: 'accountNode',
           data: {
@@ -133,33 +128,33 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           position: { x, y },
           sourcePosition: Position.Left,
           targetPosition: Position.Right,
-        });
-      }
-    }
+        };
+      });
+
+      return [...acc, ...levelNodes];
+    }, [] as Node<AccountNodeData>[]);
 
     // Create edges from connections
-    for (const connection of connections) {
-      newEdges.push({
-        id: `e${connection.source}-${connection.target}`,
-        source: connection.source,
-        target: connection.target,
-        type: 'smoothstep',
-        animated: false,
-        style: {
-          stroke: '#363643',
-          strokeWidth: 2,
-        },
-        markerEnd: {
-          type: MarkerType.Arrow,
-          width: 20,
-          height: 20,
-          color: '#363643',
-        },
-      });
-    }
+    const edges = connections.map((connection) => ({
+      id: `e${connection.source}-${connection.target}`,
+      source: connection.source,
+      target: connection.target,
+      type: 'smoothstep',
+      animated: false,
+      style: {
+        stroke: '#363643',
+        strokeWidth: 2,
+      },
+      markerEnd: {
+        type: MarkerType.Arrow,
+        width: 20,
+        height: 20,
+        color: '#363643',
+      },
+    }));
 
-    setNodes(newNodes);
-    setEdges(newEdges);
+    setNodes(nodes);
+    setEdges(edges);
 
     // Focus on the selected account node after nodes are set
     setTimeout(() => {
