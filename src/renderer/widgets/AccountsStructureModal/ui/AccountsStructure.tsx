@@ -14,6 +14,7 @@ import {
 } from '@xyflow/react';
 import { useEffect, useMemo } from 'react';
 
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 
 import { AccountStructureNode } from './AccountStructureNode';
@@ -180,11 +181,24 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
     setNodes(nodes);
     setEdges(edges);
 
+    const selectedNodeLevel = matrix.findIndex((level) => level.some((node) => node.account.id === account.id));
+    const nodesToInclude = [
+      matrix[selectedNodeLevel],
+      matrix[selectedNodeLevel + 1],
+      matrix[selectedNodeLevel + 2],
+      matrix[selectedNodeLevel - 1],
+      matrix[selectedNodeLevel - 2],
+    ]
+      .filter(nonNullable)
+      .slice(0, 3)
+      .flat()
+      .map((node) => node.account);
+
     fitView({
-      nodes: [account],
+      nodes: nodesToInclude,
       padding: 0.5,
       maxZoom: 0.75,
-      minZoom: 0.25,
+      minZoom: 0.75,
       includeHiddenNodes: true,
     });
   }, [graph, setNodes, setEdges, account.id, fitView, matrix, connections]);
