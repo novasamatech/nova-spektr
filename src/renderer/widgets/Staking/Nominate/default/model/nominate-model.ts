@@ -305,7 +305,7 @@ sample({
   clock: txSaved,
   source: {
     nominateForm: $nominateForm,
-    coreTx: $tx,
+    coreTx: $coreTx,
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ nominateForm, coreTx, txWrappers }) => {
