@@ -12,7 +12,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 
@@ -40,60 +40,64 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
-  // Create matrix of nodes and track connections
-  const matrix: AccountNodeData[][] = [];
-  const connections: { source: string; target: string }[] = [];
-  const visited = new Set<string>();
+  // Memoize matrix and connections calculations
+  const { matrix, connections } = useMemo(() => {
+    const matrix: AccountNodeData[][] = [];
+    const connections: { source: string; target: string }[] = [];
+    const visited = new Set<string>();
 
-  const processNodeForMatrix = (node: AccountNode, level: number) => {
-    if (visited.has(node.account.id)) return;
-    visited.add(node.account.id);
+    const processNodeForMatrix = (node: AccountNode, level: number) => {
+      if (visited.has(node.account.id)) return;
+      visited.add(node.account.id);
 
-    // Ensure level array exists
-    if (!matrix[level]) {
-      matrix[level] = [];
-    }
+      // Ensure level array exists
+      if (!matrix[level]) {
+        matrix[level] = [];
+      }
 
-    // Add node to current level
-    matrix[level].push({
-      account: node.account,
-      isSelected: node.account.id === account.id,
-    });
-
-    // Process children and add connections
-    for (const child of node.children) {
-      // Add connection for each parent-child relationship
-      connections.push({
-        source: child.account.id,
-        target: node.account.id,
+      // Add node to current level
+      matrix[level].push({
+        account: node.account,
+        isSelected: node.account.id === account.id,
       });
 
-      // Process child node in next level
-      processNodeForMatrix(child, level + 1);
-    }
-  };
+      // Process children and add connections
+      for (const child of node.children) {
+        // Add connection for each parent-child relationship
+        connections.push({
+          source: child.account.id,
+          target: node.account.id,
+        });
 
-  // First, find root nodes (nodes that are not children of any other node)
-  const childIds = new Set<string>();
-  for (const [_, node] of graph) {
-    for (const child of node.children) {
-      childIds.add(child.account.id);
-    }
-  }
+        // Process child node in next level
+        processNodeForMatrix(child, level + 1);
+      }
+    };
 
-  // Process root nodes first
-  for (const [_, node] of graph) {
-    if (!childIds.has(node.account.id) && !visited.has(node.account.id)) {
-      processNodeForMatrix(node, 0);
+    // First, find root nodes (nodes that are not children of any other node)
+    const childIds = new Set<string>();
+    for (const [_, node] of graph) {
+      for (const child of node.children) {
+        childIds.add(child.account.id);
+      }
     }
-  }
 
-  // Then process remaining nodes
-  for (const [_, node] of graph) {
-    if (!visited.has(node.account.id)) {
-      processNodeForMatrix(node, 0);
+    // Process root nodes first
+    for (const [_, node] of graph) {
+      if (!childIds.has(node.account.id) && !visited.has(node.account.id)) {
+        processNodeForMatrix(node, 0);
+      }
     }
-  }
+
+    // Then process remaining nodes
+    for (const [_, node] of graph) {
+      if (!visited.has(node.account.id)) {
+        processNodeForMatrix(node, 0);
+      }
+    }
+
+    return { matrix, connections };
+  }, [graph, account.id]);
 
   console.log('Graph:', graph);
   console.log('Matrix:', matrix);
@@ -163,7 +167,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         nodes: [{ id: account.id }],
         padding: 0.5,
         maxZoom: 1,
-        minZoom: 0.5,
+        minZoom: 0.25,
         includeHiddenNodes: true,
       });
     }, 0);
