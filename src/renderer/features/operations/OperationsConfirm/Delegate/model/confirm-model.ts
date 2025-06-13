@@ -3,8 +3,8 @@ import { type BN } from '@polkadot/util';
 import { type Address, type Asset, type Conviction } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 
 export type DelegateConfirm = TxConfirmInfo & {
   transferable: string;
@@ -25,7 +25,7 @@ export type DelegateConfirm = TxConfirmInfo & {
 const confirmStore = createTransactionConfirmStore<DelegateConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operationsModel.$multisigTransactions,
+  $multisigTransactions: selectedWalletMultisigOperations.$list,
 });
 
 export const confirmModel = {

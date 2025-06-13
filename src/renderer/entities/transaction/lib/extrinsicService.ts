@@ -4,7 +4,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { multisigUtils } from '@/entities/multisig';
+import { multisigOperationService } from '@/domains/network';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
@@ -210,7 +210,10 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = multisigUtils.getOtherSignatories(txWrapper.multisigAccount, txWrapper.signer.accountId);
+  const otherSignatories = multisigOperationService.getOtherSignatories(
+    txWrapper.multisigAccount,
+    txWrapper.signer.accountId,
+  );
 
   return {
     chainId: transaction.chainId,

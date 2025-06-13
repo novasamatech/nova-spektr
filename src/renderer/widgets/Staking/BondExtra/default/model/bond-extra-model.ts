@@ -149,14 +149,13 @@ const startSigningEvent = sample({
     formParams: formModel.form.$values,
     walletData: $walletData,
     tx: formModel.$tx,
-    proxiedAccount: formModel.$proxiedAccount,
   },
-}).filterMap(({ formParams: { initiator, signatory }, walletData, tx, proxiedAccount }) => {
+}).filterMap(({ formParams: { initiator, signatory }, walletData, tx }) => {
   if (nonNullable(walletData) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory)) {
     return [
       {
         chain: walletData.chain,
-        account: proxiedAccount || initiator,
+        account: initiator,
         signatory,
         transaction: tx,
       },

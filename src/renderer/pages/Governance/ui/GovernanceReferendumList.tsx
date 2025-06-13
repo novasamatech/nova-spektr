@@ -21,7 +21,7 @@ export const GovernanceReferendumList = () => {
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
   const isSearching = useUnit(governancePageAggregate.$isSearching);
-  const all = useUnit(governancePageAggregate.$all);
+  const displayedReferendums = useUnit(governancePageAggregate.$displayedReferendums);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
 
@@ -34,8 +34,8 @@ export const GovernanceReferendumList = () => {
   };
 
   const isLoadingState = isLoading || (isSearching && isTitlesLoading);
-  const isNetworkDisabled = !isApiConnected && !isLoadingState && all.length === 0;
-  const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
+  const isNetworkDisabled = !isApiConnected && !isLoadingState && displayedReferendums.length === 0;
+  const isEmptyState = isApiConnected && !isLoadingState && displayedReferendums.length === 0;
   const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
 
   return (
