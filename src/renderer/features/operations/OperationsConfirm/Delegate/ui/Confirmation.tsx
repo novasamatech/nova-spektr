@@ -167,7 +167,7 @@ export const Confirmation = ({
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirmWallets.signatory || confirmWallets.initiator).type}
+              type={confirmWallets.signatory?.type}
               onClick={confirmModel.startSigning}
             />
           )}

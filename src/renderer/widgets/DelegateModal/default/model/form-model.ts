@@ -33,9 +33,6 @@ import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type DelegateData, type WalletData } from '../lib/types';
 
-// ---------------------------------------------------------------------------
-// Shared flow event & stores (were previously in flow-shared.ts)
-// ---------------------------------------------------------------------------
 export const flowFinished = createEvent();
 
 export const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
@@ -44,7 +41,6 @@ export const $tracks = createStore<number[]>([]).reset(flowFinished);
 export const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'initiator'> | null>(null).reset(
   flowFinished,
 );
-// ---------------------------------------------------------------------------
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -58,15 +54,6 @@ const formInitiated = createEvent<WalletData & { shards: AnyAccount[] }>();
 const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
-
-const txWrapperChanged = createEvent<{
-  proxyAccount: AnyAccount | null;
-  signatories: AnyAccount[][];
-  isProxy: boolean;
-  isMultisig: boolean;
-}>();
-const feeDataChanged = createEvent<Record<'fee' | 'totalFee' | 'multisigDeposit', string>>();
-const isFeeLoadingChanged = createEvent<boolean>();
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
@@ -193,8 +180,6 @@ const $api = combine(
   },
 );
 
-// Computed stores that depend on form should be declared after form
-
 const $account = combine(
   {
     network: $networkStore,
@@ -253,14 +238,12 @@ const $coreTx = combine(
   },
 );
 
-// Signatories list via shared factory
 const $signatories = createSignatoriesStore({
   chain: $chain,
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
 
-// Tx wrappers derived from common factory
 const $txWrappers = createTxWrappers({
   chain: $chain,
   wallet: walletSelect.$selectedWallet,
@@ -269,7 +252,6 @@ const $txWrappers = createTxWrappers({
   signatory: form.fields.signatory.$value,
 });
 
-// Complex Tx store for fee & route calculation
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -286,7 +268,9 @@ const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 // Multisig deposit calculation
 const $multisigThreshold = $route.map((route) => {
   const multisig = route.find(accountUtils.isMultisigAccount);
-  return multisig ? ((multisig as any).threshold ?? null) : null;
+  if (!multisig) return null;
+
+  return multisig.threshold;
 });
 
 const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
@@ -335,8 +319,6 @@ const $signatoryBalance = combine(
   },
 );
 
-// Computed
-
 const $proxyWallet = combine(
   {
     isProxy: $isProxy,
@@ -355,12 +337,8 @@ const $canSubmit = combine(
     isFormValid: form.$isValid,
     pendingFee: $pendingFee,
   },
-  ({ isFormValid, pendingFee }) => {
-    return isFormValid && !pendingFee;
-  },
+  ({ isFormValid, pendingFee }) => isFormValid && !pendingFee,
 );
-
-// Fields connections
 
 sample({
   clock: formInitiated,
@@ -443,10 +421,6 @@ export const formModel = {
   events: {
     formInitiated,
     formCleared,
-
-    txWrapperChanged,
-    feeDataChanged,
-    isFeeLoadingChanged,
   },
   output: {
     formSubmitted,
