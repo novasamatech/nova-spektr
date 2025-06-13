@@ -332,7 +332,9 @@ sample({
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTxs[index],
           initiator: shard,
-          route: [shard],
+          route: txWrappers.map((wrapper) =>
+            wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+          ),
           tx: coreTxs[index],
           multisigTx: null,
         } satisfies DelegateConfirm;
