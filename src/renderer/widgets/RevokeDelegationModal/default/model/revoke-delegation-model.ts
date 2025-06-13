@@ -256,7 +256,6 @@ sample({
   source: {
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,
-    txWrappers: $txWrappers,
     initiator: $initiator,
     signatory: $signatory,
     step: $step,
@@ -267,15 +266,13 @@ sample({
     nonNullable(chain) &&
     nonNullable(transaction) &&
     isStep(step, Step.CONFIRM),
-  fn: ({ initiator, signatory, chain, transaction, txWrappers }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
-
+  fn: ({ initiator, signatory, chain, transaction }) => {
     return {
       event: {
         signingPayloads: [
           {
             chain: chain!,
-            account: wrapper ? wrapper.proxyAccount : initiator!,
+            account: initiator!,
             signatory,
             transaction: transaction!,
           },
