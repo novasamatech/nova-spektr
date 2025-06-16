@@ -255,8 +255,9 @@ const $coreTx = combine(
       return null;
     }
 
-    const shard = account.account;
-    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+    const initiator = account.account;
+
+    const address = toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix });
     const finalConviction = isUnchanged ? activeDelegations[address]?.conviction : conviction;
     const finalAmount = isUnchanged
       ? activeDelegations[address]?.balance.toString()
@@ -264,16 +265,16 @@ const $coreTx = combine(
 
     return transactionBuilder.buildEditDelegation({
       chain: walletData.chain!,
-      accountId: shard.accountId,
+      accountId: initiator.accountId,
       balance: finalAmount || '0',
       conviction: finalConviction || 'None',
       previousConviction: activeDelegations[address]?.conviction || 'None',
       target: target!.address || '',
       tracks,
       undelegateTracks:
-        activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })]?.map(
-          Number,
-        ) || [],
+        activeTracks[target!.address]?.[
+          toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix })
+        ]?.map(Number) || [],
     });
   },
 );
@@ -287,7 +288,7 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
-const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 

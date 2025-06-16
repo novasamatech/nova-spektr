@@ -132,12 +132,15 @@ sample({
     multisigDeposit: formModel.$multisigDeposit,
     coreTx: formModel.$coreTx,
     step: $step,
+    tx: formModel.$tx,
+    multisigTx: formModel.$multisigTx,
   },
-  filter: ({ walletData, delegateData, step, account }) =>
+  filter: ({ walletData, delegateData, step, account, tx }) =>
     nonNullable(delegateData) &&
     nonNullable(walletData.wallet) &&
     nonNullable(walletData.chain) &&
     nonNullable(account) &&
+    nonNullable(tx) &&
     isStep(step, Step.INIT),
   fn: ({
     fee,
@@ -151,11 +154,17 @@ sample({
     activeDelegations,
     isUnchanged,
     multisigDeposit,
+    tx,
+    multisigTx,
   }) => {
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
-    const shard = account!.account;
+    const initiator = account!.account;
 
-    const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+    const address = toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix });
+
+    const transferable = transferableAmount(
+      balanceUtils.getBalance(balances, initiator.accountId, walletData.chain!.chainId, asset.assetId.toString()),
+    );
 
     return {
       event: [
@@ -164,9 +173,7 @@ sample({
           asset: asset!,
           tracks,
           target: target?.address || '',
-          transferable: transferableAmount(
-            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
-          ),
+          transferable,
           ...delegateData!,
           signatory: delegateData!.signatory!,
           ...(isUnchanged && {
@@ -177,12 +184,12 @@ sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData!.locks[shard.accountId],
+          locks: delegateData!.locks[initiator.accountId],
           coreTx: coreTx!,
-          route: [shard],
-          multisigTx: null,
-          tx: coreTx!,
-          initiator: shard,
+          route: [initiator],
+          multisigTx,
+          tx: tx!,
+          initiator,
         } satisfies EditDelegationConfirm,
       ],
       step: Step.CONFIRM,

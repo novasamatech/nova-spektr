@@ -70,89 +70,85 @@ export const Confirmation = ({
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="addDelegationConfirm" size={60} />
 
-        {meta && (
-          <LargeTitleText as="p" className="font-manrope">
-            <AssetBalance className="text-large-title" value={amountValue} asset={meta.asset} />
-          </LargeTitleText>
-        )}
+        <LargeTitleText as="p" className="font-manrope">
+          <AssetBalance className="text-large-title" value={amountValue} asset={meta.asset} />
+        </LargeTitleText>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      {meta && (
-        <TransactionDetails
-          chain={meta.chain}
-          wallets={wallets}
-          initiators={initiators}
-          signatory={meta.signatory}
-          proxied={proxyAccount}
-        >
-          <DetailRow label={t('governance.addDelegation.confirmation.target')}>
-            <Account variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
+      <TransactionDetails
+        chain={meta.chain}
+        wallets={wallets}
+        initiators={initiators}
+        signatory={meta.signatory}
+        proxied={proxyAccount}
+      >
+        <DetailRow label={t('governance.addDelegation.confirmation.target')}>
+          <Account variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
+        </DetailRow>
+
+        <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>
+          <TracksDetails tracks={meta.tracks} />
+        </DetailRow>
+
+        <hr className="w-full border-filter-border pr-2" />
+
+        <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
+          <BalanceDiff
+            from={meta.transferable}
+            to={new BN(meta.transferable).sub(new BN(amountValue))}
+            asset={meta.asset}
+            lock={meta.locks}
+          />
+        </DetailRow>
+
+        <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
+          <LockValueDiff from={meta.locks} to={amountValue} asset={meta.asset} />
+        </DetailRow>
+
+        <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
+          <LockPeriodDiff from="None" to={meta.conviction} lockPeriods={lockPeriods} />
+        </DetailRow>
+
+        <hr className="w-full border-filter-border pr-2" />
+
+        {multisigAccount && (
+          <DetailRow
+            className="text-text-primary"
+            label={
+              <>
+                <Icon className="text-text-tertiary" name="lock" size={12} />
+                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div tabIndex={0}>
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
+                </Tooltip>
+              </>
+            }
+          >
+            <div className="flex flex-col items-end gap-y-0.5">
+              <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]} />
+              <AssetFiatBalance asset={meta.chain.assets[0]} amount={meta.multisigDeposit} />
+            </div>
           </DetailRow>
+        )}
 
-          <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>
-            <TracksDetails tracks={meta.tracks} />
-          </DetailRow>
+        <FeeWithLabel fee={meta.fee} asset={meta.asset} label={t('staking.networkFee', { count: confirms.length })} />
 
-          <hr className="w-full border-filter-border pr-2" />
-
-          <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
-            <BalanceDiff
-              from={meta.transferable}
-              to={new BN(meta.transferable).sub(new BN(amountValue))}
-              asset={meta.asset}
-              lock={meta.locks}
-            />
-          </DetailRow>
-
-          <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-            <LockValueDiff from={meta.locks} to={amountValue} asset={meta.asset} />
-          </DetailRow>
-
-          <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-            <LockPeriodDiff from="None" to={meta.conviction} lockPeriods={lockPeriods} />
-          </DetailRow>
-
-          <hr className="w-full border-filter-border pr-2" />
-
-          {multisigAccount && (
-            <DetailRow
-              className="text-text-primary"
-              label={
-                <>
-                  <Icon className="text-text-tertiary" name="lock" size={12} />
-                  <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0}>
-                        <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-                  </Tooltip>
-                </>
-              }
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={meta.multisigDeposit} asset={meta.chain.assets[0]} />
-                <AssetFiatBalance asset={meta.chain.assets[0]} amount={meta.multisigDeposit} />
-              </div>
-            </DetailRow>
-          )}
-
-          <FeeWithLabel fee={meta.fee} asset={meta.asset} label={t('staking.networkFee', { count: confirms.length })} />
-
-          {confirms.length > 1 && (
-            <FeeWithLabel
-              fee={meta.totalFee}
-              asset={meta.asset}
-              label={t('staking.networkFeeTotal')}
-              className="text-text-primary"
-            />
-          )}
-        </TransactionDetails>
-      )}
+        {confirms.length > 1 && (
+          <FeeWithLabel
+            fee={meta.totalFee}
+            asset={meta.asset}
+            label={t('staking.networkFeeTotal')}
+            className="text-text-primary"
+          />
+        )}
+      </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">
         {onGoBack && (

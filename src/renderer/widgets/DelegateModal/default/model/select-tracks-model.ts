@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Chain, TransactionType, type Wallet } from '@/shared/core';
+import { type Chain, TransactionType } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -14,6 +14,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -24,9 +25,10 @@ import {
   votingService,
 } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
+
+import { formModel } from './form-model';
 
 const formInitiated = createEvent<DelegateAccount>();
 const formSubmitted = createEvent<{ tracks: number[]; accounts: AnyAccount[] }>();
@@ -54,14 +56,13 @@ const $availableAccounts = combine(
     delegations: delegationAggregate.$activeDelegations,
     network: delegationAggregate.$network,
     delegate: $delegate,
+    accounts: accounts.$list,
   },
-  ({ wallet, delegations, network, delegate }) => {
+  ({ wallet, delegations, network, delegate, accounts }) => {
     if (!wallet || !network?.chain || !delegate) return [];
 
-    return wallet.accounts
-      .filter(
-        (a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, network.chain.chainId),
-      )
+    return accountService
+      .filterAccountsOnChain(accounts, network.chain)
       .filter(
         (account) =>
           !delegations[delegate.address]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
@@ -97,14 +98,14 @@ type CheckWeightParams = {
   tracks: number[];
   chain: Chain;
   api: ApiPromise;
-  wallet: Wallet;
+  isMultisig: boolean;
 };
 
 const checkMaxWeightReachedFx = createEffect(
-  async ({ tracks, chain, api, wallet }: CheckWeightParams): Promise<boolean> => {
-    if (!wallet || !chain || !api) return true;
+  async ({ tracks, chain, api, isMultisig }: CheckWeightParams): Promise<boolean> => {
+    if (!chain || !api) return true;
 
-    if (walletUtils.isMultisig(wallet)) {
+    if (isMultisig) {
       const mockTx = transactionBuilder.buildDelegate({
         tracks,
         chain,
@@ -235,14 +236,14 @@ sample({
   source: {
     tracks: $tracks,
     network: delegationAggregate.$network,
-    wallet: walletSelect.$selectedWallet,
+    isMultisig: formModel.$isMultisig,
   },
-  filter: ({ network, wallet }) => !!network && !!wallet,
-  fn: ({ tracks, network, wallet }, _): CheckWeightParams => ({
+  filter: ({ network, isMultisig }) => !!network && !!isMultisig,
+  fn: ({ tracks, network, isMultisig }, _): CheckWeightParams => ({
     tracks,
     chain: network!.chain,
     api: network!.api,
-    wallet: wallet!,
+    isMultisig,
   }),
   target: checkMaxWeightReachedFx,
 });

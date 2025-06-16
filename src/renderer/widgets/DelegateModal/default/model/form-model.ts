@@ -248,7 +248,7 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
-const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 

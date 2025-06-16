@@ -91,7 +91,6 @@ const formSubmitted = sample({
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
     multisigTx: formModel.$multisigTx,
-    proxyAccount: formModel.$proxyAccount,
   },
 }).filterMap(
   ({
@@ -121,15 +120,17 @@ const formSubmitted = sample({
     ) {
       const asset = getRelaychainAsset(walletData.chain.assets)!;
 
+      const transferable = transferableAmount(
+        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
+      );
+
       return [
         {
           chain: walletData.chain,
           asset,
           tracks,
           target: target?.address || '',
-          transferable: transferableAmount(
-            balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
-          ),
+          transferable,
           balance: delegateData.balance,
           conviction: delegateData.conviction,
           signatory: delegateData.signatory,
