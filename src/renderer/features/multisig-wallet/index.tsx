@@ -6,8 +6,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
-import { transactionService } from '@/domains/network';
-import { multisigUtils } from '@/entities/multisig';
+import { multisigOperationService, transactionService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -77,7 +76,7 @@ transactionSDK(multisigWalletFeature, {
   },
   wrap(transaction, { api, account }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigUtils.getOtherSignatories(account, account.accountId);
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
       const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
 
@@ -109,7 +108,7 @@ transactionSDK(multisigWalletFeature, {
   },
   wrapLegacy(transaction, { api, account }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigUtils.getOtherSignatories(account, account.accountId);
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {

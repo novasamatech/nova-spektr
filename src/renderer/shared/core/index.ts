@@ -72,7 +72,7 @@ export type {
   Notification,
   MultisigCreated,
   FlexibleMultisigCreated,
-  MultisigOperation,
+  MultisigOperationNotification,
   ProxyAction,
 } from './types/notification';
 export { NotificationType } from './types/notification';
@@ -85,10 +85,6 @@ export type {
   SigningStatus,
   MultisigTxStatus,
   DecodedTransaction,
-  MultisigEvent,
-  MultisigTransaction,
-  FlexibleMultisigTransaction,
-  MultisigTransactionKey,
   ProxyTransaction,
   TxWrapper,
   TxWrappers_OLD,
