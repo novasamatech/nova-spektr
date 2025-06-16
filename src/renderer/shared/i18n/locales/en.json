@@ -683,6 +683,7 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
+      "completedVotingVoted": "You have voted",
       "emptyListDescription": "Members will appear here once opinions are submitted",
       "emptyListTitle": "No opinions yet",
       "level": {
