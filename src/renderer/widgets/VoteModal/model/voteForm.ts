@@ -11,7 +11,7 @@ import {
 } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
@@ -191,14 +191,6 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: networkSelectorModel.$governanceChain,
-  signatory: form.fields.signatory.$value,
-});
-
 // balances
 
 sample({
@@ -323,7 +315,7 @@ export const voteForm = {
   $tx,
   $coreTx,
   $multisigTx,
-  $txWrappers,
+  $route,
 
   $initiatorWallet,
   $initiators,

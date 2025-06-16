@@ -22,14 +22,13 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
 export type FormParams = {
@@ -188,14 +187,6 @@ const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
 });
 
 // Computed
-
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
-});
 
 const $withdrawBalance = combine(
   {
@@ -485,7 +476,6 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
-  $txWrappers,
 
   $fee,
   $proxyBalance,

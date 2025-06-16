@@ -1,8 +1,9 @@
 import { type TFunction } from 'i18next';
 
-import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
+import { type Chain, TransactionType } from '@/shared/core';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type SelectedFilters } from '../model/filter';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';

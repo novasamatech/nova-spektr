@@ -13,7 +13,7 @@ import {
 } from '@/shared/core';
 import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -467,25 +467,12 @@ sample({
 
 sample({
   clock: txSaved,
-  source: {
-    walletData: $walletData,
-    coreTxs: $coreTxs,
-    txWrappers: $txWrappers,
-  },
-  filter: ({ walletData, coreTxs, txWrappers }) => {
-    return Boolean(walletData.wallet) && Boolean(coreTxs) && Boolean(txWrappers);
-  },
-  fn: ({ walletData, coreTxs, txWrappers }) => {
-    const accounts = walletData.chain
-      ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
-      : [];
-    const account = accounts.at(0);
-    if (!account) throw new Error('Account not found');
-
-    return coreTxs!.map((coreTx) => ({
-      initiatorAccountId: account.accountId,
+  source: $coreTxs,
+  fn: (coreTxs) => {
+    return coreTxs.map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     }));
   },

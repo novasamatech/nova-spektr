@@ -2,10 +2,10 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { isStep } from '@/shared/lib/utils';
+import { isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -204,16 +204,14 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    transferStore: $transferStore,
     coreTx: $coreTx,
-    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ transferStore, coreTx, txWrappers }) => Boolean(transferStore) && Boolean(coreTx) && Boolean(txWrappers),
-  fn: ({ transferStore, coreTx, txWrappers }) => {
-    const tx = {
-      initiatorAccountId: transferStore!.account.accountId,
+  filter: ({ coreTx }) => nonNullable(coreTx),
+  fn: ({ coreTx }) => {
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: coreTx!.accountId,
       coreTx: coreTx!,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     };
 

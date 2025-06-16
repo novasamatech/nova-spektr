@@ -344,22 +344,12 @@ sample({
 
 sample({
   clock: txSaved,
-  source: {
-    store: $walletData,
-    coreTxs: $pureTxs,
-    txWrappers: $txWrappers,
-  },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTxs, txWrappers }) => {
-    const account = store!.shards.at(0);
-    if (!account) throw new Error('Account not found');
-
-    return coreTxs!.map((coreTx) => ({
-      initiatorAccountId: account.accountId,
+  source: $pureTxs,
+  fn: (coreTxs) => {
+    return coreTxs.map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     }));
   },

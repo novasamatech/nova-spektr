@@ -2,21 +2,13 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import {
-  type BasketTransaction,
-  type Chain,
-  type ChainId,
-  type Connection,
-  type Transaction,
-  TransactionType,
-  WrapperKind,
-} from '@/shared/core';
+import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type BondExtraConfirm,
   type PayeeConfirm,
@@ -73,9 +65,7 @@ const prepareBondNominateDataFx = createEffect(
       destination: bondTx.args.dest,
       signatory: account!,
       initiator: account!,
-      route: transaction.txWrappers.map((wrapper) =>
-        wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-      ),
+      route: transaction.route,
       coreTx: transaction.coreTx,
       tx: transaction.coreTx,
       multisigTx: null,
@@ -99,9 +89,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     totalFee: fee.toString(),
     multisigDeposit: '0',
     initiator: account!,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.signer,
-    ),
+    route: transaction.route,
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
     multisigTx: transaction.coreTx,
@@ -152,9 +140,7 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
 
     fee,
     totalFee: fee,
@@ -175,9 +161,7 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     api: apis[chain.chainId],
     signatory: account!,
     initiator: account!,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
@@ -198,9 +182,7 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     amount: transaction.coreTx.args.value,
     signatory: account!,
     initiator: account!,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
@@ -233,9 +215,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     signatory: account!,
     initiator: account!,
     amount,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
