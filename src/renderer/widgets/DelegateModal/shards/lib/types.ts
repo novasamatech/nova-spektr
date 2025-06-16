@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { type Account, type Address, type Chain, type Conviction, type Wallet } from '@/shared/core';
+import { type Address, type Chain, type Conviction, type Wallet } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 
 export type WalletData = {
   wallet: Wallet;
@@ -8,8 +9,8 @@ export type WalletData = {
 };
 
 export type DelegateData = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   tracks: number[];
   target: Address;
   conviction: Conviction;

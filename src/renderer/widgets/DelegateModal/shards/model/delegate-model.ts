@@ -30,7 +30,10 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { delegateConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/Delegate';
+import {
+  type DelegateConfirm,
+  delegateConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm/Delegate';
 import { type DelegateData, type FeeData } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -83,9 +86,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : undefined;
+    return walletData?.chain ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
 );
 
 const $transactions = combine(
@@ -95,7 +97,7 @@ const $transactions = combine(
     txWrappers: $txWrappers,
   },
   ({ api, coreTxs, txWrappers }) => {
-    if (!api) return undefined;
+    if (!api) return null;
 
     return coreTxs.map((tx) =>
       transactionService.getWrappedTransaction({
@@ -105,7 +107,6 @@ const $transactions = combine(
       }),
     );
   },
-  { skipVoid: false },
 );
 
 // Transaction & Form
@@ -116,7 +117,7 @@ sample({
     walletData: $walletData,
     wallets: walletModel.$wallets,
   },
-  filter: ({ walletData }) => Boolean(walletData.wallet),
+  filter: ({ walletData }) => nonNullable(walletData.wallet),
   fn: ({ walletData, wallets }, data) => {
     const signatories = 'signatory' in data && data.signatory ? [data.signatory] : [];
 
@@ -173,7 +174,7 @@ sample({
     accounts: $accounts,
   },
   filter: ({ walletData, target, tracks }) => {
-    return Boolean(walletData.chain) && Boolean(target) && Boolean(tracks.length);
+    return nonNullable(walletData.chain) && nonNullable(target) && tracks.length > 0;
   },
   fn: ({ walletData, accounts, target, tracks }, delegateData) => {
     return accounts.map((shard) => {
@@ -193,7 +194,7 @@ sample({
 sample({
   clock: $transactions,
   source: $api,
-  filter: (api, transactions) => Boolean(api) && Boolean(transactions?.length),
+  filter: (api, transactions) => nonNullable(api) && (transactions?.length ?? 0) > 0,
   fn: (api, transactions) => ({
     api: api!,
     transaction: transactions![0].wrappedTx,
@@ -204,7 +205,7 @@ sample({
 sample({
   clock: $txWrappers,
   source: $api,
-  filter: (api, txWrappers) => Boolean(api) && transactionService.hasMultisig(txWrappers),
+  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
   fn: (api, txWrappers) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
 
@@ -271,7 +272,7 @@ sample({
 sample({
   clock: selectTracksModel.output.formSubmitted,
   source: $walletData,
-  filter: (walletData) => Boolean(walletData.chain) && Boolean(walletData.wallet),
+  filter: (walletData) => nonNullable(walletData.chain) && nonNullable(walletData.wallet),
   fn: (walletData, { tracks, accounts }) => ({
     event: { wallet: walletData.wallet!, chain: walletData.chain!, shards: accounts },
     tracks,
@@ -302,7 +303,12 @@ sample({
     step: $step,
   },
   filter: ({ walletData, delegateData, step }) => {
-    return Boolean(delegateData) && Boolean(walletData.wallet) && Boolean(walletData.chain) && isStep(step, Step.INIT);
+    return (
+      nonNullable(delegateData) &&
+      nonNullable(walletData.wallet) &&
+      nonNullable(walletData.chain) &&
+      isStep(step, Step.INIT)
+    );
   },
   fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
@@ -322,21 +328,28 @@ sample({
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
+          signatory: delegateData!.signatory!,
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTxs[index],
-        };
+          initiator: shard,
+          route: txWrappers.map((wrapper) =>
+            wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+          ),
+          tx: coreTxs[index],
+          multisigTx: null,
+        } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
     walletData: $walletData,
@@ -346,7 +359,9 @@ sample({
     step: $step,
   },
   filter: ({ delegateData, walletData, transactions, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.CONFIRM);
+    return (
+      nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transactions) && isStep(step, Step.CONFIRM)
+    );
   },
   fn: ({ delegateData, walletData, transactions, txWrappers, accounts }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
@@ -380,7 +395,7 @@ sample({
     step: $step,
   },
   filter: ({ delegateData, walletData, transactions, step }) => {
-    return Boolean(delegateData) && Boolean(walletData) && Boolean(transactions) && isStep(step, Step.SIGN);
+    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transactions) && isStep(step, Step.SIGN);
   },
   fn: (delegateFlowData, signParams) => ({
     event: {

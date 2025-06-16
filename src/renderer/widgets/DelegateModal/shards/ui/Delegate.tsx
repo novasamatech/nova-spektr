@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep } from '@/shared/lib/utils';
+import { Step, isStep, nullable } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
@@ -64,7 +64,7 @@ export const Delegate = () => {
     );
   }
 
-  if (transactions === undefined) {
+  if (nullable(transactions)) {
     return null;
   }
 
