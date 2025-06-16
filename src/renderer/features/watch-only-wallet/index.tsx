@@ -27,6 +27,14 @@ accountSDK(watchOnlyWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
+  nodeConfig: account => {
+    if (accountUtils.isWatchOnlyAccount(account)) {
+      return {
+        title: 'Watch Only',
+        color: 'var(--badge-orange-background-default)',
+      };
+    }
+  },
 });
 
 watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

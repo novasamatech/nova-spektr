@@ -44,6 +44,14 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
+  nodeConfig: account => {
+    if (accountUtils.isMultisigAccount(account)) {
+      return {
+        title: 'Multisig',
+        color: '#05B199',
+      };
+    }
+  },
 });
 
 transactionSDK(multisigWalletFeature, {

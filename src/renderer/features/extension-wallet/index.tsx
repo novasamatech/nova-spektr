@@ -29,6 +29,14 @@ accountSDK(extensionWalletFeature, {
     return polkadotExtensionService.isExtensionAccount(account);
   },
   canSignMultipleTransactions: () => false,
+  nodeConfig: (account) => {
+    if (polkadotExtensionService.isExtensionAccount(account)) {
+      return {
+        title: 'Polkadot.js',
+        color: '#FF8C00',
+      };
+    }
+  },
 });
 
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

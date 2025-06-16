@@ -43,6 +43,14 @@ accountSDK(proxiedWalletFeature, {
     }
     return children;
   },
+  nodeConfig: account => {
+    if (accountUtils.isProxiedAccount(account)) {
+      return {
+        title: 'Proxied wallet',
+        color: '#2A1FD5',
+      };
+    }
+  },
 });
 
 transactionSDK(proxiedWalletFeature, {
