@@ -227,7 +227,7 @@ sample({
     return [
       {
         initiatorAccountId: coreTx.accountId,
-        coreTx: coreTx,
+        coreTx,
         route,
         createdAt: Date.now(),
       },

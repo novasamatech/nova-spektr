@@ -1,6 +1,5 @@
-import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -13,12 +12,11 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
-import { createTxWrappers } from '@/shared/transactions/createTxWrappers';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { type FormSubmitEvent } from '../lib/types';
@@ -37,7 +35,6 @@ type FormParams = {
 const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 
-const $multisigDeposit = createStore<string>(ZERO_BALANCE);
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $chain = $networkStore.map((network) => network?.chain ?? null);
@@ -54,7 +51,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             proxyBalance: $proxyBalance,
             network: $networkStore,
           }),
-          fn: (_i: AnyAccount | null, _f: FormParams, { fee, isProxy, proxyBalance }) => {
+          fn: (_i, _f, { fee, isProxy, proxyBalance }) => {
             if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
               return { message: 'staking.notEnoughBalanceError' };
             }
@@ -106,14 +103,6 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
   },
   validateOn: ['submit'],
-});
-
-type DepositParams = {
-  api: ApiPromise;
-  threshold: number;
-};
-const getMultisigDepositFx = createEffect(({ api, threshold }: DepositParams): string => {
-  return transactionService.getMultisigDeposit(threshold, api);
 });
 
 // Computed
@@ -251,20 +240,16 @@ const $proxyBalance = combine(
   },
 );
 
-sample({
-  clock: $route.updates,
-  source: $api,
-  filter: (api, route) => nonNullable(api) && route.some(accountUtils.isMultisigAccount),
-  fn: (api, route) => ({
-    api: api!,
-    threshold: route.find(accountUtils.isMultisigAccount)!.threshold,
-  }),
-  target: getMultisigDepositFx,
+const $multisigThreshold = $route.map((route) => {
+  const multisig = route.find(accountUtils.isMultisigAccount);
+  if (!multisig) return null;
+
+  return multisig.threshold;
 });
 
-sample({
-  clock: getMultisigDepositFx.doneData,
-  target: $multisigDeposit,
+const { $multisigDeposit } = createMultisigDeposit({
+  $api: $api,
+  $threshold: $multisigThreshold,
 });
 
 const $canSubmit = combine(
@@ -314,6 +299,7 @@ sample({
 
     return {
       ...fee,
+      multisigDeposit: fee.multisigDeposit.toString(),
       totalFee: fee.fee.toString(),
       chain: network!.chain,
       initiator: initiator!,
@@ -321,14 +307,6 @@ sample({
     };
   },
   target: formSubmitted,
-});
-
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
 });
 
 export const formModel = {
@@ -349,7 +327,6 @@ export const formModel = {
   $networkStore,
   $tx,
   $canSubmit,
-  $txWrappers,
 
   formInitiated,
   formSubmitted,

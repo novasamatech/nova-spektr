@@ -304,19 +304,17 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    nominateForm: $nominateForm,
     coreTx: $coreTx,
-    txWrappers: formModel.$txWrappers,
+    nominateForm: $nominateForm,
   },
-  filter: ({ nominateForm, coreTx, txWrappers }) => {
-    return nonNullable(nominateForm) && nonNullable(coreTx) && nonNullable(txWrappers);
-  },
-  fn: ({ nominateForm, coreTx, txWrappers }) => {
+  fn: ({ coreTx, nominateForm }) => {
+    if (nullable(coreTx) || nullable(nominateForm)) return [];
+
     return [
       {
-        initiatorAccountId: nominateForm!.initiator.accountId,
-        coreTx: coreTx!,
-        txWrappers,
+        initiatorAccountId: coreTx.accountId,
+        coreTx,
+        route: nominateForm!.route,
         createdAt: Date.now(),
       },
     ];

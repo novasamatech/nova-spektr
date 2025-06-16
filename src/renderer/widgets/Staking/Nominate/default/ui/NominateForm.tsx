@@ -129,7 +129,7 @@ const FeeSection = () => {
             </>
           }
         >
-          <Fee fee={multisigDeposit} asset={network.chain.assets[0]} />
+          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
         </DetailRow>
       )}
 
