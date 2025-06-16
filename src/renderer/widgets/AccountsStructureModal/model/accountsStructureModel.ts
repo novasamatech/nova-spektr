@@ -8,21 +8,26 @@ const $availableChains = networkModel.$chains.map((chains) => Object.values(chai
 
 const selectChain = createEvent<string>();
 const resetChain = createEvent();
-const setAccount = createEvent<AnyAccount | null>();
+const setAccounts = createEvent<AnyAccount[] | null>();
+const selectAccount = createEvent<AnyAccount>();
 
 const $selectedChainId = createStore<string | null>(null)
   .on(selectChain, (_, chainId) => chainId)
   .reset(resetChain);
 
-const $account = createStore<AnyAccount | null>(null)
-  .on(setAccount, (_, account) => account)
+const $accountList = createStore<AnyAccount[] | null>(null)
+  .on(setAccounts, (_, accounts) => accounts)
   .reset(resetChain);
+
+const $selectedAccount = createStore<AnyAccount | null>(null)
+  .on(setAccounts, (_, accounts) => accounts?.[0] ?? null)
+  .on(selectAccount, (_, account) => account);
 
 // Filter available chains based on account
 const $filteredChains = combine(
   {
     chains: $availableChains,
-    account: $account,
+    account: $selectedAccount,
   },
   ({ chains, account }) => {
     if (!account) return chains;
@@ -34,10 +39,6 @@ const $filteredChains = combine(
 sample({
   clock: $filteredChains,
   source: $selectedChainId,
-  filter: (selectedChainId, filteredChains) => {
-    if (!selectedChainId || !filteredChains.length) return true;
-    return !filteredChains.some((chain) => chain.chainId === selectedChainId);
-  },
   fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
   target: selectChain,
 });
@@ -73,6 +74,8 @@ const $network = combine(
 export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
+  $selectedAccount,
+  $accountList,
   $availableChains: $filteredChains,
   $filteredChains,
   $network,
@@ -80,6 +83,7 @@ export const accountsStructureModel = {
   events: {
     selectChain,
     resetChain,
-    setAccount,
+    setAccounts,
+    selectAccount,
   },
 };

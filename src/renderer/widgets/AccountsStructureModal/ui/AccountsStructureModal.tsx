@@ -10,6 +10,7 @@ import { Modal } from '@/shared/ui-kit';
 import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
+import { AccountSelector } from './AccountSelector';
 import { ChainSelector } from './ChainSelector';
 
 const AccountsStructure = lazy(() =>
@@ -17,23 +18,24 @@ const AccountsStructure = lazy(() =>
 );
 
 type Props = {
-  account: AnyAccount;
+  walletAccounts: AnyAccount[];
   onClose?: () => void;
 };
 
-export const AccountsStructureModal = ({ account, onClose }: Props) => {
+export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
+  const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
-  const setAccount = useUnit(accountsStructureModel.events.setAccount);
+  const setAccounts = useUnit(accountsStructureModel.events.setAccounts);
 
   useEffect(() => {
-    setAccount(account);
+    setAccounts(walletAccounts);
     return () => {
-      setAccount(null);
+      setAccounts(null);
     };
-  }, [account, setAccount]);
+  }, [walletAccounts, setAccounts]);
 
   const onToggle = useCallback(
     (value: boolean) => {
@@ -47,8 +49,8 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
   );
 
   const graph = useMemo(() => {
-    if (!selectedChain) return null;
-    return findNodesRelatedToAccount(accountList, account, selectedChain);
+    if (!selectedChain || !selectedAccount) return null;
+    return findNodesRelatedToAccount(accountList, selectedAccount, selectedChain);
   }, [accountList, selectedChain]);
 
   return (
@@ -56,13 +58,18 @@ export const AccountsStructureModal = ({ account, onClose }: Props) => {
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-[600px]">
-          <div className="absolute left-4 top-4 z-10 w-[200px]">
-            <ChainSelector account={account} />
+          <div className="absolute left-4 top-4 z-10 flex gap-4">
+            <div className="w-[200px]">
+              <ChainSelector />
+            </div>
+            <div className="w-[200px]">
+              <AccountSelector walletAccounts={walletAccounts} />
+            </div>
           </div>
 
           {graph && isOpen && (
             <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
-              <AccountsStructure account={account} graph={graph} />
+              {selectedAccount && <AccountsStructure account={selectedAccount} graph={graph} />}
             </Suspense>
           )}
         </div>

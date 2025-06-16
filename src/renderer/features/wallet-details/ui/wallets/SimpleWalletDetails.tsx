@@ -121,7 +121,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
 
           <div className="shrink-0">
-            {features.accountsStructure && firstAccount && <AccountsStructureModal account={firstAccount} />}
+            {features.accountsStructure && firstAccount && <AccountsStructureModal walletAccounts={[firstAccount]} />}
           </div>
         </div>
       </Modal.HeaderContent>

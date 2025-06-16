@@ -257,7 +257,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
               {features.accountsStructure && (
                 <div className="shrink-0">
-                  {multisigAccount && <AccountsStructureModal account={multisigAccount} />}
+                  {multisigAccount && <AccountsStructureModal walletAccounts={[multisigAccount]} />}
                 </div>
               )}
             </div>

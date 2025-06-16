@@ -130,16 +130,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     });
   };
 
-  // ToDo: implement acc selector in modal, here we have 1 acc per chain
-  const pkdtAccount = wallet.accounts.find(
-    a => a.chainId === '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-  );
-  const kusamaAccount = wallet.accounts.find(
-    a => a.chainId === '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
-  );
-
-  console.log({ wallet });
-
   return (
     <>
       <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
@@ -154,17 +144,10 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
                 title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
                 variant={connected ? 'success' : 'waiting'}
               />
+
+              {/* ToDo: upd layout */}
+              {features.accountsStructure && <AccountsStructureModal walletAccounts={wallet.accounts} />}
             </WalletCardLg>
-
-            <hr />
-
-            <div>{t('This is for testing purpose, for Kusama account')}</div>
-            {features.accountsStructure && kusamaAccount && <AccountsStructureModal account={kusamaAccount} />}
-
-            <hr />
-
-            <div>{t('This is for testing purpose, for Polkadot account')}</div>
-            {features.accountsStructure && pkdtAccount && <AccountsStructureModal account={pkdtAccount} />}
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>

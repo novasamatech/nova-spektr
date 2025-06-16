@@ -121,7 +121,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <WalletCardLg wallet={wallet} />
 
             {features.accountsStructure && (
-              <div className="shrink-0">{account && <AccountsStructureModal account={account} />}</div>
+              <div className="shrink-0">{account && <AccountsStructureModal walletAccounts={[account]} />}</div>
             )}
           </div>
 
