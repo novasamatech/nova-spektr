@@ -38,27 +38,27 @@ export const Confirmation = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
-
-  const { meta, wallets: confirmWallets } = confirmStore;
+  const confirmStore = confirms[id] || {};
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
-    keys: [meta?.chain],
+    keys: [confirmStore.meta?.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: meta?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore.meta?.chain });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  if (!confirmStore || !confirmWallets?.initiator) {
+  if (!confirmStore || !confirmStore.wallets?.initiator) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
       </Box>
     );
   }
+
+  const { meta, wallets: confirmWallets } = confirmStore;
 
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
