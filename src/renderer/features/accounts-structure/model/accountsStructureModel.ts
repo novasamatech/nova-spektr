@@ -7,20 +7,13 @@ import { networkModel } from '@/entities/network';
 const $availableChains = networkModel.$chains.map((chains) => Object.values(chains));
 
 const selectChain = createEvent<string>();
-const resetChain = createEvent();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
-const $selectedChainId = restore(selectChain, null).reset(resetChain);
+const $selectedChainId = restore(selectChain, null);
 
-const $accountList = createStore<AnyAccount[] | null>(null)
-  .on(setAccounts, (_, accounts) => accounts)
-  .reset(resetChain);
-
-const $selectedAccount = restore(selectAccount, null)
-  .on(setAccounts, (_, accounts) => accounts?.[0] ?? null)
-  .reset(resetChain);
-
+const $accountList = createStore<AnyAccount[] | null>(null).on(setAccounts, (_, accounts) => accounts);
+const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
 // Filter available chains based on account
 const $filteredChains = combine(
   {
@@ -80,7 +73,6 @@ export const accountsStructureModel = {
 
   events: {
     selectChain,
-    resetChain,
     setAccounts,
     selectAccount,
   },
