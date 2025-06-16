@@ -13,7 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -24,7 +24,7 @@ import {
   votingService,
 } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<DelegateAccount>();
@@ -49,18 +49,16 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
 
 const $availableAccounts = combine(
   {
-    wallet: walletModel.$activeWallet,
+    accounts: accounts.$list,
     delegations: delegationAggregate.$activeDelegations,
     network: delegationAggregate.$network,
     delegate: $delegate,
   },
-  ({ wallet, delegations, network, delegate }) => {
-    if (!wallet || !network?.chain || !delegate) return [];
+  ({ accounts, delegations, network, delegate }) => {
+    if (!network?.chain || !delegate) return [];
 
-    return wallet.accounts
-      .filter(
-        (a) => accountUtils.isNonBaseVaultAccount(a, wallet) && accountUtils.isChainIdMatch(a, network.chain.chainId),
-      )
+    return accountService
+      .filterAccountsOnChain(accounts, network.chain)
       .filter(
         (account) =>
           !delegations[delegate.address]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
