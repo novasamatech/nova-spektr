@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { type WalletConnectGroup } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import {
@@ -19,11 +20,11 @@ import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
+import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -146,7 +147,9 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               />
 
               {/* ToDo: upd layout */}
-              {features.accountsStructure && <AccountsStructureModal walletAccounts={wallet.accounts} />}
+              {features.accountsStructure && (
+                <Slot id={accountsStructureModalSlot} props={{ walletAccounts: wallet.accounts }} />
+              )}
             </WalletCardLg>
           </div>
         </Modal.HeaderContent>

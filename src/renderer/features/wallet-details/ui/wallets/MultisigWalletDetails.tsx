@@ -4,6 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { $features } from '@/shared/config/features';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, toAddress } from '@/shared/lib/utils';
@@ -14,12 +15,12 @@ import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
@@ -257,7 +258,9 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
               {features.accountsStructure && (
                 <div className="shrink-0">
-                  {multisigAccount && <AccountsStructureModal walletAccounts={[multisigAccount]} />}
+                  {multisigAccount && (
+                    <Slot id={accountsStructureModalSlot} props={{ walletAccounts: [multisigAccount] }} />
+                  )}
                 </div>
               )}
             </div>

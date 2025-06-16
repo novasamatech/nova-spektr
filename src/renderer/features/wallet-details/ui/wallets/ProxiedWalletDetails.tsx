@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
@@ -11,10 +12,10 @@ import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { WalletCardLg, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
@@ -121,7 +122,9 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <WalletCardLg wallet={wallet} />
 
             {features.accountsStructure && (
-              <div className="shrink-0">{account && <AccountsStructureModal walletAccounts={[account]} />}</div>
+              <div className="shrink-0">
+                {account && <Slot id={accountsStructureModalSlot} props={{ walletAccounts: [account] }} />}
+              </div>
             )}
           </div>
 

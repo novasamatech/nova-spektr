@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { type Chain, type Wallet } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { Icon, IconButton } from '@/shared/ui';
@@ -11,11 +12,11 @@ import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
-import { AccountsStructureModal } from '@/widgets/AccountsStructureModal';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
@@ -121,7 +122,9 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
 
           <div className="shrink-0">
-            {features.accountsStructure && firstAccount && <AccountsStructureModal walletAccounts={[firstAccount]} />}
+            {features.accountsStructure && firstAccount && (
+              <Slot id={accountsStructureModalSlot} props={{ walletAccounts: [firstAccount] }} />
+            )}
           </div>
         </div>
       </Modal.HeaderContent>
