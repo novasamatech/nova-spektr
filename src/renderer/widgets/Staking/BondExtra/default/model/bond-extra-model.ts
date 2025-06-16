@@ -2,8 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type MultisigTxWrapper, WrapperKind } from '@/shared/core';
-import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -53,18 +52,25 @@ const $api = combine(
   ({ apis, walletData }) => (walletData ? apis[walletData.chain.chainId] : null),
 );
 
-sample({
-  clock: formModel.$txWrappers,
+const requestMultisigDeposit = sample({
+  clock: formModel.$multisigAccount,
   source: $api,
-  filter: (api, txWrappers) => nonNullable(api) && transactionService.hasMultisig(txWrappers),
-  fn: (api, txWrappers) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.MULTISIG) as MultisigTxWrapper;
+  fn: (api, account) => {
+    if (nullable(api) || nullable(account)) return null;
 
     return {
-      api: api!,
-      threshold: wrapper?.multisigAccount.threshold || 0,
+      api,
+      threshold: account.threshold,
     };
   },
+}).updates.filterMap((params) => {
+  if (params) {
+    return params;
+  }
+});
+
+sample({
+  clock: requestMultisigDeposit,
   target: getMultisigDepositFx,
 });
 
@@ -244,17 +250,20 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $walletData,
     coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers) && nonNullable(store?.initiator);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
-    if (!store || !coreTx || !store.initiator) return [];
+  fn: ({ coreTx, route }) => {
+    if (nullable(coreTx)) return [];
 
-    return [{ initiatorAccountId: store.initiator!.accountId, coreTx, txWrappers, createdAt: Date.now() }];
+    return [
+      {
+        initiatorAccountId: coreTx.accountId,
+        coreTx,
+        route,
+        createdAt: Date.now(),
+      },
+    ];
   },
   target: basketOperations.addTransactions,
 });

@@ -16,7 +16,7 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -153,14 +153,6 @@ const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> =>
 });
 
 // Computed
-
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
-});
 
 const $isChainConnected = combine(
   {
@@ -473,7 +465,6 @@ export const formModel = {
 
   $proxyWallet,
   $signatories,
-  $txWrappers,
   $coreTx,
   $route,
   $multisigTx,

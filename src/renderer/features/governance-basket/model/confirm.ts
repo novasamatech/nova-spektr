@@ -5,7 +5,6 @@ import { createGate } from 'effector-react';
 
 import {
   type Balance,
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type Connection,
@@ -19,9 +18,11 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
+  type DelegateConfirm,
   type RemoveVoteConfirm,
   type VoteConfirm,
   delegateConfirmModel,
@@ -104,19 +105,22 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     asset,
     transferable,
 
-    shards: [account!],
     balance: coreTxs[0].args.balance,
     conviction: votingService.getConviction(coreTxs[0].args.conviction),
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
-    description: '',
     locks,
-    signatory: null,
+    signatory: account!,
+    initiator: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies DelegateInput;
+  } satisfies DelegateConfirm;
 });
 
 const prepareEditDelegationDataFx = createEffect(
@@ -392,7 +396,7 @@ sample({
 sample({
   clock: prepareDelegateDataFx.doneData,
   fn: (data) => [data],
-  target: delegateConfirmModel.events.formInitiated,
+  target: delegateConfirmModel.init,
 });
 
 sample({

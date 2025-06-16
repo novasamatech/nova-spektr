@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -246,21 +246,16 @@ sample({
   clock: txSaved,
   source: {
     coreTx: formModel.$coreTx,
-    walletData: $walletData,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ coreTx, walletData, txWrappers }) => {
-    return nonNullable(coreTx) && nonNullable(walletData) && nonNullable(txWrappers);
-  },
-  fn: ({ coreTx, walletData, txWrappers }) => {
-    const account = walletData!.shards[0].accountId;
-    if (!account) throw new Error('Initiator account not found');
+  fn: ({ coreTx, route }) => {
+    if (nullable(coreTx)) return [];
 
     return [
       {
-        initiatorAccountId: account,
-        coreTx: coreTx!,
-        txWrappers,
+        initiatorAccountId: coreTx.accountId,
+        coreTx,
+        route,
         createdAt: Date.now(),
       },
     ];

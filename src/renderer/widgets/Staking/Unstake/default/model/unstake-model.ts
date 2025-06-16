@@ -218,19 +218,17 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $unstakeStore,
     coreTx: $coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
+  fn: ({ coreTx, route }) => {
+    if (!coreTx) return [];
+
     return [
       {
-        initiatorAccountId: store!.initiator.accountId,
-        coreTx: coreTx!,
-        txWrappers,
+        initiatorAccountId: coreTx.accountId,
+        coreTx: coreTx,
+        route,
         createdAt: Date.now(),
       },
     ];

@@ -22,7 +22,7 @@ import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -441,18 +441,15 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $removeProxyStore,
     coreTx: $coreTx,
-    txWrappers: $txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
-    const tx = {
-      initiatorAccountId: store!.account.accountId,
-      coreTx: coreTx!,
-      txWrappers,
+  fn: ({ coreTx }) => {
+    if (nullable(coreTx)) return [];
+
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: coreTx.accountId,
+      coreTx,
+      route: [],
       createdAt: Date.now(),
     };
 

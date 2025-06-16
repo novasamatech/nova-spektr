@@ -191,22 +191,14 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $restakeStore,
     coreTxs: $coreTxs,
-    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTxs, txWrappers }) => {
-    const account = store!.shards.at(0);
-    if (!account) throw new Error('Account not found');
-
-    return coreTxs!.map((coreTx) => ({
+  filter: ({ coreTxs }) => nonNullable(coreTxs),
+  fn: ({ coreTxs }) => {
+    return (coreTxs ?? []).map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
-      groupId: Date.now(),
-      initiatorAccountId: account.accountId,
+      route: [],
       createdAt: Date.now(),
     }));
   },

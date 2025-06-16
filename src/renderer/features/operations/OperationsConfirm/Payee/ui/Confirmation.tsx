@@ -109,7 +109,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={confirmStore.wallets.signatory?.type || confirmStore.wallets.initiator.type}
+              type={confirmStore.wallets.signatory.type}
               onClick={confirmModel.startSigning}
             />
           )}

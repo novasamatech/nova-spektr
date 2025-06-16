@@ -222,16 +222,15 @@ sample({
   source: {
     unlockData: $unlockData,
     coreTxs: $coreTxs,
-    txWrappers: unlockFormAggregate.$txWrappers,
   },
-  filter: ({ unlockData, coreTxs, txWrappers }) => {
-    return !!unlockData && !!coreTxs && !!txWrappers;
+  filter: ({ coreTxs }) => {
+    return !!coreTxs;
   },
-  fn: ({ unlockData, coreTxs, txWrappers }) =>
+  fn: ({ coreTxs }) =>
     coreTxs!.map((coreTx) => ({
-      initiatorAccountId: unlockData!.shards[0].accountId,
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     })),
   target: basketOperations.addTransactions,
