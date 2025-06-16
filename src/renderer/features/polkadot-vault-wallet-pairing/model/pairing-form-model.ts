@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesModel } from '@/features/proxies';

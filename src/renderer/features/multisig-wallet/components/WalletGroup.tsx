@@ -1,3 +1,4 @@
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
@@ -7,7 +8,10 @@ import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { WalletIcon } from '@/entities/wallet';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
 const { WalletFiatBalance } = walletsFiatBalanceFeature.views;
@@ -24,11 +28,16 @@ type Props = {
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
   const { t } = useI18n();
+  const allAccounts = useUnit(accounts.$list);
+  const chains = useUnit(networkModel.$chains);
 
   const filteredWallets = performSearch({
     query,
     records: wallets,
-    weights: { name: 1 },
+    getMeta: wallet => ({
+      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+    }),
+    weights: { name: 1, allAddresses: 0.8 },
   });
 
   if (filteredWallets.length === 0) {

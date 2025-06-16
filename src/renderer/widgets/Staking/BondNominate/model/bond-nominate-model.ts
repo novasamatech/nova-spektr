@@ -14,11 +14,12 @@ import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/util
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { operationsModel, operationsUtils } from '@/entities/operations';
+import { operationsUtils } from '@/entities/operations';
 import { validatorsService } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -103,7 +104,7 @@ const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
     coreTxs: $pureTxs,
-    transactions: operationsModel.$multisigTransactions,
+    transactions: selectedWalletMultisigOperations.$list,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
 );
