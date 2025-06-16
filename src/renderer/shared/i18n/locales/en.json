@@ -4,6 +4,10 @@
     "networksColumn_one": "Network {count}",
     "networksColumn_other": "Networks {count}"
   },
+  "accountsStructure": {
+    "button": "Open overview",
+    "modalTitle": "Overview account"
+  },
   "addressBook": {
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
@@ -2148,9 +2152,5 @@
     "ledgerImageAlt": "Icon of Ledger option",
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
-  },
-  "accountsStructure": {
-    "modalTitle": "Overview account",
-    "button": "Open overview"
   }
 }
