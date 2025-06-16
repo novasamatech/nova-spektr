@@ -300,7 +300,7 @@ const $isProxy = $route.map((route) => nonNullable(route.find((account) => accou
 const $isMultisig = $route.map((route) =>
   nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
 );
-const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)));
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 
 const $proxyWallet = combine(
   {
