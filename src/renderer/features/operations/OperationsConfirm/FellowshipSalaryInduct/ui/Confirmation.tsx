@@ -51,8 +51,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
           {!hideSignButton && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(record.wallets.signatory || record.wallets.initiator)?.type}
-              onClick={() => confirm.startSigning()}
+              type={record.wallets.signatory.type}
+              onClick={confirm.startSigning}
             />
           )}
         </div>

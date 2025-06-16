@@ -48,7 +48,7 @@ sample({
     chains: networkModel.$chains,
     accounts: accounts.$list,
   },
-  filter: ({ transactions }) => Boolean(transactions) && transactions.length > 0,
+  filter: ({ transactions }) => nonNullable(transactions) && transactions.length > 0,
   fn: ({ transactions, accounts, chains }) => {
     // TODO implement wrapping in basket context. Now basket only supports PV so it's not necessary.
     const signingPayloads = transactions
@@ -84,9 +84,7 @@ sample({
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
-  filter: ({ transactions }) => {
-    return Boolean(transactions) && transactions.length > 0;
-  },
+  filter: ({ transactions }) => nonNullable(transactions) && transactions.length > 0,
   fn: ({ transactions, chains, wallets }, signParams) => {
     const account = walletUtils.getAccountsBy(wallets, account => {
       return (

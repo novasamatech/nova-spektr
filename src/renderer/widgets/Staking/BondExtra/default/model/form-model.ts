@@ -224,8 +224,8 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount));
-const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount));
+const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
 const $isProxy = $proxiedAccount.map(nonNullable);
 const $isMultisig = $multisigAccount.map(nonNullable);
 

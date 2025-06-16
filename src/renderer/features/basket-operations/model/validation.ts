@@ -8,10 +8,10 @@ import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable, transferableAmountBN } from '@/shared/lib/utils';
-import { transactionService as t } from '@/domains/network';
+import { transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
+import { getExtrinsic } from '@/entities/transaction';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type ValidationResult } from '@/features/operations/OperationsValidation';
 
@@ -34,7 +34,7 @@ const validateFeeFx = attach({
     apis: networkModel.$apis,
     balances: balanceModel.$balances,
   },
-  async effect({ chains, apis, balances }, { transaction, signerOptions }: ValidationParams) {
+  async effect({ chains, apis, balances }, { transaction }: ValidationParams) {
     const chain = chains[transaction.coreTx.chainId];
     const api = apis[transaction.coreTx.chainId];
     const asset = chain.assets.at(0);
@@ -43,10 +43,11 @@ const validateFeeFx = attach({
 
     await api.isReady;
 
-    const wrapped = await t.wrapLegacyTransaction(transaction.coreTx, transaction.route, api);
+    const wrapped = await transactionService.wrapLegacyTransaction(transaction.coreTx, transaction.route, api);
+    const extrinsic = getExtrinsic[wrapped.type](wrapped.args, api);
 
     const accountId = wrapped.accountId;
-    const fee = await transactionService.getTransactionFee(wrapped, api, signerOptions);
+    const fee = await transactionService.getExtrinsicFee(extrinsic);
     const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const feeBN = new BN(fee);
