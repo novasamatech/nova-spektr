@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useLayoutEffect } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type Chain, type ChainId } from '@/shared/core';
@@ -8,6 +8,8 @@ import { Paths } from '@/shared/routes';
 import { Header, Plate } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   Locks,
   NetworkSelector,
@@ -19,11 +21,16 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
-import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
 import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
+
+// Lazy load delegate components
+const Delegate = lazy(() => import('@/widgets/DelegateModal').then((module) => ({ default: module.Delegate })));
+const DelegateShards = lazy(() =>
+  import('@/widgets/DelegateModal').then((module) => ({ default: module.DelegateShards })),
+);
 
 export const Governance = () => {
   useGate(governancePageAggregate.gates.flow);
@@ -34,6 +41,8 @@ export const Governance = () => {
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
   const selectedChain = useUnit(networkSelectorModel.$governanceChain);
+  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
+  const isAccountWithShards = selectedAccounts.find((account) => accountUtils.isAccountWithShards(account));
 
   useEffect(() => {
     if (!selectedChain || referendumId) return;
@@ -100,7 +109,7 @@ export const Governance = () => {
       <CurrentDelegationModal />
       <DelegationModal />
       <DelegateDetails />
-      <Delegate />
+      <Suspense fallback={null}>{isAccountWithShards ? <DelegateShards /> : <Delegate />}</Suspense>
 
       <UnlockModal />
     </div>
