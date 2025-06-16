@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 
 import { accountService } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
@@ -11,17 +11,15 @@ const resetChain = createEvent();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
-const $selectedChainId = createStore<string | null>(null)
-  .on(selectChain, (_, chainId) => chainId)
-  .reset(resetChain);
+const $selectedChainId = restore(selectChain, null).reset(resetChain);
 
 const $accountList = createStore<AnyAccount[] | null>(null)
   .on(setAccounts, (_, accounts) => accounts)
   .reset(resetChain);
 
-const $selectedAccount = createStore<AnyAccount | null>(null)
+const $selectedAccount = restore(selectAccount, null)
   .on(setAccounts, (_, accounts) => accounts?.[0] ?? null)
-  .on(selectAccount, (_, account) => account);
+  .reset(resetChain);
 
 // Filter available chains based on account
 const $filteredChains = combine(
