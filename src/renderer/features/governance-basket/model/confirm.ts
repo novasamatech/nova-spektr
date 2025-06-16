@@ -5,7 +5,6 @@ import { createGate } from 'effector-react';
 
 import {
   type Balance,
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type Connection,
@@ -19,6 +18,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {

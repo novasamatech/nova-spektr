@@ -38,6 +38,11 @@ import { NetworkInfo } from './NetworkInfo';
 import { NominatorsList } from './NominatorsList';
 
 // Lazy-loaded components
+const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
+
+const LazyUnstakeShards = lazy(() =>
+  import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
+);
 const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 
 const LazyBondExtraShards = lazy(() =>
@@ -296,6 +301,10 @@ export const Staking = () => {
     });
 
     const model = {
+      [StakeOperations.UNSTAKE]:
+        selectedNominators.length > 1
+          ? Operations.unstakeModelShards.events.flowStarted
+          : Operations.unstakeModel.events.flowStarted,
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
         ? Operations.bondNominateModelShards.flowStarted
         : Operations.bondNominateModel.flowStarted,
@@ -303,7 +312,6 @@ export const Staking = () => {
         selectedNominators.length > 1
           ? Operations.bondExtraShardsModel.events.flowStarted
           : Operations.bondExtraModel.events.flowStarted,
-      [StakeOperations.UNSTAKE]: Operations.unstakeModel.events.flowStarted,
       [StakeOperations.RESTAKE]: isMultipleStakes
         ? Operations.restakeModelShards.flowStarted
         : Operations.restakeModel.flowStarted,
@@ -415,7 +423,7 @@ export const Staking = () => {
 
       {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
-      <Operations.Unstake />
+      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
       <Operations.Nominate />
       {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
       <Suspense fallback={null}>{isMultipleStakes ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>

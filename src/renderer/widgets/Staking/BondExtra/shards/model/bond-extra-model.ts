@@ -358,16 +358,15 @@ sample({
   source: {
     store: $walletData,
     coreTxs: $pureTxs,
-    txWrappers: $txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
+  filter: ({ store, coreTxs }) => {
+    return Boolean(store) && Boolean(coreTxs);
   },
-  fn: ({ store, coreTxs, txWrappers }) =>
+  fn: ({ store, coreTxs }) =>
     coreTxs!.map((coreTx) => ({
       initiatorAccountId: store!.shards[0].accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     })),
   target: basketOperations.addTransactions,

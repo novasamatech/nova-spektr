@@ -1,7 +1,6 @@
 import { combine } from 'effector';
 import { or } from 'patronum';
 
-import { type BasketTransaction } from '@/shared/core';
 import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
@@ -14,7 +13,7 @@ import {
   trackService,
   votingService,
 } from '@/domains/collectives';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperations } from '@/aggregates/basket-operations';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { CompletedReferendumVoting } from '../components/tasks/CompletedReferendumVoting';
 import { OngoingReferendumVoting } from '../components/tasks/OngoingReferendumVoting';

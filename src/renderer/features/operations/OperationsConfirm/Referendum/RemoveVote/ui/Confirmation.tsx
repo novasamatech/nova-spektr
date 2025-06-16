@@ -15,7 +15,7 @@ import {
   votingService,
 } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
-import { Fee } from '@/entities/transaction';
+import { FeeWithDataLoading } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
@@ -128,7 +128,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         )}
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
-          <Fee api={api} asset={asset} transaction={tx} />
+          <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>
       </TransactionDetails>
 
@@ -139,10 +139,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={confirm.wallets.signatory?.type}
-              onClick={() => {
-                confirmModel.startSigning();
-              }}
+              type={confirm.wallets.signatory.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

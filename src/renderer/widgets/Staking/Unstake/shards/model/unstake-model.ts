@@ -80,27 +80,39 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs },
-  filter: ({ networkStore }) => Boolean(networkStore),
-  fn: ({ networkStore, coreTxs }, { formData }) => ({
+  source: {
+    networkStore: $networkStore,
+    coreTxs: $coreTxs,
+    api: formModel.$api,
+  },
+  filter: ({ networkStore, api, coreTxs }, { formData }) => {
+    return nonNullable(formData) && nonNullable(coreTxs) && nonNullable(networkStore) && nonNullable(api);
+  },
+  fn: ({ networkStore, coreTxs, api }, { formData, transactions }) => ({
     event: [
       {
         ...formData,
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTxs![0],
+        tx: coreTxs![0],
+        api: api!,
+        initiator: formData.shards[0],
+        signatory: formData.signatory!,
+        route: [formData.shards[0]],
+        multisigTx: transactions![0].multisigTx!,
       },
     ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
@@ -184,21 +196,16 @@ sample({
 
 sample({
   clock: txSaved,
-  source: {
-    store: $unstakeStore,
-    coreTxs: $coreTxs,
-    txWrappers: formModel.$txWrappers,
-  },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTxs) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTxs, txWrappers }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorAccountId: store!.shards[0].accountId,
+  source: $coreTxs,
+  filter: nonNullable,
+  fn: (coreTxs) => {
+    return (coreTxs ?? []).map((coreTx) => ({
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
-    })),
+    }));
+  },
   target: basketOperations.addTransactions,
 });
 

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { validatorsService } from '@/entities/staking';
@@ -305,19 +305,17 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $walletData,
     coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
+  fn: ({ coreTx, route }) => {
+    if (nullable(coreTx)) return [];
+
     return [
       {
-        initiatorAccountId: store!.shards[0].accountId,
-        coreTx: coreTx!,
-        txWrappers,
+        initiatorAccountId: coreTx.accountId,
+        coreTx,
+        route,
         createdAt: Date.now(),
       },
     ];
