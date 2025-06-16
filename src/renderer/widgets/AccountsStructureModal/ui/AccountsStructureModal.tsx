@@ -51,7 +51,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const graph = useMemo(() => {
     if (!selectedChain || !selectedAccount) return null;
     return findNodesRelatedToAccount(accountList, selectedAccount, selectedChain);
-  }, [accountList, selectedChain]);
+  }, [accountList, selectedChain, selectedAccount]);
 
   return (
     <Modal size="full" isOpen={isOpen} onToggle={onToggle}>
@@ -67,9 +67,9 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
             </div>
           </div>
 
-          {graph && isOpen && (
+          {graph && isOpen && selectedAccount && (
             <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
-              {selectedAccount && <AccountsStructure account={selectedAccount} graph={graph} />}
+              {<AccountsStructure account={selectedAccount} graph={graph} />}
             </Suspense>
           )}
         </div>
