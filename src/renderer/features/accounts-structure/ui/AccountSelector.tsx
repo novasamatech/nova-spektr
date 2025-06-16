@@ -13,7 +13,7 @@ type AccountSelector = {
 
 export const AccountSelector = ({ walletAccounts }: AccountSelector) => {
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
-  const selectAccount = useUnit(accountsStructureModel.events.selectAccount);
+  const selectAccount = useUnit(accountsStructureModel.selectAccount);
   const chains = useUnit(networkModel.$chains);
 
   return (

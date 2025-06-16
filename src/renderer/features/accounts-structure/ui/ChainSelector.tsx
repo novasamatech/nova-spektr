@@ -22,7 +22,7 @@ export const ChainSelector = () => {
       placeholder={t('proxy.addProxy.networkPlaceholder')}
       value={selectedChainId}
       height="sm"
-      onChange={accountsStructureModel.events.selectChain}
+      onChange={accountsStructureModel.selectChain}
     >
       {availableChains.map((chain) => (
         <Select.Item key={chain.chainId} value={chain.chainId}>

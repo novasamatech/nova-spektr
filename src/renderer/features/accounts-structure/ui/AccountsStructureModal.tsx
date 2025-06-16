@@ -28,7 +28,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
-  const setAccounts = useUnit(accountsStructureModel.events.setAccounts);
+  const setAccounts = useUnit(accountsStructureModel.setAccounts);
 
   useEffect(() => {
     setAccounts(walletAccounts);

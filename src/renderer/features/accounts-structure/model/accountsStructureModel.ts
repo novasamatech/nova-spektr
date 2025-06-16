@@ -71,9 +71,7 @@ export const accountsStructureModel = {
   $filteredChains: $availableChains,
   $network,
 
-  events: {
-    selectChain,
-    setAccounts,
-    selectAccount,
-  },
+  selectChain,
+  setAccounts,
+  selectAccount,
 };
