@@ -4,7 +4,7 @@ import { accountService } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
-const $availableChains = networkModel.$chains.map((chains) => Object.values(chains));
+const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
 
 const selectChain = createEvent<string>();
 const setAccounts = createEvent<AnyAccount[] | null>();
@@ -14,10 +14,10 @@ const $selectedChainId = restore(selectChain, null);
 
 const $accountList = createStore<AnyAccount[] | null>(null).on(setAccounts, (_, accounts) => accounts);
 const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
-// Filter available chains based on account
-const $filteredChains = combine(
+
+const $availableChains = combine(
   {
-    chains: $availableChains,
+    chains: $allChains,
     account: $selectedAccount,
   },
   ({ chains, account }) => {
@@ -28,7 +28,7 @@ const $filteredChains = combine(
 
 // Set initial chain to first available one when account changes
 sample({
-  clock: $filteredChains,
+  clock: $availableChains,
   source: $selectedChainId,
   fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
   target: selectChain,
@@ -37,7 +37,7 @@ sample({
 const $selectedChain = combine(
   {
     chainId: $selectedChainId,
-    chains: $filteredChains,
+    chains: $availableChains,
   },
   ({ chainId, chains }) => {
     return chains.find((chain) => chain.chainId === chainId) ?? null;
@@ -67,8 +67,8 @@ export const accountsStructureModel = {
   $selectedChain,
   $selectedAccount,
   $accountList,
-  $availableChains: $filteredChains,
-  $filteredChains,
+  $availableChains: $availableChains,
+  $filteredChains: $availableChains,
   $network,
 
   events: {
