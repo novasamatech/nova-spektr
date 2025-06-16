@@ -6,11 +6,11 @@ import uniq from 'lodash/uniq';
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { Step, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { lockPeriodsModel, locksModel, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
@@ -97,7 +97,7 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $initiator, ({ chain, votes }, account) => {
+const $coreTx = combine(flow.state, $selectedSignatory, ({ chain, votes }, account) => {
   if (nullable(account) || nullable(chain) || nullable(votes)) return null;
 
   return transactionBuilder.buildRemoveVotes({
@@ -116,14 +116,6 @@ const { $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const $txWrappers = createTxWrappers({
-  initiator: $initiator,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: networkSelectorModel.$governanceChain,
-  signatory: $selectedSignatory,
-});
-
 // Transaction save
 
 const txSaved = createEvent();
@@ -131,18 +123,17 @@ const txSaved = createEvent();
 sample({
   clock: txSaved,
   source: {
-    initiator: $initiator,
     coreTx: $coreTx,
-    txWrappers: $txWrappers,
+    route: $route,
   },
   filter: nonNullableMap,
-  fn: ({ initiator, coreTx, txWrappers }) => {
-    if (!initiator || !coreTx) return [];
+  fn: ({ coreTx, route }) => {
+    if (nullable(coreTx)) return [];
 
-    const tx = {
-      initiatorAccountId: initiator.accountId,
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: coreTx.accountId,
       coreTx,
-      txWrappers,
+      route,
       createdAt: Date.now(),
     };
 

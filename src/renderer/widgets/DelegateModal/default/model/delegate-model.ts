@@ -278,12 +278,12 @@ sample({
   source: {
     walletData: formModel.$walletData,
     coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ walletData, coreTx, txWrappers }) => {
-    return nonNullable(walletData.wallet) && nonNullable(coreTx) && nonNullable(txWrappers);
+  filter: ({ walletData, coreTx, route }) => {
+    return nonNullable(walletData.wallet) && nonNullable(coreTx) && nonNullable(route);
   },
-  fn: ({ walletData, coreTx, txWrappers }) => {
+  fn: ({ walletData, coreTx, route }) => {
     const accounts = walletData.chain
       ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
       : [];
@@ -294,7 +294,7 @@ sample({
       {
         initiatorAccountId: account.accountId,
         coreTx: coreTx!,
-        txWrappers,
+        route,
         createdAt: Date.now(),
       },
     ];

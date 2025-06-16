@@ -15,5 +15,5 @@ const Template: StoryFn<typeof SignatoryCard> = (args) => <SignatoryCard {...arg
 export const Primary = Template.bind({});
 Primary.args = {
   children: TEST_ADDRESS,
-  status: 'SIGNED',
+  status: 'approve',
 };

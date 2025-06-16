@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { type BasketTransaction, WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { HeaderTitleText, Loader } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { ConfirmSlider } from '@/features/operations/OperationsConfirm';
 import { signOperations } from '../model/sign';

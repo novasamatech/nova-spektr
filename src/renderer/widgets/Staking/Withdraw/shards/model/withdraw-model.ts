@@ -193,16 +193,15 @@ sample({
   source: {
     store: $withdrawData,
     coreTxs: $coreTxs,
-    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTxs, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTxs) && nonNullable(txWrappers);
+  filter: ({ store, coreTxs }) => {
+    return nonNullable(store) && nonNullable(coreTxs);
   },
-  fn: ({ store, coreTxs, txWrappers }) =>
+  fn: ({ store, coreTxs }) =>
     coreTxs!.map((coreTx) => ({
       initiatorAccountId: store!.shards[0].accountId,
       coreTx,
-      txWrappers,
+      route: [],
       createdAt: Date.now(),
     })),
   target: basketOperations.addTransactions,

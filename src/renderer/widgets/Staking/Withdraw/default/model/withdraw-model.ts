@@ -190,16 +190,16 @@ sample({
   source: {
     store: $withdrawData,
     coreTx: formModel.$coreTx,
-    txWrappers: formModel.$txWrappers,
+    route: formModel.$route,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return nonNullable(store) && nonNullable(coreTx) && nonNullable(txWrappers);
+  filter: ({ store, coreTx }) => {
+    return nonNullable(store) && nonNullable(coreTx);
   },
-  fn: ({ store, coreTx, txWrappers }) => [
+  fn: ({ store, coreTx, route }) => [
     {
       initiatorAccountId: store!.initiator!.accountId,
       coreTx: coreTx!,
-      txWrappers: txWrappers!,
+      route,
       createdAt: Date.now(),
     },
   ],

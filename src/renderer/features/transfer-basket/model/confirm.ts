@@ -2,13 +2,13 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type BasketTransaction, type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { getAssetById } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import { transferConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type TransferInput } from '../types/confirm';
 

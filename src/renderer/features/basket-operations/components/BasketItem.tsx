@@ -1,9 +1,9 @@
 import { useStoreMap } from 'effector-react';
 
-import { type BasketTransaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Checkbox } from '@/shared/ui-kit';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { validation } from '../model/validation';
 
 import { BasketOperationStatus } from './BasketOperationStatus';

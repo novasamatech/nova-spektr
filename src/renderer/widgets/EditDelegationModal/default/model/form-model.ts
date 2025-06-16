@@ -17,12 +17,7 @@ import {
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createMultisigDeposit,
-  createSignatoriesStore,
-  createTxWrappers,
-} from '@/shared/transactions';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -226,14 +221,6 @@ const $signatories = createSignatoriesStore({
   chain: $chain,
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
-});
-
-const $txWrappers = createTxWrappers({
-  initiator: form.fields.initiator.$value,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: $chain,
-  signatory: form.fields.signatory.$value,
 });
 
 const $walletData = combine({
@@ -480,7 +467,6 @@ export const formModel = {
   form,
   $proxyWallet,
   $signatories,
-  $txWrappers,
 
   $account,
   $initiatorBalance,

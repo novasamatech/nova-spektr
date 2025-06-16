@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { u8aToHex } from '@polkadot/util';
-import { createApi, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
 import {
@@ -8,16 +7,19 @@ import {
   type ChainId,
   type HexString,
   type MultisigAccount,
-  type MultisigEvent,
-  type MultisigTransaction,
   type Transaction,
   TransactionType,
 } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
-import { buildMultisigTx } from '@/entities/multisig';
+import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
-import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
+import {
+  type ExtrinsicResultParams,
+  decodeCallData,
+  transactionBuilder,
+  transactionService,
+} from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 export type SubmitInput = {
@@ -46,15 +48,6 @@ const $submitStore = restore<SubmitInput>(formInitiated, null);
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);
 const $results = createStore<Result[]>([]).reset(formInitiated);
-
-type Callbacks = {
-  addMultisigTx: (tx: MultisigTransaction) => Promise<void>;
-  addEventWithQueue: (event: MultisigEvent) => void;
-};
-const $hooks = createStore<Callbacks | null>(null);
-const $hooksApi = createApi($hooks, {
-  hooksChanged: (state, { addMultisigTx, addEventWithQueue }) => ({ ...state, addMultisigTx, addEventWithQueue }),
-});
 
 type SignAndSubmitExtrinsicParams = {
   apis: Record<ChainId, ApiPromise>;
@@ -85,7 +78,6 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
 
     for (const [index, transaction] of splittedBatch.entries()) {
-      console.log('payload', u8aToHex(txPayloads[index]));
       transactionService
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {
@@ -100,38 +92,28 @@ const signAndSubmitExtrinsicsFx = createEffect(
 );
 
 type SaveMultisigParams = {
-  transactions: Transaction[];
+  api: ApiPromise | null;
   multisigTxs: Transaction[];
   multisigAccount: MultisigAccount;
   params: ExtrinsicResultParams;
-  hooks: Callbacks;
 };
 
-type SaveMultisigResult = {
-  transactions: MultisigTransaction[];
-  events: MultisigEvent[];
-};
-const saveMultisigTxFx = createEffect(
-  ({ transactions, multisigTxs, multisigAccount, params, hooks }: SaveMultisigParams): SaveMultisigResult => {
-    const { txs, events } = transactions.reduce<{ txs: MultisigTransaction[]; events: MultisigEvent[] }>(
-      (acc, transaction, index) => {
-        const multisigData = buildMultisigTx(transaction, multisigTxs[index], params, multisigAccount);
+const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, api }: SaveMultisigParams) => {
+  const result = [];
 
-        hooks.addEventWithQueue(multisigData.event);
-        hooks.addMultisigTx(multisigData.transaction);
-        acc.txs.push(multisigData.transaction);
-        acc.events.push(multisigData.event);
+  for (const multisigTx of multisigTxs) {
+    if (!api) continue;
 
-        console.log(`New transaction was created with call hash ${multisigData.transaction.callHash}`);
+    const transaction = decodeCallData(api, multisigTx.accountId, multisigTx.args.callData);
 
-        return acc;
-      },
-      { txs: [], events: [] },
-    );
+    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, multisigAccount);
+    result.push(multisigOperation);
 
-    return { transactions: txs, events };
-  },
-);
+    console.log(`New transaction was created with call hash ${multisigOperation.callHash}`);
+  }
+
+  return result;
+});
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
@@ -203,14 +185,13 @@ sample({
 sample({
   clock: extrinsicSucceeded,
   source: {
+    apis: networkModel.$apis,
     submitStore: $submitStore,
-    hooks: $hooks,
   },
   filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, hooks }, { params }) => ({
+  fn: ({ submitStore, apis }, { params }) => ({
+    api: submitStore && apis[submitStore.chain.chainId],
     params,
-    hooks: hooks!,
-    transactions: submitStore!.coreTxs,
     multisigTxs: submitStore!.multisigTxs,
     multisigAccount: submitStore!.account as MultisigAccount,
   }),
@@ -264,11 +245,11 @@ export const submitModel = {
   events: {
     formInitiated,
     submitStarted,
-    hooksApiChanged: $hooksApi.hooksChanged,
   },
   output: {
     formSubmitted,
     extrinsicSucceeded,
     extrinsicFailed,
+    saveMultisigTx: saveMultisigTxFx.doneData,
   },
 };

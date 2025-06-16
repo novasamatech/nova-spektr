@@ -4,7 +4,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { multisigUtils } from '@/entities/multisig';
+import { multisigOperationService } from '@/domains/network';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
@@ -113,11 +113,11 @@ export const getExtrinsic: Record<
     return api.tx.proxy.killPure(spawner, proxyType, index, height, extIndex);
   },
   // TODO: Check that this method works correctly
-  [TransactionType.PROXY]: ({ real, forceProxyType, transaction }, api) => {
+  [TransactionType.PROXY]: ({ real, forceProxyType, transaction, call }, api) => {
     const tx = transaction as Transaction;
-    const call = getExtrinsic[tx.type](tx.args, api).method;
+    const proxyCall = call ?? getExtrinsic[tx.type](tx.args, api).method;
 
-    return api.tx.proxy.proxy(real, forceProxyType, call);
+    return api.tx.proxy.proxy(real, forceProxyType, proxyCall);
   },
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
@@ -210,7 +210,10 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = multisigUtils.getOtherSignatories(txWrapper.multisigAccount, txWrapper.signer.accountId);
+  const otherSignatories = multisigOperationService.getOtherSignatories(
+    txWrapper.multisigAccount,
+    txWrapper.signer.accountId,
+  );
 
   return {
     chainId: transaction.chainId,

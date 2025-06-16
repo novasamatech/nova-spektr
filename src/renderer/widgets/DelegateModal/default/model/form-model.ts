@@ -14,12 +14,7 @@ import {
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createMultisigDeposit,
-  createSignatoriesStore,
-  createTxWrappers,
-} from '@/shared/transactions';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -260,15 +255,6 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// Tx wrappers derived from common factory
-const $txWrappers = createTxWrappers({
-  chain: $chain,
-  wallet: walletSelect.$selectedWallet,
-  wallets: walletModel.$wallets,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-});
-
 // Complex Tx store for fee & route calculation
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
@@ -437,8 +423,6 @@ export const formModel = {
   $walletData,
   $coreTx,
   $proxyAccount,
-
-  $txWrappers,
 
   events: {
     formInitiated,
