@@ -1,8 +1,7 @@
-import { BN } from '@polkadot/util';
 import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
-import { type DelegateAccount, delegationService } from '@/shared/api/governance';
+import { type DelegateAccount } from '@/shared/api/governance';
 import {
   Step,
   getBalanceBn,
@@ -19,12 +18,7 @@ import { votingModel } from '@/entities/governance';
 import { accountUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
-import {
-  delegateRegistryAggregate,
-  networkSelectorModel,
-  tracksAggregate,
-  votingAggregate,
-} from '@/features/governance';
+import { networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -117,7 +111,7 @@ sample({
   }),
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     balances: balanceModel.$balances,
@@ -135,47 +129,51 @@ sample({
     tx: formModel.$tx,
     multisigTx: formModel.$multisigTx,
   },
-  filter: ({ walletData, delegateData, step, account, tx }) =>
-    nonNullable(delegateData) &&
-    nonNullable(walletData.wallet) &&
-    nonNullable(walletData.chain) &&
-    nonNullable(account) &&
-    nonNullable(tx) &&
-    isStep(step, Step.INIT),
-  fn: ({
-    fee,
+}).filterMap(
+  ({
     balances,
+    fee,
     walletData,
     tracks,
     target,
     account,
     delegateData,
-    coreTx,
     activeDelegations,
     isUnchanged,
     multisigDeposit,
+    coreTx,
+    step,
     tx,
     multisigTx,
   }) => {
-    const asset = getRelaychainAsset(walletData.chain!.assets)!;
-    const initiator = account!.account;
+    if (
+      nonNullable(delegateData) &&
+      nonNullable(walletData.wallet) &&
+      nonNullable(walletData.chain) &&
+      nonNullable(account) &&
+      nonNullable(tx) &&
+      nonNullable(coreTx) &&
+      nonNullable(delegateData.signatory) &&
+      isStep(step, Step.INIT)
+    ) {
+      const asset = getRelaychainAsset(walletData.chain.assets)!;
+      const initiator = account.account;
 
-    const address = toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix });
+      const address = toAddress(initiator.accountId, { prefix: walletData.chain.addressPrefix });
 
-    const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, initiator.accountId, walletData.chain!.chainId, asset.assetId.toString()),
-    );
+      const transferable = transferableAmount(
+        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
+      );
 
-    return {
-      event: [
+      return [
         {
-          chain: walletData.chain!,
+          chain: walletData.chain,
           asset: asset!,
           tracks,
           target: target?.address || '',
           transferable,
-          ...delegateData!,
-          signatory: delegateData!.signatory!,
+          ...delegateData,
+          signatory: delegateData.signatory,
           ...(isUnchanged && {
             balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
             conviction: activeDelegations[address].conviction,
@@ -184,14 +182,23 @@ sample({
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData!.locks[initiator.accountId],
-          coreTx: coreTx!,
+          locks: delegateData.locks[initiator.accountId],
+          coreTx,
           route: [initiator],
           multisigTx,
-          tx: tx!,
+          tx,
           initiator,
         } satisfies EditDelegationConfirm,
-      ],
+      ];
+    }
+  },
+);
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.CONFIRM,
     };
   },
@@ -240,7 +247,7 @@ sample({
   }),
 });
 
-sample({
+const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: formModel.$walletData,
@@ -251,43 +258,45 @@ sample({
     step: $step,
     coreTx: formModel.$coreTx,
   },
-  filter: ({ delegateData, walletData, transaction, step }) => {
-    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transaction) && isStep(step, Step.SIGN);
-  },
-  fn: (delegateFlowData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: delegateFlowData.walletData.chain!,
-      account: delegateFlowData.accounts[0],
-      signatory: delegateFlowData.delegateData!.signatory,
-      coreTxs: [delegateFlowData.coreTx!],
-      wrappedTxs: [delegateFlowData.transaction!],
-      multisigTxs: delegateFlowData.multisigTx ? [delegateFlowData.multisigTx] : [],
-    },
-    step: Step.SUBMIT,
+  fn: (source, signParams) => ({
+    ...source,
+    signParams,
   }),
+}).filterMap(({ delegateData, walletData, transaction, step, accounts, coreTx, multisigTx, signParams }) => {
+  if (
+    nonNullable(delegateData) &&
+    nonNullable(walletData) &&
+    nonNullable(walletData.chain) &&
+    nonNullable(transaction) &&
+    nonNullable(coreTx) &&
+    nonNullable(delegateData.signatory) &&
+    nonNullable(accounts[0]) &&
+    isStep(step, Step.SIGN)
+  ) {
+    return {
+      ...signParams,
+      chain: walletData.chain,
+      account: accounts[0],
+      signatory: delegateData.signatory,
+      coreTxs: [coreTx],
+      wrappedTxs: [transaction],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,
   }),
-});
-
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    delegate: formModel.$target,
-    data: $delegateData,
-    walletData: formModel.$walletData,
-    tracks: formModel.$tracks,
-  },
-  filter: ({ delegate, data, walletData }) => {
-    return !!delegate && !!data && !!walletData.chain;
-  },
-  fn: ({ delegate, tracks, data, walletData }) => ({
-    delegate: delegate!,
-    votes: delegationService.calculateTotalVotes(new BN(data!.balance), tracks, walletData.chain!),
-  }),
-  target: delegateRegistryAggregate.events.addDelegation,
 });
 
 sample({
