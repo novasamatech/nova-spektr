@@ -62,6 +62,9 @@ const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
+const $target = createStore<DelegateAccount | null>(null);
+const $tracks = createStore<number[]>([]);
+
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
 const $previousConviction = createStore<Conviction>('None');
@@ -173,8 +176,6 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
-// Computed stores that depend on form should be declared after form
-
 const $account = combine(
   {
     network: $networkStore,
@@ -235,20 +236,12 @@ const $txWrappers = createTxWrappers({
   signatory: form.fields.signatory.$value,
 });
 
-// Shared stores moved from edit-delegation-model to avoid circular dependency -----------------
-
-// Wallet + chain data
 const $walletData = combine({
   wallet: walletSelect.$selectedWallet,
   accounts: walletSelect.$selectedAccounts,
   chain: networkSelectorModel.$governanceChain,
 });
 
-// Selected delegate (target) and tracks
-const $target = createStore<DelegateAccount | null>(null);
-const $tracks = createStore<number[]>([]);
-
-// Active delegations for selected delegate
 const $activeDelegations = combine(
   { delegations: delegationAggregate.$activeDelegations, delegate: $target },
   ({ delegations, delegate }) => {
@@ -257,8 +250,6 @@ const $activeDelegations = combine(
     return delegations[delegate.address] || {};
   },
 );
-
-// Core transaction for edit-delegation flow -----------------------------------------------
 
 const $coreTx = combine(
   {
@@ -300,8 +291,6 @@ const $coreTx = combine(
   },
 );
 
-// createComplexTxStore depends on $coreTx, so it should be defined after the declaration above
-
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
@@ -315,7 +304,6 @@ const $proxyAccount = $route.map((route) => route.find((account) => accountUtils
 const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
-// Multisig deposit calculation
 const $multisigThreshold = $route.map((route) => {
   const multisig = route.find(accountUtils.isMultisigAccount);
   if (!multisig) return null;
@@ -392,8 +380,6 @@ const $canSubmit = combine(
   },
 );
 
-// Fields connections
-
 sample({
   clock: formInitiated,
   target: form.reset,
@@ -411,8 +397,6 @@ sample({
     networkStore: $networkStore,
   }),
 });
-
-// Submit
 
 sample({
   clock: form.$values.updates,

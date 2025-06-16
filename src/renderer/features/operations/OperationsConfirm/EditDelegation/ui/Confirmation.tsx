@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -163,8 +163,8 @@ export const Confirmation = ({
 
           {!hideSignButton && !isMultisigExists && (
             <SignButton
-              isDefault={Boolean(secondaryActionButton)}
-              type={(signerWallet || initiatorWallet).type}
+              isDefault={nonNullable(secondaryActionButton)}
+              type={signerWallet?.type}
               onClick={confirmModel.startSigning}
             />
           )}

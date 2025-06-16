@@ -46,8 +46,6 @@ const txsConfirmed = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const { $walletData, $target, $tracks, $activeDelegations, $coreTx } = formModel;
-
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'initiator'> | null>(null).reset(
   flowFinished,
 );
@@ -82,7 +80,7 @@ sample({ clock: stepChanged, target: $step });
 sample({
   clock: flowStarted,
   target: spread({
-    delegate: $target,
+    delegate: formModel.$target,
     accounts: $accounts,
   }),
 });
@@ -101,8 +99,8 @@ sample({
 sample({
   clock: selectTracksModel.output.formSubmitted,
   source: {
-    walletData: $walletData,
-    activeDelegations: $activeDelegations,
+    walletData: formModel.$walletData,
+    activeDelegations: formModel.$activeDelegations,
   },
   filter: ({ walletData }) => nonNullable(walletData.chain) && nonNullable(walletData.wallet),
   fn: ({ walletData, activeDelegations }, { tracks, accounts }) => ({
@@ -113,7 +111,7 @@ sample({
   }),
   target: spread({
     event: formModel.events.formInitiated,
-    tracks: $tracks,
+    tracks: formModel.$tracks,
     accounts: $accounts,
     step: stepChanged,
   }),
@@ -124,15 +122,15 @@ sample({
   source: {
     balances: balanceModel.$balances,
     fee: formModel.$fee,
-    walletData: $walletData,
-    tracks: $tracks,
-    target: $target,
+    walletData: formModel.$walletData,
+    tracks: formModel.$tracks,
+    target: formModel.$target,
     account: formModel.$account,
     delegateData: $delegateData,
-    activeDelegations: $activeDelegations,
+    activeDelegations: formModel.$activeDelegations,
     isUnchanged: $isUnchanged,
     multisigDeposit: formModel.$multisigDeposit,
-    coreTx: $coreTx,
+    coreTx: formModel.$coreTx,
     step: $step,
   },
   filter: ({ walletData, delegateData, step, account }) =>
@@ -200,7 +198,7 @@ sample({
   clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
-    walletData: $walletData,
+    walletData: formModel.$walletData,
     transaction: formModel.$tx,
     account: formModel.$account,
     step: $step,
@@ -238,13 +236,13 @@ sample({
 sample({
   clock: signModel.output.formSubmitted,
   source: {
-    walletData: $walletData,
+    walletData: formModel.$walletData,
     transaction: formModel.$tx,
     multisigTx: formModel.$multisigTx,
     delegateData: $delegateData,
     accounts: $accounts,
     step: $step,
-    coreTx: $coreTx,
+    coreTx: formModel.$coreTx,
   },
   filter: ({ delegateData, walletData, transaction, step }) => {
     return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transaction) && isStep(step, Step.SIGN);
@@ -269,7 +267,12 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: { delegate: $target, data: $delegateData, walletData: $walletData, tracks: $tracks },
+  source: {
+    delegate: formModel.$target,
+    data: $delegateData,
+    walletData: formModel.$walletData,
+    tracks: formModel.$tracks,
+  },
   filter: ({ delegate, data, walletData }) => {
     return !!delegate && !!data && !!walletData.chain;
   },
@@ -336,8 +339,8 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    walletData: $walletData,
-    coreTx: $coreTx,
+    walletData: formModel.$walletData,
+    coreTx: formModel.$coreTx,
     txWrappers: formModel.$txWrappers,
   },
   filter: ({ walletData, coreTx, txWrappers }) => {
@@ -370,8 +373,8 @@ sample({
 
 export const editDelegationModel = {
   $step,
-  $walletData,
-  $initiatorWallet: $walletData.map((data) => data?.wallet || null),
+  $walletData: formModel.$walletData,
+  $initiatorWallet: formModel.$walletData.map((data) => data?.wallet || null),
 
   events: {
     flowStarted,

@@ -104,7 +104,6 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
 
   const balances = useUnit(balanceModel.$balances);
 
@@ -124,7 +123,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!network) {
     return null;
   }
 

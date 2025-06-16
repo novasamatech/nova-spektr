@@ -17,9 +17,3 @@ export type DelegateData = {
   balance: string;
   locks: Record<string, BN>;
 };
-
-export type FeeData = {
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-};
