@@ -1,10 +1,12 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { Paths } from '@/shared/routes';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -24,6 +26,8 @@ export const walletIconSlot = createSlot<{ wallet: Wallet; size: number }>();
 
 export const WalletSelect = () => {
   const { t } = useI18n();
+
+  const navigate = useNavigate();
 
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
@@ -82,6 +86,7 @@ export const WalletSelect = () => {
                   query: filterQuery,
                   onSelect: ({ id }) => {
                     walletSelect.select(id);
+                    navigate(Paths.ASSETS);
                     setOpen(false);
                   },
                 }}
