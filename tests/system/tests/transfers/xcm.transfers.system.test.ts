@@ -8,7 +8,7 @@ import { xcmTransferTestCases } from 'tests/system/utils/transferTestCases';
 const feature = 'Wallets. XCM transfers.';
 const story = 'Transfers';
 
-test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress1'] }, () => {
+test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
   for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
     test(`Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`, async ({
       loginPage,
