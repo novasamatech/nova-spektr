@@ -190,8 +190,8 @@ const XcmChainSelector = () => {
       <Select
         placeholder={t('transfer.destinationChainPlaceholder')}
         value={xcmChain.value.chainId}
-        onChange={selectChain}
         testId={TEST_IDS.OPERATIONS.XCM_SELECTOR}
+        onChange={selectChain}
       >
         <Select.Group title={t('transfer.onChainPlaceholder')}>
           <Select.Item value={nativeChain.chainId}>
