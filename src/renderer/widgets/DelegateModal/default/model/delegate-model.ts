@@ -75,7 +75,7 @@ sample({
   }),
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
     balances: balanceModel.$balances,
@@ -86,52 +86,73 @@ sample({
     target: $target,
     delegateData: $delegateData,
     coreTx: formModel.$coreTx,
+    tx: formModel.$tx,
+    route: formModel.$route,
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
     multisigTx: formModel.$multisigTx,
     proxyAccount: formModel.$proxyAccount,
   },
-  filter: ({ walletData, delegateData, initiator, step }) => {
-    return (
+}).filterMap(
+  ({
+    balances,
+    fee,
+    walletData,
+    tracks,
+    initiator,
+    target,
+    delegateData,
+    coreTx,
+    step,
+    multisigDeposit,
+    multisigTx,
+    tx,
+    route,
+  }) => {
+    if (
       nonNullable(delegateData) &&
       nonNullable(walletData.wallet) &&
       nonNullable(walletData.chain) &&
       nonNullable(initiator) &&
+      nonNullable(delegateData.signatory) &&
+      nonNullable(coreTx) &&
+      nonNullable(tx) &&
       isStep(step, Step.INIT)
-    );
-  },
-  fn: ({ fee, balances, walletData, tracks, target, initiator, delegateData, coreTx, multisigDeposit, multisigTx }) => {
-    const asset = getRelaychainAsset(walletData.chain!.assets)!;
+    ) {
+      const asset = getRelaychainAsset(walletData.chain.assets)!;
 
-    return {
-      event: [
+      return [
         {
-          chain: walletData.chain!,
-          asset: asset!,
+          chain: walletData.chain,
+          asset,
           tracks,
           target: target?.address || '',
           transferable: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              initiator!.accountId,
-              walletData.chain!.chainId,
-              asset.assetId.toString(),
-            ),
+            balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
           ),
-          balance: delegateData!.balance,
-          conviction: delegateData!.conviction,
-          signatory: delegateData!.signatory!,
+          balance: delegateData.balance,
+          conviction: delegateData.conviction,
+          signatory: delegateData.signatory,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
-          locks: delegateData!.locks[initiator!.accountId],
-          coreTx: coreTx!,
-          initiator: initiator!,
-          route: [initiator!],
-          tx: coreTx!,
-          multisigTx: multisigTx,
+          locks: delegateData.locks[initiator.accountId],
+          coreTx,
+          initiator,
+          route,
+          tx,
+          multisigTx,
         } satisfies DelegateConfirm,
-      ],
+      ];
+    }
+  },
+);
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.CONFIRM,
     };
   },
@@ -141,7 +162,7 @@ sample({
   }),
 });
 
-sample({
+const startSigning = sample({
   clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
@@ -151,21 +172,32 @@ sample({
     step: $step,
     coreTx: formModel.$coreTx,
   },
-  filter: ({ delegateData, walletData, step }) => {
-    return nonNullable(delegateData) && nonNullable(walletData) && isStep(step, Step.CONFIRM);
-  },
-  fn: ({ delegateData, walletData, initiator, transaction }) => {
-    return {
-      event: {
-        signingPayloads: [
-          {
-            chain: walletData.chain!,
-            account: initiator!,
-            signatory: delegateData!.signatory,
-            transaction: transaction!,
-          },
-        ],
+}).filterMap(({ delegateData, walletData, transaction, initiator, step }) => {
+  if (
+    nonNullable(delegateData) &&
+    nonNullable(walletData) &&
+    nonNullable(walletData.chain) &&
+    nonNullable(transaction) &&
+    nonNullable(initiator) &&
+    nonNullable(delegateData.signatory) &&
+    isStep(step, Step.CONFIRM)
+  ) {
+    return [
+      {
+        chain: walletData.chain,
+        account: initiator,
+        signatory: delegateData.signatory,
+        transaction,
       },
+    ];
+  }
+});
+
+sample({
+  clock: startSigning,
+  fn: (signingPayloads) => {
+    return {
+      signingPayloads,
       step: Step.SIGN,
     };
   },
@@ -175,7 +207,7 @@ sample({
   }),
 });
 
-sample({
+const signSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     walletData: formModel.$walletData,
@@ -186,21 +218,42 @@ sample({
     step: $step,
     coreTx: formModel.$coreTx,
   },
-  filter: ({ delegateData, walletData, transaction, step }) => {
-    return nonNullable(delegateData) && nonNullable(walletData) && nonNullable(transaction) && isStep(step, Step.SIGN);
-  },
-  fn: (delegateFlowData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: delegateFlowData.walletData.chain!,
-      account: delegateFlowData.initiator!,
-      signatory: delegateFlowData.delegateData!.signatory,
-      coreTxs: delegateFlowData.coreTx ? [delegateFlowData.coreTx] : [],
-      wrappedTxs: delegateFlowData.transaction ? [delegateFlowData.transaction] : [],
-      multisigTxs: delegateFlowData.multisigTx ? [delegateFlowData.multisigTx] : [],
-    },
-    step: Step.SUBMIT,
+  fn: (source, signParams) => ({
+    ...source,
+    signParams,
   }),
+}).filterMap(({ delegateData, walletData, transaction, step, initiator, coreTx, multisigTx, signParams }) => {
+  if (
+    nonNullable(delegateData) &&
+    nonNullable(walletData) &&
+    nonNullable(walletData.chain) &&
+    nonNullable(transaction) &&
+    nonNullable(initiator) &&
+    nonNullable(delegateData.signatory) &&
+    nonNullable(coreTx) &&
+    nonNullable(transaction) &&
+    isStep(step, Step.SIGN)
+  ) {
+    return {
+      ...signParams,
+      chain: walletData.chain,
+      account: initiator,
+      signatory: delegateData.signatory,
+      coreTxs: [coreTx],
+      wrappedTxs: [transaction],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SUBMIT,
+    };
+  },
   target: spread({
     event: submitModel.events.formInitiated,
     step: stepChanged,

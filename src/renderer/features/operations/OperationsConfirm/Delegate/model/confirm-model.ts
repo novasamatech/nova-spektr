@@ -33,7 +33,6 @@ export const confirmModel = {
   $confirms: confirmStore.$confirms,
   $isMultisigExists: confirmStore.$isMultisigExists,
 
-  // Actions
   init: confirmStore.init,
   startSigning: confirmStore.startSigning,
   addConfirms: confirmStore.addConfirms,
