@@ -96,7 +96,7 @@ export const Confirmation = ({
       <TransactionDetails
         chain={confirmStore.chain}
         wallets={wallets}
-        initiator={[confirmStore.account]}
+        initiators={[confirmStore.account]}
         signatory={confirmStore.signatory}
         proxied={confirmStore.proxiedAccount}
       >
@@ -178,7 +178,7 @@ export const Confirmation = ({
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(signerWallet || initiatorWallet).type}
+              type={signerWallet.type}
               onClick={confirmModel.output.formSubmitted}
             />
           )}

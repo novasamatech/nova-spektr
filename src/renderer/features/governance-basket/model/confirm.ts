@@ -5,7 +5,6 @@ import { createGate } from 'effector-react';
 
 import {
   type Balance,
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type Connection,
@@ -18,11 +17,12 @@ import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
+  type DelegateConfirm,
   type RemoveVoteConfirm,
   type VoteConfirm,
   delegateConfirmModel,
@@ -105,19 +105,22 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     asset,
     transferable,
 
-    shards: [account!],
     balance: coreTxs[0].args.balance,
     conviction: votingService.getConviction(coreTxs[0].args.conviction),
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
-    description: '',
     locks,
-    signatory: null,
+    signatory: account!,
+    initiator: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies DelegateInput;
+  } satisfies DelegateConfirm;
 });
 
 const prepareEditDelegationDataFx = createEffect(
@@ -235,14 +238,13 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     api,
     chain,
     asset: chain.assets[0],
-    account: account!,
+    initiator: account!,
     existingVote: coreTx.args.vote,
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    signatory: account!,
+    multisigTx: null,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies VoteConfirm;
 });
 
@@ -262,15 +264,14 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     api,
     chain,
     id: transaction.id,
-    account: account!,
+    initiator: account!,
     asset: chain.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    signatory: account!,
+    multisigTx: null,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies RemoveVoteConfirm;
 });
 
@@ -302,7 +303,7 @@ sample({
 sample({
   clock: prepareVoteDataFx.doneData,
   fn: (data) => [data],
-  target: voteConfirmModel.events.fillConfirm,
+  target: voteConfirmModel.init,
 });
 
 sample({
@@ -333,7 +334,7 @@ sample({
 sample({
   clock: prepareRemoveVoteDataFx.doneData,
   fn: (data) => [data],
-  target: removeVoteConfirmModel.events.fillConfirm,
+  target: removeVoteConfirmModel.init,
 });
 
 sample({
@@ -395,7 +396,7 @@ sample({
 sample({
   clock: prepareDelegateDataFx.doneData,
   fn: (data) => [data],
-  target: delegateConfirmModel.events.formInitiated,
+  target: delegateConfirmModel.init,
 });
 
 sample({

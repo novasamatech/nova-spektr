@@ -85,7 +85,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
         <TransactionDetails
           chain={confirmStore.chain}
           wallets={wallets}
-          initiator={confirmStore.shards}
+          initiators={confirmStore.shards}
           signatory={confirmStore.signatory}
           proxied={confirmStore.proxiedAccount}
         >
@@ -171,7 +171,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={basketUtils.isBasketAvailable(initiatorWallet) && Boolean(secondaryActionButton)}
-                type={(signerWallet || initiatorWallet).type}
+                type={signerWallet.type}
                 onClick={unlockConfirmAggregate.output.formSubmitted}
               />
             )}

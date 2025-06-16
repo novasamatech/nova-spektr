@@ -55,7 +55,7 @@ describe('accounts service', () => {
   });
 
   it('should filter accounts by chainId', async () => {
-    const filtered = accountService.filterAccountOnChain(
+    const filtered = accountService.filterAccountsOnChain(
       [chainAccount, kusamaChainAccount, universalAccount],
       polkadotChain,
     );
@@ -67,7 +67,7 @@ describe('accounts service', () => {
     const spy = jest.fn().mockReturnValue(true);
     accountService.accountAvailabilityOnChainAnyOf.registerHandler({ body: spy, available: () => true });
 
-    const filtered = accountService.filterAccountOnChain(
+    const filtered = accountService.filterAccountsOnChain(
       [kusamaChainAccount, chainAccount, universalAccount],
       polkadotChain,
     );

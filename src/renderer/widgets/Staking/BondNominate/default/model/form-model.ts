@@ -1,0 +1,421 @@
+import { BN } from '@polkadot/util';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { spread } from 'patronum';
+
+import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
+import {
+  ZERO_BALANCE,
+  formatAmount,
+  getRelaychainAsset,
+  isStringsMatchQuery,
+  nonNullable,
+  nullable,
+  stakeableAmount,
+  toAddress,
+  transferableAmount,
+  validateAddress,
+} from '@/shared/lib/utils';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { transactionBuilder } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { validatorsModel } from '@/features/staking';
+import { type WalletData } from '../lib/types';
+
+type FormParams = {
+  initiator: AnyAccount | null;
+  signatory: AnyAccount | null;
+  amount: string;
+  destination: Address;
+};
+
+const formInitiated = createEvent<WalletData>();
+const formSubmitted = createEvent();
+const formChanged = createEvent<FormParams>();
+const formCleared = createEvent();
+const destinationQueryChanged = createEvent<string>();
+const destinationTypeChanged = createEvent<RewardsDestination>();
+
+const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
+
+const $destinationQuery = restore(destinationQueryChanged, '');
+const $destinationType = restore(destinationTypeChanged, RewardsDestination.RESTAKE);
+
+const $proxyBalance = createStore<string>(ZERO_BALANCE);
+
+const $proxyAccount = createStore<AnyAccount | null>(null);
+const $isProxy = createStore<boolean>(false);
+const $isMultisig = createStore<boolean>(false);
+
+const multisigDepositChanged = createEvent<string>();
+const $multisigDeposit = restore(multisigDepositChanged, null);
+
+const $chain = $networkStore.map((network) => network?.chain ?? null);
+
+const $validators = restore(validatorsModel.output.formSubmitted, []);
+
+const form: Form<FormParams> = createForm<FormParams>({
+  fields: {
+    initiator: {
+      defaultValue: null,
+      validator: () => {
+        return {
+          source: combine({
+            fee: $fee,
+            isProxy: $isProxy,
+            proxyBalance: $proxyBalance,
+          }),
+          fn: (_v, _f, { fee, isProxy, proxyBalance }) => {
+            if (isProxy && fee.gt(new BN(proxyBalance))) {
+              return { message: 'transfer.notEnoughBalanceForFeeError' };
+            }
+          },
+        };
+      },
+    },
+    signatory: {
+      defaultValue: null,
+      validator: () => {
+        return {
+          source: combine({
+            fee: $fee,
+            isMultisig: $isMultisig,
+            signatoryBalance: $signatoryBalance,
+            multisigDeposit: $multisigDeposit,
+          }),
+          fn: (_v, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+            const isNotEnoughMultisigTokens = isMultisig && multisigDeposit.add(fee).gt(new BN(signatoryBalance));
+            if (isNotEnoughMultisigTokens) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            }
+          },
+        };
+      },
+    },
+    amount: {
+      defaultValue: '',
+      validator: () => {
+        return {
+          source: combine({
+            network: $networkStore,
+            bondBalanceRange: $bondBalanceRange,
+            fee: $fee,
+            isMultisig: $isMultisig,
+            accountBalance: $accountBalance,
+          }),
+          fn: (amount, _f, { network, bondBalanceRange, fee, isMultisig, accountBalance }) => {
+            if (nullable(amount) || amount === '') {
+              return { message: 'transfer.requiredAmountError' };
+            }
+
+            if (amount === ZERO_BALANCE) {
+              return { message: 'transfer.notZeroAmountError' };
+            }
+
+            const amountBN = new BN(formatAmount(amount, network.asset.precision));
+            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
+            const isNotEnoughBalance = amountBN.gt(new BN(bondBalance));
+            if (isNotEnoughBalance) {
+              return { message: 'staking.notEnoughBalanceError' };
+            }
+
+            const isNotEnoughBalanceForFee = !isMultisig && amountBN.add(fee).gt(new BN(accountBalance));
+            if (isNotEnoughBalanceForFee) {
+              return { message: 'transfer.notEnoughBalanceForFeeError' };
+            }
+          },
+        };
+      },
+    },
+    destination: {
+      defaultValue: '' as Address,
+      validator: () => {
+        return {
+          source: $destinationType,
+          fn: (destination, _, destinationType) => {
+            if (destinationType === RewardsDestination.TRANSFERABLE && !validateAddress(destination)) {
+              return { message: 'staking.bond.incorrectAddressError' };
+            }
+          },
+        };
+      },
+    },
+  },
+  validateOn: ['submit'],
+});
+
+// Computed
+
+const $proxyWallet = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    wallets: walletModel.$wallets,
+  },
+  ({ isProxy, proxyAccount, wallets }) => {
+    if (!isProxy || !proxyAccount) return null;
+
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId) ?? null;
+  },
+);
+
+const $accountBalance = combine(
+  {
+    network: $networkStore,
+    wallet: walletSelect.$selectedWallet,
+    initiator: form.fields.initiator.$value,
+    balances: balanceModel.$balances,
+  },
+  ({ network, wallet, initiator, balances }) => {
+    if (!wallet || !network || !initiator) return null;
+
+    const { chain, asset } = network;
+
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
+
+    return stakeableAmount(balance);
+  },
+);
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
+
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
+
+const $destinationAccounts = combine(
+  {
+    wallets: walletModel.$wallets,
+    network: $networkStore,
+    query: $destinationQuery,
+  },
+  ({ wallets, network, query }) => {
+    if (!network) return [];
+
+    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+      const isPvWallet = walletUtils.isPolkadotVault(wallet);
+      const isBaseAccount = accountUtils.isVaultBaseAccount(account);
+      if (isBaseAccount && isPvWallet) return false;
+
+      const isShardAccount = accountUtils.isVaultShardAccount(account);
+      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+      const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
+
+      return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
+    });
+  },
+);
+
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    network: $networkStore,
+  },
+  ({ apis, network }) => {
+    return network ? apis[network.chain.chainId] : null;
+  },
+);
+
+const $coreTx = combine(
+  {
+    chain: $chain,
+    signatory: form.fields.signatory.$value,
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+    validators: $validators,
+    networkStore: $networkStore,
+  },
+  ({ chain, signatory, amount, destination, validators, networkStore }) => {
+    if (nullable(destination) || nullable(chain) || nullable(signatory) || nullable(networkStore)) {
+      return null;
+    }
+
+    return transactionBuilder.buildBondNominate({
+      chain: chain,
+      asset: networkStore.asset,
+      accountId: signatory.accountId,
+      amount: amount,
+      destination: destination,
+      nominators: validators.map(({ address }) => address),
+    });
+  },
+);
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
+
+const $canSubmit = combine(
+  {
+    isValid: form.$isValid,
+    isFeePending: $pendingFee,
+  },
+  ({ isValid, isFeePending }) => {
+    return isValid && !isFeePending;
+  },
+);
+
+// Fields connections
+
+sample({
+  clock: formInitiated,
+  target: form.reset,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ chain, shards }) => Boolean(getRelaychainAsset(chain.assets)) && shards.length > 0,
+  fn: ({ chain, shards }) => ({
+    initiator: shards[0],
+    networkStore: { chain, asset: getRelaychainAsset(chain.assets)! },
+  }),
+  target: spread({
+    initiator: form.fields.initiator.change,
+    networkStore: $networkStore,
+  }),
+});
+
+sample({
+  clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
+});
+
+sample({
+  clock: $route,
+  fn: (route) => {
+    const proxyAccount = route.find(accountUtils.isProxiedAccount);
+    const isMultisigAccount = route.find(accountUtils.isMultisigAccount);
+
+    return {
+      proxyAccount: proxyAccount ?? null,
+      isProxy: nonNullable(proxyAccount),
+      isMultisig: nonNullable(isMultisigAccount),
+    };
+  },
+  target: spread({
+    isProxy: $isProxy,
+    isMultisig: $isMultisig,
+    proxyAccount: $proxyAccount,
+  }),
+});
+
+const $bondBalanceRange = combine(
+  {
+    accountBalance: $accountBalance,
+  },
+  ({ accountBalance }) => {
+    if (nullable(accountBalance) || accountBalance === '') return ZERO_BALANCE;
+
+    const minBondBalance = accountBalance;
+    return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+  },
+);
+
+sample({
+  clock: form.fields.initiator.change,
+  target: form.fields.amount.reset,
+});
+
+sample({
+  source: {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  filter: ({ isProxy, network, proxyAccount }) => {
+    return isProxy && Boolean(network) && Boolean(proxyAccount);
+  },
+  fn: ({ balances, network, proxyAccount }) => {
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccount!.accountId,
+      network!.chain.chainId,
+      network!.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+  target: $proxyBalance,
+});
+
+// Submit
+
+sample({
+  clock: form.$values.updates,
+  target: formChanged,
+});
+
+sample({
+  clock: form.submit.doneData,
+  target: formSubmitted,
+});
+
+sample({
+  clock: formCleared,
+  target: form.reset,
+});
+
+export const formModel = {
+  form,
+
+  $proxyWallet,
+  $signatories,
+  $destinationAccounts,
+  $destinationQuery,
+  $destinationType,
+
+  $bondBalanceRange,
+  $proxyBalance,
+
+  $multisigDeposit,
+  $fee,
+  $pendingFee,
+  $multisigTx,
+  $tx,
+  $coreTx,
+  $route,
+  $api,
+  $networkStore,
+  $isMultisig,
+  $canSubmit,
+
+  formInitiated,
+  formCleared,
+  destinationQueryChanged,
+  destinationTypeChanged,
+  multisigDepositChanged,
+  formSubmitted,
+  formChanged,
+};

@@ -93,8 +93,6 @@ export type {
   WrapAsMulti,
 } from './types/transaction';
 
-export type { BasketTransaction } from './types/basket';
-
 export type {
   TrackId,
   TrackInfo,

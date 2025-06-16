@@ -15,7 +15,7 @@ const $chain = createStore();
 const $accounts = createStore();
 
 const $chainAccounts = combine($accounts, $chain, (allAccounts, chain) => {
-  return accountService.filterAccountOnChain(allAccounts, chain);
+  return accountService.filterAccountsOnChain(allAccounts, chain);
 });
 ```
 

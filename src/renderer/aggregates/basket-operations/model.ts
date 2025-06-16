@@ -3,11 +3,13 @@ import { uniq } from 'lodash';
 import { and, not, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type BasketTransaction, type ID } from '@/shared/core';
+import { type ID } from '@/shared/core';
 import { populated } from '@/shared/effector';
 import { walletSelect } from '@/aggregates/wallet-select';
 // eslint-disable-next-line boundaries/element-types
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+
+import { type BasketTransaction, type BasketTransactionDraft } from './types';
 
 // list
 
@@ -17,7 +19,7 @@ const populateFx = createEffect(() => storageService.basketTransactions.readAll(
 
 const $populated = populated(populateFx);
 
-const addTransactionsFx = createEffect(async (transactions: Omit<BasketTransaction, 'id'>[]) => {
+const addTransactionsFx = createEffect(async (transactions: BasketTransactionDraft[]) => {
   return storageService.basketTransactions.createAll(transactions).then(result => result ?? []);
 });
 
