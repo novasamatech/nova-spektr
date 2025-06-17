@@ -119,6 +119,10 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
           'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
           'org.eclipse.elk.alignment': 'CENTER',
+          'org.eclipse.elk.alg.libavoid.clusterCrossingPenalty': '1',
+          'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
+          'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'TRUE',
+          'org.eclipse.elk.layered.mergeHierarchyEdges': 'FALSE',
         },
       })
       .then((layoutGraph) => {
