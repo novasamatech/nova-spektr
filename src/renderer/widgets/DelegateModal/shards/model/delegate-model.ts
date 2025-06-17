@@ -316,14 +316,16 @@ sample({
 
     return {
       event: shards.map((shard, index) => {
+        const transferable = transferableAmount(
+          balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
+        );
+
         return {
           chain: walletData.chain!,
           asset: asset!,
           tracks,
           target: target?.address || '',
-          transferable: transferableAmount(
-            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
-          ),
+          transferable,
           ...delegateData!,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
