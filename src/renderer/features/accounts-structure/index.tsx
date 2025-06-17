@@ -3,8 +3,9 @@ import { createSlot } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { type AnyAccount } from '@/domains/network';
 
-import { AccountsStructureModal } from './ui/AccountsStructureModal';
-export { accountNodeConfigTransformer } from './ui/AccountStructureNode';
+import { AccountsStructureModal } from './components/AccountsStructureModal';
+
+export { accountNodeConfigTransformer } from './components/AccountStructureNode';
 
 export const accountsStructureModalSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
