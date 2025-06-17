@@ -123,6 +123,11 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
           'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'TRUE',
           'org.eclipse.elk.layered.mergeHierarchyEdges': 'FALSE',
+          'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
+          'elk.layered.spacing.edgeNode': '25',
+          'elk.layered.spacing.edgeEdge': '25',
+          'elk.layered.spacing.baseValue': '25',
+          'elk.layered.spacing.individual': 'true',
         },
       })
       .then((layoutGraph) => {
