@@ -33,7 +33,7 @@ export const Content = memo(({ evidence }: Props) => {
     return (
       <Card>
         <Box padding={6}>
-          <Skeleton height="10lh" />
+          <Skeleton height="446px" />
         </Box>
       </Card>
     );
