@@ -23,6 +23,7 @@ import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
   type DelegateConfirm,
+  type EditDelegationConfirm,
   type RemoveVoteConfirm,
   type VoteConfirm,
   delegateConfirmModel,
@@ -32,7 +33,7 @@ import {
   voteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
-import { type DelegateInput, type RevokeDelegationInput } from '../types/confirm';
+import { type RevokeDelegationInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -153,21 +154,24 @@ const prepareEditDelegationDataFx = createEffect(
       asset,
       transferable,
 
-      shards: [account!],
       balance: coreTxs[0].args.balance,
       conviction: coreTxs[0].args.conviction,
       // TODO: Previous conviction should be received from chain
       previousConviction: coreTxs[0].args.previousConviction || 'None',
       target: coreTxs[0].args.target,
       tracks: coreTxs.map((t: Transaction) => t.args.track),
-      description: '',
       locks,
-      signatory: null,
+      signatory: account!,
+      route: [account!],
+      tx: transaction.coreTx,
+      coreTx: transaction.coreTx,
+      multisigTx: null,
+      initiator: account!,
 
       fee,
-      totalFee: '0',
+      totalFee: fee,
       multisigDeposit: '0',
-    } satisfies DelegateInput;
+    } satisfies EditDelegationConfirm;
   },
 );
 
@@ -427,7 +431,7 @@ sample({
 sample({
   clock: prepareEditDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: editDelegationConfirmModel.events.formInitiated,
+  target: editDelegationConfirmModel.init,
 });
 
 sample({

@@ -3,14 +3,15 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nullable } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
-import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { ConfirmSlider, EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
+import { EditDelegationConfirmation as Confirmation } from '@/features/operations/OperationsConfirm';
 import { editDelegationModel } from '../model/edit-delegation-model';
+import { formModel } from '../model/form-model';
 
 import { DelegateForm } from './DelegateForm';
 import { SelectTrackForm } from './SelectTracksForm';
@@ -21,7 +22,7 @@ export const EditDelegation = () => {
   const step = useUnit(editDelegationModel.$step);
   const walletData = useUnit(editDelegationModel.$walletData);
   const initiatorWallet = useUnit(editDelegationModel.$initiatorWallet);
-  const transactions = useUnit(editDelegationModel.$transactions);
+  const tx = useUnit(formModel.$tx);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), editDelegationModel.output.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
@@ -59,60 +60,35 @@ export const EditDelegation = () => {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
   }
 
-  if (nullable(transactions)) {
+  if (nullable(tx)) {
     return null;
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="overflow-y-auto flex-1"
-      panelClass="max-h-[736px] w-fit flex flex-col"
-      isOpen={isModalOpen}
-      title={
+    <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={(open) => !open && closeModal()}>
+      <Modal.Title close>
         <OperationTitle title={t('operations.modalTitles.editDelegationOn')} chainId={walletData.chain!.chainId} />
-      }
-      onClose={closeModal}
-    >
-      {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => editDelegationModel.events.stepChanged(Step.INIT)}
-        />
-      )}
+      </Modal.Title>
 
-      {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-        <ConfirmSlider
-          count={transactions.length}
-          footer={
-            <div className="flex gap-2">
-              {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+      <Modal.Content>
+        {isStep(step, Step.CONFIRM) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
                 <Button pallet="secondary" onClick={() => editDelegationModel.events.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )}
-              <SignButton isDefault type={walletData.wallet?.type} onClick={editDelegationModel.events.txsConfirmed} />
-            </div>
-          }
-        >
-          {transactions.map((_, index) => (
-            <ConfirmSlider.Item key={index}>
-              <Confirmation id={index} hideSignButton />
-            </ConfirmSlider.Item>
-          ))}
-        </ConfirmSlider>
-      )}
+              )
+            }
+            onGoBack={() => editDelegationModel.events.stepChanged(Step.INIT)}
+          />
+        )}
 
-      {isStep(step, Step.SIGN) && (
-        <OperationSign onGoBack={() => editDelegationModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+        {isStep(step, Step.SIGN) && (
+          <OperationSign onGoBack={() => editDelegationModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };
