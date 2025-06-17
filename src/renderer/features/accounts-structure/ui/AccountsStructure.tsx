@@ -18,9 +18,14 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 
 import { AccountStructureNode } from './AccountStructureNode';
+import { CustomEdge } from './CustomEdge';
 
 const nodeTypes = {
   accountNode: AccountStructureNode,
+};
+
+const edgeTypes = {
+  custom: CustomEdge,
 };
 
 interface AccountsStructureProps {
@@ -77,15 +82,15 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       nodes={nodes}
       edges={edges}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       fitView={false}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}
       proOptions={{ hideAttribution: true }}
       defaultEdgeOptions={{
-        type: 'smoothstep',
+        type: 'custom',
         animated: false,
-        style: { stroke: '#363643', strokeWidth: 2 },
         markerEnd: {
           type: MarkerType.Arrow,
           width: 20,
