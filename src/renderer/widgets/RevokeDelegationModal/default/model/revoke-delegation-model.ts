@@ -1,12 +1,10 @@
-import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
 import { type Address } from '@/shared/core';
 import {
   Step,
-  ZERO_BALANCE,
   getRelaychainAsset,
   isStep,
   nonNullable,
@@ -14,12 +12,12 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -37,16 +35,6 @@ const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
-
-const $multisigDeposit = createStore(ZERO_BALANCE);
-
-type DepositParams = {
-  api: ApiPromise;
-  threshold: number;
-};
-const getMultisigDepositFx = createEffect(({ api, threshold }: DepositParams): string => {
-  return transactionService.getMultisigDeposit(threshold, api);
-});
 
 const $api = combine(
   {
@@ -144,25 +132,16 @@ const { $fee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-sample({
-  source: {
-    api: $api,
-    route: $route,
-  },
-  filter: ({ api, route }) => nonNullable(api) && nonNullable(route),
-  fn: ({ api, route }) => {
-    const multisig = route.find(accountUtils.isMultisigAccount);
-    return {
-      api: api!,
-      threshold: multisig?.threshold ?? 0,
-    };
-  },
-  target: getMultisigDepositFx,
+const $multisigThreshold = $route.map((route) => {
+  const multisig = route.find(accountUtils.isMultisigAccount);
+  if (!multisig) return null;
+
+  return multisig.threshold;
 });
 
-sample({
-  clock: getMultisigDepositFx.doneData,
-  target: $multisigDeposit,
+const { $multisigDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
 });
 
 // Steps
@@ -240,7 +219,7 @@ const dataSubmitted = sample({
           multisigTx,
           fee: fee.toString(),
           totalFee: fee.toString(),
-          multisigDeposit,
+          multisigDeposit: multisigDeposit.toString(),
         } satisfies RevokeDelegationConfirm,
       ];
     }
