@@ -89,7 +89,7 @@ export const Governance = () => {
               </Plate>
               {isApiConnected && (
                 <>
-                  <Locks onClick={unlockAggregate.events.flowStarted} />
+                  <Locks onClick={unlockAggregate.flowStarted} />
                   <TotalDelegation
                     onClick={() =>
                       hasDelegations

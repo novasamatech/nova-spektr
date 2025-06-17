@@ -61,11 +61,11 @@ sample({
   source: unlockModel.$claimSchedule,
   filter: (claims) => nonNullable(claims),
   fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAccountId[],
-  target: unlockFormAggregate.events.formInitiated,
+  target: unlockFormAggregate.formInitiated,
 });
 
 sample({
-  clock: unlockFormAggregate.output.formSubmitted,
+  clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
     const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
@@ -90,19 +90,19 @@ sample({
 });
 
 sample({
-  clock: unlockFormAggregate.output.formSubmitted,
+  clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => ({
     event: [{ ...formData, coreTx: transactions[0].coreTx }],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: unlockConfirmAggregate.events.formInitiated,
+    event: unlockConfirmAggregate.formInitiated,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: unlockConfirmAggregate.output.formSubmitted,
+  clock: unlockConfirmAggregate.formSubmitted,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
@@ -197,7 +197,7 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, unlockFormAggregate.events.formCleared],
+  target: [stepChanged, unlockFormAggregate.formCleared],
 });
 
 sample({
@@ -248,14 +248,9 @@ export const unlockAggregate = {
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    unlockFormStarted,
-    txSaved,
-  },
-
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  unlockFormStarted,
+  txSaved,
+  flowFinished,
 };

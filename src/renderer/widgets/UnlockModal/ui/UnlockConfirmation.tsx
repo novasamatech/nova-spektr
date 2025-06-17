@@ -172,7 +172,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
               <SignButton
                 isDefault={basketUtils.isBasketAvailable(initiatorWallet) && Boolean(secondaryActionButton)}
                 type={signerWallet.type}
-                onClick={unlockConfirmAggregate.output.formSubmitted}
+                onClick={unlockConfirmAggregate.formSubmitted}
               />
             )}
           </div>

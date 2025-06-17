@@ -552,16 +552,11 @@ export const unlockFormAggregate = {
   $proxyBalance,
   $signatoryBalance,
 
-  events: {
-    formInitiated,
-    formCleared,
-    feeChanged,
-    totalFeeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
-  },
-
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  formCleared,
+  feeChanged,
+  totalFeeChanged,
+  multisigDepositChanged,
+  isFeeLoadingChanged,
+  formSubmitted,
 };

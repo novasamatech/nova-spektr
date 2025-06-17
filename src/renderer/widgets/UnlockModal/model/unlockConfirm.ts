@@ -154,11 +154,6 @@ export const unlockConfirmAggregate = {
   $transferableAmount,
   $isMultisigExists,
 
-  events: {
-    formInitiated,
-  },
-
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  formSubmitted,
 };

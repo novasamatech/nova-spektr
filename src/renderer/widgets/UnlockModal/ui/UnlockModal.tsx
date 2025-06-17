@@ -21,11 +21,8 @@ export const UnlockModal = () => {
   const step = useUnit(unlockAggregate.$step);
   const chainId = useUnit(networkSelectorModel.$governanceChainId);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), unlockAggregate.output.flowFinished);
-  const [isBasketModalOpen, closeBasketModal] = useModalClose(
-    isStep(step, Step.BASKET),
-    unlockAggregate.output.flowFinished,
-  );
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), unlockAggregate.flowFinished);
+  const [isBasketModalOpen, closeBasketModal] = useModalClose(isStep(step, Step.BASKET), unlockAggregate.flowFinished);
 
   if (!chainId) {
     return null;
@@ -58,18 +55,18 @@ export const UnlockModal = () => {
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
         {isStep(step, Step.INIT) && <UnlockInfo />}
-        {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.events.stepChanged(Step.INIT)} />}
+        {isStep(step, Step.SELECT) && <UnlockForm onGoBack={() => unlockAggregate.stepChanged(Step.INIT)} />}
         {isStep(step, Step.CONFIRM) && (
           <UnlockConfirmation
             secondaryActionButton={
-              <Button pallet="secondary" onClick={() => unlockAggregate.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => unlockAggregate.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             }
-            onGoBack={() => unlockAggregate.events.stepChanged(Step.SELECT)}
+            onGoBack={() => unlockAggregate.stepChanged(Step.SELECT)}
           />
         )}
-        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.events.stepChanged(Step.CONFIRM)} />}
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => unlockAggregate.stepChanged(Step.CONFIRM)} />}
       </Modal.Content>
     </Modal>
   );

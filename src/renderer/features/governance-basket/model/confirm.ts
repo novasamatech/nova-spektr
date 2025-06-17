@@ -369,7 +369,7 @@ sample({
 sample({
   clock: prepareUnlockDataFx.doneData,
   fn: (data) => [data],
-  target: unlockConfirmAggregate.events.formInitiated,
+  target: unlockConfirmAggregate.formInitiated,
 });
 
 sample({
