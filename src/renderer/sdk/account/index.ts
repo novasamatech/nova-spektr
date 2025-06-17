@@ -1,5 +1,6 @@
 import { createSDK } from '@/shared/di';
-import { accountNodeConfigTransformer, accountService } from '@/domains/network';
+import { accountService } from '@/domains/network';
+import { accountNodeConfigTransformer } from '@/features/accounts-structure';
 
 export const accountSDK = createSDK({
   required: {

@@ -1,11 +1,19 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
 import { useMemo } from 'react';
 
-import { useTransformer } from '@/shared/di';
+import { createTransformer, useTransformer } from '@/shared/di';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
-import { type AnyAccount, accountNodeConfigTransformer } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
+
+export const accountNodeConfigTransformer = createTransformer<
+  AnyAccount,
+  {
+    title: string;
+    color: string;
+  }
+>();
 
 type AccountStructureNodeProps = {
   data: {
