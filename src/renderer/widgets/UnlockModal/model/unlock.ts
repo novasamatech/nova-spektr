@@ -119,7 +119,7 @@ sample({
     wrappedTxs: $wrappedTxs,
   },
   filter: ({ unlockData, chain, wrappedTxs }) => {
-    return Boolean(unlockData) && Boolean(chain) && Boolean(wrappedTxs);
+    return nonNullable(unlockData) && nonNullable(chain) && nonNullable(wrappedTxs);
   },
   fn: ({ unlockData, chain, wrappedTxs }) => ({
     event: {
