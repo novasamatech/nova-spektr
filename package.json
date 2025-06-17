@@ -124,6 +124,7 @@
     "effector-forms": "2.0.0-next.1",
     "effector-react": "23.3.0",
     "effector-storage": "7.1.0",
+    "elkjs": "^0.10.0",
     "graphql": "16.10.0",
     "graphql-request": "6.1.0",
     "i18next": "24.2.3",

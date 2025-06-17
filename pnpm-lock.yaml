@@ -152,6 +152,9 @@ importers:
       effector-storage:
         specifier: 7.1.0
         version: 7.1.0(effector@23.3.0)
+      elkjs:
+        specifier: ^0.10.0
+        version: 0.10.0
       graphql:
         specifier: 16.10.0
         version: 16.10.0
@@ -5331,6 +5334,9 @@ packages:
     resolution: {integrity: sha512-Z7l2bVgpdKxHQMI4i0CirBX2n+iCYKOx5mbzNM3BpOyFELwlobEXKmzCmEnwP+3EcNeIhUQyIEBFQxN06QgdIw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
+
+  elkjs@0.10.0:
+    resolution: {integrity: sha512-v/3r+3Bl2NMrWmVoRTMBtHtWvRISTix/s9EfnsfEWApNrsmNjqgqJOispCGg46BPwIFdkag3N/HYSxJczvCm6w==}
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -15759,6 +15765,8 @@ snapshots:
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
+
+  elkjs@0.10.0: {}
 
   elliptic@6.6.1:
     dependencies:

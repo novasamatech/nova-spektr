@@ -12,9 +12,9 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
+import ELK from 'elkjs/lib/elk.bundled.js';
 import { useEffect, useMemo } from 'react';
 
-import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 
 import { AccountStructureNode } from './AccountStructureNode';
@@ -38,8 +38,7 @@ type AccountNodeData = {
   isSelected: boolean;
 };
 
-const LEVEL_SPACING = 400;
-const NODE_SPACING = 115;
+const elk = new ELK();
 
 const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
@@ -52,29 +51,63 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
     const nodes = createNodesFromMatrix(matrix);
     const edges = createEdgesFromConnections(connections);
 
-    setNodes(nodes);
-    setEdges(edges);
+    // Create ELK graph
+    const elkGraph = {
+      id: 'root',
+      children: nodes.map((node) => ({
+        id: node.id,
+        width: 250, // Width of your custom node
+        height: 100, // Height of your custom node
+      })),
+      edges: connections.map((c) => ({
+        id: `e${c.source}-${c.target}`,
+        sources: [c.source],
+        targets: [c.target],
+      })),
+    };
 
-    const selectedNodeLevel = matrix.findIndex((level) => level.some((node) => node.account.id === account.id));
-    const nodesToInclude = [
-      matrix[selectedNodeLevel],
-      matrix[selectedNodeLevel + 1],
-      matrix[selectedNodeLevel + 2],
-      matrix[selectedNodeLevel - 1],
-      matrix[selectedNodeLevel - 2],
-    ]
-      .filter(nonNullable)
-      .slice(0, 3)
-      .flat()
-      .map((node) => node.account);
+    // Apply ELK layout
+    elk
+      .layout(elkGraph, {
+        layoutOptions: {
+          'elk.algorithm': 'layered',
+          'elk.direction': 'RIGHT',
+          'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+          'elk.spacing.nodeNode': '20',
+          'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+          'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+        },
+      })
+      .then((layoutGraph) => {
+        console.log({ layoutGraph, nodes });
+        const layoutNodes = nodes.map((node) => {
+          const layoutNode = layoutGraph.children?.find((n) => n.id === node.id);
+          if (layoutNode) {
+            return {
+              ...node,
+              position: {
+                x: layoutNode.x || 0,
+                y: layoutNode.y || 0,
+              },
+            };
+          }
+          return node;
+        });
 
-    fitView({
-      nodes: nodesToInclude,
-      padding: 0.5,
-      maxZoom: 0.75,
-      minZoom: 0.75,
-      includeHiddenNodes: true,
-    });
+        setNodes(layoutNodes);
+        setEdges(edges);
+
+        const selectedNode = layoutNodes.find((node) => node.data.account.id === account.id);
+        if (selectedNode) {
+          fitView({
+            nodes: [selectedNode],
+            padding: 0.5,
+            maxZoom: 0.75,
+            minZoom: 0.75,
+            includeHiddenNodes: true,
+          });
+        }
+      });
   }, [graph, setNodes, setEdges, account.id, fitView, matrix, connections]);
 
   return (
@@ -113,16 +146,7 @@ export const AccountsStructure = (props: AccountsStructureProps) => (
   </ReactFlowProvider>
 );
 
-function createNode(
-  nodeData: AccountNodeData,
-  levelIndex: number,
-  nodeIndex: number,
-  levelHeight: number,
-): Node<AccountNodeData> {
-  const startY = -levelHeight / 2;
-  const x = -levelIndex * LEVEL_SPACING;
-  const y = startY + nodeIndex * NODE_SPACING;
-
+function createNode(nodeData: AccountNodeData): Node<AccountNodeData> {
   return {
     id: nodeData.account.id,
     type: 'accountNode',
@@ -130,7 +154,7 @@ function createNode(
       account: nodeData.account,
       isSelected: nodeData.isSelected,
     },
-    position: { x, y },
+    position: { x: 0, y: 0 }, // Initial position, will be updated by ELK
     sourcePosition: Position.Left,
     targetPosition: Position.Right,
   };
@@ -145,9 +169,8 @@ function createEdge(connection: { source: string; target: string }): Edge {
 }
 
 function createNodesFromMatrix(matrix: AccountNodeData[][]): Node<AccountNodeData>[] {
-  return matrix.reduce((acc, level, levelIndex) => {
-    const levelHeight = level.length * NODE_SPACING;
-    const levelNodes = level.map((nodeData, nodeIndex) => createNode(nodeData, levelIndex, nodeIndex, levelHeight));
+  return matrix.reduce((acc, level) => {
+    const levelNodes = level.map((nodeData) => createNode(nodeData));
     return [...acc, ...levelNodes];
   }, [] as Node<AccountNodeData>[]);
 }
