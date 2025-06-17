@@ -119,7 +119,7 @@ const formSubmitted = sample({
     walletData: formModel.$walletData,
     tracks: formModel.$tracks,
     target: formModel.$target,
-    account: formModel.$account,
+    initiator: formModel.form.fields.initiator.$value,
     delegateData: $delegateData,
     activeDelegations: formModel.$activeDelegations,
     isUnchanged: $isUnchanged,
@@ -136,7 +136,7 @@ const formSubmitted = sample({
     walletData,
     tracks,
     target,
-    account,
+    initiator,
     delegateData,
     activeDelegations,
     isUnchanged,
@@ -150,14 +150,13 @@ const formSubmitted = sample({
       nonNullable(delegateData) &&
       nonNullable(walletData.wallet) &&
       nonNullable(walletData.chain) &&
-      nonNullable(account) &&
+      nonNullable(initiator) &&
       nonNullable(tx) &&
       nonNullable(coreTx) &&
       nonNullable(delegateData.signatory) &&
       isStep(step, Step.INIT)
     ) {
       const asset = getRelaychainAsset(walletData.chain.assets)!;
-      const initiator = account.account;
 
       const address = toAddress(initiator.accountId, { prefix: walletData.chain.addressPrefix });
 
@@ -208,36 +207,43 @@ sample({
   }),
 });
 
-sample({
+const startSigning = sample({
   clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     delegateData: $delegateData,
     walletData: formModel.$walletData,
     transaction: formModel.$tx,
-    account: formModel.$account,
+    initiator: formModel.form.fields.initiator.$value,
     step: $step,
   },
-  filter: ({ delegateData, walletData, transaction, step, account }) => {
-    return (
-      nonNullable(delegateData) &&
-      nonNullable(walletData) &&
-      nonNullable(transaction) &&
-      nonNullable(account) &&
-      isStep(step, Step.CONFIRM)
-    );
-  },
-  fn: ({ delegateData, walletData, transaction, account }) => {
+}).filterMap(({ delegateData, walletData, transaction, step, initiator }) => {
+  if (
+    nonNullable(delegateData) &&
+    nonNullable(walletData) &&
+    nonNullable(walletData.chain) &&
+    nonNullable(transaction) &&
+    nonNullable(initiator) &&
+    nonNullable(delegateData.signatory) &&
+    isStep(step, Step.CONFIRM)
+  ) {
     return {
-      event: {
-        signingPayloads: [
-          {
-            chain: walletData.chain!,
-            account: account!.account,
-            signatory: delegateData!.signatory,
-            transaction: transaction!,
-          },
-        ],
-      },
+      signingPayloads: [
+        {
+          chain: walletData.chain,
+          account: initiator,
+          signatory: delegateData.signatory,
+          transaction,
+        },
+      ],
+    };
+  }
+});
+
+sample({
+  clock: startSigning,
+  fn: (event) => {
+    return {
+      event,
       step: Step.SIGN,
     };
   },

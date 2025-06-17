@@ -171,7 +171,7 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
-const $account = combine(
+const $availableBalance = combine(
   {
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
@@ -189,7 +189,6 @@ const $account = combine(
     const lock = getLocksForAddress(address, trackLocks);
 
     return {
-      account: initiator,
       balance: transferableAmountBN(balance),
       lock,
       available: balance ? locksService.getAvailableBalance(balance) : BN_ZERO,
@@ -197,7 +196,7 @@ const $account = combine(
   },
 );
 
-const $initiatorBalance = $account.map((account) => {
+const $initiatorBalance = $availableBalance.map((account) => {
   return account?.available.toString() || ZERO_BALANCE;
 });
 
@@ -243,19 +242,17 @@ const $coreTx = combine(
     walletData: $walletData,
     target: $target,
     tracks: $tracks,
-    account: $account,
+    initiator: form.fields.initiator.$value,
     activeTracks: delegationAggregate.$activeTracks,
     activeDelegations: $activeDelegations,
     amount: form.fields.amount.$value,
     conviction: form.fields.conviction.$value,
     isUnchanged: form.fields.isUnchanged.$value,
   },
-  ({ walletData, target, tracks, account, activeTracks, activeDelegations, amount, conviction, isUnchanged }) => {
-    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || nullable(account)) {
+  ({ walletData, target, tracks, initiator, activeTracks, activeDelegations, amount, conviction, isUnchanged }) => {
+    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || nullable(initiator)) {
       return null;
     }
-
-    const initiator = account.account;
 
     const address = toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix });
     const finalConviction = isUnchanged ? activeDelegations[address]?.conviction : conviction;
@@ -388,10 +385,11 @@ sample({
 
 sample({
   clock: form.$values.updates,
-  source: { networkStore: $networkStore, account: $account },
-  filter: ({ networkStore, account }) => nonNullable(networkStore) && nonNullable(account),
-  fn: ({ account }, formData) => {
-    const locks = account ? { [account.account.accountId]: account.lock } : {};
+  source: { networkStore: $networkStore, account: $availableBalance, initiator: form.fields.initiator.$value },
+  filter: ({ networkStore, account, initiator }) =>
+    nonNullable(networkStore) && nonNullable(account) && nonNullable(initiator),
+  fn: ({ account, initiator }, formData) => {
+    const locks = account ? { [initiator!.accountId]: account.lock } : {};
 
     return { ...formData, locks };
   },
@@ -469,7 +467,7 @@ export const formModel = {
   $proxyWallet,
   $signatories,
 
-  $account,
+  $availableBalance,
   $initiatorBalance,
   $delegateBalanceRange,
   $proxyBalance,
