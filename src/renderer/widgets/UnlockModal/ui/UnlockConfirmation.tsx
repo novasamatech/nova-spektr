@@ -14,7 +14,7 @@ import { AssetFiatBalance } from '@/entities/price';
 import { AccountsModal } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
-import { unlockConfirmAggregate } from '../aggregates/unlockConfirm';
+import { unlockConfirmAggregate } from '../model/unlockConfirm';
 
 type Props = {
   id?: number;

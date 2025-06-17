@@ -15,7 +15,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
 import { type AccountWithClaim } from '@/features/governance/types/structs';
-import { unlockFormAggregate } from '../aggregates/unlockForm';
+import { unlockFormAggregate } from '../model/unlockForm';
 
 type Props = {
   onGoBack: () => void;

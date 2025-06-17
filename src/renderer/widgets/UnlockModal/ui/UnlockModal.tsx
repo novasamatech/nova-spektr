@@ -9,7 +9,7 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { networkSelectorModel } from '@/features/governance/model/networkSelector';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { unlockAggregate } from '../aggregates/unlock';
+import { unlockAggregate } from '../model/unlock';
 
 import { UnlockConfirmation } from './UnlockConfirmation';
 import { UnlockForm } from './UnlockForm';

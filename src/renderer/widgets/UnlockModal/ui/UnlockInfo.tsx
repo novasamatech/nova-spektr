@@ -10,7 +10,7 @@ import { Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
-import { unlockAggregate } from '../aggregates/unlock';
+import { unlockAggregate } from '../model/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
