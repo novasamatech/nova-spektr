@@ -53,7 +53,7 @@ export const VotingButtonWithTooltip = memo(
 
     if (checked || isVoted || disabled || nullable(votes) || nullable(voteImpact)) return buttonNode;
 
-    const tooltipText = variant === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
+    const tooltipText = variant === 'positive' ? t('voteChart.good') : t('voteChart.notGood');
     const impact = categorizeImpact(voteImpact);
 
     return (

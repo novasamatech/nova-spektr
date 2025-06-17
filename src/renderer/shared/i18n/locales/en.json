@@ -671,7 +671,7 @@
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
       "voteImpact": {
         "huge": "Huge",
-        "impact": "Vote impact:",
+        "impact": "Impact:",
         "minor": "Minor",
         "moderate": "Moderate"
       },
@@ -2018,8 +2018,8 @@
     "wallet": "Wallet"
   },
   "voteChart": {
-    "aye": "Aye",
-    "nay": "Nay",
+    "good": "Good",
+    "notGood": "Not good",
     "toPass": "To pass"
   },
   "walletDetails": {
