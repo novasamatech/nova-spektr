@@ -218,6 +218,9 @@ const dataSubmitted = sample({
       const asset = getRelaychainAsset(chain.assets)!;
       const delegation = delegations[delegate];
       const delegationData = Object.values(delegation)[0];
+      const transferable = transferableAmount(
+        balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString()),
+      );
 
       return [
         {
@@ -225,9 +228,7 @@ const dataSubmitted = sample({
           asset,
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
-          transferable: transferableAmount(
-            balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString()),
-          ),
+          transferable,
           initiator,
           signatory,
           delegate,
