@@ -19,5 +19,3 @@ export { block } from './block';
 export { multisigOperation } from './multisig-operation/model';
 export { multisigOperationService } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
-
-export { accountNodeConfigTransformer } from './account/transformers';
