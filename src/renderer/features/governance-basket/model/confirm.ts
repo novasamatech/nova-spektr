@@ -24,14 +24,15 @@ import {
   type DelegateConfirm,
   type EditDelegationConfirm,
   type RemoveVoteConfirm,
+  type UnlockConfirm,
   type VoteConfirm,
   delegateConfirmModel,
   editDelegationConfirmModel,
   removeVoteConfirmModel,
   revokeDelegationConfirmModel,
+  unlockConfirmModel,
   voteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type UnlockConfirm, unlockConfirmModel } from '@/widgets/UnlockModal';
 import { type RevokeDelegationInput } from '../types/confirm';
 
 type DataParams = {

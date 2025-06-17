@@ -9,9 +9,9 @@ import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { networkSelectorModel } from '@/features/governance/model/networkSelector';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { UnlockConfirmation } from '@/features/operations/OperationsConfirm';
 import { unlockAggregate } from '../model/unlock';
 
-import { UnlockConfirmation } from './UnlockConfirmation';
 import { UnlockForm } from './UnlockForm';
 import { UnlockInfo } from './UnlockInfo';
 
