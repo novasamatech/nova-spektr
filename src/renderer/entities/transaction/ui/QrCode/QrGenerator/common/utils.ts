@@ -9,15 +9,7 @@ import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
-import {
-  CRYPTO_ECDSA,
-  CRYPTO_ETHEREUM,
-  CRYPTO_SR25519,
-  CRYPTO_STUB,
-  Command,
-  FRAME_SIZE,
-  SUBSTRATE_ID,
-} from './constants';
+import { CRYPTO_ETHEREUM, CRYPTO_SR25519, CRYPTO_STUB, Command, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
 
@@ -92,7 +84,7 @@ export const createDynamicDerivationsSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ECDSA,
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
     new Uint8Array([cmd]),
     decodeAddress(address),
     str.encode(derivationPath),
