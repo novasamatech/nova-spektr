@@ -22,7 +22,7 @@ import { navigationModel } from '@/features/navigation';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
-import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
+import { unlockAggregate, unlockAggregateShards } from '@/widgets/UnlockModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
@@ -30,6 +30,12 @@ import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 const Delegate = lazy(() => import('@/widgets/DelegateModal').then((module) => ({ default: module.Delegate })));
 const DelegateShards = lazy(() =>
   import('@/widgets/DelegateModal').then((module) => ({ default: module.DelegateShards })),
+);
+
+// Lazy load unlock components
+const UnlockModal = lazy(() => import('@/widgets/UnlockModal').then((module) => ({ default: module.UnlockModal })));
+const UnlockModalShards = lazy(() =>
+  import('@/widgets/UnlockModal').then((module) => ({ default: module.UnlockModalShards })),
 );
 
 export const Governance = () => {
@@ -74,6 +80,8 @@ export const Governance = () => {
   const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
 
+  const unlockFlowStarted = isAccountWithShards ? unlockAggregateShards.flowStarted : unlockAggregate.flowStarted;
+
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
@@ -89,7 +97,7 @@ export const Governance = () => {
               </Plate>
               {isApiConnected && (
                 <>
-                  <Locks onClick={unlockAggregate.flowStarted} />
+                  <Locks onClick={unlockFlowStarted} />
                   <TotalDelegation
                     onClick={() =>
                       hasDelegations
@@ -110,8 +118,7 @@ export const Governance = () => {
       <DelegationModal />
       <DelegateDetails />
       <Suspense fallback={null}>{isAccountWithShards ? <DelegateShards /> : <Delegate />}</Suspense>
-
-      <UnlockModal />
+      <Suspense fallback={null}>{isAccountWithShards ? <UnlockModalShards /> : <UnlockModal />}</Suspense>
     </div>
   );
 };
