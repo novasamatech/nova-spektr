@@ -1,9 +1,9 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -53,6 +53,24 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
+  const initiators = useMemo(() => {
+    if (nullable(confirms)) return [];
+
+    return confirms.map((confirm) => confirm.meta.initiator);
+  }, [confirms]);
+
+  const multisigAccount = useMemo(() => {
+    if (nullable(confirmStore)) return null;
+
+    return confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  }, [confirmStore.meta.route]);
+
+  const proxyAccount = useMemo(() => {
+    if (nullable(confirmStore)) return null;
+
+    return confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
+  }, [confirmStore.meta.route]);
+
   if (!confirmStore || !meta || !initiatorWallet) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
@@ -62,10 +80,6 @@ export const Confirmation = ({
   }
 
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
-
-  const initiators = confirms.map((confirm) => confirm.meta.initiator);
-  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
-  const proxyAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
