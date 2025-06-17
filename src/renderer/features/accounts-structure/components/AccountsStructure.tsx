@@ -111,7 +111,14 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           'elk.layered.spacing.nodeNodeBetweenLayers': '100',
           'elk.spacing.nodeNode': '25',
           'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+          'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
+          'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
+          'elk.layered.crossingMinimization.greedySwitchHierarchical.type': 'TWO_SIDED',
+          'elk.layered.crossingMinimization.hierarchicalSweepiness': '0.5',
           'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+          'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
+          'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
+          'org.eclipse.elk.alignment': 'CENTER',
         },
       })
       .then((layoutGraph) => {
