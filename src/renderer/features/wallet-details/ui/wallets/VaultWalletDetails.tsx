@@ -1,6 +1,7 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
+import { $features } from '@/shared/config/features';
 import {
   type Chain,
   type DraftAccount,
@@ -9,6 +10,7 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
+import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
@@ -18,6 +20,7 @@ import { Hash } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
+import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
@@ -52,6 +55,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
+  const features = useUnit($features);
 
   const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
 
@@ -178,8 +182,14 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
+          <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
+
+            <div className="shrink-0">
+              {features.accountsStructure && (
+                <Slot id={accountsStructureModalSlot} props={{ walletAccounts: wallet.accounts }} />
+              )}
+            </div>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
