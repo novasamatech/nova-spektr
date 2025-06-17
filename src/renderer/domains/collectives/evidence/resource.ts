@@ -64,7 +64,12 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     const evidence = evidences.at(0);
 
     if (evidence?.evidence) {
-      const content = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.evidence.value)).then(r => r.text());
+      const response = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.evidence.value));
+
+      if (response.status <= 200 || response.status >= 300) {
+        return null;
+      }
+      const content = await response.text();
 
       return {
         pallet: palletType,
