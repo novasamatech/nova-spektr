@@ -198,7 +198,7 @@ const FeeSection = () => {
   const pendingFee = useUnit(formModel.$pendingFee);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const isMultisig = useUnit(formModel.$isMultisig);
-  const account = useUnit(formModel.$account);
+  const availableBalance = useUnit(formModel.$availableBalance);
   const previousConviction = useUnit(formModel.$previousConviction);
 
   const lockPeriods = useStoreMap({
@@ -209,7 +209,7 @@ const FeeSection = () => {
 
   useGate(locksPeriodsAggregate.gates.flow, { chain: network?.chain });
 
-  if (!network || !initiator.value || !account) {
+  if (!network || !initiator.value || !availableBalance) {
     return null;
   }
 
@@ -219,15 +219,15 @@ const FeeSection = () => {
     <div className="flex flex-col gap-y-2">
       <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
         <BalanceDiff
-          from={account.balance}
-          to={new BN(account.balance).sub(amountValue)}
+          from={availableBalance.balance}
+          to={new BN(availableBalance.balance).sub(amountValue)}
           asset={network.asset}
-          lock={account.lock}
+          lock={availableBalance.lock}
         />
       </DetailRow>
 
       <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-        <LockValueDiff asset={network.asset} from={account.lock} to={amountValue} />
+        <LockValueDiff asset={network.asset} from={availableBalance.lock} to={amountValue} />
       </DetailRow>
 
       <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
