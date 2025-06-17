@@ -15,7 +15,7 @@ import { signModel } from '@/features/operations/OperationSign/model/sign-model'
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
 
-import { unlockConfirmAggregate } from './unlockConfirm';
+import { type UnlockConfirm, unlockConfirmModel } from './unlockConfirm';
 import { unlockFormAggregate } from './unlockForm';
 
 const flowStarted = createEvent();
@@ -92,17 +92,27 @@ sample({
 sample({
   clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => ({
-    event: [{ ...formData, coreTx: transactions[0].coreTx }],
+    event: [
+      {
+        ...formData,
+        initiator: formData.initiator!,
+        signatory: formData.signatory!,
+        coreTx: transactions[0].coreTx,
+        route: [formData.initiator!],
+        tx: transactions[0].coreTx,
+        multisigTx: null,
+      } satisfies UnlockConfirm,
+    ],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: unlockConfirmAggregate.formInitiated,
+    event: unlockConfirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: unlockConfirmAggregate.formSubmitted,
+  clock: unlockConfirmModel.startSigning,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,

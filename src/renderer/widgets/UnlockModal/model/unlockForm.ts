@@ -42,6 +42,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: FormParams & {
+    initiator: AnyAccount | null;
     signatory: AnyAccount | null;
     chain: Chain;
     asset: Asset;
@@ -513,6 +514,7 @@ sample({
       formData: {
         ...fee,
         ...rest,
+        initiator: realAccounts[0],
         shards: realAccounts,
         amount: formData.amount,
         chain: network!.chain,
@@ -521,7 +523,7 @@ sample({
 
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
-    };
+    } satisfies FormSubmitEvent;
   },
   target: formSubmitted,
 });
