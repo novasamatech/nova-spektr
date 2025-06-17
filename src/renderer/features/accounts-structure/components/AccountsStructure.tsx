@@ -12,7 +12,6 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
-import { type LayoutOptions } from 'elkjs/lib/elk-api';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { useEffect } from 'react';
 
@@ -39,7 +38,32 @@ type AccountNodeData = {
   isSelected: boolean;
 };
 
-const elk = new ELK();
+const elk = new ELK({
+  defaultLayoutOptions: {
+    'elk.algorithm': 'layered',
+    'elk.direction': 'RIGHT',
+    'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+    'elk.spacing.nodeNode': '25',
+    'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+    'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
+    'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
+    'elk.layered.crossingMinimization.greedySwitchHierarchical.type': 'TWO_SIDED',
+    'elk.layered.crossingMinimization.hierarchicalSweepiness': '0.5',
+    'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+    'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
+    'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
+    'org.eclipse.elk.alignment': 'CENTER',
+    'org.eclipse.elk.alg.libavoid.clusterCrossingPenalty': '1',
+    'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
+    'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+    'org.eclipse.elk.layered.mergeHierarchyEdges': 'false',
+    'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
+    'elk.layered.spacing.edgeNode': '25',
+    'elk.layered.spacing.edgeEdge': '25',
+    'elk.layered.spacing.baseValue': '25',
+    'elk.layered.spacing.individual': 'true',
+  },
+});
 
 function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccountId: string) {
   const nodes: Node<AccountNodeData>[] = [];
@@ -80,31 +104,6 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   return { nodes, edges };
 }
 
-const layoutOptions: LayoutOptions = {
-  'elk.algorithm': 'layered',
-  'elk.direction': 'RIGHT',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
-  'elk.spacing.nodeNode': '25',
-  'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-  'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
-  'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
-  'elk.layered.crossingMinimization.greedySwitchHierarchical.type': 'TWO_SIDED',
-  'elk.layered.crossingMinimization.hierarchicalSweepiness': '0.5',
-  'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-  'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
-  'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
-  'org.eclipse.elk.alignment': 'CENTER',
-  'org.eclipse.elk.alg.libavoid.clusterCrossingPenalty': '1',
-  'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
-  'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'TRUE',
-  'org.eclipse.elk.layered.mergeHierarchyEdges': 'FALSE',
-  'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
-  'elk.layered.spacing.edgeNode': '25',
-  'elk.layered.spacing.edgeEdge': '25',
-  'elk.layered.spacing.baseValue': '25',
-  'elk.layered.spacing.individual': 'true',
-};
-
 const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -113,40 +112,38 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   useEffect(() => {
     const { nodes, edges } = createGraphElements(graph, account.id);
 
-    // Create ELK graph
-    const elkGraph = {
-      id: 'root',
-      children: nodes.map((node) => ({
-        id: node.id,
-        width: 250,
-        height: 100,
-      })),
-      edges: edges.map((edge) => ({
-        id: edge.id,
-        sources: [edge.source],
-        targets: [edge.target],
-      })),
-    };
+    elk
+      .layout({
+        id: 'root',
+        children: nodes.map((node) => ({
+          id: node.id,
+          width: 250,
+          height: 100,
+        })),
+        edges: edges.map((edge) => ({
+          id: edge.id,
+          sources: [edge.source],
+          targets: [edge.target],
+        })),
+      })
+      .then((layoutGraph) => {
+        const layoutMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
+        const layoutNodes = nodes.map((node) => {
+          const layoutNode = layoutMap.get(node.id);
+          return { ...node, position: { x: layoutNode?.x ?? node.position.x, y: layoutNode?.y ?? node.position.x } };
+        });
 
-    // Apply ELK layout
-    elk.layout(elkGraph, { layoutOptions }).then((layoutGraph) => {
-      const layoutMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
-      const layoutNodes = nodes.map((node) => {
-        const layoutNode = layoutMap.get(node.id);
-        return { ...node, position: { x: layoutNode?.x ?? node.position.x, y: layoutNode?.y ?? node.position.x } };
+        setNodes(layoutNodes);
+        setEdges(edges);
+
+        fitView({
+          nodes: [account],
+          padding: 0.5,
+          maxZoom: 0.75,
+          minZoom: 0.75,
+          includeHiddenNodes: true,
+        });
       });
-
-      setNodes(layoutNodes);
-      setEdges(edges);
-
-      fitView({
-        nodes: [account],
-        padding: 0.5,
-        maxZoom: 0.75,
-        minZoom: 0.75,
-        includeHiddenNodes: true,
-      });
-    });
   }, [graph, account.id, fitView]);
 
   return (
