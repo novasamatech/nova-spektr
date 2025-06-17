@@ -1,3 +1,4 @@
+import { $features } from '@/shared/config/features';
 import { createSlot } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import { type AnyAccount } from '@/domains/network';
@@ -9,6 +10,7 @@ export const accountsStructureModalSlot = createSlot<{ walletAccounts: AnyAccoun
 
 export const accountsStructureFeature = createFeature({
   name: 'accounts/structure',
+  enable: $features.map(({ accountsStructure }) => accountsStructure),
 });
 
 accountsStructureFeature.inject(accountsStructureModalSlot, ({ walletAccounts }) => {
