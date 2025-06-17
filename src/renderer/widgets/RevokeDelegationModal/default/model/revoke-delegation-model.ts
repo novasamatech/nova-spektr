@@ -14,7 +14,7 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore, createTxWrappers } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -112,14 +112,6 @@ sample({
 sample({
   clock: selectSignatory,
   target: $signatory,
-});
-
-const $txWrappers = createTxWrappers({
-  initiator: $initiator,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: networkSelectorModel.$governanceChain,
-  signatory: $signatory,
 });
 
 const $coreTx = combine(
@@ -404,12 +396,12 @@ sample({
     chain: networkSelectorModel.$governanceChain,
     accounts: walletSelect.$selectedAccounts,
     coreTx: $coreTx,
-    txWrappers: $txWrappers,
+    route: $route,
   },
-  filter: ({ chain, coreTx, txWrappers }) => {
-    return nonNullable(chain) && nonNullable(coreTx) && nonNullable(txWrappers);
+  filter: ({ chain, coreTx, route }) => {
+    return nonNullable(chain) && nonNullable(coreTx) && nonNullable(route);
   },
-  fn: ({ chain, accounts, coreTx, txWrappers }) => {
+  fn: ({ chain, accounts, coreTx, route }) => {
     const chainAccounts = chain ? accountService.filterAccountsOnChain(accounts, chain) : [];
     const account = chainAccounts.at(0);
     if (!account) throw new Error('Account not found');
@@ -417,7 +409,7 @@ sample({
     return [
       {
         coreTx: coreTx!,
-        txWrappers,
+        route,
         initiatorAccountId: account.accountId,
         createdAt: Date.now(),
       },

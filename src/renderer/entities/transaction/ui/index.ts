@@ -1,4 +1,5 @@
-export { FeeWithDataLoading as Fee } from './FeeWithDataLoading/FeeWithDataLoading';
+export { FeeWithDataLoading } from './FeeWithDataLoading/FeeWithDataLoading';
+export { Fee } from './Fee/Fee';
 export { XcmFee } from './XcmFee/XcmFee';
 export { FeeLoader } from './FeeLoader/FeeLoader';
 export { OperationResult } from './OperationResult/OperationResult';

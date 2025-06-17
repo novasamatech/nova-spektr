@@ -62,7 +62,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   return (
     <Box padding={[4, 5]}>
       <VotingConfirmation
-        account={confirm.accounts.initiator}
+        account={confirm.meta.initiator}
         asset={confirm.meta.asset}
         chain={confirm.meta.chain}
         vote={confirm.meta.aye ? 'aye' : 'nay'}
@@ -89,10 +89,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
           {!hideSignButton && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
-              onClick={() => {
-                confirmModel.events.sign();
-              }}
+              type={confirm.wallets.signatory.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

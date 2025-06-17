@@ -53,7 +53,7 @@ const $deposits = createStore<ProxyDeposits[]>([]);
 
 const getWorkerFx = attach({
   source: $worker,
-  async effect(worker) {
+  effect(worker) {
     if (worker) {
       return worker;
     }

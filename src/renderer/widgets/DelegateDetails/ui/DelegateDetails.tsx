@@ -6,7 +6,6 @@ import { Plate } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { EditDelegation } from '@/widgets/EditDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
 import { DelegateActivity } from './DelegateActivity';
@@ -16,6 +15,7 @@ import { DelegateSummary } from './DelegateSummary';
 import { YourDelegation } from './YourDelegation';
 import { YourDelegations } from './YourDelegations';
 
+// Lazy load revoke delegation component
 const RevokeDelegation = lazy(() =>
   import('@/widgets/RevokeDelegationModal').then(({ RevokeDelegation }) => ({
     default: RevokeDelegation,
@@ -25,6 +25,14 @@ const RevokeDelegationShards = lazy(() =>
   import('@/widgets/RevokeDelegationModal').then(({ RevokeDelegationShards }) => ({
     default: RevokeDelegationShards,
   })),
+);
+// Lazy load edit delegation component
+const EditDelegation = lazy(() =>
+  import('@/widgets/EditDelegationModal').then((module) => ({ default: module.EditDelegation })),
+);
+
+const EditDelegationShards = lazy(() =>
+  import('@/widgets/EditDelegationModal').then((module) => ({ default: module.EditDelegationShards })),
 );
 
 export const DelegateDetails = () => {
@@ -68,7 +76,7 @@ export const DelegateDetails = () => {
           </Suspense>
         )}
         <DelegateSummary />
-        <EditDelegation />
+        <Suspense fallback={null}>{isAccountWithShards ? <EditDelegationShards /> : <EditDelegation />}</Suspense>
       </Modal.Content>
     </Modal>
   );

@@ -8,11 +8,11 @@ import {
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
+  type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
 import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
-import { createTxWrappers } from '@/shared/transactions';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -42,6 +42,7 @@ const $walletData = combine({
   chain: networkSelectorModel.$governanceChain,
 });
 
+const $txWrappers = createStore<TxWrapper[]>([]);
 const $revokeDelegationData = createStore<RevokeDelegationData[]>([]);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
@@ -72,8 +73,6 @@ const $api = combine(
     return walletData?.chain ? apis[walletData.chain.chainId] : null;
   },
 );
-
-const $initiator = $walletData.map((data) => data.accounts.at(0) ?? null);
 
 // Signatory
 
@@ -107,12 +106,23 @@ sample({
   target: $signatory,
 });
 
-const $txWrappers = createTxWrappers({
-  initiator: $initiator,
-  wallets: walletModel.$wallets,
-  wallet: walletSelect.$selectedWallet,
-  chain: networkSelectorModel.$governanceChain,
-  signatory: $signatory,
+sample({
+  clock: [flowStarted, $signatory.updates],
+  source: {
+    walletData: $walletData,
+    signatory: $signatory,
+    wallets: walletModel.$wallets,
+  },
+  filter: ({ walletData }) => !!walletData.wallet,
+  fn: ({ walletData, wallets, signatory }) => {
+    return transactionService.getTxWrappers({
+      wallet: walletData.wallet!,
+      wallets,
+      account: walletData.wallet!.accounts[0],
+      signatories: signatory ? [signatory] : [],
+    });
+  },
+  target: $txWrappers,
 });
 
 const $transactions = combine(
@@ -412,23 +422,14 @@ sample({
   source: {
     walletData: $walletData,
     coreTxs: $coreTxs,
-    txWrappers: $txWrappers,
   },
-  filter: ({ walletData, coreTxs, txWrappers }) => {
-    return nonNullable(walletData.wallet) && nonNullable(coreTxs) && nonNullable(txWrappers);
-  },
-  fn: ({ walletData, coreTxs, txWrappers }) => {
-    const accounts = walletData.chain
-      ? accountService.filterAccountsOnChain(walletData.accounts, walletData.chain)
-      : [];
-    const account = accounts.at(0);
-    if (!account) throw new Error('Account not found');
-
-    return coreTxs!.map((coreTx) => {
+  filter: ({ coreTxs }) => nonNullable(coreTxs),
+  fn: ({ coreTxs }) => {
+    return coreTxs.map((coreTx) => {
       return {
         coreTx,
-        txWrappers,
-        initiatorAccountId: account.accountId,
+        initiatorAccountId: coreTx.accountId,
+        route: [],
         createdAt: Date.now(),
       };
     });

@@ -22,7 +22,7 @@ export type ConfirmItem<Input extends TxConfirmInfo = TxConfirmInfo> = {
   meta: Input;
   wallets: {
     initiator: Wallet;
-    signatory: Wallet | null;
+    signatory: Wallet;
   };
 };
 
@@ -56,11 +56,12 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
         if (!initiatorWallet) return null;
 
         const signatoryWallet = walletUtils.getWalletById(wallets, meta.signatory.walletId);
+        if (!signatoryWallet) return null;
 
         return {
           meta,
           wallets: {
-            signatory: signatoryWallet || null,
+            signatory: signatoryWallet,
             initiator: initiatorWallet,
           },
         };
@@ -124,8 +125,8 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
   );
 
   return {
-    $confirms,
     $confirmMap,
+    $confirms,
     $isMultisigExists,
 
     init,

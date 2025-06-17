@@ -5,7 +5,6 @@ import { createGate } from 'effector-react';
 
 import {
   type Balance,
-  type BasketTransaction,
   type Chain,
   type ChainId,
   type Connection,
@@ -19,9 +18,12 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
+  type DelegateConfirm,
+  type EditDelegationConfirm,
   type RemoveVoteConfirm,
   type VoteConfirm,
   delegateConfirmModel,
@@ -32,7 +34,6 @@ import {
 } from '@/features/operations/OperationsConfirm';
 import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
-import { type DelegateInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -105,19 +106,22 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     asset,
     transferable,
 
-    shards: [account!],
     balance: coreTxs[0].args.balance,
     conviction: votingService.getConviction(coreTxs[0].args.conviction),
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
-    description: '',
     locks,
-    signatory: null,
+    signatory: account!,
+    initiator: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies DelegateInput;
+  } satisfies DelegateConfirm;
 });
 
 const prepareEditDelegationDataFx = createEffect(
@@ -150,21 +154,24 @@ const prepareEditDelegationDataFx = createEffect(
       asset,
       transferable,
 
-      shards: [account!],
       balance: coreTxs[0].args.balance,
       conviction: coreTxs[0].args.conviction,
       // TODO: Previous conviction should be received from chain
       previousConviction: coreTxs[0].args.previousConviction || 'None',
       target: coreTxs[0].args.target,
       tracks: coreTxs.map((t: Transaction) => t.args.track),
-      description: '',
       locks,
-      signatory: null,
+      signatory: account!,
+      route: [account!],
+      tx: transaction.coreTx,
+      coreTx: transaction.coreTx,
+      multisigTx: null,
+      initiator: account!,
 
       fee,
-      totalFee: '0',
+      totalFee: fee,
       multisigDeposit: '0',
-    } satisfies DelegateInput;
+    } satisfies EditDelegationConfirm;
   },
 );
 
@@ -402,7 +409,7 @@ sample({
 sample({
   clock: prepareDelegateDataFx.doneData,
   fn: (data) => [data],
-  target: delegateConfirmModel.events.formInitiated,
+  target: delegateConfirmModel.init,
 });
 
 sample({
@@ -433,7 +440,7 @@ sample({
 sample({
   clock: prepareEditDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: editDelegationConfirmModel.events.formInitiated,
+  target: editDelegationConfirmModel.init,
 });
 
 sample({

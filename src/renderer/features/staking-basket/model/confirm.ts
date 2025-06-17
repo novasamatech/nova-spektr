@@ -2,23 +2,16 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import {
-  type BasketTransaction,
-  type Chain,
-  type ChainId,
-  type Connection,
-  type Transaction,
-  TransactionType,
-  WrapperKind,
-} from '@/shared/core';
+import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type BondExtraConfirm,
+  type PayeeConfirm,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
   nominateConfirmModel,
@@ -29,8 +22,9 @@ import {
 } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
 import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
+import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
-import { type NominateInput, type PayeeInput, type UnstakeInput } from '../types/confirm';
+import { type NominateInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -71,9 +65,7 @@ const prepareBondNominateDataFx = createEffect(
       destination: bondTx.args.dest,
       signatory: account!,
       initiator: account!,
-      route: transaction.txWrappers.map((wrapper) =>
-        wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-      ),
+      route: transaction.route,
       coreTx: transaction.coreTx,
       tx: transaction.coreTx,
       multisigTx: null,
@@ -97,9 +89,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     totalFee: fee.toString(),
     multisigDeposit: '0',
     initiator: account!,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.signer,
-    ),
+    route: transaction.route,
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
     multisigTx: transaction.coreTx,
@@ -143,13 +133,19 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
+    initiator: account!,
+    signatory: account!,
+
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: transaction.route,
 
     fee,
-  } as PayeeInput;
+    totalFee: fee,
+    multisigDeposit: '0',
+  } satisfies PayeeConfirm;
 });
 
 const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -161,14 +157,19 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: coreTx.args.value,
-    description: '',
+    api: apis[chain.chainId],
+    signatory: account!,
+    initiator: account!,
+    route: transaction.route,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
-    totalFee: '0',
+    totalFee: fee,
     multisigDeposit: '0',
-  } as UnstakeInput;
+  } satisfies UnstakeConfirm;
 });
 
 const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -181,9 +182,7 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     amount: transaction.coreTx.args.value,
     signatory: account!,
     initiator: account!,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
@@ -216,9 +215,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     signatory: account!,
     initiator: account!,
     amount,
-    route: transaction.txWrappers.map((wrapper) =>
-      wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
-    ),
+    route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
     multisigTx: null,
@@ -341,7 +338,7 @@ sample({
 sample({
   clock: prepareUnstakeDataFx.doneData,
   fn: (data) => [data],
-  target: unstakeConfirmModel.events.formInitiated,
+  target: unstakeConfirmModel.formInitiated,
 });
 
 sample({
@@ -428,7 +425,7 @@ sample({
 sample({
   clock: preparePayeeDataFx.doneData,
   fn: (data) => [data],
-  target: payeeConfirmModel.events.formInitiated,
+  target: payeeConfirmModel.init,
 });
 
 export const confirm = {

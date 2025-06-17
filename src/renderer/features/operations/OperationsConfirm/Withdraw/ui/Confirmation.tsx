@@ -9,6 +9,7 @@ import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { AccountsModal } from '@/entities/staking';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -34,7 +35,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
+  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
@@ -67,7 +69,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           signatory={signatory}
           proxied={proxiedAccount}
         >
-          {initiator && accountUtils.isMultisigAccount(initiator) && (
+          {multisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={
@@ -92,15 +94,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             </DetailRow>
           )}
 
-          <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
-            className="text-text-primary"
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={fee} asset={chain.assets[0]} />
-              <AssetFiatBalance asset={chain.assets[0]} amount={fee} />
-            </div>
-          </DetailRow>
+          <FeeWithLabel fee={fee} asset={chain.assets[0]} label={t('staking.networkFee', { count: 1 })} />
         </TransactionDetails>
 
         <div className="mt-3 flex w-full justify-between">
@@ -116,7 +110,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
-                type={confirmStore.wallets.signatory?.type}
+                type={confirmStore.wallets.signatory.type}
                 onClick={confirmModel.startSigning}
               />
             )}

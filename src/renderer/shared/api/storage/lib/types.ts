@@ -3,7 +3,6 @@ import { type Table } from 'dexie';
 import {
   type Account,
   type Balance,
-  type BasketTransaction,
   type ChainMetadata,
   type Connection,
   type Contact,
@@ -18,6 +17,8 @@ import {
 import { type MultisigOperation } from '@/domains/network';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
+// eslint-disable-next-line boundaries/element-types
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 
 // =====================================================
 // ================== Storage Schemes ==================
