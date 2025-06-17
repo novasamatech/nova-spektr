@@ -84,7 +84,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView={false}
-      nodesDraggable={false}
+      nodesDraggable={true}
       nodesConnectable={false}
       elementsSelectable={false}
       proOptions={{ hideAttribution: true }}
