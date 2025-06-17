@@ -115,8 +115,9 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         },
       })
       .then((layoutGraph) => {
+        const layoutMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
         const layoutNodes = nodes.map((node) => {
-          const layoutNode = layoutGraph.children?.find((n) => n.id === node.id);
+          const layoutNode = layoutMap.get(node.id);
           if (layoutNode) {
             return {
               ...node,
