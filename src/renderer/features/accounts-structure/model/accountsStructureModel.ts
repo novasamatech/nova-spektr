@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
 import { accountService } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
@@ -12,7 +12,7 @@ const selectAccount = createEvent<AnyAccount>();
 
 const $selectedChainId = restore(selectChain, null);
 
-const $accountList = createStore<AnyAccount[] | null>(null).on(setAccounts, (_, accounts) => accounts);
+const $accountList = restore(setAccounts, null);
 const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
 
 const $availableChains = combine(
