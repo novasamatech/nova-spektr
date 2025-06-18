@@ -27,7 +27,22 @@ import {
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
-import * as Operations from '@/widgets/Staking';
+import {
+  bondExtraModel,
+  bondExtraShardsModel,
+  bondNominateModel,
+  bondNominateModelShards,
+  nominateModel,
+  nominateShardsModel,
+  payeeModel,
+  payeeModelShards,
+  restakeModel,
+  restakeModelShards,
+  unstakeModel,
+  unstakeModelShards,
+  withdrawModel,
+  withdrawShardsModel,
+} from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
 import { AboutStaking } from './AboutStaking';
@@ -315,26 +330,24 @@ export const Staking = () => {
 
     const model = {
       [StakeOperations.UNSTAKE]: isMultipleAccountsSelected
-        ? Operations.unstakeModelShards.events.flowStarted
-        : Operations.unstakeModel.events.flowStarted,
+        ? unstakeModelShards.events.flowStarted
+        : unstakeModel.events.flowStarted,
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
-        ? Operations.bondNominateModelShards.flowStarted
-        : Operations.bondNominateModel.flowStarted,
+        ? bondNominateModelShards.flowStarted
+        : bondNominateModel.flowStarted,
       [StakeOperations.BOND_EXTRA]: isMultipleAccountsSelected
-        ? Operations.bondExtraShardsModel.events.flowStarted
-        : Operations.bondExtraModel.events.flowStarted,
+        ? bondExtraShardsModel.events.flowStarted
+        : bondExtraModel.events.flowStarted,
       [StakeOperations.NOMINATE]: isMultipleAccountsSelected
-        ? Operations.nominateShardsModel.events.flowStarted
-        : Operations.nominateModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: isMultipleAccountsSelected
-        ? Operations.restakeModelShards.flowStarted
-        : Operations.restakeModel.flowStarted,
+        ? nominateShardsModel.events.flowStarted
+        : nominateModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleAccountsSelected ? restakeModelShards.flowStarted : restakeModel.flowStarted,
       [StakeOperations.WITHDRAW]: isMultipleAccountsSelected
-        ? Operations.withdrawShardsModel.events.flowStarted
-        : Operations.withdrawModel.events.flowStarted,
+        ? withdrawShardsModel.events.flowStarted
+        : withdrawModel.events.flowStarted,
       [StakeOperations.SET_PAYEE]: isMultipleAccountsSelected
-        ? Operations.payeeModelShards.events.flowStarted
-        : Operations.payeeModel.events.flowStarted,
+        ? payeeModelShards.events.flowStarted
+        : payeeModel.events.flowStarted,
     };
 
     model[operation]({
