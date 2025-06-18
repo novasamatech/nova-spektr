@@ -105,7 +105,7 @@ importers:
         specifier: 2.20.3
         version: 2.20.3(typescript@5.8.3)(zod@3.24.2)
       '@xyflow/react':
-        specifier: ^12.6.4
+        specifier: 12.6.4
         version: 12.6.4(@types/react@19.1.0)(immer@10.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@zxing/browser':
         specifier: 0.1.5
@@ -153,7 +153,7 @@ importers:
         specifier: 7.1.0
         version: 7.1.0(effector@23.3.0)
       elkjs:
-        specifier: ^0.10.0
+        specifier: 0.10.0
         version: 0.10.0
       graphql:
         specifier: 16.10.0
