@@ -60,7 +60,7 @@ const elk = new ELK({
     'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
     'elk.layered.spacing.edgeNode': '25',
     'elk.layered.spacing.edgeEdge': '25',
-    'elk.layered.spacing.baseValue': '25',
+    'elk.layered.spacing.baseValue': '50',
     'elk.layered.spacing.individual': 'true',
   },
 });
