@@ -28,14 +28,13 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
-  const setAccounts = useUnit(accountsStructureModel.setAccounts);
 
   useEffect(() => {
-    setAccounts(walletAccounts);
+    accountsStructureModel.setAccounts(walletAccounts);
     return () => {
-      setAccounts(null);
+      accountsStructureModel.setAccounts(null);
     };
-  }, [walletAccounts, setAccounts]);
+  }, [walletAccounts]);
 
   const onToggle = useCallback(
     (value: boolean) => {

@@ -13,7 +13,6 @@ type AccountSelector = {
 
 export const AccountSelector = ({ walletAccounts }: AccountSelector) => {
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
-  const selectAccount = useUnit(accountsStructureModel.selectAccount);
   const chains = useUnit(networkModel.$chains);
 
   return (
@@ -23,7 +22,7 @@ export const AccountSelector = ({ walletAccounts }: AccountSelector) => {
       onChange={(id) => {
         const account = walletAccounts.find((a) => a.id === id);
         if (account) {
-          selectAccount(account);
+          accountsStructureModel.selectAccount(account);
         }
       }}
     >
