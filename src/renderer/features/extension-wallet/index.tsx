@@ -31,10 +31,24 @@ accountSDK(extensionWalletFeature, {
   canSignMultipleTransactions: () => false,
   visualGraphNode: ({ account }) => {
     if (polkadotExtensionService.isExtensionAccount(account)) {
-      return {
-        title: 'Polkadot.js',
-        color: '#FF8C00',
-      };
+      if (polkadotExtensionService.isPolkadotExtensionAccount(account)) {
+        return {
+          title: 'Polkadot.js',
+          color: '#FF8C00',
+        };
+      }
+      if (polkadotExtensionService.isTalismanExtensionAccount(account)) {
+        return {
+          title: 'Talisman',
+          color: '#D5FF5C',
+        };
+      }
+      if (polkadotExtensionService.isSubWalletExtensionAccount(account)) {
+        return {
+          title: 'SubWallet',
+          color: '#004BFF',
+        };
+      }
     }
   },
 });
