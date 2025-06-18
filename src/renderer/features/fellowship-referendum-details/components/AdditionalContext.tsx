@@ -12,7 +12,7 @@ import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 import { Card } from './Card';
 
 type Props = {
-  description?: string;
+  description?: string | null;
 };
 
 export const AdditionalContext = ({ description }: Props) => {

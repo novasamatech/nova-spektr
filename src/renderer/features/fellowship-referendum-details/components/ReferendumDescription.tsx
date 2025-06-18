@@ -22,6 +22,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
   const referendumMeta = useUnit(details.$referendumMeta);
   const pendingEvidence = useUnit(details.$pendingEvidence);
   const evidence = useUnit(details.$evidence);
+  const description = useUnit(details.$description);
 
   const canHaveEvidence =
     nonNullable(referendum) &&
@@ -45,7 +46,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      <AdditionalContext description={referendumMeta?.description} />
+      <AdditionalContext description={description} />
     </>
   );
 });
