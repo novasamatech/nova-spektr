@@ -32,7 +32,7 @@ import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
 
-export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -186,7 +186,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <WalletCardLg wallet={wallet} />
 
             <div className="shrink-0">
-              <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
+              <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
             </div>
           </div>
         </Modal.HeaderContent>
