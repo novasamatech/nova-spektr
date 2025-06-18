@@ -21,10 +21,10 @@ import {
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
+import { type NominateConfirm } from '@/features/operations/OperationsConfirm/Nominate/model/confirm-model';
 import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
 import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
 import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
-import { type NominateInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -114,16 +114,18 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
+    initiator: account!,
+    signatory: account!,
     validators,
-    destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
+    route: [account!],
 
     fee,
-    totalFee: '0',
+    totalFee: fee,
     multisigDeposit: '0',
-  } as NominateInput;
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: transaction.coreTx,
+  } satisfies NominateConfirm;
 });
 
 const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -396,7 +398,7 @@ sample({
 sample({
   clock: prepareNominateDataFx.doneData,
   fn: (data) => [data],
-  target: nominateConfirmModel.events.formInitiated,
+  target: nominateConfirmModel.startSigning,
 });
 
 sample({

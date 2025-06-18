@@ -4,9 +4,10 @@ import { type FormEvent } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
-import { Button, InputHint } from '@/shared/ui';
+import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
+import { Tooltip } from '@/shared/ui-kit';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert, accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -134,11 +135,11 @@ const FeeSection = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const route = useUnit(formModel.$route);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
 
   if (!network || !initiator.value) {
     return null;
@@ -148,12 +149,25 @@ const FeeSection = () => {
   return (
     <div className="flex flex-col gap-y-2">
       {multisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={network.chain.assets[0]}
-          threshold={multisig.threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+        <DetailRow
+          className="text-text-primary"
+          label={
+            <>
+              <Icon className="text-text-tertiary" name="lock" size={12} />
+              <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
+              </Tooltip>
+            </>
+          }
+        >
+          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
+        </DetailRow>
       )}
 
       <FeeWithLabel
