@@ -42,6 +42,18 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
+  visualGraphNode({ account }) {
+    if (
+      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isVaultChainAccount(account) ||
+      accountUtils.isVaultShardAccount(account)
+    ) {
+      return {
+        title: 'Polkadot Vault',
+        color: '#EC007D',
+      };
+    }
+  },
 });
 
 polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
