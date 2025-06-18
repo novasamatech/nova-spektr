@@ -12,11 +12,11 @@ import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only
 
 import { WalletDetails } from './ui/components';
 
-export { accountsStructureSlot as simpleAccountsStructureSlot } from './ui/wallets/SimpleWalletDetails';
-export { accountsStructureSlot as vaultStructureSlot } from './ui/wallets/VaultWalletDetails';
-export { accountsStructureSlot as multisigAccountsStructureSlot } from './ui/wallets/MultisigWalletDetails';
-export { accountsStructureSlot as proxiedAccountsStructureSlot } from './ui/wallets/ProxiedWalletDetails';
-export { accountsStructureSlot as walletConnectAccountsStructureSlot } from './ui/wallets/WalletConnectDetails';
+export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
+export { overviewSlot as vaultOverviewSlot } from './ui/wallets/VaultWalletDetails';
+export { overviewSlot as multisigOverviewSlot } from './ui/wallets/MultisigWalletDetails';
+export { overviewSlot as proxiedOverviewSlot } from './ui/wallets/ProxiedWalletDetails';
+export { overviewSlot as walletConnectOverviewSlot } from './ui/wallets/WalletConnectDetails';
 
 export { WalletDetails };
 
