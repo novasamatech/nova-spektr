@@ -1,0 +1,619 @@
+/* eslint-disable import-x/max-dependencies */
+import { BN_ZERO } from '@polkadot/util';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { camelCase } from 'lodash';
+import { spread } from 'patronum';
+
+import { type Address, type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
+import {
+  TEST_ACCOUNTS,
+  ZERO_BALANCE,
+  assert,
+  formatAmount,
+  getAssetId,
+  getNativeAsset,
+  nonNullable,
+  nullable,
+  toAccountId,
+  toAddress,
+  transferableAmountBN,
+  validateAddress,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel, networkUtils } from '@/entities/network';
+import { TransferType, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { TransferRules } from '@/features/operations/OperationsValidation';
+import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
+import { type NetworkStore } from '../lib/types';
+
+type BalanceMap = Record<'balance' | 'native', string>;
+
+type FormParams = {
+  signatory: AnyAccount | null;
+  destination: Address;
+  destinationChain: Chain | null;
+  amount: string;
+};
+
+type FormSubmitEvent = FormParams & {
+  multisigTx: Transaction | null;
+  coreTx: Transaction;
+  tx: Transaction;
+  initiator: AnyAccount;
+  signatory: AnyAccount;
+  route: AnyAccount[];
+  destinationChain: Chain;
+  fee: string;
+  xcmFee: string;
+  deliveryFee: string;
+  multisigDeposit: string;
+};
+
+const formInitiated = createEvent<NetworkStore>();
+const formSubmitted = createEvent<FormSubmitEvent>();
+
+const multisigDepositChanged = createEvent<string>();
+
+const myselfClicked = createEvent();
+const xcmDestinationSelected = createEvent<AccountId>();
+const xcmDestinationCancelled = createEvent();
+
+const $networkStore = restore(formInitiated, null);
+const $isNative = createStore<boolean>(false);
+
+const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
+
+const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
+
+const $chain = $networkStore.map((s) => (s ? s.chain : null));
+const $asset = $networkStore.map((s) => (s ? s.asset : null));
+
+const form: Form<FormParams> = createForm<FormParams>({
+  fields: {
+    signatory: {
+      defaultValue: null,
+      validator() {
+        return (signatory) => {
+          if (nullable(signatory)) {
+            return { message: 'transfer.noSignatoryError' };
+          }
+          // return {
+          //   rules: [
+          //     TransferRules.signatory.notEnoughTokens(
+          //       combine({
+          //         fee: $fee,
+          //         isMultisig: $isMultisig,
+          //         multisigDeposit: $multisigDeposit,
+          //         balance: $signatoryBalance,
+          //       }),
+          //     ),
+          //   ],
+          // };
+        };
+      },
+    },
+    destinationChain: {
+      defaultValue: null,
+    },
+    destination: {
+      defaultValue: '',
+      validator() {
+        return () => {
+          return {
+            rules: [
+              TransferRules.destination.required,
+              TransferRules.destination.incorrectRecipient(xcmTransferModel.$xcmChain),
+            ],
+          };
+        };
+      },
+    },
+    amount: {
+      defaultValue: '',
+      validator() {
+        return () => {
+          return {
+            rules: [
+              TransferRules.amount.required,
+              TransferRules.amount.notZero,
+              TransferRules.amount.notEnoughBalance(
+                combine({
+                  network: $networkStore,
+                  balance: $accountBalance,
+                }),
+              ),
+              TransferRules.amount.insufficientBalanceForFee(
+                combine({
+                  fee: $fee,
+                  deliveryFee: xcmTransferModel.$deliveryFee,
+                  xcmFee: xcmTransferModel.$xcmFee,
+                  network: $networkStore,
+                  balance: $accountBalance,
+                  isNative: $isNative,
+                  isMultisig: $isMultisig,
+                  isXcm: $isXcm,
+                  isProxy: $isProxy,
+                }),
+              ),
+              TransferRules.amount.insufficientBalanceForDeliveryFee(
+                combine({
+                  fee: $fee,
+                  deliveryFee: xcmTransferModel.$deliveryFee,
+                  xcmFee: xcmTransferModel.$xcmFee,
+                  network: $networkStore,
+                  balance: $accountBalance,
+                  isNative: $isNative,
+                  isMultisig: $isMultisig,
+                  isXcm: $isXcm,
+                  isProxy: $isProxy,
+                }),
+              ),
+              TransferRules.amount.insufficientBalanceForXcmFee(
+                combine({
+                  fee: $fee,
+                  deliveryFee: xcmTransferModel.$deliveryFee,
+                  xcmFee: xcmTransferModel.$xcmFee,
+                  network: $networkStore,
+                  balance: $accountBalance,
+                  isNative: $isNative,
+                  isMultisig: $isMultisig,
+                  isXcm: $isXcm,
+                  isProxy: $isProxy,
+                }),
+              ),
+            ],
+          };
+        };
+      },
+    },
+  },
+  validateOn: ['submit'],
+});
+
+// Computed
+
+const $isXcm = combine(
+  {
+    source: $chain,
+    destination: form.fields.destinationChain.$value,
+  },
+  ({ source, destination }) => {
+    return nonNullable(source) && nonNullable(destination) && source.chainId !== destination.chainId;
+  },
+);
+
+const $api = combine(
+  {
+    apis: networkModel.$apis,
+    network: $networkStore,
+  },
+  ({ apis, network }) => {
+    if (!network) return null;
+
+    return apis[network.chain.chainId] ?? null;
+  },
+);
+
+const $isChainConnected = combine(
+  {
+    network: $networkStore,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ network, statuses }) => {
+    if (!network) return false;
+
+    return networkUtils.isConnectedStatus(statuses[network.chain.chainId]);
+  },
+);
+
+// initiator
+
+const $initiator = combine($networkStore, walletSelect.$selectedAccounts, (store, accounts) => {
+  if (nullable(store)) return null;
+
+  return accounts.find((a) => accountService.isAccountAvailableOnChain(a, store.chain)) ?? null;
+});
+
+const $initiatorBalance = combine(
+  {
+    initiator: $initiator,
+    balances: balanceModel.$balances,
+    chain: $chain,
+    asset: $asset,
+  },
+  ({ initiator, asset, chain, balances }) => {
+    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
+      return {
+        transferable: BN_ZERO,
+        native: BN_ZERO,
+      };
+    }
+
+    const transferable = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      asset.assetId.toString(),
+    );
+    const native = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      getNativeAsset(chain.assets).assetId.toString(),
+    );
+
+    return {
+      transferable: transferableAmountBN(transferable),
+      native: transferableAmountBN(native),
+    };
+  },
+);
+
+// signatories
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  accounts: accounts.$list,
+  initiator: $initiator,
+});
+
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    balances: balanceModel.$balances,
+    chain: $chain,
+  },
+  ({ signatory, balances, chain }) => {
+    if (nullable(signatory) || nullable(chain)) {
+      return BN_ZERO;
+    }
+
+    const asset = getNativeAsset(chain.assets);
+    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+    return balance ? withdrawableAmountBN(balance) : BN_ZERO;
+  },
+);
+
+// transaction
+
+const $coreTx = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    form: form.$values,
+    xcmData: xcmTransferModel.$xcmData,
+    isConnected: $isChainConnected,
+    initiator: $initiator,
+  },
+  ({ network, isXcm, form, xcmData, isConnected, initiator }) => {
+    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
+      return null;
+    }
+
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: initiator.accountId,
+      amount: form.amount,
+      destination: form.destination,
+      xcmData,
+    });
+  },
+);
+
+const $fakeTx = combine(
+  {
+    network: $networkStore,
+    isConnected: $isChainConnected,
+    xcmData: xcmTransferModel.$xcmData,
+  },
+  ({ isConnected, network, xcmData }): Transaction | null => {
+    if (!network || !isConnected) return null;
+
+    const transactionType = network.asset.type ? TransferType[network.asset.type] : TransactionType.TRANSFER;
+
+    const palletName =
+      network.asset.typeExtras && 'palletName' in network.asset.typeExtras
+        ? camelCase(network.asset.typeExtras.palletName)
+        : 'assets';
+
+    return {
+      chainId: network.chain.chainId,
+      accountId: TEST_ACCOUNTS[0],
+      type: transactionType,
+      args: {
+        palletName,
+        destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
+        ...xcmData?.args,
+      },
+    };
+  },
+);
+
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: $initiator,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+});
+
+const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
+
+const $destinationChains = combine(
+  {
+    network: $networkStore,
+    chains: networkModel.$chains,
+    statuses: networkModel.$connectionStatuses,
+    transferDirections: xcmTransferModel.$transferDirections,
+  },
+  ({ network, chains, statuses, transferDirections }) => {
+    if (!network || !transferDirections) return [];
+
+    const xcmChains = transferDirections.reduce<Chain[]>((acc, chain) => {
+      const chainId = `0x${chain.destination.chainId}` as ChainId;
+
+      if (statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId])) {
+        acc.push(chains[chainId]);
+      }
+
+      return acc;
+    }, []);
+
+    return [network.chain].concat(xcmChains);
+  },
+);
+
+const $destinationAccounts = combine(
+  {
+    isXcm: $isXcm,
+    accounts: walletSelect.$selectedAccounts,
+    chain: form.fields.destinationChain.$value,
+  },
+  ({ isXcm, accounts, chain }) => {
+    if (!isXcm || !chain) return [];
+    return accountService.filterAccountsOnChain(accounts, chain);
+  },
+);
+
+const $isMyselfXcmEnabled = combine(
+  {
+    isXcm: $isXcm,
+    destinationAccounts: $destinationAccounts,
+  },
+  ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
+);
+
+const $canSubmit = combine(
+  {
+    isXcm: $isXcm,
+    isFormValid: form.$isValid,
+    isFeeLoading: $pendingFee,
+    isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
+    isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
+  },
+  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
+    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
+  },
+);
+
+const $extrinsic = combine(
+  {
+    api: $api,
+    coreTx: $coreTx,
+  },
+  ({ api, coreTx }) => {
+    if (!api || !coreTx) return null;
+
+    return getExtrinsic[coreTx.type](coreTx.args, api);
+  },
+);
+
+const $hasDeliveryError = form.fields.amount.$errors.map((errors) => {
+  return errors.some((error) => error.message === 'transfer.notEnoughBalanceForDeliveryFeeError');
+});
+
+// Fields connections
+
+sample({
+  clock: formInitiated,
+  target: [form.reset, xcmTransferModel.events.xcmStarted],
+});
+
+sample({
+  clock: formInitiated,
+  fn: ({ chain, asset }) => getAssetId(chain.assets[0]) === getAssetId(asset),
+  target: $isNative,
+});
+
+sample({
+  clock: formInitiated,
+  filter: ({ chain, asset }) => Boolean(chain) && Boolean(asset),
+  fn: ({ chain }) => chain,
+  target: form.fields.destinationChain.change,
+});
+
+sample({
+  clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length > 0,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
+});
+
+sample({
+  clock: form.fields.destinationChain.change,
+  target: form.fields.destination.reset,
+});
+
+sample({
+  clock: myselfClicked,
+  source: {
+    xcmChain: form.fields.destinationChain.$value,
+    destinationAccounts: $destinationAccounts,
+  },
+  filter: ({ xcmChain, destinationAccounts }) => {
+    return nonNullable(xcmChain) && destinationAccounts.length === 1;
+  },
+  fn: ({ xcmChain, destinationAccounts }) => {
+    const account = destinationAccounts.at(0);
+    assert(account, 'destination account not found');
+
+    return toAddress(account.accountId, { prefix: xcmChain?.addressPrefix });
+  },
+  target: form.fields.destination.change,
+});
+
+sample({
+  clock: myselfClicked,
+  source: $destinationAccounts,
+  filter: (destinationAccounts) => destinationAccounts.length > 1,
+  fn: () => true,
+  target: $isMyselfXcmOpened,
+});
+
+sample({
+  clock: xcmDestinationSelected,
+  source: form.fields.destinationChain.$value,
+  filter: nonNullable,
+  fn: (xcmChain, accountId) => ({
+    canSelect: false,
+    destination: toAddress(accountId, { prefix: xcmChain?.addressPrefix }),
+  }),
+  target: spread({
+    canSelect: $isMyselfXcmOpened,
+    destination: form.fields.destination.change,
+  }),
+});
+
+// XCM model Bindings
+
+sample({
+  clock: form.fields.destinationChain.change.filter({ fn: nonNullable }),
+  fn: (chain) => chain.chainId,
+  target: xcmTransferModel.events.xcmChainSelected,
+});
+
+sample({
+  clock: form.fields.destination.change,
+  fn: toAccountId,
+  target: xcmTransferModel.events.destinationChanged,
+});
+
+sample({
+  clock: form.fields.amount.change,
+  source: $networkStore,
+  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
+  fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
+  target: xcmTransferModel.events.amountChanged,
+});
+
+// Submit
+
+const formSubmitFinished = sample({
+  clock: form.submit.doneData,
+  source: {
+    chain: $chain,
+    initiator: $initiator,
+    network: $networkStore,
+    route: $route,
+    coreTx: $coreTx,
+    tx: $tx,
+    multisigTx: $multisigTx,
+    fee: $fee,
+    xcmFee: xcmTransferModel.$xcmFee,
+    deliveryFee: xcmTransferModel.$deliveryFee,
+    multisigDeposit: $multisigDeposit,
+  },
+  fn: (
+    { chain, initiator, network, route, coreTx, tx, multisigTx, multisigDeposit, fee, xcmFee, deliveryFee },
+    form,
+  ) => {
+    if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
+      return null;
+    return {
+      tx,
+      coreTx,
+      multisigTx,
+      initiator: initiator,
+      signatory: form.signatory,
+      amount: formatAmount(form.amount, network!.asset.precision),
+      destination: form.destination,
+      destinationChain: form.destinationChain ?? chain,
+      multisigDeposit,
+      route,
+      fee: fee.toString(),
+      xcmFee,
+      deliveryFee: deliveryFee ?? ZERO_BALANCE,
+    } satisfies FormSubmitEvent;
+  },
+});
+
+sample({
+  clock: formSubmitFinished.filter({ fn: nonNullable }),
+  target: formSubmitted,
+});
+
+sample({
+  clock: $extrinsic,
+  filter: nonNullable,
+  target: xcmTransferModel.events.deliveryFeeRequested,
+});
+
+export const formModel = {
+  form,
+
+  $initiator,
+  $signatories,
+
+  $initiatorBalance,
+  $signatoryBalance,
+
+  $proxyAccount,
+  $multisigAccount,
+
+  $isMyselfXcmEnabled,
+  $isMyselfXcmOpened,
+
+  $destinationAccounts,
+  $destinationChains,
+
+  $fee,
+  $multisigDeposit,
+  $deliveryFee: xcmTransferModel.$deliveryFee,
+  $hasDeliveryError,
+
+  $coreTx,
+  $tx,
+  $fakeTx,
+  $api,
+  $networkStore,
+  $isXcm,
+  $isChainConnected,
+  $canSubmit,
+
+  $xcmConfig: xcmTransferModel.$config,
+  $xcmApi: xcmTransferModel.$apiDestination,
+
+  formInitiated,
+  formCleared: form.reset,
+
+  myselfClicked,
+  xcmDestinationSelected,
+  xcmDestinationCancelled,
+
+  multisigDepositChanged,
+  isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
+  xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
+
+  formSubmitted,
+};

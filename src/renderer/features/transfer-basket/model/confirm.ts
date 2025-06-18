@@ -3,14 +3,13 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetById, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
-import { transferConfirmModel } from '@/features/operations/OperationsConfirm';
-import { type TransferInput } from '../types/confirm';
+import { type TransferConfirmStore, transferConfirmModel } from '@/features/operations/OperationsConfirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -24,28 +23,31 @@ const flow = createGate<BasketTransaction>();
 const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
-  const xcmChain = chains[transaction.coreTx.args.destinationChain] || chain;
+  const destinationChain = chains[transaction.coreTx.args.destinationChain] || chain;
   const asset = getAssetById(transaction.coreTx.args.asset, chain.assets);
+
+  if (nullable(account) || nullable(asset)) return null;
 
   return {
     id: transaction.id,
-    xcmChain,
-    xcmAsset: asset,
+    destinationChain,
     chain,
-    asset: getAssetById(transaction.coreTx.args.asset, chain.assets),
-    account,
+    asset,
+    initiator: account,
+    signatory: account,
+    route: [account],
+    multisigTx: null,
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
     amount: transaction.coreTx.args.value,
     destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
 
     fee,
     // TODO: Calculate delivery fee
     deliveryFee: null,
     xcmFee: transaction.coreTx.args.xcmFee || '0',
     multisigDeposit: '0',
-    coreTx: transaction.coreTx,
-  } as TransferInput;
+  } satisfies TransferConfirmStore;
 });
 
 sample({
@@ -70,9 +72,9 @@ sample({
 });
 
 sample({
-  clock: prepareDataFx.doneData,
+  clock: prepareDataFx.doneData.filter({ fn: nonNullable }),
   fn: (data) => [data],
-  target: transferConfirmModel.events.formInitiated,
+  target: transferConfirmModel.init,
 });
 
 export const confirm = {

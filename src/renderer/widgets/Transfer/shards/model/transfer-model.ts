@@ -2,14 +2,14 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { isStep, nonNullable } from '@/shared/lib/utils';
+import { isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { transferConfirmModel } from '@/features/operations/OperationsConfirm';
+import { type TransferConfirmStore, transferConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type NetworkStore, Step, type TransferStore } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -88,34 +88,52 @@ sample({
   }),
 });
 
-sample({
+const readyToConfirm = sample({
   clock: formModel.output.formSubmitted,
   source: {
     networkStore: $networkStore,
     coreTx: $coreTx,
   },
-  filter: ({ networkStore }) => Boolean(networkStore),
-  fn: ({ networkStore, coreTx }, { formData }) => ({
-    event: [
-      {
-        ...formData,
-        account: formData.account!,
-        xcmAsset: networkStore!.asset,
-        chain: networkStore!.chain,
-        asset: networkStore!.asset!,
-        coreTx,
-      },
-    ],
+  fn: ({ networkStore, coreTx }, { formData }) => {
+    if (nullable(coreTx) || nullable(networkStore) || nullable(formData.account)) return null;
+
+    const event: TransferConfirmStore = {
+      id: 0,
+      coreTx,
+      tx: coreTx,
+      multisigTx: null,
+      chain: networkStore.chain,
+      asset: networkStore.asset,
+      initiator: formData.account,
+      signatory: formData.account,
+      route: [formData.account],
+      destinationChain: formData.xcmChain,
+      destination: formData.destination,
+      amount: formData.amount,
+      fee: formData.fee,
+      xcmFee: formData.xcmFee,
+      deliveryFee: formData.deliveryFee,
+      multisigDeposit: formData.multisigDeposit,
+    };
+
+    return event;
+  },
+});
+
+sample({
+  clock: readyToConfirm.filter({ fn: nonNullable }),
+  fn: (event) => ({
+    events: [event],
     step: Step.CONFIRM,
   }),
   target: spread({
-    event: transferConfirmModel.events.formInitiated,
+    events: transferConfirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: transferConfirmModel.output.formConfirmed,
+  clock: transferConfirmModel.confirmed,
   source: {
     transferStore: $transferStore,
     networkStore: $networkStore,

@@ -1,13 +1,12 @@
 import { createStore } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { type Account, type Asset, AssetType, type Chain, ChainOptions } from '@/shared/core';
+import { type Asset, AssetType, type Chain, ChainOptions } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
-import { TransferRules } from '@/features/operations/OperationsValidation/lib/transfer-rules';
-import {
-  type TransferAccountStore,
-  type TransferSignatoryFeeStore,
-} from '@/features/operations/OperationsValidation/types/types';
+import { type AnyAccount } from '@/domains/network';
+import { type TransferAccountStore, type TransferSignatoryFeeStore } from '../types/types';
+
+import { TransferRules } from './transfer-rules';
 
 const createTestAsset = (): Asset => ({
   assetId: 0,
@@ -80,7 +79,7 @@ describe('Transfer Validation Rules', () => {
     it('should pass when signatory is selected for multisig', () => {
       const store = createStore(true);
       const rule = TransferRules.signatory.noSignatorySelected(store);
-      expect(rule.validator({ address: 'some-address' } as unknown as Account, {}, true)).toBe(true);
+      expect(rule.validator({ address: 'some-address' } as unknown as AnyAccount, {}, true)).toBe(true);
     });
 
     it('should fail when no signatory is selected for multisig', () => {

@@ -1,26 +1,27 @@
-import { useForm } from 'effector-forms';
+import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import {
+  formatBalance,
+  getNativeAsset,
+  nonNullable,
+  toAddress,
+  validateAddress,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
 import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Select } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
-import {
-  DeliveryFeeWithLabel,
-  FeeWithLabelWithDataLoading,
-  MultisigDepositWithLabel,
-  XcmFeeWithLabel,
-} from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import { AccountSelectModal, DeliveryFeeAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
+import { balanceModel, balanceUtils } from '../../../../entities/balance';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -28,7 +29,7 @@ type Props = {
 };
 
 export const TransferForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$transferForm);
+  const { submit } = useForm(formModel.form);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -38,9 +39,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <AlertForProxyFee />
         <XcmChainSelector />
-        <AccountSelector />
         <Signatories />
         <Destination />
         <Amount />
@@ -58,111 +57,40 @@ export const TransferForm = ({ onGoBack }: Props) => {
   );
 };
 
-const AlertForProxyFee = () => {
-  const {
-    fields: { account },
-  } = useForm(formModel.$transferForm);
-
-  const fee = useUnit(formModel.$fee);
-  const { native } = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-
-  if (!network || !proxyWallet || !account.hasError()) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(native, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={account.resetErrors}
-    />
-  );
-};
-
-const AccountSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { account },
-  } = useForm(formModel.$transferForm);
-
-  const accounts = useUnit(formModel.$accounts);
-  const network = useUnit(formModel.$networkStore);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  if (!network || accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
-    return null;
-  }
-
-  const selectAccount = (id: AnyAccount['id']) => {
-    const accountMatch = accounts.find(({ account }) => account.id === id);
-    if (!accountMatch) return;
-
-    account.onChange(accountMatch.account);
-  };
-
-  return (
-    <Field text={t('operation.selectAccountLabel')}>
-      <Select
-        placeholder={t('operation.selectAccount')}
-        value={account.value ? account.value.id.toString() : null}
-        onChange={selectAccount}
-      >
-        {accounts.map(({ account, balances }) => {
-          const isShard = accountUtils.isVaultShardAccount(account);
-          const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
-
-          return (
-            <Select.Item key={account.id} value={account.id}>
-              <div className="flex w-full items-center justify-between">
-                <AccountAddress
-                  showIcon
-                  iconSize={20}
-                  variant="short"
-                  address={address}
-                  title={isShard ? toShortAddress(address, 16) : account.name}
-                  canCopy={false}
-                />
-                <AssetBalance value={balances?.balance} asset={network.asset} />
-              </div>
-            </Select.Item>
-          );
-        })}
-      </Select>
-    </Field>
-  );
-};
-
 const Signatories = () => {
   const { t } = useI18n();
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$transferForm);
+  } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const network = useUnit(formModel.$networkStore);
+  const balances = useUnit(balanceModel.$balances);
 
-  if (!isMultisig || !network) {
+  if (!network) {
     return null;
   }
+
+  const options = signatories.map((signer) => {
+    const balance = balanceUtils.getBalance(
+      balances,
+      signer.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return { signer, balance: balance ? withdrawableAmountBN(balance) : BN_ZERO };
+  });
 
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
-      asset={network.chain.assets[0]}
+      signatories={options}
+      asset={getNativeAsset(network.chain.assets)}
       addressPrefix={network.chain.addressPrefix}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
       onChange={signatory.onChange}
     />
   );
@@ -172,10 +100,10 @@ const XcmChainSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { xcmChain },
-  } = useForm(formModel.$transferForm);
+    fields: { destinationChain },
+  } = useForm(formModel.form);
 
-  const chains = useUnit(formModel.$chains);
+  const chains = useUnit(formModel.$destinationChains);
 
   if (chains.length <= 1) {
     return null;
@@ -187,14 +115,14 @@ const XcmChainSelector = () => {
     const chainMatch = chains.find((chain) => chain.chainId === chainId);
     if (!chainMatch) return;
 
-    xcmChain.onChange(chainMatch);
+    destinationChain.onChange(chainMatch);
   };
 
   return (
     <Field text={t('transfer.destinationChainLabel')}>
       <Select
         placeholder={t('transfer.destinationChainPlaceholder')}
-        value={xcmChain.value.chainId}
+        value={destinationChain.value?.chainId ?? null}
         onChange={selectChain}
       >
         <Select.Group title={t('transfer.onChainPlaceholder')}>
@@ -218,14 +146,14 @@ const Destination = () => {
   const { t } = useI18n();
 
   const {
-    fields: { destination, xcmChain },
-  } = useForm(formModel.$transferForm);
+    fields: { destination, destinationChain },
+  } = useForm(formModel.form);
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(destination.value, xcmChain.value) ? (
+      {nonNullable(destinationChain.value) && validateAddress(destination.value, destinationChain.value) ? (
         <Identicon size={20} address={destination.value} background={false} />
       ) : (
         <Icon size={20} name="emptyIdenticon" />
@@ -234,7 +162,7 @@ const Destination = () => {
   );
 
   const suffixElement = (
-    <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
+    <Button size="sm" pallet="secondary" onClick={() => formModel.myselfClicked()}>
       {t('transfer.myselfButton')}
     </Button>
   );
@@ -244,14 +172,14 @@ const Destination = () => {
       <Input
         placeholder={t('transfer.recipientPlaceholder')}
         testId={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
-        invalid={destination.hasError()}
+        invalid={destination.hasError}
         value={destination.value}
         prefixElement={prefixElement}
         suffixElement={isMyselfXcmEnabled && suffixElement}
         onChange={destination.onChange}
       />
-      <InputHint active={destination.hasError()} variant="error">
-        {t(destination.errorText())}
+      <InputHint active={destination.hasError} variant="error">
+        {t(destination.errorMessage)}
       </InputHint>
     </Field>
   );
@@ -262,9 +190,9 @@ const Amount = () => {
 
   const {
     fields: { amount },
-  } = useForm(formModel.$transferForm);
+  } = useForm(formModel.form);
 
-  const accountBalance = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$initiatorBalance);
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -274,17 +202,17 @@ const Amount = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amount.hasError()}
+        invalid={amount.hasError}
         value={amount.value}
-        balance={accountBalance?.balance}
+        balance={accountBalance.transferable.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={amount.onChange}
       />
-      <InputHint active={amount.hasError()} variant="error">
-        {t(amount.errorText())}
+      <InputHint active={amount.hasError} variant="error">
+        {t(amount.errorMessage)}
       </InputHint>
     </div>
   );
@@ -293,7 +221,7 @@ const Amount = () => {
 const FeeSection = () => {
   const {
     fields: { account },
-  } = useForm(formModel.$transferForm);
+  } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
@@ -317,16 +245,15 @@ const FeeSection = () => {
           api={api}
           asset={network.chain.assets[0]}
           threshold={(account.value as MultisigAccount).threshold || 1}
-          onDepositChange={formModel.events.multisigDepositChanged}
+          onDepositChange={formModel.multisigDepositChanged}
         />
       )}
 
-      <FeeWithLabelWithDataLoading
-        api={api}
+      <FeeWithLabel
+        label={t('operation.networkFee')}
         asset={network.chain.assets[0]}
-        transaction={transaction?.wrappedTx || fakeTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
+        fee={fee.toString()}
+        isLoading={pendingFee}
       />
 
       {isXcm && xcmApi && xcmConfig && (
@@ -335,8 +262,8 @@ const FeeSection = () => {
           config={xcmConfig}
           asset={network.asset}
           transaction={coreTx || fakeTx}
-          onFeeChange={formModel.events.xcmFeeChanged}
-          onFeeLoading={formModel.events.isXcmFeeLoadingChanged}
+          onFeeChange={formModel.xcmFeeChanged}
+          onFeeLoading={formModel.isXcmFeeLoadingChanged}
         />
       )}
 
@@ -346,17 +273,15 @@ const FeeSection = () => {
 };
 
 const AlertForDeliveryFee = () => {
-  const {
-    fields: { account },
-  } = useForm(formModel.$transferForm);
+  const initiator = useUnit(formModel.$initiator);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const accountBalance = useUnit(formModel.$accountBalance);
+  const accountBalance = useUnit(formModel.$initiatorBalance);
   const network = useUnit(formModel.$networkStore);
   const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
   const asset = network?.chain.assets.at(0);
 
-  if (!account.value || !asset || !network || !deliveryFee || !hasDeliveryError || !accountBalance) {
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !accountBalance) {
     return null;
   }
 
@@ -365,7 +290,7 @@ const AlertForDeliveryFee = () => {
 
   return (
     <DeliveryFeeAlert
-      address={toAddress(account.value.accountId, { prefix: network.chain.addressPrefix })}
+      address={toAddress(initiator.accountId, { prefix: network.chain.addressPrefix })}
       fee={formattedFee}
       balance={formattedBalance}
       symbol={asset.symbol}
@@ -376,15 +301,15 @@ const AlertForDeliveryFee = () => {
 
 const MyselfAccountModal = () => {
   const {
-    fields: { xcmChain },
-  } = useForm(formModel.$transferForm);
+    fields: { destinationChain },
+  } = useForm(formModel.form);
 
   const isXcm = useUnit(formModel.$isXcm);
   const network = useUnit(formModel.$networkStore);
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const isMyselfXcmOpened = useUnit(formModel.$isMyselfXcmOpened);
 
-  if (!isXcm || !network || destinationAccounts.length === 0) {
+  if (!isXcm || !network || !destinationChain.value || destinationAccounts.length === 0) {
     return null;
   }
 
@@ -392,9 +317,9 @@ const MyselfAccountModal = () => {
     <AccountSelectModal
       isOpen={isMyselfXcmOpened}
       accounts={destinationAccounts}
-      chain={xcmChain.value}
-      onClose={formModel.events.xcmDestinationCancelled}
-      onSelect={({ accountId }) => formModel.events.xcmDestinationSelected(accountId)}
+      chain={destinationChain.value}
+      onClose={formModel.xcmDestinationCancelled}
+      onSelect={({ accountId }) => formModel.xcmDestinationSelected(accountId)}
     />
   );
 };

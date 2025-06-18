@@ -34,9 +34,8 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { TransferRules } from '@/features/operations/OperationsValidation';
+import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
-
-import { xcmTransferModel } from './xcm-transfer-model';
 
 type BalanceMap = Record<'balance' | 'native', string>;
 

@@ -1,4 +1,5 @@
-import { type Account, type Address, type Asset, type Chain, type ProxiedAccount } from '@/shared/core';
+import { type Address, type Asset, type Chain } from '@/shared/core';
+import { type AnyAccount } from '@/domains/network';
 
 export const enum Step {
   NONE,
@@ -15,12 +16,11 @@ export type NetworkStore = {
 };
 
 export type TransferStore = {
-  xcmChain: Chain;
-  account: Account;
-  proxiedAccount?: ProxiedAccount;
-  signatory: Account | null;
+  initiator: AnyAccount;
+  signatory: AnyAccount | null;
   amount: string;
   destination: Address;
+  destinationChain: Chain;
 
   fee: string;
   xcmFee: string;
