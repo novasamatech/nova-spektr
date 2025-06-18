@@ -63,44 +63,53 @@ sample({
   target: $unlockData,
 });
 
-sample({
+const formSubmitted = sample({
   clock: unlockFormAggregate.formSubmitted,
   source: {
     coreTx: unlockFormAggregate.$coreTx,
     tx: unlockFormAggregate.$tx,
   },
-  fn: ({ coreTx, tx }, formData) => ({
-    event: [
+  fn: (source, formData) => ({ source, formData }),
+}).filterMap(({ source: { coreTx, tx }, formData }) => {
+  if (nonNullable(coreTx) && nonNullable(tx) && nonNullable(formData.initiator) && nonNullable(formData.signatory)) {
+    return [
       {
         ...formData,
-        initiator: formData.initiator!,
-        signatory: formData.signatory!,
-        coreTx: coreTx!,
-        route: [formData.initiator!],
-        tx: tx!,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        coreTx: coreTx,
+        route: [formData.initiator],
+        tx: tx,
         multisigTx: null,
       } satisfies UnlockConfirm,
-    ],
-    step: Step.CONFIRM,
-  }),
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.CONFIRM,
+    };
+  },
   target: spread({
     event: unlockConfirmModel.init,
     step: stepChanged,
   }),
 });
 
-sample({
+const startSigning = sample({
   clock: unlockConfirmModel.startSigning,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
     tx: unlockFormAggregate.$tx,
   },
-  filter: ({ unlockData, chain, tx }) => {
-    return nonNullable(unlockData) && nonNullable(chain) && nonNullable(tx);
-  },
-  fn: ({ unlockData, chain, tx }) => ({
-    event: {
+}).filterMap(({ unlockData, chain, tx }) => {
+  if (nonNullable(unlockData) && nonNullable(chain) && nonNullable(tx)) {
+    return {
       signingPayloads: [
         {
           chain: chain!,
@@ -109,16 +118,25 @@ sample({
           transaction: tx!,
         },
       ],
-    },
-    step: Step.SIGN,
-  }),
+    };
+  }
+});
+
+sample({
+  clock: startSigning,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SIGN,
+    };
+  },
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
-sample({
+const signFormSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     unlockData: $unlockData,
@@ -128,20 +146,33 @@ sample({
     tx: unlockFormAggregate.$tx,
     step: $step,
   },
-  filter: (source) => {
-    return isStep(source.step, Step.SIGN) && !!source.unlockData && !!source.tx && !!source.coreTx && !!source.chain;
-  },
-  fn: (source, signParams) => {
+  fn: (source, signParams) => ({ source, signParams }),
+}).filterMap(({ source, signParams }) => {
+  if (
+    isStep(source.step, Step.SIGN) &&
+    nonNullable(source.unlockData?.initiator) &&
+    nonNullable(source.unlockData?.signatory) &&
+    nonNullable(source.tx) &&
+    nonNullable(source.coreTx) &&
+    nonNullable(source.chain)
+  ) {
     return {
-      event: {
-        ...signParams,
-        chain: source.chain!,
-        account: source.unlockData!.initiator!,
-        signatory: source.unlockData!.signatory!,
-        coreTxs: [source.coreTx!],
-        wrappedTxs: [source.tx!],
-        multisigTxs: source.multisigTx ? [source.multisigTx] : [],
-      },
+      ...signParams,
+      chain: source.chain,
+      account: source.unlockData.initiator,
+      signatory: source.unlockData.signatory,
+      coreTxs: [source.coreTx],
+      wrappedTxs: [source.tx],
+      multisigTxs: source.multisigTx ? [source.multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signFormSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.SUBMIT,
     };
   },
@@ -160,7 +191,7 @@ sample({
     step: $step,
   },
   filter: ({ unlockData, step, chain }, { step: submitStep }) =>
-    !!unlockData &&
+    nonNullable(unlockData) &&
     isStep(step, Step.SUBMIT) &&
     submitUtils.isSuccessStep(submitStep) &&
     chain?.chainId === unlockData.chain.chainId,
