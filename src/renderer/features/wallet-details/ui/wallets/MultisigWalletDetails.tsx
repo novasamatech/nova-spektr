@@ -25,7 +25,7 @@ import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details'
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 
-export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -260,7 +260,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
               {multisigAccount && (
                 <div className="shrink-0">
-                  <Slot id={accountsStructureSlot} props={{ walletAccounts: [multisigAccount] }} />
+                  <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
                 </div>
               )}
             </div>
