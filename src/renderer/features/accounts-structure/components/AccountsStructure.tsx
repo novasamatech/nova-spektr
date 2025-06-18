@@ -13,7 +13,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 
@@ -186,8 +186,8 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   );
 };
 
-export const AccountsStructure = (props: AccountsStructureProps) => (
+export const AccountsStructure = memo((props: AccountsStructureProps) => (
   <ReactFlowProvider>
     <AccountsStructureInner {...props} />
   </ReactFlowProvider>
-);
+));
