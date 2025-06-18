@@ -289,7 +289,6 @@ export const Staking = () => {
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
-  const isMultipleStakes = totalStakes.length > 1;
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
@@ -307,32 +306,27 @@ export const Staking = () => {
     });
 
     const model = {
-      [StakeOperations.UNSTAKE]:
-        selectedNominators.length > 1
-          ? Operations.unstakeModelShards.events.flowStarted
-          : Operations.unstakeModel.events.flowStarted,
+      [StakeOperations.UNSTAKE]: isMultipleAccountsSelected
+        ? Operations.unstakeModelShards.events.flowStarted
+        : Operations.unstakeModel.events.flowStarted,
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
         ? Operations.bondNominateModelShards.flowStarted
         : Operations.bondNominateModel.flowStarted,
-      [StakeOperations.BOND_EXTRA]:
-        selectedNominators.length > 1
-          ? Operations.bondExtraShardsModel.events.flowStarted
-          : Operations.bondExtraModel.events.flowStarted,
-      [StakeOperations.NOMINATE]:
-        selectedNominators.length > 1
-          ? Operations.nominateShardsModel.events.flowStarted
-          : Operations.nominateModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: isMultipleStakes
+      [StakeOperations.BOND_EXTRA]: isMultipleAccountsSelected
+        ? Operations.bondExtraShardsModel.events.flowStarted
+        : Operations.bondExtraModel.events.flowStarted,
+      [StakeOperations.NOMINATE]: isMultipleAccountsSelected
+        ? Operations.nominateShardsModel.events.flowStarted
+        : Operations.nominateModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleAccountsSelected
         ? Operations.restakeModelShards.flowStarted
         : Operations.restakeModel.flowStarted,
-      [StakeOperations.WITHDRAW]:
-        totalStakes.length > 1
-          ? Operations.withdrawShardsModel.events.flowStarted
-          : Operations.withdrawModel.events.flowStarted,
-      [StakeOperations.SET_PAYEE]:
-        selectedNominators.length > 1
-          ? Operations.payeeModelShards.events.flowStarted
-          : Operations.payeeModel.events.flowStarted,
+      [StakeOperations.WITHDRAW]: isMultipleAccountsSelected
+        ? Operations.withdrawShardsModel.events.flowStarted
+        : Operations.withdrawModel.events.flowStarted,
+      [StakeOperations.SET_PAYEE]: isMultipleAccountsSelected
+        ? Operations.payeeModelShards.events.flowStarted
+        : Operations.payeeModel.events.flowStarted,
     };
 
     model[operation]({
@@ -431,12 +425,12 @@ export const Staking = () => {
       />
 
       {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
-      {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
-      <Suspense fallback={null}>{isMultipleStakes ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
+      {isMultipleAccountsSelected ? <Operations.RestakeShards /> : <Operations.Restake />}
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
     </>
   );
 };
