@@ -45,7 +45,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      <AdditionalContext description={referendumMeta?.description} />
+      <AdditionalContext />
     </>
   );
 });
