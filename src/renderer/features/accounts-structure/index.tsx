@@ -11,8 +11,6 @@ import {
 
 import { AccountsStructureModal } from './components/AccountsStructureModal';
 
-export { accountNodeConfigTransformer } from './components/AccountStructureNode';
-
 export const accountsStructureFeature = createFeature({
   name: 'accounts/structure',
   enable: $features.map(({ accountsStructure }) => accountsStructure),

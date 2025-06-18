@@ -1,19 +1,12 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
-import { createTransformer, useTransformer } from '@/shared/di';
+import { useTransformer } from '@/shared/di';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AnyAccount } from '@/domains/network';
-
-export const accountNodeConfigTransformer = createTransformer<
-  AnyAccount,
-  {
-    title: string;
-    color: string;
-  }
->();
+import { accountNodeConfigTransformer } from '@/sdk/account';
 
 type AccountStructureNodeProps = {
   data: {
@@ -23,12 +16,12 @@ type AccountStructureNodeProps = {
   id: string;
 };
 
-export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) => {
+export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
 
-  const config = useTransformer(accountNodeConfigTransformer, data.account);
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.account });
 
   return (
     <>
@@ -69,4 +62,4 @@ export const AccountStructureNode = ({ data, id }: AccountStructureNodeProps) =>
       </div>
     </>
   );
-};
+});

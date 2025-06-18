@@ -42,7 +42,7 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  nodeConfig: account => {
+  visualGraphNode({ account }) {
     if (
       accountUtils.isVaultBaseAccount(account) ||
       accountUtils.isVaultChainAccount(account) ||

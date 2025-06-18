@@ -27,7 +27,7 @@ accountSDK(watchOnlyWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  nodeConfig: account => {
+  visualGraphNode({ account }) {
     if (accountUtils.isWatchOnlyAccount(account)) {
       return {
         title: 'Watch Only',

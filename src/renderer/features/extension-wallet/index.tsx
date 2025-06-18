@@ -29,7 +29,7 @@ accountSDK(extensionWalletFeature, {
     return polkadotExtensionService.isExtensionAccount(account);
   },
   canSignMultipleTransactions: () => false,
-  nodeConfig: (account) => {
+  visualGraphNode: ({ account }) => {
     if (polkadotExtensionService.isExtensionAccount(account)) {
       return {
         title: 'Polkadot.js',
