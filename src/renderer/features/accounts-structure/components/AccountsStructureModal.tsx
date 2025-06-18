@@ -54,6 +54,12 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
 
   return (
     <Modal size="full" isOpen={isOpen} onToggle={onToggle}>
+      <Modal.Trigger>
+        <Button pallet="secondary" size="sm" variant="fill">
+          {t('accountsStructure.button')}
+        </Button>
+      </Modal.Trigger>
+
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-[600px]">
@@ -73,11 +79,6 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
           )}
         </div>
       </Modal.Content>
-      <Modal.Trigger>
-        <Button pallet="secondary" size="sm" variant="fill">
-          {t('accountsStructure.button')}
-        </Button>
-      </Modal.Trigger>
     </Modal>
   );
 };
