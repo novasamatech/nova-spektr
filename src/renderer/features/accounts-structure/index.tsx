@@ -2,11 +2,11 @@ import { $features } from '@/shared/config/features';
 import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import {
-  multisigAccountsStructureSlot,
-  proxiedAccountsStructureSlot,
-  simpleAccountsStructureSlot,
-  vaultStructureSlot,
-  walletConnectAccountsStructureSlot,
+  multisigOverviewSlot,
+  proxiedOverviewSlot,
+  simpleOverviewSlot,
+  vaultOverviewSlot,
+  walletConnectOverviewSlot,
 } from '@/features/wallet-details';
 
 import { AccountsStructureModal } from './components/AccountsStructureModal';
@@ -16,14 +16,14 @@ export const accountsStructureFeature = createFeature({
   enable: $features.map(({ accountsStructure }) => accountsStructure),
 });
 
-const accountsStructureModalSlot = combineIdentifiers(
-  simpleAccountsStructureSlot,
-  walletConnectAccountsStructureSlot,
-  proxiedAccountsStructureSlot,
-  multisigAccountsStructureSlot,
-  vaultStructureSlot,
+const overviewSlot = combineIdentifiers(
+  simpleOverviewSlot,
+  walletConnectOverviewSlot,
+  proxiedOverviewSlot,
+  multisigOverviewSlot,
+  vaultOverviewSlot,
 );
 
-accountsStructureFeature.inject(accountsStructureModalSlot, ({ walletAccounts }) => {
+accountsStructureFeature.inject(overviewSlot, ({ walletAccounts }) => {
   return <AccountsStructureModal walletAccounts={walletAccounts} />;
 });
