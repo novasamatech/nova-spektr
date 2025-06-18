@@ -1,5 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
-
 import { type Asset, type Validator } from '@/shared/core';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
@@ -13,7 +11,6 @@ export type NominateConfirm = TxConfirmInfo & {
   fee: string;
   totalFee: string;
   multisigDeposit: string;
-  api: ApiPromise;
 };
 
 const confirmStore = createTransactionConfirmStore<NominateConfirm>({

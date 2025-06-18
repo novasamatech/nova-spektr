@@ -163,16 +163,14 @@ const formSubmitted = sample({
     coreTx: $coreTx,
     validators: $validators,
     multisigTx: $multisigTx,
-    api: $api,
   },
-}).filterMap(({ nominateForm, multisigTx, fee, tx, coreTx, validators, api }) => {
+}).filterMap(({ nominateForm, multisigTx, fee, tx, coreTx, validators }) => {
   if (
     nonNullable(nominateForm) &&
     nonNullable(nominateForm.initiator) &&
     nonNullable(nominateForm.signatory) &&
     nonNullable(coreTx) &&
-    nonNullable(tx) &&
-    nonNullable(api)
+    nonNullable(tx)
   ) {
     return [
       {
@@ -183,7 +181,6 @@ const formSubmitted = sample({
         coreTx,
         tx,
         validators,
-        api,
         multisigTx,
       },
     ];

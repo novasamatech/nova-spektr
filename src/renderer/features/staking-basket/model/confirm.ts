@@ -119,7 +119,6 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     validators,
     route: [account!],
 
-    api: apis[chainId],
     fee,
     totalFee: fee,
     multisigDeposit: '0',
