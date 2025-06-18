@@ -1,20 +1,18 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
+import { noop } from 'lodash';
 import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress } from '@/shared/lib/utils';
-import { Button, InputHint, MultiSelect } from '@/shared/ui';
-import { type DropdownResult } from '@/shared/ui/Dropdowns/common/types';
-import { Address, AssetBalance } from '@/shared/ui-entities';
+import { formatBalance, transferableAmount } from '@/shared/lib/utils';
+import { Button, InputHint } from '@/shared/ui';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
 import { unlockFormAggregate } from '../model/unlockForm';
 
 type Props = {
@@ -22,7 +20,7 @@ type Props = {
 };
 
 export const UnlockForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(unlockFormAggregate.$unlockForm);
+  const { submit } = useForm(unlockFormAggregate.form);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -33,7 +31,6 @@ export const UnlockForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
-        <AccountsSelector />
         <Signatories />
         <Amount />
       </form>
@@ -47,15 +44,15 @@ export const UnlockForm = ({ onGoBack }: Props) => {
 
 const ProxyFeeAlert = () => {
   const {
-    fields: { shards },
-  } = useForm(unlockFormAggregate.$unlockForm);
+    fields: { initiator },
+  } = useForm(unlockFormAggregate.form);
 
   const fee = useUnit(unlockFormAggregate.$fee);
   const balance = useUnit(unlockFormAggregate.$proxyBalance);
   const network = useUnit(networkSelectorModel.$network);
   const proxyWallet = useUnit(unlockFormAggregate.$proxyWallet);
 
-  if (!network || !proxyWallet || !shards.hasError()) {
+  if (!network || !proxyWallet || !initiator.hasError) {
     return null;
   }
 
@@ -68,69 +65,8 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={shards.resetErrors}
+      onClose={noop}
     />
-  );
-};
-
-const AccountsSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { shards },
-  } = useForm(unlockFormAggregate.$unlockForm);
-
-  const accounts = useUnit(unlockFormAggregate.$accounts);
-  const network = useUnit(networkSelectorModel.$network);
-  const chain = useUnit(networkSelectorModel.$governanceChain);
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
-  if (!network || !chain || walletUtils.isFlexibleMultisig(wallet) || accounts.length <= 0) {
-    return null;
-  }
-
-  const options = useMemo(
-    () =>
-      accounts.map(({ account, balance }) => {
-        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-        return {
-          id: account.id,
-          value: account,
-          element: (
-            <div className="flex flex-grow justify-between" key={account.id}>
-              <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
-              <AssetBalance value={balance} asset={network.asset} className="w-min" />
-            </div>
-          ),
-        };
-      }),
-    [accounts, chain],
-  );
-
-  const selectedIds = useMemo(() => {
-    return shards.value.map((a) => a.id);
-  }, [shards.value]);
-
-  const onSelect = (values: DropdownResult<AccountWithClaim>[]) => {
-    shards.onChange(values.map(({ value }) => value));
-  };
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <MultiSelect
-        label={t('operation.selectAccountLabel')}
-        placeholder={t('operation.selectAccount')}
-        multiPlaceholder={t('governance.operations.selectPlaceholder')}
-        invalid={shards.hasError()}
-        selectedIds={selectedIds}
-        options={options}
-        onChange={onSelect}
-      />
-      <InputHint variant="error" active={shards.hasError()}>
-        {t(shards.errorText())}
-      </InputHint>
-    </div>
   );
 };
 
@@ -139,24 +75,41 @@ const Signatories = () => {
 
   const {
     fields: { signatory },
-  } = useForm(unlockFormAggregate.$unlockForm);
+  } = useForm(unlockFormAggregate.form);
 
   const signatories = useUnit(unlockFormAggregate.$signatories);
   const isMultisig = useUnit(unlockFormAggregate.$isMultisig);
-  const chain = useUnit(networkSelectorModel.$governanceChain);
+  const network = useUnit(networkSelectorModel.$network);
+  const balances = useUnit(balanceModel.$balances);
 
-  if (!isMultisig || !chain) {
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances, network]);
+
+  if (!isMultisig || !network?.chain) {
     return null;
   }
 
   return (
     <SignatorySelector
       signatory={signatory.value}
-      signatories={signatories[0]}
-      asset={chain.assets[0]}
-      addressPrefix={chain.addressPrefix}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
+      signatories={signatoriesWithBalance}
+      asset={network.chain.assets[0]}
+      addressPrefix={network.chain.addressPrefix}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
       onChange={signatory.onChange}
     />
   );
@@ -167,7 +120,7 @@ const Amount = () => {
 
   const {
     fields: { amount },
-  } = useForm(unlockFormAggregate.$unlockForm);
+  } = useForm(unlockFormAggregate.form);
 
   const network = useUnit(networkSelectorModel.$network);
   if (!network) {
@@ -178,14 +131,14 @@ const Amount = () => {
     <div className="flex flex-col gap-y-2">
       <AmountInput
         disabled
-        invalid={amount.hasError()}
+        invalid={amount.hasError}
         value={formatBalance(amount.value, network.asset.precision).value}
         balance={amount.value}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
       />
-      <InputHint active={amount.hasError()} variant="error">
-        {t(amount.errorText())}
+      <InputHint active={amount.hasError} variant="error">
+        {t(amount.errorMessage)}
       </InputHint>
     </div>
   );
@@ -195,15 +148,16 @@ const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { shards },
-  } = useForm(unlockFormAggregate.$unlockForm);
+    fields: { initiator },
+  } = useForm(unlockFormAggregate.form);
 
   const api = useUnit(unlockFormAggregate.$api);
   const chain = useUnit(networkSelectorModel.$governanceChain);
-  const transactions = useUnit(unlockFormAggregate.$transactions);
   const isMultisig = useUnit(unlockFormAggregate.$isMultisig);
+  const fee = useUnit(unlockFormAggregate.$fee);
+  const pendingFee = useUnit(unlockFormAggregate.$pendingFee);
 
-  if (!chain || shards.value.length === 0) {
+  if (!chain || !initiator) {
     return null;
   }
 
@@ -213,31 +167,17 @@ const FeeSection = () => {
         <MultisigDepositWithLabel
           api={api}
           asset={chain.assets[0]}
-          threshold={(shards.value[0] as MultisigAccount).threshold || 1}
+          threshold={(initiator.value as MultisigAccount).threshold || 1}
           onDepositChange={unlockFormAggregate.multisigDepositChanged}
         />
       )}
 
-      <FeeWithLabelWithDataLoading
-        label={t('operation.networkFee', { count: shards.value.length || 1 })}
-        api={api}
+      <FeeWithLabel
+        label={t('staking.networkFee', { count: 1 })}
         asset={chain.assets[0]}
-        transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={unlockFormAggregate.feeChanged}
-        onFeeLoading={unlockFormAggregate.isFeeLoadingChanged}
+        fee={fee.toString()}
+        isLoading={pendingFee}
       />
-
-      {transactions && transactions.length > 1 && (
-        <FeeWithLabelWithDataLoading
-          label={t('operation.networkFeeTotal')}
-          api={api}
-          asset={chain.assets[0]}
-          multiply={transactions.length}
-          transaction={transactions[0].wrappedTx}
-          onFeeChange={unlockFormAggregate.totalFeeChanged}
-          onFeeLoading={unlockFormAggregate.isFeeLoadingChanged}
-        />
-      )}
     </div>
   );
 };

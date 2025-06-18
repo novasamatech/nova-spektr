@@ -1,287 +1,142 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
-import { spread } from 'patronum';
+import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
-import {
-  type Asset,
-  type Chain,
-  type MultisigTxWrapper,
-  type ProxiedAccount,
-  type ProxyTxWrapper,
-  type Transaction,
-} from '@/shared/core';
-import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type Asset, type Chain } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
+import { ZERO_BALANCE, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
-
-type Accounts = {
-  account: AccountWithClaim;
-  balance: string;
-};
 
 type FormParams = {
-  shards: AccountWithClaim[];
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
 };
 
-type FormSubmitEvent = {
-  transactions: {
-    wrappedTx: Transaction;
-    multisigTx?: Transaction;
-    coreTx: Transaction;
-  }[];
-  formData: FormParams & {
-    initiator: AnyAccount | null;
-    signatory: AnyAccount | null;
-    chain: Chain;
-    asset: Asset;
-    fee: string;
-    totalLock: BN;
-    totalFee: string;
-    multisigDeposit: string;
-    proxiedAccount?: ProxiedAccount;
-  };
+type FormSubmitEvent = FormParams & {
+  chain: Chain;
+  asset: Asset;
+  fee: string;
+  totalLock: BN;
+  totalFee: string;
+  multisigDeposit: string;
 };
 
 const formInitiated = createEvent<ClaimChunkWithAccountId[]>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const formCleared = createEvent();
-
-const feeChanged = createEvent<string>();
-const totalFeeChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
-
-const $signatoryBalance = createStore<string>(ZERO_BALANCE);
-const $proxyBalance = createStore<string>(ZERO_BALANCE);
-
-const $isMultisig = createStore<boolean>(false);
-const $isProxy = createStore<boolean>(false);
-const $selectedSignatories = createStore<AnyAccount[]>([]);
-const $accounts = createStore<Accounts[]>([]);
-
-const $fee = restore(feeChanged, ZERO_BALANCE);
-const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $unlockForm = createForm<FormParams>({
+const $claims = restore(formInitiated, null);
+
+const form: Form<FormParams> = createForm<FormParams>({
+  validateOn: ['submit'],
   fields: {
-    shards: {
-      init: [] satisfies AccountWithClaim[],
-      rules: [
-        {
-          name: 'noProxyFee',
+    initiator: {
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
             isProxy: $isProxy,
             proxyBalance: $proxyBalance,
           }),
-          validator: (_s, _f, { isProxy, proxyBalance, fee }) => {
-            if (!isProxy) return true;
-
-            return new BN(fee).lte(new BN(proxyBalance));
+          fn: (_initiator, _fields, { fee, isProxy, proxyBalance }) => {
+            if (isProxy) {
+              if (new BN(fee).gt(new BN(proxyBalance))) {
+                return { message: 'transfer.notEnoughBalanceForFeeError' };
+              }
+            }
           },
-        },
-      ],
+        };
+      },
     },
     signatory: {
-      init: null,
-      rules: [
-        {
-          name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
-          source: $isMultisig,
-          validator: (signatory, _, isMultisig) => {
-            if (!signatory || !isMultisig) return true;
-
-            return Object.keys(signatory).length > 0;
-          },
-        },
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          validator: (_s, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (!isMultisig) return true;
+          fn: (signatory, _fields, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
+            if (!isMultisig) return;
 
-            return new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance));
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
+            }
+
+            const required = new BN(multisigDeposit).add(new BN(fee));
+            if (required.gt(new BN(signatoryBalance))) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     amount: {
-      init: '',
-      rules: [
-        {
-          name: 'required',
-          errorText: 'transfer.requiredAmountError',
-          validator: Boolean,
-        },
-        {
-          name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
-          validator: (value) => value !== ZERO_BALANCE,
-        },
-        {
-          name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+      defaultValue: '',
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
-            accounts: $accounts,
+            claimableBalance: $claimableBalance,
           }),
-          validator: (value, form, { fee, isMultisig, accounts }) => {
-            if (isMultisig) return true;
-
-            const accountsBalances = (accounts as Accounts[]).reduce<string[]>((acc, { account, balance }) => {
-              if (form.shards.includes(account)) {
-                acc.push(balance);
+          fn: (amount, fields, { fee, isMultisig, claimableBalance }) => {
+            const amountBN = new BN(amount);
+            if (nullable(amount) || amountBN.lte(BN_ZERO)) {
+              return { message: 'transfer.notZeroAmountError' };
+            }
+            if (!isMultisig && fields.initiator) {
+              const feeBN = new BN(fee);
+              if (amountBN.add(feeBN).gt(new BN(claimableBalance))) {
+                return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
-
-              return acc;
-            }, []);
-
-            return form.shards.every((_: AccountWithClaim, index: number) => {
-              return new BN(fee).lte(new BN(accountsBalances[index]));
-            });
+            }
           },
-        },
-      ],
+        };
+      },
     },
   },
-  validateOn: ['submit'],
 });
 
-const $shards = combine(
+const $claimableBalance = combine(
   {
-    activeWallet: walletModel.$activeWallet,
+    initiator: form.fields.initiator.$value,
+    claimable: unlockModel.$claimable,
+  },
+  ({ initiator, claimable }) => {
+    if (nullable(initiator) || nullable(claimable)) return null;
+
+    return claimable?.[initiator.accountId].toString() ?? ZERO_BALANCE;
+  },
+);
+
+const $signatories = createSignatoriesStore({
+  chain: networkSelectorModel.$governanceChain,
+  initiator: form.fields.initiator.$value,
+  accounts: accounts.$list,
+});
+
+const $api = combine(
+  {
+    apis: networkModel.$apis,
     chainId: networkSelectorModel.$governanceChainId,
   },
-  ({ activeWallet, chainId }) => {
-    if (!chainId || !activeWallet) return [];
-
-    return (
-      activeWallet.accounts.filter((account, _, collection) => {
-        const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-        const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
-        const hasManyAccounts = collection.length > 1;
-
-        if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
-          return false;
-        }
-
-        return accountUtils.isChainIdMatch(account, chainId);
-      }) || []
-    );
-  },
-);
-
-const $txWrappers = combine(
-  {
-    wallet: walletModel.$activeWallet,
-    wallets: walletModel.$wallets,
-    chain: networkSelectorModel.$governanceChain,
-    shards: $shards,
-    signatories: $selectedSignatories,
-  },
-  ({ wallet, wallets, chain, shards, signatories }) => {
-    if (!wallet || !chain || shards.length !== 1) return [];
-
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
-      },
-    });
-
-    return transactionService.getTxWrappers({
-      wallet,
-      wallets: filteredWallets || [],
-      account: shards[0],
-      signatories,
-    });
-  },
-);
-
-const $realAccounts = combine(
-  {
-    txWrappers: $txWrappers,
-    shards: $unlockForm.fields.shards.$value,
-  },
-  ({ txWrappers, shards }) => {
-    if (shards.length === 0) return [];
-    if (txWrappers.length === 0) return shards;
-
-    if (transactionService.hasMultisig([txWrappers[0]])) {
-      return [(txWrappers[0] as MultisigTxWrapper).multisigAccount];
-    }
-
-    return [(txWrappers[0] as ProxyTxWrapper).proxyAccount];
-  },
-);
-
-const $proxyWallet = combine(
-  {
-    isProxy: $isProxy,
-    accounts: $realAccounts,
-    wallets: walletModel.$wallets,
-  },
-  ({ isProxy, accounts, wallets }) => {
-    if (!isProxy || accounts.length === 0) return undefined;
-
-    return walletUtils.getWalletById(wallets, accounts[0].walletId);
-  },
-  { skipVoid: false },
-);
-
-const $signatories = combine(
-  {
-    chainId: networkSelectorModel.$governanceChainId,
-    network: networkSelectorModel.$network,
-    txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
-  },
-  ({ chainId, network, txWrappers, balances }) => {
-    if (!chainId || !network || !txWrappers) return [];
-
-    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
-      if (!transactionService.hasMultisig([wrapper])) return acc;
-
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signatory.accountId,
-          chainId,
-          network.asset.assetId.toString(),
-        );
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
+  ({ apis, chainId }) => {
+    return chainId ? (apis[chainId] ?? null) : null;
   },
 );
 
@@ -297,55 +152,71 @@ const $isChainConnected = combine(
   },
 );
 
-const $pureTxs = combine(
+const $coreTx = combine(
   {
     chain: networkSelectorModel.$governanceChain,
-    shards: $unlockForm.fields.shards.$value,
+    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     isConnected: $isChainConnected,
+    claims: $claims,
   },
-  ({ chain, shards, isConnected }) => {
-    if (!chain || !isConnected || !shards) return undefined;
+  ({ chain, initiator, signatory, isConnected, claims }) => {
+    if (nullable(chain) || nullable(initiator) || nullable(signatory) || nullable(claims) || !isConnected) return null;
+    const claim = claims.find((claim) => claim.accountId === initiator.accountId);
 
-    return shards.map((shard) => {
-      return transactionBuilder.buildUnlock({
-        actions: shard.actions || [],
-        chain: chain,
-        accountId: shard.accountId,
-        amount: shard.amount || ZERO_BALANCE,
-      });
+    return transactionBuilder.buildUnlock({
+      actions: claim?.actions ?? [],
+      chain: chain,
+      accountId: signatory.accountId,
+      amount: claim?.amount.toString() ?? ZERO_BALANCE,
     });
   },
-  { skipVoid: false },
 );
 
-const $transactions = combine(
-  {
-    apis: networkModel.$apis,
-    chain: networkSelectorModel.$governanceChain,
-    pureTxs: $pureTxs,
-    txWrappers: $txWrappers,
-  },
-  ({ apis, chain, pureTxs, txWrappers }) => {
-    if (!chain || !pureTxs) return undefined;
+const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+  api: $api,
+  chain: networkSelectorModel.$governanceChain,
+  transaction: $coreTx,
+  accounts: accounts.$list,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+});
 
-    return pureTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api: apis[chain.chainId],
-        transaction: tx,
-        txWrappers,
-      }),
+const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
+const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
+const $isProxy = $proxyAccount.map((account) => nonNullable(account));
+
+const $proxyBalance = combine(
+  {
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    balances: balanceModel.$balances,
+    network: networkSelectorModel.$network,
+  },
+  ({ isProxy, proxyAccount, balances, network }) => {
+    if (!isProxy || !network || !proxyAccount) return ZERO_BALANCE;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      proxyAccount.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
     );
+
+    return transferableAmount(balance);
   },
-  { skipVoid: false },
 );
 
-const $api = combine(
+const $proxyWallet = combine(
   {
-    apis: networkModel.$apis,
-    chainId: networkSelectorModel.$governanceChainId,
+    isProxy: $isProxy,
+    proxyAccount: $proxyAccount,
+    wallets: walletModel.$wallets,
   },
-  ({ apis, chainId }) => {
-    return chainId ? (apis[chainId] ?? null) : null;
+  ({ isProxy, proxyAccount, wallets }) => {
+    if (!isProxy || !proxyAccount) return null;
+
+    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
   },
 );
 
@@ -353,176 +224,82 @@ const $api = combine(
 
 sample({
   clock: formInitiated,
-  target: [$unlockForm.reset, $selectedSignatories.reinit],
+  target: form.reset,
 });
 
 sample({
   clock: formInitiated,
   source: unlockModel.$totalUnlock,
   fn: (totalUnlock) => totalUnlock.toString(),
-  target: $unlockForm.fields.amount.onChange,
+  target: form.fields.amount.change,
 });
 
-sample({
-  clock: formInitiated,
-  source: $shards,
-  filter: (shards) => shards.length > 0,
-  fn: (shards, claims) => {
-    const shardsMap = dictionary(shards, 'accountId');
-    const result: AccountWithClaim[] = [];
-
-    for (const claim of claims) {
-      const shard = shardsMap[claim.accountId];
-
-      if (!shard) continue;
-
-      result.push({
-        ...shard,
-        actions: claim.actions,
-        amount: claim.amount.toString(),
-        address: claim.accountId,
-      });
-    }
-
-    return result;
-  },
-  target: $unlockForm.fields.shards.onChange,
-});
-
-sample({
-  clock: formInitiated,
-  source: {
-    shards: $unlockForm.fields.shards.$value,
-    claimable: unlockModel.$claimable,
-  },
-  filter: ({ shards, claimable }) => !!claimable || shards.length > 0,
-  fn: ({ shards, claimable }) => {
-    return shards.map((shard) => {
-      const balance = claimable?.[shard.accountId] || BN_ZERO;
-
-      return {
-        account: shard,
-        balance: balance.toString(),
-      };
-    });
-  },
-  target: $accounts,
-});
-
-sample({
-  clock: $unlockForm.fields.signatory.onChange,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
-
-    return match?.balance || ZERO_BALANCE;
-  },
-  target: $signatoryBalance,
-});
-
-sample({
-  clock: $unlockForm.fields.signatory.$value,
-  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
-  fn: (signatory) => [signatory],
-  target: $selectedSignatories,
-});
-
-sample({
-  clock: $unlockForm.fields.shards.onChange,
-  target: $unlockForm.fields.amount.resetErrors,
-});
-
-sample({
-  clock: $unlockForm.fields.shards.onChange,
-  fn: (shards) => {
-    return shards.reduce((acc, shard) => acc.add(new BN(shard.amount || BN_ZERO)), BN_ZERO).toString();
-  },
-  target: $unlockForm.fields.amount.onChange,
-});
-
-const $canSubmit = combine(
+const $signatoryBalance = combine(
   {
-    isFormValid: $unlockForm.$isValid,
-    isFeeLoading: $isFeeLoading,
-    shards: $unlockForm.fields.shards.$value,
-  },
-  ({ isFormValid, isFeeLoading, shards }) => {
-    return isFormValid && !isFeeLoading && shards.length > 0;
-  },
-);
-
-sample({
-  clock: $txWrappers.updates,
-  fn: (txWrappers) => ({
-    isProxy: transactionService.hasProxy(txWrappers),
-    isMultisig: transactionService.hasMultisig(txWrappers),
-  }),
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-  }),
-});
-
-sample({
-  source: {
-    isProxy: $isProxy,
+    signatory: form.fields.signatory.$value,
     balances: balanceModel.$balances,
     network: networkSelectorModel.$network,
-    proxyAccounts: $realAccounts,
   },
-  filter: ({ isProxy, network, proxyAccounts }) => {
-    return isProxy && !!network && proxyAccounts.length > 0;
-  },
-  fn: ({ balances, network, proxyAccounts }) => {
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+
     const balance = balanceUtils.getBalance(
       balances,
-      proxyAccounts[0].accountId,
-      network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
   },
-  target: $proxyBalance,
+);
+
+sample({
+  clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
 });
 
 sample({
-  clock: $unlockForm.formValidated,
+  clock: form.fields.initiator.change,
+  target: form.fields.amount.reset,
+});
+
+const $canSubmit = combine(
+  {
+    isFormValid: form.$isValid,
+    isFeeLoading: $pendingFee,
+    initiator: form.fields.initiator.$value,
+  },
+  ({ isFormValid, isFeeLoading, initiator }) => {
+    return isFormValid && !isFeeLoading && nonNullable(initiator);
+  },
+);
+
+sample({
+  clock: form.submit.doneData,
   source: {
-    realAccounts: $realAccounts,
     network: networkSelectorModel.$network,
-    transactions: $transactions,
-    isProxy: $isProxy,
     fee: $fee,
-    totalFee: $totalFee,
     multisigDeposit: $multisigDeposit,
     totalLock: locksModel.$totalLock,
   },
-  filter: ({ network, transactions }) => {
-    return nonNullable(network) && nonNullable(transactions);
+  filter: ({ network, fee }) => {
+    return nonNullable(network) && nonNullable(fee);
   },
-  fn: ({ realAccounts, network, transactions, totalLock, isProxy, ...fee }, formData) => {
-    const { shards, ...rest } = formData;
-
+  fn: ({ network, fee, multisigDeposit, totalLock }, formData) => {
     return {
-      transactions: transactions!.map((tx) => ({
-        wrappedTx: tx.wrappedTx,
-        multisigTx: tx.multisigTx,
-        coreTx: tx.coreTx,
-      })),
-      formData: {
-        ...fee,
-        ...rest,
-        initiator: realAccounts[0],
-        shards: realAccounts,
-        amount: formData.amount,
-        chain: network!.chain,
-        asset: network!.asset,
-        totalLock,
-
-        ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
-      },
+      initiator: formData.initiator,
+      signatory: formData.signatory,
+      amount: formData.amount,
+      chain: network!.chain,
+      asset: network!.asset,
+      totalLock,
+      fee: fee.toString(),
+      totalFee: fee.toString(),
+      multisigDeposit: multisigDeposit.toString(),
     } satisfies FormSubmitEvent;
   },
   target: formSubmitted,
@@ -530,35 +307,29 @@ sample({
 
 sample({
   clock: formCleared,
-  target: [$unlockForm.reset, $selectedSignatories.reinit],
+  target: form.reset,
 });
 
 export const unlockFormAggregate = {
-  $unlockForm,
+  form,
+
   $api,
   $canSubmit,
-  $txWrappers,
-  $transactions,
-  $realAccounts,
-  $shards,
-  $isFeeLoading,
-  $accounts,
+  $coreTx,
+  $tx,
+  $multisigTx,
+  $route,
   $fee,
-
+  $pendingFee,
   $isProxy,
   $isMultisig,
   $proxyWallet,
-  $selectedSignatories,
   $signatories,
-
   $proxyBalance,
   $signatoryBalance,
 
   formInitiated,
   formCleared,
-  feeChanged,
-  totalFeeChanged,
   multisigDepositChanged,
-  isFeeLoadingChanged,
   formSubmitted,
 };
