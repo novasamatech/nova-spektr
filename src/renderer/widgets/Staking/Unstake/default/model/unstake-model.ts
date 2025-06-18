@@ -160,19 +160,20 @@ const signSubmitted = sample({
     networkStore: $networkStore,
     multisigTx: $multisigTx,
     coreTx: $coreTx,
+    tx: formModel.$tx,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ unstakeStore, coreTx, multisigTx, networkStore, signParams }) => {
-  if (nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(networkStore)) {
+}).filterMap(({ unstakeStore, coreTx, multisigTx, networkStore, tx, signParams }) => {
+  if (nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(tx) && nonNullable(networkStore)) {
     return {
       ...signParams,
       chain: networkStore.chain,
       account: unstakeStore.initiator,
       signatory: unstakeStore.signatory,
-      wrappedTxs: [coreTx],
+      wrappedTxs: [tx],
       coreTxs: [coreTx],
       multisigTxs: multisigTx ? [multisigTx] : [],
     };
@@ -226,7 +227,7 @@ sample({
     return [
       {
         initiatorAccountId: coreTx.accountId,
-        coreTx: coreTx,
+        coreTx,
         route,
         createdAt: Date.now(),
       },

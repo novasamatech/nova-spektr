@@ -8,15 +8,14 @@ import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignatorySelector } from '@/entities/operations';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert, accountUtils } from '@/entities/wallet';
-import { AmountInput } from '@/features/assets-balances';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
 };
 
-export const UnstakeForm = ({ onGoBack }: Props) => {
+export const NominateForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
 
   const submitForm = (event: FormEvent) => {
@@ -25,11 +24,10 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
+    <div className="w-modal px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <Signatories />
-        <Amount />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
         <FeeSection />
@@ -48,9 +46,8 @@ const ProxyFeeAlert = () => {
   const proxyBalance = useUnit(formModel.$proxyBalance);
   const network = useUnit(formModel.$networkStore);
   const proxyWallet = useUnit(formModel.$proxyWallet);
-  const isProxy = useUnit(formModel.$isProxy);
 
-  if (!proxyWallet || !network || !isProxy || !initiator.hasError) {
+  if (!proxyWallet || !network || !initiator.hasError) {
     return null;
   }
 
@@ -86,7 +83,7 @@ const Signatories = () => {
     <SignatorySelector
       signatory={signatory.value}
       signatories={signatories}
-      asset={network.chain.assets?.[0]}
+      asset={network.chain.assets[0]}
       addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
@@ -95,60 +92,26 @@ const Signatories = () => {
   );
 };
 
-const Amount = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { amount },
-  } = useForm(formModel.form);
-
-  const unstakeBalanceRange = useUnit(formModel.$unstakeBalanceRange);
-  const isStakingLoading = useUnit(formModel.$isStakingLoading);
-  const network = useUnit(formModel.$networkStore);
-
-  if (!network) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-col gap-y-2">
-      <AmountInput
-        invalid={amount.hasError}
-        value={amount.value}
-        balance={isStakingLoading ? null : unstakeBalanceRange}
-        balancePlaceholder={t('general.input.availableLabel')}
-        placeholder={t('general.input.amountLabel')}
-        asset={network.asset}
-        onChange={amount.onChange}
-      />
-      <InputHint active={amount.hasError} variant="error">
-        {t(amount.errorMessage)}
-      </InputHint>
-    </div>
-  );
-};
-
 const FeeSection = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator },
+    fields: { initiator, amount },
   } = useForm(formModel.form);
 
   const network = useUnit(formModel.$networkStore);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const route = useUnit(formModel.$route);
+  const isMultisig = useUnit(formModel.$isMultisig);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
 
   if (!network || !initiator.value) {
     return null;
   }
-  const multisig = route.find(accountUtils.isMultisigAccount);
 
   return (
     <div className="flex flex-col gap-y-2">
-      {multisig && (
+      {isMultisig && (
         <DetailRow
           className="text-text-primary"
           label={
@@ -171,11 +134,14 @@ const FeeSection = () => {
       )}
 
       <FeeWithLabel
-        label={t('staking.networkFee', { count: 1 })}
-        asset={network.chain.assets[0]}
-        fee={fee.toString()}
+        fee={fee}
         isLoading={pendingFee}
+        asset={network.chain.assets[0]}
+        label={t('staking.networkFee', { count: 1 })}
       />
+      <InputHint active={amount.hasError} variant="error">
+        {t(amount.errorMessage)}
+      </InputHint>
     </div>
   );
 };
