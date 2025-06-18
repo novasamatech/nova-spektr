@@ -174,14 +174,18 @@ export const createDynamicDerivationExportPayload = (
           MultiSigner: CryptoTypeString.SR25519,
           public: decodeAddress(publicKey, false, 1),
         },
-        derivedKeys: derivations
-          .filter((d) => d.cryptoType !== CryptoType.ETHEREUM)
-          .map((d) => ({
-            address: encodeAddress(d.accountId, chains[d.chainId].addressPrefix),
-            derivationPath: d.derivationPath,
-            genesisHash: hexToU8a(d.chainId),
-            encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
-          })),
+        derivedKeys: derivations.map((d) => ({
+          address:
+            d.cryptoType === CryptoType.ETHEREUM
+              ? (d.publicKey ??
+                (() => {
+                  throw new Error('publicKey is required for ETHEREUM');
+                })())
+              : encodeAddress(d.accountId, chains[d.chainId].addressPrefix),
+          derivationPath: d.derivationPath,
+          genesisHash: hexToU8a(d.chainId),
+          encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
+        })),
       },
     ],
   });

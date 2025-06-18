@@ -33,6 +33,7 @@ export interface ChainAccount {
   accountId: AccountId;
   cryptoType: CryptoType;
   signingType: SigningType;
+  publicKey?: AccountId;
 }
 
 export type AnyAccount = UniversalAccount | ChainAccount;

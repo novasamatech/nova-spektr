@@ -1,4 +1,4 @@
-import { hexToU8a, isHex } from '@polkadot/util';
+import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
@@ -105,6 +105,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             publicKey: {
               MultiSigner: addressInfo.publicKey.MultiSigner,
               public: isEthereum ? ethereumEncode(publicKey) : encodeAddress(publicKey),
+              publicHex: isEthereum ? u8aToHex(publicKey) : undefined,
             },
           };
         });
