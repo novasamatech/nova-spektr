@@ -9,6 +9,7 @@ import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
+import { rfcModel } from '../../model/rfc';
 import { tasksService } from '../../service';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
@@ -49,21 +50,36 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     fn: (meta, [id]) => meta[id] ?? null,
   });
 
+  const rfc = useStoreMap({
+    store: rfcModel.$rfcSummary,
+    keys: [referendum.proposal],
+    fn: (summary, [proposal]) =>
+      summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
+  });
+
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
   //todo: whitelist detection might be implemented better
   const isWhitelist = !isRFCProposal;
 
-  const content = useMemo(
-    () =>
-      meta?.description ? (
+  const content = useMemo(() => {
+    if (rfc?.summary) {
+      return (
+        <Markdown cut="150px" compact>
+          {tasksService.cutMarkdown(rfc.summary)}
+        </Markdown>
+      );
+    }
+
+    if (meta?.description) {
+      return (
         <Markdown cut="150px" compact>
           {tasksService.cutMarkdown(meta.description)}
         </Markdown>
-      ) : (
-        t('fellowship.tasks.task.anyReferendum.noDescription')
-      ),
-    [meta],
-  );
+      );
+    }
+
+    return t('fellowship.tasks.task.anyReferendum.noDescription');
+  }, [meta, rfc]);
 
   return (
     <Box direction="row" gap={2}>
