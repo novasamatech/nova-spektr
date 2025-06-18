@@ -14,7 +14,7 @@ import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
+import { type AccountWithClaim } from '../lib/types';
 import { unlockFormAggregate } from '../model/unlockForm';
 
 type Props = {

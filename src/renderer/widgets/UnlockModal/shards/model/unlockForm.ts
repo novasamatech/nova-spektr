@@ -22,7 +22,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
+import { type AccountWithClaim } from '../lib/types';
 
 type Accounts = {
   account: AccountWithClaim;

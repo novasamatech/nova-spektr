@@ -9,12 +9,12 @@ import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { type UnlockFormData } from '@/features/governance/types/structs';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
 import { type UnlockConfirm, unlockConfirmModel } from '@/features/operations/OperationsConfirm';
+import { type UnlockFormData } from '../lib/types';
 
 import { unlockFormAggregate } from './unlockForm';
 
