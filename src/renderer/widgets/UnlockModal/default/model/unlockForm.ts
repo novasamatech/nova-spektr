@@ -4,10 +4,11 @@ import { combine, createEvent, restore, sample } from 'effector';
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { ZERO_BALANCE, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { locksService } from '@/entities/governance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -93,16 +94,16 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
-            claimableBalance: $claimableBalance,
+            availableBalance: $availableBalance,
           }),
-          fn: (amount, fields, { fee, isMultisig, claimableBalance }) => {
+          fn: (amount, fields, { fee, isMultisig, availableBalance }) => {
             const amountBN = new BN(amount);
             if (nullable(amount) || amountBN.lte(BN_ZERO)) {
               return { message: 'transfer.notZeroAmountError' };
             }
             if (!isMultisig && fields.initiator) {
               const feeBN = new BN(fee);
-              if (amountBN.add(feeBN).gt(new BN(claimableBalance))) {
+              if (amountBN.add(feeBN).gt(new BN(availableBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
             }
@@ -113,15 +114,26 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
 });
 
-const $claimableBalance = combine(
+const $availableBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    claimable: unlockModel.$claimable,
+    chain: networkSelectorModel.$governanceChain,
+    balances: balanceModel.$balances,
+    accounts: accounts.$list,
   },
-  ({ initiator, claimable }) => {
-    if (nullable(initiator) || nullable(claimable)) return null;
+  ({ balances, chain, initiator }) => {
+    if (nullable(initiator) || nullable(chain)) return BN_ZERO;
 
-    return claimable?.[initiator.accountId].toString() ?? ZERO_BALANCE;
+    const nativeAsset = getNativeAsset(chain.assets);
+    const accountBalance = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      nativeAsset.assetId.toString(),
+    );
+    if (!accountBalance) return BN_ZERO;
+
+    return locksService.getAvailableBalance(accountBalance);
   },
 );
 
