@@ -1,7 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { $features } from '@/shared/config/features';
 import { type Chain, type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -44,7 +43,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const allChains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const features = useUnit($features);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -124,9 +122,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <WalletCardLg wallet={wallet} />
 
           <div className="shrink-0">
-            {features.accountsStructure && firstAccount && (
-              <Slot id={accountsStructureSlot} props={{ walletAccounts: [firstAccount] }} />
-            )}
+            {firstAccount && <Slot id={accountsStructureSlot} props={{ walletAccounts: [firstAccount] }} />}
           </div>
         </div>
       </Modal.HeaderContent>

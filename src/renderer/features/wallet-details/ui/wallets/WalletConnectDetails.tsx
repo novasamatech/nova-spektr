@@ -1,7 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState, useTransition } from 'react';
 
-import { $features } from '@/shared/config/features';
 import { type WalletConnectGroup } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -62,7 +61,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const features = useUnit($features);
   const [_, startTransition] = useTransition();
 
   const [tab, setTab] = useState('accounts');
@@ -140,19 +138,20 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
-            <WalletCardLg wallet={wallet}>
-              <StatusLabel
-                className="ml-auto"
-                title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
-                variant={connected ? 'success' : 'waiting'}
-              />
+          <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
+            <div>
+              <WalletCardLg wallet={wallet}>
+                <StatusLabel
+                  className="ml-auto"
+                  title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
+                  variant={connected ? 'success' : 'waiting'}
+                />
+              </WalletCardLg>
+            </div>
 
-              {/* ToDo: upd layout */}
-              {features.accountsStructure && (
-                <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
-              )}
-            </WalletCardLg>
+            <div className="shrink-0">
+              <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
+            </div>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>

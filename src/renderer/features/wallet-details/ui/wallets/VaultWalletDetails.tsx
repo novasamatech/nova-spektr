@@ -1,7 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { $features } from '@/shared/config/features';
 import {
   type Chain,
   type DraftAccount,
@@ -57,7 +56,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const features = useUnit($features);
 
   const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
 
@@ -188,9 +186,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <WalletCardLg wallet={wallet} />
 
             <div className="shrink-0">
-              {features.accountsStructure && (
-                <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
-              )}
+              <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
             </div>
           </div>
         </Modal.HeaderContent>

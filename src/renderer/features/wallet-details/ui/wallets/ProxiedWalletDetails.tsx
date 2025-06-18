@@ -1,7 +1,6 @@
 import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { $features } from '@/shared/config/features';
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -55,7 +54,6 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const features = useUnit($features);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [tab, setTab] = useState('accounts');
@@ -123,9 +121,9 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="flex items-center justify-between">
             <WalletCardLg wallet={wallet} />
 
-            {features.accountsStructure && (
+            {account && (
               <div className="shrink-0">
-                {account && <Slot id={accountsStructureSlot} props={{ walletAccounts: [account] }} />}
+                <Slot id={accountsStructureSlot} props={{ walletAccounts: [account] }} />
               </div>
             )}
           </div>

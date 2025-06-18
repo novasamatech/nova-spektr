@@ -258,9 +258,9 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             <div className="flex items-center justify-between">
               <WalletCardLg wallet={wallet} />
 
-              {features.accountsStructure && (
+              {multisigAccount && (
                 <div className="shrink-0">
-                  {multisigAccount && <Slot id={accountsStructureSlot} props={{ walletAccounts: [multisigAccount] }} />}
+                  <Slot id={accountsStructureSlot} props={{ walletAccounts: [multisigAccount] }} />
                 </div>
               )}
             </div>
