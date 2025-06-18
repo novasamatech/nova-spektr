@@ -11,13 +11,10 @@ import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 
 import { Card } from './Card';
 
-type Props = {
-  description?: string;
-};
-
-export const AdditionalContext = ({ description }: Props) => {
+export const AdditionalContext = () => {
   const { t } = useTranslation();
   const evidence = useUnit(details.$evidence);
+  const description = useUnit(details.$description);
 
   const chain = useStoreMap({
     store: fellowshipReferendumsDetailsFeature.input,
