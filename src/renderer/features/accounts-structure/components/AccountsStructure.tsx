@@ -136,13 +136,23 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         setNodes(layoutNodes);
         setEdges(edges);
 
-        fitView({
-          nodes: [account],
-          padding: 0.5,
-          maxZoom: 0.75,
-          minZoom: 0.75,
-          includeHiddenNodes: true,
-        });
+        const selectedNode = graph.get(account);
+        if (selectedNode) {
+          const parentNodes = Array.from(graph.values()).filter((n) =>
+            n.children.some((c) => c.account.id === account.id),
+          );
+
+          fitView({
+            nodes: [
+              selectedNode.account,
+              ...selectedNode.children.map((n) => n.account),
+              ...parentNodes.map((n) => n.account),
+            ],
+            padding: 0.5,
+            maxZoom: 0.75,
+            minZoom: 0.75,
+          });
+        }
       });
   }, [graph, account.id, fitView]);
 
