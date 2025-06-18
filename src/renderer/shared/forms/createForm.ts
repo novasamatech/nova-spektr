@@ -96,13 +96,20 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
       const validatorsList = Object.entries(validators);
 
       const requests = validatorsList.map(([key, validator]) => {
-        const value = values[key];
-        if (typeof validator === 'function') {
-          return validator(value, values, void 0);
-        } else {
-          // eslint-disable-next-line effector/no-getState
-          const source = validator.source.getState();
-          return validator.fn(value, values, source);
+        try {
+          const value = values[key];
+          if (typeof validator === 'function') {
+            return validator(value, values, void 0);
+          } else {
+            // eslint-disable-next-line effector/no-getState
+            const source = validator.source.getState();
+            return validator.fn(value, values, source);
+          }
+        } catch (e) {
+          const error: ValidationError = {
+            message: e instanceof Error ? e.toString() : 'Unknown error',
+          };
+          return error;
         }
       });
 

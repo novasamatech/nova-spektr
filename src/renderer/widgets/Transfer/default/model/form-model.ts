@@ -1,7 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
+import { debug, spread } from 'patronum';
 
 import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -172,6 +172,8 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
+
+debug(form.submit);
 
 // Computed
 

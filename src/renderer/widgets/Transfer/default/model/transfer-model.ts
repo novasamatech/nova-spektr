@@ -50,8 +50,7 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
-
+    if (!store) return null;
     return walletUtils.getWalletById(wallets, store.initiator.walletId) ?? null;
   },
 );

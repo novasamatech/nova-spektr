@@ -68,7 +68,7 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balances);
 
-  if (!network) {
+  if (!network || signatories.length <= 1) {
     return null;
   }
 

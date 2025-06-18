@@ -3,12 +3,12 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
-import { networkModel } from '../../../../entities/network';
-import { xcmModel } from '../../../../entities/xcm';
-import { type XcmConfig, XcmTransferType, xcmService } from '../../../../shared/api/xcm';
-import { type Asset, type Chain, type ChainId } from '../../../../shared/core';
-import { getParachainId, toLocalChainId } from '../../../../shared/lib/utils';
-import { type AccountId } from '../../../../shared/polkadotjs-schemas';
+import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
+import { type Asset, type Chain, type ChainId } from '@/shared/core';
+import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkModel } from '@/entities/network';
+import { xcmModel } from '@/entities/xcm';
 import { xcmTransferUtils } from '../../default/lib/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
@@ -148,7 +148,7 @@ const $api = combine(
     network: $networkStore,
   },
   ({ apis, network }) => {
-    return network ? apis[network.chain.chainId] : null;
+    return network ? (apis[network.chain.chainId] ?? null) : null;
   },
 );
 
