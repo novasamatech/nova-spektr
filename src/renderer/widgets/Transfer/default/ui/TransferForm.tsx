@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type MultisigAccount } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -16,12 +16,12 @@ import {
 } from '@/shared/lib/utils';
 import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
 import { Box, Field, Input, Select } from '@/shared/ui-kit';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
-import { balanceModel, balanceUtils } from '../../../../entities/balance';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -219,19 +219,17 @@ const Amount = () => {
 };
 
 const FeeSection = () => {
-  const {
-    fields: { account },
-  } = useForm(formModel.form);
+  const { t } = useI18n();
 
   const api = useUnit(formModel.$api);
+  const initiator = useUnit(formModel.$initiator);
   const network = useUnit(formModel.$networkStore);
-  const transaction = useUnit(formModel.$transaction);
   const coreTx = useUnit(formModel.$coreTx);
-  const fakeTx = useUnit(formModel.$fakeTx);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const isXcm = useUnit(formModel.$isXcm);
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
   const deliveryFee = useUnit(formModel.$deliveryFee);
 
   if (!network) {
@@ -240,11 +238,11 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isMultisig && (
+      {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
         <MultisigDepositWithLabel
           api={api}
           asset={network.chain.assets[0]}
-          threshold={(account.value as MultisigAccount).threshold || 1}
+          threshold={initiator.threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
       )}
@@ -261,7 +259,7 @@ const FeeSection = () => {
           api={xcmApi}
           config={xcmConfig}
           asset={network.asset}
-          transaction={coreTx || fakeTx}
+          transaction={coreTx}
           onFeeChange={formModel.xcmFeeChanged}
           onFeeLoading={formModel.isXcmFeeLoadingChanged}
         />
@@ -273,20 +271,24 @@ const FeeSection = () => {
 };
 
 const AlertForDeliveryFee = () => {
+  const {
+    fields: { amount },
+  } = useForm(formModel.form);
   const initiator = useUnit(formModel.$initiator);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const accountBalance = useUnit(formModel.$initiatorBalance);
+  const initiatorBalance = useUnit(formModel.$initiatorBalance);
   const network = useUnit(formModel.$networkStore);
-  const hasDeliveryError = useUnit(formModel.$hasDeliveryError);
-  const asset = network?.chain.assets.at(0);
+  const asset = getNativeAsset(network?.chain.assets ?? []);
 
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !accountBalance) {
+  const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
+
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(accountBalance.native, asset.precision).value;
+  const formattedBalance = formatBalance(initiatorBalance.native, asset.precision).value;
 
   return (
     <DeliveryFeeAlert
@@ -294,7 +296,7 @@ const AlertForDeliveryFee = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={asset.symbol}
-      onClose={account.resetErrors}
+      onClose={amount.reset}
     />
   );
 };

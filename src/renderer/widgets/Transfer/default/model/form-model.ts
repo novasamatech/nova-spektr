@@ -1,13 +1,11 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { camelCase } from 'lodash';
 import { spread } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
+import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
-  TEST_ACCOUNTS,
   ZERO_BALANCE,
   assert,
   formatAmount,
@@ -26,14 +24,12 @@ import { createComplexTxStore, createSignatoriesStore } from '@/shared/transacti
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { TransferType, getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
-
-type BalanceMap = Record<'balance' | 'native', string>;
 
 type FormParams = {
   signatory: AnyAccount | null;
@@ -308,35 +304,6 @@ const $coreTx = combine(
   },
 );
 
-const $fakeTx = combine(
-  {
-    network: $networkStore,
-    isConnected: $isChainConnected,
-    xcmData: xcmTransferModel.$xcmData,
-  },
-  ({ isConnected, network, xcmData }): Transaction | null => {
-    if (!network || !isConnected) return null;
-
-    const transactionType = network.asset.type ? TransferType[network.asset.type] : TransactionType.TRANSFER;
-
-    const palletName =
-      network.asset.typeExtras && 'palletName' in network.asset.typeExtras
-        ? camelCase(network.asset.typeExtras.palletName)
-        : 'assets';
-
-    return {
-      chainId: network.chain.chainId,
-      accountId: TEST_ACCOUNTS[0],
-      type: transactionType,
-      args: {
-        palletName,
-        destination: toAddress(TEST_ACCOUNTS[0], { prefix: network.chain.addressPrefix }),
-        ...xcmData?.args,
-      },
-    };
-  },
-);
-
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
   initiator: $initiator,
@@ -417,10 +384,6 @@ const $extrinsic = combine(
     return getExtrinsic[coreTx.type](coreTx.args, api);
   },
 );
-
-const $hasDeliveryError = form.fields.amount.$errors.map((errors) => {
-  return errors.some((error) => error.message === 'transfer.notEnoughBalanceForDeliveryFeeError');
-});
 
 // Fields connections
 
@@ -588,13 +551,12 @@ export const formModel = {
   $destinationChains,
 
   $fee,
+  $pendingFee,
   $multisigDeposit,
   $deliveryFee: xcmTransferModel.$deliveryFee,
-  $hasDeliveryError,
 
   $coreTx,
   $tx,
-  $fakeTx,
   $api,
   $networkStore,
   $isXcm,

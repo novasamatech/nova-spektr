@@ -50,15 +50,17 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
 
     const change = createEvent<any>();
     const reset = createEvent<any>();
+    const resetError = createEvent<any>();
     const $value = restore(change, field.defaultValue).reset(reset);
 
     const setErrors = createEvent<ValidationError[]>();
-    const $errors = restore(setErrors, EMPTY_ARRAY).reset(reset, change);
+    const $errors = restore(setErrors, EMPTY_ARRAY).reset(reset, resetError, change);
 
     fields[key] = {
       $value: readonly($value),
       change,
       reset,
+      resetError,
 
       $errors: readonly($errors),
       setErrors,

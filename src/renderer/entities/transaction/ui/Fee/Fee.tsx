@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
@@ -7,7 +8,7 @@ import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  fee: string;
+  fee: BN | string;
   isLoading?: boolean;
   asset: Asset;
   className?: string;

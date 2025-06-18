@@ -6,6 +6,7 @@ export type FormField<Value> = {
   setErrors: EventCallable<ValidationError[]>;
   change: EventCallable<Value>;
   reset: EventCallable<void>;
+  resetError: EventCallable<void>;
 };
 
 export type Form<Fields> = {
