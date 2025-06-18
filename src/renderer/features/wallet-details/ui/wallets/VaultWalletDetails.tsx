@@ -9,6 +9,7 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
@@ -16,6 +17,7 @@ import { FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Hash } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -29,6 +31,8 @@ import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
+
+export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -178,8 +182,12 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
+          <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
+
+            <div className="shrink-0">
+              <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
+            </div>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
