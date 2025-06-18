@@ -54,7 +54,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     store: rfcModel.$rfcSummary,
     keys: [referendum.proposal],
     fn: (summary, [proposal]) =>
-      proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
+      summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
   });
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;

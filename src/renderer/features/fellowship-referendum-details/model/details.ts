@@ -25,7 +25,7 @@ const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null })
 const $referendum = flow.state.map(state => state.referendum);
 
 const $evidences = fellowship.$store.map(store => store?.evidenceContent ?? []);
-const $rfcSummary = fellowship.$store.map(store => store?.rfcSummary ?? {});
+const $rfcSummary = fellowship.$store.map(store => store?.rfcSummary ?? null);
 const $members = fellowship.$store.map(store => dictionary(store?.members ?? [], 'accountId'));
 const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 
@@ -61,7 +61,12 @@ const $evidence = combine(
 );
 
 const $rfc = combine({ referendum: $referendum, rfcSummary: $rfcSummary }, ({ referendum, rfcSummary }) => {
-  if (nullable(referendum) || !referendumService.isOngoing(referendum) || referendum.proposal?.type !== 'Rfc') {
+  if (
+    nullable(referendum) ||
+    !referendumService.isOngoing(referendum) ||
+    referendum.proposal?.type !== 'Rfc' ||
+    nullable(rfcSummary)
+  ) {
     return null;
   }
 

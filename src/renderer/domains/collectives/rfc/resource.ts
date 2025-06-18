@@ -11,7 +11,7 @@ type RequestParams = {
 };
 
 export const rfcSummaryResource = createRemoteResource<RequestParams, RfcDetails>({
-  cache: { ttl: 60 * 1000 },
+  cache: { ttl: Number.POSITIVE_INFINITY },
   async fn({ prNumber, chainId, palletType }) {
     const url = new URL('/api/v1/rfc-summaries/single', 'https://opengov-backend-dev.novasama-tech.org');
 

@@ -8,7 +8,7 @@ import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { referendums } from './referendums';
 
-const $rfcSummary = fellowship.$store.map(s => s?.rfcSummary ?? {});
+const $rfcSummary = fellowship.$store.map(s => s?.rfcSummary ?? null);
 
 const requestRfcFx = attach({ effect: rfcDetails.request });
 
