@@ -76,22 +76,20 @@ const form: Form<FormParams> = createForm<FormParams>({
     signatory: {
       defaultValue: null,
       validator() {
-        return (signatory) => {
-          if (nullable(signatory)) {
-            return { message: 'transfer.noSignatoryError' };
-          }
-          // return {
-          //   rules: [
-          //     TransferRules.signatory.notEnoughTokens(
-          //       combine({
-          //         fee: $fee,
-          //         isMultisig: $isMultisig,
-          //         multisigDeposit: $multisigDeposit,
-          //         balance: $signatoryBalance,
-          //       }),
-          //     ),
-          //   ],
-          // };
+        return {
+          source: combine({
+            fee: $fee,
+            isMultisig: $isMultisig,
+            multisigDeposit: $multisigDeposit,
+            balance: $signatoryBalance,
+          }),
+          fn(signatory, _, a) {
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
+            }
+
+            const b = TransferRules.signatory.notEnoughTokens(a);
+          },
         };
       },
     },
