@@ -434,7 +434,6 @@ export const Staking = () => {
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
-      {totalStakes.length > 1 ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
       {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
       <Suspense fallback={null}>{isMultipleStakes ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
       <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
