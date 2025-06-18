@@ -39,31 +39,39 @@ import { NominatorsList } from './NominatorsList';
 
 // Lazy-loaded components
 const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
-
 const LazyUnstakeShards = lazy(() =>
   import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
 );
-const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 
+const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 const LazyBondExtraShards = lazy(() =>
   import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
 );
 
 const LazyNominate = lazy(() => import('@/widgets/Staking').then(({ Nominate }) => ({ default: Nominate })));
-
 const LazyNominateShards = lazy(() =>
   import('@/widgets/Staking').then(({ NominateShards }) => ({ default: NominateShards })),
 );
 
+const LazyWithdraw = lazy(() => import('@/widgets/Staking').then(({ Withdraw }) => ({ default: Withdraw })));
 const LazyWithdrawShards = lazy(() =>
   import('@/widgets/Staking').then(({ WithdrawShards }) => ({ default: WithdrawShards })),
 );
 
-const LazyWithdraw = lazy(() => import('@/widgets/Staking').then(({ Withdraw }) => ({ default: Withdraw })));
-
 const LazyPayee = lazy(() => import('@/widgets/Staking').then(({ Payee }) => ({ default: Payee })));
-
 const LazyPayeeShards = lazy(() => import('@/widgets/Staking').then(({ PayeeShards }) => ({ default: PayeeShards })));
+
+const LazyBondNominate = lazy(() =>
+  import('@/widgets/Staking').then(({ BondNominate }) => ({ default: BondNominate })),
+);
+const LazyBondNominateShards = lazy(() =>
+  import('@/widgets/Staking').then(({ BondNominateShards }) => ({ default: BondNominateShards })),
+);
+
+const LazyRestake = lazy(() => import('@/widgets/Staking').then(({ Restake }) => ({ default: Restake })));
+const LazyRestakeShards = lazy(() =>
+  import('@/widgets/Staking').then(({ RestakeShards }) => ({ default: RestakeShards })),
+);
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -424,11 +432,13 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
-      {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
+      <Suspense fallback={null}>
+        {isMultipleAccountsSelected ? <LazyBondNominateShards /> : <LazyBondNominate />}
+      </Suspense>
       <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
       <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
       <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
-      {isMultipleAccountsSelected ? <Operations.RestakeShards /> : <Operations.Restake />}
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyRestakeShards /> : <LazyRestake />}</Suspense>
       <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
       <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
     </>
