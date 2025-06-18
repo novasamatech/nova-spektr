@@ -24,7 +24,7 @@ accountSDK(walletConnectWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  nodeConfig: account => {
+  visualGraphNode({ account }) {
     if (accountUtils.isWcAccount(account)) {
       return {
         title: 'WalletConnect',

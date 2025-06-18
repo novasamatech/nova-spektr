@@ -44,7 +44,7 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
-  nodeConfig: account => {
+  visualGraphNode({ account }) {
     if (accountUtils.isMultisigAccount(account)) {
       return {
         title: 'Multisig',

@@ -43,7 +43,7 @@ accountSDK(proxiedWalletFeature, {
     }
     return children;
   },
-  nodeConfig: account => {
+  visualGraphNode({ account }) {
     if (accountUtils.isProxiedAccount(account)) {
       return {
         title: 'Proxied wallet',

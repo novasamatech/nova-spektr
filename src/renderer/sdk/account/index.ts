@@ -1,13 +1,17 @@
-import { createSDK } from '@/shared/di';
-import { accountService } from '@/domains/network';
-import { accountNodeConfigTransformer } from '@/features/accounts-structure';
+import { createSDK, createTransformer } from '@/shared/di';
+import { type AnyAccount, accountService } from '@/domains/network';
+
+export const accountNodeConfigTransformer = createTransformer<
+  { account: AnyAccount },
+  { title: string; color: string }
+>();
 
 export const accountSDK = createSDK({
   required: {
     actionPermission: accountService.accountActionPermissionAnyOf,
     availableOnChain: accountService.accountAvailabilityOnChainAnyOf,
     canSignMultipleTransactions: accountService.accountCanSignMultipleAnyOf,
-    nodeConfig: accountNodeConfigTransformer,
+    visualGraphNode: accountNodeConfigTransformer,
   },
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,

@@ -3,22 +3,24 @@ import { useState } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletCardLg, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
-import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
+
+export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -123,7 +125,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
             {features.accountsStructure && (
               <div className="shrink-0">
-                {account && <Slot id={accountsStructureModalSlot} props={{ walletAccounts: [account] }} />}
+                {account && <Slot id={accountsStructureSlot} props={{ walletAccounts: [account] }} />}
               </div>
             )}
           </div>
