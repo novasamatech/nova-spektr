@@ -1,18 +1,30 @@
 import { $features } from '@/shared/config/features';
-import { createSlot } from '@/shared/di';
+import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
-import { type AnyAccount } from '@/domains/network';
+import {
+  multisigAccountsStructureSlot,
+  proxiedAccountsStructureSlot,
+  simpleAccountsStructureSlot,
+  vaultStructureSlot,
+  walletConnectAccountsStructureSlot,
+} from '@/features/wallet-details';
 
 import { AccountsStructureModal } from './components/AccountsStructureModal';
 
 export { accountNodeConfigTransformer } from './components/AccountStructureNode';
 
-export const accountsStructureModalSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
-
 export const accountsStructureFeature = createFeature({
   name: 'accounts/structure',
   enable: $features.map(({ accountsStructure }) => accountsStructure),
 });
+
+const accountsStructureModalSlot = combineIdentifiers(
+  simpleAccountsStructureSlot,
+  walletConnectAccountsStructureSlot,
+  proxiedAccountsStructureSlot,
+  multisigAccountsStructureSlot,
+  vaultStructureSlot,
+);
 
 accountsStructureFeature.inject(accountsStructureModalSlot, ({ walletAccounts }) => {
   return <AccountsStructureModal walletAccounts={walletAccounts} />;

@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { $features } from '@/shared/config/features';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, toAddress } from '@/shared/lib/utils';
@@ -13,9 +13,9 @@ import { type IconNames } from '@/shared/ui/types';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
-import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
@@ -24,6 +24,8 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
+
+export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -258,9 +260,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
               {features.accountsStructure && (
                 <div className="shrink-0">
-                  {multisigAccount && (
-                    <Slot id={accountsStructureModalSlot} props={{ walletAccounts: [multisigAccount] }} />
-                  )}
+                  {multisigAccount && <Slot id={accountsStructureSlot} props={{ walletAccounts: [multisigAccount] }} />}
                 </div>
               )}
             </div>

@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react';
 
 import { $features } from '@/shared/config/features';
 import { type WalletConnectGroup } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import {
@@ -19,8 +19,8 @@ import {
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
-import { accountsStructureModalSlot } from '@/features/accounts-structure';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
@@ -33,6 +33,8 @@ import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+
+export const accountsStructureSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -148,7 +150,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
               {/* ToDo: upd layout */}
               {features.accountsStructure && (
-                <Slot id={accountsStructureModalSlot} props={{ walletAccounts: wallet.accounts }} />
+                <Slot id={accountsStructureSlot} props={{ walletAccounts: wallet.accounts }} />
               )}
             </WalletCardLg>
           </div>
