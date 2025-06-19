@@ -4,6 +4,7 @@ import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
+import { $features } from '@/shared/config/features';
 import {
   AccountType,
   type Contact,
@@ -13,7 +14,9 @@ import {
   SigningType,
   type Transaction,
   TransactionType,
+  type TxWrapper,
   WalletType,
+  WrapperKind,
 } from '@/shared/core';
 import {
   Step,
@@ -106,21 +109,47 @@ const $remarkTx = combine(
     };
   },
 );
-
 const $transaction = combine(
   {
     apis: networkModel.$apis,
+    chains: networkModel.$chains,
     chain: formModel.$chain,
     remarkTx: $remarkTx,
+    signatories: signatoryModel.$signatories,
     signer: $signer,
+    threshold: formModel.$createMultisigForm.fields.threshold.$value,
+    multisigAccountId: formModel.$multisigAccountId,
+    features: $features,
   },
-  ({ apis, chain, remarkTx, signer }) => {
+  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId, features }) => {
     if (!chain || !remarkTx || !signer) return null;
+
+    const signatoriesWrapped = Array.from(signatories.values()).map(s => ({
+      accountId: toAccountId(s.address),
+      address: s.address,
+    }));
+
+    const txWrappers: TxWrapper[] = features.multisigRemark
+      ? []
+      : [
+          {
+            kind: WrapperKind.MULTISIG,
+            multisigAccount: {
+              accountId: multisigAccountId,
+              signatories: signatoriesWrapped,
+              threshold,
+            } as unknown as MultisigAccount,
+            signatories: Array.from(signatories.values()).map(s => ({
+              accountId: toAccountId(s.address),
+            })) as AnyAccount[],
+            signer,
+          },
+        ];
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       transaction: remarkTx,
-      txWrappers: [],
+      txWrappers,
     });
   },
 );
