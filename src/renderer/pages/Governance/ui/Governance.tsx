@@ -27,15 +27,15 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
 // Lazy load delegate components
-const Delegate = lazy(() => import('@/widgets/DelegateModal').then((module) => ({ default: module.Delegate })));
+const Delegate = lazy(() => import('@/widgets/DelegateModal').then(({ Delegate }) => ({ default: Delegate })));
 const DelegateShards = lazy(() =>
-  import('@/widgets/DelegateModal').then((module) => ({ default: module.DelegateShards })),
+  import('@/widgets/DelegateModal').then(({ DelegateShards }) => ({ default: DelegateShards })),
 );
 
 // Lazy load unlock components
-const UnlockModal = lazy(() => import('@/widgets/UnlockModal').then((module) => ({ default: module.UnlockModal })));
+const UnlockModal = lazy(() => import('@/widgets/UnlockModal').then(({ UnlockModal }) => ({ default: UnlockModal })));
 const UnlockModalShards = lazy(() =>
-  import('@/widgets/UnlockModal').then((module) => ({ default: module.UnlockModalShards })),
+  import('@/widgets/UnlockModal').then(({ UnlockModalShards }) => ({ default: UnlockModalShards })),
 );
 
 export const Governance = () => {
