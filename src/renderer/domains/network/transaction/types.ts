@@ -14,3 +14,34 @@ export interface EncodedTransaction {
 
 export type AnyDecodedTransaction<Args extends NonNullable<unknown> = NonNullable<unknown>> = DecodedTransaction<Args>;
 export type AnyTransaction = EncodedTransaction | AnyDecodedTransaction;
+
+export type CallType =
+  | 'Transfer'
+  | 'IdentityJudgement'
+  | 'Auctions'
+  | 'Crowdloan'
+  | 'Registrar'
+  | 'Proxy'
+  | 'Staking'
+  | 'Session'
+  | 'FastUnstake'
+  | 'VoterList'
+  | 'NominationPools'
+  | 'Treasury'
+  | 'Bounties'
+  | 'ChildBounties'
+  | 'ConvictionVoting'
+  | 'Referenda'
+  | 'Whitelist'
+  | 'Utility'
+  | 'System'
+  | 'Scheduler'
+  | 'Babe'
+  | 'Timestamp'
+  | 'Indices'
+  | 'Grandpa'
+  | 'Claims'
+  | 'Vesting'
+  | 'Utility'
+  | 'Multisig'
+  | 'Slots';
