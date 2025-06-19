@@ -6,6 +6,11 @@ export const accountNodeConfigTransformer = createTransformer<
   { title: string; color: string }
 >();
 
+export const accountConnectionTransformer = createTransformer<
+  { source: AnyAccount; target: AnyAccount },
+  { label: string; textColor: string; backgroundColor: string }
+>();
+
 export const accountSDK = createSDK({
   required: {
     actionPermission: accountService.accountActionPermissionAnyOf,
@@ -15,5 +20,6 @@ export const accountSDK = createSDK({
   },
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,
+    connection: accountConnectionTransformer,
   },
 });
