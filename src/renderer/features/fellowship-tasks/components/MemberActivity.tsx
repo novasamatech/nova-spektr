@@ -24,14 +24,18 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     keys: [accountId],
     fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
   });
-  const { meta, votes, maxRank } = useStoreMap({
+
+  const { meta, isMetaLoaded, votes, maxRank } = useStoreMap({
     store: fellowship.$store,
     keys: [],
-    fn: store => ({
-      meta: Object.values(store?.referendumMeta ?? {}),
-      votes: store?.voting ?? [],
-      maxRank: store?.maxRank ?? 0,
-    }),
+    fn: store => {
+      return {
+        meta: Object.values(store?.referendumMeta ?? {}),
+        isMetaLoaded: nonNullable(store?.referendumMeta),
+        votes: store?.voting ?? [],
+        maxRank: store?.maxRank ?? 0,
+      };
+    },
   });
 
   const notMemberOrNotCoreMember = nullable(member) || !memberService.isCoreMember(member);
@@ -42,16 +46,19 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     return referendumMetaService.getReferendumsSinceLastProof(meta, member);
   }, [meta, member, notMemberOrNotCoreMember]);
   const activity = useMemo(() => {
-    if (notMemberOrNotCoreMember) return { activity: null, agreement: null };
+    if (notMemberOrNotCoreMember) {
+      return { activity: null, agreement: null };
+    }
 
     return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
   }, [referendums, member, maxRank, votes, notMemberOrNotCoreMember]);
-  const isActivityLoaded = nonNullable(activity);
 
   if (notMemberOrNotCoreMember) return null;
 
   const { activity: activityThreshold, agreement: agreementThreshold } =
     memberService.getActivityAndAgreementThresholds(member.rank);
+
+  const isActivityLoaded = isMetaLoaded && nonNullable(activity);
 
   const isActivityFit =
     nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
