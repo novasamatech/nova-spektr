@@ -240,15 +240,14 @@ sample({
   source: {
     unlockData: $unlockData,
     coreTx: unlockFormAggregate.$coreTx,
+    route: unlockFormAggregate.$route,
   },
-  filter: ({ coreTx }) => {
-    return !!coreTx;
-  },
-  fn: ({ coreTx }) => [
+  filter: ({ unlockData, coreTx }) => nonNullable(unlockData?.initiator) && nonNullable(coreTx),
+  fn: ({ unlockData, coreTx, route }) => [
     {
-      initiatorAccountId: coreTx!.accountId,
+      initiatorAccountId: unlockData!.initiator!.accountId,
       coreTx: coreTx!,
-      route: [],
+      route,
       createdAt: Date.now(),
     },
   ],
