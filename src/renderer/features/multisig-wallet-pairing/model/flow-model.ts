@@ -5,7 +5,6 @@ import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
 import {
-  type Account,
   AccountType,
   type Contact,
   CryptoType,
@@ -15,7 +14,6 @@ import {
   type Transaction,
   TransactionType,
   WalletType,
-  WrapperKind,
 } from '@/shared/core';
 import {
   Step,
@@ -89,61 +87,42 @@ const $remarkTx = combine(
     form: formModel.$createMultisigForm.$values,
     account: $signer,
     isConnected: $isChainConnected,
+    signatories: signatoryModel.$signatories,
   },
-  ({ form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.threshold) return undefined;
+  ({ form, account, isConnected, signatories }) => {
+    if (!isConnected || !account || !form.threshold) return null;
 
     return {
       chainId: form.chainId,
       accountId: account.accountId,
-      type: TransactionType.REMARK,
+      type: TransactionType.REMARK_WITH_EVENT,
       args: {
-        remark: 'Multisig created with Nova Spektr',
+        remark: JSON.stringify({
+          text: 'Multisig created with Nova Spektr',
+          signatories: Array.from(signatories.values()).map(s => toAccountId(s.address)),
+          threshold: form.threshold,
+        }),
       },
     };
   },
-  { skipVoid: false },
 );
 
 const $transaction = combine(
   {
     apis: networkModel.$apis,
-    chains: networkModel.$chains,
     chain: formModel.$chain,
     remarkTx: $remarkTx,
-    signatories: signatoryModel.$signatories,
     signer: $signer,
-    threshold: formModel.$createMultisigForm.fields.threshold.$value,
-    multisigAccountId: formModel.$multisigAccountId,
   },
-  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
-    if (!chain || !remarkTx || !signer) return undefined;
-
-    const signatoriesWrapped = Array.from(signatories.values()).map(s => ({
-      accountId: toAccountId(s.address),
-      address: s.address,
-    }));
+  ({ apis, chain, remarkTx, signer }) => {
+    if (!chain || !remarkTx || !signer) return null;
 
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       transaction: remarkTx,
-      txWrappers: [
-        {
-          kind: WrapperKind.MULTISIG,
-          multisigAccount: {
-            accountId: multisigAccountId,
-            signatories: signatoriesWrapped,
-            threshold,
-          } as unknown as MultisigAccount,
-          signatories: Array.from(signatories.values()).map(s => ({
-            accountId: toAccountId(s.address),
-          })) as Account[],
-          signer,
-        },
-      ],
+      txWrappers: [],
     });
   },
-  { skipVoid: false },
 );
 
 const $api = combine(

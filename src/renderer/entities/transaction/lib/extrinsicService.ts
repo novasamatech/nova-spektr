@@ -123,6 +123,7 @@ export const getExtrinsic: Record<
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
   [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
+  [TransactionType.REMARK_WITH_EVENT]: ({ remark }, api) => api.tx.system.remarkWithEvent(remark),
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },
