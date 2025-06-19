@@ -16,7 +16,6 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { memo, useEffect } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -94,22 +93,16 @@ function createGraphElements(
       targetPosition: Position.Right,
     });
 
-    let label: string | undefined;
-
-    const targetAcc = node.account;
-    if (accountUtils.isProxiedAccount(targetAcc)) {
-      label = targetAcc.proxyType;
-    }
-
     for (const child of node.children) {
       edges.push({
         id: `e${child.account.id}-${node.account.id}`,
         source: child.account.id,
         target: node.account.id,
         data: {
-          label,
           pathType,
           edgeType,
+          source: child.account,
+          target: node.account,
         },
       });
       processNode(child);
@@ -162,7 +155,7 @@ const AccountsStructureInner = ({ account, graph, pathType, edgeType }: Accounts
         setNodes(layoutNodes);
         setEdges(edges);
 
-        fitView();
+        fitView({ maxZoom: 1, padding: { left: '100px' } });
       });
   }, [graph, account.id, fitView, pathType, edgeType]);
 

@@ -8,6 +8,10 @@ import {
   getStraightPath,
 } from '@xyflow/react';
 
+import { useTransformer } from '@/shared/di';
+import { type AnyAccount } from '@/domains/network';
+import { accountConnectionTransformer } from '@/sdk/account';
+
 export const CustomEdge = ({
   id,
   sourceX,
@@ -51,7 +55,12 @@ export const CustomEdge = ({
       });
   }
 
-  const label = data?.label as string | undefined;
+  const connection =
+    data &&
+    useTransformer(accountConnectionTransformer, {
+      source: data.source as AnyAccount,
+      target: data.target as AnyAccount,
+    });
   const edgeType = data?.edgeType as 'solid' | 'dashed' | undefined;
 
   return (
@@ -70,7 +79,7 @@ export const CustomEdge = ({
         }}
       />
 
-      {label && (
+      {connection && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -79,14 +88,14 @@ export const CustomEdge = ({
               padding: '5px 10px',
               fontSize: '10px',
               fontWeight: '600',
-              color: 'var(--icons-icon-alert, #7B29FF)',
+              color: connection.textColor,
               borderRadius: '26px',
               border: '2px solid #F9F9F9',
-              background: '#F5EEFF',
+              background: connection.backgroundColor,
               textTransform: 'uppercase',
             }}
           >
-            {label}
+            {connection.label}
           </div>
         </EdgeLabelRenderer>
       )}

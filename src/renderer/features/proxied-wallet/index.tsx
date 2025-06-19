@@ -51,6 +51,15 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
+  connection({ target }) {
+    if (accountUtils.isProxiedAccount(target)) {
+      return {
+        label: target.proxyType,
+        textColor: 'var(--icons-icon-alert, #7B29FF)',
+        backgroundColor: '#F5EEFF',
+      };
+    }
+  },
 });
 
 transactionSDK(proxiedWalletFeature, {
