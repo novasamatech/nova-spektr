@@ -13,7 +13,7 @@ import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
+import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { unlockConfirmModel } from '../model/unlockConfirm';
 
 type Props = {
