@@ -12,6 +12,7 @@ import { basketUtils } from '@/entities/basket';
 import { BalanceDiff } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
+import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { unlockConfirmModel } from '../model/unlockConfirm';
@@ -128,16 +129,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
             </div>
           </DetailRow>
         )}
-
-        <DetailRow
-          label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee', { count: 1 })}</FootnoteText>}
-          className="text-text-primary"
-        >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={fee} asset={nativeAsset} />
-            <AssetFiatBalance asset={nativeAsset} amount={fee} />
-          </div>
-        </DetailRow>
+        <FeeWithLabel fee={fee.toString()} asset={nativeAsset} />
       </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">
