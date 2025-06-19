@@ -10,8 +10,7 @@ import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@/features/operations/OperationSubmit';
-import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type UnlockConfirm, unlockConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type UnlockFormData } from '../lib/types';
 
