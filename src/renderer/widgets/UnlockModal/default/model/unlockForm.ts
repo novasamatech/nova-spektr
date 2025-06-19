@@ -13,9 +13,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { networkSelectorModel } from '@/features/governance';
-import { locksModel } from '@/features/governance/model/locks';
-import { unlockModel } from '@/features/governance/model/unlock/unlock';
+import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
 
 type FormParams = {
   initiator: AnyAccount | null;
