@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -25,10 +26,10 @@ export const RevokeDelegation = () => {
   const signatories = useUnit(revokeDelegationModel.$signatories);
   const network = useUnit(revokeDelegationModel.$network);
 
-  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.output.flowFinished);
+  const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), revokeDelegationModel.flowFinished);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     isStep(step, Step.BASKET),
-    revokeDelegationModel.output.flowFinished,
+    revokeDelegationModel.flowFinished,
   );
 
   const shouldPickSignatory = nullable(signatory) && signatories.length > 0;
@@ -70,78 +71,70 @@ export const RevokeDelegation = () => {
     );
   }
 
-  if (transactions === undefined) {
+  if (nullable(transactions)) {
     return null;
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="overflow-y-auto flex-1"
-      panelClass="max-h-[736px] w-fit flex flex-col"
-      isOpen={isModalOpen}
-      title={<OperationTitle title={t('governance.revokeDelegation.title')} chainId={walletData.chain!.chainId} />}
-      onClose={closeModal}
-    >
-      {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
-        <Confirmation
-          config={{ withFormatAmount: false }}
-          hideSignButton={shouldPickSignatory}
-          secondaryActionButton={
-            !shouldPickSignatory &&
-            nonNullable(initiatorWallet) &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => revokeDelegationModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-
-      {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
-        <ConfirmSlider
-          count={transactions.length}
-          footer={
-            <div className="flex gap-2">
-              {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
-                <Button pallet="secondary" onClick={() => revokeDelegationModel.events.txSaved()}>
+    <Modal isOpen={isModalOpen} size="fit" onToggle={closeModal}>
+      <Modal.Title close>
+        <OperationTitle title={t('governance.revokeDelegation.title')} chainId={walletData.chain!.chainId} />
+      </Modal.Title>
+      <Modal.Content>
+        {isStep(step, Step.CONFIRM) && transactions.length === 1 && (
+          <Confirmation
+            config={{ withFormatAmount: false }}
+            hideSignButton={shouldPickSignatory}
+            secondaryActionButton={
+              !shouldPickSignatory &&
+              nonNullable(initiatorWallet) &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
                   {t('operation.addToBasket')}
                 </Button>
-              )}
+              )
+            }
+            onGoBack={() => revokeDelegationModel.stepChanged(Step.NONE)}
+          />
+        )}
 
-              <SignButton
-                isDefault
-                type={walletData.wallet?.type}
-                onClick={revokeDelegationModel.events.txsConfirmed}
-              />
-            </div>
-          }
-        >
-          {transactions?.map((t, index) => (
-            <ConfirmSlider.Item key={index}>
-              <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
-            </ConfirmSlider.Item>
-          ))}
-        </ConfirmSlider>
-      )}
+        {isStep(step, Step.CONFIRM) && transactions.length > 1 && (
+          <ConfirmSlider
+            count={transactions.length}
+            footer={
+              <div className="flex gap-2">
+                {initiatorWallet && basketUtils.isBasketAvailable(initiatorWallet) && (
+                  <Button pallet="secondary" onClick={() => revokeDelegationModel.txSaved()}>
+                    {t('operation.addToBasket')}
+                  </Button>
+                )}
 
-      {isStep(step, Step.SIGN) && (
-        <OperationSign onGoBack={() => revokeDelegationModel.events.stepChanged(Step.CONFIRM)} />
-      )}
+                <SignButton isDefault type={walletData.wallet?.type} onClick={revokeDelegationModel.txsConfirmed} />
+              </div>
+            }
+          >
+            {transactions?.map((t, index) => (
+              <ConfirmSlider.Item key={index}>
+                <Confirmation id={index} hideSignButton config={{ withFormatAmount: false }} />
+              </ConfirmSlider.Item>
+            ))}
+          </ConfirmSlider>
+        )}
 
-      <SignatorySelectModal
-        isOpen={isSelectSignatoryOpen}
-        accounts={signatories}
-        chain={network.chain}
-        nativeAsset={network.asset}
-        onClose={handleSelectSignatoryClose}
-        onSelect={(a) => {
-          revokeDelegationModel.events.selectSignatory(a);
-          setIsSelectSignatoryOpen(false);
-        }}
-      />
-    </BaseModal>
+        {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => revokeDelegationModel.stepChanged(Step.CONFIRM)} />}
+
+        <SignatorySelectModal
+          isOpen={isSelectSignatoryOpen}
+          accounts={signatories}
+          chain={network.chain}
+          nativeAsset={network.asset}
+          onClose={handleSelectSignatoryClose}
+          onSelect={(a) => {
+            revokeDelegationModel.selectSignatory(a);
+            setIsSelectSignatoryOpen(false);
+          }}
+        />
+      </Modal.Content>
+    </Modal>
   );
 };

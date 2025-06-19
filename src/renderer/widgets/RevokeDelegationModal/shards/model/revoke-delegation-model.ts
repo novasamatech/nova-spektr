@@ -24,6 +24,7 @@ import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/fe
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { revokeDelegationConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
+import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 import { type FeeData, type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
@@ -41,10 +42,10 @@ const $walletData = combine({
   chain: networkSelectorModel.$governanceChain,
 });
 
+const $txWrappers = createStore<TxWrapper[]>([]);
 const $revokeDelegationData = createStore<RevokeDelegationData[]>([]);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 
-const $txWrappers = createStore<TxWrapper[]>([]);
 const $coreTxs = createStore<Transaction[]>([]);
 
 type FeeParams = {
@@ -69,29 +70,8 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : undefined;
+    return walletData?.chain ? apis[walletData.chain.chainId] : null;
   },
-  { skipVoid: false },
-);
-
-const $transactions = combine(
-  {
-    api: $api,
-    coreTxs: $coreTxs,
-    txWrappers: $txWrappers,
-  },
-  ({ api, coreTxs, txWrappers }) => {
-    if (!api) return undefined;
-
-    return coreTxs.map((tx) =>
-      transactionService.getWrappedTransaction({
-        api,
-        transaction: tx,
-        txWrappers,
-      }),
-    );
-  },
-  { skipVoid: false },
 );
 
 // Signatory
@@ -126,6 +106,44 @@ sample({
   target: $signatory,
 });
 
+sample({
+  clock: [flowStarted, $signatory.updates],
+  source: {
+    walletData: $walletData,
+    signatory: $signatory,
+    wallets: walletModel.$wallets,
+  },
+  filter: ({ walletData }) => !!walletData.wallet,
+  fn: ({ walletData, wallets, signatory }) => {
+    return transactionService.getTxWrappers({
+      wallet: walletData.wallet!,
+      wallets,
+      account: walletData.wallet!.accounts[0],
+      signatories: signatory ? [signatory] : [],
+    });
+  },
+  target: $txWrappers,
+});
+
+const $transactions = combine(
+  {
+    api: $api,
+    coreTxs: $coreTxs,
+    txWrappers: $txWrappers,
+  },
+  ({ api, coreTxs, txWrappers }) => {
+    if (!api) return null;
+
+    return coreTxs.map((tx) =>
+      transactionService.getWrappedTransaction({
+        api,
+        transaction: tx,
+        txWrappers,
+      }),
+    );
+  },
+);
+
 // Transaction & Form
 
 sample({
@@ -158,25 +176,6 @@ sample({
     return data.map((d) => ({ ...d, signatory }));
   },
   target: $revokeDelegationData,
-});
-
-sample({
-  clock: [flowStarted, $signatory.updates],
-  source: {
-    walletData: $walletData,
-    signatory: $signatory,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ walletData }) => !!walletData.wallet,
-  fn: ({ walletData, wallets, signatory }) => {
-    return transactionService.getTxWrappers({
-      wallet: walletData.wallet!,
-      wallets,
-      account: walletData.wallet!.accounts[0],
-      signatories: signatory ? [signatory] : [],
-    });
-  },
-  target: $txWrappers,
 });
 
 sample({
@@ -274,7 +273,6 @@ sample({
     return revokeDelegationData.length > 0 && !!walletData.wallet && !!walletData.chain;
   },
   fn: ({ feeData, balances, walletData, txWrappers, revokeDelegationData, delegations, coreTxs }) => {
-    const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
 
     return {
@@ -297,25 +295,31 @@ sample({
             ),
           ),
 
-          ...revokeData!,
+          ...revokeData,
           ...feeData,
-          ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
-          ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [revokeData.account!] }),
+          initiator: revokeData.account,
+          signatory: revokeData.account,
+          delegate: revokeData.target,
           locks: revokeData.locks[revokeData.account!.accountId],
+          route: txWrappers.map((wrapper) =>
+            wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
+          ),
           coreTx: coreTxs[0],
-        };
+          tx: coreTxs[0],
+          multisigTx: null,
+        } satisfies RevokeDelegationConfirm;
       }),
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: [confirmModel.output.formSubmitted, txsConfirmed],
+  clock: [confirmModel.startSigning, txsConfirmed],
   source: {
     revokeDelegationData: $revokeDelegationData,
     walletData: $walletData,
@@ -448,14 +452,10 @@ export const revokeDelegationModel = {
   $signatory,
   $network: networkSelectorModel.$network,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    txSaved,
-    txsConfirmed,
-    selectSignatory,
-  },
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  txSaved,
+  txsConfirmed,
+  selectSignatory,
+  flowFinished,
 };

@@ -27,7 +27,22 @@ import {
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
-import * as Operations from '@/widgets/Staking';
+import {
+  bondExtraModel,
+  bondExtraShardsModel,
+  bondNominateModel,
+  bondNominateModelShards,
+  nominateModel,
+  nominateShardsModel,
+  payeeModel,
+  payeeModelShards,
+  restakeModel,
+  restakeModelShards,
+  unstakeModel,
+  unstakeModelShards,
+  withdrawModel,
+  withdrawShardsModel,
+} from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
 
 import { AboutStaking } from './AboutStaking';
@@ -39,31 +54,39 @@ import { NominatorsList } from './NominatorsList';
 
 // Lazy-loaded components
 const LazyUnstake = lazy(() => import('@/widgets/Staking').then(({ Unstake }) => ({ default: Unstake })));
-
 const LazyUnstakeShards = lazy(() =>
   import('@/widgets/Staking').then(({ UnstakeShards }) => ({ default: UnstakeShards })),
 );
-const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 
+const LazyBondExtra = lazy(() => import('@/widgets/Staking').then(({ BondExtra }) => ({ default: BondExtra })));
 const LazyBondExtraShards = lazy(() =>
   import('@/widgets/Staking').then(({ BondExtraShards }) => ({ default: BondExtraShards })),
 );
 
 const LazyNominate = lazy(() => import('@/widgets/Staking').then(({ Nominate }) => ({ default: Nominate })));
-
 const LazyNominateShards = lazy(() =>
   import('@/widgets/Staking').then(({ NominateShards }) => ({ default: NominateShards })),
 );
 
+const LazyWithdraw = lazy(() => import('@/widgets/Staking').then(({ Withdraw }) => ({ default: Withdraw })));
 const LazyWithdrawShards = lazy(() =>
   import('@/widgets/Staking').then(({ WithdrawShards }) => ({ default: WithdrawShards })),
 );
 
-const LazyWithdraw = lazy(() => import('@/widgets/Staking').then(({ Withdraw }) => ({ default: Withdraw })));
-
 const LazyPayee = lazy(() => import('@/widgets/Staking').then(({ Payee }) => ({ default: Payee })));
-
 const LazyPayeeShards = lazy(() => import('@/widgets/Staking').then(({ PayeeShards }) => ({ default: PayeeShards })));
+
+const LazyBondNominate = lazy(() =>
+  import('@/widgets/Staking').then(({ BondNominate }) => ({ default: BondNominate })),
+);
+const LazyBondNominateShards = lazy(() =>
+  import('@/widgets/Staking').then(({ BondNominateShards }) => ({ default: BondNominateShards })),
+);
+
+const LazyRestake = lazy(() => import('@/widgets/Staking').then(({ Restake }) => ({ default: Restake })));
+const LazyRestakeShards = lazy(() =>
+  import('@/widgets/Staking').then(({ RestakeShards }) => ({ default: RestakeShards })),
+);
 
 export const Staking = () => {
   const { t } = useI18n();
@@ -289,7 +312,6 @@ export const Staking = () => {
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
-  const isMultipleStakes = totalStakes.length > 1;
 
   const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
     if (!activeChain || !activeWallet) return;
@@ -307,32 +329,25 @@ export const Staking = () => {
     });
 
     const model = {
-      [StakeOperations.UNSTAKE]:
-        selectedNominators.length > 1
-          ? Operations.unstakeModelShards.events.flowStarted
-          : Operations.unstakeModel.events.flowStarted,
+      [StakeOperations.UNSTAKE]: isMultipleAccountsSelected
+        ? unstakeModelShards.events.flowStarted
+        : unstakeModel.events.flowStarted,
       [StakeOperations.BOND_NOMINATE]: isMultipleAccountsSelected
-        ? Operations.bondNominateModelShards.flowStarted
-        : Operations.bondNominateModel.flowStarted,
-      [StakeOperations.BOND_EXTRA]:
-        selectedNominators.length > 1
-          ? Operations.bondExtraShardsModel.events.flowStarted
-          : Operations.bondExtraModel.events.flowStarted,
-      [StakeOperations.NOMINATE]:
-        selectedNominators.length > 1
-          ? Operations.nominateShardsModel.events.flowStarted
-          : Operations.nominateModel.events.flowStarted,
-      [StakeOperations.RESTAKE]: isMultipleStakes
-        ? Operations.restakeModelShards.flowStarted
-        : Operations.restakeModel.flowStarted,
-      [StakeOperations.WITHDRAW]:
-        totalStakes.length > 1
-          ? Operations.withdrawShardsModel.events.flowStarted
-          : Operations.withdrawModel.events.flowStarted,
-      [StakeOperations.SET_PAYEE]:
-        selectedNominators.length > 1
-          ? Operations.payeeModelShards.events.flowStarted
-          : Operations.payeeModel.events.flowStarted,
+        ? bondNominateModelShards.flowStarted
+        : bondNominateModel.flowStarted,
+      [StakeOperations.BOND_EXTRA]: isMultipleAccountsSelected
+        ? bondExtraShardsModel.events.flowStarted
+        : bondExtraModel.events.flowStarted,
+      [StakeOperations.NOMINATE]: isMultipleAccountsSelected
+        ? nominateShardsModel.events.flowStarted
+        : nominateModel.events.flowStarted,
+      [StakeOperations.RESTAKE]: isMultipleAccountsSelected ? restakeModelShards.flowStarted : restakeModel.flowStarted,
+      [StakeOperations.WITHDRAW]: isMultipleAccountsSelected
+        ? withdrawShardsModel.events.flowStarted
+        : withdrawModel.events.flowStarted,
+      [StakeOperations.SET_PAYEE]: isMultipleAccountsSelected
+        ? payeeModelShards.events.flowStarted
+        : payeeModel.events.flowStarted,
     };
 
     model[operation]({
@@ -430,14 +445,15 @@ export const Staking = () => {
         onClose={() => setShowWalletDetails(false)}
       />
 
-      {isMultipleAccountsSelected ? <Operations.BondNominateShards /> : <Operations.BondNominate />}
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
-      {totalStakes.length > 1 ? <Operations.WithdrawShards /> : <Operations.Withdraw />}
-      {isMultipleStakes ? <Operations.RestakeShards /> : <Operations.Restake />}
-      <Suspense fallback={null}>{isMultipleStakes ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
-      <Suspense fallback={null}>{selectedNominators.length > 1 ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
+      <Suspense fallback={null}>
+        {isMultipleAccountsSelected ? <LazyBondNominateShards /> : <LazyBondNominate />}
+      </Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyBondExtraShards /> : <LazyBondExtra />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyUnstakeShards /> : <LazyUnstake />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyNominateShards /> : <LazyNominate />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyRestakeShards /> : <LazyRestake />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyWithdrawShards /> : <LazyWithdraw />}</Suspense>
+      <Suspense fallback={null}>{isMultipleAccountsSelected ? <LazyPayeeShards /> : <LazyPayee />}</Suspense>
     </>
   );
 };
