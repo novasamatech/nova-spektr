@@ -31,18 +31,6 @@ const mapChainVote = (
   };
 };
 
-const requestFromChain = async (
-  api: ApiPromise,
-  pallet: CollectivePalletsType,
-  referendums: ReferendumId[],
-  accounts: AccountId[],
-) => {
-  const keys = referendums.map(r => accounts.map(a => [r, a] as const)).flat();
-  const votes = await collectivePallet.storage.voting(pallet, api, keys);
-  const chainId = api.genesisHash.toHex();
-  return votes.map(vote => mapChainVote(pallet, chainId, vote)).filter(nonNullable);
-};
-
 const GET_VOTES_QUERY = gql`
   query VotingHistory($referendums: [String!]) {
     votes(filter: { referendumId: { in: $referendums } }) {
@@ -121,7 +109,10 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
 
     if (api) {
       try {
-        return await requestFromChain(api, palletType, referendums, accounts);
+        const chainId = api.genesisHash.toHex();
+        const keys = referendums.flatMap(r => accounts.map(a => [r, a] as const));
+        const votes = await collectivePallet.storage.voting(palletType, api, keys);
+        return votes.map(vote => mapChainVote(palletType, chainId, vote)).filter(nonNullable);
       } catch (e) {
         /* skip */
         console.error(e);
@@ -134,6 +125,24 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
     if (!sourceUrl) return [];
 
     return requestFromSubQuery(sourceUrl, palletType, chain.chainId, referendums);
+  },
+});
+
+type RequestAllVotesParams = {
+  palletType: CollectivePalletsType;
+  chain: Chain;
+  api: ApiPromise;
+};
+
+export const requestAllResource = createRemoteResource<RequestAllVotesParams, Vote[]>({
+  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+    ttl: 60 * 1000,
+  },
+  async fn({ palletType, api, chain }) {
+    const votes = await collectivePallet.storage.voting(palletType, api);
+    return votes.map(vote => mapChainVote(palletType, chain.chainId, vote)).filter(nonNullable);
   },
 });
 

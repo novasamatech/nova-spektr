@@ -108,7 +108,7 @@ export const storage = {
   voting(
     type: PalletType,
     api: ApiPromise,
-    keys: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
+    keys?: (readonly [referendum: ReferendumId, account: AccountId])[] | ReferendumId,
   ) {
     const votingResponseSchema = pjsSchema.vec(pjsSchema.optional(collectiveVoteRecord));
 
@@ -126,7 +126,10 @@ export const storage = {
       );
 
       return substrateRpcPool
-        .call(() => getQuery(type, api, 'voting').entries(keys))
+        .call(() => {
+          const query = getQuery(type, api, 'voting');
+          return keys ? query.entries(keys) : query.entries();
+        })
         .then(votingWithKeyResponseSchema.parse);
     }
 
