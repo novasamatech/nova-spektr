@@ -67,19 +67,27 @@ const formSubmitted = sample({
   source: {
     coreTx: unlockFormAggregate.$coreTx,
     tx: unlockFormAggregate.$tx,
+    route: unlockFormAggregate.$route,
+    multisigTx: unlockFormAggregate.$multisigTx,
   },
   fn: (source, formData) => ({ source, formData }),
-}).filterMap(({ source: { coreTx, tx }, formData }) => {
-  if (nonNullable(coreTx) && nonNullable(tx) && nonNullable(formData.initiator) && nonNullable(formData.signatory)) {
+}).filterMap(({ source: { coreTx, tx, route, multisigTx }, formData }) => {
+  if (
+    nonNullable(coreTx) &&
+    nonNullable(tx) &&
+    nonNullable(route) &&
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory)
+  ) {
     return [
       {
         ...formData,
         initiator: formData.initiator,
         signatory: formData.signatory,
-        coreTx: coreTx,
-        route: [formData.initiator],
-        tx: tx,
-        multisigTx: null,
+        coreTx,
+        route,
+        tx,
+        multisigTx,
       } satisfies UnlockConfirm,
     ];
   }
