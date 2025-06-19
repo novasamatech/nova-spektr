@@ -66,7 +66,7 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     if (evidence?.evidence) {
       const response = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.evidence.value));
 
-      if (response.status <= 200 || response.status >= 300) {
+      if (response.status < 200 || response.status >= 300) {
         return null;
       }
       const content = await response.text();
