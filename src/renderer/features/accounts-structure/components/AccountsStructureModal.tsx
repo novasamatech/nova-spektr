@@ -6,7 +6,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Modal, Select } from '@/shared/ui-kit';
 import { type AccountNode, type AnyAccount, accountService, accounts } from '@/domains/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
@@ -25,6 +25,8 @@ type Props = {
 export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
+  const [pathType, setPathType] = useState<'straight' | 'bezier' | 'smoothStep'>('smoothStep');
+  const [edgeType, setEdgeType] = useState<'solid' | 'dashed'>('solid');
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
@@ -70,11 +72,28 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
             <div className="w-[200px]">
               <AccountSelector walletAccounts={walletAccounts} />
             </div>
+            <div className="w-[200px]">
+              <Select
+                value={pathType}
+                placeholder="Path type"
+                onChange={(v) => setPathType(v as 'straight' | 'bezier' | 'smoothStep')}
+              >
+                <Select.Item value="straight">{t('straight')}</Select.Item>
+                <Select.Item value="bezier">{t('bezier')}</Select.Item>
+                <Select.Item value="smoothStep">{t('smoothStep')}</Select.Item>
+              </Select>
+            </div>
+            <div className="w-[200px]">
+              <Select value={edgeType} placeholder="Edge type" onChange={(v) => setEdgeType(v as 'solid' | 'dashed')}>
+                <Select.Item value="solid">{t('solid')}</Select.Item>
+                <Select.Item value="dashed">{t('dashed')}</Select.Item>
+              </Select>
+            </div>
           </div>
 
           {graph && isOpen && selectedAccount && (
             <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
-              {<AccountsStructure account={selectedAccount} graph={graph} />}
+              {<AccountsStructure account={selectedAccount} graph={graph} pathType={pathType} edgeType={edgeType} />}
             </Suspense>
           )}
         </div>
