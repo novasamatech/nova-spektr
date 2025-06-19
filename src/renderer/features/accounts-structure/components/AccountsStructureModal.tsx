@@ -26,6 +26,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [pathType, setPathType] = useState<'straight' | 'bezier' | 'smoothStep'>('smoothStep');
+  const [edgeType, setEdgeType] = useState<'solid' | 'dashed'>('solid');
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
@@ -82,11 +83,17 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
                 <Select.Item value="smoothStep">{t('smoothStep')}</Select.Item>
               </Select>
             </div>
+            <div className="w-[200px]">
+              <Select value={edgeType} placeholder="Edge type" onChange={(v) => setEdgeType(v as 'solid' | 'dashed')}>
+                <Select.Item value="solid">{t('solid')}</Select.Item>
+                <Select.Item value="dashed">{t('dashed')}</Select.Item>
+              </Select>
+            </div>
           </div>
 
           {graph && isOpen && selectedAccount && (
             <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
-              {<AccountsStructure account={selectedAccount} graph={graph} pathType={pathType} />}
+              {<AccountsStructure account={selectedAccount} graph={graph} pathType={pathType} edgeType={edgeType} />}
             </Suspense>
           )}
         </div>

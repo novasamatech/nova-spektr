@@ -33,6 +33,7 @@ interface AccountsStructureProps {
   account: AnyAccount;
   graph: Map<AnyAccount, AccountNode>;
   pathType: 'straight' | 'bezier' | 'smoothStep';
+  edgeType: 'solid' | 'dashed';
 }
 
 type AccountNodeData = {
@@ -71,6 +72,7 @@ function createGraphElements(
   graph: Map<AnyAccount, AccountNode>,
   selectedAccountId: string,
   pathType: 'straight' | 'bezier' | 'bezierSimple' | 'smoothStep',
+  edgeType: 'solid' | 'dashed',
 ) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
@@ -107,6 +109,7 @@ function createGraphElements(
         data: {
           label,
           pathType,
+          edgeType,
         },
       });
       processNode(child);
@@ -121,13 +124,13 @@ function createGraphElements(
   return { nodes, edges };
 }
 
-const AccountsStructureInner = ({ account, graph, pathType }: AccountsStructureProps) => {
+const AccountsStructureInner = ({ account, graph, pathType, edgeType }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
   useEffect(() => {
-    const { nodes, edges } = createGraphElements(graph, account.id, pathType);
+    const { nodes, edges } = createGraphElements(graph, account.id, pathType, edgeType);
 
     elk
       .layout({
@@ -161,7 +164,7 @@ const AccountsStructureInner = ({ account, graph, pathType }: AccountsStructureP
 
         fitView();
       });
-  }, [graph, account.id, fitView, pathType]);
+  }, [graph, account.id, fitView, pathType, edgeType]);
 
   return (
     <ReactFlow

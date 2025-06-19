@@ -25,8 +25,6 @@ export const CustomEdge = ({
   const pathType = data?.pathType as string;
   let edgePath, labelX, labelY;
 
-  console.log({ pathType });
-
   switch (pathType) {
     case 'straight':
       [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
@@ -54,6 +52,7 @@ export const CustomEdge = ({
   }
 
   const label = data?.label as string | undefined;
+  const edgeType = data?.edgeType as 'solid' | 'dashed' | undefined;
 
   return (
     <>
@@ -67,6 +66,7 @@ export const CustomEdge = ({
           ...style,
           stroke: '#363643',
           strokeWidth: 2,
+          strokeDasharray: edgeType === 'dashed' ? '6 6' : undefined,
         }}
       />
 
