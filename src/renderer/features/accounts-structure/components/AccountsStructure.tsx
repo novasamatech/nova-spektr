@@ -25,12 +25,14 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  custom: CustomEdge,
+  accountEdge: CustomEdge,
 };
 
 interface AccountsStructureProps {
   account: AnyAccount;
   graph: Map<AnyAccount, AccountNode>;
+  pathType: 'straight' | 'bezier' | 'smoothStep';
+  edgeType: 'solid' | 'dashed';
 }
 
 type AccountNodeData = {
@@ -43,7 +45,7 @@ const elk = new ELK({
     'elk.algorithm': 'layered',
     'elk.direction': 'RIGHT',
     'elk.layered.spacing.nodeNodeBetweenLayers': '100',
-    'elk.spacing.nodeNode': '25',
+    'elk.spacing.nodeNode': '50',
     'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
     'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
     'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
@@ -57,15 +59,20 @@ const elk = new ELK({
     'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
     'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
     'org.eclipse.elk.layered.mergeHierarchyEdges': 'false',
-    'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
-    'elk.layered.spacing.edgeNode': '25',
-    'elk.layered.spacing.edgeEdge': '25',
+    'elk.layered.spacing.edgeEdgeBetweenLayers': '50',
+    'elk.layered.spacing.edgeNode': '50',
+    'elk.layered.spacing.edgeEdge': '50',
     'elk.layered.spacing.baseValue': '50',
     'elk.layered.spacing.individual': 'true',
   },
 });
 
-function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccountId: string) {
+function createGraphElements(
+  graph: Map<AnyAccount, AccountNode>,
+  selectedAccountId: string,
+  pathType: 'straight' | 'bezier' | 'bezierSimple' | 'smoothStep',
+  edgeType: 'solid' | 'dashed',
+) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
   const processedNodes = new Set<string>();
@@ -91,6 +98,12 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
         id: `e${child.account.id}-${node.account.id}`,
         source: child.account.id,
         target: node.account.id,
+        data: {
+          pathType,
+          edgeType,
+          source: child.account,
+          target: node.account,
+        },
       });
       processNode(child);
     }
@@ -104,13 +117,13 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   return { nodes, edges };
 }
 
-const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
+const AccountsStructureInner = ({ account, graph, pathType, edgeType }: AccountsStructureProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
   useEffect(() => {
-    const { nodes, edges } = createGraphElements(graph, account.id);
+    const { nodes, edges } = createGraphElements(graph, account.id, pathType, edgeType);
 
     elk
       .layout({
@@ -127,34 +140,24 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         })),
       })
       .then((layoutGraph) => {
-        const layoutMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
+        const layoutNodesMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
         const layoutNodes = nodes.map((node) => {
-          const layoutNode = layoutMap.get(node.id);
-          return { ...node, position: { x: layoutNode?.x ?? node.position.x, y: layoutNode?.y ?? node.position.x } };
+          const layoutNode = layoutNodesMap.get(node.id);
+          return {
+            ...node,
+            position: {
+              x: layoutNode?.x ?? node.position.x,
+              y: layoutNode?.y ?? node.position.y,
+            },
+          };
         });
 
         setNodes(layoutNodes);
         setEdges(edges);
 
-        const selectedNode = graph.get(account);
-        if (selectedNode) {
-          const parentNodes = Array.from(graph.values()).filter((n) =>
-            n.children.some((c) => c.account.id === account.id),
-          );
-
-          fitView({
-            nodes: [
-              selectedNode.account,
-              ...selectedNode.children.map((n) => n.account),
-              ...parentNodes.map((n) => n.account),
-            ],
-            padding: 0.5,
-            maxZoom: 0.75,
-            minZoom: 0.75,
-          });
-        }
+        fitView({ maxZoom: 1, padding: { left: '100px' } });
       });
-  }, [graph, account.id, fitView]);
+  }, [graph, account.id, fitView, pathType, edgeType]);
 
   return (
     <ReactFlow
@@ -168,7 +171,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       elementsSelectable={false}
       proOptions={{ hideAttribution: true }}
       defaultEdgeOptions={{
-        type: 'custom',
+        type: 'accountEdge',
         animated: false,
         markerEnd: {
           type: MarkerType.Arrow,
