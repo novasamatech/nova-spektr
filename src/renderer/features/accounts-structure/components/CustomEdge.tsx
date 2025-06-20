@@ -7,10 +7,12 @@ import {
   getSmoothStepPath,
   getStraightPath,
 } from '@xyflow/react';
+import { useUnit } from 'effector-react';
 
 import { useTransformer } from '@/shared/di';
 import { type AnyAccount } from '@/domains/network';
 import { accountConnectionTransformer } from '@/sdk/account';
+import { accountsStructureModel } from '../model/accountsStructureModel';
 
 export const CustomEdge = ({
   id,
@@ -26,7 +28,9 @@ export const CustomEdge = ({
   data,
   interactionWidth,
 }: EdgeProps) => {
-  const pathType = data?.pathType as string;
+  const pathType = useUnit(accountsStructureModel.$pathType);
+  const edgeType = useUnit(accountsStructureModel.$edgeType);
+
   let edgePath, labelX, labelY;
 
   switch (pathType) {
@@ -61,7 +65,6 @@ export const CustomEdge = ({
       source: data.source as AnyAccount,
       target: data.target as AnyAccount,
     });
-  const edgeType = data?.edgeType as 'solid' | 'dashed' | undefined;
 
   return (
     <>
