@@ -101,7 +101,6 @@ const $remarkTx = combine(
       type: TransactionType.REMARK_WITH_EVENT,
       args: {
         remark: JSON.stringify({
-          text: 'Multisig created with Nova Spektr',
           signatories: Array.from(signatories.values()).map(s => toAccountId(s.address)),
           threshold: form.threshold,
         }),
@@ -122,7 +121,7 @@ const $transaction = combine(
     features: $features,
   },
   ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId, features }) => {
-    if (!chain || !remarkTx || !signer) return null;
+    if (!chain || !remarkTx || !signer || !multisigAccountId) return null;
 
     const signatoriesWrapped = Array.from(signatories.values()).map(s => ({
       accountId: toAccountId(s.address),
