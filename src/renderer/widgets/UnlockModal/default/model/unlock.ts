@@ -2,20 +2,18 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
-import { type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { type UnlockFormData } from '@/features/governance/types/structs';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@/features/operations/OperationSubmit';
-import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type UnlockConfirm, unlockConfirmModel } from '@/features/operations/OperationsConfirm';
+import { type UnlockFormData } from '../lib/types';
 
-import { unlockConfirmAggregate } from './unlockConfirm';
 import { unlockFormAggregate } from './unlockForm';
 
 const flowStarted = createEvent();
@@ -26,9 +24,6 @@ const unlockFormStarted = createEvent();
 const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
-const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
@@ -36,8 +31,6 @@ const $step = restore<Step>(stepChanged, Step.NONE);
 const $pendingSchedule = combine(unlockModel.$claimSchedule, (chunks) =>
   (chunks || []).filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
 );
-
-const $isMultisig = $multisigTxs.map((txs) => !!txs?.length);
 
 sample({
   clock: flowStarted,
@@ -61,103 +54,132 @@ sample({
   source: unlockModel.$claimSchedule,
   filter: (claims) => nonNullable(claims),
   fn: (claims) => claims!.filter((claim) => claim.type === UnlockChunkType.CLAIMABLE) as ClaimChunkWithAccountId[],
-  target: unlockFormAggregate.events.formInitiated,
+  target: unlockFormAggregate.formInitiated,
 });
 
 sample({
-  clock: unlockFormAggregate.output.formSubmitted,
-  fn: ({ transactions, formData }) => {
-    const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
-    const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
-    const coreTxs = transactions.map((tx) => ({
-      ...tx.coreTx,
-      args: { ...tx.coreTx.args, assetId: formData.asset.assetId },
-    }));
+  clock: unlockFormAggregate.formSubmitted,
+  target: $unlockData,
+});
 
+const formSubmitted = sample({
+  clock: unlockFormAggregate.formSubmitted,
+  source: {
+    coreTx: unlockFormAggregate.$coreTx,
+    tx: unlockFormAggregate.$tx,
+    route: unlockFormAggregate.$route,
+    multisigTx: unlockFormAggregate.$multisigTx,
+  },
+  fn: (source, formData) => ({ source, formData }),
+}).filterMap(({ source: { coreTx, tx, route, multisigTx }, formData }) => {
+  if (
+    nonNullable(coreTx) &&
+    nonNullable(tx) &&
+    nonNullable(route) &&
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory)
+  ) {
+    return [
+      {
+        ...formData,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        coreTx,
+        route,
+        tx,
+        multisigTx,
+      } satisfies UnlockConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
     return {
-      wrappedTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
-      coreTxs,
-      unlockData: formData,
+      event,
+      step: Step.CONFIRM,
     };
   },
   target: spread({
-    wrappedTxs: $wrappedTxs,
-    multisigTxs: $multisigTxs,
-    coreTxs: $coreTxs,
-    unlockData: $unlockData,
-  }),
-});
-
-sample({
-  clock: unlockFormAggregate.output.formSubmitted,
-  fn: ({ transactions, formData }) => ({
-    event: [{ ...formData, coreTx: transactions[0].coreTx }],
-    step: Step.CONFIRM,
-  }),
-  target: spread({
-    event: unlockConfirmAggregate.events.formInitiated,
+    event: unlockConfirmModel.init,
     step: stepChanged,
   }),
 });
 
-sample({
-  clock: unlockConfirmAggregate.output.formSubmitted,
+const startSigning = sample({
+  clock: unlockConfirmModel.startSigning,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    wrappedTxs: $wrappedTxs,
+    tx: unlockFormAggregate.$tx,
   },
-  filter: ({ unlockData, chain, wrappedTxs }) => {
-    return Boolean(unlockData) && Boolean(chain) && Boolean(wrappedTxs);
+}).filterMap(({ unlockData, chain, tx }) => {
+  if (nonNullable(unlockData) && nonNullable(chain) && nonNullable(tx)) {
+    return {
+      signingPayloads: [
+        {
+          chain: chain!,
+          account: unlockData!.initiator!,
+          signatory: unlockData!.signatory,
+          transaction: tx!,
+        },
+      ],
+    };
+  }
+});
+
+sample({
+  clock: startSigning,
+  fn: (event) => {
+    return {
+      event,
+      step: Step.SIGN,
+    };
   },
-  fn: ({ unlockData, chain, wrappedTxs }) => ({
-    event: {
-      signingPayloads: wrappedTxs!.map((tx, index) => ({
-        chain: chain!,
-        account: unlockData!.shards[index],
-        signatory: unlockData!.signatory,
-        transaction: tx!,
-      })),
-    },
-    step: Step.SIGN,
-  }),
   target: spread({
     event: signModel.events.formInitiated,
     step: stepChanged,
   }),
 });
 
-sample({
+const signFormSubmitted = sample({
   clock: signModel.output.formSubmitted,
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    multisigTxs: $multisigTxs,
-    coreTxs: $coreTxs,
-    wrappedTxs: $wrappedTxs,
+    multisigTx: unlockFormAggregate.$multisigTx,
+    coreTx: unlockFormAggregate.$coreTx,
+    tx: unlockFormAggregate.$tx,
     step: $step,
   },
-  filter: (unlockData) => {
-    return (
-      isStep(unlockData.step, Step.SIGN) &&
-      !!unlockData.unlockData &&
-      !!unlockData.wrappedTxs &&
-      !!unlockData.coreTxs &&
-      !!unlockData.chain
-    );
-  },
-  fn: (unlockData, signParams) => {
+  fn: (source, signParams) => ({ source, signParams }),
+}).filterMap(({ source, signParams }) => {
+  if (
+    isStep(source.step, Step.SIGN) &&
+    nonNullable(source.unlockData?.initiator) &&
+    nonNullable(source.unlockData?.signatory) &&
+    nonNullable(source.tx) &&
+    nonNullable(source.coreTx) &&
+    nonNullable(source.chain)
+  ) {
     return {
-      event: {
-        ...signParams,
-        chain: unlockData.chain!,
-        account: unlockData.unlockData!.shards[0],
-        signatory: unlockData.unlockData!.signatory,
-        coreTxs: unlockData.coreTxs!,
-        wrappedTxs: unlockData.wrappedTxs!,
-        multisigTxs: unlockData.multisigTxs || [],
-      },
+      ...signParams,
+      chain: source.chain,
+      account: source.unlockData.initiator,
+      signatory: source.unlockData.signatory,
+      coreTxs: [source.coreTx],
+      wrappedTxs: [source.tx],
+      multisigTxs: source.multisigTx ? [source.multisigTx] : [],
+    };
+  }
+});
+
+sample({
+  clock: signFormSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.SUBMIT,
     };
   },
@@ -176,7 +198,7 @@ sample({
     step: $step,
   },
   filter: ({ unlockData, step, chain }, { step: submitStep }) =>
-    !!unlockData &&
+    nonNullable(unlockData) &&
     isStep(step, Step.SUBMIT) &&
     submitUtils.isSuccessStep(submitStep) &&
     chain?.chainId === unlockData.chain.chainId,
@@ -184,11 +206,7 @@ sample({
     return (chunks || []).filter((chunk) => {
       if (chunk.type !== UnlockChunkType.CLAIMABLE) return true;
 
-      return !unlockData!.shards.some((shard) => {
-        const accountId = shard.accountId || unlockData!.proxiedAccount?.accountId;
-
-        return accountId === chunk.accountId;
-      });
+      return unlockData?.initiator?.accountId !== chunk.accountId;
     });
   },
   target: [unlockModel.$claimSchedule, locksModel.events.subscribeLocks],
@@ -197,12 +215,12 @@ sample({
 sample({
   clock: flowFinished,
   fn: () => Step.NONE,
-  target: [stepChanged, unlockFormAggregate.events.formCleared],
+  target: [stepChanged, unlockFormAggregate.formCleared],
 });
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: $isMultisig,
+  source: unlockFormAggregate.$isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
@@ -221,18 +239,18 @@ sample({
   clock: txSaved,
   source: {
     unlockData: $unlockData,
-    coreTxs: $coreTxs,
+    coreTx: unlockFormAggregate.$coreTx,
+    route: unlockFormAggregate.$route,
   },
-  filter: ({ coreTxs }) => {
-    return !!coreTxs;
-  },
-  fn: ({ coreTxs }) =>
-    coreTxs!.map((coreTx) => ({
-      initiatorAccountId: coreTx.accountId,
-      coreTx,
-      route: [],
+  filter: ({ unlockData, coreTx }) => nonNullable(unlockData?.initiator) && nonNullable(coreTx),
+  fn: ({ unlockData, coreTx, route }) => [
+    {
+      initiatorAccountId: unlockData!.initiator!.accountId,
+      coreTx: coreTx!,
+      route,
       createdAt: Date.now(),
-    })),
+    },
+  ],
   target: basketOperations.addTransactions,
 });
 
@@ -248,14 +266,9 @@ export const unlockAggregate = {
   $isUnlockable: unlockModel.$isUnlockable,
   $pendingSchedule,
 
-  events: {
-    flowStarted,
-    stepChanged,
-    unlockFormStarted,
-    txSaved,
-  },
-
-  output: {
-    flowFinished,
-  },
+  flowStarted,
+  stepChanged,
+  unlockFormStarted,
+  txSaved,
+  flowFinished,
 };

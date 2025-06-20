@@ -22,7 +22,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
+import { type AccountWithClaim } from '../lib/types';
 
 type Accounts = {
   account: AccountWithClaim;
@@ -42,6 +42,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: FormParams & {
+    initiator: AnyAccount | null;
     signatory: AnyAccount | null;
     chain: Chain;
     asset: Asset;
@@ -513,6 +514,7 @@ sample({
       formData: {
         ...fee,
         ...rest,
+        initiator: realAccounts[0],
         shards: realAccounts,
         amount: formData.amount,
         chain: network!.chain,
@@ -521,7 +523,7 @@ sample({
 
         ...(isProxy && { proxiedAccount: shards[0] as ProxiedAccount }),
       },
-    };
+    } satisfies FormSubmitEvent;
   },
   target: formSubmitted,
 });
@@ -552,16 +554,11 @@ export const unlockFormAggregate = {
   $proxyBalance,
   $signatoryBalance,
 
-  events: {
-    formInitiated,
-    formCleared,
-    feeChanged,
-    totalFeeChanged,
-    multisigDepositChanged,
-    isFeeLoadingChanged,
-  },
-
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  formCleared,
+  feeChanged,
+  totalFeeChanged,
+  multisigDepositChanged,
+  isFeeLoadingChanged,
+  formSubmitted,
 };

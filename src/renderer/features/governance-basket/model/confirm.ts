@@ -20,20 +20,20 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
   type DelegateConfirm,
   type EditDelegationConfirm,
   type RemoveVoteConfirm,
+  type UnlockConfirm,
   type VoteConfirm,
   delegateConfirmModel,
   editDelegationConfirmModel,
   removeVoteConfirmModel,
   revokeDelegationConfirmModel,
+  unlockConfirmModel,
   voteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
 import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
-import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -67,16 +67,20 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
   return {
     chain,
     id: transaction.id,
-    shards: [account!],
     amount: coreTx.args.value,
     asset: chain.assets[0],
-    signatory: null,
+    initiator: account!,
+    signatory: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
     totalLock,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies UnlockFormData;
+  } satisfies UnlockConfirm;
 });
 
 const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
@@ -378,7 +382,7 @@ sample({
 sample({
   clock: prepareUnlockDataFx.doneData,
   fn: (data) => [data],
-  target: unlockConfirmAggregate.events.formInitiated,
+  target: unlockConfirmModel.init,
 });
 
 sample({

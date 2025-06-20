@@ -13,6 +13,7 @@ import {
   EditDelegationConfirmation,
   RemoveVoteConfirmation,
   RevokeDelegationConfirmation,
+  UnlockConfirmation,
   VoteConfirmation,
 } from '@/features/operations/OperationsConfirm';
 import {
@@ -20,7 +21,6 @@ import {
   removeVoteValidateModel,
   revokeDelegationValidateModel,
 } from '@/features/operations/OperationsValidation';
-import { UnlockConfirmation } from '@/widgets/UnlockModal';
 
 import { confirm } from './model/confirm';
 import { governanceBasketFeature } from './model/feature';
