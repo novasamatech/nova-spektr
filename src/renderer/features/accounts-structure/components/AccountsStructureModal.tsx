@@ -78,15 +78,15 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
                 placeholder="Path type"
                 onChange={(v) => setPathType(v as 'straight' | 'bezier' | 'smoothStep')}
               >
-                <Select.Item value="straight">{t('straight')}</Select.Item>
-                <Select.Item value="bezier">{t('bezier')}</Select.Item>
-                <Select.Item value="smoothStep">{t('smoothStep')}</Select.Item>
+                <Select.Item value="straight">{t('Straight Line')}</Select.Item>
+                <Select.Item value="bezier">{t('Bezier Curve')}</Select.Item>
+                <Select.Item value="smoothStep">{t('Smooth Step')}</Select.Item>
               </Select>
             </div>
             <div className="w-[200px]">
               <Select value={edgeType} placeholder="Edge type" onChange={(v) => setEdgeType(v as 'solid' | 'dashed')}>
-                <Select.Item value="solid">{t('solid')}</Select.Item>
-                <Select.Item value="dashed">{t('dashed')}</Select.Item>
+                <Select.Item value="solid">{t('Solid')}</Select.Item>
+                <Select.Item value="dashed">{t('Dashed')}</Select.Item>
               </Select>
             </div>
           </div>
