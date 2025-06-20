@@ -52,11 +52,6 @@ sample({
 });
 
 sample({
-  clock: stepChanged,
-  target: $step,
-});
-
-sample({
   clock: unlockFormStarted,
   source: unlockModel.$claimSchedule,
   filter: (claims) => nonNullable(claims),

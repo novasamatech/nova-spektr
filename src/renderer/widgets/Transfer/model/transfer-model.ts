@@ -20,7 +20,7 @@ const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $transferStore = createStore<TransferStore | null>(null);
@@ -55,8 +55,6 @@ const $initiatorWallet = combine(
   },
   { skipVoid: false },
 );
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

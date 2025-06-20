@@ -69,8 +69,6 @@ sample({
   target: $isUnchanged,
 });
 
-sample({ clock: stepChanged, target: $step });
-
 sample({
   clock: flowStarted,
   target: spread({

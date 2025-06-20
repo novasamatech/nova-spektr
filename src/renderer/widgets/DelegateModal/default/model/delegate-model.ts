@@ -40,8 +40,6 @@ const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowSt
 
 // Steps
 
-sample({ clock: stepChanged, target: $step });
-
 sample({
   clock: flowStarted,
   target: $target,

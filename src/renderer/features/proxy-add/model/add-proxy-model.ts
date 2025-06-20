@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
@@ -23,7 +23,7 @@ const flowFinished = createEvent();
 const flowClosed = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -43,8 +43,6 @@ const $initiatorWallet = combine(
   },
   { skipVoid: false },
 );
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

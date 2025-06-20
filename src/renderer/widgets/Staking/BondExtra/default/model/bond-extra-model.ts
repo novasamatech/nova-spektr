@@ -21,7 +21,7 @@ const flowStarted = createEvent<WalletDataShards>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $walletDataShards = restore<WalletDataShards | null>(flowStarted, null).reset(flowFinished);
 const $walletData = $walletDataShards.map((data) => {
@@ -75,8 +75,6 @@ sample({
 });
 
 // Steps
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

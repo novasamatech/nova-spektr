@@ -20,7 +20,7 @@ const flowStarted = createEvent<NetworkStore>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $restakeStore = createStore<RestakeStore | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
@@ -38,8 +38,6 @@ const $initiatorWallet = combine(
     return walletUtils.getWalletById(wallets, store.initiator.walletId);
   },
 );
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,
