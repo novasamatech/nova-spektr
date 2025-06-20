@@ -25,11 +25,11 @@ type Props = {
 export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const [pathType, setPathType] = useState<'straight' | 'bezier' | 'smoothStep'>('smoothStep');
-  const [edgeType, setEdgeType] = useState<'solid' | 'dashed'>('solid');
   const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const accountList = useUnit(accounts.$list);
+  const pathType = useUnit(accountsStructureModel.$pathType);
+  const edgeType = useUnit(accountsStructureModel.$edgeType);
 
   useEffect(() => {
     accountsStructureModel.setAccounts(walletAccounts);
@@ -73,18 +73,14 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
               <AccountSelector walletAccounts={walletAccounts} />
             </div>
             <div className="w-[200px]">
-              <Select
-                value={pathType}
-                placeholder="Path type"
-                onChange={(v) => setPathType(v as 'straight' | 'bezier' | 'smoothStep')}
-              >
+              <Select value={pathType} placeholder="Path type" onChange={(v) => accountsStructureModel.setPathType(v)}>
                 <Select.Item value="straight">{t('Straight Line')}</Select.Item>
                 <Select.Item value="bezier">{t('Bezier Curve')}</Select.Item>
                 <Select.Item value="smoothStep">{t('Smooth Step')}</Select.Item>
               </Select>
             </div>
             <div className="w-[200px]">
-              <Select value={edgeType} placeholder="Edge type" onChange={(v) => setEdgeType(v as 'solid' | 'dashed')}>
+              <Select value={edgeType} placeholder="Edge type" onChange={(v) => accountsStructureModel.setEdgeType(v)}>
                 <Select.Item value="solid">{t('Solid')}</Select.Item>
                 <Select.Item value="dashed">{t('Dashed')}</Select.Item>
               </Select>
