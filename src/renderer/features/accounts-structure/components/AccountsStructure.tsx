@@ -45,7 +45,7 @@ const elk = new ELK({
     'elk.algorithm': 'layered',
     'elk.direction': 'RIGHT',
     'elk.layered.spacing.nodeNodeBetweenLayers': '200',
-    'elk.spacing.nodeNode': '25',
+    'elk.spacing.nodeNode': '50',
     'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
     'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
     'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
