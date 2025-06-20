@@ -62,6 +62,12 @@ const $network = combine(
   },
 );
 
+export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
+export const setEdgeType = createEvent<'solid' | 'dashed'>();
+
+export const $pathType = restore(setPathType, 'smoothStep');
+export const $edgeType = restore(setEdgeType, 'solid');
+
 export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
@@ -74,4 +80,8 @@ export const accountsStructureModel = {
   selectChain,
   setAccounts,
   selectAccount,
+  setPathType,
+  setEdgeType,
+  $pathType,
+  $edgeType,
 };
