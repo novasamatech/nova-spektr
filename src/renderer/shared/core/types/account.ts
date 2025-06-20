@@ -34,6 +34,10 @@ export interface MultisigAccount extends UniversalAccount {
   threshold: number;
 }
 
+export interface MultisigSignatoryAccount extends UniversalAccount {
+  accountType: AccountType.MULTISIG_SIGNATORY;
+}
+
 export interface WcAccount extends ChainAccount {
   accountType: AccountType.WALLET_CONNECT;
   signingExtras: {
@@ -69,6 +73,7 @@ export const enum AccountType {
   FLEXIBLE_MULTISIG = 'flexible_multisig',
   WALLET_CONNECT = 'wallet_connect',
   PROXIED = 'proxied',
+  MULTISIG_SIGNATORY = 'multisig_signatory',
 }
 
 export const enum KeyType {
