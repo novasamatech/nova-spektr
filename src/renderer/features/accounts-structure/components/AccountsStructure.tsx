@@ -44,7 +44,7 @@ const elk = new ELK({
   defaultLayoutOptions: {
     'elk.algorithm': 'layered',
     'elk.direction': 'RIGHT',
-    'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+    'elk.layered.spacing.nodeNodeBetweenLayers': '200',
     'elk.spacing.nodeNode': '50',
     'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
     'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
@@ -59,10 +59,10 @@ const elk = new ELK({
     'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
     'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
     'org.eclipse.elk.layered.mergeHierarchyEdges': 'false',
-    'elk.layered.spacing.edgeEdgeBetweenLayers': '50',
-    'elk.layered.spacing.edgeNode': '50',
-    'elk.layered.spacing.edgeEdge': '50',
-    'elk.layered.spacing.baseValue': '50',
+    'elk.layered.spacing.edgeEdgeBetweenLayers': '5',
+    'elk.layered.spacing.edgeNode': '10',
+    'elk.layered.spacing.edgeEdge': '10',
+    'elk.layered.spacing.baseValue': '10',
     'elk.layered.spacing.individual': 'true',
   },
 });

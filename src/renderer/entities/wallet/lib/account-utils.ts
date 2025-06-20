@@ -9,6 +9,7 @@ import {
   type ChainId,
   CryptoType,
   type MultisigAccount,
+  type MultisigSignatoryAccount,
   type MultisigThreshold,
   type ProxiedAccount,
   ProxyVariant,
@@ -34,6 +35,7 @@ export const accountUtils = {
   isVaultChainAccount,
   isVaultShardAccount,
   isMultisigAccount,
+  isMultisigSignatoryAccount,
   isWcAccount,
   isProxiedAccount,
   isPureProxiedAccount,
@@ -101,6 +103,10 @@ function isVaultShardAccount(account: Partial<AnyAccount>): account is VaultShar
 
 function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
   return 'accountType' in account && account.accountType === AccountType.MULTISIG;
+}
+
+function isMultisigSignatoryAccount(account: Partial<AnyAccount>): account is MultisigSignatoryAccount {
+  return 'accountType' in account && account.accountType === AccountType.MULTISIG_SIGNATORY;
 }
 
 function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
