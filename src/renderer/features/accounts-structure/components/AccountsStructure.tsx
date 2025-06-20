@@ -155,7 +155,7 @@ const AccountsStructureInner = ({ account, graph, pathType, edgeType }: Accounts
         setNodes(layoutNodes);
         setEdges(edges);
 
-        fitView({ maxZoom: 1, padding: { left: '100px' } });
+        fitView({ nodes: [account], maxZoom: 0.75, padding: { left: '100px' } });
       });
   }, [graph, account.id, fitView, pathType, edgeType]);
 
