@@ -55,7 +55,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   }, [accountList, selectedChain, selectedAccount]);
 
   return (
-    <Modal size="full" isOpen={isOpen} onToggle={onToggle}>
+    <Modal size="xxl" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>
         <Button pallet="secondary" size="sm" variant="fill">
           {t('accountsStructure.button')}
@@ -64,7 +64,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
 
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
-        <div className="relative h-[600px]">
+        <div className="relative h-[90vh]">
           <div className="absolute left-4 top-4 z-10 flex gap-4">
             <div className="w-[200px]">
               <ChainSelector />
