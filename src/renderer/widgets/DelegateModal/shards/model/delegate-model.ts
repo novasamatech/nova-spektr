@@ -250,8 +250,6 @@ sample({
 
 // Steps
 
-sample({ clock: stepChanged, target: $step });
-
 sample({
   clock: flowStarted,
   target: $target,

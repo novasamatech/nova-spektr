@@ -253,11 +253,6 @@ sample({
 // Steps
 
 sample({
-  clock: stepChanged,
-  target: $step,
-});
-
-sample({
   clock: [flowStarted, $revokeDelegationData.updates],
   source: {
     balances: balanceModel.$balances,

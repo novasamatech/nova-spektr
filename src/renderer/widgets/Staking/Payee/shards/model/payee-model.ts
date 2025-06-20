@@ -32,7 +32,7 @@ const flowStarted = createEvent<WalletData>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $walletData = restore<WalletData | null>(flowStarted, null).reset(flowFinished);
 const $payeeData = createStore<PayeeData | null>(null).reset(flowFinished);
@@ -212,8 +212,6 @@ sample({
 });
 
 // Steps
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

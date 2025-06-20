@@ -146,11 +146,6 @@ const { $multisigDeposit } = createMultisigDeposit({
 
 // Steps
 
-sample({
-  clock: stepChanged,
-  target: $step,
-});
-
 const dataSubmitted = sample({
   clock: flowStarted,
   source: {
