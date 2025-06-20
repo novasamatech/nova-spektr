@@ -64,6 +64,8 @@ export const CustomEdge = ({
       source: data.source as AnyAccount,
       target: data.target as AnyAccount,
     });
+  const label = connection?.label;
+  const connectionColor = connection?.color || '#363643';
 
   return (
     <>
@@ -75,13 +77,13 @@ export const CustomEdge = ({
         interactionWidth={interactionWidth}
         style={{
           ...style,
-          stroke: '#363643',
+          stroke: connectionColor,
           strokeWidth: 2,
           strokeDasharray: edgeType === 'dashed' ? '6 6' : undefined,
         }}
       />
 
-      {connection && (
+      {label && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -90,14 +92,14 @@ export const CustomEdge = ({
               padding: '5px 10px',
               fontSize: '10px',
               fontWeight: '600',
-              color: connection.textColor,
+              color: label.color,
               borderRadius: '26px',
               border: '2px solid #F9F9F9',
-              background: connection.backgroundColor,
+              background: label.background,
               textTransform: 'uppercase',
             }}
           >
-            {connection.label}
+            {label.text}
           </div>
         </EdgeLabelRenderer>
       )}

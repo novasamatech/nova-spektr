@@ -8,7 +8,7 @@ export const accountNodeConfigTransformer = createTransformer<
 
 export const accountConnectionTransformer = createTransformer<
   { source: AnyAccount; target: AnyAccount },
-  { label: string; textColor: string; backgroundColor: string }
+  { label?: { text: string; color: string; background: string }; color?: string }
 >();
 
 export const accountSDK = createSDK({

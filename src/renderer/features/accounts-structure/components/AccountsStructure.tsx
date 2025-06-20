@@ -97,6 +97,12 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
           source: child.account,
           target: node.account,
         },
+        markerEnd: {
+          // color: 'red',
+          type: MarkerType.Arrow,
+          width: 20,
+          height: 20,
+        },
       });
       processNode(child);
     }
@@ -171,12 +177,6 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       defaultEdgeOptions={{
         type: 'accountEdge',
         animated: false,
-        markerEnd: {
-          type: MarkerType.Arrow,
-          width: 20,
-          height: 20,
-          color: '#363643',
-        },
       }}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
