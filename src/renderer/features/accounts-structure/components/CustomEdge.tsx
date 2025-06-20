@@ -8,6 +8,7 @@ import {
   getStraightPath,
 } from '@xyflow/react';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { type AnyAccount } from '@/domains/network';
@@ -31,33 +32,31 @@ export const CustomEdge = ({
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
 
-  let edgePath, labelX, labelY;
-
-  switch (pathType) {
-    case 'straight':
-      [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
-      break;
-    case 'bezier':
-      [edgePath, labelX, labelY] = getBezierPath({
-        sourceX,
-        sourceY,
-        sourcePosition,
-        targetX,
-        targetY,
-        targetPosition,
-      });
-      break;
-    default:
-      [edgePath, labelX, labelY] = getSmoothStepPath({
-        sourceX,
-        sourceY,
-        sourcePosition,
-        targetX,
-        targetY,
-        targetPosition,
-        borderRadius: 50,
-      });
-  }
+  const [edgePath, labelX, labelY] = useMemo(() => {
+    switch (pathType) {
+      case 'straight':
+        return getStraightPath({ sourceX, sourceY, targetX, targetY });
+      case 'bezier':
+        return getBezierPath({
+          sourceX,
+          sourceY,
+          sourcePosition,
+          targetX,
+          targetY,
+          targetPosition,
+        });
+      default:
+        return getSmoothStepPath({
+          sourceX,
+          sourceY,
+          sourcePosition,
+          targetX,
+          targetY,
+          targetPosition,
+          borderRadius: 50,
+        });
+    }
+  }, [pathType, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]);
 
   const connection =
     data &&
