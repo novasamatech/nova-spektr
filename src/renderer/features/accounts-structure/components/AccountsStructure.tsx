@@ -54,7 +54,7 @@ const elk = new ELK({
     'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
     'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
     'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
-    'org.eclipse.elk.alignment': 'CENTER',
+    'org.eclipse.elk.alignment': 'TOP',
     'org.eclipse.elk.alg.libavoid.clusterCrossingPenalty': '1',
     'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
     'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
@@ -148,7 +148,11 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         setNodes(layoutNodes);
         setEdges(edges);
 
-        fitView({ nodes: [account], maxZoom: 0.75, padding: { left: '100px' } });
+        fitView({
+          // nodes: [account],
+          // maxZoom: 0.75,
+          padding: { left: '100px' },
+        });
       });
   }, [graph, account.id, fitView]);
 
@@ -159,6 +163,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView={false}
+      minZoom={0}
       nodesDraggable={true}
       nodesConnectable={false}
       elementsSelectable={false}
