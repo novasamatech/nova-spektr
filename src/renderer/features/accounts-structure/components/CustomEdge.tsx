@@ -7,10 +7,13 @@ import {
   getSmoothStepPath,
   getStraightPath,
 } from '@xyflow/react';
+import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { type AnyAccount } from '@/domains/network';
 import { accountConnectionTransformer } from '@/sdk/account';
+import { accountsStructureModel } from '../model/accountsStructureModel';
 
 export const CustomEdge = ({
   id,
@@ -26,34 +29,34 @@ export const CustomEdge = ({
   data,
   interactionWidth,
 }: EdgeProps) => {
-  const pathType = data?.pathType as string;
-  let edgePath, labelX, labelY;
+  const pathType = useUnit(accountsStructureModel.$pathType);
+  const edgeType = useUnit(accountsStructureModel.$edgeType);
 
-  switch (pathType) {
-    case 'straight':
-      [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
-      break;
-    case 'bezier':
-      [edgePath, labelX, labelY] = getBezierPath({
-        sourceX,
-        sourceY,
-        sourcePosition,
-        targetX,
-        targetY,
-        targetPosition,
-      });
-      break;
-    default:
-      [edgePath, labelX, labelY] = getSmoothStepPath({
-        sourceX,
-        sourceY,
-        sourcePosition,
-        targetX,
-        targetY,
-        targetPosition,
-        borderRadius: 50,
-      });
-  }
+  const [edgePath, labelX, labelY] = useMemo(() => {
+    switch (pathType) {
+      case 'straight':
+        return getStraightPath({ sourceX, sourceY, targetX, targetY });
+      case 'bezier':
+        return getBezierPath({
+          sourceX,
+          sourceY,
+          sourcePosition,
+          targetX,
+          targetY,
+          targetPosition,
+        });
+      default:
+        return getSmoothStepPath({
+          sourceX,
+          sourceY,
+          sourcePosition,
+          targetX,
+          targetY,
+          targetPosition,
+          borderRadius: 50,
+        });
+    }
+  }, [pathType, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]);
 
   const connection =
     data &&
@@ -61,7 +64,6 @@ export const CustomEdge = ({
       source: data.source as AnyAccount,
       target: data.target as AnyAccount,
     });
-  const edgeType = data?.edgeType as 'solid' | 'dashed' | undefined;
 
   return (
     <>
