@@ -49,7 +49,7 @@ accountSDK(multisigWalletFeature, {
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
       return account.signatories
-        .map(signatory => {
+        .map((signatory, index) => {
           const userAccount = accounts.find(a => a.accountId === signatory.accountId);
 
           if (userAccount) {
@@ -59,7 +59,7 @@ accountSDK(multisigWalletFeature, {
             const signatoryAccount: MultisigSignatoryAccount = {
               accountType: AccountType.MULTISIG_SIGNATORY,
               accountId: signatory.accountId,
-              id: String(signatory.id) ?? accountId,
+              id: signatory.id ? `${signatory.id}` : `${index} ${accountId}`,
               name: signatory.name || accountId,
               walletId: account.walletId,
               cryptoType: account.cryptoType,
