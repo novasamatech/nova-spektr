@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { accountService } from '@/domains/network';
-import { type AnyAccount } from '@/domains/network';
+import { type Chain } from '@/shared/core';
+import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
@@ -70,9 +70,56 @@ export const $edgeType = restore(setEdgeType, 'dashed');
 
 export const focusOnSelected = createEvent();
 
+function findNodesRelatedToAccount(
+  accounts: AnyAccount[] | null,
+  account: AnyAccount | null,
+  chain: Chain,
+): Map<AnyAccount, AccountNode> | null {
+  if (!accounts || !account || !chain) return null;
+  const graph = accountService.createAccountGraphs(accounts, chain);
+  const result: Map<AnyAccount, AccountNode> = new Map();
+
+  for (const node of graph.values()) {
+    accountService.traverseGraph(node, {
+      enter(child) {
+        if (child.account === account) {
+          result.set(node.account, node);
+          return false;
+        }
+      },
+    });
+  }
+
+  return result;
+}
+
+export const $graph = combine(
+  {
+    accounts: accounts.$list,
+    selectedAccount: $selectedAccount,
+    selectedChain: $selectedChain,
+  },
+  ({ accounts, selectedAccount, selectedChain }) => {
+    if (!selectedChain || !selectedAccount) return null;
+    return findNodesRelatedToAccount(accounts, selectedAccount, selectedChain);
+  },
+);
+
+sample({
+  clock: combine({
+    chain: $selectedChain,
+    graph: $graph,
+  }),
+  filter: ({ chain, graph }) => !!chain && !!graph && graph.size > 0,
+  fn: ({ chain, graph }) => ({
+    chainId: chain!.chainId,
+    accounts: Array.from(graph!.keys()).map((acc) => acc.accountId),
+  }),
+  target: identity.request,
+});
+
 export const accountsStructureModel = {
   $selectedChainId,
-  $selectedChain,
   $selectedAccount,
   $accountList,
   $availableChains: $availableChains,
@@ -86,5 +133,8 @@ export const accountsStructureModel = {
   setEdgeType,
   $pathType,
   $edgeType,
+
   focusOnSelected,
+
+  $graph,
 };
