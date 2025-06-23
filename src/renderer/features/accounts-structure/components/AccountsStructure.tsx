@@ -124,7 +124,6 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
 
   useEffect(() => {
     const { nodes, edges } = createGraphElements(graph, account.id);
-
     elk
       .layout({
         id: 'root',
@@ -141,7 +140,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       })
       .then((layoutGraph) => {
         const layoutNodesMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
-        const layoutNodes = nodes.map((node) => {
+        const layoutNodes: Node<AccountNodeData>[] = nodes.map((node) => {
           const layoutNode = layoutNodesMap.get(node.id);
           return {
             ...node,
@@ -152,13 +151,11 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           };
         });
 
-        setNodes(layoutNodes);
+        setNodes(layoutNodes.length <= 15 ? alignNodesTop(layoutNodes) : layoutNodes);
         setEdges(edges);
 
         fitView({
-          // nodes: [account],
-          // maxZoom: 0.75,
-          padding: { left: '100px' },
+          padding: { top: '75px', bottom: '25px', left: '25px', right: '25px' },
         });
       });
   }, [graph, account.id, fitView]);
@@ -194,3 +191,23 @@ export const AccountsStructure = memo((props: AccountsStructureProps) => (
     <AccountsStructureInner {...props} />
   </ReactFlowProvider>
 ));
+
+function alignNodesTop(nodes: Node<AccountNodeData>[]) {
+  const layerGroups: Record<number, Node<AccountNodeData>[]> = {};
+  for (const node of nodes) {
+    const key = Math.floor(node.position.x / 200);
+    if (!layerGroups[key]) {
+      layerGroups[key] = [];
+    }
+    layerGroups[key].push(node);
+  }
+
+  for (const group of Object.values(layerGroups)) {
+    const minY = Math.min(...group.map((n) => n.position.y));
+    for (const n of group) {
+      n.position.y -= minY - 20;
+    }
+  }
+
+  return nodes;
+}
