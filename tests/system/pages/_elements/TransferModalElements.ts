@@ -8,6 +8,7 @@ export class TransferModalElements {
   static recipientInputLocator = TEST_IDS.OPERATIONS.RECIPIENT_INPUT;
   static signatoryLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR;
   static signatoryOptionLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR_OPTION;
+  static xcmSelectorLocator = TEST_IDS.OPERATIONS.XCM_SELECTOR;
 
   static getUrl(chainId: number, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {
