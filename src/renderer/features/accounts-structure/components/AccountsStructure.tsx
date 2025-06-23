@@ -16,6 +16,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { memo, useEffect } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -53,13 +54,13 @@ const elk = new ELK({
     'elk.layered.crossingMinimization.hierarchicalSweepiness': '0.5',
     'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
     'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
-    'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
-    'org.eclipse.elk.alignment': 'CENTER',
-    'org.eclipse.elk.alg.libavoid.clusterCrossingPenalty': '1',
-    'org.eclipse.elk.alg.libavoid.crossingPenalty': '1',
-    'org.eclipse.elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
-    'org.eclipse.elk.layered.mergeHierarchyEdges': 'false',
-    'elk.layered.spacing.edgeEdgeBetweenLayers': '5',
+    'elk.layered.nodePlacement.bk.fixedAlignment': 'TOP',
+    'elk.alignment': 'TOP',
+    'elk.alg.libavoid.clusterCrossingPenalty': '1',
+    'elk.alg.libavoid.crossingPenalty': '1',
+    'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
+    'elk.layered.mergeHierarchyEdges': 'false',
+    'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
     'elk.layered.spacing.edgeNode': '10',
     'elk.layered.spacing.edgeEdge': '10',
     'elk.layered.spacing.baseValue': '10',
@@ -96,6 +97,12 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
         data: {
           source: child.account,
           target: node.account,
+        },
+        markerEnd: {
+          color: accountUtils.isMultisigAccount(node.account) ? '#05B199' : '#2A1FD5',
+          type: MarkerType.Arrow,
+          width: 20,
+          height: 20,
         },
       });
       processNode(child);
@@ -148,7 +155,11 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         setNodes(layoutNodes);
         setEdges(edges);
 
-        fitView({ nodes: [account], maxZoom: 0.75, padding: { left: '100px' } });
+        fitView({
+          // nodes: [account],
+          // maxZoom: 0.75,
+          padding: { left: '100px' },
+        });
       });
   }, [graph, account.id, fitView]);
 
@@ -159,6 +170,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView={false}
+      minZoom={0}
       nodesDraggable={true}
       nodesConnectable={false}
       elementsSelectable={false}
@@ -166,13 +178,8 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
       defaultEdgeOptions={{
         type: 'accountEdge',
         animated: false,
-        markerEnd: {
-          type: MarkerType.Arrow,
-          width: 20,
-          height: 20,
-          color: '#363643',
-        },
       }}
+      className="h-full"
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
     >
