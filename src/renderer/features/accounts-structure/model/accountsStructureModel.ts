@@ -68,6 +68,8 @@ export const setEdgeType = createEvent<'solid' | 'dashed'>();
 export const $pathType = restore(setPathType, 'bezier');
 export const $edgeType = restore(setEdgeType, 'dashed');
 
+export const focusOnSelected = createEvent();
+
 export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
@@ -84,4 +86,5 @@ export const accountsStructureModel = {
   setEdgeType,
   $pathType,
   $edgeType,
+  focusOnSelected,
 };
