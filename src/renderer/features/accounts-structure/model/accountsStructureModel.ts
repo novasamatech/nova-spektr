@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain } from '@/shared/core';
-import { type AccountNode, type AnyAccount, accountService, identity } from '@/domains/network';
+import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
@@ -95,7 +95,7 @@ function findNodesRelatedToAccount(
 
 export const $graph = combine(
   {
-    accounts: $accountList,
+    accounts: accounts.$list,
     selectedAccount: $selectedAccount,
     selectedChain: $selectedChain,
   },
