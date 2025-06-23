@@ -53,7 +53,7 @@ const isFeeLoadingChanged = createEvent<boolean>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 const signerSelected = createEvent<AnyAccount>();
 
-const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
+const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
 const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
@@ -456,7 +456,7 @@ sample({
 
 sample({
   clock: delay(flow.close, 2000),
-  fn: () => Step.NAME_NETWORK,
+  fn: () => Step.SIGNATORIES_THRESHOLD,
   target: stepChanged,
 });
 

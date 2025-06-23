@@ -7,7 +7,6 @@ import { type Asset, type MultisigThreshold, type Transaction } from '@/shared/c
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
-import { Tooltip } from '@/shared/ui-kit';
 import { priceProviderModel } from '@/entities/price';
 import { FeeLoader, transactionService } from '@/entities/transaction';
 
@@ -65,32 +64,11 @@ export const MultisigCreationFees = memo(({ api, asset, threshold, onDepositChan
   }
 
   return (
-    <div className="flex items-center gap-x-4">
-      <div className="flex items-center gap-x-1">
-        <FootnoteText className="text-text-tertiary">
-          {t('createMultisigAccount.multisigCreationFeeLabel')}
-        </FootnoteText>
-
-        <Tooltip side="top">
-          <Tooltip.Trigger>
-            <div>
-              <Icon size={16} name="info" />
-            </div>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <div>
-              {t('createMultisigAccount.multisigDeposit')}
-              <AssetBalance value={deposit} asset={asset} className="ml-1 text-help-text text-inherit" />
-            </div>
-            <div>
-              {t('createMultisigAccount.networkFee')}
-              <AssetBalance value={networkFee} asset={asset} className="ml-1 text-help-text text-inherit" />
-            </div>
-          </Tooltip.Content>
-        </Tooltip>
-      </div>
+    <div className="flex items-center gap-x-2">
+      <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
 
       <AssetBalance value={fee.toString()} asset={asset} />
+      <Icon size={16} name="edit" className="text-icon-default" />
     </div>
   );
 });

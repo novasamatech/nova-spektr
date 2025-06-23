@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@/shared/i18n';
 import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
@@ -15,14 +15,19 @@ import { signatoryModel } from '../model/signatory-model';
 import { MultisigCreationFees } from './components';
 import { Signatory } from './components/Signatory';
 
-export const SelectSignatoriesThreshold = () => {
+interface Props {
+  onGoBack: () => void;
+}
+
+export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const {
-    fields: { threshold },
+    fields: { threshold, name },
     submit,
   } = useForm(formModel.$createMultisigForm);
 
+  const isNameError = name.isTouched && !name.value;
   const chain = useUnit(formModel.$chain);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
@@ -53,7 +58,6 @@ export const SelectSignatoriesThreshold = () => {
     <>
       <Modal.Content>
         <SmallTitleText className="border-b border-container-border px-5 pb-6 text-text-primary">
-          {t('createMultisigAccount.multisigStep', { step: 2 })}{' '}
           {t('createMultisigAccount.signatoryThresholdDescription')}
         </SmallTitleText>
 
@@ -73,9 +77,9 @@ export const SelectSignatoriesThreshold = () => {
           ))}
 
           <Button
-            size="sm"
+            size="md"
             variant="text"
-            className="h-8.5 w-max justify-center"
+            className="h-8.5 w-max justify-center gap-x-1"
             suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
             onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
           >
@@ -85,13 +89,32 @@ export const SelectSignatoriesThreshold = () => {
           <hr className="-mx-5 w-full border-divider" />
 
           <div className="flex gap-x-6">
-            <Box width="232px">
+            <Box width="100%">
+              <Field text={t('createMultisigAccount.walletNameLabel')}>
+                <Input
+                  autoFocus
+                  height="md"
+                  placeholder={t('createMultisigAccount.namePlaceholder')}
+                  invalid={isNameError}
+                  value={name.value}
+                  onChange={name.onChange}
+                />
+
+                <InputHint active>{t('createMultisigAccount.walletNameDescription')}</InputHint>
+                <InputHint variant="error" active={isNameError}>
+                  {t('createMultisigAccount.disabledError.emptyName')}
+                </InputHint>
+              </Field>
+            </Box>
+
+            <Box width="232px" shrink={0}>
               <Field text={t('createMultisigAccount.thresholdName')}>
                 <Select
                   placeholder={t('createMultisigAccount.thresholdPlaceholder')}
                   value={(threshold.value || '').toString()}
                   invalid={threshold.hasError()}
                   disabled={[0, 1].includes(signatories.length)}
+                  height="md"
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
@@ -101,10 +124,10 @@ export const SelectSignatoriesThreshold = () => {
                   ))}
                 </Select>
               </Field>
+              <InputHint active className="mt-2">
+                {t('createMultisigAccount.thresholdHint')}
+              </InputHint>
             </Box>
-            <InputHint active className="mt-8.5 flex-1">
-              {t('createMultisigAccount.thresholdHint')}
-            </InputHint>
           </div>
 
           <Alert
@@ -135,7 +158,7 @@ export const SelectSignatoriesThreshold = () => {
 
       <Modal.Footer>
         <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
+          <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
 
