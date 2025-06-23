@@ -63,7 +63,7 @@ describe.skip('Create multisig wallet flow-model', () => {
     });
     await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
 
-    expect(scope.getState(flowModel.$step)).toEqual(Step.NAME_NETWORK);
+    expect(scope.getState(flowModel.$step)).toEqual(Step.SIGNATORIES_THRESHOLD);
     await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
     await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
     await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
