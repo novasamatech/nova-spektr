@@ -90,6 +90,13 @@ accountSDK(multisigWalletFeature, {
       };
     }
   },
+  connection({ target }) {
+    if (accountUtils.isMultisigAccount(target)) {
+      return {
+        color: '#05B199',
+      };
+    }
+  },
 });
 
 transactionSDK(multisigWalletFeature, {

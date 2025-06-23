@@ -54,9 +54,12 @@ accountSDK(proxiedWalletFeature, {
   connection({ target }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
-        label: target.proxyType,
-        textColor: 'var(--icons-icon-alert, #7B29FF)',
-        backgroundColor: '#F5EEFF',
+        label: {
+          text: target.proxyType,
+          color: 'var(--icons-icon-alert, #7B29FF)',
+          background: '#F5EEFF',
+        },
+        color: '#2A1FD5',
       };
     }
   },
