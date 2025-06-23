@@ -16,6 +16,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { memo, useEffect } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -98,7 +99,7 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
           target: node.account,
         },
         markerEnd: {
-          // color: 'red',
+          color: accountUtils.isMultisigAccount(node.account) ? '#05B199' : '#2A1FD5',
           type: MarkerType.Arrow,
           width: 20,
           height: 20,
