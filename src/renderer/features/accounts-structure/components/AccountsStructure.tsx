@@ -17,6 +17,7 @@ import { memo, useEffect } from 'react';
 
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
+import { focusOnSelected } from '../model/accountsStructureModel';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -159,6 +160,15 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         });
       });
   }, [graph, account.id, fitView]);
+
+  useEffect(
+    () =>
+      // eslint-disable-next-line effector/no-watch
+      focusOnSelected.watch(() => {
+        fitView({ nodes: [{ id: account.id }], maxZoom: 0.5, duration: 500 });
+      }),
+    [fitView, account.id],
+  );
 
   return (
     <ReactFlow
