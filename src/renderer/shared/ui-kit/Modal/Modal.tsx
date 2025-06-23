@@ -11,7 +11,7 @@ import './Modal.css';
 
 type Props = {
   isOpen?: boolean;
-  size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
+  size: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   onToggle?: (open: boolean) => void;
 };
