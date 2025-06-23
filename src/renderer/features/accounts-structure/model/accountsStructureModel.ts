@@ -70,6 +70,38 @@ export const $edgeType = restore(setEdgeType, 'dashed');
 
 export const focusOnSelected = createEvent();
 
+export const focusOnNode = createEvent<AnyAccount>();
+export const leaveNode = createEvent();
+
+const $focusedAccount = restore(focusOnNode, null).reset(leaveNode);
+
+export const $focusedPath = combine(
+  {
+    selectedAccount: $selectedAccount,
+    accountList: accounts.$list,
+    selectedChain: $selectedChain,
+    focusedAccount: $focusedAccount,
+  },
+  ({ selectedAccount, accountList, selectedChain, focusedAccount }) => {
+    if (!selectedAccount || !focusedAccount || !accountList || !selectedChain) return [];
+    // try to find a route
+    const route = accountService.findRoute(selectedAccount, focusedAccount, accountList, selectedChain);
+
+    if (route.length) {
+      return route;
+    }
+
+    // return a reversed route
+    return accountService.findRoute(focusedAccount, selectedAccount, accountList, selectedChain);
+  },
+);
+
+const $highlightedNodesIds = $focusedPath.map((accounts) => {
+  if (!accounts.length) return null;
+
+  return new Set(accounts.map((account) => account.id));
+});
+
 function findNodesRelatedToAccount(
   accounts: AnyAccount[] | null,
   account: AnyAccount | null,
@@ -122,8 +154,7 @@ export const accountsStructureModel = {
   $selectedChainId,
   $selectedAccount,
   $accountList,
-  $availableChains: $availableChains,
-  $filteredChains: $availableChains,
+  $availableChains,
   $network,
 
   selectChain,
@@ -135,6 +166,9 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
+  focusOnNode,
+  leaveNode,
+  $highlightedNodesIds,
 
   $graph,
 };

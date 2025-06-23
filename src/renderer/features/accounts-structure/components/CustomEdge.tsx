@@ -31,6 +31,12 @@ export const CustomEdge = ({
 }: EdgeProps) => {
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
+  const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
+
+  if (!data) return null;
+
+  const sourceAccount = data.source as AnyAccount;
+  const targetAccount = data.target as AnyAccount;
 
   const [edgePath, labelX, labelY] = useMemo(() => {
     switch (pathType) {
@@ -59,13 +65,13 @@ export const CustomEdge = ({
   }, [pathType, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]);
 
   const connection =
-    data &&
-    useTransformer(accountConnectionTransformer, {
-      source: data.source as AnyAccount,
-      target: data.target as AnyAccount,
-    });
+    data && useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount });
   const label = connection?.label;
   const connectionColor = connection?.color || '#363643';
+
+  const shouldFade = highlightedNodesIds
+    ? !highlightedNodesIds.has(sourceAccount.id) || !highlightedNodesIds.has(targetAccount.id)
+    : false;
 
   return (
     <>
@@ -80,6 +86,8 @@ export const CustomEdge = ({
           stroke: connectionColor,
           strokeWidth: 2,
           strokeDasharray: edgeType === 'dashed' ? '6 6' : undefined,
+          opacity: shouldFade ? 0.2 : 1,
+          transition: 'opacity 300ms',
         }}
       />
 
@@ -97,6 +105,8 @@ export const CustomEdge = ({
               border: '2px solid #F9F9F9',
               background: label.background,
               textTransform: 'uppercase',
+              opacity: shouldFade ? 0.2 : 1,
+              transition: 'opacity 300ms',
             }}
           >
             {label.text}
