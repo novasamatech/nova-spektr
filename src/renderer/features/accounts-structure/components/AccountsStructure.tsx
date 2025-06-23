@@ -179,6 +179,7 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
         type: 'accountEdge',
         animated: false,
       }}
+      className="h-full"
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
     >

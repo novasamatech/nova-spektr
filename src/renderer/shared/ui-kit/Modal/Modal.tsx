@@ -57,7 +57,6 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
                 'w-fit': size === 'fit',
                 'h-fit': height === 'fit',
                 'h-full': height === 'full',
-                'w-[90vw]': size === 'xxl',
                 'h-modal': height === 'lg',
               },
             )}
