@@ -95,9 +95,9 @@ export const Signatory = ({
     return ownAccountName || contactAccountName;
   }, [isOwnAccount, ownAccountName, contactAccountName]);
 
-  // Wallets
+  // Build Own Accounts options
   useEffect(() => {
-    if (!isOwnAccount || wallets.length === 0 || !chain) return;
+    if (!chain || wallets.length === 0) return;
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
@@ -112,7 +112,7 @@ export const Signatory = ({
     });
 
     const walletByGroup = services.walletSelect.getWalletByGroups(filteredWallets || []);
-    const walletsOptions: ComboboxGroup[] = [];
+    const ownAccountOptions: ComboboxGroup[] = [];
 
     for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
       if (walletsGroup.length === 0) continue;
@@ -129,8 +129,7 @@ export const Signatory = ({
           });
         }
       }
-
-      walletsOptions.push({
+      ownAccountOptions.push({
         id: walletFamily,
         label: (
           <div className="flex items-center gap-x-2" key={walletFamily}>
@@ -144,12 +143,12 @@ export const Signatory = ({
       });
     }
 
-    setOptions(walletsOptions);
-  }, [query, wallets, isOwnAccount]);
+    setOptions(ownAccountOptions);
+  }, [query, chain, wallets]);
 
-  // Contacts
+  // Build Contacts options and set combined options
   useEffect(() => {
-    if (isOwnAccount || !chain) return;
+    if (!chain || isOwnAccount) return;
 
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
@@ -184,8 +183,8 @@ export const Signatory = ({
       },
     ];
 
-    setOptions(contactsOptions);
-  }, [query, chain, isOwnAccount, contacts, filteredContacts]);
+    setOptions(options => [...options, ...contactsOptions]);
+  }, [query, chain, isOwnAccount, filteredContacts]);
 
   // initiate the query form in case of not own account
   useEffect(() => {
@@ -222,11 +221,19 @@ export const Signatory = ({
     });
   };
 
+  const nameLabel = isOwnAccount
+    ? t('createMultisigAccount.myName')
+    : t('createMultisigAccount.signatoryNameLabel', { index: signatoryIndex });
+
+  const addressLabel = isOwnAccount
+    ? t('createMultisigAccount.myAddress')
+    : t('createMultisigAccount.signatoryAddress');
+
   return (
     <div className="grid grid-cols-[232px,1fr] gap-x-6">
-      <Field text={t('createMultisigAccount.signatoryNameLabel')}>
+      <Field text={nameLabel}>
         <Input
-          name={t('createMultisigAccount.signatoryNameLabel')}
+          name={nameLabel}
           placeholder={t('addressBook.createContact.namePlaceholder')}
           invalid={false}
           value={signatoryName}
@@ -236,7 +243,7 @@ export const Signatory = ({
       </Field>
       <div className="grid grid-cols-[444px,28px] gap-x-4">
         <Box width="100%">
-          <Field text={t('createMultisigAccount.signatoryAddress')}>
+          <Field text={addressLabel}>
             <Combobox
               data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
               placeholder={t('createMultisigAccount.signatorySelection')}
