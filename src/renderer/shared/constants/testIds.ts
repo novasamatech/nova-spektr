@@ -35,6 +35,7 @@ export const TEST_IDS = {
     QR_CODE_CONTAINER: 'operations-qr-code-container',
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
     SIGNATORY_SELECTOR_OPTION: 'Address',
+    XCM_SELECTOR: 'operations-xcm-selector',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
