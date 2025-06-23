@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain } from '@/shared/core';
-import { type AccountNode, type AnyAccount, accountService } from '@/domains/network';
+import { type AccountNode, type AnyAccount, accountService, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
@@ -104,6 +104,19 @@ export const $graph = combine(
     return findNodesRelatedToAccount(accounts, selectedAccount, selectedChain);
   },
 );
+
+sample({
+  clock: combine({
+    chain: $selectedChain,
+    graph: $graph,
+  }),
+  filter: ({ chain, graph }) => !!chain && !!graph && graph.size > 0,
+  fn: ({ chain, graph }) => ({
+    chainId: chain!.chainId,
+    accounts: Array.from(graph!.keys()).map((acc) => acc.accountId),
+  }),
+  target: identity.request,
+});
 
 export const accountsStructureModel = {
   $selectedChainId,
