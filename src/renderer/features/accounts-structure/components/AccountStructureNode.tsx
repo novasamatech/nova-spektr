@@ -1,4 +1,5 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
@@ -7,6 +8,7 @@ import { SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AnyAccount } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
+import { accountsStructureModel } from '../model/accountsStructureModel';
 
 type AccountStructureNodeProps = {
   data: {
@@ -17,11 +19,14 @@ type AccountStructureNodeProps = {
 };
 
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
+  const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
 
   const config = useTransformer(accountNodeConfigTransformer, { account: data.account });
+
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.account.id) : false;
 
   return (
     <>
@@ -30,7 +35,15 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
       {/*  toolbar*/}
       {/*</NodeToolbar>*/}
 
-      <div className="flex overflow-hidden rounded-md bg-white shadow-md">
+      <div
+        className="flex cursor-pointer overflow-hidden rounded-md bg-white shadow-md"
+        style={{
+          opacity: shouldFade ? 0.2 : 1,
+          transition: 'opacity 300ms',
+        }}
+        onMouseEnter={() => accountsStructureModel.enterAccountNode(data.account)}
+        onMouseLeave={() => accountsStructureModel.leaveAccountNode()}
+      >
         <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
         <div className="w-[250px]">
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
