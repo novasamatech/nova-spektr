@@ -70,17 +70,17 @@ export const $edgeType = restore(setEdgeType, 'dashed');
 
 export const focusOnSelected = createEvent();
 
-export const focusOnNode = createEvent<AnyAccount>();
-export const leaveNode = createEvent();
+export const enterAccountNode = createEvent<AnyAccount>();
+export const leaveAccountNode = createEvent();
 
-const $focusedAccount = restore(focusOnNode, null).reset(leaveNode);
+const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode);
 
-export const $focusedPath = combine(
+export const $highlightedPath = combine(
   {
     selectedAccount: $selectedAccount,
     accountList: accounts.$list,
     selectedChain: $selectedChain,
-    focusedAccount: $focusedAccount,
+    focusedAccount: $hoveredAccountNode,
   },
   ({ selectedAccount, accountList, selectedChain, focusedAccount }) => {
     if (!selectedAccount || !focusedAccount || !accountList || !selectedChain) return [];
@@ -96,7 +96,7 @@ export const $focusedPath = combine(
   },
 );
 
-const $highlightedNodesIds = $focusedPath.map((accounts) => {
+const $highlightedNodesIds = $highlightedPath.map((accounts) => {
   if (!accounts.length) return null;
 
   return new Set(accounts.map((account) => account.id));
@@ -166,8 +166,8 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
-  focusOnNode,
-  leaveNode,
+  enterAccountNode,
+  leaveAccountNode,
   $highlightedNodesIds,
 
   $graph,

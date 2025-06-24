@@ -41,8 +41,8 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
           opacity: shouldFade ? 0.2 : 1,
           transition: 'opacity 300ms',
         }}
-        onMouseEnter={() => accountsStructureModel.focusOnNode(data.account)}
-        onMouseLeave={() => accountsStructureModel.leaveNode()}
+        onMouseEnter={() => accountsStructureModel.enterAccountNode(data.account)}
+        onMouseLeave={() => accountsStructureModel.leaveAccountNode()}
       >
         <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
         <div className="w-[250px]">
