@@ -6,13 +6,13 @@ import { useTransformer } from '@/shared/di';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
-import { type AnyAccount } from '@/domains/network';
+import { type AccountNode } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 type AccountStructureNodeProps = {
   data: {
-    account: AnyAccount;
+    node: AccountNode;
     isSelected: boolean;
   };
   id: string;
@@ -24,9 +24,9 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
 
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.account });
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account });
 
-  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.account.id) : false;
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
   return (
     <>
@@ -41,7 +41,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
           opacity: shouldFade ? 0.2 : 1,
           transition: 'opacity 300ms',
         }}
-        onMouseEnter={() => accountsStructureModel.enterAccountNode(data.account)}
+        onMouseEnter={() => accountsStructureModel.enterAccountNode(data.node)}
         onMouseLeave={() => accountsStructureModel.leaveAccountNode()}
       >
         <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
@@ -61,8 +61,8 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             </div>
             <div className="px-4 py-2 text-sm text-text-secondary">
               <Address
-                address={toAddress(data.account.accountId)}
-                title={data.account.name}
+                address={toAddress(data.node.account.accountId)}
+                title={data.node.account.name}
                 variant="short"
                 showIcon
                 iconSize={24}

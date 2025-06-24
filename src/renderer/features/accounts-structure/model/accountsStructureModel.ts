@@ -70,33 +70,40 @@ export const $edgeType = restore(setEdgeType, 'dashed');
 
 export const focusOnSelected = createEvent();
 
-export const enterAccountNode = createEvent<AnyAccount>();
+export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
 
 const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode);
 
-export const $highlightedPath = combine(
+export const $highlightedNodes = combine(
   {
     selectedAccount: $selectedAccount,
     accountList: accounts.$list,
     selectedChain: $selectedChain,
-    focusedAccount: $hoveredAccountNode,
+    focusedAccountNode: $hoveredAccountNode,
   },
-  ({ selectedAccount, accountList, selectedChain, focusedAccount }) => {
-    if (!selectedAccount || !focusedAccount || !accountList || !selectedChain) return [];
+  ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
+    if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
     // try to find a route
-    const route = accountService.findRoute(selectedAccount, focusedAccount, accountList, selectedChain);
+    const route = accountService.findRoute(selectedAccount, focusedAccountNode.account, accountList, selectedChain);
 
     if (route.length) {
       return route;
     }
 
-    // return a reversed route
-    return accountService.findRoute(focusedAccount, selectedAccount, accountList, selectedChain);
+    // find a reversed route
+    const reversedRoute = accountService.findRoute(
+      focusedAccountNode.account,
+      selectedAccount,
+      accountList,
+      selectedChain,
+    );
+
+    return [...reversedRoute, ...focusedAccountNode.children.map((node) => node.account)];
   },
 );
 
-const $highlightedNodesIds = $highlightedPath.map((accounts) => {
+const $highlightedNodesIds = $highlightedNodes.map((accounts) => {
   if (!accounts.length) return null;
 
   return new Set(accounts.map((account) => account.id));

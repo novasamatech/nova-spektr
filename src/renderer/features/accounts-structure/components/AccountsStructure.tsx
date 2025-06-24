@@ -38,7 +38,7 @@ interface AccountsStructureProps {
 }
 
 type AccountNodeData = {
-  account: AnyAccount;
+  node: AccountNode;
   isSelected: boolean;
 };
 
@@ -82,7 +82,7 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
       id: node.account.id,
       type: 'accountNode',
       data: {
-        account: node.account,
+        node,
         isSelected: node.account.id === selectedAccountId,
       },
       position: { x: 0, y: 0 },
