@@ -86,7 +86,7 @@ export const CustomEdge = ({
           stroke: connectionColor,
           strokeWidth: 2,
           strokeDasharray: edgeType === 'dashed' ? '6 6' : undefined,
-          opacity: shouldFade ? 0.2 : 1,
+          opacity: shouldFade ? 0.1 : 1,
           transition: 'opacity 300ms',
         }}
       />
@@ -105,7 +105,7 @@ export const CustomEdge = ({
               border: '2px solid #F9F9F9',
               background: label.background,
               textTransform: 'uppercase',
-              opacity: shouldFade ? 0.2 : 1,
+              opacity: shouldFade ? 0 : 1,
               transition: 'opacity 300ms',
             }}
           >
