@@ -33,7 +33,7 @@ export const AdditionalContext = () => {
     fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
   });
 
-  if (pendingMeta && !description?.trim())
+  if (pendingMeta)
     return (
       <Card>
         <Box padding={6}>
