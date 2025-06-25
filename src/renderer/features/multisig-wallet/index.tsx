@@ -61,7 +61,7 @@ accountSDK(multisigWalletFeature, {
               accountType: AccountType.MULTISIG_SIGNATORY,
               accountId: signatory.accountId,
               id: signatory.id ? `${signatory.id}` : `${index} ${accountId}`,
-              name: signatory.name || accountId,
+              name: signatory.name ?? '',
               walletId: account.walletId,
               cryptoType: account.cryptoType,
               type: 'universal',
