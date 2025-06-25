@@ -60,8 +60,6 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
   const title = useMemo(() => {
     if (!referendum || !referendumService.isOngoing(referendum)) return '';
 
-    const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-
     const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
     const isPromotion = evidence?.wish === 'Promotion' || trackService.isPromotionTrack(referendum.track);
 
@@ -69,18 +67,13 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
 
     const trackName = isPromotion ? 'Promotion' : 'Retention';
 
-    if (isRFCProposal) {
-      return t('fellowship.tasks.titles.votingTitle.rfc');
+    if (referendum.proposal && referendumService.isEvidenceProposal(referendum.proposal)) {
+      return t('fellowship.tasks.titles.votingTitle.rank', {
+        rank: trackService.getProposalTrack(relatedTracks, proposerMember, trackName),
+      });
     }
 
-    //todo detect whitelist
-    // if (isWhitelist) {
-    // return t('fellowship.tasks.titles.votingTitle.whitelist');
-    // }
-
-    return t('fellowship.tasks.titles.votingTitle.rank', {
-      rank: trackService.getProposalTrack(relatedTracks, proposerMember, trackName),
-    });
+    return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
   }, [referendum, input, tracks]);
 
   if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum) || nullable(currentMember)) {
