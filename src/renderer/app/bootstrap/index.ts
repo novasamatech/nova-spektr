@@ -47,7 +47,7 @@ const populate = async () => {
   await accounts.populate();
   await walletModel.populate();
   multisigsModel.subscribe();
-  proxyModel.populate();
+  await proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
 
