@@ -62,7 +62,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
                 {config?.title}
               </SmallTitleText>
             </div>
-            <div className="px-4 py-2 text-sm text-text-secondary">
+            <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
               <Address
                 address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
                 title={accountIdentity?.name ?? data.node.account.name}
