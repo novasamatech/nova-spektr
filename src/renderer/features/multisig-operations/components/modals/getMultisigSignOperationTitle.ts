@@ -48,6 +48,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
   // Remark
   [TransactionType.REMARK]: () => 'operations.modalTitles.remark',
+  [TransactionType.REMARK_WITH_EVENT]: () => 'operations.modalTitles.remark',
   // Governance
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
   [TransactionType.VOTE]: () => 'operations.modalTitles.vote',
