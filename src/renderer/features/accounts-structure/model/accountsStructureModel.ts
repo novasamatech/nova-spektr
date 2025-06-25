@@ -159,6 +159,7 @@ sample({
 
 export const accountsStructureModel = {
   $selectedChainId,
+  $selectedChain,
   $selectedAccount,
   $accountList,
   $availableChains,
