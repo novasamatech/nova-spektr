@@ -1,10 +1,11 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService } from '@/domains/collectives';
+import { type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { fellowshipModel } from '../model/fellowship';
 import { votesModel } from '../model/votes';
 
 export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
@@ -12,6 +13,24 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
 
   const votes = useUnit(votesModel.$votesList);
   const pending = useUnit(votesModel.$pending);
+  const referendumMeta = useStoreMap({
+    store: fellowshipModel.$referendumMeta,
+    keys: [referendum.id],
+    fn: (meta, [id]) => meta[id],
+  });
+
+  // Get track information - for ongoing referendums use track property, for completed use metadata
+  const trackId = useMemo(() => {
+    if (referendumService.isOngoing(referendum)) {
+      return referendum.track;
+    }
+    // For completed referendums, get track from metadata
+    return referendumMeta?.track ?? null;
+  }, [referendum, referendumMeta]);
+
+  const isPromotionReferendum = trackId ? trackService.isPromotionTrack(trackId) : false;
+  const isRetentionReferendum = trackId ? trackService.isRetentionTrack(trackId) : false;
+  const isPromotionRetentionReferendum = isPromotionReferendum || isRetentionReferendum;
 
   const totalAyes = useMemo(
     () => votes.filter(vote => vote.decision === 'Aye').reduce((acc, v) => acc + v.votes, 0),
@@ -42,9 +61,13 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   if (nobodyVoted) {
     title = t('fellowship.votingHistory.noVotes');
   } else if (referendumService.isCompleted(referendum)) {
-    title = t('fellowship.votingHistory.voteEnded');
+    title = isPromotionRetentionReferendum
+      ? t('fellowship.votingHistory.voteEndedPromotionRetention')
+      : t('fellowship.votingHistory.voteEnded');
   } else {
-    title = t('fellowship.votingHistory.subtitle');
+    title = isPromotionRetentionReferendum
+      ? t('fellowship.votingHistory.subtitlePromotionRetention')
+      : t('fellowship.votingHistory.subtitle');
   }
 
   let voteLevel = null;
