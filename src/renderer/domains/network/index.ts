@@ -4,7 +4,7 @@ export type {
   AnyDecodedTransaction,
   DecodedTransaction,
   EncodedTransaction,
-  CallType,
+  Section,
 } from './transaction/types';
 
 export { accounts } from './account/store';

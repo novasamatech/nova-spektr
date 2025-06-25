@@ -9,7 +9,7 @@ import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { xcmModel } from '@/entities/xcm';
-import { xcmTransferUtils } from '../../default/lib/xcm-transfer-utils';
+import { xcmTransferUtils } from '../services/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();

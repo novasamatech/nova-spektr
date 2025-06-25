@@ -1,6 +1,6 @@
 import { AccountType, CryptoType, type ProxiedAccount, type ProxyType, ProxyVariant, SigningType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type CallType } from '@/domains/network';
+import { type Section } from '@/domains/network';
 
 import { proxyService } from './service';
 
@@ -24,7 +24,7 @@ function createProxy(proxyType: ProxyType): ProxiedAccount {
 
 type PermissionTestCase = {
   route: ProxyType[];
-  call: CallType;
+  call: Section;
   expected: boolean;
 };
 

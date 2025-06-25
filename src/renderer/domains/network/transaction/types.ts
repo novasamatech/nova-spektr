@@ -15,8 +15,8 @@ export interface EncodedTransaction {
 export type AnyDecodedTransaction<Args extends NonNullable<unknown> = NonNullable<unknown>> = DecodedTransaction<Args>;
 export type AnyTransaction = EncodedTransaction | AnyDecodedTransaction;
 
-export type CallType =
-  | 'Transfer'
+export type Section =
+  | 'Balances'
   | 'IdentityJudgement'
   | 'Auctions'
   | 'Crowdloan'

@@ -4,7 +4,7 @@ import { type Asset, type Balance, type Chain, type ChainId, CryptoType } from '
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { nullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
-import { type CallType } from '../transaction/types';
+import { type Section } from '../transaction/types';
 
 import {
   type AccountNode,
@@ -34,7 +34,7 @@ const validateRouteBalancesTransformer = createTransformer<
 const validateCallPermissionTransformer = createTransformer<
   {
     route: AnyAccount[];
-    call: CallType;
+    call: Section;
   },
   AccountValidationError
 >();
@@ -267,7 +267,7 @@ async function validateRouteBalances({ api, route, balances, chainId, asset }: B
   return errors;
 }
 
-function validateCallPermission(route: AnyAccount[], call: CallType) {
+function validateCallPermission(route: AnyAccount[], call: Section) {
   return validateCallPermissionTransformer({ route, call });
 }
 

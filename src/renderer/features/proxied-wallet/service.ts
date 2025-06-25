@@ -1,12 +1,12 @@
 import { type ProxiedAccount, type ProxyType } from '@/shared/core';
-import { type AnyAccount, type AnyDecodedTransaction, type CallType } from '@/domains/network';
+import { type AnyAccount, type AnyDecodedTransaction, type Section } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ProxyTransaction } from './types';
 
 type Call = {
   type: 'call';
-  name: CallType;
+  name: Section;
 };
 
 type ProxyCall = {
@@ -14,13 +14,13 @@ type ProxyCall = {
   name: ProxyType;
 };
 
-function createProxyCall(proxyType: ProxyType, call: CallType): ProxyCall | null {
-  const Staking: CallType[] = ['Utility', 'Staking', 'Session', 'FastUnstake', 'VoterList', 'NominationPools'];
-  const NominationPools: CallType[] = ['Utility', 'NominationPools'];
-  const CancelProxy: CallType[] = ['Proxy'];
-  const Auction: CallType[] = ['Auctions', 'Crowdloan', 'Registrar', 'Slots'];
-  const IdentityJudgement: CallType[] = ['IdentityJudgement'];
-  const Governance: CallType[] = [
+function createProxyCall(proxyType: ProxyType, call: Section): ProxyCall | null {
+  const Staking: Section[] = ['Utility', 'Staking', 'Session', 'FastUnstake', 'VoterList', 'NominationPools'];
+  const NominationPools: Section[] = ['Utility', 'NominationPools'];
+  const CancelProxy: Section[] = ['Proxy'];
+  const Auction: Section[] = ['Auctions', 'Crowdloan', 'Registrar', 'Slots'];
+  const IdentityJudgement: Section[] = ['IdentityJudgement'];
+  const Governance: Section[] = [
     'Utility',
     'Treasury',
     'Bounties',
@@ -37,7 +37,7 @@ function createProxyCall(proxyType: ProxyType, call: CallType): ProxyCall | null
     };
   }
 
-  if (proxyType === 'NonTransfer' && call !== 'Transfer') {
+  if (proxyType === 'NonTransfer' && call !== 'Balances') {
     return {
       type: 'proxy',
       name: 'NonTransfer',
@@ -109,7 +109,7 @@ function isSuperset(x: ProxyType, y: ProxyType) {
 
 function checkPermission(
   route: AnyAccount[],
-  call: CallType,
+  call: Section,
 ): { success: true } | { success: false; account: ProxiedAccount } {
   const proxiedRoute = route.filter(accountUtils.isProxiedAccount);
   if (proxiedRoute.length === 0) {
