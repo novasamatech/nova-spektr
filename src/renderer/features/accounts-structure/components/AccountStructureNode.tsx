@@ -20,6 +20,7 @@ type AccountStructureNodeProps = {
 
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
+  const chain = useUnit(accountsStructureModel.$selectedChain);
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
@@ -61,7 +62,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             </div>
             <div className="px-4 py-2 text-sm text-text-secondary">
               <Address
-                address={toAddress(data.node.account.accountId)}
+                address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
                 title={data.node.account.name}
                 variant="short"
                 showIcon
