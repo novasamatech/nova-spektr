@@ -4,3 +4,4 @@ export { migrateAccounts } from './migration-3';
 export { migrateMultisigAccounts } from './migration-4';
 export { migratePVAccounts } from './migration-5';
 export { migrateMultishardAccounts } from './migration-6';
+export { migrateProxyDuplicates } from './migration-7';
