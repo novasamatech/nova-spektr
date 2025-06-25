@@ -4,8 +4,8 @@ import { createGate } from 'effector-react';
 import sortBy from 'lodash/sortBy';
 import { delay, spread } from 'patronum';
 
+import { $features } from '@/shared/config/features';
 import {
-  type Account,
   AccountType,
   type Contact,
   CryptoType,
@@ -14,6 +14,7 @@ import {
   SigningType,
   type Transaction,
   TransactionType,
+  type TxWrapper,
   WalletType,
   WrapperKind,
 } from '@/shared/core';
@@ -89,22 +90,24 @@ const $remarkTx = combine(
     form: formModel.$createMultisigForm.$values,
     account: $signer,
     isConnected: $isChainConnected,
+    signatories: signatoryModel.$signatories,
   },
-  ({ form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.threshold) return undefined;
+  ({ form, account, isConnected, signatories }) => {
+    if (!isConnected || !account || !form.threshold) return null;
 
     return {
       chainId: form.chainId,
       accountId: account.accountId,
-      type: TransactionType.REMARK,
+      type: TransactionType.REMARK_WITH_EVENT,
       args: {
-        remark: 'Multisig created with Nova Spektr',
+        remark: JSON.stringify({
+          signatories: Array.from(signatories.values()).map(s => toAccountId(s.address)),
+          threshold: form.threshold,
+        }),
       },
     };
   },
-  { skipVoid: false },
 );
-
 const $transaction = combine(
   {
     apis: networkModel.$apis,
@@ -115,35 +118,39 @@ const $transaction = combine(
     signer: $signer,
     threshold: formModel.$createMultisigForm.fields.threshold.$value,
     multisigAccountId: formModel.$multisigAccountId,
+    features: $features,
   },
-  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId }) => {
-    if (!chain || !remarkTx || !signer) return undefined;
+  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId, features }) => {
+    if (!chain || !remarkTx || !signer || !multisigAccountId) return null;
 
     const signatoriesWrapped = Array.from(signatories.values()).map(s => ({
       accountId: toAccountId(s.address),
       address: s.address,
     }));
 
+    const txWrappers: TxWrapper[] = features.multisigRemark
+      ? []
+      : [
+          {
+            kind: WrapperKind.MULTISIG,
+            multisigAccount: {
+              accountId: multisigAccountId,
+              signatories: signatoriesWrapped,
+              threshold,
+            } as unknown as MultisigAccount,
+            signatories: Array.from(signatories.values()).map(s => ({
+              accountId: toAccountId(s.address),
+            })) as AnyAccount[],
+            signer,
+          },
+        ];
+
     return transactionService.getWrappedTransaction({
       api: apis[chain.chainId],
       transaction: remarkTx,
-      txWrappers: [
-        {
-          kind: WrapperKind.MULTISIG,
-          multisigAccount: {
-            accountId: multisigAccountId,
-            signatories: signatoriesWrapped,
-            threshold,
-          } as unknown as MultisigAccount,
-          signatories: Array.from(signatories.values()).map(s => ({
-            accountId: toAccountId(s.address),
-          })) as Account[],
-          signer,
-        },
-      ],
+      txWrappers,
     });
   },
-  { skipVoid: false },
 );
 
 const $api = combine(
