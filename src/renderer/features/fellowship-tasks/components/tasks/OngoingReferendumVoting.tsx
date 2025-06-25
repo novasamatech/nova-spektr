@@ -1,11 +1,11 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
@@ -57,11 +57,19 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
       summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
   });
 
+  const isRFCPending = useUnit(rfcModel.$isPending);
+  const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
+  const isReferendumPending = useUnit(referendums.$pending);
+
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
+  const isPending = isReferendumPending || (isRFCProposal ? isRFCPending : isMetaPending);
+
   //todo: whitelist detection might be implemented better
   const isWhitelist = !isRFCProposal;
 
   const content = useMemo(() => {
+    if (isPending) return;
+
     if (rfc?.summary) {
       return (
         <Markdown cut="150px" compact>
@@ -79,7 +87,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     }
 
     return t('fellowship.tasks.task.anyReferendum.noDescription');
-  }, [meta, rfc]);
+  }, [meta, rfc, isPending]);
 
   return (
     <Box direction="row" gap={2}>
@@ -88,18 +96,21 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
           <Box alignSelf="flex-start" shrink={0}>
             <TaskBadge isRFC={isRFCProposal} isWhitelist={isWhitelist} />
           </Box>
-          <Box gap={3}>
+          <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3} grow={1}>
               <SmallTitleText className="truncate">
                 {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
               </SmallTitleText>
               <TaskLabels tags={tags} />
             </Box>
-            <FootnoteText as="div">{content}</FootnoteText>
+            <Box width="90%">
+              {isPending && <Skeleton height="2.5lh" width="95%" />}
+              <FootnoteText as="div">{content}</FootnoteText>
+            </Box>
           </Box>
         </button>
       </ReferendumDetailsModal>
-      <Box gap={3} padding={4} horizontalAlign="end" shrink={0}>
+      <Box height="auto" horizontalAlign="end" gap={3} padding={4} shrink={0}>
         <Slot
           id={referendumVotingTaskActionSlot}
           props={{ referendum, transaction, dateThresholds: DefaultDateThresholds }}

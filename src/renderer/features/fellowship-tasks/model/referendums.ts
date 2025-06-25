@@ -64,5 +64,7 @@ export const referendums = {
   $ongoing,
   $completed,
   $metadata,
-  pending: referendum.request.pending,
+
+  $pendingReferendumMeta: referendumMeta.request.pending,
+  $pending: referendum.request.pending,
 };
