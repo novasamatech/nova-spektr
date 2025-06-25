@@ -25,7 +25,6 @@ const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null })
 const $referendum = flow.state.map(state => state.referendum);
 
 const $evidences = fellowship.$store.map(store => store?.evidenceContent ?? []);
-const $rfcSummary = fellowship.$store.map(store => store?.rfcSummary ?? null);
 const $members = fellowship.$store.map(store => dictionary(store?.members ?? [], 'accountId'));
 const $meta = fellowship.$store.map(store => store?.referendumMeta ?? {});
 
@@ -60,37 +59,17 @@ const $evidence = combine(
   },
 );
 
-const $rfc = combine({ referendum: $referendum, rfcSummary: $rfcSummary }, ({ referendum, rfcSummary }) => {
-  if (
-    nullable(referendum) ||
-    !referendumService.isOngoing(referendum) ||
-    referendum.proposal?.type !== 'Rfc' ||
-    nullable(rfcSummary)
-  ) {
-    return null;
+const $description = combine({ referendum: $referendum, metadata: $referendumMeta }, ({ referendum, metadata }) => {
+  if (nullable(referendum)) return null;
+
+  if (referendumService.isOngoing(referendum) && referendum.proposal) {
+    if (referendum.proposal.type === 'Unknown') {
+      return referendum.proposal.description;
+    }
   }
 
-  return rfcSummary[referendum.proposal.pullRequest] ?? null;
+  return metadata?.description ?? null;
 });
-
-const $description = combine(
-  { referendum: $referendum, metadata: $referendumMeta, rfc: $rfc },
-  ({ referendum, metadata, rfc }) => {
-    if (nullable(referendum)) return null;
-
-    if (referendumService.isOngoing(referendum) && referendum.proposal) {
-      if (rfc) {
-        return rfc.summary;
-      }
-
-      if (referendum.proposal.type === 'Unknown') {
-        return referendum.proposal.description;
-      }
-    }
-
-    return metadata?.description ?? null;
-  },
-);
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.request.pending);
 const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.request.pending);
