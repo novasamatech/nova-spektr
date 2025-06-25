@@ -32,6 +32,7 @@ sample({
 
 export const rfcModel = {
   $rfcSummary,
+  $isPending: rfcDetails.request.pending,
 
   requestRfcSummary: requestRfcFx,
 };

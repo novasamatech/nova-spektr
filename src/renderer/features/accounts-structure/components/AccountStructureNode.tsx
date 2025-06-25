@@ -6,7 +6,7 @@ import { useTransformer } from '@/shared/di';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
-import { type AccountNode } from '@/domains/network';
+import { type AccountNode, identity } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
@@ -20,6 +20,7 @@ type AccountStructureNodeProps = {
 
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
+  const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
@@ -27,6 +28,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account });
 
+  const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
   return (
@@ -64,10 +66,10 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
                 </LabelText>
               )}
             </div>
-            <div className="px-4 py-2 text-sm text-text-secondary">
+            <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
               <Address
                 address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
-                title={data.node.account.name}
+                title={data.node.account.name ?? accountIdentity?.name}
                 variant="short"
                 showIcon
                 iconSize={24}
