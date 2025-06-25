@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { cnTw, toAddress } from '@/shared/lib/utils';
-import { SmallTitleText } from '@/shared/ui/Typography';
+import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { type AccountNode } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
@@ -50,15 +50,19 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
           <div className="flex flex-col">
-            <div style={{ background: data.isSelected ? config?.color : 'transparent' }}>
-              <SmallTitleText
-                className={cnTw(
-                  'border-stroke border-b px-4 py-2',
-                  data.isSelected ? 'text-white' : 'text-text-secondary',
-                )}
-              >
+            <div
+              className="border-stroke flex items-center justify-between border-b px-4 py-2"
+              style={{ background: data.isSelected ? config?.color : 'transparent' }}
+            >
+              <SmallTitleText className={data.isSelected ? 'text-white' : 'text-text-secondary'}>
                 {config?.title}
               </SmallTitleText>
+
+              {config?.subTitle && (
+                <LabelText className={cnTw('font-medium', data.isSelected ? 'text-white' : 'text-text-secondary')}>
+                  {config?.subTitle}
+                </LabelText>
+              )}
             </div>
             <div className="px-4 py-2 text-sm text-text-secondary">
               <Address

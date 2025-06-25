@@ -6,7 +6,8 @@
   },
   "accountsStructure": {
     "button": "Open overview",
-    "modalTitle": "Account Overview"
+    "modalTitle": "Account Overview",
+    "multisigThreshold": "{ threshold } out of { total }"
   },
   "addressBook": {
     "contactList": {
