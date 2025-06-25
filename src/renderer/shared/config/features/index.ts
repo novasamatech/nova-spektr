@@ -31,6 +31,7 @@ export const $defaultFeatures = createStore({
   ledger: true,
   extensionWallets: true,
   accountsStructure: true,
+  multisigRemark: false,
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));

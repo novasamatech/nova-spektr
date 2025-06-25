@@ -42,6 +42,8 @@ export const enum TransactionType {
 
   REMARK = 'remark',
 
+  REMARK_WITH_EVENT = 'remark_with_event',
+
   UNLOCK = 'unlock',
   VOTE = 'vote',
   REVOTE = 'revote',
