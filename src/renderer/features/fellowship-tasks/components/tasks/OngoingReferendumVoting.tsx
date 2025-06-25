@@ -59,10 +59,9 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
 
   const isRFCPending = useUnit(rfcModel.$isPending);
   const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
-  const isReferendumPending = useUnit(referendums.$pending);
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-  const isPending = isReferendumPending || (isRFCProposal ? isRFCPending : isMetaPending);
+  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
   //todo: whitelist detection might be implemented better
   const isWhitelist = !isRFCProposal;
