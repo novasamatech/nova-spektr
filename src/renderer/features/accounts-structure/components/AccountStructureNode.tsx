@@ -1,6 +1,6 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useRef, MouseEvent } from 'react';
+import { type MouseEvent, memo, useMemo, useRef } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
