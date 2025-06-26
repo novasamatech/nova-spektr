@@ -6,6 +6,7 @@ import { type Encoder } from 'raptorq/raptorq';
 
 import { type Address, type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
@@ -175,13 +176,25 @@ export const createDynamicDerivationExportPayload = (
           public: decodeAddress(publicKey, false, 1),
         },
         derivedKeys: derivations
-          .filter((d) => d.cryptoType !== CryptoType.ETHEREUM)
-          .map((d) => ({
-            address: encodeAddress(d.accountId, chains[d.chainId].addressPrefix),
-            derivationPath: d.derivationPath,
-            genesisHash: hexToU8a(d.chainId),
-            encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
-          })),
+          .map((d) => {
+            const chain = chains[d.chainId];
+            const address =
+              d.cryptoType === CryptoType.ETHEREUM
+                ? (d.publicKey ?? null)
+                : chain
+                  ? encodeAddress(d.accountId, chain.addressPrefix)
+                  : null;
+
+            if (nullable(address)) return null;
+
+            return {
+              address,
+              derivationPath: d.derivationPath,
+              genesisHash: hexToU8a(d.chainId),
+              encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
+            };
+          })
+          .filter(nonNullable),
       },
     ],
   });
