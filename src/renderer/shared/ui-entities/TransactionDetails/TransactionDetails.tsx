@@ -35,7 +35,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
   const signatoryWallet = useMemo(() => {
     return signatory
       ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: a => a.accountId === signatory.accountId,
+          accountFn: a => a.accountId === signatory.accountId && a.name === signatory.name,
         })
       : null;
   }, [wallets, signatory]);
