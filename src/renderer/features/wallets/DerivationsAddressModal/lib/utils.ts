@@ -28,7 +28,12 @@ function createDerivedAccounts<T extends DraftAccount<VaultShardAccount> | Draft
 ): (T & { accountId: AccountId })[] {
   return accounts.map((account) => {
     const derivationPath = `${account.derivationPath}${cryptoTypeToMultisignerIndex(account.cryptoType)}`;
+    const derivedKey = derivedKeys[derivationPath];
 
-    return { ...account, accountId: toAccountId(derivedKeys[derivationPath].publicKey.public) };
+    return {
+      ...account,
+      accountId: toAccountId(derivedKey.publicKey.public),
+      publicKey: derivedKey.publicKey.publicHex,
+    };
   });
 }
