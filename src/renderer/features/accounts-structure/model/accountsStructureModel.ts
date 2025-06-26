@@ -89,9 +89,6 @@ export const $highlightedNodes = combine(
   ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
 
-    // ToDo: resolve
-    // const activeNode = heldAccountNode || focusedAccountNode;
-
     const pathToSelected = accountService.findRoute(
       selectedAccount,
       focusedAccountNode.account,
