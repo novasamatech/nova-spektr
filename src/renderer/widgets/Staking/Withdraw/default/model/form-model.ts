@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
@@ -15,7 +15,6 @@ import {
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
-  getNativeAsset,
   getRelaychainAsset,
   nonNullable,
   redeemableAmount,
@@ -116,9 +115,9 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
-            initiatorBalance: $initiatorBalance,
+            signatoryBalance: $signatoryBalance,
           }),
-          fn: (value, form, { fee, isMultisig, initiatorBalance }) => {
+          fn: (value, form, { fee, isMultisig, signatoryBalance }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -128,7 +127,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             if (isMultisig) {
-              const isEnough = new BN(fee).lte(new BN(initiatorBalance.balance));
+              const isEnough = new BN(signatoryBalance).gt(new BN(fee));
+
+              console.log({ isEnough, fee: fee.toString(), signatoryBalance: signatoryBalance.toString() });
 
               if (!isEnough) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
@@ -141,28 +142,6 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
   validateOn: ['submit'],
 });
-
-const $initiatorBalance = combine(
-  {
-    initiator: form.fields.initiator.$value,
-    chain: $chain,
-    balances: balanceModel.$balances,
-  },
-  ({ balances, chain, initiator }) => {
-    if (!initiator || !chain) return BN_ZERO;
-
-    const nativeAsset = getNativeAsset(chain.assets);
-    const accountBalance = balanceUtils.getBalance(
-      balances,
-      initiator.accountId,
-      chain.chainId,
-      nativeAsset.assetId.toString(),
-    );
-    if (!accountBalance) return BN_ZERO;
-
-    return transferableAmount(accountBalance);
-  },
-);
 
 // Effects
 type StakingParams = {
