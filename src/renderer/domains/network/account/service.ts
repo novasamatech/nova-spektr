@@ -39,7 +39,7 @@ function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): b
   }
 
   const supportedCryptoTypes = networkUtils.isEthereumBased(chain.options)
-    ? [CryptoType.ECDSA, CryptoType.ETHEREUM]
+    ? [CryptoType.SR25519, CryptoType.ECDSA, CryptoType.ETHEREUM]
     : [CryptoType.SR25519, CryptoType.ED25519];
 
   return supportedCryptoTypes.includes(account.cryptoType);
