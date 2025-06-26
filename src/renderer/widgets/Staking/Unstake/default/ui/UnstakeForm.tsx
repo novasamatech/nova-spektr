@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { noop } from 'lodash';
 import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
@@ -63,7 +64,7 @@ const ProxyFeeAlert = () => {
       fee={formattedFee}
       balance={formattedBalance}
       symbol={network.asset.symbol}
-      onClose={() => {}}
+      onClose={noop}
     />
   );
 };

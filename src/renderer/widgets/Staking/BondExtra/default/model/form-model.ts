@@ -288,14 +288,6 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $signatories,
-  filter: (signatories) => signatories.length === 1,
-  fn: (signatories) => signatories.at(0) ?? null,
-  target: form.fields.signatory.change,
-});
-
-sample({
-  clock: formInitiated,
   filter: ({ chain, initiator }) => nonNullable(getRelaychainAsset(chain.assets)) && nonNullable(initiator),
   fn: ({ chain, initiator }) => ({
     initiator,
@@ -305,6 +297,14 @@ sample({
     initiator: form.fields.initiator.change,
     networkStore: $networkStore,
   }),
+});
+
+sample({
+  clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
 });
 
 sample({

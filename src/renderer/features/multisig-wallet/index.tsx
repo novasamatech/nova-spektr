@@ -166,7 +166,9 @@ transactionSDK(multisigWalletFeature, {
   wrapLegacy(transaction, { api, account }) {
     if (accountUtils.isMultisigAccount(account)) {
       const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
-      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+      const extrinsicFunction = getExtrinsic[transaction.type];
+
+      const extrinsic = extrinsicFunction(transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
         const multisigTransaction: Transaction = {
@@ -177,7 +179,7 @@ transactionSDK(multisigWalletFeature, {
             threshold: account.threshold,
             otherSignatories,
             maybeTimepoint: null,
-            call: extrinsic.method.toHex(),
+            callData: extrinsic.method.toHex(),
             maxWeight,
           },
         };
