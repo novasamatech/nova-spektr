@@ -34,7 +34,6 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
-  // Ref for click outside
   const nodeRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
