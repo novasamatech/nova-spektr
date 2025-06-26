@@ -129,8 +129,6 @@ const form: Form<FormParams> = createForm<FormParams>({
             if (isMultisig) {
               const isEnough = new BN(signatoryBalance).gt(new BN(fee));
 
-              console.log({ isEnough, fee: fee.toString(), signatoryBalance: signatoryBalance.toString() });
-
               if (!isEnough) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
