@@ -86,6 +86,7 @@ accountSDK(multisigWalletFeature, {
       return {
         title: 'Signatory',
         color: '#C3C3CB',
+        disabled: true,
       };
     }
   },
