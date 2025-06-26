@@ -20,6 +20,7 @@ export type Chain = {
 
 export const enum AdditionalType {
   IDENTITY_CHAIN = 'identityChain',
+  TIMELINE_CHAIN = 'timelineChain',
 }
 
 export const enum ChainOptions {
