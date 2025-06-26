@@ -74,13 +74,11 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
-  visualGraphNode({ account }) {
-    const { t } = useI18n();
-
+  visualGraphNode({ account, translation }) {
     if (accountUtils.isMultisigAccount(account)) {
       return {
         title: 'Multisig',
-        subTitle: t('accountsStructure.multisigThreshold', {
+        subTitle: translation('accountsStructure.multisigThreshold', {
           threshold: account.threshold,
           total: account.signatories.length,
         }),

@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
@@ -19,6 +20,7 @@ type AccountStructureNodeProps = {
 };
 
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
+  const { t } = useI18n();
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
   const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
@@ -26,7 +28,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
 
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account });
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, translation: t });
 
   const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;

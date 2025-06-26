@@ -1,8 +1,10 @@
+import { type TFunction } from 'i18next';
+
 import { createSDK, createTransformer } from '@/shared/di';
 import { type AnyAccount, accountService } from '@/domains/network';
 
 export const accountNodeConfigTransformer = createTransformer<
-  { account: AnyAccount },
+  { account: AnyAccount; translation: TFunction<'translation'> },
   { title: string; subTitle?: string; color: string }
 >();
 
