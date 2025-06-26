@@ -1,7 +1,14 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import { type Transaction, TransactionType, WalletIconType, WalletType } from '@/shared/core';
+import {
+  AccountType,
+  type MultisigSignatoryAccount,
+  type Transaction,
+  TransactionType,
+  WalletIconType,
+  WalletType,
+} from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
@@ -31,7 +38,10 @@ accountSDK(multisigWalletFeature, {
     return accountUtils.isMultisigAccount(account);
   },
   availableOnChain({ account, chain }) {
-    return accountUtils.isMultisigAccount(account) && networkUtils.isMultisigSupported(chain.options);
+    return (
+      (accountUtils.isMultisigAccount(account) || accountUtils.isMultisigSignatoryAccount(account)) &&
+      networkUtils.isMultisigSupported(chain.options)
+    );
   },
   canSignMultipleTransactions() {
     return false;
@@ -39,16 +49,57 @@ accountSDK(multisigWalletFeature, {
   collectAccountChildren(children, { account, accounts }) {
     if (accountUtils.isMultisigAccount(account)) {
       return account.signatories
-        .flatMap(signatory =>
-          accounts.filter(a =>
-            accountUtils.isProxiedAccount(a)
-              ? a.proxyAccountId === signatory.accountId
-              : a.accountId === signatory.accountId,
-          ),
-        )
+        .map((signatory, index) => {
+          const userAccount = accounts.find(a => a.accountId === signatory.accountId);
+
+          if (userAccount) {
+            return userAccount;
+          } else {
+            const accountId = signatory.accountId as string;
+            const signatoryAccount: MultisigSignatoryAccount = {
+              accountType: AccountType.MULTISIG_SIGNATORY,
+              accountId: signatory.accountId,
+              id: signatory.id ? `${signatory.id}` : `${index} ${accountId}`,
+              name: signatory.name ?? '',
+              walletId: account.walletId,
+              cryptoType: account.cryptoType,
+              type: 'universal',
+              signingType: account.signingType,
+            };
+
+            return signatoryAccount;
+          }
+        })
         .concat(children);
     }
     return children;
+  },
+  visualGraphNode({ account, translation }) {
+    if (accountUtils.isMultisigAccount(account)) {
+      return {
+        title: 'Multisig',
+        subTitle: translation('accountsStructure.multisigThreshold', {
+          threshold: account.threshold,
+          total: account.signatories.length,
+        }),
+        color: '#05B199',
+      };
+    }
+
+    if (accountUtils.isMultisigSignatoryAccount(account)) {
+      return {
+        title: 'Signatory',
+        color: '#C3C3CB',
+        disabled: true,
+      };
+    }
+  },
+  connection({ target }) {
+    if (accountUtils.isMultisigAccount(target)) {
+      return {
+        color: '#05B199',
+      };
+    }
   },
 });
 

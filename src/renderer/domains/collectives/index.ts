@@ -16,6 +16,7 @@ export type {
   RejectedReferendum,
   Tally,
   TimedOutReferendum,
+  RfcProposal,
 } from './referendum/types';
 
 export { referendumMeta } from './referendumMeta/store';
@@ -39,6 +40,8 @@ export type {
 
 export { feed } from './feed/store';
 export type { FeedRecord } from './feed/types';
+
+export { rfcDetails } from './rfc/store';
 
 export { salary } from './salary/store';
 export { salaryService } from './salary/service';

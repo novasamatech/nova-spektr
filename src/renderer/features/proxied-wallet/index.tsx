@@ -43,6 +43,26 @@ accountSDK(proxiedWalletFeature, {
     }
     return children;
   },
+  visualGraphNode({ account }) {
+    if (accountUtils.isProxiedAccount(account)) {
+      return {
+        title: 'Proxied wallet',
+        color: '#2A1FD5',
+      };
+    }
+  },
+  connection({ target }) {
+    if (accountUtils.isProxiedAccount(target)) {
+      return {
+        label: {
+          text: target.proxyType,
+          color: 'var(--icons-icon-alert, #7B29FF)',
+          background: '#F5EEFF',
+        },
+        color: '#2A1FD5',
+      };
+    }
+  },
 });
 
 transactionSDK(proxiedWalletFeature, {

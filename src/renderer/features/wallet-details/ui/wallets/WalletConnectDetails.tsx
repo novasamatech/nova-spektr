@@ -2,6 +2,7 @@ import { useGate, useUnit } from 'effector-react';
 import { useState, useTransition } from 'react';
 
 import { type WalletConnectGroup } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import {
@@ -17,6 +18,7 @@ import {
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
@@ -30,6 +32,8 @@ import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
+
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -134,14 +138,20 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
-            <WalletCardLg wallet={wallet}>
-              <StatusLabel
-                className="ml-auto"
-                title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
-                variant={connected ? 'success' : 'waiting'}
-              />
-            </WalletCardLg>
+          <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
+            <div>
+              <WalletCardLg wallet={wallet}>
+                <StatusLabel
+                  className="ml-auto"
+                  title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
+                  variant={connected ? 'success' : 'waiting'}
+                />
+              </WalletCardLg>
+            </div>
+
+            <div className="shrink-0">
+              <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
+            </div>
           </div>
         </Modal.HeaderContent>
         <Modal.Content disableScroll>

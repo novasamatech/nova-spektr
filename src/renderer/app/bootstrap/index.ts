@@ -47,7 +47,7 @@ const populate = async () => {
   await accounts.populate();
   await walletModel.populate();
   multisigsModel.subscribe();
-  proxyModel.populate();
+  await proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
 
@@ -96,6 +96,8 @@ export const bootstrap = () => {
     import('@/features/ledger-wallet-pairing').then(({ ledgerWalletPairingFeature }) => ledgerWalletPairingFeature),
 
     import('@/features/proxied-wallet').then(({ proxiedWalletFeature }) => proxiedWalletFeature),
+
+    import('@/features/accounts-structure').then(({ accountsStructureFeature }) => accountsStructureFeature),
 
     import('@/features/fellowship-activity-feed').then(({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature),
     import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),

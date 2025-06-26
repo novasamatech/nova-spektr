@@ -30,6 +30,8 @@ export const $defaultFeatures = createStore({
   watchOnly: true,
   ledger: true,
   extensionWallets: true,
+  accountsStructure: true,
+  multisigRemark: false,
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));

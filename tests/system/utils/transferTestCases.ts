@@ -24,3 +24,34 @@ export const transferTestCases = [
     recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
   },
 ];
+
+export const xcmTransferTestCases = [
+  {
+    chainName: 'Polkadot',
+    assetId: 0,
+    xcmChainName: 'Polkadot Asset Hub Polkadot',
+    amount: '1',
+    recipient: '14tqRfiFfYeB12o7d9YK4X9LiCMKLNCt1LoVdWZypWbwNp2Y',
+  },
+  {
+    chainName: 'Polkadot',
+    assetId: 0,
+    xcmChainName: 'Hydration',
+    amount: '0.01',
+    recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
+  },
+  {
+    chainName: 'Hydration',
+    assetId: 1,
+    xcmChainName: 'Moonbeam Moonbeam',
+    amount: '0.01',
+    recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
+  },
+  {
+    chainName: 'Karura',
+    assetId: 2,
+    xcmChainName: 'Moonriver Moonriver',
+    amount: '0.01',
+    recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
+  },
+];

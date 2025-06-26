@@ -2,12 +2,14 @@ import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -17,6 +19,8 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
+
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -103,7 +107,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     </Dropdown>
   );
 
-  const accounts = useMemo(
+  const accountsIds = useMemo(
     () => (firstAccount ? Object.values(chains).map(chain => [chain, firstAccount.accountId] as const) : []),
     [chains, firstAccount],
   );
@@ -114,13 +118,17 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
         {t('walletDetails.common.title')}
       </Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
+        <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
           <WalletCardLg wallet={wallet} />
+
+          <div className="shrink-0">
+            {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
+          </div>
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <ChainAccountsList accounts={accounts} />
+          <ChainAccountsList accounts={accountsIds} />
         ) : (
           <Tabs value={tab} onChange={setTab}>
             <Box padding={[0, 5]} shrink={0}>
@@ -130,7 +138,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
               </Tabs.List>
             </Box>
             <Tabs.Content value="accounts">
-              <ChainAccountsList accounts={accounts} />
+              <ChainAccountsList accounts={accountsIds} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
               {hasProxies ? (

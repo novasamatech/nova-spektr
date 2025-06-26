@@ -17,6 +17,7 @@ export type Progress = {
 export type MultiSigner<T extends string | Uint8Array> = {
   MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
   public: T;
+  publicHex?: string;
 };
 
 export type SeedInfo = {

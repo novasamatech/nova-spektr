@@ -37,6 +37,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.PROXY]: 'unknownConfirm',
   // Remark
   [TransactionType.REMARK]: 'unknownConfirm',
+  [TransactionType.REMARK_WITH_EVENT]: 'unknownConfirm',
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
   [TransactionType.VOTE]: 'voteMst',

@@ -78,6 +78,11 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await this.page.getByTestId(TransferModalElements.recipientInputLocator).fill(recipient);
   }
 
+  public async chooseXcmChain(chainName: string): Promise<void> {
+    await this.page.getByTestId(TransferModalElements.xcmSelectorLocator).click();
+    await this.page.getByRole('option', { name: chainName }).click();
+  }
+
   public async chooseSignatory(): Promise<void> {
     await this.page.getByTestId(TransferModalElements.signatoryLocator).click();
     await this.page.getByTestId(TransferModalElements.signatoryOptionLocator).first().click();
