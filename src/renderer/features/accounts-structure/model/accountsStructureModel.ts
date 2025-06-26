@@ -72,8 +72,11 @@ export const focusOnSelected = createEvent();
 
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
+export const holdAccountNode = createEvent<AccountNode>();
+export const releaseAccountNode = createEvent();
 
-const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode);
+const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode, releaseAccountNode);
+const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode);
 
 export const $highlightedNodes = combine(
   {
@@ -81,9 +84,13 @@ export const $highlightedNodes = combine(
     accountList: accounts.$list,
     selectedChain: $selectedChain,
     focusedAccountNode: $hoveredAccountNode,
+    heldAccountNode: $heldAccountNode,
   },
   ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
+
+    // ToDo: resolve
+    // const activeNode = heldAccountNode || focusedAccountNode;
 
     const pathToSelected = accountService.findRoute(
       selectedAccount,
@@ -176,7 +183,10 @@ export const accountsStructureModel = {
   focusOnSelected,
   enterAccountNode,
   leaveAccountNode,
+  holdAccountNode,
+  releaseAccountNode,
   $highlightedNodesIds,
+  $heldAccountNode,
 
   $graph,
 };

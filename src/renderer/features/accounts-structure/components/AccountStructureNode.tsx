@@ -1,6 +1,6 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
 import { useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useRef, MouseEvent } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -24,6 +24,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
   const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
+  const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
@@ -33,6 +34,27 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
+  // Ref for click outside
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = () => {
+    if (!config?.disabled && !heldAccountNode) {
+      accountsStructureModel.enterAccountNode(data.node);
+    }
+  };
+  const handleMouseLeave = () => {
+    if (!config?.disabled && !heldAccountNode) {
+      accountsStructureModel.leaveAccountNode();
+    }
+  };
+
+  const handleClick = (e: MouseEvent) => {
+    if (config?.disabled) return;
+
+    e.stopPropagation();
+    accountsStructureModel.holdAccountNode(data.node);
+  };
+
   return (
     <>
       {/* show on hover */}
@@ -41,13 +63,15 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
       {/*</NodeToolbar>*/}
 
       <div
+        ref={nodeRef}
         className="flex cursor-pointer overflow-hidden rounded-md bg-white shadow-md"
         style={{
           opacity: shouldFade ? 0.2 : 1,
           transition: 'opacity 300ms',
         }}
-        onMouseEnter={() => !config?.disabled && accountsStructureModel.enterAccountNode(data.node)}
-        onMouseLeave={() => !config?.disabled && accountsStructureModel.leaveAccountNode()}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       >
         <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
         <div className="w-[250px]">
