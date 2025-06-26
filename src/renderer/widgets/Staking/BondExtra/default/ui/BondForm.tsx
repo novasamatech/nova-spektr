@@ -6,12 +6,10 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, stakeableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -184,10 +182,7 @@ const FeeSection = () => {
             </>
           }
         >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit} />
-          </div>
+          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
         </DetailRow>
       )}
 
