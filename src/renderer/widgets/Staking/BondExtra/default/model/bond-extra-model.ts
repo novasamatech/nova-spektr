@@ -121,7 +121,7 @@ const formSubmitted = sample({
         signatory: formParams.signatory,
         fee: fee.toString(),
         totalFee: fee.toString(),
-        multisigDeposit,
+        multisigDeposit: multisigDeposit.toString(),
         chain: walletData.chain,
         asset: getRelaychainAsset(walletData.chain.assets)!,
         tx: tx,
