@@ -19,6 +19,7 @@ export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface VaultShardAccount extends ChainAccount {
@@ -26,6 +27,7 @@ export interface VaultShardAccount extends ChainAccount {
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface MultisigAccount extends UniversalAccount {

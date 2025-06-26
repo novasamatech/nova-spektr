@@ -5,7 +5,7 @@ import { type AnyAccount, accountService } from '@/domains/network';
 
 export const accountNodeConfigTransformer = createTransformer<
   { account: AnyAccount; translation: TFunction<'translation'> },
-  { title: string; subTitle?: string; color: string }
+  { title: string; subTitle?: string; color: string; disabled?: boolean }
 >();
 
 export const accountConnectionTransformer = createTransformer<
