@@ -75,10 +75,14 @@ accountSDK(multisigWalletFeature, {
     }
     return children;
   },
-  visualGraphNode({ account }) {
+  visualGraphNode({ account, translation }) {
     if (accountUtils.isMultisigAccount(account)) {
       return {
         title: 'Multisig',
+        subTitle: translation('accountsStructure.multisigThreshold', {
+          threshold: account.threshold,
+          total: account.signatories.length,
+        }),
         color: '#05B199',
       };
     }
