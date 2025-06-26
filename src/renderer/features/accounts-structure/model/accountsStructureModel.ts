@@ -84,22 +84,22 @@ export const $highlightedNodes = combine(
   },
   ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
-    // try to find a route
-    const route = accountService.findRoute(selectedAccount, focusedAccountNode.account, accountList, selectedChain);
 
-    if (route.length) {
-      return route;
-    }
-
-    // find a reversed route
-    const reversedRoute = accountService.findRoute(
-      focusedAccountNode.account,
+    const pathToSelected = accountService.findRoute(
       selectedAccount,
+      focusedAccountNode.account,
       accountList,
       selectedChain,
     );
 
-    return [...reversedRoute, ...focusedAccountNode.children.map((node) => node.account)];
+    const descendants: AnyAccount[] = [];
+    accountService.traverseGraph(focusedAccountNode, {
+      enter(node) {
+        descendants.push(node.account);
+      },
+    });
+
+    return [...pathToSelected, ...descendants];
   },
 );
 
