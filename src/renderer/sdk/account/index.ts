@@ -3,7 +3,7 @@ import { type AnyAccount, accountService } from '@/domains/network';
 
 export const accountNodeConfigTransformer = createTransformer<
   { account: AnyAccount },
-  { title: string; color: string }
+  { title: string; color: string; disabled?: boolean }
 >();
 
 export const accountConnectionTransformer = createTransformer<
