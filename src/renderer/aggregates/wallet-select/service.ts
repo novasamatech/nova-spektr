@@ -1,5 +1,6 @@
-import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
-import { includes } from '@/shared/lib/utils';
+import { type Chain, type Wallet, type WalletFamily, WalletType } from '@/shared/core';
+import { includes, toAddress } from '@/shared/lib/utils';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
@@ -38,13 +39,25 @@ const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, 
   }, accumulator);
 };
 
-const getFirstWallet = (wallets: Wallet[]) => {
-  const groups = Object.values(getWalletByGroups(wallets));
+const composeWalletMeta = (wallet: Wallet, accounts: AnyAccount[], chains: Record<string, Chain>) => {
+  const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
 
-  return groups.find(g => g.length > 0)?.at(0) ?? null;
+  return walletAccounts
+    .map(account => {
+      if (accountService.isUniversalAccount(account)) {
+        return Object.values(chains)
+          .filter(chain => accountService.isAccountAvailableOnChain(account, chain))
+          .map(chain => toAddress(account.accountId, { prefix: chain.addressPrefix }))
+          .join(' ');
+      }
+
+      const chain = chains[account.chainId];
+      return toAddress(account.accountId, { prefix: chain?.addressPrefix });
+    })
+    .join(' ');
 };
 
 export const walletSelectService = {
   getWalletByGroups,
-  getFirstWallet,
+  composeWalletMeta,
 };

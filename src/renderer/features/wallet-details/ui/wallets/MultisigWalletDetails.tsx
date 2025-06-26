@@ -4,6 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { $features } from '@/shared/config/features';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, toAddress } from '@/shared/lib/utils';
@@ -12,6 +13,7 @@ import { type IconNames } from '@/shared/ui/types';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
@@ -22,6 +24,8 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
+
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -51,6 +55,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
+  const features = useUnit($features);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -104,7 +109,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   // TODO: remove it when flexible multisig is supported
-  const features = useUnit($features);
 
   if (canCreatePureProxy) {
     features.flexibleMultisig
@@ -251,7 +255,15 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         </Modal.Title>
         <Modal.HeaderContent>
           <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
-            <WalletCardLg wallet={wallet} />
+            <div className="flex items-center justify-between">
+              <WalletCardLg wallet={wallet} />
+
+              {multisigAccount && (
+                <div className="shrink-0">
+                  <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
+                </div>
+              )}
+            </div>
             <div className="flex items-center">
               <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
               <div className="flex items-center text-footnote">

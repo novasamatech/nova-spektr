@@ -390,6 +390,9 @@ const getCallDataParser: Record<
   [TransactionType.REMARK]: (decoded): Record<string, any> => {
     return { remark: decoded.args[0].toString() };
   },
+  [TransactionType.REMARK_WITH_EVENT]: (decoded): Record<string, any> => {
+    return { remark: decoded.args[0].toString() };
+  },
   [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
     return {
       class: decoded.args[0].toString(),

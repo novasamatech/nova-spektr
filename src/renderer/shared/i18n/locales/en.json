@@ -4,6 +4,11 @@
     "networksColumn_one": "Network {count}",
     "networksColumn_other": "Networks {count}"
   },
+  "accountsStructure": {
+    "button": "Open overview",
+    "modalTitle": "Account Overview",
+    "multisigThreshold": "{ threshold } out of { total }"
+  },
   "addressBook": {
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
@@ -156,18 +161,16 @@
       "title": "Create flexible multisig"
     },
     "multisig": "Multisig",
-    "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
     "multisigExistText": "A multisig wallet with the selected signatories and threshold already exists. You can try to create a multisig on another network.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
-    "multisigStep": "Step { step }.",
-    "nameDescription": "Give a name to your multisig account",
-    "nameLabel": "Account",
+    "myAddress": "My address",
+    "myName": "My name",
     "nameNetworkDescription": "Select the network and the name of your multisig",
     "namePlaceholder": "Enter name",
     "networkDescription": "This new multisig will only work on this network. To carry out operations on a different network you will need to create a new multisig.",
-    "networkFee": "Network fee:",
+    "networkFee": "Network fee",
     "newMultisigTitle": "New multisig",
     "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
     "noOwnSignatoryTitle": "No owned account",
@@ -199,9 +202,9 @@
     "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryAddress": "Address",
-    "signatoryNameLabel": "Signatory name",
+    "signatoryNameLabel": "Signatory {index} name ",
     "signatorySelection": "Choose or enter address",
-    "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your multisig.",
+    "signatoryThresholdDescription": "Set up your multisig: signatories, name and threshold",
     "signatoryTitle": "Select signatories",
     "signingWallet": "Signing wallet",
     "signingWith": "Signing with",
@@ -209,7 +212,7 @@
     "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
     "thresholdErrorDescription": "Threshold must be set and superior or equal to { minThreshold }",
     "thresholdErrorTitle": "Invalid threshold",
-    "thresholdHint": "Minimum number of signatories needed to approve a transaction.",
+    "thresholdHint": "Minimum signatories needed to approve.",
     "thresholdName": "Threshold",
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
     "thresholdPlaceholder": "Select number",
@@ -217,7 +220,8 @@
     "titleOn": "on",
     "walletFormTitle": "Set up your wallet",
     "walletName": "Wallet name",
-    "walletNameLabel": "Wallet name",
+    "walletNameDescription": "This name will be visible to you only.",
+    "walletNameLabel": "Multisig wallet's name",
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
@@ -634,8 +638,7 @@
         "retain": "Should {name} be retained at Rank {rank}?",
         "votingTitle": {
           "rank": "Is it good enough for Rank {rank}?",
-          "rfc": "Is it good enough to be approved?",
-          "whitelist": "Is it good enough to be whitelisted?"
+          "rfcOrWhitelist": "What do you think?"
         }
       }
     },
@@ -671,7 +674,7 @@
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
       "voteImpact": {
         "huge": "Huge",
-        "impact": "Vote impact:",
+        "impact": "Impact:",
         "minor": "Minor",
         "moderate": "Moderate"
       },
@@ -679,6 +682,7 @@
       "votingStatus": "Voting status"
     },
     "votingHistory": {
+      "completedVotingVoted": "You found it",
       "emptyListDescription": "Members will appear here once opinions are submitted",
       "emptyListTitle": "No opinions yet",
       "level": {
@@ -689,8 +693,10 @@
       "modalTitle": "What do others think?",
       "noVotes": "No opinions have been submitted yet",
       "showHistoryButton": "View more",
-      "subtitle": "Other members find the evidence to be ",
-      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
+      "subtitle": "Other members find the evidence to be",
+      "subtitlePromotionRetention": "Other members find it to be",
+      "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
+      "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
       "votes_other": "{ count } votes",
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
@@ -2017,8 +2023,8 @@
     "wallet": "Wallet"
   },
   "voteChart": {
-    "aye": "Aye",
-    "nay": "Nay",
+    "good": "Good",
+    "notGood": "Not Good",
     "toPass": "To pass"
   },
   "walletDetails": {

@@ -1,7 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
 import {
@@ -40,7 +40,7 @@ const flowStarted = createEvent();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowFinished);
 
@@ -123,8 +123,6 @@ const getPureProxyFx = createEffect(
     });
   },
 );
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

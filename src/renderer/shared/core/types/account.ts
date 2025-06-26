@@ -19,6 +19,7 @@ export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface VaultShardAccount extends ChainAccount {
@@ -26,12 +27,17 @@ export interface VaultShardAccount extends ChainAccount {
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
+}
+
+export interface MultisigSignatoryAccount extends UniversalAccount {
+  accountType: AccountType.MULTISIG_SIGNATORY;
 }
 
 export interface WcAccount extends ChainAccount {
@@ -69,6 +75,7 @@ export const enum AccountType {
   FLEXIBLE_MULTISIG = 'flexible_multisig',
   WALLET_CONNECT = 'wallet_connect',
   PROXIED = 'proxied',
+  MULTISIG_SIGNATORY = 'multisig_signatory',
 }
 
 export const enum KeyType {

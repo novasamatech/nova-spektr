@@ -24,6 +24,14 @@ accountSDK(walletConnectWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
+  visualGraphNode({ account }) {
+    if (accountUtils.isWcAccount(account)) {
+      return {
+        title: 'WalletConnect',
+        color: '#3B99FC',
+      };
+    }
+  },
 });
 
 walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {

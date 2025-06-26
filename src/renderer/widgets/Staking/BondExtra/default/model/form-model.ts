@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -13,7 +13,7 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -33,12 +33,8 @@ const formSubmitted = createEvent();
 const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 
-const multisigDepositChanged = createEvent<string>();
-
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 const $chain = $networkStore.map((network) => network?.chain ?? null);
-
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
@@ -144,7 +140,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-
 // Computed
 
 const $initiatorBalance = combine(
@@ -228,6 +223,18 @@ const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedA
 const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
 const $isProxy = $proxiedAccount.map(nonNullable);
 const $isMultisig = $multisigAccount.map(nonNullable);
+
+const $multisigThreshold = $route.map((route) => {
+  const multisig = route.find(accountUtils.isMultisigAccount);
+  if (!multisig) return null;
+
+  return multisig.threshold;
+});
+
+const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
+});
 
 const $proxyBalance = combine(
   {
@@ -359,8 +366,6 @@ export const formModel = {
   events: {
     formInitiated,
     formCleared,
-
-    multisigDepositChanged,
   },
   output: {
     formSubmitted,

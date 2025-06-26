@@ -2,12 +2,14 @@ import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletCardLg, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -16,6 +18,8 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
+
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
@@ -114,7 +118,16 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
       </Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
-          <WalletCardLg wallet={wallet} />
+          <div className="flex items-center justify-between">
+            <WalletCardLg wallet={wallet} />
+
+            {account && (
+              <div className="shrink-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: [account] }} />
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center">
             <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
             <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>

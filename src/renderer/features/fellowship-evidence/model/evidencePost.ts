@@ -116,10 +116,9 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
-sample({
+const evidenceReqiested = sample({
   clock: submitModel.output.formSubmitted,
   source: {
-    transactions: $wrappedTx,
     api: $api,
     account: $account,
     chain: $chain,
@@ -128,11 +127,19 @@ sample({
     return nonNullable(api) && nonNullable(transactions) && nonNullable(account) && nonNullable(chain?.chainId);
   },
   fn({ api, account, chain }) {
+    if (nullable(api) || nullable(account) || nullable(chain)) return null;
+    return { api, account, chain };
+  },
+});
+
+sample({
+  clock: evidenceReqiested.filter({ fn: nonNullable }),
+  fn({ api, account, chain }) {
     return {
       palletType: 'fellowship' as const,
-      api: api!,
-      chainId: chain!.chainId,
-      accounts: [account!.accountId],
+      api,
+      chainId: chain.chainId,
+      accounts: [account.accountId],
     };
   },
   target: evidence.request,

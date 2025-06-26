@@ -12,6 +12,12 @@ import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only
 
 import { WalletDetails } from './ui/components';
 
+export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
+export { overviewSlot as vaultOverviewSlot } from './ui/wallets/VaultWalletDetails';
+export { overviewSlot as multisigOverviewSlot } from './ui/wallets/MultisigWalletDetails';
+export { overviewSlot as proxiedOverviewSlot } from './ui/wallets/ProxiedWalletDetails';
+export { overviewSlot as walletConnectOverviewSlot } from './ui/wallets/WalletConnectDetails';
+
 export { WalletDetails };
 
 /**

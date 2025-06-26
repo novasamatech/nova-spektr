@@ -46,7 +46,7 @@ const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
@@ -205,8 +205,6 @@ sample({
     isMultisig: $isMultisig,
   }),
 });
-
-sample({ clock: stepChanged, target: $step });
 
 split({
   clock: wentBackFromConfirm,

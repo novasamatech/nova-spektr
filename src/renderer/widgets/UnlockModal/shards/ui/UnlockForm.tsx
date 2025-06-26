@@ -14,8 +14,8 @@ import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
-import { type AccountWithClaim } from '@/features/governance/types/structs';
-import { unlockFormAggregate } from '../aggregates/unlockForm';
+import { type AccountWithClaim } from '../lib/types';
+import { unlockFormAggregate } from '../model/unlockForm';
 
 type Props = {
   onGoBack: () => void;
@@ -214,7 +214,7 @@ const FeeSection = () => {
           api={api}
           asset={chain.assets[0]}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
-          onDepositChange={unlockFormAggregate.events.multisigDepositChanged}
+          onDepositChange={unlockFormAggregate.multisigDepositChanged}
         />
       )}
 
@@ -223,8 +223,8 @@ const FeeSection = () => {
         api={api}
         asset={chain.assets[0]}
         transaction={transactions?.[0]?.wrappedTx}
-        onFeeChange={unlockFormAggregate.events.feeChanged}
-        onFeeLoading={unlockFormAggregate.events.isFeeLoadingChanged}
+        onFeeChange={unlockFormAggregate.feeChanged}
+        onFeeLoading={unlockFormAggregate.isFeeLoadingChanged}
       />
 
       {transactions && transactions.length > 1 && (
@@ -234,8 +234,8 @@ const FeeSection = () => {
           asset={chain.assets[0]}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
-          onFeeChange={unlockFormAggregate.events.totalFeeChanged}
-          onFeeLoading={unlockFormAggregate.events.isFeeLoadingChanged}
+          onFeeChange={unlockFormAggregate.totalFeeChanged}
+          onFeeLoading={unlockFormAggregate.isFeeLoadingChanged}
         />
       )}
     </div>

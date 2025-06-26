@@ -10,7 +10,7 @@ import { Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
-import { unlockAggregate } from '../aggregates/unlock';
+import { unlockAggregate } from '../model/unlock';
 
 export const UnlockInfo = () => {
   const { t } = useI18n();
@@ -68,7 +68,7 @@ const ActionsSection = () => {
 
   return (
     <div className="mt-3 flex items-center self-end">
-      <Button type="submit" disabled={!isUnlockable} onClick={() => unlockAggregate.events.unlockFormStarted()}>
+      <Button type="submit" disabled={!isUnlockable} onClick={() => unlockAggregate.unlockFormStarted()}>
         {t('governance.locks.unlock')}
       </Button>
     </div>

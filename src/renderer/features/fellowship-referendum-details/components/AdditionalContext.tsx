@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Icon, Markdown } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
 import { Account } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
 import { identityService } from '@/domains/network';
 import { details } from '../model/details';
@@ -11,13 +12,11 @@ import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 
 import { Card } from './Card';
 
-type Props = {
-  description?: string;
-};
-
-export const AdditionalContext = ({ description }: Props) => {
+export const AdditionalContext = () => {
   const { t } = useTranslation();
   const evidence = useUnit(details.$evidence);
+  const description = useUnit(details.$description);
+  const pendingMeta = useUnit(details.$pendingMeta);
 
   const chain = useStoreMap({
     store: fellowshipReferendumsDetailsFeature.input,
@@ -33,6 +32,15 @@ export const AdditionalContext = ({ description }: Props) => {
     keys: [memberId],
     fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
   });
+
+  if (pendingMeta)
+    return (
+      <Card>
+        <Box padding={6}>
+          <Skeleton height="5lh" width="100%" />
+        </Box>
+      </Card>
+    );
 
   if (!description?.trim())
     return (

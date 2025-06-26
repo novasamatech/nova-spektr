@@ -4,13 +4,21 @@ import { and, or } from 'patronum';
 import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
-import { type Referendum, evidence, referendum, referendumMeta, referendumService } from '@/domains/collectives';
+import {
+  type Referendum,
+  evidence,
+  referendum,
+  referendumMeta,
+  referendumService,
+  rfcDetails,
+} from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowship } from './fellowship';
 
 const requestEvidenceFx = attach({ effect: evidence.requestContent });
+const requestRfcFx = attach({ effect: rfcDetails.request });
 
 const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null });
 
@@ -55,10 +63,6 @@ const $description = combine({ referendum: $referendum, metadata: $referendumMet
   if (nullable(referendum)) return null;
 
   if (referendumService.isOngoing(referendum) && referendum.proposal) {
-    if (referendum.proposal.type === 'Rfc') {
-      return `https://github.com/polkadot-fellows/RFCs/pull/${referendum.proposal.pullRequest}`;
-    }
-
     if (referendum.proposal.type === 'Unknown') {
       return referendum.proposal.description;
     }
@@ -96,6 +100,30 @@ sample({
     return input;
   },
   target: requestEvidenceFx,
+});
+
+const rfcSummaryRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $referendum).filterMap(
+  ({ input, data: referendum }) => {
+    if (
+      nullable(referendum) ||
+      !referendumService.isOngoing(referendum) ||
+      !referendum.proposal ||
+      !referendumService.isRfcProposal(referendum.proposal)
+    ) {
+      return;
+    }
+
+    return {
+      palletType: input.palletType,
+      prNumber: referendum.proposal.pullRequest,
+      chainId: input.chainId,
+    };
+  },
+);
+
+sample({
+  clock: rfcSummaryRequested,
+  target: requestRfcFx,
 });
 
 export const details = {

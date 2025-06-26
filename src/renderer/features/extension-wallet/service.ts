@@ -30,9 +30,24 @@ function isExtensionAccount(account: AnyAccount): account is ExtensionAccount {
   return 'accountType' in account && account.accountType === 'extension';
 }
 
+function isPolkadotExtensionAccount(account: ExtensionAccount): boolean {
+  return account.extension === 'polkadot-js';
+}
+
+function isTalismanExtensionAccount(account: ExtensionAccount): boolean {
+  return account.extension === 'talisman';
+}
+
+function isSubWalletExtensionAccount(account: ExtensionAccount): boolean {
+  return account.extension === 'subwallet-js';
+}
+
 export const polkadotExtensionService = {
   isExtensionWallet,
   isExtensionAccount,
+  isPolkadotExtensionAccount,
+  isTalismanExtensionAccount,
+  isSubWalletExtensionAccount,
   isPolkadotExtensionWallet,
   isTalismanExtensionWallet,
   isSubWalletExtensionWallet,

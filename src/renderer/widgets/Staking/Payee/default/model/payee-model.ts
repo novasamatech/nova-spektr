@@ -21,7 +21,7 @@ const flowStarted = createEvent<FormInput>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $walletData = restore<FormInput | null>(flowStarted, null).reset(flowFinished);
 
@@ -66,8 +66,6 @@ sample({
 });
 
 // Steps
-
-sample({ clock: stepChanged, target: $step });
 
 sample({
   clock: flowStarted,

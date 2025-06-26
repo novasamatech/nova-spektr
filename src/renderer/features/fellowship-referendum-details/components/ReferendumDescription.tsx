@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Markdown, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { type Referendum, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 
 import { AdditionalContext } from './AdditionalContext';
@@ -26,11 +26,10 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
   const canHaveEvidence =
     nonNullable(referendum) &&
     nonNullable(referendumMeta) &&
-    referendumService.isOngoing(referendum) &&
     (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track));
 
   const shouldRenderEvidence = nonNullable(evidence) && !pendingEvidence;
-  const shouldRenderEvidencePending = nullable(evidence) && pendingEvidence;
+  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidence) && pendingEvidence;
   const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidence) && !pendingEvidence;
 
   return (
@@ -46,7 +45,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      <AdditionalContext description={referendumMeta?.description} />
+      <AdditionalContext />
     </>
   );
 });

@@ -21,7 +21,7 @@ const flowStarted = createEvent<WalletDataShards>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $walletDataShards = restore<WalletDataShards | null>(flowStarted, null).reset(flowFinished);
 const $walletData = $walletDataShards.map((data) => {
@@ -76,8 +76,6 @@ sample({
 
 // Steps
 
-sample({ clock: stepChanged, target: $step });
-
 sample({
   clock: flowStarted,
   fn: (data) => ({
@@ -123,7 +121,7 @@ const formSubmitted = sample({
         signatory: formParams.signatory,
         fee: fee.toString(),
         totalFee: fee.toString(),
-        multisigDeposit,
+        multisigDeposit: multisigDeposit.toString(),
         chain: walletData.chain,
         asset: getRelaychainAsset(walletData.chain.assets)!,
         tx: tx,

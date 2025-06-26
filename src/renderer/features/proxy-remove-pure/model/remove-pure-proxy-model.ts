@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample, split } from 'effector';
+import { combine, createEvent, createStore, restore, sample, split } from 'effector';
 import { spread } from 'patronum';
 
 import {
@@ -45,7 +45,7 @@ const flowStarted = createEvent<Input>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowFinished);
 
@@ -199,8 +199,6 @@ const $shouldRemovePureProxy = combine(
     return isPureProxy && anyProxies.length === 1;
   },
 );
-
-sample({ clock: stepChanged, target: $step });
 
 split({
   clock: wentBackFromConfirm,
