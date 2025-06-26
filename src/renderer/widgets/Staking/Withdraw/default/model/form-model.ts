@@ -318,6 +318,14 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
+});
+
+sample({
+  clock: formInitiated,
   source: {
     networkStore: $networkStore,
     api: $api,
