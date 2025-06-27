@@ -1,10 +1,17 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, ChainOptions } from '@/shared/core';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+const $allChains = networkModel.$chains.map((chains) => {
+  const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
+  const filteredChains = Object.values(chains).filter((chain) =>
+    chain.options?.some((option) => requiredOptions.has(option)),
+  );
+
+  return filteredChains;
+});
 
 const selectChain = createEvent<string>();
 const setAccounts = createEvent<AnyAccount[] | null>();
