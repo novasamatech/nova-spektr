@@ -40,7 +40,7 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
 
 async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: AnyTransaction = transaction;
-  for (const account of Array.from(route).reverse()) {
+  for (const account of Array.from(route)) {
     const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, api });
     if (nonNullable(result)) {
       wrapped = result;
@@ -56,7 +56,7 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
  */
 async function wrapLegacyTransaction(transaction: DeprecatedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: DeprecatedTransaction = transaction;
-  for (const account of Array.from(route).reverse()) {
+  for (const account of Array.from(route)) {
     const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, { account, api });
     if (nonNullable(result)) {
       wrapped = result;
