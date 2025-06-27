@@ -11,16 +11,10 @@ import { accountUtils } from '@/entities/wallet';
 export async function migrateEVMAccountsCryptoType(t: Transaction): Promise<void> {
   const accounts = await t.table<AnyAccount>('accounts2').toArray();
 
-  const accountsToUpdate = accounts.map((account) => {
-    if (accountUtils.isWcAccount(account)) {
-      return {
-        ...account,
-        cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
-      };
-    } else {
-      return account;
-    }
-  });
+  const accountsToUpdate = accounts.filter(accountUtils.isWcAccount).map((account) => ({
+    ...account,
+    cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
+  }));
 
   await t.table('accounts2').bulkPut(accountsToUpdate);
 }
