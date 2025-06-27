@@ -78,7 +78,7 @@ export interface NovaWalletWallet extends Wallet {
 
 export type WalletsMap = Record<ID, Wallet>;
 
-export const enum WalletType {
+export enum WalletType {
   WATCH_ONLY = 'wallet_wo',
   POLKADOT_VAULT = 'wallet_pv',
   MULTISIG = 'wallet_ms',
