@@ -1,11 +1,10 @@
 import { BN } from '@polkadot/util';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { noop } from 'lodash';
 import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -15,7 +14,6 @@ import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governanc
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -49,7 +47,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
           <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
           <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-            <ProxyFeeAlert />
             <Signatories />
             <Amount />
             <Conviction />
@@ -64,34 +61,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
         <ActionsSection onGoBack={onGoBack} />
       </Modal.Footer>
     </Modal>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const fee = useUnit(formModel.$fee);
-  const balance = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-
-  if (!network || !proxyWallet || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(balance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={noop}
-    />
   );
 };
 

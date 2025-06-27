@@ -3,12 +3,10 @@ import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignatorySelector } from '@/entities/operations';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -26,7 +24,6 @@ export const NominateForm = ({ onGoBack }: Props) => {
   return (
     <div className="w-modal px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
         <Signatories />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
@@ -34,34 +31,6 @@ export const NominateForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
     </div>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const fee = useUnit(formModel.$fee);
-  const proxyBalance = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-
-  if (!proxyWallet || !network || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(proxyBalance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={() => {}}
-    />
   );
 };
 

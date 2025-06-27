@@ -4,7 +4,7 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, stakeableAmount, toAddress, validateAddress } from '@/shared/lib/utils';
+import { stakeableAmount, toAddress, validateAddress } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance } from '@/shared/ui-entities';
@@ -13,7 +13,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert } from '@/entities/wallet';
+import { AccountAddress } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -31,7 +31,6 @@ export const PayeeForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
         <Signatories />
         <Destination />
       </form>
@@ -40,34 +39,6 @@ export const PayeeForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
     </div>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const fee = useUnit(formModel.$fee);
-  const balance = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-
-  if (!network || !proxyWallet || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(balance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={initiator.reset}
-    />
   );
 };
 
