@@ -63,7 +63,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
             </div>
 
             <div className="w-[200px]">
-              <AccountSelector walletAccounts={walletAccounts} />
+              <AccountSelector />
             </div>
 
             <div className="w-[200px]">
