@@ -1,26 +1,58 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type MultisigAccount } from '@/shared/core';
+import { type ChainId, type MultisigAccount, type WalletFamily } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, nonNullable, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
-import { Box, Field, Input, Select } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import {
+  formatBalance,
+  includesMultiple,
+  nonNullable,
+  performSearch,
+  toAddress,
+  toShortAddress,
+  validateAddress,
+} from '@/shared/lib/utils';
+import { Button, CaptionText, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Address as AccountAddress, Address, AssetBalance } from '@/shared/ui-entities';
+import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { contactModel } from '@/entities/contact';
 import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import {
+  AccountSelectModal,
+  DeliveryFeeAlert,
+  ProxyWalletAlert,
+  WalletIcon,
+  accountUtils,
+  walletModel,
+  walletUtils,
+} from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
+import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
 
 type Props = {
   onGoBack: () => void;
 };
+
+type ComboboxItem = {
+  id: string;
+  label: React.ReactNode;
+  value: { address: string; walletId?: number };
+};
+
+type ComboboxGroup = {
+  id: string;
+  label: React.ReactNode;
+  items: ComboboxItem[];
+};
+
+const { services, constants } = walletSelectFeature;
 
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.$transferForm);
@@ -217,11 +249,118 @@ const Destination = () => {
     fields: { destination, xcmChain },
   } = useForm(formModel.$transferForm);
 
+  const contacts = useUnit(contactModel.$contacts);
+  const wallets = useUnit(walletModel.$wallets);
+  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
+  const accountsList = useUnit(accounts.$list);
+
+  const [query, setQuery] = useState('');
+  const [options, setOptions] = useState<ComboboxGroup[]>([]);
+
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
+
+  const filteredContacts = useMemo(() => {
+    return performSearch({
+      query,
+      records: contacts,
+      weights: { name: 1, address: 0.5 },
+    });
+  }, [query, contacts]);
+
+  const chain = xcmChain.value;
+
+  useEffect(() => {
+    const filteredAccounts = accountsList.filter((account) => {
+      const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
+      const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+      const queryPass = includesMultiple([account.name, address], query);
+      const isMyself = selectedAccounts.find((a) => a.accountId === account.accountId);
+
+      return isChainMatch && isCorrectAccount && queryPass && !isMyself;
+    });
+
+    const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);
+    const ownAccountOptions: ComboboxGroup[] = [];
+
+    for (const [walletFamily, accountsGroup] of Object.entries(accountByGroup)) {
+      if (accountsGroup.length === 0) continue;
+
+      const accountOptions: ComboboxItem[] = [];
+
+      for (const account of accountsGroup) {
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+        accountOptions.push({
+          id: address,
+          value: { address, walletId: account.walletId },
+          label: <Address showIcon title={account.name} address={address} />,
+        });
+      }
+
+      ownAccountOptions.push({
+        id: walletFamily,
+        label: (
+          <div className="flex items-center gap-x-2" key={walletFamily}>
+            <WalletIcon type={walletFamily as WalletFamily} />
+            <CaptionText className="font-semibold uppercase text-text-secondary">
+              {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
+            </CaptionText>
+          </div>
+        ),
+        items: accountOptions,
+      });
+    }
+
+    setOptions(ownAccountOptions);
+  }, [query, chain, wallets]);
+
+  useEffect(() => {
+    const addressOptions: ComboboxItem[] = [];
+    for (const contact of filteredContacts) {
+      const displayedAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
+      const isValidAddress = validateAddress(displayedAddress, chain);
+
+      if (!isValidAddress) continue;
+
+      addressOptions.push({
+        id: contact.id.toString(),
+        label: <Address showIcon title={contact.name} address={displayedAddress} />,
+        value: { address: displayedAddress },
+      });
+    }
+
+    if (validateAddress(query, chain)) {
+      const displayedAddress = toAddress(query, { prefix: chain.addressPrefix });
+      const addressExists = options.some((group) =>
+        group.items.some((item) => item.value.address === displayedAddress),
+      );
+
+      if (addressExists) return;
+
+      addressOptions.push({
+        id: query,
+        label: <Address showIcon address={displayedAddress} />,
+        value: { address: displayedAddress },
+      });
+    }
+
+    if (addressOptions.length === 0) return;
+
+    const contactsOptions = [
+      {
+        id: 'contacts',
+        label: t('createMultisigAccount.contactsGroup'),
+        items: addressOptions,
+      },
+    ];
+
+    setOptions((options) => [...options, ...contactsOptions]);
+  }, [query, chain, filteredContacts]);
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(destination.value, xcmChain.value) ? (
+      {validateAddress(destination.value, chain) ? (
         <Identicon size={20} address={destination.value} background={false} />
       ) : (
         <Icon size={20} name="emptyIdenticon" />
@@ -229,23 +368,42 @@ const Destination = () => {
     </div>
   );
 
-  const suffixElement = (
-    <Button size="sm" pallet="secondary" onClick={() => formModel.events.myselfClicked()}>
-      {t('transfer.myselfButton')}
-    </Button>
-  );
+  const handleChange = () => {
+    formModel.events.myselfClicked();
+    setQuery('');
+  };
 
   return (
     <Field text={t('transfer.recipientLabel')}>
-      <Input
-        placeholder={t('transfer.recipientPlaceholder')}
-        testId={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
-        invalid={destination.hasError()}
-        value={destination.value}
-        prefixElement={prefixElement}
-        suffixElement={isMyselfXcmEnabled && suffixElement}
-        onChange={destination.onChange}
-      />
+      <Box direction="row" gap={2} horizontalAlign="center" verticalAlign="center">
+        <Combobox
+          data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
+          placeholder={t('transfer.recipientPlaceholder')}
+          invalid={destination.hasError()}
+          value={destination.value.trim()}
+          prefixElement={prefixElement}
+          height="md"
+          onChange={destination.onChange}
+          onInput={setQuery}
+        >
+          {options.map((group) => (
+            <Combobox.Group key={group.id} title={group.label}>
+              {group.items.map((option) => (
+                <Combobox.Item key={option.id} value={option.value.address}>
+                  {option.label}
+                </Combobox.Item>
+              ))}
+            </Combobox.Group>
+          ))}
+        </Combobox>
+
+        {isMyselfXcmEnabled && (
+          <Button pallet="secondary" onClick={handleChange}>
+            {t('transfer.myselfButton')}
+          </Button>
+        )}
+      </Box>
+
       <InputHint active={destination.hasError()} variant="error">
         {t(destination.errorText())}
       </InputHint>
