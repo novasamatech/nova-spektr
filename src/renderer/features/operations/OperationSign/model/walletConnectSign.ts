@@ -6,9 +6,10 @@ import { createGate } from 'effector-react';
 import { nanoid } from 'nanoid';
 import { combineEvents, spread } from 'patronum';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type ChainId, type HexString, type WcAccount } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
+import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
@@ -20,10 +21,13 @@ type SignResponse = {
   signature: HexString;
 };
 
-const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloads: [] } });
+const flow = createGate<{ payloads: SigningPayload[]; accounts: AnyAccount[] }>({
+  defaultState: { payloads: [], accounts: [] },
+});
 const $step = createStore<Step>('idle');
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
+const $accounts = flow.state.map(({ accounts }) => accounts);
 
 const $transactions = createStore<ReturnType<typeof transactionService.createPayloadWithMetadata>[]>([]);
 
@@ -231,6 +235,66 @@ sample({
   filter: (step) => step === 'idle',
   fn: () => null,
   target: $pending,
+});
+
+// updating accounts
+
+sample({
+  clock: getSessionFx.done,
+  source: {
+    accounts: $accounts,
+    chains: networkModel.$chains,
+  },
+  fn: ({ accounts, chains }, { result: session }) => {
+    const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
+    const accountsFromSession = walletConnectService.getAccountsFromSession(session, Object.values(chains));
+    const accountsToCreate = new Set<AnyAccountDraft<WcAccount>>();
+    const accountsToUpdate = new Set<WcAccount>();
+    const accountsToDelete = new Set(wcAccounts);
+
+    const name = wcAccounts.map((a) => a.name).at(0) ?? 'unknown';
+    const walletId = wcAccounts.map((a) => a.walletId).at(0);
+
+    assert(walletId, "Can't get walletId from accounts");
+
+    for (const { accountId, chain } of accountsFromSession) {
+      const account = wcAccounts.find((a) => a.accountId === accountId && a.chainId === chain.chainId);
+
+      if (account) {
+        if (!walletConnectService.hasSameTopic(account, session)) {
+          accountsToUpdate.add(walletConnectService.updateAccount(account, session));
+        }
+      } else {
+        accountsToCreate.add(
+          walletConnectService.createAccount({
+            walletId,
+            name,
+            accountId,
+            chainId: chain.chainId,
+            session,
+          }),
+        );
+      }
+
+      for (const accountToDelete of accountsToDelete) {
+        if (accountToDelete.chainId === chain.chainId) {
+          accountsToDelete.delete(accountToDelete);
+          break;
+        }
+      }
+    }
+
+    return {
+      create: Array.from(accountsToCreate),
+      update: Array.from(accountsToUpdate),
+      delete: Array.from(accountsToDelete),
+    };
+  },
+  target: spread({
+    create: accounts.createAccounts,
+    update: accounts.updateAccounts,
+    delete: accounts.deleteAccounts,
+  }),
 });
 
 export const walletConnectSign = {
