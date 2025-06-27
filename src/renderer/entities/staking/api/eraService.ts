@@ -65,5 +65,11 @@ async function getTimeToEra(api: ApiPromise, timelineApi: ApiPromise, destinatio
   const leftEras = destinationEra - activeEra.index.toNumber() - 1;
   const blocksLeftForEras = leftEras * eraLength * sessionDuration;
 
-  return (eraRemained + blocksLeftForEras) * blockTime;
+  // After asset hub migration, active era updates are delayed (no longer tied to session end).
+  // Add a 1–2 block buffer to unstaking timers to avoid edge cases,
+  // but only if the staking chain differs from the timeline chain.
+  // TODO buffer = 1; when polkadot fully migrates to asset hub
+  const buffer = api === timelineApi ? 0 : 1;
+
+  return (eraRemained + blocksLeftForEras + buffer) * blockTime;
 }
