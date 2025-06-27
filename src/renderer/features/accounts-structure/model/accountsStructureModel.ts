@@ -83,10 +83,12 @@ export const $highlightedNodes = combine(
     selectedAccount: $selectedAccount,
     accountList: accounts.$list,
     selectedChain: $selectedChain,
-    focusedAccountNode: $hoveredAccountNode,
+    hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
   },
-  ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
+  ({ selectedAccount, accountList, selectedChain, hoveredAccountNode, heldAccountNode }) => {
+    const focusedAccountNode = heldAccountNode ?? hoveredAccountNode;
+
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
 
     const pathToSelected = accountService.findRoute(
