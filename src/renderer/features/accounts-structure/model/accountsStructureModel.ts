@@ -30,11 +30,16 @@ const $availableAccounts = combine(
   },
 );
 
-const $selectedAccount = restore(selectAccount, null).on($availableAccounts, (selectedAccount, availableAccounts) => {
-  if (!selectedAccount) return availableAccounts?.[0];
-
-  return availableAccounts?.find((item) => item.accountId === selectedAccount?.accountId) ?? availableAccounts?.[0];
-});
+const $selectedAccount = combine(
+  {
+    selected: restore(selectAccount, null),
+    availableAccounts: $availableAccounts,
+  },
+  ({ selected, availableAccounts }) => {
+    if (selected) return selected;
+    return availableAccounts?.[0] ?? null;
+  },
+);
 
 const $availableChains = combine(
   {
