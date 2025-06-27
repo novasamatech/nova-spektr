@@ -22,7 +22,7 @@ import { Box, Skeleton } from '@/shared/ui-kit';
 import { type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { SelectedValidatorsModal, useValidatorsMap } from '@/entities/staking';
@@ -49,11 +49,6 @@ type Props = {
 export const Details = ({ api, operation, account, chain, signatory }: Props) => {
   const { t } = useI18n();
 
-  const connection = useStoreMap({
-    store: networkModel.$connections,
-    keys: [chain.chainId],
-    fn: (connections, [chainId]) => connections[chainId] ?? null,
-  });
   const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
@@ -100,7 +95,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
   const defaultAsset = chain?.assets?.[0];
 
-  const validatorsMap = useValidatorsMap(api, connection && networkUtils.isLightClientConnection(connection));
+  const validatorsMap = useValidatorsMap(api);
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 

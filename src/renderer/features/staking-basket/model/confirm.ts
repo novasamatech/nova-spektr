@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
 import { basketOperationsService } from '@/aggregates/basket-operations';
@@ -45,42 +45,39 @@ type DataParams = {
 
 const flow = createGate<BasketTransaction>();
 
-const prepareBondNominateDataFx = createEffect(
-  async ({ transaction, accounts, connections, chains, apis }: DataParams) => {
-    const bondTx = transaction.coreTx.args.transactions.find((t: Transaction) => t.type === TransactionType.BOND)!;
-    const nominateTx = transaction.coreTx.args.transactions.find(
-      (t: Transaction) => t.type === TransactionType.NOMINATE,
-    )!;
+const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
+  const bondTx = transaction.coreTx.args.transactions.find((t: Transaction) => t.type === TransactionType.BOND)!;
+  const nominateTx = transaction.coreTx.args.transactions.find(
+    (t: Transaction) => t.type === TransactionType.NOMINATE,
+  )!;
 
-    const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
-      transaction,
-      apis,
-      chains,
-      accounts,
-    );
+  const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
+    transaction,
+    apis,
+    chains,
+    accounts,
+  );
 
-    const era = await eraService.getActiveEra(apis[chainId]);
-    const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
-    const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0, isLightClient);
+  const era = await eraService.getActiveEra(apis[chainId]);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
 
-    const validators = nominateTx.args.targets.map((address: string) => validatorsMap[address]);
+  const validators = nominateTx.args.targets.map((address: string) => validatorsMap[address]);
 
-    return {
-      id: transaction.id,
-      chain,
-      asset: chain.assets[0],
-      shards: [account],
-      amount: bondTx.args.value,
-      validators,
-      destination: bondTx.args.dest,
-      description: '',
-      signatory: null,
+  return {
+    id: transaction.id,
+    chain,
+    asset: chain.assets[0],
+    shards: [account],
+    amount: bondTx.args.value,
+    validators,
+    destination: bondTx.args.dest,
+    description: '',
+    signatory: null,
 
-      fee,
-      multisigDeposit: '0',
-    } as BondNominateInput;
-  },
-);
+    fee,
+    multisigDeposit: '0',
+  } as BondNominateInput;
+});
 
 const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
@@ -100,7 +97,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
   } as BondExtraInput;
 });
 
-const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis, connections }: DataParams) => {
+const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
   const { chainId, chain, account, fee } = await basketOperationsService.getTransactionData(
     transaction,
     apis,
@@ -109,8 +106,7 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
   );
 
   const era = await eraService.getActiveEra(apis[chainId]);
-  const isLightClient = networkUtils.isLightClientConnection(connections[chainId]);
-  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0, isLightClient);
+  const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
 
   const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[address]);
 
