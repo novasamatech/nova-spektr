@@ -8,6 +8,7 @@ const $allChains = networkModel.$chains.map((chains) => {
   const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
   return Object.values(chains).filter((chain) => chain.options?.some((option) => requiredOptions.has(option)));
 });
+const $allChainsMap = $allChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
 const selectChain = createEvent<ChainId>();
 const setAccounts = createEvent<AnyAccount[] | null>();
@@ -30,16 +31,11 @@ const $availableAccounts = combine(
   },
 );
 
-const $selectedAccount = combine(
-  {
-    selected: restore(selectAccount, null),
-    availableAccounts: $availableAccounts,
-  },
-  ({ selected, availableAccounts }) => {
-    if (selected) return selected;
-    return availableAccounts?.[0] ?? null;
-  },
-);
+const $selectedAccount = restore(selectAccount, null).on($availableAccounts, (selectedAccount, availableAccounts) => {
+  return (
+    availableAccounts?.find((item) => item.accountId === selectedAccount?.accountId) ?? availableAccounts?.[0] ?? null
+  );
+});
 
 const $availableChains = combine(
   {
@@ -197,8 +193,9 @@ export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
   $selectedAccount,
-  $allAccounts,
+  $availableAccounts,
   $availableChains,
+  $allChainsMap,
   $availableChainsMap,
   $network,
 
