@@ -1,21 +1,29 @@
 import { type Transaction } from 'dexie';
 
-import { CryptoType } from '@/shared/core';
+import { CryptoType, type Wallet } from '@/shared/core';
 import { isEthereumAccountId } from '@/shared/lib/utils/address';
 import { type AnyAccount } from '@/domains/network';
+import { walletUtils } from '@/entities/wallet';
 
 /**
  * Migration to fix cryptoType for connected EVM accounts
  */
 export async function migrateEVMAccountsCryptoType(t: Transaction): Promise<void> {
+  const wallets = await t.db.table<Wallet>('wallets').toArray();
   const accounts = await t.table<AnyAccount>('accounts2').toArray();
 
-  console.log('migrateEVMAccountsCryptoType', { accounts });
+  const accountsToUpdate = accounts.map((account) => {
+    const wallet = wallets.find((wallet) => wallet.id === account.walletId);
 
-  const accountsToUpdate = accounts.map((account) => ({
-    ...account,
-    cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
-  }));
+    if (walletUtils.isWalletConnect(wallet)) {
+      return {
+        ...account,
+        cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
+      };
+    } else {
+      return account;
+    }
+  });
 
   await t.table('accounts2').bulkPut(accountsToUpdate);
 }
