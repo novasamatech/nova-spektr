@@ -48,7 +48,6 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   };
 
   const handleClick = (e: MouseEvent) => {
-    console.log('handleClick');
     if (config?.disabled) return;
 
     e.stopPropagation();
@@ -56,7 +55,6 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
     if (heldAccountNode?.account.id === data.node.account.id) {
       accountsStructureModel.releaseAccountNode();
     } else {
-      console.log('holdAccountNode');
       accountsStructureModel.holdAccountNode(data.node);
     }
   };
