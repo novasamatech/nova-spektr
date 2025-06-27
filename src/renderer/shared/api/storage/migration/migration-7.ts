@@ -1,9 +1,12 @@
 import { type Transaction } from 'dexie';
 
-import { CryptoType } from '@/shared/core';
+import { AccountType, CryptoType, type WcAccount } from '@/shared/core';
 import { isEthereumAccountId } from '@/shared/lib/utils/address';
 import { type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+
+function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
+  return 'accountType' in account && account.accountType === AccountType.WALLET_CONNECT;
+}
 
 /**
  * Migration to fix cryptoType for connected EVM accounts
@@ -11,7 +14,7 @@ import { accountUtils } from '@/entities/wallet';
 export async function migrateEVMAccountsCryptoType(t: Transaction): Promise<void> {
   const accounts = await t.table<AnyAccount>('accounts2').toArray();
 
-  const accountsToUpdate = accounts.filter(accountUtils.isWcAccount).map((account) => ({
+  const accountsToUpdate = accounts.filter(isWcAccount).map((account) => ({
     ...account,
     cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
   }));
