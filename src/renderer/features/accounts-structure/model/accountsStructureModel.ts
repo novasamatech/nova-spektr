@@ -1,26 +1,45 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain, ChainOptions } from '@/shared/core';
+import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 const $allChains = networkModel.$chains.map((chains) => {
   const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
-  const filteredChains = Object.values(chains).filter((chain) =>
-    chain.options?.some((option) => requiredOptions.has(option)),
-  );
-
-  return filteredChains;
+  return Object.values(chains).filter((chain) => chain.options?.some((option) => requiredOptions.has(option)));
 });
 
-const selectChain = createEvent<string>();
+const selectChain = createEvent<ChainId>();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
 const $selectedChainId = restore(selectChain, null);
 
-const $accountList = restore(setAccounts, null);
-const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
+const $allAccounts = restore(setAccounts, null);
+
+const $availableAccounts = combine(
+  {
+    allAccounts: $allAccounts,
+    allChains: $allChains,
+  },
+  ({ allAccounts, allChains }) => {
+    if (!allAccounts) return null;
+    return allAccounts.filter((account) =>
+      allChains.some((chain) => accountService.isAccountAvailableOnChain(account, chain)),
+    );
+  },
+);
+
+const $selectedAccount = combine(
+  {
+    selected: restore(selectAccount, null),
+    availableAccounts: $availableAccounts,
+  },
+  ({ selected, availableAccounts }) => {
+    if (selected) return selected;
+    return availableAccounts?.[0] ?? null;
+  },
+);
 
 const $availableChains = combine(
   {
@@ -28,26 +47,30 @@ const $availableChains = combine(
     account: $selectedAccount,
   },
   ({ chains, account }) => {
-    if (!account) return chains;
-    return chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
+    return !account ? chains : chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
   },
 );
+
+const $availableChainsMap = $availableChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
 // Set initial chain to first available one when account changes
 sample({
   clock: $availableChains,
   source: $selectedChainId,
-  fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
+  fn: (_, filteredChains) => {
+    const firstChain = Array.from(filteredChains.values())[0];
+    return firstChain?.chainId ?? null;
+  },
   target: selectChain,
 });
 
 const $selectedChain = combine(
   {
     chainId: $selectedChainId,
-    chains: $availableChains,
+    chains: $availableChainsMap,
   },
   ({ chainId, chains }) => {
-    return chains.find((chain) => chain.chainId === chainId) ?? null;
+    return chainId ? (chains.get(chainId) ?? null) : null;
   },
 );
 
@@ -172,8 +195,9 @@ export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
   $selectedAccount,
-  $accountList,
+  $allAccounts,
   $availableChains,
+  $availableChainsMap,
   $network,
 
   selectChain,

@@ -4,7 +4,6 @@ import { toAddress } from '@/shared/lib/utils';
 import { Address } from '@/shared/ui-entities';
 import { Select } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { networkModel } from '@/entities/network';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 type AccountSelector = {
@@ -13,7 +12,7 @@ type AccountSelector = {
 
 export const AccountSelector = ({ walletAccounts }: AccountSelector) => {
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
-  const chains = useUnit(networkModel.$chains);
+  const chains = useUnit(accountsStructureModel.$availableChainsMap);
 
   return (
     <Select
@@ -27,7 +26,7 @@ export const AccountSelector = ({ walletAccounts }: AccountSelector) => {
       }}
     >
       {walletAccounts.map((account) => {
-        const chain = accountService.isChainAccount(account) ? chains[account.chainId] : null;
+        const chain = accountService.isChainAccount(account) ? chains.get(account.chainId) : undefined;
         return (
           <Select.Item key={account.id} value={account.id}>
             <Address
