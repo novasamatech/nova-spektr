@@ -1,15 +1,13 @@
 import { useUnit } from 'effector-react';
-import { noop } from 'lodash';
 import { type FormEvent } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignatorySelector } from '@/entities/operations';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -28,7 +26,6 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
         <Signatories />
         <Amount />
       </form>
@@ -37,35 +34,6 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
     </div>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const fee = useUnit(formModel.$fee);
-  const proxyBalance = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-  const isProxy = useUnit(formModel.$isProxy);
-
-  if (!proxyWallet || !network || !isProxy || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(proxyBalance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={noop}
-    />
   );
 };
 
