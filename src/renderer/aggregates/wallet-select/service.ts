@@ -3,18 +3,12 @@ import { includes, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
-const getWalletFamily = (wallet: Wallet): WalletFamily | undefined => {
-  if (walletUtils.isPolkadotVaultGroup(wallet)) return WalletType.POLKADOT_VAULT;
-  if (walletUtils.isRegularMultisig(wallet)) return WalletType.MULTISIG;
-  if (walletUtils.isFlexibleMultisig(wallet)) return WalletType.FLEXIBLE_MULTISIG;
-  if (walletUtils.isWatchOnly(wallet)) return WalletType.WATCH_ONLY;
-  if (walletUtils.isWalletConnect(wallet)) return WalletType.WALLET_CONNECT;
-  if (walletUtils.isNovaWallet(wallet)) return WalletType.NOVA_WALLET;
-  if (walletUtils.isProxied(wallet)) return WalletType.PROXIED;
-  if (walletUtils.isPolkadotExtension(wallet)) return WalletType.POLKADOT_EXTENSION;
-  if (walletUtils.isTalismanExtension(wallet)) return WalletType.TALISMAN_EXTENSION;
-  if (walletUtils.isSubWalletExtension(wallet)) return WalletType.SUBWALLET_EXTENSION;
-  return undefined;
+const getWalletFamily = (wallet: Wallet): WalletFamily | null => {
+  if (walletUtils.isPolkadotVaultGroup(wallet)) {
+    return WalletType.POLKADOT_VAULT;
+  }
+
+  return Object.values(WalletType).includes(wallet.type) ? (wallet.type as WalletFamily) : null;
 };
 
 const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
