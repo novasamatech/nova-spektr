@@ -1,19 +1,41 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+const $allChains = networkModel.$chains.map((chains) => {
+  const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
+  return Object.values(chains).filter((chain) => chain.options?.some((option) => requiredOptions.has(option)));
+});
+const $allChainsMap = $allChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
-const selectChain = createEvent<string>();
+const selectChain = createEvent<ChainId>();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
 const $selectedChainId = restore(selectChain, null);
 
-const $accountList = restore(setAccounts, null);
-const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
+const $allAccounts = restore(setAccounts, null);
+
+const $availableAccounts = combine(
+  {
+    allAccounts: $allAccounts,
+    allChains: $allChains,
+  },
+  ({ allAccounts, allChains }) => {
+    if (!allAccounts) return null;
+    return allAccounts.filter((account) =>
+      allChains.some((chain) => accountService.isAccountAvailableOnChain(account, chain)),
+    );
+  },
+);
+
+const $selectedAccount = restore(selectAccount, null).on($availableAccounts, (selectedAccount, availableAccounts) => {
+  return (
+    availableAccounts?.find((item) => item.accountId === selectedAccount?.accountId) ?? availableAccounts?.[0] ?? null
+  );
+});
 
 const $availableChains = combine(
   {
@@ -21,26 +43,30 @@ const $availableChains = combine(
     account: $selectedAccount,
   },
   ({ chains, account }) => {
-    if (!account) return chains;
-    return chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
+    return !account ? chains : chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
   },
 );
+
+const $availableChainsMap = $availableChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
 // Set initial chain to first available one when account changes
 sample({
   clock: $availableChains,
   source: $selectedChainId,
-  fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
+  fn: (_, filteredChains) => {
+    const firstChain = Array.from(filteredChains.values())[0];
+    return firstChain?.chainId ?? null;
+  },
   target: selectChain,
 });
 
 const $selectedChain = combine(
   {
     chainId: $selectedChainId,
-    chains: $availableChains,
+    chains: $availableChainsMap,
   },
   ({ chainId, chains }) => {
-    return chains.find((chain) => chain.chainId === chainId) ?? null;
+    return chainId ? (chains.get(chainId) ?? null) : null;
   },
 );
 
@@ -83,10 +109,12 @@ export const $highlightedNodes = combine(
     selectedAccount: $selectedAccount,
     accountList: accounts.$list,
     selectedChain: $selectedChain,
-    focusedAccountNode: $hoveredAccountNode,
+    hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
   },
-  ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
+  ({ selectedAccount, accountList, selectedChain, hoveredAccountNode, heldAccountNode }) => {
+    const focusedAccountNode = heldAccountNode ?? hoveredAccountNode;
+
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
 
     const pathToSelected = accountService.findRoute(
@@ -165,8 +193,10 @@ export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
   $selectedAccount,
-  $accountList,
+  $availableAccounts,
   $availableChains,
+  $allChainsMap,
+  $availableChainsMap,
   $network,
 
   selectChain,
