@@ -359,6 +359,14 @@ sample({
   }),
 });
 
+sample({
+  clock: formInitiated,
+  source: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0) ?? null,
+  target: form.fields.signatory.change,
+});
+
 const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> => {
   return useStakingData().getMinNominatorBond(api);
 });

@@ -97,7 +97,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!network) {
+  if (!network || signatoryWithBalance.length < 2) {
     return null;
   }
 

@@ -96,9 +96,10 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!isMultisig || !network || signatoryWithBalance.length < 2) {
     return null;
   }
+
   return (
     <SignatorySelector
       signatory={signatory.value}
