@@ -51,7 +51,12 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
     if (config?.disabled) return;
 
     e.stopPropagation();
-    accountsStructureModel.holdAccountNode(data.node);
+
+    if (heldAccountNode?.account.id === data.node.account.id) {
+      accountsStructureModel.releaseAccountNode();
+    } else {
+      accountsStructureModel.holdAccountNode(data.node);
+    }
   };
 
   return (
