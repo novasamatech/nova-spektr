@@ -16,7 +16,7 @@ import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
 
 export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, onGoBack, onResult }: SigningProps) => {
-  useGate(walletConnectSign.flow, { payloads: signingPayloads });
+  useGate(walletConnectSign.flow, { payloads: signingPayloads, accounts: signerWallet?.accounts ?? [] });
 
   const { t } = useI18n();
   const payload = signingPayloads[0];
