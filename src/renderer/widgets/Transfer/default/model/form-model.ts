@@ -1,7 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { debug, spread } from 'patronum';
+import { spread } from 'patronum';
 
 import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -27,7 +27,6 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { TransferRules } from '@/features/operations/OperationsValidation';
 import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
 
@@ -75,103 +74,19 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     signatory: {
       defaultValue: null,
-      validator() {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            multisigDeposit: $multisigDeposit,
-            balance: $signatoryBalance,
-          }),
-          fn(signatory, _, a) {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            const b = TransferRules.signatory.notEnoughTokens(a);
-          },
-        };
-      },
     },
     destinationChain: {
       defaultValue: null,
     },
     destination: {
       defaultValue: '',
-      validator() {
-        return () => {
-          return {
-            rules: [
-              TransferRules.destination.required,
-              TransferRules.destination.incorrectRecipient(xcmTransferModel.$xcmChain),
-            ],
-          };
-        };
-      },
     },
     amount: {
       defaultValue: '',
-      validator() {
-        return () => {
-          return {
-            rules: [
-              TransferRules.amount.required,
-              TransferRules.amount.notZero,
-              TransferRules.amount.notEnoughBalance(
-                combine({
-                  network: $networkStore,
-                  balance: $accountBalance,
-                }),
-              ),
-              TransferRules.amount.insufficientBalanceForFee(
-                combine({
-                  fee: $fee,
-                  deliveryFee: xcmTransferModel.$deliveryFee,
-                  xcmFee: xcmTransferModel.$xcmFee,
-                  network: $networkStore,
-                  balance: $accountBalance,
-                  isNative: $isNative,
-                  isMultisig: $isMultisig,
-                  isXcm: $isXcm,
-                  isProxy: $isProxy,
-                }),
-              ),
-              TransferRules.amount.insufficientBalanceForDeliveryFee(
-                combine({
-                  fee: $fee,
-                  deliveryFee: xcmTransferModel.$deliveryFee,
-                  xcmFee: xcmTransferModel.$xcmFee,
-                  network: $networkStore,
-                  balance: $accountBalance,
-                  isNative: $isNative,
-                  isMultisig: $isMultisig,
-                  isXcm: $isXcm,
-                  isProxy: $isProxy,
-                }),
-              ),
-              TransferRules.amount.insufficientBalanceForXcmFee(
-                combine({
-                  fee: $fee,
-                  deliveryFee: xcmTransferModel.$deliveryFee,
-                  xcmFee: xcmTransferModel.$xcmFee,
-                  network: $networkStore,
-                  balance: $accountBalance,
-                  isNative: $isNative,
-                  isMultisig: $isMultisig,
-                  isXcm: $isXcm,
-                  isProxy: $isProxy,
-                }),
-              ),
-            ],
-          };
-        };
-      },
     },
   },
   validateOn: ['submit'],
 });
-
-debug(form.submit);
 
 // Computed
 
