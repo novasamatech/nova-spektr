@@ -44,7 +44,7 @@ describe('proxy service', () => {
     { route: ['Staking', 'Any'], call: 'Staking', expected: false },
     { route: ['Staking', 'NonTransfer'], call: 'Staking', expected: false },
     // negative - non transfer
-    { route: ['NonTransfer'], call: 'Transfer', expected: false },
+    { route: ['NonTransfer'], call: 'Balances', expected: false },
     // negative - not overlapping proxy types
     { route: ['Staking', 'Governance'], call: 'Staking', expected: false },
     { route: ['Staking', 'Governance'], call: 'ConvictionVoting', expected: false },

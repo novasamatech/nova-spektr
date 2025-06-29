@@ -1,15 +1,15 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
-import { type Asset, type Chain } from '../../../../shared/core';
-import { useI18n } from '../../../../shared/i18n';
-import { useModalClose } from '../../../../shared/lib/hooks';
-import { BaseModal, Button } from '../../../../shared/ui';
-import { basketUtils } from '../../../../entities/basket';
-import { OperationTitle } from '../../../../entities/chain';
-import { OperationResult } from '../../../../entities/transaction';
-import { OperationSign, OperationSubmit } from '../../../../features/operations';
-import { TransferConfirm } from '../../../../features/operations/OperationsConfirm';
+import { type Asset, type Chain } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
+import { useModalClose } from '@/shared/lib/hooks';
+import { BaseModal, Button } from '@/shared/ui';
+import { basketUtils } from '@/entities/basket';
+import { OperationTitle } from '@/entities/chain';
+import { OperationResult } from '@/entities/transaction';
+import { OperationSign, OperationSubmit } from '@/features/operations';
+import { TransferConfirm } from '@/features/operations/OperationsConfirm';
 import { transferUtils } from '../lib/transfer-utils';
 import { Step } from '../lib/types';
 import { transferModel } from '../model/transfer-model';
