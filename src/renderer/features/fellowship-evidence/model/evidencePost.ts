@@ -123,8 +123,8 @@ const evidenceReqiested = sample({
     account: $account,
     chain: $chain,
   },
-  filter: ({ transactions, api, account, chain }) => {
-    return nonNullable(api) && nonNullable(transactions) && nonNullable(account) && nonNullable(chain?.chainId);
+  filter: ({ api, account, chain }) => {
+    return nonNullable(api) && nonNullable(account) && nonNullable(chain?.chainId);
   },
   fn({ api, account, chain }) {
     if (nullable(api) || nullable(account) || nullable(chain)) return null;

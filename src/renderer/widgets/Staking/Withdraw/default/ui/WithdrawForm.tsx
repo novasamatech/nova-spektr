@@ -9,7 +9,6 @@ import { Button, InputHint } from '@/shared/ui';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -28,7 +27,6 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
         <Signatories />
         <Amount />
       </form>
@@ -37,34 +35,6 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
     </div>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const fee = useUnit(formModel.$fee);
-  const balance = useUnit(formModel.$proxyBalance);
-  const network = useUnit(formModel.$networkStore);
-  const proxyWallet = useUnit(formModel.$proxyWallet);
-
-  if (!network || !proxyWallet || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(balance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={initiator.reset}
-    />
   );
 };
 
@@ -96,9 +66,10 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network) {
+  if (!isMultisig || !network || signatoryWithBalance.length < 2) {
     return null;
   }
+
   return (
     <SignatorySelector
       signatory={signatory.value}

@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { noop } from 'lodash';
 import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
@@ -10,7 +9,6 @@ import { Button, InputHint } from '@/shared/ui';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
 import { unlockFormAggregate } from '../model/unlockForm';
@@ -30,7 +28,6 @@ export const UnlockForm = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
-        <ProxyFeeAlert />
         <Signatories />
         <Amount />
       </form>
@@ -39,34 +36,6 @@ export const UnlockForm = ({ onGoBack }: Props) => {
       </div>
       <ActionsSection onGoBack={onGoBack} />
     </div>
-  );
-};
-
-const ProxyFeeAlert = () => {
-  const {
-    fields: { initiator },
-  } = useForm(unlockFormAggregate.form);
-
-  const fee = useUnit(unlockFormAggregate.$fee);
-  const balance = useUnit(unlockFormAggregate.$proxyBalance);
-  const network = useUnit(networkSelectorModel.$network);
-  const proxyWallet = useUnit(unlockFormAggregate.$proxyWallet);
-
-  if (!network || !proxyWallet || !initiator.hasError) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(fee, network.asset.precision).value;
-  const formattedBalance = formatBalance(balance, network.asset.precision).value;
-
-  return (
-    <ProxyWalletAlert
-      wallet={proxyWallet}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={network.asset.symbol}
-      onClose={noop}
-    />
   );
 };
 

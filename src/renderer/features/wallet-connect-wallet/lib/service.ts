@@ -134,6 +134,12 @@ function updateAccount(account: WcAccount, session: SessionTypes.Struct): WcAcco
   };
 }
 
+function hasSameTopic(account: WcAccount, session: SessionTypes.Struct) {
+  return (
+    account.signingExtras.pairingTopic === session.pairingTopic && account.signingExtras.sessionTopic === session.topic
+  );
+}
+
 function isConnected(sessions: Record<string, SessionTypes.Struct>, pairingTopic: string): boolean {
   const session = sessions[pairingTopic];
 
@@ -159,6 +165,8 @@ export const walletConnectService = {
   isConnected,
   isAccountConnected,
   areAccountsConnected,
+
+  hasSameTopic,
 
   getWalletConnectChains,
   getWalletConnectChainId,

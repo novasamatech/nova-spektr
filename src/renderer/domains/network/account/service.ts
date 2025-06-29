@@ -223,7 +223,6 @@ function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAcc
     return [destination];
   }
 
-  const stack: AnyAccount[] = [];
   const graphs = createAccountGraphs(accounts, chain);
   const entryNode = graphs.get(source);
 
@@ -231,19 +230,38 @@ function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAcc
     return [];
   }
 
-  traverseGraph(entryNode, {
-    enter(node) {
-      stack.push(node.account);
-      if (node.account === destination) {
-        return false;
-      }
-    },
-    exit() {
-      stack.pop();
-    },
-  });
+  const queue = [{ node: entryNode, path: [entryNode.account] }];
+  const visited = {
+    [entryNode.account.id]: true, // because includes in array works for 0(N)
+  };
+  let i = 0; // because unshift works for 0(N)
 
-  return stack;
+  while (queue.length > 0) {
+    const item = queue[i];
+
+    if (!item) {
+      return [];
+    }
+
+    const { node, path } = item;
+
+    for (const child of node.children) {
+      if (visited[child.account.id]) continue;
+
+      const newPath = [...path, child.account];
+
+      if (child.account === destination) {
+        return newPath;
+      }
+
+      visited[child.account.id] = true;
+      queue.push({ node: child, path: newPath });
+    }
+
+    i++;
+  }
+
+  return [];
 }
 
 type BalanceValidationParams = {
