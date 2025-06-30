@@ -129,8 +129,6 @@ const AccountsStructureInner = () => {
 
     const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId);
 
-    console.log({ nodes, edges });
-
     elk
       .layout({
         id: 'root',
