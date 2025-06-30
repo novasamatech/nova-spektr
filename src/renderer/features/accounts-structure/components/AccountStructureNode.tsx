@@ -37,7 +37,8 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
     return accountIdentity ? identityService.getFullName(accountIdentity) : '';
   }, [identities, chain, data.node.account]);
 
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
 

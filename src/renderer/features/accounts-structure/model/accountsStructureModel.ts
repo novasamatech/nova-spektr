@@ -1,6 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
@@ -167,7 +168,7 @@ sample({
     chain: $selectedChain,
     graph: $graph,
   }),
-  filter: ({ chain, graph }) => !!chain && !!graph,
+  filter: ({ chain, graph }) => nonNullable(chain) && nonNullable(graph),
   fn: ({ chain, graph }) => ({
     chainId: chain!.chainId,
     accounts: Array.from(graph!.values()).flatMap(({ account, children }) => [
