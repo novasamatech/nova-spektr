@@ -32,7 +32,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });
 
   const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
-  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +52,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
     e.stopPropagation();
 
-    if (heldAccountNode?.account.id === data.node.account.id) {
+    if (heldAccountNode?.account.accountId === data.node.account.accountId) {
       accountsStructureModel.releaseAccountNode();
     } else {
       accountsStructureModel.holdAccountNode(data.node);

@@ -124,7 +124,7 @@ export const $highlightedNodes = combine(
 const $highlightedNodesIds = $highlightedNodes.map((accounts) => {
   if (!accounts.length) return null;
 
-  return new Set(accounts.map((account) => account.id));
+  return new Set(accounts.map((account) => account.accountId));
 });
 
 function findNodesRelatedToAccount(
