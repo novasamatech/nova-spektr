@@ -67,8 +67,7 @@ export const CustomEdge = ({
   }, [pathType, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]);
 
   const connection =
-    data &&
-    useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount, translation: t });
+    data && useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount, t });
   const label = connection?.label;
   const connectionColor = connection?.color || '#363643';
 
