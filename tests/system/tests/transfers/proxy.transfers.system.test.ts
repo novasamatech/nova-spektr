@@ -9,7 +9,7 @@ const story = 'Transfers';
 
 test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }, () => {
   // TODO: fix this test to use Asset Hub instead of Westend
-  test.fail('Proxy wallet can make regular transfer', async ({ loginPage }) => {
+  test.fail('Proxy wallet can make regular transfer @allure.id:3380', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();

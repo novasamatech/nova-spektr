@@ -9,8 +9,8 @@ const feature = 'Wallet. Multisig wallet.';
 const story = 'Transfers';
 
 test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
-    test(`Multisig can make regular transfer on ${chainName}`, async ({ loginPage }) => {
+  for (const { chainName, assetId, amount, recipient, msTestId } of transferTestCases) {
+    test(`Multisig can make regular transfer on ${chainName} @allure.id:${msTestId}`, async ({ loginPage }) => {
       await allure.feature(feature);
       await allure.story(story);
       test.slow();

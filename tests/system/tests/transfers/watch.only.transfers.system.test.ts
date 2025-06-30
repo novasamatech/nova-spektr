@@ -9,7 +9,7 @@ const feature = 'Wallets. Watch-only. Single wallet';
 const story = 'Transfers';
 
 test.describe('Watch-only transfers', { tag: ['@watch-only-transfers', '@regress'] }, () => {
-  test('Watch-only transfer buttons should not be visible', async ({ loginPage }) => {
+  test('Watch-only transfer buttons should not be visible @allure.id:3335', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
 
@@ -20,8 +20,10 @@ test.describe('Watch-only transfers', { tag: ['@watch-only-transfers', '@regress
     await assetsPage.checkReceiveButtonNotExists();
   });
 
-  for (const { chainName, assetId } of transferTestCases) {
-    test(`Should not be able to open transfer modal on ${chainName} in watch-only mode`, async ({ loginPage }) => {
+  for (const { chainName, assetId, watchOnlyTestId } of transferTestCases) {
+    test(`Should not be able to open transfer modal on ${chainName} in watch-only mode @allure.id:${watchOnlyTestId}`, async ({
+      loginPage,
+    }) => {
       await allure.feature(feature);
       await allure.story(story);
 

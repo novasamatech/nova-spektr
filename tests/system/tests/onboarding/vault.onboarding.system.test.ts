@@ -3,7 +3,7 @@ import * as allure from 'allure-js-commons';
 import { expect, test } from '../../utils/baseRegularFixture';
 
 test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
-  test('Show access denied if no permissions', async ({ loginPage, page }) => {
+  test('Show access denied if no permissions @allure.id:1530', async ({ loginPage, page }) => {
     await allure.feature('Onboarding');
     await allure.story('Onboarding via Polkadot Vault');
     const polkadotVaultOnboardingPage = await loginPage
@@ -14,7 +14,7 @@ test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
     expect(await page.isVisible(accessDeniedText));
   });
 
-  test('Default settings for assets page', async ({ loginPage }) => {
+  test('Default settings for assets page @allure.id:1531', async ({ loginPage }) => {
     await allure.feature('Onboarding');
     await allure.story('Onboarding via Polkadot Vault');
     test.slow();

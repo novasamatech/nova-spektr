@@ -7,7 +7,7 @@ const feature = 'Onboarding. Multisig Vault';
 const story = 'Multisig Vault onboarding';
 
 test.describe('Multisig Vault onboarding', { tag: ['@regress'] }, () => {
-  test.fail('Can create multisig wallet', async ({ loginPage }) => {
+  test.fail('Can create multisig wallet @allure.id:3951', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     const onboardingPage = await loginPage.importDatabase('multisigOnboarding/multisig_onboarding.json');

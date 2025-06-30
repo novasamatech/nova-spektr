@@ -9,8 +9,8 @@ const feature = 'Wallets. XCM transfers.';
 const story = 'Transfers';
 
 test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
-    test(`Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`, async ({
+  for (const { chainName, assetId, xcmChainName, amount, recipient, vaultXCMTestId } of xcmTransferTestCases) {
+    test(`Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName} @allure.id:${vaultXCMTestId}`, async ({
       loginPage,
     }) => {
       await allure.feature(feature);

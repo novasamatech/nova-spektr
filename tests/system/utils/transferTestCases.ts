@@ -4,24 +4,40 @@ export const transferTestCases = [
     assetId: 0,
     amount: '0.1',
     recipient: '13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq',
+    msTestId: '3372',
+    novaTestId: '3376',
+    vaultRegularTestId: '3158',
+    watchOnlyTestId: '3336',
   },
   {
     chainName: 'Kusama',
     assetId: 0,
     amount: '0.01',
     recipient: 'FLVFEaY1oa7tAqfqh6gCb1q9RGuFHS1pkvAsAF7wwWUTFxY',
+    msTestId: '3373',
+    novaTestId: '3377',
+    vaultRegularTestId: '3159',
+    watchOnlyTestId: '3337',
   },
   {
     chainName: 'Polkadot Asset Hub',
     assetId: 0,
     amount: '0.01',
     recipient: '13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq',
+    msTestId: '3374',
+    novaTestId: '3378',
+    vaultRegularTestId: '3161',
+    watchOnlyTestId: '3338',
   },
   {
     chainName: 'Hydration',
     assetId: 0,
     amount: '0.01',
     recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
+    msTestId: '3375',
+    novaTestId: '3379',
+    vaultRegularTestId: '3160',
+    watchOnlyTestId: '3339',
   },
 ];
 
@@ -32,6 +48,7 @@ export const xcmTransferTestCases = [
     xcmChainName: 'Polkadot Asset Hub Polkadot',
     amount: '1',
     recipient: '14tqRfiFfYeB12o7d9YK4X9LiCMKLNCt1LoVdWZypWbwNp2Y',
+    vaultXCMTestId: '4362',
   },
   {
     chainName: 'Polkadot',
@@ -39,6 +56,7 @@ export const xcmTransferTestCases = [
     xcmChainName: 'Hydration',
     amount: '0.01',
     recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
+    vaultXCMTestId: '4363',
   },
   {
     chainName: 'Hydration',
@@ -46,6 +64,7 @@ export const xcmTransferTestCases = [
     xcmChainName: 'Moonbeam Moonbeam',
     amount: '0.01',
     recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
+    vaultXCMTestId: '4364',
   },
   {
     chainName: 'Karura',
@@ -53,5 +72,6 @@ export const xcmTransferTestCases = [
     xcmChainName: 'Moonriver Moonriver',
     amount: '0.01',
     recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
+    vaultXCMTestId: '4365',
   },
 ];

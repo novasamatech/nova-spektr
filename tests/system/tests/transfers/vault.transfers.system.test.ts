@@ -9,8 +9,10 @@ const feature = 'Wallets. Polkadot Vault. Single wallet';
 const story = 'Transfers';
 
 test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
-    test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ loginPage }) => {
+  for (const { chainName, assetId, amount, recipient, vaultRegularTestId } of transferTestCases) {
+    test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName} @allure.id:${vaultRegularTestId}`, async ({
+      loginPage,
+    }) => {
       await allure.feature(feature);
       await allure.story(story);
       test.slow();

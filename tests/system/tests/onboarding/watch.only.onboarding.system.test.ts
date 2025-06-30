@@ -10,7 +10,7 @@ test.describe(
     tag: '@regress',
   },
   () => {
-    test('Can add watch only wallet', async ({ loginPage, page }) => {
+    test('Can add watch only wallet @allure.id:1532', async ({ loginPage, page }) => {
       await allure.feature('Onboarding');
       await allure.story('Onboarding via Watch-only');
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
@@ -21,7 +21,7 @@ test.describe(
       expect(await page.isVisible(watchOnlyAssetsPage.pageElements.assetsPageLocator)).toBeTruthy();
     });
 
-    test('Link from info button lead to subscan', async ({ loginPage, page, context }) => {
+    test('Link from info button lead to subscan @allure.id:1533', async ({ loginPage, page, context }) => {
       await allure.feature('Onboarding');
       await allure.story('Onboarding via Watch-only');
       const watchOnlyPage = await loginPage.gotoOnboarding().then((onboarding) => onboarding.clickWatchOnlyButton());
