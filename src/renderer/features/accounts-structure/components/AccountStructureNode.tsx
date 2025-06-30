@@ -29,7 +29,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
 
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, translation: t });
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });
 
   const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;

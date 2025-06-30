@@ -11,6 +11,7 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { type AnyAccount } from '@/domains/network';
 import { accountConnectionTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
@@ -29,6 +30,7 @@ export const CustomEdge = ({
   data,
   interactionWidth,
 }: EdgeProps) => {
+  const { t } = useI18n();
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
@@ -65,7 +67,7 @@ export const CustomEdge = ({
   }, [pathType, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition]);
 
   const connection =
-    data && useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount });
+    data && useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount, t });
   const label = connection?.label;
   const connectionColor = connection?.color || '#363643';
 
