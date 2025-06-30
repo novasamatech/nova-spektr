@@ -167,10 +167,13 @@ sample({
     chain: $selectedChain,
     graph: $graph,
   }),
-  filter: ({ chain, graph }) => !!chain && !!graph && graph.size > 0,
+  filter: ({ chain, graph }) => !!chain && !!graph,
   fn: ({ chain, graph }) => ({
     chainId: chain!.chainId,
-    accounts: Array.from(graph!.keys()).map((acc) => acc.accountId),
+    accounts: Array.from(graph!.values()).flatMap(({ account, children }) => [
+      account.accountId,
+      ...children.map((child) => child.account.accountId),
+    ]),
   }),
   target: identity.request,
 });

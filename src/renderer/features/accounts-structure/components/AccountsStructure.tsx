@@ -12,6 +12,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
+import { useUnit } from 'effector-react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { memo, useEffect, useRef } from 'react';
 
@@ -30,13 +31,6 @@ const nodeTypes = {
 const edgeTypes = {
   accountEdge: CustomEdge,
 };
-
-interface AccountsStructureProps {
-  account: AnyAccount;
-  graph: Map<AnyAccount, AccountNode>;
-  pathType: 'straight' | 'bezier' | 'smoothStep';
-  edgeType: 'solid' | 'dashed';
-}
 
 type AccountNodeData = {
   node: AccountNode;
@@ -119,7 +113,10 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   return { nodes, edges };
 }
 
-const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
+const AccountsStructureInner = () => {
+  const graph = useUnit(accountsStructureModel.$graph);
+  const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
@@ -128,7 +125,9 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   useClickOutside([graphRef], () => accountsStructureModel.releaseAccountNode());
 
   useEffect(() => {
-    const { nodes, edges } = createGraphElements(graph, account.id);
+    if (!graph || !selectedAccount) return;
+
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.id);
     elk
       .layout({
         id: 'root',
@@ -163,15 +162,15 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           padding: { top: '75px', bottom: '25px', left: '25px', right: '25px' },
         });
       });
-  }, [graph, account.id, fitView]);
+  }, [graph, selectedAccount, fitView]);
 
   useEffect(
     () =>
       // eslint-disable-next-line effector/no-watch
-      focusOnSelected.watch(() => {
-        fitView({ nodes: [{ id: account.id }], maxZoom: 0.5, duration: 500 });
-      }),
-    [fitView, account.id],
+      focusOnSelected.watch(
+        () => selectedAccount && fitView({ nodes: [{ id: selectedAccount.id }], maxZoom: 0.5, duration: 500 }),
+      ),
+    [fitView, selectedAccount],
   );
 
   return (
@@ -202,9 +201,9 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   );
 };
 
-export const AccountsStructure = memo((props: AccountsStructureProps) => (
+export const AccountsStructure = memo(() => (
   <ReactFlowProvider>
-    <AccountsStructureInner {...props} />
+    <AccountsStructureInner />
   </ReactFlowProvider>
 ));
 

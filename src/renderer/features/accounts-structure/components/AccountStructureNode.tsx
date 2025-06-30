@@ -99,7 +99,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
               <Address
                 address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
-                title={data.node.account.name ?? accountIdentity?.name}
+                title={data.node.account.name || accountIdentity?.name}
                 variant="short"
                 showIcon
                 iconSize={24}
