@@ -1551,8 +1551,7 @@
       "IdentityJudgement": "Judgement",
       "NominationPools": "Nominations",
       "NonTransfer": "Non Transfer",
-      "Staking": "Staking",
-      "Unknown": "Unknown"
+      "Staking": "Staking"
     },
     "operations": {
       "any": "all operations",

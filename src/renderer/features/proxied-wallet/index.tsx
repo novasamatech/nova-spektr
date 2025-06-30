@@ -51,11 +51,15 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  connection({ target, translation }) {
+  connection({ target, t }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
         label: {
-          text: translation(`proxy.types.${target.proxyType}`) || target.proxyType,
+          text: (() => {
+            const key = `proxy.types.${target.proxyType}`;
+            const translatedValue = t(key);
+            return translatedValue !== key ? translatedValue : target.proxyType;
+          })(),
           color: 'var(--icons-icon-alert, #7B29FF)',
           background: '#F5EEFF',
         },
