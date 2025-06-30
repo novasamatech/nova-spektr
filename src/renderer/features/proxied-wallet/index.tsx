@@ -55,7 +55,7 @@ accountSDK(proxiedWalletFeature, {
     if (accountUtils.isProxiedAccount(target)) {
       return {
         label: {
-          text: translation(`proxy.types.${target.proxyType}`),
+          text: translation(`proxy.types.${target.proxyType}`) || target.proxyType,
           color: 'var(--icons-icon-alert, #7B29FF)',
           background: '#F5EEFF',
         },
