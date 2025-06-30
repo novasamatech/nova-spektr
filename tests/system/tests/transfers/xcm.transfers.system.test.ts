@@ -3,7 +3,7 @@ import * as allure from 'allure-js-commons';
 import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { xcmTransferTestCases } from 'tests/system/utils/transferTestCases';
+import { xcmTransferTestCases } from '../../utils/transferTestCases';
 
 const feature = 'Wallets. XCM transfers.';
 const story = 'Transfers';
