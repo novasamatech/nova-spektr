@@ -8,10 +8,13 @@ import { includesMultiple, performSearch, toAccountId, toAddress, validateAddres
 import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { type SignatoryInfo } from '../../lib/types';
+import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
@@ -33,10 +36,8 @@ type Props = {
   isOwnAccount?: boolean;
   isDuplicate: boolean;
   isInvalidAddress: boolean;
-  signatoryName: string;
-  signatoryAddress: AccountAddress;
   signatoryIndex: number;
-  selectedWalletId?: string;
+  signatory: Omit<SignatoryInfo, 'index'>;
   onDelete?: (index: number) => void;
 };
 
@@ -45,18 +46,17 @@ export const Signatory = ({
   isDuplicate,
   isInvalidAddress,
   isOwnAccount = false,
-  signatoryName,
-  signatoryAddress,
-  selectedWalletId,
+  signatory,
   onDelete,
 }: Props) => {
   const { t } = useI18n();
-
+  const { name: signatoryName, address: signatoryAddress, walletId: selectedWalletId } = signatory;
   const chain = useUnit(formModel.$chain);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
+  const accountList = useUnit(accounts.$list);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(signatoryAddress);
   const [options, setOptions] = useState<ComboboxGroup[]>([]);
 
   const filteredContacts = useMemo(() => {
@@ -209,16 +209,28 @@ export const Signatory = ({
   };
 
   const onAddressChange = (value: string) => {
+    setQuery(value);
     const selectedOption = options.flatMap(group => group.items).find(option => option.value.address === value);
-    if (!selectedOption) return;
-    const newSignatory = selectedOption.value;
+    const newSignatory = selectedOption?.value;
 
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
       name: signatoryName,
-      address: newSignatory.address,
-      walletId: newSignatory.walletId?.toString(), // will be undefined for contact
+      address: value,
+      walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
+
+    if (isOwnAccount && chain) {
+      const account = accountList.find(
+        a =>
+          a.accountId === toAccountId(value) &&
+          a.walletId === newSignatory?.walletId &&
+          accountUtils.isChainIdMatch(a, chain.chainId),
+      );
+
+      if (!account) return;
+      flowModel.signerSelected(account);
+    }
   };
 
   const nameLabel = isOwnAccount
@@ -228,6 +240,8 @@ export const Signatory = ({
   const addressLabel = isOwnAccount
     ? t('createMultisigAccount.myAddress')
     : t('createMultisigAccount.signatoryAddress');
+
+  const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
     <div className="grid grid-cols-[232px,1fr] gap-x-6">
@@ -248,16 +262,11 @@ export const Signatory = ({
               data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
               placeholder={t('createMultisigAccount.signatorySelection')}
               invalid={isDuplicate}
-              value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              value={query}
               prefixElement={
-                <Identicon
-                  address={isInvalidAddress ? '' : signatoryAddress}
-                  size={20}
-                  background={false}
-                  canCopy={false}
-                />
+                <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
               }
-              onChange={value => onAddressChange(value)}
+              onChange={onAddressChange}
               onInput={setQuery}
             >
               {options.map(group => (
