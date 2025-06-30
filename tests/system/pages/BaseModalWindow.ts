@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { type BaseModalElements } from './_elements/BaseModalElements';
 
@@ -12,19 +13,25 @@ export abstract class BaseModal<T extends BaseModalElements = BaseModalElements>
   }
 
   async click(testId: string) {
-    await this.page.getByTestId(testId).click();
+    await step(`Click element with testId: ${testId}`, async () => {
+      await this.page.getByTestId(testId).click();
+    });
 
     return this;
   }
 
   async fill(testId: string, value: string) {
-    await this.page.getByTestId(testId).fill(value);
+    await step(`Fill field [${testId}] with value: "${value}"`, async () => {
+      await this.page.getByTestId(testId).fill(value);
+    });
 
     return this;
   }
 
   async clickIntoField(testId: string) {
-    await this.page.getByTestId(testId).click();
+    await step(`Click into field with testId: ${testId}`, async () => {
+      await this.page.getByTestId(testId).click();
+    });
 
     return this;
   }
