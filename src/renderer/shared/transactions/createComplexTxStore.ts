@@ -3,7 +3,7 @@ import { type Store, combine, createEffect, createStore, sample } from 'effector
 import { spread } from 'patronum';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { nonNullableMap, nullable } from '@/shared/lib/utils';
+import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -51,6 +51,13 @@ export const createComplexTxStore = <T extends Transaction>({
 
   const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
+    const signatory = route.at(-1);
+
+    assert(signatory, 'Signatory is required');
+
+    // its a legacy transaction structure which includes unnecessary information about signator
+    // we should set signatory explicitly
+    tx.accountId = signatory.accountId;
 
     const mutisigAccountIndex = route.findIndex(accountUtils.isMultisigAccount);
     if (mutisigAccountIndex !== -1) {
@@ -59,6 +66,8 @@ export const createComplexTxStore = <T extends Transaction>({
         route.slice(mutisigAccountIndex - 1),
         api,
       );
+
+      multisigTx.accountId = signatory.accountId;
 
       return {
         tx,

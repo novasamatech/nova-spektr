@@ -242,19 +242,19 @@ const $coreTx = combine(
     walletData: $walletData,
     target: $target,
     tracks: $tracks,
-    initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     activeTracks: delegationAggregate.$activeTracks,
     activeDelegations: $activeDelegations,
     amount: form.fields.amount.$value,
     conviction: form.fields.conviction.$value,
     isUnchanged: form.fields.isUnchanged.$value,
   },
-  ({ walletData, target, tracks, initiator, activeTracks, activeDelegations, amount, conviction, isUnchanged }) => {
-    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || nullable(initiator)) {
+  ({ walletData, target, tracks, signatory, activeTracks, activeDelegations, amount, conviction, isUnchanged }) => {
+    if (nullable(walletData?.chain) || nullable(target) || tracks.length === 0 || nullable(signatory)) {
       return null;
     }
 
-    const address = toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix });
+    const address = toAddress(signatory.accountId, { prefix: walletData.chain!.addressPrefix });
     const finalConviction = isUnchanged ? activeDelegations[address]?.conviction : conviction;
     const finalAmount = isUnchanged
       ? activeDelegations[address]?.balance.toString()
@@ -262,7 +262,7 @@ const $coreTx = combine(
 
     return transactionBuilder.buildEditDelegation({
       chain: walletData.chain!,
-      accountId: initiator.accountId,
+      accountId: signatory.accountId,
       balance: finalAmount || '0',
       conviction: finalConviction || 'None',
       previousConviction: activeDelegations[address]?.conviction || 'None',
@@ -270,7 +270,7 @@ const $coreTx = combine(
       tracks,
       undelegateTracks:
         activeTracks[target!.address]?.[
-          toAddress(initiator.accountId, { prefix: walletData.chain!.addressPrefix })
+          toAddress(signatory.accountId, { prefix: walletData.chain!.addressPrefix })
         ]?.map(Number) || [],
     });
   },

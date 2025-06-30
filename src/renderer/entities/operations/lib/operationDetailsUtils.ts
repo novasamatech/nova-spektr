@@ -3,7 +3,6 @@ import { BN } from '@polkadot/util';
 import { isString } from 'lodash';
 
 import {
-  type Account,
   type Address,
   type Chain,
   type ChainId,
@@ -20,7 +19,7 @@ import {
 import { dictionary, toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
+import { type AnyAccount, type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -66,12 +65,12 @@ export const getSignatoryName = (
 };
 
 export const getSignatoryAccounts = (
-  accounts: Account[],
+  accounts: AnyAccount[],
   wallets: Wallet[],
   events: MultisigEvent[],
   signatories: Signatory[],
   chainId: ChainId,
-): Account[] => {
+): AnyAccount[] => {
   const walletsMap = dictionary(wallets, 'id');
 
   const result = [];
