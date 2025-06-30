@@ -1543,16 +1543,6 @@
       "staking": "Staking operations",
       "unknown": "Unknown operations"
     },
-    "types": {
-      "Any": "Any",
-      "Auction": "Auction",
-      "CancelProxy": "Cancel",
-      "Governance": "Governance",
-      "IdentityJudgement": "Judgement",
-      "NominationPools": "Nominations",
-      "NonTransfer": "Non Transfer",
-      "Staking": "Staking"
-    },
     "operations": {
       "any": "all operations",
       "auction": "auction operations",
@@ -1579,7 +1569,17 @@
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
+    "types": {
+      "Any": "Any",
+      "Auction": "Auction",
+      "CancelProxy": "Cancel",
+      "Governance": "Governance",
+      "IdentityJudgement": "Judgement",
+      "NominationPools": "Nominations",
+      "NonTransfer": "Non Transfer",
+      "Staking": "Staking"
+    }
   },
   "pureProxyRemove": {
     "warning": {
