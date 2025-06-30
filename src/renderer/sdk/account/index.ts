@@ -9,7 +9,7 @@ export const accountNodeConfigTransformer = createTransformer<
 >();
 
 export const accountConnectionTransformer = createTransformer<
-  { source: AnyAccount; target: AnyAccount },
+  { source: AnyAccount; target: AnyAccount; translation: TFunction<'translation'> },
   { label?: { text: string; color: string; background: string }; color?: string }
 >();
 

@@ -1543,6 +1543,17 @@
       "staking": "Staking operations",
       "unknown": "Unknown operations"
     },
+    "types": {
+      "Any": "Any",
+      "Auction": "Auction",
+      "CancelProxy": "Cancel",
+      "Governance": "Governance",
+      "IdentityJudgement": "Judgement",
+      "NominationPools": "Nominations",
+      "NonTransfer": "Non Transfer",
+      "Staking": "Staking",
+      "Unknown": "Unknown"
+    },
     "operations": {
       "any": "all operations",
       "auction": "auction operations",

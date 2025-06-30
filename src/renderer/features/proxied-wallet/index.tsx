@@ -51,11 +51,11 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  connection({ target }) {
+  connection({ target, translation }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
         label: {
-          text: target.proxyType,
+          text: translation(`proxy.types.${target.proxyType}`),
           color: 'var(--icons-icon-alert, #7B29FF)',
           background: '#F5EEFF',
         },
