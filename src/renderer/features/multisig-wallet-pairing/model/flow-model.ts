@@ -335,6 +335,7 @@ sample({
       ...signParams,
       chain: chain!,
       account: signer!,
+      signatory: signer,
       coreTxs: [coreTx!],
       wrappedTxs: [tx!],
       multisigTxs: multisigTx ? [multisigTx] : [],
@@ -381,7 +382,9 @@ sample({
   source: {
     signatories: signatoryModel.$signatories,
     contacts: contactModel.$contacts,
+    contactPending: contactModel.effects.createContactsFx.pending,
   },
+  filter: ({ contactPending }) => !contactPending,
   fn: ({ signatories, contacts }) => {
     const contactsSet = new Set(contacts.map(c => c.accountId));
 
