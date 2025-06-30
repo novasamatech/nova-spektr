@@ -32,6 +32,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const signerWallet = confirmStore.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount);
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
 
   if (!confirmStore || !initiatorWallet) {
@@ -66,7 +67,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         signatory={confirmStore.meta.signatory}
         proxied={proxiedAccount}
       >
-        {isMultisigExists && (
+        {multisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={
