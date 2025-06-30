@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { type BasePageElements } from './_elements/BasePageElements';
 
@@ -12,28 +13,36 @@ export abstract class BasePage<T extends BasePageElements = BasePageElements> {
   }
 
   async goto(url: string) {
-    await this.page.goto(url);
+    await step(`Navigate to URL: ${url}`, async () => {
+      await this.page.goto(url);
+    });
 
     return this;
   }
 
   public async gotoMain(): Promise<this> {
-    await this.page.goto(this.pageElements.url);
-    await this.page.waitForLoadState('load');
-    await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForLoadState('networkidle');
+    await step(`Navigate to the page: ${this.pageElements.url}`, async () => {
+      await this.page.goto(this.pageElements.url);
+      await this.page.waitForLoadState('load');
+      await this.page.waitForLoadState('domcontentloaded');
+      await this.page.waitForLoadState('networkidle');
+    });
 
     return this;
   }
 
   async click(testId: string) {
-    await this.page.getByTestId(testId).click();
+    await step(`Click element with testId: ${testId}`, async () => {
+      await this.page.getByTestId(testId).click();
+    });
 
     return this;
   }
 
   async fill(selector: string, value: string) {
-    await this.page.fill(selector, value);
+    await step(`Fill field "${selector}" with value: "${value}"`, async () => {
+      await this.page.fill(selector, value);
+    });
 
     return this;
   }
