@@ -18,36 +18,50 @@ const $selectedChainId = restore(selectChain, null);
 
 const $allAccounts = restore(setAccounts, null);
 
+const $selectedChain = combine(
+  {
+    chainId: $selectedChainId,
+    chains: $allChainsMap,
+  },
+  ({ chainId, chains }) => (chainId ? (chains.get(chainId) ?? null) : null),
+);
+
 const $availableAccounts = combine(
   {
     allAccounts: $allAccounts,
-    allChains: $allChains,
+    selectedChain: $selectedChain,
   },
-  ({ allAccounts, allChains }) => {
-    if (!allAccounts) return null;
-    return allAccounts.filter((account) =>
-      allChains.some((chain) => accountService.isAccountAvailableOnChain(account, chain)),
+  ({ allAccounts, selectedChain }) => {
+    if (!allAccounts || !selectedChain) return null;
+
+    return allAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, selectedChain));
+  },
+);
+
+const $selectedAccount = restore(selectAccount, null).on(
+  $availableAccounts,
+  (selectedAccount, accountsForSelectedChain) => {
+    return (
+      accountsForSelectedChain?.find((item) => item.accountId === selectedAccount?.accountId) ??
+      accountsForSelectedChain?.[0] ??
+      null
     );
   },
 );
 
-const $selectedAccount = restore(selectAccount, null).on($availableAccounts, (selectedAccount, availableAccounts) => {
-  return (
-    availableAccounts?.find((item) => item.accountId === selectedAccount?.accountId) ?? availableAccounts?.[0] ?? null
-  );
-});
-
 const $availableChains = combine(
   {
     chains: $allChains,
-    account: $selectedAccount,
+    accounts: $allAccounts,
   },
-  ({ chains, account }) => {
-    return !account ? chains : chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
+  ({ chains, accounts }) => {
+    if (!accounts) return chains;
+
+    return chains.filter((chain) =>
+      accounts.some((account) => accountService.isAccountAvailableOnChain(account, chain)),
+    );
   },
 );
-
-const $availableChainsMap = $availableChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
 // Set initial chain to first available one when account changes
 sample({
@@ -59,34 +73,6 @@ sample({
   },
   target: selectChain,
 });
-
-const $selectedChain = combine(
-  {
-    chainId: $selectedChainId,
-    chains: $availableChainsMap,
-  },
-  ({ chainId, chains }) => {
-    return chainId ? (chains.get(chainId) ?? null) : null;
-  },
-);
-
-const $network = combine(
-  {
-    chain: $selectedChain,
-    apis: networkModel.$apis,
-  },
-  ({ chain, apis }) => {
-    if (!chain) return null;
-
-    const api = apis[chain.chainId];
-    if (!api) return null;
-
-    const asset = chain.assets.at(0);
-    if (!asset) return null;
-
-    return { api, chain, asset };
-  },
-);
 
 export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
 export const setEdgeType = createEvent<'solid' | 'dashed'>();
@@ -196,8 +182,6 @@ export const accountsStructureModel = {
   $availableAccounts,
   $availableChains,
   $allChainsMap,
-  $availableChainsMap,
-  $network,
 
   selectChain,
   setAccounts,
