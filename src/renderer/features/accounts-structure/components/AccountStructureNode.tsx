@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
-import { type AccountNode, identity } from '@/domains/network';
+import { type AccountNode, identity, identityService } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
@@ -28,11 +28,17 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
+  const title = useMemo(() => {
+    if (data.node.account.name) {
+      return data.node.account.name;
+    }
+
+    const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
+    return accountIdentity ? identityService.getFullName(accountIdentity) : '';
+  }, [identities, chain, data.node.account]);
 
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });
-
-  const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
-  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +58,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
     e.stopPropagation();
 
-    if (heldAccountNode?.account.id === data.node.account.id) {
+    if (heldAccountNode?.account.accountId === data.node.account.accountId) {
       accountsStructureModel.releaseAccountNode();
     } else {
       accountsStructureModel.holdAccountNode(data.node);
@@ -99,7 +105,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
               <Address
                 address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
-                title={data.node.account.name ?? accountIdentity?.name}
+                title={title}
                 variant="short"
                 showIcon
                 iconSize={24}

@@ -1,6 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
@@ -124,7 +125,7 @@ export const $highlightedNodes = combine(
 const $highlightedNodesIds = $highlightedNodes.map((accounts) => {
   if (!accounts.length) return null;
 
-  return new Set(accounts.map((account) => account.id));
+  return new Set(accounts.map((account) => account.accountId));
 });
 
 function findNodesRelatedToAccount(
@@ -167,10 +168,13 @@ sample({
     chain: $selectedChain,
     graph: $graph,
   }),
-  filter: ({ chain, graph }) => !!chain && !!graph && graph.size > 0,
+  filter: ({ chain, graph }) => nonNullable(chain) && nonNullable(graph),
   fn: ({ chain, graph }) => ({
     chainId: chain!.chainId,
-    accounts: Array.from(graph!.keys()).map((acc) => acc.accountId),
+    accounts: Array.from(graph!.values()).flatMap(({ account, children }) => [
+      account.accountId,
+      ...children.map((child) => child.account.accountId),
+    ]),
   }),
   target: identity.request,
 });
