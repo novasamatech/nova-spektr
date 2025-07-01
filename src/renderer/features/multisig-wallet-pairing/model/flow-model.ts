@@ -84,7 +84,7 @@ const $coreTx = combine(
     if (!isConnected || !account) return null;
 
     return transactionBuilder.buildRemark({
-      chainId: chainId,
+      chainId,
       accountId: account.accountId,
       threshold: threshold || 2,
       signatories: Array.from(signatories.values()).map(s => toAccountId(s.address)),
@@ -181,6 +181,107 @@ sample({
   target: stepChanged,
 });
 
+// Submit
+
+const formSubmitted = sample({
+  clock: formModel.form.validate,
+  source: {
+    tx: $tx,
+    coreTx: $coreTx,
+    multisigTx: $multisigTx,
+    route: $route,
+    signer: $signer,
+    chain: formModel.$chain,
+    threshold: formModel.form.fields.threshold.$value,
+  },
+}).filterMap(({ chain, tx, multisigTx, coreTx, route, signer, threshold }) => {
+  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
+    return [
+      {
+        tx,
+        multisigTx,
+        coreTx,
+        route,
+        signatory: signer,
+        initiator: signer,
+        threshold,
+        chain,
+      },
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: event => {
+    return {
+      event,
+      step: Step.CONFIRM,
+    };
+  },
+  target: spread({
+    event: confirmModel.init,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: confirmModel.startSigning,
+  source: {
+    chain: formModel.$chain,
+    tx: $tx,
+    signer: $signer,
+  },
+  filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
+  fn: ({ chain, tx, signer }) => ({
+    event: {
+      signingPayloads: [
+        {
+          chain: chain!,
+          account: signer!,
+          transaction: tx!,
+          signatory: signer,
+        },
+      ],
+    },
+    step: Step.SIGN,
+  }),
+  target: spread({
+    event: signModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  source: {
+    chain: formModel.$chain,
+    coreTx: $coreTx,
+    tx: $tx,
+    multisigTx: $multisigTx,
+    signer: $signer,
+  },
+  filter: ({ chain, coreTx, tx, signer }) => {
+    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
+  },
+  fn: ({ chain, coreTx, tx, multisigTx, signer }, signParams) => ({
+    event: {
+      ...signParams,
+      chain: chain!,
+      account: signer!,
+      signatory: signer,
+      coreTxs: [coreTx!],
+      wrappedTxs: [tx!],
+      multisigTxs: multisigTx ? [multisigTx] : [],
+    },
+    step: Step.SUBMIT,
+  }),
+  target: spread({
+    event: submitModel.events.formInitiated,
+    step: stepChanged,
+  }),
+});
+
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
@@ -245,107 +346,6 @@ sample({
 sample({
   clock: createWalletFx.doneData,
   target: proxiesModel.findAllProxies,
-});
-
-// Submit
-
-const formSubmitted = sample({
-  clock: formModel.form.validate,
-  source: {
-    tx: $tx,
-    coreTx: $coreTx,
-    multisigTx: $multisigTx,
-    route: $route,
-    signer: $signer,
-    chain: formModel.$chain,
-    threshold: formModel.form.fields.threshold.$value,
-  },
-}).filterMap(({ chain, tx, multisigTx, coreTx, route, signer, threshold }) => {
-  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
-    return [
-      {
-        tx,
-        multisigTx,
-        coreTx,
-        route,
-        signatory: signer,
-        initiator: signer,
-        threshold,
-        chain,
-      },
-    ];
-  }
-});
-
-sample({
-  clock: formSubmitted,
-  fn: event => {
-    return {
-      event,
-      step: Step.CONFIRM,
-    };
-  },
-  target: spread({
-    event: confirmModel.init,
-    step: stepChanged,
-  }),
-});
-
-sample({
-  clock: confirmModel.startSigning,
-  source: {
-    chain: formModel.$chain,
-    tx: $tx,
-    signer: $signer,
-  },
-  filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
-  fn: ({ chain, tx, signer }) => ({
-    event: {
-      signingPayloads: [
-        {
-          chain: chain!,
-          account: signer!,
-          transaction: tx!,
-          signatory: signer!,
-        },
-      ],
-    },
-    step: Step.SIGN,
-  }),
-  target: spread({
-    event: signModel.events.formInitiated,
-    step: stepChanged,
-  }),
-});
-
-sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    chain: formModel.$chain,
-    coreTx: $coreTx,
-    tx: $tx,
-    multisigTx: $multisigTx,
-    signer: $signer,
-  },
-  filter: ({ chain, coreTx, tx, signer }) => {
-    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
-  },
-  fn: ({ chain, coreTx, tx, multisigTx, signer }, signParams) => ({
-    event: {
-      ...signParams,
-      chain: chain!,
-      account: signer!,
-      signatory: signer,
-      coreTxs: [coreTx!],
-      wrappedTxs: [tx!],
-      multisigTxs: multisigTx ? [multisigTx] : [],
-    },
-    step: Step.SUBMIT,
-  }),
-  target: spread({
-    event: submitModel.events.formInitiated,
-    step: stepChanged,
-  }),
 });
 
 // Contacts
