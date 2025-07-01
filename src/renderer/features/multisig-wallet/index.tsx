@@ -155,9 +155,9 @@ transactionSDK(multisigWalletFeature, {
       return transaction;
     }
   },
-  wrap(transaction, { api, account }) {
+  wrap(transaction, { api, account, signatory }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
       const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
 
@@ -187,9 +187,9 @@ transactionSDK(multisigWalletFeature, {
       };
     }
   },
-  wrapLegacy(transaction, { api, account }) {
+  wrapLegacy(transaction, { api, account, signatory }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {

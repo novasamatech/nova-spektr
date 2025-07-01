@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { assert, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '../account/types';
 
 import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction } from './types';
@@ -11,13 +11,13 @@ import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransactio
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
   AnyTransaction | Promise<AnyTransaction>,
-  { account: AnyAccount; api: ApiPromise }
+  { account: AnyAccount; signatory: AnyAccount; api: ApiPromise }
 >();
 
 const wrapLegacyTransactionTransformer = createTransformer<
   DeprecatedTransaction,
   DeprecatedTransaction | Promise<DeprecatedTransaction>,
-  { account: AnyAccount; api: ApiPromise }
+  { account: AnyAccount; signatory: AnyAccount; api: ApiPromise }
 >();
 
 const unwrapTransactionTransformer = createTransformer<
@@ -40,8 +40,13 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
 
 async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: AnyTransaction = transaction;
-  for (const account of Array.from(route)) {
-    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, api });
+  const signatory = route.at(-1);
+  const path = route.slice(0, -1);
+
+  assert(signatory, 'Signatory not found in route');
+
+  for (const account of Array.from(path)) {
+    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, signatory, api });
     if (nonNullable(result)) {
       wrapped = result;
     }
@@ -56,8 +61,17 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
  */
 async function wrapLegacyTransaction(transaction: DeprecatedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: DeprecatedTransaction = transaction;
-  for (const account of Array.from(route)) {
-    const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, { account, api });
+  const signatory = route.at(-1);
+  const path = route.slice(0, -1);
+
+  assert(signatory, 'Signatory not found in route');
+
+  for (const account of Array.from(path)) {
+    const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, {
+      account,
+      signatory,
+      api,
+    });
     if (nonNullable(result)) {
       wrapped = result;
     }
