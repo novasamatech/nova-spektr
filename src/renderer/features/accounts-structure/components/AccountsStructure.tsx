@@ -192,6 +192,7 @@ const AccountsStructureInner = () => {
           animated: false,
         }}
         className="h-full"
+        onViewportChange={accountsStructureModel.setViewport}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
       >

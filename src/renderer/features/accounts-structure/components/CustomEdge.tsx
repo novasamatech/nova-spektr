@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { AsyncItem } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { accountConnectionTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
@@ -34,6 +35,23 @@ export const CustomEdge = ({
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
+  const viewport = useUnit(accountsStructureModel.$viewport);
+
+  const isOutsideViewport = useMemo(() => {
+    // Transform source and target coordinates to screen coordinates
+    const sourceScreenX = sourceX * viewport.zoom + viewport.x;
+    const sourceScreenY = sourceY * viewport.zoom + viewport.y;
+    const targetScreenX = targetX * viewport.zoom + viewport.x;
+    const targetScreenY = targetY * viewport.zoom + viewport.y;
+
+    // Check if both source and target are outside viewport (assuming 0,0 to window dimensions)
+    return (
+      (sourceScreenX < 0 && targetScreenX < 0) ||
+      (sourceScreenY < 0 && targetScreenY < 0) ||
+      (sourceScreenX > window.innerWidth && targetScreenX > window.innerWidth) ||
+      (sourceScreenY > window.innerHeight && targetScreenY > window.innerHeight)
+    );
+  }, [sourceX, sourceY, targetX, targetY, viewport]);
 
   if (!data) return null;
 
@@ -75,8 +93,8 @@ export const CustomEdge = ({
     ? !highlightedNodesIds.has(sourceAccount.accountId) || !highlightedNodesIds.has(targetAccount.accountId)
     : false;
 
-  return (
-    <>
+  return isOutsideViewport ? null : (
+    <AsyncItem>
       <BaseEdge
         id={id}
         path={edgePath}
@@ -115,6 +133,6 @@ export const CustomEdge = ({
           </div>
         </EdgeLabelRenderer>
       )}
-    </>
+    </AsyncItem>
   );
 };

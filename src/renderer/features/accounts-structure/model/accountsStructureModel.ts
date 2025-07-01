@@ -83,6 +83,9 @@ export const $edgeType = restore(setEdgeType, 'dashed');
 
 export const focusOnSelected = createEvent();
 
+export const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
+export const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
+
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
 export const holdAccountNode = createEvent<AccountNode>();
@@ -196,6 +199,8 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
+  setViewport,
+  $viewport,
   enterAccountNode,
   leaveAccountNode,
   holdAccountNode,
