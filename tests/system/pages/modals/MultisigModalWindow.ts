@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
@@ -56,36 +57,44 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   }
 
   public async clickOnContinueButton(): Promise<void> {
-    await this.waitForContinueButtonToBeEnabled();
-    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await step('Click Continue button', async () => {
+      await this.waitForContinueButtonToBeEnabled();
+      await this.page.getByRole('button', { name: 'Continue' }).click();
+    });
   }
 
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
-    await this.clickOnContinueButton();
+    await step('Open Confirmation modal from Multisig modal', async () => {
+      await this.clickOnContinueButton();
+    });
     return new ConfirmationModalWindow(this.page, new ConfirmationModalElements(), this.previousPage);
   }
 
   public async chooseNetworkandWalletName(network: string, name: string): Promise<void> {
-    await this.fillWalletName(name);
-    await this.chooseNetwork(network);
-    await this.clickOnContinueButton();
+    await step(`Fill wallet name "${name}" and choose network "${network}"`, async () => {
+      await this.fillWalletName(name);
+      await this.chooseNetwork(network);
+      await this.clickOnContinueButton();
+    });
   }
 
   public async fillSignatoryAndSetTrashhold(signatoryDictionary: string[], trashhold?: number): Promise<void> {
-    await this.fillSignatoryAddress(signatoryDictionary[0], 0);
+    await step('Fill signatories and set threshold', async () => {
+      await this.fillSignatoryAddress(signatoryDictionary[0], 0);
 
-    for (let i = 1; i < signatoryDictionary.length; i++) {
-      await this.clickAddSignatoryButton();
-      await this.fillSignatoryWalletName('Multisig wallet', i);
-      await this.fillSignatoryAddress(signatoryDictionary[i], i);
-    }
-    if (trashhold) {
-      if (trashhold < 2 || trashhold > signatoryDictionary.length) {
-        throw new Error(`Threshold must be between 2 and ${signatoryDictionary.length}`);
+      for (let i = 1; i < signatoryDictionary.length; i++) {
+        await this.clickAddSignatoryButton();
+        await this.fillSignatoryWalletName('Multisig wallet', i);
+        await this.fillSignatoryAddress(signatoryDictionary[i], i);
       }
-      await this.chooseTrashhold(trashhold);
-    } else {
-      await this.chooseTrashhold(signatoryDictionary.length);
-    }
+      if (trashhold) {
+        if (trashhold < 2 || trashhold > signatoryDictionary.length) {
+          throw new Error(`Threshold must be between 2 and ${signatoryDictionary.length}`);
+        }
+        await this.chooseTrashhold(trashhold);
+      } else {
+        await this.chooseTrashhold(signatoryDictionary.length);
+      }
+    });
   }
 }

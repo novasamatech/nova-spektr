@@ -12,6 +12,7 @@ import {
   useNodesState,
   useReactFlow,
 } from '@xyflow/react';
+import { useUnit } from 'effector-react';
 import ELK from 'elkjs/lib/elk.bundled.js';
 import { memo, useEffect } from 'react';
 
@@ -29,13 +30,6 @@ const nodeTypes = {
 const edgeTypes = {
   accountEdge: CustomEdge,
 };
-
-interface AccountsStructureProps {
-  account: AnyAccount;
-  graph: Map<AnyAccount, AccountNode>;
-  pathType: 'straight' | 'bezier' | 'smoothStep';
-  edgeType: 'solid' | 'dashed';
-}
 
 type AccountNodeData = {
   node: AccountNode;
@@ -75,15 +69,15 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   const processedNodes = new Set<string>();
 
   function processNode(node: AccountNode) {
-    if (processedNodes.has(node.account.id)) return;
-    processedNodes.add(node.account.id);
+    if (processedNodes.has(node.account.accountId)) return;
+    processedNodes.add(node.account.accountId);
 
     nodes.push({
-      id: node.account.id,
+      id: node.account.accountId,
       type: 'accountNode',
       data: {
         node,
-        isSelected: node.account.id === selectedAccountId,
+        isSelected: node.account.accountId === selectedAccountId,
       },
       position: { x: 0, y: 0 },
       sourcePosition: Position.Left,
@@ -92,9 +86,9 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
 
     for (const child of node.children) {
       edges.push({
-        id: `e${child.account.id}-${node.account.id}`,
-        source: child.account.id,
-        target: node.account.id,
+        id: `e${child.account.accountId}-${node.account.accountId}`,
+        source: child.account.accountId,
+        target: node.account.accountId,
         data: {
           source: child.account,
           target: node.account,
@@ -118,13 +112,19 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   return { nodes, edges };
 }
 
-const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
+const AccountsStructureInner = () => {
+  const graph = useUnit(accountsStructureModel.$graph);
+  const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
 
   useEffect(() => {
-    const { nodes, edges } = createGraphElements(graph, account.id);
+    if (!graph || !selectedAccount) return;
+
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId);
+
     elk
       .layout({
         id: 'root',
@@ -159,15 +159,15 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
           padding: { top: '75px', bottom: '25px', left: '25px', right: '25px' },
         });
       });
-  }, [graph, account.id, fitView]);
+  }, [graph, selectedAccount, fitView]);
 
   useEffect(
     () =>
       // eslint-disable-next-line effector/no-watch
-      focusOnSelected.watch(() => {
-        fitView({ nodes: [{ id: account.id }], maxZoom: 0.5, duration: 500 });
-      }),
-    [fitView, account.id],
+      focusOnSelected.watch(
+        () => selectedAccount && fitView({ nodes: [{ id: selectedAccount.accountId }], maxZoom: 0.5, duration: 500 }),
+      ),
+    [fitView, selectedAccount],
   );
 
   return (
@@ -196,9 +196,9 @@ const AccountsStructureInner = ({ account, graph }: AccountsStructureProps) => {
   );
 };
 
-export const AccountsStructure = memo((props: AccountsStructureProps) => (
+export const AccountsStructure = memo(() => (
   <ReactFlowProvider>
-    <AccountsStructureInner {...props} />
+    <AccountsStructureInner />
   </ReactFlowProvider>
 ));
 
