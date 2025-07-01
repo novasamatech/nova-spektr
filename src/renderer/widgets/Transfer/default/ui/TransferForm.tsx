@@ -1,6 +1,6 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type WalletFamily } from '@/shared/core';
@@ -190,7 +190,13 @@ const Destination = () => {
 
   const chain = destinationChain.value ?? network?.chain;
 
+  useEffect(() => {
+    setQuery('');
+  }, [chain]);
+
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
+    if (validateAddress(query, chain)) return [];
+
     const filteredAccounts = accountsList.filter((account) => {
       const isChainMatch = chain ? accountService.isAccountAvailableOnChain(account, chain) : true;
       const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
@@ -236,6 +242,8 @@ const Destination = () => {
   }, [query, chain, wallets]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
+    if (validateAddress(query, chain)) return [];
+
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
       const displayedAddress = toAddress(contact.accountId, { prefix: chain?.addressPrefix });
@@ -246,21 +254,6 @@ const Destination = () => {
       addressOptions.push({
         id: contact.id.toString(),
         label: <Address showIcon title={contact.name} address={displayedAddress} />,
-        value: { address: displayedAddress },
-      });
-    }
-
-    if (validateAddress(query, chain)) {
-      const displayedAddress = toAddress(query, { prefix: chain?.addressPrefix });
-      const addressExists = walletsOptions.some((group) =>
-        group.items.some((item) => item.value.address === displayedAddress),
-      );
-
-      if (addressExists) return [];
-
-      addressOptions.push({
-        id: query,
-        label: <Address showIcon address={displayedAddress} />,
         value: { address: displayedAddress },
       });
     }
