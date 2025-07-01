@@ -72,7 +72,7 @@ export const CustomEdge = ({
   const connectionColor = connection?.color || '#363643';
 
   const shouldFade = highlightedNodesIds
-    ? !highlightedNodesIds.has(sourceAccount.id) || !highlightedNodesIds.has(targetAccount.id)
+    ? !highlightedNodesIds.has(sourceAccount.accountId) || !highlightedNodesIds.has(targetAccount.accountId)
     : false;
 
   return (
