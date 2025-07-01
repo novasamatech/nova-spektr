@@ -275,6 +275,12 @@ const Destination = () => {
   const chain = xcmChain.value;
 
   useEffect(() => {
+    setQuery('');
+  }, [chain]);
+
+  useEffect(() => {
+    if (validateAddress(query, chain)) return;
+
     const filteredAccounts = accountsList.filter((account) => {
       const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
       const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
@@ -321,6 +327,8 @@ const Destination = () => {
   }, [query, chain, wallets]);
 
   useEffect(() => {
+    if (validateAddress(query, chain)) return;
+
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
       const displayedAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
@@ -331,21 +339,6 @@ const Destination = () => {
       addressOptions.push({
         id: contact.id.toString(),
         label: <Address showIcon title={contact.name} address={displayedAddress} />,
-        value: { address: displayedAddress },
-      });
-    }
-
-    if (validateAddress(query, chain)) {
-      const displayedAddress = toAddress(query, { prefix: chain.addressPrefix });
-      const addressExists = options.some((group) =>
-        group.items.some((item) => item.value.address === displayedAddress),
-      );
-
-      if (addressExists) return;
-
-      addressOptions.push({
-        id: query,
-        label: <Address showIcon address={displayedAddress} />,
         value: { address: displayedAddress },
       });
     }

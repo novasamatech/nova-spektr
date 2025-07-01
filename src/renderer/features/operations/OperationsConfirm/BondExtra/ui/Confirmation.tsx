@@ -37,9 +37,10 @@ export const Confirmation = ({
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const { amount, asset, chain, fee, totalFee, initiator, signatory, route, multisigDeposit } = confirmStore.meta;
+  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirmStore.meta;
 
   const proxiedAccount = route.find(accountUtils.isProxiedAccount);
+  const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!confirmStore || !confirmStore.wallets.initiator) {
     return null;
@@ -73,7 +74,7 @@ export const Confirmation = ({
         signatory={signatory}
         proxied={proxiedAccount}
       >
-        {accountUtils.isMultisigAccount(initiator) && (
+        {multisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={
