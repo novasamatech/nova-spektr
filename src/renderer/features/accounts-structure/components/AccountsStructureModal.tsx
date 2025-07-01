@@ -55,39 +55,57 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
       <Modal.Title close>{t('accountsStructure.modalTitle')}</Modal.Title>
       <Modal.Content>
         <div className="relative h-full">
-          <div className="absolute left-4 top-4 z-10 flex gap-4">
-            <div className="w-[200px]">
-              <ChainSelector />
+          <div className="absolute top-4 z-10 flex w-full justify-between px-4">
+            <div className="flex gap-4">
+              <div className="w-[200px]">
+                <ChainSelector />
+              </div>
+
+              <div className="w-[200px]">
+                <AccountSelector />
+              </div>
+
+              <div className="flex items-center">
+                <Button
+                  size="sm"
+                  variant="fill"
+                  pallet="secondary"
+                  onClick={() => accountsStructureModel.focusOnSelected()}
+                >
+                  {t('Focus on selected')}
+                </Button>
+              </div>
             </div>
 
-            <div className="w-[200px]">
-              <AccountSelector />
-            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center">
+                <Button size="sm" variant="fill" pallet="secondary" onClick={() => accountsStructureModel.reset()}>
+                  {t('Reset')}
+                </Button>
+              </div>
 
-            <div className="w-[200px]">
-              <Select value={pathType} placeholder="Path type" onChange={(v) => accountsStructureModel.setPathType(v)}>
-                <Select.Item value="straight">{t('Straight Line')}</Select.Item>
-                <Select.Item value="bezier">{t('Bezier Curve')}</Select.Item>
-                <Select.Item value="smoothStep">{t('Smooth Step')}</Select.Item>
-              </Select>
-            </div>
+              <div className="w-[120px]">
+                <Select
+                  value={pathType}
+                  placeholder="Path type"
+                  onChange={(v) => accountsStructureModel.setPathType(v)}
+                >
+                  <Select.Item value="straight">{t('Straight Line')}</Select.Item>
+                  <Select.Item value="bezier">{t('Bezier Curve')}</Select.Item>
+                  <Select.Item value="smoothStep">{t('Smooth Step')}</Select.Item>
+                </Select>
+              </div>
 
-            <div className="w-[200px]">
-              <Select value={edgeType} placeholder="Edge type" onChange={(v) => accountsStructureModel.setEdgeType(v)}>
-                <Select.Item value="solid">{t('Solid')}</Select.Item>
-                <Select.Item value="dashed">{t('Dashed')}</Select.Item>
-              </Select>
-            </div>
-
-            <div className="flex items-center">
-              <Button
-                size="sm"
-                variant="fill"
-                pallet="secondary"
-                onClick={() => accountsStructureModel.focusOnSelected()}
-              >
-                {t('Focus on selected')}
-              </Button>
+              <div className="w-[120px]">
+                <Select
+                  value={edgeType}
+                  placeholder="Edge type"
+                  onChange={(v) => accountsStructureModel.setEdgeType(v)}
+                >
+                  <Select.Item value="solid">{t('Solid')}</Select.Item>
+                  <Select.Item value="dashed">{t('Dashed')}</Select.Item>
+                </Select>
+              </div>
             </div>
           </div>
 
