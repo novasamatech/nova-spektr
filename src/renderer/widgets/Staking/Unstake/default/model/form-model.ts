@@ -88,16 +88,16 @@ const form: Form<FormParams> = createForm<FormParams>({
             signatoriesWithBalance: $signatoriesWithBalance,
           }),
           fn: (signatory, _f, { fee, isMultisig, signatoriesWithBalance, multisigDeposit }) => {
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
+            }
+
             const balance = signatoriesWithBalance.find(
               (s: { signer: AnyAccount; balance: string }) => s.signer.accountId === signatory?.accountId,
             )?.balance;
 
             if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(balance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-
-            if (!signatory && isMultisig) {
-              return { message: 'proxy.addProxy.noSignatoryError' };
             }
           },
         };

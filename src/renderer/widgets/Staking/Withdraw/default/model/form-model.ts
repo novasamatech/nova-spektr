@@ -17,6 +17,7 @@ import {
   ZERO_BALANCE,
   getRelaychainAsset,
   nonNullable,
+  nullable,
   redeemableAmount,
   toAddress,
   transferableAmount,
@@ -97,12 +98,12 @@ const form: Form<FormParams> = createForm<FormParams>({
             signatoryBalance: $signatoryBalance,
           }),
           fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
             }
 
-            if (signatory && Object.keys(signatory).length <= 0) {
-              return { message: 'proxy.addProxy.noSignatoryError' };
+            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },
         };
