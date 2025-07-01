@@ -44,9 +44,6 @@ export const Confirmation = ({
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = confirmStore.wallets.initiator;
-  const signerWallet = confirmStore.wallets.signatory;
-
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
     keys: [confirmStore.meta.chain],
@@ -61,13 +58,15 @@ export const Confirmation = ({
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirmStore) {
     return (
       <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
       </Box>
     );
   }
+
+  const signerWallet = confirmStore.wallets.signatory;
 
   const amountValue = config.withFormatAmount
     ? formatAmount(confirmStore.meta.balance, confirmStore.meta.asset.precision)

@@ -146,8 +146,13 @@ const { $multisigDeposit } = createMultisigDeposit({
 
 // Steps
 
-const dataSubmitted = sample({
+sample({
   clock: flowStarted,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
+
+const dataSubmitted = sample({
   source: {
     balances: balanceModel.$balances,
     fee: $fee,
@@ -163,7 +168,7 @@ const dataSubmitted = sample({
     delegate: $delegate,
     multisigDeposit: $multisigDeposit,
   },
-}).filterMap(
+}).updates.filterMap(
   ({
     fee,
     balances,
@@ -226,12 +231,10 @@ sample({
   fn: (event) => {
     return {
       event,
-      step: Step.CONFIRM,
     };
   },
   target: spread({
     event: confirmModel.init,
-    step: stepChanged,
   }),
 });
 
