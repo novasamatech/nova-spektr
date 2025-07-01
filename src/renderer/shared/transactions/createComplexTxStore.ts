@@ -51,12 +51,13 @@ export const createComplexTxStore = <T extends Transaction>({
 
   const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
+    const signatory = route.at(-1);
 
-    const signatory = route.at(-1)?.accountId;
+    assert(signatory, 'Signatory is required');
 
-    assert(signatory, 'Signatory not found');
-
-    tx.accountId = signatory;
+    // its a legacy transaction structure which includes unnecessary information about signator
+    // we should set signatory explicitly
+    tx.accountId = signatory.accountId;
 
     const mutisigAccountIndex = route.findIndex(accountUtils.isMultisigAccount);
     if (mutisigAccountIndex !== -1) {
@@ -66,7 +67,7 @@ export const createComplexTxStore = <T extends Transaction>({
         api,
       );
 
-      multisigTx.accountId = signatory;
+      multisigTx.accountId = signatory.accountId;
 
       return {
         tx,
