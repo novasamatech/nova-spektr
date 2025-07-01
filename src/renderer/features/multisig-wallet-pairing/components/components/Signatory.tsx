@@ -8,7 +8,7 @@ import { includesMultiple, performSearch, toAccountId, toAddress, validateAddres
 import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
@@ -220,12 +220,14 @@ export const Signatory = ({
       walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
 
+    const accountId = toAccountId(value);
+
     if (isOwnAccount && chain) {
       const account = accountList.find(
         a =>
-          a.accountId === toAccountId(value) &&
+          a.accountId === accountId &&
           a.walletId === newSignatory?.walletId &&
-          accountUtils.isChainIdMatch(a, chain.chainId),
+          accountService.isAccountAvailableOnChain(a, chain),
       );
 
       if (!account) return;

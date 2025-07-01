@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -73,7 +72,7 @@ export const ConfirmationStep = () => {
 
                 <div className="flex max-w-[348px] flex-col">
                   <BodyText as="span" className="truncate tracking-tight text-text-secondary">
-                    {signer.name || (signerWallet.type === WalletType.POLKADOT_VAULT && signerWallet.name) || ''}
+                    {signer.name || signerWallet.name}
                   </BodyText>
                 </div>
               </div>

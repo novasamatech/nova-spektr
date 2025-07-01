@@ -3,6 +3,7 @@ import { combine, sample } from 'effector';
 import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type FormParams } from '../lib/types';
@@ -106,7 +107,7 @@ const $availableAccounts = combine(
 
     const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
       const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w);
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(a, chain);
+      const isChainMatch = accountService.isAccountAvailableOnChain(a, chain);
 
       return isValidWallet && isChainMatch;
     });
