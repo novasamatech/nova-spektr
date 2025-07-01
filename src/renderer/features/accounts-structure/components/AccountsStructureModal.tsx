@@ -24,10 +24,8 @@ type Props = {
 export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
-  const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
   const pathType = useUnit(accountsStructureModel.$pathType);
   const edgeType = useUnit(accountsStructureModel.$edgeType);
-  const graph = useUnit(accountsStructureModel.$graph);
 
   useEffect(() => {
     accountsStructureModel.setAccounts(walletAccounts);
@@ -93,9 +91,9 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
             </div>
           </div>
 
-          {graph && isOpen && selectedAccount && (
+          {isOpen && (
             <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
-              {<AccountsStructure account={selectedAccount} graph={graph} pathType={pathType} edgeType={edgeType} />}
+              {<AccountsStructure />}
             </Suspense>
           )}
         </div>
