@@ -71,14 +71,12 @@ const form: Form<FormParams> = createForm<FormParams>({
             signatoryBalance: $signatoryBalance,
           }),
           fn: (signatory, _fields, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
-            if (!isMultisig) return;
-
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
 
             const required = new BN(multisigDeposit).add(new BN(fee));
-            if (required.gt(new BN(signatoryBalance))) {
+            if (isMultisig && required.gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },

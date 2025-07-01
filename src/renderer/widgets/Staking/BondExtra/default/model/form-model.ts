@@ -84,7 +84,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             signatoryBalance: $signatoryBalance,
           }),
           fn: (signatory: AnyAccount | null, _: FormParams, { isMultisig, fee, multisigDeposit, signatoryBalance }) => {
-            if (isMultisig && signatory && Object.keys(signatory).length === 0) {
+            if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
 

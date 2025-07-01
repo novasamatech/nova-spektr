@@ -90,6 +90,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             signatoryBalance: $signatoryBalance,
           }),
           fn: (signatory, _f, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
+            }
+
             const isNotEnoughMultisigTokens =
               isMultisig && new BN(multisigDeposit).add(fee).gt(new BN(signatoryBalance));
             if (isNotEnoughMultisigTokens) {
