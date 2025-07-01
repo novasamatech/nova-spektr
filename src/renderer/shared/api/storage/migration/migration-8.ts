@@ -2,6 +2,7 @@ import { type Transaction } from 'dexie';
 
 import { AccountType, CryptoType, type WcAccount } from '@/shared/core';
 import { isEthereumAccountId } from '@/shared/lib/utils/address';
+// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
 function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
