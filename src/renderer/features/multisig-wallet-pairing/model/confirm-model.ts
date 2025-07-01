@@ -1,45 +1,28 @@
-import { combine, createEvent, restore } from 'effector';
-
+import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
-import { type AddMultisigStore } from '../lib/types';
+import { walletModel } from '@/entities/wallet';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
-const formInitiated = createEvent<AddMultisigStore>();
-const formSubmitted = createEvent();
+export type MultisigConfirm = TxConfirmInfo;
 
-const $confirmStore = restore(formInitiated, null).reset(formSubmitted);
-
-const $api = combine(
-  {
-    apis: networkModel.$apis,
-    store: $confirmStore,
-  },
-  ({ apis, store }) => {
-    return store ? apis[store.chainId] : null;
-  },
-);
-
-const $signerWallet = combine(
-  {
-    store: $confirmStore,
-    wallets: walletModel.$wallets,
-  },
-  ({ store, wallets }) => {
-    if (!store) return null;
-
-    return walletUtils.getWalletById(wallets, store.signer.walletId);
-  },
-  { skipVoid: false },
-);
+const confirmStore = createTransactionConfirmStore<MultisigConfirm>({
+  $wallets: walletModel.$wallets,
+  $apis: networkModel.$apis,
+  $multisigTransactions: selectedWalletMultisigOperations.$list,
+});
 
 export const confirmModel = {
-  $confirmStore,
-  $signerWallet,
-  $api,
-  events: {
-    formInitiated,
-  },
-  output: {
-    formSubmitted,
-  },
+  $confirmMap: confirmStore.$confirmMap,
+  $isMultisigExists: confirmStore.$isMultisigExists,
+  $confirms: confirmStore.$confirms,
+
+  init: confirmStore.init,
+  addConfirms: confirmStore.addConfirms,
+  replaceWithConfirm: confirmStore.replaceWithConfirm,
+  resetConfirm: confirmStore.resetConfirm,
+  startSigning: confirmStore.startSigning,
+
+  submitStarted: submitModel.events.formInitiated,
+  submitFinished: submitModel.output.formSubmitted,
 };

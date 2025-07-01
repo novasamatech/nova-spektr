@@ -46,6 +46,7 @@ export const transactionBuilder = {
   buildRejectFlexibleMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
+  buildRemark,
 
   buildBatchAll,
   splitBatchAll,
@@ -636,4 +637,24 @@ function buildCreateFlexibleMultisig({
   const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
 
   return buildBatchAll({ chain, accountId: signer.accountId, transactions });
+}
+
+type RemarkParams = {
+  chainId: ChainId;
+  accountId: AccountId;
+  threshold: number;
+  signatories: AccountId[];
+};
+function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParams): Transaction {
+  return {
+    chainId,
+    accountId,
+    type: TransactionType.REMARK_WITH_EVENT,
+    args: {
+      remark: JSON.stringify({
+        signatories,
+        threshold,
+      }),
+    },
+  };
 }
