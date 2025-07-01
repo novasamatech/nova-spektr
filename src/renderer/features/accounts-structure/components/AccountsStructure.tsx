@@ -14,11 +14,12 @@ import {
 } from '@xyflow/react';
 import { useUnit } from 'effector-react';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
+import { useClickOutside } from '@/shared/lib/hooks';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
-import { focusOnSelected } from '../model/accountsStructureModel';
+import { accountsStructureModel, focusOnSelected } from '../model/accountsStructureModel';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -119,6 +120,9 @@ const AccountsStructureInner = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<AccountNodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView } = useReactFlow();
+  const graphRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside([graphRef], () => accountsStructureModel.releaseAccountNode());
 
   useEffect(() => {
     if (!graph || !selectedAccount) return;
@@ -171,28 +175,30 @@ const AccountsStructureInner = () => {
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
-      fitView={false}
-      minZoom={0}
-      nodesDraggable={true}
-      nodesConnectable={false}
-      elementsSelectable={false}
-      proOptions={{ hideAttribution: true }}
-      defaultEdgeOptions={{
-        type: 'accountEdge',
-        animated: false,
-      }}
-      className="h-full"
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-    >
-      <Controls showInteractive={false} />
-      <Background variant={BackgroundVariant.Dots} gap={20} size={0.75} color="#363643" bgColor="#F9F9F9" />
-    </ReactFlow>
+    <div ref={graphRef} className="h-full" onClick={() => accountsStructureModel.releaseAccountNode()}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView={false}
+        minZoom={0}
+        nodesDraggable={true}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        proOptions={{ hideAttribution: true }}
+        defaultEdgeOptions={{
+          type: 'accountEdge',
+          animated: false,
+        }}
+        className="h-full"
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+      >
+        <Controls showInteractive={false} />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={0.75} color="#363643" bgColor="#F9F9F9" />
+      </ReactFlow>
+    </div>
   );
 };
 
