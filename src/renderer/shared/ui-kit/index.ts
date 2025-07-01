@@ -1,4 +1,5 @@
 export { useResizeObserver } from './hooks/useResizeObserver';
+export { useIntersectionObserver } from './hooks/useIntersectionObserver';
 export { useTheme } from './Theme/useTheme';
 
 export { FilledIconButton } from './FilledIconButton/FilledIconButton';

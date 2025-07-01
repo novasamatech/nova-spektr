@@ -7,6 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
+import { AsyncItem, useIntersectionObserver } from '@/shared/ui-kit';
 import { type AccountNode, identity, identityService } from '@/domains/network';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
@@ -41,6 +42,8 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
+  const intersectionRef = useRef<HTMLDivElement>(null);
+  const isInViewport = useIntersectionObserver(intersectionRef.current);
 
   const handleMouseEnter = () => {
     if (!config?.disabled && !heldAccountNode) {
@@ -66,7 +69,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   };
 
   return (
-    <>
+    <div ref={intersectionRef}>
       {/* show on hover */}
       {/*<NodeToolbar isVisible={true} position={Position.Top}>*/}
       {/*  toolbar*/}
@@ -84,38 +87,42 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
         onClick={handleClick}
       >
         <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
-        <div className="w-[250px]">
+        <div className="min-h-[90px] w-[250px]">
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
-          <div className="flex flex-col">
-            <div
-              className="border-stroke flex items-center justify-between border-b px-4 py-2"
-              style={{ background: data.isSelected ? config?.color : 'transparent' }}
-            >
-              <SmallTitleText className={data.isSelected ? 'text-white' : 'text-text-secondary'}>
-                {config?.title}
-              </SmallTitleText>
+          {isInViewport && (
+            <AsyncItem>
+              <div className="flex flex-col">
+                <div
+                  className="border-stroke flex items-center justify-between border-b px-4 py-2"
+                  style={{ background: data.isSelected ? config?.color : 'transparent' }}
+                >
+                  <SmallTitleText className={data.isSelected ? 'text-white' : 'text-text-secondary'}>
+                    {config?.title}
+                  </SmallTitleText>
 
-              {config?.subTitle && (
-                <LabelText className={cnTw('font-medium', data.isSelected ? 'text-white' : 'text-text-secondary')}>
-                  {config?.subTitle}
-                </LabelText>
-              )}
-            </div>
-            <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
-              <Address
-                address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
-                title={title}
-                variant="short"
-                showIcon
-                iconSize={24}
-              />
-            </div>
-          </div>
+                  {config?.subTitle && (
+                    <LabelText className={cnTw('font-medium', data.isSelected ? 'text-white' : 'text-text-secondary')}>
+                      {config?.subTitle}
+                    </LabelText>
+                  )}
+                </div>
+                <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
+                  <Address
+                    address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
+                    title={title}
+                    variant="short"
+                    showIcon
+                    iconSize={24}
+                  />
+                </div>
+              </div>
+            </AsyncItem>
+          )}
 
           {hasOutgoing && <Handle type="source" position={Position.Right} className="opacity-0" />}
         </div>
       </div>
-    </>
+    </div>
   );
 });
