@@ -6,7 +6,7 @@ export { OperationResult } from './OperationResult/OperationResult';
 export { ScanSingleframeQr } from './Scanning/ScanSingleframeQr';
 export { ScanMultiframeQr } from './Scanning/ScanMultiframeQr';
 export { MultisigDeposit } from './MultisigDeposit/MultisigDeposit';
-export { MultisigDepositWithLabel } from './MultisigDepositWithLabel/MultisigDepositWithLabel';
+export { MultisigDepositWithLabel, MultisigDepositFee } from './MultisigDepositWithLabel/MultisigDepositWithLabel';
 export { ProxyDeposit } from './ProxyDeposit/ProxyDeposit';
 export { ProxyDepositLabel } from './ProxyDepositLabel/ProxyDepositLabel';
 export { FeeWithLabelWithDataLoading, FeeWithLabel } from './FeeWithLabel/FeeWithLabel';

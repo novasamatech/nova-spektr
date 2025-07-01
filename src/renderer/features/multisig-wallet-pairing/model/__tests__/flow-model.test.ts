@@ -1,15 +1,17 @@
 import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
-import { type Account, type ChainId, ConnectionStatus } from '@/shared/core';
+import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import * as networkDomain from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { ExtrinsicResult } from '@/features/operations/OperationSubmit/lib/types';
-import { confirmModel } from '../confirm-model';
+import { type MultisigConfirm, confirmModel } from '../confirm-model';
 import { flowModel } from '../flow-model';
 import { formModel } from '../form-model';
 import { signatoryModel } from '../signatory-model';
@@ -61,30 +63,39 @@ describe.skip('Create multisig wallet flow-model', () => {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', walletId: '1' },
     });
-    await allSettled(flowModel.events.signerSelected, { scope, params: signerWallet.accounts[0] });
+    await allSettled(flowModel.signerSelected, { scope, params: signerWallet.accounts[0] });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.SIGNATORIES_THRESHOLD);
-    await allSettled(formModel.$createMultisigForm.fields.chainId.onChange, { scope, params: testChain.chainId });
-    await allSettled(formModel.$createMultisigForm.fields.name.onChange, { scope, params: 'some name' });
-    await allSettled(formModel.$createMultisigForm.fields.threshold.onChange, { scope, params: 2 });
+    await allSettled(formModel.form.fields.chainId.change, { scope, params: testChain.chainId });
+    await allSettled(formModel.form.fields.name.change, { scope, params: 'some name' });
+    await allSettled(formModel.form.fields.threshold.change, { scope, params: 2 });
 
-    await allSettled(formModel.$createMultisigForm.submit, { scope });
+    const mockTx = transactionBuilder.buildRemark({
+      chainId: testChain.chainId,
+      accountId: '0x00' as AccountId,
+      threshold: 2,
+      signatories: ['0x00' as AccountId],
+    });
 
+    await allSettled(formModel.form.submit, { scope });
+    const account = { walletId: signerWallet.id } as unknown as networkDomain.AnyAccount;
     const store = {
       chainId: '0x00' as ChainId,
-      account: { walletId: signerWallet.id } as unknown as Account,
-      signer: { walletId: signerWallet.id } as unknown as Account,
       threshold: 2,
-      name: 'multisig name',
-      fee: '',
-      multisigDeposit: '',
-    };
+      route: [account],
+      tx: mockTx,
+      coreTx: mockTx,
+      multisigTx: null,
+      initiator: account,
+      signatory: account,
+      chain: testChain,
+    } as MultisigConfirm;
 
-    await allSettled(confirmModel.events.formInitiated, { scope, params: store });
+    await allSettled(confirmModel.init, { scope, params: [store] });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, { scope });
+    await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(flowModel.$step)).toEqual(Step.SIGN);
 

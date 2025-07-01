@@ -73,6 +73,7 @@ export const Confirmation = ({
     : confirmStore.meta.amount;
 
   const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
+  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount);
 
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
 
@@ -130,7 +131,7 @@ export const Confirmation = ({
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {isMultisigExists && (
+          {multisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={

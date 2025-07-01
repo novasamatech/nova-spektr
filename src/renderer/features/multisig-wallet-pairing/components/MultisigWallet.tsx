@@ -48,7 +48,7 @@ export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) 
       {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && (
         <Modal.Content>
-          <OperationSign onGoBack={() => flowModel.events.stepChanged(Step.CONFIRM)} />
+          <OperationSign onGoBack={() => flowModel.stepChanged(Step.CONFIRM)} />
         </Modal.Content>
       )}
     </Modal>
