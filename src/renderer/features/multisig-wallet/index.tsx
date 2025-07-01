@@ -12,7 +12,7 @@ import {
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { assert, isEthereumAccountId, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { multisigOperationService, transactionService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
@@ -155,9 +155,12 @@ transactionSDK(multisigWalletFeature, {
       return transaction;
     }
   },
-  wrap(transaction, { api, account }) {
+  wrap(transaction, { api, account, route, index }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const signatory = route.at(index + 1);
+      assert(signatory, 'Signatory not found');
+
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
       const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
 
@@ -187,9 +190,12 @@ transactionSDK(multisigWalletFeature, {
       };
     }
   },
-  wrapLegacy(transaction, { api, account }) {
+  wrapLegacy(transaction, { api, account, route, index }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const signatory = route.at(index + 1);
+      assert(signatory, 'Signatory not found');
+
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
