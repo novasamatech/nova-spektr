@@ -48,6 +48,7 @@ accountSDK(proxiedWalletFeature, {
       return {
         title: 'Proxied wallet',
         color: '#2A1FD5',
+        background: 'linear-gradient(180deg, #2A0FD2 57.52%, #8A00CC 85.97%)',
       };
     }
   },

@@ -84,6 +84,7 @@ accountSDK(multisigWalletFeature, {
           total: account.signatories.length,
         }),
         color: '#05B199',
+        background: 'linear-gradient(180deg, #00AF9A 55.03%, #1AB775 100.43%)',
       };
     }
 
