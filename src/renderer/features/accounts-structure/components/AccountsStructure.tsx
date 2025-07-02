@@ -173,6 +173,13 @@ const AccountsStructureInner = () => {
 
   useClickOutside([graphRef], () => accountsStructureModel.releaseAccountNode());
 
+  useEffect(() => {
+    if (graphRef.current) {
+      const rect = graphRef.current.getBoundingClientRect();
+      accountsStructureModel.setCanvasSize({ width: rect.width, height: rect.height });
+    }
+  }, [graphRef]);
+
   // Layout graph when graph or selected account changes
   useEffect(() => {
     void layoutGraph();

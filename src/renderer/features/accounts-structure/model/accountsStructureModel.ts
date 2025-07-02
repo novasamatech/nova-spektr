@@ -87,6 +87,9 @@ export const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
 export const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
 export const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
 
+export const setCanvasSize = createEvent<{ width: number; height: number }>();
+export const $canvasSize = restore(setCanvasSize, { width: 0, height: 0 });
+
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
 export const holdAccountNode = createEvent<AccountNode>();
@@ -203,6 +206,8 @@ export const accountsStructureModel = {
   reset,
   setViewport,
   $viewport,
+  setCanvasSize,
+  $canvasSize,
   enterAccountNode,
   leaveAccountNode,
   holdAccountNode,

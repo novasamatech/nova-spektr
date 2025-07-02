@@ -36,6 +36,7 @@ export const CustomEdge = ({
   const edgeType = useUnit(accountsStructureModel.$edgeType);
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
   const viewport = useUnit(accountsStructureModel.$viewport);
+  const canvasSize = useUnit(accountsStructureModel.$canvasSize);
 
   const isOutsideViewport = useMemo(() => {
     // Transform source and target coordinates to screen coordinates
@@ -44,14 +45,14 @@ export const CustomEdge = ({
     const targetScreenX = targetX * viewport.zoom + viewport.x;
     const targetScreenY = targetY * viewport.zoom + viewport.y;
 
-    // Check if both source and target are outside viewport (assuming 0,0 to window dimensions)
+    // Check if both source and target are outside viewport using canvas dimensions
     return (
       (sourceScreenX < 0 && targetScreenX < 0) ||
       (sourceScreenY < 0 && targetScreenY < 0) ||
-      (sourceScreenX > window.innerWidth && targetScreenX > window.innerWidth) ||
-      (sourceScreenY > window.innerHeight && targetScreenY > window.innerHeight)
+      (sourceScreenX > canvasSize.width && targetScreenX > canvasSize.width) ||
+      (sourceScreenY > canvasSize.height && targetScreenY > canvasSize.height)
     );
-  }, [sourceX, sourceY, targetX, targetY, viewport]);
+  }, [sourceX, sourceY, targetX, targetY, viewport, canvasSize]);
 
   if (!data) return null;
 
