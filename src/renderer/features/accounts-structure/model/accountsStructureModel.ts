@@ -75,13 +75,14 @@ sample({
   target: selectChain,
 });
 
+export const focusOnSelected = createEvent();
+export const reset = createEvent();
+
 export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
 export const setEdgeType = createEvent<'solid' | 'dashed'>();
 
-export const $pathType = restore(setPathType, 'bezier');
-export const $edgeType = restore(setEdgeType, 'dashed');
-
-export const focusOnSelected = createEvent();
+export const $pathType = restore(setPathType, 'bezier').reset(reset);
+export const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
 
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
@@ -196,6 +197,7 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
+  reset,
   enterAccountNode,
   leaveAccountNode,
   holdAccountNode,

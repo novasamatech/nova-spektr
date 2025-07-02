@@ -7,7 +7,22 @@
   "accountsStructure": {
     "button": "Open overview",
     "modalTitle": "Account Overview",
-    "multisigThreshold": "{ threshold } out of { total }"
+    "multisigThreshold": "{ threshold } out of { total }",
+    "toolbar": {
+      "edgeType": {
+        "dashed": "Dashed",
+        "placeholder": "Edge type",
+        "solid": "Solid"
+      },
+      "focusOnSelected": "Focus on selected",
+      "pathType": {
+        "bezier": "Bezier Curve",
+        "placeholder": "Path type",
+        "smoothStep": "Smooth Step",
+        "straight": "Straight Line"
+      },
+      "reset": "Reset"
+    }
   },
   "addressBook": {
     "contactList": {
