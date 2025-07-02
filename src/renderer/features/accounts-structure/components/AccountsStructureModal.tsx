@@ -66,12 +66,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
               </div>
 
               <div className="flex items-center">
-                <Button
-                  size="sm"
-                  variant="fill"
-                  pallet="secondary"
-                  onClick={() => accountsStructureModel.focusOnSelected()}
-                >
+                <Button size="sm" variant="text" onClick={() => accountsStructureModel.focusOnSelected()}>
                   {t('accountsStructure.toolbar.focusOnSelected')}
                 </Button>
               </div>
@@ -79,7 +74,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
 
             <div className="flex gap-4">
               <div className="flex items-center">
-                <Button size="sm" variant="fill" pallet="secondary" onClick={() => accountsStructureModel.reset()}>
+                <Button size="sm" variant="text" onClick={() => accountsStructureModel.reset()}>
                   {t('accountsStructure.toolbar.reset')}
                 </Button>
               </div>
