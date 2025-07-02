@@ -1,6 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, toAccountId } from '@/shared/lib/utils';
@@ -56,6 +57,12 @@ export const Confirmation = ({
   const api = useStoreMap({
     store: confirmModel.$apis,
     keys: [confirmStore?.chain?.chainId],
+    fn: (value, [chainId]) => value?.[chainId],
+  });
+
+  const timelineApi = useStoreMap({
+    store: confirmModel.$apis,
+    keys: [confirmStore?.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirmStore?.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
@@ -194,7 +201,7 @@ export const Confirmation = ({
             </StakingPopover.Item>
             <StakingPopover.Item>
               {t('staking.confirmation.hintUnstakePeriod')} {'('}
-              <UnstakingDuration api={api} />
+              <UnstakingDuration api={api} timelineApi={timelineApi} />
               {')'}
             </StakingPopover.Item>
             <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
