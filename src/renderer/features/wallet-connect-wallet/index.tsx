@@ -24,8 +24,16 @@ accountSDK(walletConnectWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  visualGraphNode({ account }) {
+  visualGraphNode({ account, wallet }) {
     if (accountUtils.isWcAccount(account)) {
+      if (walletUtils.isNovaWallet(wallet)) {
+        return {
+          title: 'Nova Wallet',
+          color: '#305CE7',
+          background: 'linear-gradient(180deg, #225FE7 50%, #D7D3E9 80%)',
+        };
+      }
+
       return {
         title: 'WalletConnect',
         color: '#3B99FC',

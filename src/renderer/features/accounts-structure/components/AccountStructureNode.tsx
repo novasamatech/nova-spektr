@@ -9,6 +9,7 @@ import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { AsyncItem, useIntersectionObserver } from '@/shared/ui-kit';
 import { type AccountNode, identity, identityService } from '@/domains/network';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
@@ -26,6 +27,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [isIntersecting, setIsIntersecting] = useState(true);
 
@@ -41,7 +43,8 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
     return accountIdentity ? identityService.getFullName(accountIdentity) : '';
   }, [identities, chain, data.node.account]);
 
-  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, t });
+  const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
+  const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });
   const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -89,7 +92,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
       >
-        <div className="w-1" style={{ background: config?.color ?? 'transparent' }} />
+        <div className="w-1" style={{ background: config?.background ?? config?.color ?? 'transparent' }} />
         <div className="min-h-[90px] w-[250px]">
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
