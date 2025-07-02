@@ -103,6 +103,8 @@ accountSDK(multisigWalletFeature, {
       };
     }
   },
+  // VALENTIN REVIEW: validation seems to be context-free, in a sense that multiple validations that validate a single account
+  // do not work together. Is "reduce balance" approach is in some other branch?
   validateRouteBalances({ account, api, route, balances, chainId, asset, index }) {
     if (accountUtils.isMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);

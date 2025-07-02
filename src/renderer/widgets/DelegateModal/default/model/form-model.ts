@@ -73,6 +73,8 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.bond.noInitiatorError' };
             }
 
+            // VALENTIN REVIEW: general note about validations: validations seems to not be in-line with the latest discussed approach
+            // I assume new approach is not merged yet
             if (isProxy) {
               if (new BN(fee).gt(new BN(proxyBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
