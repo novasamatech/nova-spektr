@@ -9,19 +9,19 @@
     "modalTitle": "Account Overview",
     "multisigThreshold": "{ threshold } out of { total }",
     "toolbar": {
-      "focusOnSelected": "Focus on selected",
-      "reset": "Reset",
-      "pathType": {
-        "placeholder": "Path type",
-        "straight": "Straight Line",
-        "bezier": "Bezier Curve",
-        "smoothStep": "Smooth Step"
-      },
       "edgeType": {
+        "dashed": "Dashed",
         "placeholder": "Edge type",
-        "solid": "Solid",
-        "dashed": "Dashed"
-      }
+        "solid": "Solid"
+      },
+      "focusOnSelected": "Focus on selected",
+      "pathType": {
+        "bezier": "Bezier Curve",
+        "placeholder": "Path type",
+        "smoothStep": "Smooth Step",
+        "straight": "Straight Line"
+      },
+      "reset": "Reset"
     }
   },
   "addressBook": {
