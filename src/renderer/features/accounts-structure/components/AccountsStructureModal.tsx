@@ -72,7 +72,7 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
                   pallet="secondary"
                   onClick={() => accountsStructureModel.focusOnSelected()}
                 >
-                  {t('Focus on selected')}
+                  {t('accountsStructure.toolbar.focusOnSelected')}
                 </Button>
               </div>
             </div>
@@ -80,30 +80,30 @@ export const AccountsStructureModal = ({ walletAccounts, onClose }: Props) => {
             <div className="flex gap-4">
               <div className="flex items-center">
                 <Button size="sm" variant="fill" pallet="secondary" onClick={() => accountsStructureModel.reset()}>
-                  {t('Reset')}
+                  {t('accountsStructure.toolbar.reset')}
                 </Button>
               </div>
 
               <div className="w-[120px]">
                 <Select
                   value={pathType}
-                  placeholder="Path type"
+                  placeholder={t('accountsStructure.toolbar.pathType.placeholder')}
                   onChange={(v) => accountsStructureModel.setPathType(v)}
                 >
-                  <Select.Item value="straight">{t('Straight Line')}</Select.Item>
-                  <Select.Item value="bezier">{t('Bezier Curve')}</Select.Item>
-                  <Select.Item value="smoothStep">{t('Smooth Step')}</Select.Item>
+                  <Select.Item value="straight">{t('accountsStructure.toolbar.pathType.straight')}</Select.Item>
+                  <Select.Item value="bezier">{t('accountsStructure.toolbar.pathType.bezier')}</Select.Item>
+                  <Select.Item value="smoothStep">{t('accountsStructure.toolbar.pathType.smoothStep')}</Select.Item>
                 </Select>
               </div>
 
               <div className="w-[120px]">
                 <Select
                   value={edgeType}
-                  placeholder="Edge type"
+                  placeholder={t('accountsStructure.toolbar.edgeType.placeholder')}
                   onChange={(v) => accountsStructureModel.setEdgeType(v)}
                 >
-                  <Select.Item value="solid">{t('Solid')}</Select.Item>
-                  <Select.Item value="dashed">{t('Dashed')}</Select.Item>
+                  <Select.Item value="solid">{t('accountsStructure.toolbar.edgeType.solid')}</Select.Item>
+                  <Select.Item value="dashed">{t('accountsStructure.toolbar.edgeType.dashed')}</Select.Item>
                 </Select>
               </div>
             </div>
