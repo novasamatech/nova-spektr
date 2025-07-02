@@ -47,6 +47,7 @@ accountSDK(extensionWalletFeature, {
         return {
           title: 'SubWallet',
           color: '#004BFF',
+          background: 'linear-gradient(180deg, #004BFF 0%, #4CEAAC 100%)',
         };
       }
     }
