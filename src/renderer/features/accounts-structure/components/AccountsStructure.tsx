@@ -14,7 +14,7 @@ import {
 } from '@xyflow/react';
 import { useUnit } from 'effector-react';
 import ELK from 'elkjs/lib/elk.bundled.js';
-import { memo, useEffect, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
 import { useClickOutside } from '@/shared/lib/hooks';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
@@ -113,6 +113,53 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
   return { nodes, edges };
 }
 
+const useGraphLayout = (
+  graph: Map<AnyAccount, AccountNode> | null,
+  selectedAccount: AnyAccount | null,
+  setNodes: (nodes: Node<AccountNodeData>[]) => void,
+  setEdges: (edges: Edge[]) => void,
+  fitView: ReturnType<typeof useReactFlow>['fitView'],
+) => {
+  return useCallback(async () => {
+    if (!graph || !selectedAccount) return;
+
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId);
+
+    const layoutGraph = await elk.layout({
+      id: 'root',
+      children: nodes.map((node) => ({
+        id: node.id,
+        width: 250,
+        height: 100,
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        sources: [edge.source],
+        targets: [edge.target],
+      })),
+    });
+
+    const layoutNodesMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
+    const layoutNodes: Node<AccountNodeData>[] = nodes.map((node) => {
+      const layoutNode = layoutNodesMap.get(node.id);
+      return {
+        ...node,
+        position: {
+          x: layoutNode?.x ?? node.position.x,
+          y: layoutNode?.y ?? node.position.y,
+        },
+      };
+    });
+
+    setNodes(layoutNodes.length <= 15 ? alignNodesTop(layoutNodes) : layoutNodes);
+    setEdges(edges);
+
+    fitView({
+      padding: { top: '75px', bottom: '25px', left: '25px', right: '25px' },
+    });
+  }, [graph, selectedAccount, setNodes, setEdges, fitView]);
+};
+
 const AccountsStructureInner = () => {
   const graph = useUnit(accountsStructureModel.$graph);
   const selectedAccount = useUnit(accountsStructureModel.$selectedAccount);
@@ -122,48 +169,29 @@ const AccountsStructureInner = () => {
   const { fitView } = useReactFlow();
   const graphRef = useRef<HTMLDivElement>(null);
 
+  const layoutGraph = useGraphLayout(graph, selectedAccount, setNodes, setEdges, fitView);
+
   useClickOutside([graphRef], () => accountsStructureModel.releaseAccountNode());
 
   useEffect(() => {
-    if (!graph || !selectedAccount) return;
+    if (graphRef.current) {
+      const rect = graphRef.current.getBoundingClientRect();
+      accountsStructureModel.setCanvasSize({ width: rect.width, height: rect.height });
+    }
+  }, [graphRef]);
 
-    const { nodes, edges } = createGraphElements(graph, selectedAccount.accountId);
+  // Layout graph when graph or selected account changes
+  useEffect(() => {
+    void layoutGraph();
+  }, [layoutGraph]);
 
-    elk
-      .layout({
-        id: 'root',
-        children: nodes.map((node) => ({
-          id: node.id,
-          width: 250,
-          height: 100,
-        })),
-        edges: edges.map((edge) => ({
-          id: edge.id,
-          sources: [edge.source],
-          targets: [edge.target],
-        })),
-      })
-      .then((layoutGraph) => {
-        const layoutNodesMap = new Map(layoutGraph.children?.map((i) => [i.id, i]) ?? []);
-        const layoutNodes: Node<AccountNodeData>[] = nodes.map((node) => {
-          const layoutNode = layoutNodesMap.get(node.id);
-          return {
-            ...node,
-            position: {
-              x: layoutNode?.x ?? node.position.x,
-              y: layoutNode?.y ?? node.position.y,
-            },
-          };
-        });
-
-        setNodes(layoutNodes.length <= 15 ? alignNodesTop(layoutNodes) : layoutNodes);
-        setEdges(edges);
-
-        fitView({
-          padding: { top: '75px', bottom: '25px', left: '25px', right: '25px' },
-        });
-      });
-  }, [graph, selectedAccount, fitView]);
+  // Layout graph when reset is called
+  useEffect(
+    () =>
+      // eslint-disable-next-line effector/no-watch
+      accountsStructureModel.reset.watch(() => layoutGraph()),
+    [layoutGraph],
+  );
 
   useEffect(
     () =>
@@ -192,6 +220,7 @@ const AccountsStructureInner = () => {
           animated: false,
         }}
         className="h-full"
+        onViewportChange={accountsStructureModel.setViewport}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
       >

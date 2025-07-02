@@ -75,13 +75,20 @@ sample({
   target: selectChain,
 });
 
+export const focusOnSelected = createEvent();
+export const reset = createEvent();
+
 export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
 export const setEdgeType = createEvent<'solid' | 'dashed'>();
 
-export const $pathType = restore(setPathType, 'bezier');
-export const $edgeType = restore(setEdgeType, 'dashed');
+export const $pathType = restore(setPathType, 'bezier').reset(reset);
+export const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
 
-export const focusOnSelected = createEvent();
+export const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
+export const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
+
+export const setCanvasSize = createEvent<{ width: number; height: number }>();
+export const $canvasSize = restore(setCanvasSize, { width: 0, height: 0 });
 
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
@@ -196,6 +203,11 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
+  reset,
+  setViewport,
+  $viewport,
+  setCanvasSize,
+  $canvasSize,
   enterAccountNode,
   leaveAccountNode,
   holdAccountNode,
