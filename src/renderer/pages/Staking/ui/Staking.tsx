@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
 import { type Account, type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
@@ -73,6 +74,11 @@ export const Staking = () => {
   const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
   const addressPrefix = activeChain?.addressPrefix;
   const explorers = activeChain?.explorers;
+
+  const timelineChainId = useMemo(() => {
+    return activeChain?.additional?.[AdditionalType.TIMELINE_CHAIN] ?? activeChain?.chainId;
+  }, [activeChain]);
+  const { api: timelineApi } = useNetworkData(timelineChainId);
 
   const accounts =
     activeWallet?.accounts.filter((account, _, collection) => {
@@ -321,6 +327,7 @@ export const Staking = () => {
             >
               <AboutStaking
                 api={api}
+                timelineApi={timelineApi}
                 era={chainId ? chainEra[chainId] : undefined}
                 validators={Object.values(validators)}
                 asset={relaychainAsset}
@@ -338,6 +345,7 @@ export const Staking = () => {
 
                 <NominatorsList
                   api={api}
+                  timelineApi={timelineApi}
                   era={chainId ? chainEra[chainId] : undefined}
                   nominators={nominatorsInfo}
                   asset={relaychainAsset}

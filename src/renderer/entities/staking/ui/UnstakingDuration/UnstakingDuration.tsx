@@ -6,18 +6,19 @@ import { useStakingData } from '../../api';
 
 type Props = {
   api?: ApiPromise;
+  timelineApi?: ApiPromise;
   className?: string;
 };
 
-export const UnstakingDuration = ({ api, className }: Props) => {
+export const UnstakingDuration = ({ api, timelineApi, className }: Props) => {
   const { getUnbondingPeriod } = useStakingData();
 
   const [unstakingPeriod, setUnstakingPeriod] = useState('...');
 
   useEffect(() => {
-    if (!api) return;
+    if (!api || !timelineApi) return;
 
-    setUnstakingPeriod(getUnbondingPeriod(api));
+    setUnstakingPeriod(getUnbondingPeriod(api, timelineApi));
 
     return () => {
       setUnstakingPeriod('');
