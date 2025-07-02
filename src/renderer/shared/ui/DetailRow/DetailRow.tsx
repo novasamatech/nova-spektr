@@ -28,7 +28,7 @@ export const DetailRow = ({ label, className, wrapperClassName, testId, children
         {children}
       </FootnoteText>
     ) : (
-      <dd className={cnTw('flex min-w-32 max-w-[60%] items-center justify-end text-footnote', className)}>
+      <dd className={cnTw('flex min-w-32 max-w-[70%] items-center justify-end text-footnote', className)}>
         {children}
       </dd>
     )}
