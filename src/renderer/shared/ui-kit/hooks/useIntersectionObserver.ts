@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-const elementCallbacks = new Map<Element, (isIntersecting: boolean) => void>();
+type IntersectionObserverCallback = (entry: IntersectionObserverEntry) => void;
+
+const elementCallbacks = new Map<Element, IntersectionObserverCallback>();
 
 const observer = new IntersectionObserver(
-  (entries) => {
+  entries => {
     for (const entry of entries) {
       const callback = elementCallbacks.get(entry.target);
       if (callback) {
-        callback(entry.isIntersecting);
+        callback(entry);
       }
     }
   },
@@ -17,13 +19,11 @@ const observer = new IntersectionObserver(
   },
 );
 
-export function useIntersectionObserver(element: Element | null) {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-
+export function useIntersectionObserver(element: Element | null, callback: IntersectionObserverCallback) {
   useEffect(() => {
     if (!element) return;
 
-    elementCallbacks.set(element, setIsIntersecting);
+    elementCallbacks.set(element, callback);
     observer.observe(element);
 
     return () => {
@@ -31,6 +31,4 @@ export function useIntersectionObserver(element: Element | null) {
       elementCallbacks.delete(element);
     };
   }, [element]);
-
-  return isIntersecting;
 }

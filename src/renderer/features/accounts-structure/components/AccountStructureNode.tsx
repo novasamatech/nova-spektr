@@ -1,6 +1,6 @@
 import { Handle, Position, useNodeConnections } from '@xyflow/react';
 import { useUnit } from 'effector-react';
-import { type MouseEvent, memo, useMemo, useRef } from 'react';
+import { type MouseEvent, memo, useMemo, useRef, useState } from 'react';
 
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -26,6 +26,9 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
+
+  const [isIntersecting, setIsIntersecting] = useState(true);
+
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
@@ -43,7 +46,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const intersectionRef = useRef<HTMLDivElement>(null);
-  const isInViewport = useIntersectionObserver(intersectionRef.current);
+  useIntersectionObserver(intersectionRef.current, (entry) => setIsIntersecting(entry.isIntersecting));
 
   const handleMouseEnter = () => {
     if (!config?.disabled && !heldAccountNode) {
@@ -90,7 +93,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
         <div className="min-h-[90px] w-[250px]">
           {hasIncoming && <Handle type="target" position={Position.Left} className="opacity-0" />}
 
-          {isInViewport && (
+          {isIntersecting && (
             <AsyncItem>
               <div className="flex flex-col">
                 <div
