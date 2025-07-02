@@ -113,9 +113,43 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
 
 async function fetchOperations(url: string, accountId: AccountId, api: ApiPromise): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
-  const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
+  const [result, chainMultisigs] = await Promise.all([
+    client.request<any, { accountId: AccountId }>(operationsQuery, { accountId }),
+    multisigPallet.storage.multisigs(api, accountId),
+  ]);
 
-  return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, api));
+  const existingMultisigs = new Set(
+    chainMultisigs.map(({ key, multisig }) => {
+      if (nullable(multisig)) {
+        return '';
+      }
+      return multisigOperationService.getOperationId(
+        key.callHash,
+        key.accountId,
+        multisig.when.height,
+        multisig.when.index,
+      );
+    }),
+  );
+
+  return result.multisigOperations.nodes
+    .map((node: unknown) => mapSubqueryOperationRecord(node, api))
+    .filter((x: MultisigOperation | null) => {
+      if (nullable(x)) {
+        return false;
+      }
+
+      /**
+       * Subquery responses may have an incorrect "pending" state for completed
+       * operations. To handle this case, we filter out pending operations that
+       * do not exist on chain.
+       */
+      if (x.status === 'pending' && !existingMultisigs.has(x.id)) {
+        return false;
+      }
+
+      return true;
+    });
 }
 
 const multisigEvent = z.union([
@@ -149,7 +183,9 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
     const chainId = chain.chainId;
 
     for (const { key, multisig } of response) {
-      if (nullable(multisig)) continue;
+      if (nullable(multisig)) {
+        continue;
+      }
       const timestamp = await getCreatedDateFromApi(multisig.when.height, api);
 
       const operationId = multisigOperationService.getOperationId(
@@ -256,7 +292,9 @@ export const subscribeEventsResource = createSubscriptionResource<
         event => {
           const data = multisigEvent.parse(event.data);
 
-          if (data.multisigAccountId !== accountId) return;
+          if (data.multisigAccountId !== accountId) {
+            return;
+          }
 
           const operationId = multisigOperationService.getOperationId(
             data.callHash,

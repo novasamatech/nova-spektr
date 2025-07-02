@@ -26,7 +26,7 @@ export const OperationDetails = ({ operation }: Props) => {
   return (
     <DetailRow label={t('operation.details.multisigWallet')}>
       <Box direction="row" gap={2}>
-        <WalletIcon type={activeWallet.type} size={16} />
+        <WalletIcon className="shrink-0" type={activeWallet.type} size={16} />
         <span>{activeWallet.name}</span>
         <AccountExplorers accountId={accountId} chain={chain} />
       </Box>
