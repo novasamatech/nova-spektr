@@ -43,9 +43,7 @@ const $selectedAccount = restore(selectAccount, null).on(
   $availableAccounts,
   (selectedAccount, accountsForSelectedChain) => {
     return (
-      accountsForSelectedChain?.find((item) => item.accountId === selectedAccount?.accountId) ??
-      accountsForSelectedChain?.[0] ??
-      null
+      accountsForSelectedChain?.find((item) => item.id === selectedAccount?.id) ?? accountsForSelectedChain?.[0] ?? null
     );
   },
 );
@@ -132,7 +130,7 @@ export const $highlightedNodes = combine(
 const $highlightedNodesIds = $highlightedNodes.map((accounts) => {
   if (!accounts.length) return null;
 
-  return new Set(accounts.map((account) => account.accountId));
+  return new Set(accounts.map((account) => account.id));
 });
 
 function findNodesRelatedToAccount(

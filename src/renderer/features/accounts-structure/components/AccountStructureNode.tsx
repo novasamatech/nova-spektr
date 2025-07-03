@@ -45,7 +45,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
   const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });
-  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.accountId) : false;
+  const shouldFade = highlightedNodesIds ? !highlightedNodesIds.has(data.node.account.id) : false;
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const intersectionRef = useRef<HTMLDivElement>(null);
@@ -67,7 +67,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
 
     e.stopPropagation();
 
-    if (heldAccountNode?.account.accountId === data.node.account.accountId) {
+    if (heldAccountNode?.account.id === data.node.account.id) {
       accountsStructureModel.releaseAccountNode();
     } else {
       accountsStructureModel.holdAccountNode(data.node);
