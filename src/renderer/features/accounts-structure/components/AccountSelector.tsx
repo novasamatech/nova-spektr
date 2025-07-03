@@ -13,10 +13,10 @@ export const AccountSelector = () => {
 
   return (
     <Select
-      value={selectedAccount?.accountId ?? null}
+      value={selectedAccount?.id ?? null}
       placeholder="Select account"
       onChange={(id) => {
-        const account = availableAccounts?.find((a) => a.accountId === id);
+        const account = availableAccounts?.find((a) => a.id === id);
         if (account) {
           accountsStructureModel.selectAccount(account);
         }
@@ -25,7 +25,7 @@ export const AccountSelector = () => {
       {availableAccounts?.map((account) => {
         const chain = accountService.isChainAccount(account) ? chains.get(account.chainId) : undefined;
         return (
-          <Select.Item key={account.accountId} value={account.accountId}>
+          <Select.Item key={account.id} value={account.id}>
             <Address
               showIcon
               variant="short"

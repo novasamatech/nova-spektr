@@ -91,7 +91,7 @@ export const CustomEdge = ({
   const connectionColor = connection?.color || '#363643';
 
   const shouldFade = highlightedNodesIds
-    ? !highlightedNodesIds.has(sourceAccount.accountId) || !highlightedNodesIds.has(targetAccount.accountId)
+    ? !highlightedNodesIds.has(sourceAccount.id) || !highlightedNodesIds.has(targetAccount.id)
     : false;
 
   return isOutsideViewport ? null : (
