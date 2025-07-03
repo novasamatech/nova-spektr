@@ -2,21 +2,16 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import {
-  type BasketTransaction,
-  type Chain,
-  type ChainId,
-  type Connection,
-  type Transaction,
-  TransactionType,
-} from '@/shared/core';
+import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
 import { redeemableAmount, toAddress } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
+  type BondExtraConfirm,
+  type PayeeConfirm,
   bondExtraConfirmModel,
   bondNominateConfirmModel,
   nominateConfirmModel,
@@ -25,15 +20,11 @@ import {
   unstakeConfirmModel,
   withdrawConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import {
-  type BondExtraInput,
-  type BondNominateInput,
-  type NominateInput,
-  type PayeeInput,
-  type RestakeInput,
-  type UnstakeInput,
-  type WithdrawInput,
-} from '../types/confirm';
+import { type BondNominateConfirm } from '@/features/operations/OperationsConfirm/BondNominate/model/confirm-model';
+import { type NominateConfirm } from '@/features/operations/OperationsConfirm/Nominate/model/confirm-model';
+import { type RestakeConfirm } from '@/features/operations/OperationsConfirm/Restake/model/confirm-model';
+import { type UnstakeConfirm } from '@/features/operations/OperationsConfirm/Unstake/model/confirm-model';
+import { type WithdrawConfirm } from '@/features/operations/OperationsConfirm/Withdraw/model/confirm-model';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -69,16 +60,19 @@ const prepareBondNominateDataFx = createEffect(
       id: transaction.id,
       chain,
       asset: chain.assets[0],
-      shards: [account],
       amount: bondTx.args.value,
       validators,
       destination: bondTx.args.dest,
-      description: '',
-      signatory: null,
-
+      signatory: account!,
+      initiator: account!,
+      route: transaction.route,
+      coreTx: transaction.coreTx,
+      tx: transaction.coreTx,
+      multisigTx: null,
       fee,
+      totalFee: fee,
       multisigDeposit: '0',
-    } as BondNominateInput;
+    } satisfies BondNominateConfirm;
   },
 );
 
@@ -89,15 +83,17 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: transaction.coreTx.args.maxAdditional,
-    description: '',
-    signatory: null,
-
+    signatory: account!,
     fee,
-    totalFee: '0',
+    totalFee: fee.toString(),
     multisigDeposit: '0',
-  } as BondExtraInput;
+    initiator: account!,
+    route: transaction.route,
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: transaction.coreTx,
+  } satisfies BondExtraConfirm;
 });
 
 const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chains, apis, connections }: DataParams) => {
@@ -118,16 +114,18 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
+    initiator: account!,
+    signatory: account!,
     validators,
-    destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
+    route: [account!],
 
     fee,
-    totalFee: '0',
+    totalFee: fee,
     multisigDeposit: '0',
-  } as NominateInput;
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    multisigTx: transaction.coreTx,
+  } satisfies NominateConfirm;
 });
 
 const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -137,13 +135,19 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     destination: transaction.coreTx.args.dest,
-    description: '',
-    signatory: null,
+    initiator: account!,
+    signatory: account!,
+
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
+    route: transaction.route,
 
     fee,
-  } as PayeeInput;
+    totalFee: fee,
+    multisigDeposit: '0',
+  } satisfies PayeeConfirm;
 });
 
 const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -155,14 +159,19 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: coreTx.args.value,
-    description: '',
+    api: apis[chain.chainId],
+    signatory: account!,
+    initiator: account!,
+    route: transaction.route,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
 
     fee,
-    totalFee: '0',
+    totalFee: fee,
     multisigDeposit: '0',
-  } as UnstakeInput;
+  } satisfies UnstakeConfirm;
 });
 
 const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -172,15 +181,17 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
     amount: transaction.coreTx.args.value,
-    description: '',
-    signatory: null,
-
+    signatory: account!,
+    initiator: account!,
+    route: transaction.route,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } as RestakeInput;
+  } satisfies RestakeConfirm;
 });
 
 const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -203,14 +214,17 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     id: transaction.id,
     chain,
     asset: chain.assets[0],
-    shards: [account],
+    signatory: account!,
+    initiator: account!,
     amount,
-    description: '',
-
+    route: transaction.route,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',
-  } as WithdrawInput;
+  } satisfies WithdrawConfirm;
 });
 
 sample({
@@ -239,7 +253,7 @@ sample({
 sample({
   clock: prepareWithdrawDataFx.doneData,
   fn: (data) => [data],
-  target: withdrawConfirmModel.events.formInitiated,
+  target: withdrawConfirmModel.init,
 });
 
 sample({
@@ -268,7 +282,7 @@ sample({
 sample({
   clock: prepareBondNominateDataFx.doneData,
   fn: (data) => [data],
-  target: bondNominateConfirmModel.events.formInitiated,
+  target: bondNominateConfirmModel.init,
 });
 
 sample({
@@ -297,7 +311,7 @@ sample({
 sample({
   clock: prepareBondExtraDataFx.doneData,
   fn: (data) => [data],
-  target: bondExtraConfirmModel.events.formInitiated,
+  target: bondExtraConfirmModel.init,
 });
 
 sample({
@@ -326,7 +340,7 @@ sample({
 sample({
   clock: prepareUnstakeDataFx.doneData,
   fn: (data) => [data],
-  target: unstakeConfirmModel.events.formInitiated,
+  target: unstakeConfirmModel.formInitiated,
 });
 
 sample({
@@ -355,7 +369,7 @@ sample({
 sample({
   clock: prepareRestakeDataFx.doneData,
   fn: (data) => [data],
-  target: restakeConfirmModel.events.formInitiated,
+  target: restakeConfirmModel.init,
 });
 
 sample({
@@ -384,7 +398,7 @@ sample({
 sample({
   clock: prepareNominateDataFx.doneData,
   fn: (data) => [data],
-  target: nominateConfirmModel.events.formInitiated,
+  target: nominateConfirmModel.startSigning,
 });
 
 sample({
@@ -413,7 +427,7 @@ sample({
 sample({
   clock: preparePayeeDataFx.doneData,
   fn: (data) => [data],
-  target: payeeConfirmModel.events.formInitiated,
+  target: payeeConfirmModel.init,
 });
 
 export const confirm = {

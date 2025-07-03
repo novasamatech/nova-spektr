@@ -117,7 +117,7 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
                 <Icon name="switch" size={60} />
               </Box>
 
-              <TransactionDetails wallets={input.wallets} chain={input.chain} initiator={[account]} signatory={null}>
+              <TransactionDetails wallets={input.wallets} chain={input.chain} initiators={[account]} signatory={null}>
                 <DetailRow label={t('fellowship.voting.confirmation.status')}>
                   {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
                   &nbsp;{'→'}&nbsp;

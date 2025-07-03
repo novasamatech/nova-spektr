@@ -17,7 +17,7 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 import { WalletGroup } from './components/WalletGroup';
 import { walletActionsSlot } from './components/WalletRow';
 import { walletsModel } from './model/wallets';
-import { proxyService } from './services/proxyTransaction';
+import { proxyService } from './service';
 import { type ProxyTransaction } from './types';
 
 export { walletActionsSlot };
@@ -67,6 +67,14 @@ accountSDK(proxiedWalletFeature, {
         color: '#2A1FD5',
       };
     }
+  },
+  validateCallPermission({ route, call }) {
+    const result = proxyService.checkPermission(route, call);
+    if (result.success) return;
+    return {
+      account: result.account,
+      message: `Proxy account ${result.account} with type ${result.account.proxyType} cannot handle ${call} call`,
+    };
   },
 });
 

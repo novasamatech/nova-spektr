@@ -24,5 +24,7 @@ export const accountSDK = createSDK({
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,
     connection: accountConnectionTransformer,
+    validateRouteBalances: accountService.validateRouteBalancesTransformer,
+    validateCallPermission: accountService.validateCallPermissionTransformer,
   },
 });

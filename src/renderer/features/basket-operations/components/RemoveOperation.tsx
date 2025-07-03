@@ -1,10 +1,9 @@
 import { type MouseEventHandler } from 'react';
 
-import { type BasketTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { ConfirmModal, FootnoteText, IconButton, SmallTitleText } from '@/shared/ui';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperations } from '@/aggregates/basket-operations';
 
 type Props = {
   operation: BasketTransaction;

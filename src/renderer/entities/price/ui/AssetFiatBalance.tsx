@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
@@ -13,7 +14,7 @@ import { FiatBalance } from './FiatBalance';
 
 type Props = {
   asset: Asset | AssetByChains;
-  amount?: BigNumber | string;
+  amount?: BigNumber | BN | string;
   className?: string;
 };
 
@@ -32,7 +33,7 @@ export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
     return <FiatBalance amount={ZERO_BALANCE} className={className} />;
   }
 
-  const amountBn = BigNumber.isBigNumber(amount) ? amount : new BigNumber(amount);
+  const amountBn = BigNumber.isBigNumber(amount) ? amount : new BigNumber(amount.toString());
 
   const price =
     currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];

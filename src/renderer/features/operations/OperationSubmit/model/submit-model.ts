@@ -22,7 +22,7 @@ import {
 } from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
-type Input = {
+export type SubmitInput = {
   chain: Chain;
   account: AnyAccount;
   coreTxs: Transaction[];
@@ -35,7 +35,7 @@ type Input = {
 
 type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
 
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent<SubmitInput>();
 const submitStarted = createEvent();
 const formSubmitted = createEvent<Result[]>();
 
@@ -43,7 +43,7 @@ const extrinsicSucceeded = createEvent<{ id: number; params: ExtrinsicResultPara
 const extrinsicFailed = createEvent<{ id: number; params: string }>();
 const txsExecuted = createEvent();
 
-const $submitStore = restore<Input>(formInitiated, null);
+const $submitStore = restore<SubmitInput>(formInitiated, null);
 
 const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 const $submittingTxs = createStore<number[]>([]);

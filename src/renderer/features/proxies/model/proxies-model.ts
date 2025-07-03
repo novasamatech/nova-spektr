@@ -53,7 +53,7 @@ const $deposits = createStore<ProxyDeposits[]>([]);
 
 const getWorkerFx = attach({
   source: $worker,
-  async effect(worker) {
+  effect(worker) {
     if (worker) {
       return worker;
     }
@@ -195,7 +195,7 @@ const findAllProxiesFx = attach({
       .filter(proxiesUtils.chainSupportProxy)
       .map((chain) => ({
         chain,
-        accounts: accountService.filterAccountOnChain(accounts, chain),
+        accounts: accountService.filterAccountsOnChain(accounts, chain),
       }));
   },
   effect: series(findProxiesFx, { parallel: true, skipErrors: true }),
