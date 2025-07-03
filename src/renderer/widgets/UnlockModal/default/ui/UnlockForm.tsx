@@ -67,7 +67,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network?.chain) {
+  if (!isMultisig || !network?.chain || signatoriesWithBalance.length < 2) {
     return null;
   }
 
