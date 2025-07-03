@@ -70,7 +70,6 @@ const formSubmitted = sample({
     nonNullable(networkStore) &&
     nonNullable(coreTx) &&
     nonNullable(tx) &&
-    nonNullable(multisigTx) &&
     nonNullable(route) &&
     nonNullable(formData.initiator) &&
     nonNullable(formData.signatory)
