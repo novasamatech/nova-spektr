@@ -24,26 +24,3 @@ export type RevokeDelegationInput = {
   totalFee: string;
   multisigDeposit: string;
 };
-
-export type DelegateInput = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-  shards: AnyAccount[];
-  transferable: string;
-  locks: BN;
-
-  tracks: number[];
-  target: Address;
-  conviction: Conviction;
-  previousConviction?: Conviction;
-  balance: string;
-
-  description: string;
-
-  signatory: AnyAccount | null;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-};

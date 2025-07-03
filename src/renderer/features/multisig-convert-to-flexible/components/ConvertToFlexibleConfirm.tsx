@@ -38,7 +38,7 @@ export const ConvertToFlexibleConfirm = () => {
           <Icon className="text-icon-default" name="proxyConfirm" size={60} />
         </div>
 
-        <TransactionDetails chain={chain} wallets={wallets} initiator={[account]} signatory={selectedSignatory}>
+        <TransactionDetails chain={chain} wallets={wallets} initiators={[account]} signatory={selectedSignatory}>
           <DetailRow
             className="text-text-primary"
             label={

@@ -10,7 +10,12 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { SignatorySelector } from '@/entities/operations';
 import { PureProxyPopover } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
+import {
+  FeeWithLabelWithDataLoading,
+  MultisigDepositWithLabel,
+  ProxyDeposit,
+  ProxyDepositLabel,
+} from '@/entities/transaction';
 import { AccountAddress, accountUtils } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
@@ -190,7 +195,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithDataLoading
         api={api}
         asset={chain.value.assets[0]}
         transaction={fakeTx}

@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { balanceService } from '@/shared/api/balances';
 import { $features } from '@/shared/config/features';
 import {
   AccountType,
@@ -11,9 +12,10 @@ import {
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId } from '@/shared/lib/utils';
+import { assert, isEthereumAccountId, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { multisigOperationService, transactionService } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -23,7 +25,7 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
-import { multisigService } from './services/multisigTransaction';
+import { multisigService } from './services/multisig';
 import { type MultisigTransaction } from './types';
 
 export { walletActionsSlot };
@@ -102,6 +104,28 @@ accountSDK(multisigWalletFeature, {
       };
     }
   },
+  validateRouteBalances({ account, api, route, balances, chainId, asset, index }) {
+    if (accountUtils.isMultisigAccount(account)) {
+      const deposit = multisigService.getMultisigDeposit(account.threshold, api);
+      const payer = route.at(index + 1);
+
+      if (nullable(payer)) {
+        return { account, message: 'Multisig signatory payer not found' };
+      }
+      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, asset.assetId.toString());
+      if (nullable(balance)) {
+        return { account, message: 'Balance not found' };
+      }
+
+      return balanceService.getExistentialDeposit(api, asset).then(existentialDeposit => {
+        const spend = existentialDeposit.add(deposit);
+        if (withdrawableAmountBN(balance).lt(spend)) {
+          return { account, message: 'Insufficient funds for multisig deposit' };
+        }
+        return null;
+      });
+    }
+  },
 });
 
 transactionSDK(multisigWalletFeature, {
@@ -132,9 +156,12 @@ transactionSDK(multisigWalletFeature, {
       return transaction;
     }
   },
-  wrap(transaction, { api, account }) {
+  wrap(transaction, { api, account, route, index }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const signatory = route.at(index + 1);
+      assert(signatory, 'Signatory not found');
+
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
       const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
 
@@ -164,9 +191,12 @@ transactionSDK(multisigWalletFeature, {
       };
     }
   },
-  wrapLegacy(transaction, { api, account }) {
+  wrapLegacy(transaction, { api, account, route, index }) {
     if (accountUtils.isMultisigAccount(account)) {
-      const otherSignatories = multisigOperationService.getOtherSignatories(account, account.accountId);
+      const signatory = route.at(index + 1);
+      assert(signatory, 'Signatory not found');
+
+      const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
@@ -178,7 +208,7 @@ transactionSDK(multisigWalletFeature, {
             threshold: account.threshold,
             otherSignatories,
             maybeTimepoint: null,
-            call: extrinsic.method.toHex(),
+            callData: extrinsic.method.toHex(),
             maxWeight,
           },
         };

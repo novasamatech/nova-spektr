@@ -1,23 +1,31 @@
 import { type Transaction } from 'dexie';
 
-import { AccountType, CryptoType, type WcAccount } from '@/shared/core';
-import { isEthereumAccountId } from '@/shared/lib/utils/address';
-import { type AnyAccount } from '@/domains/network';
+import { type TxWrapper } from '@/shared/core';
+// eslint-disable-next-line boundaries/element-types
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 
-function isWcAccount(account: Partial<AnyAccount>): account is WcAccount {
-  return 'accountType' in account && account.accountType === AccountType.WALLET_CONNECT;
-}
+type OldTBasketTransaction = Omit<BasketTransaction, 'route'> & {
+  txWrappers: TxWrapper[];
+};
 
-/**
- * Migration to fix cryptoType for connected EVM accounts
- */
-export async function migrateEVMAccountsCryptoType(t: Transaction): Promise<void> {
-  const accounts = await t.table<AnyAccount>('accounts2').toArray();
+export async function migrateCASBasket(t: Transaction): Promise<void> {
+  const operations = await t.db.table<OldTBasketTransaction>('basketTransactions').toArray();
+  const newOperations = operations.map<BasketTransaction>((op) => {
+    return {
+      id: op.id,
+      coreTx: op.coreTx,
+      createdAt: op.createdAt,
+      error: op.error,
+      initiatorAccountId: op.initiatorAccountId,
+      route: op.txWrappers.map((wrapper) => {
+        if (wrapper.kind === 'multisig') {
+          return wrapper.multisigAccount;
+        } else {
+          return wrapper.proxiedAccount;
+        }
+      }),
+    };
+  });
 
-  const accountsToUpdate = accounts.filter(isWcAccount).map((account) => ({
-    ...account,
-    cryptoType: isEthereumAccountId(account.accountId) ? CryptoType.ETHEREUM : account.cryptoType,
-  }));
-
-  await t.table('accounts2').bulkPut(accountsToUpdate);
+  await t.table('basketTransactions').bulkPut(newOperations);
 }

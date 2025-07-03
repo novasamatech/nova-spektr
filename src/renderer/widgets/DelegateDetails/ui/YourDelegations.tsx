@@ -164,7 +164,7 @@ export const YourDelegations = () => {
                       name="delete"
                       onClick={() =>
                         delegate &&
-                        revokeDelegationModel.events.flowStarted({
+                        revokeDelegationModel.flowStarted({
                           delegate: delegate.address,
                           accounts: [accounts[index]],
                         })
@@ -188,7 +188,7 @@ export const YourDelegations = () => {
               disabled={!selectedAccounts.length}
               onClick={() =>
                 delegate &&
-                revokeDelegationModel.events.flowStarted({
+                revokeDelegationModel.flowStarted({
                   delegate: delegate.address,
                   accounts: selectedAccounts,
                 })
