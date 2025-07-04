@@ -5,7 +5,7 @@ import { combineEvents } from 'patronum';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountService, accounts } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { votingService } from '@/entities/governance';
 import { permissionUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -80,7 +80,7 @@ const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && pe
 const $isAddAvailable = combine(
   {
     activeAccounts: $activeAccounts,
-    accounts: accounts.$list,
+    accounts: walletSelect.$selectedAccounts,
     chain: networkSelectorModel.$governanceChain,
     canDelegate: $canDelegate,
   },
