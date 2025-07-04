@@ -6573,7 +6573,6 @@
         "symbol": "WND",
         "precision": 12,
         "type": "native",
-        "staking": "relaychain",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
