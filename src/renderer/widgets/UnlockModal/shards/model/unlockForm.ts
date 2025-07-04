@@ -312,6 +312,7 @@ const $pureTxs = combine(
         chain: chain,
         accountId: shard.accountId,
         amount: shard.amount || ZERO_BALANCE,
+        target: shard.accountId,
       });
     });
   },
