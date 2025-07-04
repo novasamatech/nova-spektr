@@ -178,6 +178,7 @@ const $coreTx = combine(
       chain: chain,
       accountId: signatory.accountId,
       amount: claim?.amount.toString() ?? ZERO_BALANCE,
+      target: initiator.accountId,
     });
   },
 );
