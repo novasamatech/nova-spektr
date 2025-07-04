@@ -8,13 +8,11 @@ import { includesMultiple, performSearch, toAccountId, toAddress, validateAddres
 import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { type SignatoryInfo } from '../../lib/types';
-import { flowModel } from '../../model/flow-model';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
 
@@ -54,7 +52,6 @@ export const Signatory = ({
   const chain = useUnit(formModel.$chain);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
-  const accountList = useUnit(accounts.$list);
 
   const [query, setQuery] = useState(signatoryAddress);
   const [options, setOptions] = useState<ComboboxGroup[]>([]);
@@ -199,6 +196,10 @@ export const Signatory = ({
     onNameChange(displayName);
   }, [displayName]);
 
+  useEffect(() => {
+    setQuery(signatoryAddress);
+  }, [signatoryAddress]);
+
   const onNameChange = (newName: string) => {
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
@@ -219,20 +220,6 @@ export const Signatory = ({
       address: value,
       walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
-
-    const accountId = toAccountId(value);
-
-    if (isOwnAccount && chain) {
-      const account = accountList.find(
-        a =>
-          a.accountId === accountId &&
-          a.walletId === newSignatory?.walletId &&
-          accountService.isAccountAvailableOnChain(a, chain),
-      );
-
-      if (!account) return;
-      flowModel.signerSelected(account);
-    }
   };
 
   const nameLabel = isOwnAccount

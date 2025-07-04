@@ -4,16 +4,17 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Step, nonNullable } from '@/shared/lib/utils';
-import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 
-import { MultisigCreationFees } from './components';
-import { Signatory } from './components/Signatory';
+import { Signatory } from './components';
+import { MultisigFeeModal } from './components/MultisigFeeModal';
 
 interface Props {
   onGoBack: () => void;
@@ -32,19 +33,33 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const wrongChainTypes = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
 
+  const signerWallet = useUnit(flowModel.$signerWallet);
+  const fee = useUnit(flowModel.$fee);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
+  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
+  const isFeeLoading = useUnit(flowModel.$isFeeLoading);
+  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
+  const chain = useUnit(formModel.$chain);
+
   const signatories = useUnit(signatoryModel.$signatories);
-  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
 
-  const onSubmit = (event: FormEvent) => {
-    signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+  const totalFee = multisigDeposit.add(fee).toString();
+  const isLoading = isFeeLoading || isMultisigDepositLoading;
 
-    if (ownedSignatoriesWallets.length > 1) {
-      flowModel.stepChanged(Step.SIGNER_SELECTION);
-    } else {
-      event.preventDefault();
-      submit();
-    }
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+
+    // TODO: will be used for multisig as signer
+    // signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+
+    // if (ownedSignatoriesWallets.length > 1) {
+    //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+    // } else {
+    //   event.preventDefault();
+    // submit();
+    // }
   };
 
   return (
@@ -154,9 +169,24 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex items-center justify-end gap-x-6">
-            <MultisigCreationFees />
+            {signerWallet && (
+              <div className="flex items-center gap-x-2">
+                <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
+                {chain && (
+                  <Fee
+                    fee={totalFee}
+                    isLoading={isLoading}
+                    asset={getNativeAsset(chain.assets)}
+                    className={isEnoughBalance ? '' : 'text-text-negative'}
+                  />
+                )}
 
-            <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
+                <MultisigFeeModal>
+                  <IconButton size={16} name="edit" className="text-icon-default" />
+                </MultisigFeeModal>
+              </div>
+            )}
+            <Button key="create" type="submit" disabled={!canSubmit || !isEnoughBalance} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>

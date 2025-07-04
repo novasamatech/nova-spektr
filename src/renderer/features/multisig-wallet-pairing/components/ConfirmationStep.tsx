@@ -27,7 +27,6 @@ export const ConfirmationStep = () => {
 
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
-  const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
   const {
     fields: { name, threshold },
@@ -101,11 +100,12 @@ export const ConfirmationStep = () => {
           <Button
             variant="text"
             onClick={() => {
-              if ((ownedSignatories || []).length > 1) {
-                flowModel.stepChanged(Step.SIGNER_SELECTION);
-              } else {
-                flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              }
+              flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              // if ((ownedSignatories || []).length > 1) {
+              //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+              // } else {
+              //   flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              // }
             }}
           >
             {t('createMultisigAccount.backButton')}

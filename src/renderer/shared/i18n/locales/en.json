@@ -186,6 +186,17 @@
     "namePlaceholder": "Enter name",
     "networkDescription": "This new multisig will only work on this network. To carry out operations on a different network you will need to create a new multisig.",
     "networkFee": "Network fee",
+    "networkSelect": {
+      "available": "Available",
+      "availableNetwork": "Available network",
+      "emptySearch": "Nothing was found",
+      "emptySearchDescription": "Update the search or cancel filtering.",
+      "feeDescription": "Spektr will create a multisig that will be discoverable by each signatory. They will be notified that the multisig has been created. To ensure everything works smoothly, we need to create a small operation - this will consume a network fee.",
+      "feeLabel": "Why pay to create a multisig?",
+      "feeTitle": "Pay network fee with",
+      "networkFee": "Network fee",
+      "unavailableNetwork": "Unavailable network"
+    },
     "newMultisigTitle": "New multisig",
     "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
     "noOwnSignatoryTitle": "No owned account",

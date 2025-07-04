@@ -13,17 +13,18 @@ import {
   type NoID,
   SigningType,
   type TxWrapper,
+  type Wallet,
   WalletType,
   WrapperKind,
 } from '@/shared/core';
 import { Step, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createComplexTxStore, createMultisigDeposit } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
@@ -45,22 +46,37 @@ const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close)
 const $error = createStore('').reset(flow.close);
 const $signer = restore(signerSelected, null).reset(flow.close);
 
-const $signerWallet = combine({ signer: $signer, wallets: walletModel.$wallets }, ({ signer, wallets }) => {
-  return walletUtils.getWalletFilteredAccounts(wallets, {
-    accountFn: a => a.accountId === signer?.accountId,
-    walletFn: w => walletUtils.isValidSignatory(w) && w.id === signer?.walletId,
-  });
+const $signerWallet = createStore<Wallet | null>(null).reset(flow.close);
+
+sample({
+  clock: signatoryModel.$ownedSignatoriesWallets,
+  source: signatoryModel.$signatories,
+  filter: ownedSignatoriesWallets => ownedSignatoriesWallets.length > 0,
+  fn: (signatories, wallets) => {
+    const ownSignatory = signatories.at(0);
+    if (!ownSignatory || !ownSignatory.walletId) return null;
+
+    return wallets.find(w => w.id.toString() === ownSignatory.walletId) ?? null;
+  },
+  target: $signerWallet,
 });
 
-const $isChainConnected = combine(
-  {
-    chainId: formModel.form.fields.chainId.$value,
-    statuses: networkModel.$connectionStatuses,
+sample({
+  clock: $signerWallet,
+  source: { accounts: accounts.$list, chain: formModel.$chain },
+  filter: ({ chain }, wallet) => nonNullable(wallet) && nonNullable(chain),
+  fn: ({ accounts, chain }, wallet) => {
+    return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain!)) ?? null;
   },
-  ({ chainId, statuses }) => {
-    return networkUtils.isConnectedStatus(statuses[chainId]);
-  },
-);
+  target: $signer,
+});
+
+sample({
+  clock: $signerWallet,
+  filter: nonNullable,
+  fn: wallet => [wallet!],
+  target: signatoryModel.events.getSignatoriesBalance,
+});
 
 const $api = combine(
   {
@@ -72,16 +88,36 @@ const $api = combine(
   },
 );
 
+const $multisigChains = combine(networkModel.$chains, chains => {
+  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+});
+
+// If the current chain is not connected switch to the next one
+sample({
+  clock: flow.open,
+  source: {
+    isChainConnected: formModel.$isChainConnected,
+    multisigChains: $multisigChains,
+    chainId: formModel.form.fields.chainId.$value,
+  },
+  filter: ({ isChainConnected }) => !isChainConnected,
+  fn: ({ multisigChains, chainId }) => {
+    const nextChainIndex = multisigChains.findIndex(chain => chain.chainId === chainId) + 1;
+
+    return multisigChains[nextChainIndex]?.chainId ?? multisigChains[0].chainId;
+  },
+  target: formModel.form.fields.chainId.change,
+});
+
 const $coreTx = combine(
   {
     threshold: formModel.form.fields.threshold.$value,
     chainId: formModel.form.fields.chainId.$value,
     account: $signer,
-    isConnected: $isChainConnected,
     signatories: signatoryModel.$signatories,
   },
-  ({ threshold, chainId, account, isConnected, signatories }) => {
-    if (!isConnected || !account) return null;
+  ({ threshold, chainId, account, signatories }) => {
+    if (!account) return null;
 
     return transactionBuilder.buildRemark({
       chainId,
@@ -95,7 +131,6 @@ const $coreTx = combine(
 const $transaction = combine(
   {
     apis: networkModel.$apis,
-    chains: networkModel.$chains,
     chain: formModel.$chain,
     remarkTx: $coreTx,
     signatories: signatoryModel.$signatories,
@@ -426,6 +461,7 @@ export const flowModel = {
   $signer,
   $signerWallet,
   $isEnoughBalance,
+  $tx,
 
   $fee,
   $isFeeLoading: $pendingFee,

@@ -1,8 +1,9 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
-import { type Address, type Wallet } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { accountService, accounts } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatoryInfo } from '../lib/types';
@@ -11,6 +12,7 @@ const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
 const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
+const validateSignatories = createEvent<Chain>();
 const resetSignatories = createEvent();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
@@ -96,6 +98,33 @@ sample({
 });
 
 sample({
+  clock: validateSignatories,
+  source: {
+    signatories: $signatories,
+    ownWallets: $ownedSignatoriesWallets,
+    accounts: accounts.$list,
+  },
+  fn: ({ signatories, ownWallets, accounts }, chain) => {
+    return signatories.map(s => {
+      if (!s.walletId) {
+        return { ...s, address: toAddress(s.address, { prefix: chain.addressPrefix }) };
+      }
+      const wallet = ownWallets.find(w => w.id.toString() === s.walletId);
+      const account = accounts.find(
+        a => a.walletId === wallet?.id && accountService.isAccountAvailableOnChain(a, chain),
+      );
+
+      if (!account) {
+        return { ...s, address: '', name: '' };
+      }
+
+      return { ...s, address: toAddress(account.accountId, { prefix: chain.addressPrefix }) };
+    });
+  },
+  target: $signatories,
+});
+
+sample({
   clock: deleteSignatory,
   source: $signatories,
   filter: (signatories, index) => signatories.length > index,
@@ -126,5 +155,6 @@ export const signatoryModel = {
     deleteSignatory,
     getSignatoriesBalance,
     resetSignatories,
+    validateSignatories,
   },
 };
