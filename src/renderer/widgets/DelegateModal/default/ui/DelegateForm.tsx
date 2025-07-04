@@ -33,8 +33,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
     submit();
   };
 
-  console.log('gay sex is cool');
-
   return (
     <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
       <Modal.Title close>
