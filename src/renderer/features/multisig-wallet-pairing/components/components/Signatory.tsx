@@ -241,7 +241,7 @@ export const Signatory = ({
               data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
               placeholder={t('createMultisigAccount.signatorySelection')}
               invalid={isDuplicate}
-              value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              value={query || toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
               prefixElement={
                 <Identicon
                   address={isInvalidAddress ? '' : signatoryAddress}
