@@ -165,18 +165,20 @@ const $coreTx = combine(
   {
     chain: networkSelectorModel.$governanceChain,
     initiator: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     isConnected: $isChainConnected,
     claims: $claims,
   },
-  ({ chain, initiator, isConnected, claims }) => {
-    if (nullable(chain) || nullable(initiator) || nullable(claims) || !isConnected) return null;
+  ({ chain, initiator, signatory, isConnected, claims }) => {
+    if (nullable(chain) || nullable(initiator) || nullable(signatory) || nullable(claims) || !isConnected) return null;
     const claim = claims.find((claim) => claim.accountId === initiator.accountId);
 
     return transactionBuilder.buildUnlock({
       actions: claim?.actions ?? [],
       chain: chain,
-      accountId: initiator.accountId,
+      accountId: signatory.accountId,
       amount: claim?.amount.toString() ?? ZERO_BALANCE,
+      target: initiator.accountId,
     });
   },
 );
