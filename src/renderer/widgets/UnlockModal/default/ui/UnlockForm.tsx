@@ -47,7 +47,6 @@ const Signatories = () => {
   } = useForm(unlockFormAggregate.form);
 
   const signatories = useUnit(unlockFormAggregate.$signatories);
-  const isMultisig = useUnit(unlockFormAggregate.$isMultisig);
   const network = useUnit(networkSelectorModel.$network);
   const balances = useUnit(balanceModel.$balances);
 
@@ -67,7 +66,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network?.chain) {
+  if (!network?.chain || signatoriesWithBalance.length < 2) {
     return null;
   }
 

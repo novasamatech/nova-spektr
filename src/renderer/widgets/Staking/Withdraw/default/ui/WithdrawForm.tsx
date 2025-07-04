@@ -47,7 +47,6 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const balances = useUnit(balanceModel.$balances);
 
   const signatoryWithBalance = useMemo(() => {
@@ -66,7 +65,7 @@ const Signatories = () => {
     });
   }, [signatories, balances, network]);
 
-  if (!isMultisig || !network || signatoryWithBalance.length < 2) {
+  if (!network || signatoryWithBalance.length < 2) {
     return null;
   }
 

@@ -404,6 +404,14 @@ sample({
   target: form.reset,
 });
 
+// Pre-select first signatory automatically
+sample({
+  clock: $signatories,
+  filter: (signatories) => signatories.length === 1,
+  fn: (signatories) => signatories.at(0)!,
+  target: form.fields.signatory.change,
+});
+
 sample({
   clock: formInitiated,
   source: $networkStore,
