@@ -7,7 +7,7 @@ import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
 import { votingService } from '@/entities/governance';
-import { permissionUtils, walletUtils } from '@/entities/wallet';
+import { permissionUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
   delegateRegistryAggregate,
@@ -83,13 +83,9 @@ const $isAddAvailable = combine(
     accounts: accounts.$list,
     chain: networkSelectorModel.$governanceChain,
     canDelegate: $canDelegate,
-    wallet: walletSelect.$selectedWallet,
-    activeDelegations: $activeDelegations,
   },
-  ({ canDelegate, activeAccounts, accounts, chain, wallet, activeDelegations }) => {
+  ({ canDelegate, activeAccounts, accounts, chain }) => {
     if (!chain) return false;
-
-    if (walletUtils.isProxied(wallet) && Object.values(activeDelegations).length > 0) return false;
 
     const filteredAccounts = accountService.filterAccountsOnChain(accounts, chain);
 

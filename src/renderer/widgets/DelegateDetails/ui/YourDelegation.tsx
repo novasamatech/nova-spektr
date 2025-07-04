@@ -7,8 +7,7 @@ import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -21,7 +20,7 @@ export const YourDelegation = () => {
   const uniqueTracks = useUnit(delegateDetailsModel.$uniqueTracks);
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const chain = useUnit(delegateDetailsModel.$chain);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const isAddAvailable = useUnit(delegateDetailsModel.$isAddAvailable);
   const isEditAvailable = useUnit(delegateDetailsModel.$isEditAvailable);

@@ -18,7 +18,7 @@ import {
   getTrackTitles,
   getTreasuryTrackDescription,
 } from '@/entities/governance';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { AccountsMultiSelector, networkSelectorModel } from '@/features/governance';
 import { RemoveVotesModal } from '@/widgets/RemoveVotesModal';
 import { formModel } from '../model/form-model';
@@ -260,7 +260,7 @@ const AccountsSelector = () => {
   const accountsBalances = useUnit(selectTracksModel.$accountsBalances);
   const { wallet, chain } = useUnit(formModel.$walletData);
 
-  if (!wallet || walletUtils.isProxied(wallet) || !chain || availableAccounts.length <= 1) {
+  if (!wallet || !chain || availableAccounts.length <= 1) {
     return null;
   }
 
