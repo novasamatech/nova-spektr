@@ -6,14 +6,12 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { SignatorySelector } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -219,10 +217,7 @@ const FeeSection = () => {
             </>
           }
         >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit.toString()} />
-          </div>
+          <Fee fee={multisigDeposit} asset={network.chain.assets[0]} />
         </DetailRow>
       )}
 
