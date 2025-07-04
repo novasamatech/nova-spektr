@@ -181,22 +181,24 @@ const startSigning = sample({
     nonNullable(delegateData.signatory) &&
     isStep(step, Step.CONFIRM)
   ) {
-    return [
-      {
-        chain: walletData.chain,
-        account: initiator,
-        signatory: delegateData.signatory,
-        transaction,
-      },
-    ];
+    return {
+      signingPayloads: [
+        {
+          chain: walletData.chain,
+          account: initiator,
+          signatory: delegateData.signatory,
+          transaction,
+        },
+      ],
+    };
   }
 });
 
 sample({
   clock: startSigning,
-  fn: (signingPayloads) => {
+  fn: (event) => {
     return {
-      signingPayloads,
+      event,
       step: Step.SIGN,
     };
   },
