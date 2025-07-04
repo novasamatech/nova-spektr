@@ -32,6 +32,7 @@ export const buildMultisigTx = (
   account: MultisigAccount,
 ): MultisigOperation => {
   const operationId = multisigOperationService.getOperationId(
+    multisigTx.chainId,
     multisigTx.args.callHash,
     account.accountId,
     params.timepoint.height,

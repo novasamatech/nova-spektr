@@ -99,6 +99,8 @@ export const bootstrap = () => {
 
     import('@/features/accounts-structure').then(({ accountsStructureFeature }) => accountsStructureFeature),
 
+    import('@/features/multisig-operations').then(({ multisigOperationsFeature }) => multisigOperationsFeature),
+
     import('@/features/fellowship-activity-feed').then(({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature),
     import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),
     import('@/features/fellowship-evidence-salary').then(({ fellowshipEvidenceSalaryFeature }) => fellowshipEvidenceSalaryFeature),

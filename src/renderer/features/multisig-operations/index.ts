@@ -6,3 +6,5 @@ export { confirmTransactionInfoSlot } from './components/ActionSteps/Confirmatio
 export { Operations } from './components/Operations';
 export { operationsModel } from './model/list';
 export { SignatorySelectModal } from './components/modals/SignatorySelectModal';
+
+export { multisigOperationsFeature } from './model/feature';
