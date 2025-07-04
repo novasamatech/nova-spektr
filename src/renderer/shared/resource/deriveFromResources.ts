@@ -29,12 +29,14 @@ type ResourcesFirstOutput<T extends any[]> = T extends [infer Head, ...unknown[]
 
 type DerivedParams<State, Resources extends any[]> = {
   store: StoreWritable<State> | State;
+  onReceive?: EventCallable<NoInfer<State>>;
   resources: ResourcesChain<Resources>;
   map(state: NoInfer<State>, input: ResourcesFirstOutput<Resources>, metadata: ResourcesMetadata<Resources>): State;
 };
 
 export function deriveFromResources<State, const Resources extends Resource<any, any, any>[]>({
   store,
+  onReceive,
   resources,
   map,
 }: DerivedParams<State, Resources>) {
@@ -63,5 +65,13 @@ export function deriveFromResources<State, const Resources extends Resource<any,
       fn: (state, { meta, result }) => map(state, result, meta),
       target: $state,
     });
+
+    if (onReceive) {
+      sample({
+        clock: closestResource.push,
+        fn: ({ result }: { result: State }) => result,
+        target: onReceive,
+      });
+    }
   }
 }

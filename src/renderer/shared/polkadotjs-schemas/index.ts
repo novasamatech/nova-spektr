@@ -15,6 +15,7 @@ import {
   nullSchema,
   perbillSchema,
   permillSchema,
+  rawStringSchema,
   storageKeySchema,
   structHexSchema,
   textSchema,
@@ -63,6 +64,7 @@ export const pjsSchema = {
   structHex: structHexSchema,
   dataString: dataStringSchema,
   hex: hexSchema,
+  rawString: rawStringSchema,
   u8Array: hexSchema,
 
   object: objectSchema,

@@ -70,7 +70,7 @@ export const Operations = () => {
                     {txs
                       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
                       .map(tx => (
-                        <li key={`${tx.accountId}-${tx.section}-${tx.method}-${tx.timestamp}`}>
+                        <li key={tx.id}>
                           <Operation operation={tx} account={account} />
                         </li>
                       ))}

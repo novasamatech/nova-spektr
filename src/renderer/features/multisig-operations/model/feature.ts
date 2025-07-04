@@ -74,15 +74,7 @@ const $input = combine(
   },
 );
 
-export const multisigOperationsFeatureStatus = createFeature({
+export const multisigOperationsFeature = createFeature({
   name: 'multisig/operations',
   input: $input,
-});
-
-multisigOperationsFeatureStatus.start();
-
-sample({
-  clock: walletModel.$activeWallet,
-  filter: walletUtils.isMultisig,
-  target: multisigOperationsFeatureStatus.restore,
 });
