@@ -2,15 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
-import {
-  type Chain,
-  type ChainId,
-  type HexString,
-  type MultisigAccount,
-  type Transaction,
-  TransactionType,
-} from '@/shared/core';
+import { type Chain, type ChainId, type HexString, type Transaction, TransactionType } from '@/shared/core';
 import { removeFromCollection } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
@@ -39,8 +33,8 @@ const formInitiated = createEvent<SubmitInput>();
 const submitStarted = createEvent();
 const formSubmitted = createEvent<Result[]>();
 
-const extrinsicSucceeded = createEvent<{ id: number; params: ExtrinsicResultParams }>();
-const extrinsicFailed = createEvent<{ id: number; params: string }>();
+const extrinsicSucceeded = createEvent<{ id: number; signatory: AccountId; params: ExtrinsicResultParams }>();
+const extrinsicFailed = createEvent<{ id: number; signatory: AccountId; params: string }>();
 const txsExecuted = createEvent();
 
 const $submitStore = restore<SubmitInput>(formInitiated, null);
@@ -82,9 +76,9 @@ const signAndSubmitExtrinsicsFx = createEffect(
         .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
         .then((result) => {
           if (result.executed) {
-            boundExtrinsicSucceeded({ id: index, params: result.params });
+            boundExtrinsicSucceeded({ id: index, signatory: transaction.accountId, params: result.params });
           } else {
-            boundExtrinsicFailed({ id: index, params: result.error });
+            boundExtrinsicFailed({ id: index, signatory: transaction.accountId, params: result.error });
           }
         });
     }
@@ -92,24 +86,24 @@ const signAndSubmitExtrinsicsFx = createEffect(
 );
 
 type SaveMultisigParams = {
-  api: ApiPromise | null;
+  apis: Record<ChainId, ApiPromise>;
   multisigTxs: Transaction[];
-  multisigAccount: MultisigAccount;
+  signatoryAccountId: AccountId;
   params: ExtrinsicResultParams;
 };
 
-const saveMultisigTxFx = createEffect(({ multisigTxs, multisigAccount, params, api }: SaveMultisigParams) => {
+const saveMultisigTxFx = createEffect(({ multisigTxs, signatoryAccountId, params, apis }: SaveMultisigParams) => {
   const result = [];
 
   for (const multisigTx of multisigTxs) {
+    const api = apis[multisigTx.chainId];
     if (!api) continue;
 
     const transaction = decodeCallData(api, multisigTx.accountId, multisigTx.args.callData);
+    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, signatoryAccountId);
 
-    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, multisigAccount);
     result.push(multisigOperation);
-
-    console.log(`New transaction was created with call hash ${multisigOperation.callHash}`);
+    console.info(`New transaction was created with call hash ${multisigOperation.callHash}`);
   }
 
   return result;
@@ -189,11 +183,11 @@ sample({
     submitStore: $submitStore,
   },
   filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, apis }, { params }) => ({
-    api: submitStore && apis[submitStore.chain.chainId],
+  fn: ({ submitStore, apis }, { signatory, params }) => ({
+    apis,
     params,
     multisigTxs: submitStore!.multisigTxs,
-    multisigAccount: submitStore!.account as MultisigAccount,
+    signatoryAccountId: signatory,
   }),
   target: saveMultisigTxFx,
 });

@@ -63,7 +63,7 @@ export const createComplexTxStore = <T extends Transaction>({
     if (mutisigAccountIndex !== -1) {
       const multisigTx = await transactionService.wrapLegacyTransaction(
         transaction,
-        route.slice(mutisigAccountIndex - 1),
+        route.slice(mutisigAccountIndex),
         api,
       );
 
