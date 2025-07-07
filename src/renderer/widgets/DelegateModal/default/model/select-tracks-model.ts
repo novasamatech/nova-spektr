@@ -14,7 +14,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
-import { accountService, accounts } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -56,7 +56,7 @@ const $availableAccounts = combine(
     delegations: delegationAggregate.$activeDelegations,
     network: delegationAggregate.$network,
     delegate: $delegate,
-    accounts: accounts.$list,
+    accounts: walletSelect.$selectedAccounts,
   },
   ({ wallet, delegations, network, delegate, accounts }) => {
     if (!wallet || !network?.chain || !delegate) return [];
