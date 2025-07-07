@@ -1,7 +1,7 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -19,10 +19,10 @@ export const SignerSelection = () => {
   const chain = useUnit(formModel.$chain);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
-  const { submit } = useForm(formModel.$createMultisigForm);
+  const { submit } = useForm(formModel.form);
 
   const onSubmit = (event: FormEvent, account: AnyAccount) => {
-    flowModel.events.signerSelected(account);
+    flowModel.signerSelected(account);
     event.preventDefault();
     submit();
   };
@@ -34,7 +34,7 @@ export const SignerSelection = () => {
           {ownedSignatoriesWallets.map(wallet => {
             if (!chain) return null;
 
-            const accounts = accountService.filterAccountOnChain(wallet.accounts, chain);
+            const accounts = accountService.filterAccountsOnChain(wallet.accounts, chain);
             const account = accounts.at(0);
 
             if (!account) return null;
@@ -53,7 +53,7 @@ export const SignerSelection = () => {
       </Modal.Content>
       <Modal.Footer>
         <Box fitContainer direction="row" horizontalAlign="start" verticalAlign="center">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
+          <Button variant="text" onClick={() => flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>
         </Box>

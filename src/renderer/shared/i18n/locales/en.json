@@ -7,7 +7,22 @@
   "accountsStructure": {
     "button": "Open overview",
     "modalTitle": "Account Overview",
-    "multisigThreshold": "{ threshold } out of { total }"
+    "multisigThreshold": "{ threshold } out of { total }",
+    "toolbar": {
+      "edgeType": {
+        "dashed": "Dashed",
+        "placeholder": "Edge type",
+        "solid": "Solid"
+      },
+      "focusOnSelected": "Focus on selected",
+      "pathType": {
+        "bezier": "Bezier Curve",
+        "placeholder": "Path type",
+        "smoothStep": "Smooth Step",
+        "straight": "Straight Line"
+      },
+      "reset": "Reset"
+    }
   },
   "addressBook": {
     "contactList": {
@@ -1569,7 +1584,17 @@
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
+    "types": {
+      "Any": "Any",
+      "Auction": "Auction",
+      "CancelProxy": "Cancel",
+      "Governance": "Governance",
+      "IdentityJudgement": "Judgement",
+      "NominationPools": "Nominations",
+      "NonTransfer": "Non Transfer",
+      "Staking": "Staking"
+    }
   },
   "pureProxyRemove": {
     "warning": {

@@ -12,6 +12,7 @@ import {
   createVaultChainAccount,
 } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
 
 type OldChainAccount = VaultChainAccount & { baseAccountId?: AccountId };

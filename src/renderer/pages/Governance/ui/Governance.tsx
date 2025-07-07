@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useLayoutEffect } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type Chain, type ChainId } from '@/shared/core';
@@ -8,6 +8,8 @@ import { Paths } from '@/shared/routes';
 import { Header, Plate } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   Locks,
   NetworkSelector,
@@ -19,11 +21,22 @@ import {
 import { navigationModel } from '@/features/navigation';
 import { CurrentDelegationModal, currentDelegationModel } from '@/widgets/CurrentDelegationsModal';
 import { DelegateDetails } from '@/widgets/DelegateDetails';
-import { Delegate } from '@/widgets/DelegateModal';
 import { DelegationModal, delegationModel } from '@/widgets/DelegationModal';
-import { UnlockModal, unlockAggregate } from '@/widgets/UnlockModal';
+import { unlockAggregate, unlockAggregateShards } from '@/widgets/UnlockModal';
 import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
+
+// Lazy load delegate components
+const Delegate = lazy(() => import('@/widgets/DelegateModal').then(({ Delegate }) => ({ default: Delegate })));
+const DelegateShards = lazy(() =>
+  import('@/widgets/DelegateModal').then(({ DelegateShards }) => ({ default: DelegateShards })),
+);
+
+// Lazy load unlock components
+const UnlockModal = lazy(() => import('@/widgets/UnlockModal').then(({ UnlockModal }) => ({ default: UnlockModal })));
+const UnlockModalShards = lazy(() =>
+  import('@/widgets/UnlockModal').then(({ UnlockModalShards }) => ({ default: UnlockModalShards })),
+);
 
 export const Governance = () => {
   useGate(governancePageAggregate.gates.flow);
@@ -34,6 +47,8 @@ export const Governance = () => {
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
   const selectedChain = useUnit(networkSelectorModel.$governanceChain);
+  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
+  const isAccountWithShards = selectedAccounts.find((account) => accountUtils.isAccountWithShards(account));
 
   useEffect(() => {
     if (!selectedChain || referendumId) return;
@@ -65,6 +80,8 @@ export const Governance = () => {
   const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
 
+  const unlockFlowStarted = isAccountWithShards ? unlockAggregateShards.flowStarted : unlockAggregate.flowStarted;
+
   return (
     <div className="flex h-full flex-col">
       <Header title={t('governance.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
@@ -80,7 +97,7 @@ export const Governance = () => {
               </Plate>
               {isApiConnected && (
                 <>
-                  <Locks onClick={unlockAggregate.events.flowStarted} />
+                  <Locks onClick={unlockFlowStarted} />
                   <TotalDelegation
                     onClick={() =>
                       hasDelegations
@@ -100,9 +117,8 @@ export const Governance = () => {
       <CurrentDelegationModal />
       <DelegationModal />
       <DelegateDetails />
-      <Delegate />
-
-      <UnlockModal />
+      <Suspense fallback={null}>{isAccountWithShards ? <DelegateShards /> : <Delegate />}</Suspense>
+      <Suspense fallback={null}>{isAccountWithShards ? <UnlockModalShards /> : <UnlockModal />}</Suspense>
     </div>
   );
 };

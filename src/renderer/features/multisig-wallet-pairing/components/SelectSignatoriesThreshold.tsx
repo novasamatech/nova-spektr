@@ -1,8 +1,8 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
@@ -25,30 +25,23 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const {
     fields: { threshold, name },
     submit,
-  } = useForm(formModel.$createMultisigForm);
+  } = useForm(formModel.form);
 
-  const isNameError = name.isTouched && !name.value;
-  const chain = useUnit(formModel.$chain);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const wrongChainTypes = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
-  const fakeTx = useUnit(flowModel.$fakeTx);
 
-  const api = useUnit(flowModel.$api);
   const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
-
-  const asset = chain?.assets.at(0);
 
   const onSubmit = (event: FormEvent) => {
     signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
     if (ownedSignatoriesWallets.length > 1) {
-      flowModel.events.stepChanged(Step.SIGNER_SELECTION);
+      flowModel.stepChanged(Step.SIGNER_SELECTION);
     } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
       event.preventDefault();
       submit();
     }
@@ -62,16 +55,14 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
         </SmallTitleText>
 
         <Box direction="column" gap={6} padding={[6, 5, 4, 5]} height="100%">
-          {signatories.map((signer, index) => (
+          {signatories.map((signatory, index) => (
             <Signatory
               key={index}
               isOwnAccount={index === 0}
-              isDuplicate={duplicateSignatories[signer.address]?.includes(index)}
-              isInvalidAddress={wrongChainTypes.includes(signer.address)}
+              isDuplicate={duplicateSignatories[signatory.address]?.includes(index)}
+              isInvalidAddress={wrongChainTypes.includes(signatory.address)}
               signatoryIndex={index}
-              signatoryName={signer.name}
-              signatoryAddress={signer.address}
-              selectedWalletId={signer.walletId}
+              signatory={signatory}
               onDelete={signatoryModel.events.deleteSignatory}
             />
           ))}
@@ -95,14 +86,14 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   autoFocus
                   height="md"
                   placeholder={t('createMultisigAccount.namePlaceholder')}
-                  invalid={isNameError}
+                  invalid={name.hasError}
                   value={name.value}
                   onChange={name.onChange}
                 />
 
                 <InputHint active>{t('createMultisigAccount.walletNameDescription')}</InputHint>
-                <InputHint variant="error" active={isNameError}>
-                  {t('createMultisigAccount.disabledError.emptyName')}
+                <InputHint variant="error" active={name.hasError}>
+                  {t(name.errorMessage)}
                 </InputHint>
               </Field>
             </Box>
@@ -112,7 +103,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                 <Select
                   placeholder={t('createMultisigAccount.thresholdPlaceholder')}
                   value={(threshold.value || '').toString()}
-                  invalid={threshold.hasError()}
+                  invalid={threshold.hasError}
                   disabled={[0, 1].includes(signatories.length)}
                   height="md"
                   onChange={value => threshold.onChange(Number(value))}
@@ -163,9 +154,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex items-center justify-end gap-x-6">
-            {nonNullable(asset) ? (
-              <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
-            ) : null}
+            <MultisigCreationFees />
 
             <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
