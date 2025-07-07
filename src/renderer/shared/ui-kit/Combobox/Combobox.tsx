@@ -65,8 +65,10 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
           setOpen={onOpenChange}
           defaultValue={value}
           defaultSelectedValue={value}
+          value={value}
+          selectedValue={value}
           setSelectedValue={onChange}
-          setValue={value => startTransition(() => onChange(value))}
+          setValue={value => startTransition(() => onChange(value.trim()))}
         >
           <Trigger {...inputProps} onChange={onInput} />
           <Content>{children}</Content>

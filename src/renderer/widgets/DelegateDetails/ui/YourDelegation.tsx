@@ -122,7 +122,7 @@ export const YourDelegation = () => {
             pallet="secondary"
             onClick={() => {
               if (delegate) {
-                revokeDelegationModel.events.flowStarted({ delegate: delegate.address, accounts: [accounts[0]] });
+                revokeDelegationModel.flowStarted({ delegate: delegate.address, accounts: [accounts[0]] });
               }
             }}
           >

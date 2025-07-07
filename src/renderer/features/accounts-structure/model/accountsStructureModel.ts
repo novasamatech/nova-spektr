@@ -1,28 +1,64 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain } from '@/shared/core';
+import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+const $allChains = networkModel.$chains.map((chains) => {
+  const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
+  return Object.values(chains).filter((chain) => chain.options?.some((option) => requiredOptions.has(option)));
+});
+const $allChainsMap = $allChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
-const selectChain = createEvent<string>();
+const selectChain = createEvent<ChainId>();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
 const $selectedChainId = restore(selectChain, null);
 
-const $accountList = restore(setAccounts, null);
-const $selectedAccount = restore(selectAccount, null).on(setAccounts, (_, accounts) => accounts?.[0] ?? null);
+const $allAccounts = restore(setAccounts, null);
+
+const $selectedChain = combine(
+  {
+    chainId: $selectedChainId,
+    chains: $allChainsMap,
+  },
+  ({ chainId, chains }) => (chainId ? (chains.get(chainId) ?? null) : null),
+);
+
+const $availableAccounts = combine(
+  {
+    allAccounts: $allAccounts,
+    selectedChain: $selectedChain,
+  },
+  ({ allAccounts, selectedChain }) => {
+    if (!allAccounts || !selectedChain) return null;
+
+    return allAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, selectedChain));
+  },
+);
+
+const $selectedAccount = restore(selectAccount, null).on(
+  $availableAccounts,
+  (selectedAccount, accountsForSelectedChain) => {
+    return (
+      accountsForSelectedChain?.find((item) => item.id === selectedAccount?.id) ?? accountsForSelectedChain?.[0] ?? null
+    );
+  },
+);
 
 const $availableChains = combine(
   {
     chains: $allChains,
-    account: $selectedAccount,
+    accounts: $allAccounts,
   },
-  ({ chains, account }) => {
-    if (!account) return chains;
-    return chains.filter((chain) => accountService.isAccountAvailableOnChain(account, chain));
+  ({ chains, accounts }) => {
+    if (!accounts) return chains;
+
+    return chains.filter((chain) =>
+      accounts.some((account) => accountService.isAccountAvailableOnChain(account, chain)),
+    );
   },
 );
 
@@ -30,45 +66,27 @@ const $availableChains = combine(
 sample({
   clock: $availableChains,
   source: $selectedChainId,
-  fn: (_, filteredChains) => filteredChains[0]?.chainId ?? null,
+  fn: (_, filteredChains) => {
+    const firstChain = Array.from(filteredChains.values())[0];
+    return firstChain?.chainId ?? null;
+  },
   target: selectChain,
 });
 
-const $selectedChain = combine(
-  {
-    chainId: $selectedChainId,
-    chains: $availableChains,
-  },
-  ({ chainId, chains }) => {
-    return chains.find((chain) => chain.chainId === chainId) ?? null;
-  },
-);
-
-const $network = combine(
-  {
-    chain: $selectedChain,
-    apis: networkModel.$apis,
-  },
-  ({ chain, apis }) => {
-    if (!chain) return null;
-
-    const api = apis[chain.chainId];
-    if (!api) return null;
-
-    const asset = chain.assets.at(0);
-    if (!asset) return null;
-
-    return { api, chain, asset };
-  },
-);
+export const focusOnSelected = createEvent();
+export const reset = createEvent();
 
 export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
 export const setEdgeType = createEvent<'solid' | 'dashed'>();
 
-export const $pathType = restore(setPathType, 'bezier');
-export const $edgeType = restore(setEdgeType, 'dashed');
+export const $pathType = restore(setPathType, 'bezier').reset(reset);
+export const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
 
-export const focusOnSelected = createEvent();
+export const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
+export const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
+
+export const setCanvasSize = createEvent<{ width: number; height: number }>();
+export const $canvasSize = restore(setCanvasSize, { width: 0, height: 0 });
 
 export const enterAccountNode = createEvent<AccountNode>();
 export const leaveAccountNode = createEvent();
@@ -83,10 +101,12 @@ export const $highlightedNodes = combine(
     selectedAccount: $selectedAccount,
     accountList: accounts.$list,
     selectedChain: $selectedChain,
-    focusedAccountNode: $hoveredAccountNode,
+    hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
   },
-  ({ selectedAccount, accountList, selectedChain, focusedAccountNode }) => {
+  ({ selectedAccount, accountList, selectedChain, hoveredAccountNode, heldAccountNode }) => {
+    const focusedAccountNode = heldAccountNode ?? hoveredAccountNode;
+
     if (!selectedAccount || !focusedAccountNode || !accountList || !selectedChain) return [];
 
     const pathToSelected = accountService.findRoute(
@@ -153,10 +173,13 @@ sample({
     chain: $selectedChain,
     graph: $graph,
   }),
-  filter: ({ chain, graph }) => !!chain && !!graph && graph.size > 0,
+  filter: ({ chain, graph }) => nonNullable(chain) && nonNullable(graph),
   fn: ({ chain, graph }) => ({
     chainId: chain!.chainId,
-    accounts: Array.from(graph!.keys()).map((acc) => acc.accountId),
+    accounts: Array.from(graph!.values()).flatMap(({ account, children }) => [
+      account.accountId,
+      ...children.map((child) => child.account.accountId),
+    ]),
   }),
   target: identity.request,
 });
@@ -165,9 +188,9 @@ export const accountsStructureModel = {
   $selectedChainId,
   $selectedChain,
   $selectedAccount,
-  $accountList,
+  $availableAccounts,
   $availableChains,
-  $network,
+  $allChainsMap,
 
   selectChain,
   setAccounts,
@@ -178,6 +201,11 @@ export const accountsStructureModel = {
   $edgeType,
 
   focusOnSelected,
+  reset,
+  setViewport,
+  $viewport,
+  setCanvasSize,
+  $canvasSize,
   enterAccountNode,
   leaveAccountNode,
   holdAccountNode,

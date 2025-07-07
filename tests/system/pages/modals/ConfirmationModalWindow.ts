@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
@@ -16,13 +17,15 @@ export class ConfirmationModalWindow extends BaseModal<ConfirmationModalElements
   }
 
   public async confirm(): Promise<SigningModalWindow> {
-    const alert = this.page.getByTestId('alert');
-    if (await alert.isVisible()) {
-      const alertText = await alert.textContent();
-      throw new Error(`Alert found on the page with text: ${alertText}`);
-    }
-    await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
+    return await step('Confirm transaction', async () => {
+      const alert = this.page.getByTestId('alert');
+      if (await alert.isVisible()) {
+        const alertText = await alert.textContent();
+        throw new Error(`Alert found on the page with text: ${alertText}`);
+      }
+      await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
 
-    return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);
+      return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);
+    });
   }
 }

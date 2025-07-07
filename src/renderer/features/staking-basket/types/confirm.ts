@@ -54,38 +54,6 @@ export type NominateInput = {
   coreTx?: Transaction | null;
 };
 
-export type PayeeInput = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-
-  shards: AnyAccount[];
-  proxiedAccount?: ProxiedAccount;
-  signatory: AnyAccount | null;
-  destination?: string;
-  description: string;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-  coreTx?: Transaction | null;
-};
-
-export type UnstakeInput = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-  shards: AnyAccount[];
-  proxiedAccount?: ProxiedAccount;
-  signatory: AnyAccount | null;
-  amount: string;
-  description: string;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-};
-
 export type RestakeInput = {
   id?: number;
   chain: Chain;
@@ -96,22 +64,6 @@ export type RestakeInput = {
   amount: string;
   description: string;
   signatory: AnyAccount | null;
-
-  fee: string;
-  totalFee: string;
-  multisigDeposit: string;
-  coreTx?: Transaction | null;
-};
-
-export type WithdrawInput = {
-  id?: number;
-  chain: Chain;
-  asset: Asset;
-  shards: AnyAccount[];
-  proxiedAccount?: ProxiedAccount;
-  signatory: AnyAccount | null;
-  amount: string;
-  description: string;
 
   fee: string;
   totalFee: string;

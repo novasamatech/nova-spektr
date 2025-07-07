@@ -11,13 +11,13 @@ import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransactio
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
   AnyTransaction | Promise<AnyTransaction>,
-  { account: AnyAccount; api: ApiPromise }
+  { account: AnyAccount; route: AnyAccount[]; index: number; api: ApiPromise }
 >();
 
 const wrapLegacyTransactionTransformer = createTransformer<
   DeprecatedTransaction,
   DeprecatedTransaction | Promise<DeprecatedTransaction>,
-  { account: AnyAccount; api: ApiPromise }
+  { account: AnyAccount; route: AnyAccount[]; index: number; api: ApiPromise }
 >();
 
 const unwrapTransactionTransformer = createTransformer<
@@ -40,8 +40,9 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
 
 async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: AnyTransaction = transaction;
-  for (const account of Array.from(route).reverse()) {
-    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, api });
+
+  for (const [index, account] of Array.from(route).entries()) {
+    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, route, index, api });
     if (nonNullable(result)) {
       wrapped = result;
     }
@@ -56,8 +57,14 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
  */
 async function wrapLegacyTransaction(transaction: DeprecatedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: DeprecatedTransaction = transaction;
-  for (const account of Array.from(route).reverse()) {
-    const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, { account, api });
+
+  for (const [index, account] of Array.from(route).entries()) {
+    const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, {
+      account,
+      route,
+      index,
+      api,
+    });
     if (nonNullable(result)) {
       wrapped = result;
     }

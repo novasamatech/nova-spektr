@@ -1,73 +1,34 @@
-import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo } from 'react';
 
-import { type Asset, type MultisigThreshold, type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
-import { priceProviderModel } from '@/entities/price';
-import { FeeLoader, transactionService } from '@/entities/transaction';
+import { Fee } from '@/entities/transaction';
+import { flowModel } from '../../model/flow-model';
+import { formModel } from '../../model/form-model';
 
-type Props = {
-  api?: ApiPromise;
-  asset: Asset;
-  threshold: MultisigThreshold;
-  className?: string;
-  onDepositChange?: (deposit: string) => void;
-  transaction?: Transaction;
-};
-
-export const MultisigCreationFees = memo(({ api, asset, threshold, onDepositChange, transaction }: Props) => {
+export const MultisigCreationFees = memo(() => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+  const fee = useUnit(flowModel.$fee);
+  const signer = useUnit(flowModel.$signer);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
+  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
+  const isFeeLoading = useUnit(flowModel.$isFeeLoading);
+  const chain = useUnit(formModel.$chain);
 
-  const [isNetworkFeeLoading, setIsNetworkFeeLoading] = useState(true);
-  const [isDepositLoading, setIsDepositLoading] = useState(true);
+  const asset = chain?.assets.at(0);
 
-  const [deposit, setDeposit] = useState<BN>(BN_ZERO);
-  const [networkFee, setNetworkFee] = useState<BN>(BN_ZERO);
-  const fee = useMemo(() => deposit.add(networkFee), [deposit, networkFee]);
+  if (!asset || !signer) return;
 
-  const isLoading = useMemo(() => isNetworkFeeLoading || isDepositLoading, [isNetworkFeeLoading, isDepositLoading]);
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    setIsDepositLoading(true);
-    const txDeposit = transactionService.getMultisigDeposit(threshold, api);
-
-    setDeposit(new BN(txDeposit));
-    setIsDepositLoading(false);
-    onDepositChange?.(txDeposit);
-  }, [threshold, api]);
-
-  useEffect(() => {
-    if (!api || !transaction) return;
-
-    setIsNetworkFeeLoading(true);
-    transactionService
-      .getTransactionFee(transaction, api)
-      .then(fee => setNetworkFee(new BN(fee)))
-      .catch(error => {
-        setNetworkFee(BN_ZERO);
-        console.info('Error getting fee - ', error);
-      })
-      .finally(() => setIsNetworkFeeLoading(false));
-  }, [api]);
-
-  if (isLoading) {
-    return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
-  }
+  const totalFee = multisigDeposit.add(fee).toString();
+  const isLoading = isFeeLoading || isMultisigDepositLoading;
 
   return (
     <div className="flex items-center gap-x-2">
       <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
+      <Fee fee={totalFee} isLoading={isLoading} asset={asset} />
 
-      <AssetBalance value={fee.toString()} asset={asset} />
       <Icon size={16} name="edit" className="text-icon-default" />
     </div>
   );

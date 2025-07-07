@@ -1,14 +1,13 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
@@ -22,8 +21,8 @@ export const ConfirmationStep = () => {
 
   const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
-  const api = useUnit(flowModel.$api);
-  const fakeTx = useUnit(flowModel.$fakeTx);
+  const fee = useUnit(flowModel.$fee);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
 
   const chain = useUnit(formModel.$chain);
@@ -32,9 +31,11 @@ export const ConfirmationStep = () => {
 
   const {
     fields: { name, threshold },
-  } = useForm(formModel.$createMultisigForm);
+  } = useForm(formModel.form);
 
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
+
+  if (!signerWallet || !signer) return;
 
   return (
     <>
@@ -67,11 +68,11 @@ export const ConfirmationStep = () => {
             <Separator className="my-4 border-filter-border" />
             <DetailRow label={t('createMultisigAccount.signingWallet')}>
               <div className="flex w-full items-center justify-end gap-x-2">
-                <WalletIcon type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
+                <WalletIcon type={signerWallet.type} />
 
                 <div className="flex max-w-[348px] flex-col">
                   <BodyText as="span" className="truncate tracking-tight text-text-secondary">
-                    {signer?.name || (signerWallet?.type === WalletType.POLKADOT_VAULT && signerWallet?.name) || ''}
+                    {signer.name || signerWallet.name}
                   </BodyText>
                 </div>
               </div>
@@ -79,19 +80,10 @@ export const ConfirmationStep = () => {
             <Separator className="my-4 border-filter-border" />
             {chain ? (
               <div className="mb-4 flex flex-1 flex-col gap-y-4">
-                <MultisigDepositWithLabel
-                  api={api}
-                  asset={chain.assets[0]}
-                  threshold={threshold.value}
-                  onDepositChange={flowModel.events.multisigDepositChanged}
-                />
-                <FeeWithLabel
-                  api={api}
-                  asset={chain.assets[0]}
-                  transaction={fakeTx}
-                  onFeeChange={flowModel.events.feeChanged}
-                  onFeeLoading={flowModel.events.isFeeLoadingChanged}
-                />
+                <MultisigDepositFee asset={chain.assets[0]} multisigDeposit={multisigDeposit.toString()} />
+
+                <FeeWithLabel fee={fee.toString()} asset={chain.assets[0]} />
+
                 <Alert
                   variant="error"
                   title={t('createMultisigAccount.notEnoughTokensTitle')}
@@ -110,20 +102,16 @@ export const ConfirmationStep = () => {
             variant="text"
             onClick={() => {
               if ((ownedSignatories || []).length > 1) {
-                flowModel.events.stepChanged(Step.SIGNER_SELECTION);
+                flowModel.stepChanged(Step.SIGNER_SELECTION);
               } else {
-                flowModel.events.stepChanged(Step.SIGNATORIES_THRESHOLD);
+                flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
               }
             }}
           >
             {t('createMultisigAccount.backButton')}
           </Button>
 
-          <SignButton
-            disabled={!isEnoughBalance}
-            type={signerWallet?.type || WalletType.POLKADOT_VAULT}
-            onClick={confirmModel.output.formSubmitted}
-          />
+          <SignButton disabled={!isEnoughBalance} type={signerWallet.type} onClick={confirmModel.startSigning} />
         </Box>
       </Modal.Footer>
 

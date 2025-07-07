@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type CallHash, type Chain, ChainOptions, type MultisigAccount } from '@/shared/core';
+import { type CallHash, type Chain, type ChainId, ChainOptions, type MultisigAccount } from '@/shared/core';
 import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
@@ -28,8 +28,8 @@ function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
   );
 }
 
-function getOperationId(callHash: string, address: string, block: number, index: number) {
-  return `${callHash}-${address}-${block}-${index}`;
+function getOperationId(chainId: ChainId, callHash: string, accountId: AccountId, block: number, index: number) {
+  return `${chainId}-${callHash}-${accountId}-${block}-${index}`;
 }
 
 function getEventId(operationId: string, signer: string, status: 'approve' | 'reject') {
