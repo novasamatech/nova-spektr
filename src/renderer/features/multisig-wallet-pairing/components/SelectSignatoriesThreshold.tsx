@@ -4,8 +4,9 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -32,18 +33,21 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const wrongChainTypes = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const chain = useUnit(formModel.$chain);
 
   const signerWallet = useUnit(flowModel.$signerWallet);
+  const signer = useUnit(flowModel.$signer);
   const fee = useUnit(flowModel.$fee);
-  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
-  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
   const isFeeLoading = useUnit(flowModel.$isFeeLoading);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
-  const chain = useUnit(formModel.$chain);
+  const signerBalance = useUnit(flowModel.$signerBalance);
 
   const signatories = useUnit(signatoryModel.$signatories);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
 
+  // TODO: delete when indexer is ready
+  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
   const totalFee = multisigDeposit.add(fee).toString();
   const isLoading = isFeeLoading || isMultisigDepositLoading;
 
@@ -62,14 +66,16 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
     // }
   };
 
+  const asset = getNativeAsset(chain?.assets || []);
+
   return (
     <>
       <Modal.Content>
-        <SmallTitleText className="border-b border-container-border px-5 pb-6 text-text-primary">
-          {t('createMultisigAccount.signatoryThresholdDescription')}
-        </SmallTitleText>
+        <div className="flex h-full flex-col gap-y-6 px-5 pb-6 pt-4">
+          <SmallTitleText>{t('createMultisigAccount.signatoryThresholdDescription')}</SmallTitleText>
 
-        <Box direction="column" gap={6} padding={[6, 5, 4, 5]} height="100%">
+          <hr className="-ml-5 w-[110%] border-divider" />
+
           {signatories.map((signatory, index) => (
             <Signatory
               key={index}
@@ -92,7 +98,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.addNewSignatory')}
           </Button>
 
-          <hr className="-mx-5 w-full border-divider" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           <div className="flex gap-x-6">
             <Box width="100%">
@@ -136,30 +142,62 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             </Box>
           </div>
 
-          <Alert
-            variant="info"
-            active={nonNullable(hiddenMultisig)}
-            title={t('createMultisigAccount.multisigExistTitle')}
-          >
-            <Alert.Item withDot={false}>
-              <Trans t={t} i18nKey="createMultisigAccount.multisigHiddenExistText" />
-            </Alert.Item>
-            <Alert.Item withDot={false}>
-              <Button
-                variant="text"
-                size="sm"
-                className="p-0"
-                onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
-              >
-                {t('createMultisigAccount.restoreButton')}
-              </Button>
-            </Alert.Item>
-          </Alert>
+          <div className="mt-auto">
+            <Alert
+              variant="info"
+              active={nonNullable(hiddenMultisig)}
+              title={t('createMultisigAccount.multisigExistTitle')}
+            >
+              <Alert.Item withDot={false}>
+                <Trans t={t} i18nKey="createMultisigAccount.multisigHiddenExistText" />
+              </Alert.Item>
+              <Alert.Item withDot={false}>
+                <Button
+                  variant="text"
+                  size="sm"
+                  className="p-0"
+                  onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
+                >
+                  {t('createMultisigAccount.restoreButton')}
+                </Button>
+              </Alert.Item>
+            </Alert>
 
-          <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
-            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-          </Alert>
-        </Box>
+            <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
+              <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+            </Alert>
+
+            {!nullable(signerBalance) && !nullable(chain) && !nullable(signer) && (
+              <Alert
+                variant="error"
+                active={!isEnoughBalance}
+                title={t('createMultisigAccount.disabledError.notEnoughBalanceTitle')}
+              >
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.disabledError.notEnoughBalanceText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain.addressPrefix })}
+                            title={signer.name}
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                      fee: <AssetBalance value={totalFee} asset={asset} />,
+                      balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
+                    }}
+                  />
+                </Alert.Item>
+              </Alert>
+            )}
+          </div>
+        </div>
       </Modal.Content>
 
       <Modal.Footer>
@@ -176,7 +214,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   <Fee
                     fee={totalFee}
                     isLoading={isLoading}
-                    asset={getNativeAsset(chain.assets)}
+                    asset={asset}
                     className={isEnoughBalance ? '' : 'text-text-negative'}
                   />
                 )}

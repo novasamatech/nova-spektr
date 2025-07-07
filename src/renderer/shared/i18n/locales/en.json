@@ -162,6 +162,8 @@
     "disabledError": {
       "differentAccounts": "Wallets with different accounts for chains are not supported",
       "emptyName": "A name is required",
+      "notEnoughBalanceText": "The account <account/> has insufficient funds to cover the transaction fee of <fee/>. Transferable balance: <balance/>. Please top up the balance of this wallet and try again.",
+      "notEnoughBalanceTitle": "The creation of this multisig cannot be completed",
       "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
     },
     "disabledLabel": "Not supported",

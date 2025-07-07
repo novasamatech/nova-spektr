@@ -188,25 +188,31 @@ const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   transaction: $transaction.map(tx => tx?.wrappedTx ?? null), // TODO: replace with coreTx after subquery support
 });
 
-const $isEnoughBalance = combine(
+const $signerBalance = combine(
   {
     signer: $signer,
-    fee: $fee,
-    multisigDeposit: $multisigDeposit,
     balances: balanceModel.$balances,
     chain: formModel.$chain,
   },
-  ({ signer, fee, multisigDeposit, balances, chain }) => {
-    if (!signer || !fee || !multisigDeposit || !chain) return false;
+  ({ signer, balances, chain }) => {
+    if (!signer || !chain) return null;
 
-    const balance = balanceUtils.getBalance(
-      balances,
-      signer.accountId,
-      chain.chainId,
-      chain.assets[0].assetId.toString(),
+    return (
+      balanceUtils.getBalance(balances, signer.accountId, chain.chainId, chain.assets[0].assetId.toString()) ?? null
     );
+  },
+);
 
-    return new BN(fee).add(new BN(multisigDeposit)).lte(withdrawableAmountBN(balance));
+const $isEnoughBalance = combine(
+  {
+    fee: $fee,
+    multisigDeposit: $multisigDeposit,
+    signerBalance: $signerBalance,
+  },
+  ({ fee, multisigDeposit, signerBalance }) => {
+    if (!signerBalance || !fee || !multisigDeposit) return false;
+
+    return new BN(fee).add(new BN(multisigDeposit)).lte(withdrawableAmountBN(signerBalance));
   },
 );
 
@@ -462,6 +468,7 @@ export const flowModel = {
   $signerWallet,
   $isEnoughBalance,
   $tx,
+  $signerBalance,
 
   $fee,
   $isFeeLoading: $pendingFee,
