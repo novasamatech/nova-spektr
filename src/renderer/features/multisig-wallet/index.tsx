@@ -209,6 +209,7 @@ transactionSDK(multisigWalletFeature, {
             otherSignatories,
             maybeTimepoint: null,
             callData: extrinsic.method.toHex(),
+            callHash: extrinsic.method.hash.toHex(),
             maxWeight,
           },
         };

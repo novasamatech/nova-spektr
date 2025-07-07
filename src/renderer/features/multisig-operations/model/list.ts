@@ -1,6 +1,7 @@
 import { sample } from 'effector';
 
 import { multisigOperation } from '@/domains/network';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { multisigOperationsFeature } from './feature';
 
@@ -12,6 +13,11 @@ sample({
 sample({
   clock: multisigOperationsFeature.stopped,
   target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
+});
+
+sample({
+  clock: submitModel.output.saveMultisigTx,
+  target: multisigOperation.addOperations,
 });
 
 export const operationsModel = {
