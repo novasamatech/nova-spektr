@@ -81,8 +81,7 @@ export async function getParachainId(api: ApiPromise): Promise<number> {
 }
 
 export const getExpectedBlockTime = (api: ApiPromise): BN => {
-  const substrateBlockTime =
-    api.consts.babe?.expectedBlockTime || api.consts.aura?.slotDuration || api.consts.timestamp?.minimumPeriod.muln(2);
+  const substrateBlockTime = api.consts.babe?.expectedBlockTime || api.consts.aura?.slotDuration;
   const proofOfWorkBlockTime = api.consts.difficulty?.targetBlockTime;
   const subspaceBlockTime = api.consts.subspace?.expectedBlockTime;
 
