@@ -195,12 +195,6 @@ function findLeafs(account: AnyAccount, accounts: AnyAccount[], chain: Chain): A
  * Find leaf accounts, that can sign transactions.
  */
 function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
-  const graphs = createAccountGraphs(accounts, chain);
-  const node = graphs.get(account);
-  if (nullable(node)) {
-    return [];
-  }
-
   return findLeafs(account, accounts, chain).filter(hasPermissionToMakeActions);
 }
 

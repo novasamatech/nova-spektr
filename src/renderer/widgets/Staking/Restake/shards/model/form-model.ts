@@ -30,6 +30,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };
@@ -220,7 +221,7 @@ const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> =>
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
     shards: $shards,
     network: $networkStore,
