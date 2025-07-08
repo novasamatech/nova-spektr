@@ -160,6 +160,7 @@
     "createMultisigWallet": "Create multisig wallet",
     "createionStatusTitle": "Mulitisig creation",
     "disabledError": {
+      "addressIsNotSupported": "This address is unsupported on the selected chain",
       "differentAccounts": "Wallets with different accounts for chains are not supported",
       "emptyName": "A name is required",
       "notEnoughBalanceText": "The account <account/> has insufficient funds to cover the transaction fee of <fee/>. Transferable balance: <balance/>. Please top up the balance of this wallet and try again.",
@@ -182,6 +183,7 @@
     "multisigExistText": "A multisig wallet with the selected signatories and threshold already exists. You can try to create a multisig on another network.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "A multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
+    "myAccounts": "My accounts",
     "myAddress": "My address",
     "myName": "My name",
     "nameNetworkDescription": "Select the network and the name of your multisig",
@@ -234,6 +236,7 @@
     "signatorySelection": "Choose or enter address",
     "signatoryThresholdDescription": "Set up your multisig: signatories, name and threshold",
     "signatoryTitle": "Select signatories",
+    "signingAccount": "Signing account",
     "signingWallet": "Signing wallet",
     "signingWith": "Signing with",
     "successMessage": "Wallet added",

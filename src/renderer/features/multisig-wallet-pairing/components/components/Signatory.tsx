@@ -2,21 +2,19 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
-import { type Address as AccountAddress, type ID, type WalletFamily } from '@/shared/core';
+import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
-import { CaptionText, IconButton, Identicon, InputHint } from '@/shared/ui';
+import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
-import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { filterModel } from '@/features/contacts';
-import { walletSelectFeature } from '@/features/wallet-select';
 import { type SignatoryInfo } from '../../lib/types';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
-
-const { services, constants } = walletSelectFeature;
 
 type ComboboxItem = {
   id: string;
@@ -38,6 +36,8 @@ type Props = {
   signatory: Omit<SignatoryInfo, 'index'>;
   onDelete?: (index: number) => void;
 };
+
+const POLKADOT_ADDRESS_PREFFIX = 0;
 
 export const Signatory = ({
   signatoryIndex,
@@ -72,10 +72,7 @@ export const Signatory = ({
       accountFn: a => {
         if (!chain) return false;
 
-        const accountIdMatch = toAccountId(signatoryAddress) === a.accountId;
-        const chainIdMatch = accountUtils.isChainIdMatch(a, chain.chainId);
-
-        return accountIdMatch && chainIdMatch;
+        return toAccountId(signatoryAddress) === a.accountId;
       },
     })?.[0]?.name || '';
 
@@ -98,50 +95,47 @@ export const Signatory = ({
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
-      accountFn: (account, wallet) => {
-        const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-        const isCorrectAccount = accountUtils.isNonBaseVaultAccount(account, wallet);
+      accountFn: account => {
+        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain); //any own acc available
+        const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
         const queryPass = includesMultiple([account.name, address], query);
 
-        return isChainMatch && isCorrectAccount && queryPass;
+        return (isOwnAccount || isChainMatch) && isCorrectAccount && queryPass;
       },
     });
 
-    const walletByGroup = services.walletSelect.getWalletByGroups(filteredWallets || []);
+    if (nullable(filteredWallets) || filteredWallets.length === 0) return;
+
     const ownAccountOptions: ComboboxGroup[] = [];
 
-    for (const [walletFamily, walletsGroup] of Object.entries(walletByGroup)) {
-      if (walletsGroup.length === 0) continue;
+    const accountOptions = new Map<string, ComboboxItem>();
 
-      const accountOptions: ComboboxItem[] = [];
-      for (const wallet of walletsGroup) {
-        for (const account of wallet.accounts) {
-          const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+    for (const wallet of filteredWallets) {
+      for (const account of wallet.accounts) {
+        const address = toAddress(account.accountId, { prefix: POLKADOT_ADDRESS_PREFFIX });
 
-          accountOptions.push({
-            id: address,
-            value: { address, walletId: account.walletId },
-            label: <Address showIcon title={account.name} address={address} />,
-          });
-        }
+        if (accountOptions.has(address)) continue;
+
+        const title = wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
+
+        accountOptions.set(address, {
+          id: address,
+          value: { address, walletId: account.walletId },
+          label: <Address showIcon title={title} address={address} />,
+        });
       }
-      ownAccountOptions.push({
-        id: walletFamily,
-        label: (
-          <div className="flex items-center gap-x-2" key={walletFamily}>
-            <WalletIcon type={walletFamily as WalletFamily} />
-            <CaptionText className="font-semibold uppercase text-text-secondary">
-              {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
-            </CaptionText>
-          </div>
-        ),
-        items: accountOptions,
-      });
     }
+    if (accountOptions.size === 0) return;
+
+    ownAccountOptions.push({
+      id: 'accounts',
+      label: isOwnAccount ? '' : t('createMultisigAccount.myAccounts'),
+      items: Array.from(accountOptions.values()),
+    });
 
     setOptions(ownAccountOptions);
-  }, [query, chain, wallets]);
+  }, [query, chain, wallets, isOwnAccount]);
 
   // Build Contacts options and set combined options
   useEffect(() => {
@@ -180,7 +174,7 @@ export const Signatory = ({
       },
     ];
 
-    setOptions(options => [...options, ...contactsOptions]);
+    setOptions(options => [...contactsOptions, ...options]);
   }, [query, chain, isOwnAccount, filteredContacts]);
 
   // initiate the query form in case of not own account
@@ -268,6 +262,10 @@ export const Signatory = ({
                 </Combobox.Group>
               ))}
             </Combobox>
+
+            <InputHint active={isInvalid} variant="error">
+              {t('createMultisigAccount.disabledError.addressIsNotSupported')}
+            </InputHint>
 
             <InputHint active={isDuplicate} variant="error">
               {t('createMultisigAccount.duplicateSignatoryAddress')}

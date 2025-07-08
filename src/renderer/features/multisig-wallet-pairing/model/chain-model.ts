@@ -1,12 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain, type Transaction } from '@/shared/core';
 import { series } from '@/shared/effector/series';
-import { TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { TEST_ACCOUNTS, getNativeAsset, merge, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -21,7 +20,10 @@ type ChainWithFeeAndBalance = {
   asset: Asset;
 };
 
-const flow = createGate();
+type ChainsWithFee = {
+  chain: Chain;
+  fee: string | null;
+};
 
 const $multisigChains = combine(networkModel.$chains, chains => {
   return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
@@ -40,10 +42,10 @@ const calculateFeeForChainFx = createEffect(
   },
 );
 
-const calculateFeesSeriesFx = series(calculateFeeForChainFx, { parallel: true, skipErrors: true });
+const calculateFeesSeriesFx = series(calculateFeeForChainFx, { parallel: true });
 
 sample({
-  clock: flow.open,
+  clock: flowModel.$tx,
   source: {
     multisigChains: $multisigChains,
     apis: networkModel.$apis,
@@ -59,25 +61,39 @@ sample({
       });
 
       const transaction = tx ? { ...tx, chainId: chain.chainId, accountId: TEST_ACCOUNTS[0] } : fakeTx;
-
       return { chain, tx: transaction, api: apis[chain.chainId] ?? null };
     });
   },
   target: calculateFeesSeriesFx,
 });
 
-const $availableChains = createStore<ChainWithFeeAndBalance[]>([]);
-const $unavailableChains = createStore<ChainWithFeeAndBalance[]>([]);
+const $availableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
+const $unavailableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
+const $chainsWithFee = createStore<ChainsWithFee[]>([]).reset(flowModel.flow.close);
 
 sample({
   clock: calculateFeesSeriesFx.doneData,
+  source: $chainsWithFee,
+  fn: (chains, newChains) => {
+    return merge({
+      a: chains,
+      b: newChains,
+      mergeBy: e => e.chain.chainId,
+    });
+  },
+  target: $chainsWithFee,
+});
+
+sample({
+  clock: [$chainsWithFee, flowModel.$signer],
   source: {
     signer: flowModel.$signer,
     balances: balanceModel.$balances,
     accounts: accounts.$list,
+    chains: $chainsWithFee,
   },
-  filter: ({ signer }) => nonNullable(signer),
-  fn: ({ signer, balances, accounts }, chains) => {
+  filter: ({ signer, chains }) => nonNullable(signer) && chains.length !== 0,
+  fn: ({ signer, balances, accounts, chains }) => {
     const availableChains = [];
     const unavailableChains = [];
     const accountList = accountService.filterAccountsByWallet(accounts, signer!.walletId);
@@ -128,6 +144,4 @@ export const chainSelectorModel = {
   $unavailableChains,
   $isLoading: calculateFeesSeriesFx.pending,
   $multisigChains,
-
-  flow,
 };

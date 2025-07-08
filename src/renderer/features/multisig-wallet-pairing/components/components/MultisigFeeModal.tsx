@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useMemo, useState } from 'react';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
@@ -65,8 +65,6 @@ type ChainsListProps = {
 };
 
 const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
-  useGate(chainSelectorModel.flow);
-
   const { t } = useI18n();
 
   const availableChains = useUnit(chainSelectorModel.$availableChains);

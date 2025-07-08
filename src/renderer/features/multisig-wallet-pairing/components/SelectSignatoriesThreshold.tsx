@@ -224,7 +224,12 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                 </MultisigFeeModal>
               </div>
             )}
-            <Button key="create" type="submit" disabled={!canSubmit || !isEnoughBalance} onClick={onSubmit}>
+            <Button
+              key="create"
+              type="submit"
+              disabled={!canSubmit || !isEnoughBalance || isFeeLoading}
+              onClick={onSubmit}
+            >
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>
